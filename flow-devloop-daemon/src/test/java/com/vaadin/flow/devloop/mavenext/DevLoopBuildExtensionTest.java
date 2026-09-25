@@ -37,6 +37,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -57,8 +58,7 @@ class DevLoopBuildExtensionTest {
     @Test
     void theBuildPluginsAreWrittenWithTheirCoordinates() {
         Properties model = DevLoopBuildExtension
-                .modelOf(project(jetty("org.eclipse.jetty.ee11",
-                        "jetty-ee11-maven-plugin", "12.1.13")));
+                .modelOf(project(jetty("ee11", "12.1.13")));
 
         assertEquals("1", model.getProperty("plugins"));
         assertEquals("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin:12.1.13",
@@ -73,8 +73,7 @@ class DevLoopBuildExtensionTest {
     @Test
     void aPluginWithNoVersionLeavesTheCoordinatesOpen() {
         Properties model = DevLoopBuildExtension
-                .modelOf(project(jetty("org.eclipse.jetty.ee10",
-                        "jetty-ee10-maven-plugin", null)));
+                .modelOf(project(jetty("ee10", null)));
 
         assertEquals("org.eclipse.jetty.ee10:jetty-ee10-maven-plugin:",
                 model.getProperty("plugin.0"));
@@ -87,8 +86,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void configurationIsWrittenForThePluginAndItsExecutions() {
-        Plugin plugin = jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13");
+        Plugin plugin = jetty("ee11", "12.1.13");
         plugin.setConfiguration(configuration("scan", "2"));
         PluginExecution execution = new PluginExecution();
         execution.setConfiguration(configuration("deployMode", "FORK"));
@@ -103,8 +101,7 @@ class DevLoopBuildExtensionTest {
     /** The profiles Maven ran with, which is the answer poms cannot give. */
     @Test
     void theActiveProfilesAreNamed() {
-        MavenProject project = project(jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13"));
+        MavenProject project = project(jetty("ee11", "12.1.13"));
         project.setActiveProfiles(List.of(profile("jetty"), profile("ide")));
 
         assertEquals("jetty,ide",
@@ -123,8 +120,7 @@ class DevLoopBuildExtensionTest {
     @Test
     void theFileLandsWhereTheDaemonLooksForIt() throws IOException {
         MavenProject project = project(module.resolve("target"),
-                jetty("org.eclipse.jetty.ee11", "jetty-ee11-maven-plugin",
-                        "12.1.13"));
+                jetty("ee11", "12.1.13"));
 
         DevLoopBuildExtension.writeModel(project);
 
@@ -140,8 +136,7 @@ class DevLoopBuildExtensionTest {
     @Test
     void aMovedBuildDirectoryDoesNotMoveTheFile() throws IOException {
         MavenProject project = project(module.resolve("build"),
-                jetty("org.eclipse.jetty.ee11", "jetty-ee11-maven-plugin",
-                        "12.1.13"));
+                jetty("ee11", "12.1.13"));
 
         DevLoopBuildExtension.writeModel(project);
 
@@ -173,8 +168,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void aUserPropertyForcesTheConfiguration() {
-        Plugin jetty = jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13");
+        Plugin jetty = jetty("ee11", "12.1.13");
         jetty.setConfiguration(configuration("scan", "2"));
 
         afterProjectsRead(
@@ -192,8 +186,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void aSystemPropertyStillForcesTheConfiguration() {
-        Plugin jetty = jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13");
+        Plugin jetty = jetty("ee11", "12.1.13");
         jetty.setConfiguration(configuration("scan", "2"));
 
         afterProjectsRead(new Properties(),
@@ -207,8 +200,7 @@ class DevLoopBuildExtensionTest {
     /** An element the project never declared is added rather than skipped. */
     @Test
     void anUndeclaredElementIsAdded() {
-        Plugin jetty = jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13");
+        Plugin jetty = jetty("ee11", "12.1.13");
 
         afterProjectsRead(
                 userProperties("org.eclipse.jetty.ee11:jetty-ee11-maven-plugin",
@@ -225,8 +217,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void anExecutionsOwnValueIsRemoved() {
-        Plugin jetty = jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13");
+        Plugin jetty = jetty("ee11", "12.1.13");
         PluginExecution execution = new PluginExecution();
         execution.setConfiguration(configuration("scan", "2"));
         jetty.addExecution(execution);
@@ -243,7 +234,7 @@ class DevLoopBuildExtensionTest {
     /** Only the plugin the daemon named is touched. */
     @Test
     void anotherPluginIsLeftAlone() {
-        Plugin compiler = jetty("org.apache.maven.plugins",
+        Plugin compiler = plugin("org.apache.maven.plugins",
                 "maven-compiler-plugin", "3.13.0");
         compiler.setConfiguration(configuration("scan", "2"));
 
@@ -261,8 +252,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void withoutThePropertiesNothingIsForced() {
-        Plugin jetty = jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13");
+        Plugin jetty = jetty("ee11", "12.1.13");
         jetty.setConfiguration(configuration("scan", "2"));
 
         afterProjectsRead(new Properties(), new Properties(), project(jetty));
@@ -273,8 +263,7 @@ class DevLoopBuildExtensionTest {
     /** Coordinates that name no artifact are not a plugin to look for. */
     @Test
     void coordinatesWithoutAnArtifactForceNothing() {
-        Plugin jetty = jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13");
+        Plugin jetty = jetty("ee11", "12.1.13");
         jetty.setConfiguration(configuration("scan", "2"));
 
         afterProjectsRead(userProperties("jetty-ee11-maven-plugin", "scan=0"),
@@ -292,8 +281,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void aUserPropertySetsAProjectProperty() {
-        Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
-                "1.10.29");
+        Plugin cargo = cargo("1.10.29");
         MavenProject project = project(cargo);
 
         afterProjectsRead(
@@ -317,8 +305,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void aDeclaredProjectPropertyIsAddedTo() {
-        Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
-                "1.10.29");
+        Plugin cargo = cargo("1.10.29");
         MavenProject project = project(cargo);
         project.getProperties().setProperty("cargo.jvmargs", "-Xmx2g");
 
@@ -340,8 +327,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void aBlankDeclaredProjectPropertyIsSimplySet() {
-        Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
-                "1.10.29");
+        Plugin cargo = cargo("1.10.29");
         MavenProject project = project(cargo);
         project.getProperties().setProperty("cargo.jvmargs", "   ");
 
@@ -361,8 +347,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void nothingToForceStillSetsTheProjectProperty() {
-        Plugin cargo = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
-                "1.10.29");
+        Plugin cargo = cargo("1.10.29");
         MavenProject project = project(cargo);
         Properties user = projectProperties(
                 "org.codehaus.cargo:cargo-maven3-plugin", "cargo.jvmargs",
@@ -388,10 +373,8 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void anInheritedPluginIsForcedInTheApplicationModuleAlone() {
-        Plugin inherited = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
-                "1.10.29");
-        Plugin declared = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
-                "1.10.29");
+        Plugin inherited = cargo("1.10.29");
+        Plugin declared = cargo("1.10.29");
         MavenProject root = module("root", inherited);
         MavenProject app = module(APP, declared);
 
@@ -407,10 +390,8 @@ class DevLoopBuildExtensionTest {
     /** The project properties are scoped to that module for the same reason. */
     @Test
     void anInheritedPluginSetsThePropertyInTheApplicationModuleAlone() {
-        Plugin inherited = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
-                "1.10.29");
-        Plugin declared = jetty("org.codehaus.cargo", "cargo-maven3-plugin",
-                "1.10.29");
+        Plugin inherited = cargo("1.10.29");
+        Plugin declared = cargo("1.10.29");
         MavenProject root = module("root", inherited);
         MavenProject app = module(APP, declared);
 
@@ -432,8 +413,7 @@ class DevLoopBuildExtensionTest {
      */
     @Test
     void withoutTheModuleNothingIsForced() {
-        Plugin jetty = jetty("org.eclipse.jetty.ee11",
-                "jetty-ee11-maven-plugin", "12.1.13");
+        Plugin jetty = jetty("ee11", "12.1.13");
         jetty.setConfiguration(configuration("scan", "2"));
         Properties user = userProperties(
                 "org.eclipse.jetty.ee11:jetty-ee11-maven-plugin", "scan=0");
@@ -447,7 +427,7 @@ class DevLoopBuildExtensionTest {
     /** A module that does not run the named plugin keeps its own model. */
     @Test
     void anotherModulesPropertiesAreLeftAlone() {
-        Plugin compiler = jetty("org.apache.maven.plugins",
+        Plugin compiler = plugin("org.apache.maven.plugins",
                 "maven-compiler-plugin", "3.13.0");
         MavenProject project = project(compiler);
 
@@ -474,6 +454,172 @@ class DevLoopBuildExtensionTest {
                 new DefaultMavenExecutionResult(), List.of(project()));
 
         assertTrue(DevLoopBuildExtension.projectProperties(session).isEmpty());
+    }
+
+    /**
+     * The third channel, and the one that is not a rewrite but the launch
+     * itself: TomEE's run mojo has no skip of any kind, so a {@code tomee:run}
+     * named on a command line would start a server in every module of the
+     * reactor. A goal bound to a phase runs where the model carries it, and
+     * this is the model.
+     */
+    @Test
+    void aBoundGoalBecomesAnExecutionOnThatModulesPlugin() {
+        Plugin tomee = tomee("10.1.2");
+
+        afterProjectsRead(
+                bindProperties("org.apache.tomee.maven:tomee-maven-plugin",
+                        "package:run"),
+                new Properties(), project(tomee));
+
+        assertEquals(1, tomee.getExecutions().size());
+        PluginExecution bound = tomee.getExecutions().get(0);
+        assertEquals("package", bound.getPhase());
+        assertEquals(List.of("run"), bound.getGoals());
+        // Looked up by id at least once by Maven itself, so the cached map has
+        // to know about it too.
+        assertTrue(tomee.getExecutionsAsMap().containsKey(bound.getId()));
+    }
+
+    /**
+     * Maven may read a model more than once, and a build that bound the goal
+     * twice would start two servers on one port. The id is what makes the
+     * second ask a no-op.
+     */
+    @Test
+    void bindingTwiceLeavesOneExecution() {
+        Plugin tomee = tomee("10.1.2");
+        MavenProject app = project(tomee);
+        Properties properties = bindProperties(
+                "org.apache.tomee.maven:tomee-maven-plugin", "package:run");
+
+        afterProjectsRead(properties, new Properties(), app);
+        afterProjectsRead(properties, new Properties(), app);
+
+        assertEquals(1, tomee.getExecutions().size());
+    }
+
+    /**
+     * And it is bound in the application's module and in no other, which is the
+     * whole point: a plugin a reactor parent declares is in every module that
+     * inherits it, and an execution added to the reactor root would start the
+     * server there instead.
+     */
+    @Test
+    void anotherModuleGetsNoBoundExecution() {
+        Plugin inherited = tomee("10.1.2");
+
+        afterProjectsRead(
+                bindProperties("org.apache.tomee.maven:tomee-maven-plugin",
+                        "package:run"),
+                new Properties(), module("root", inherited));
+
+        assertTrue(inherited.getExecutions().isEmpty());
+    }
+
+    /**
+     * The project's own executions are that project's business. This run is
+     * still its build, so the goal is added to them rather than instead of them
+     * - the same reasoning the Cargo project property is added under.
+     */
+    @Test
+    void theProjectsOwnExecutionsSurviveTheBinding() {
+        Plugin tomee = tomee("10.1.2");
+        PluginExecution own = new PluginExecution();
+        own.setId("build-tomee");
+        own.setPhase("pre-integration-test");
+        own.addGoal("build");
+        tomee.addExecution(own);
+
+        afterProjectsRead(
+                bindProperties("org.apache.tomee.maven:tomee-maven-plugin",
+                        "package:run"),
+                new Properties(), project(tomee));
+
+        assertEquals(2, tomee.getExecutions().size());
+        assertEquals("build-tomee", tomee.getExecutions().get(0).getId());
+    }
+
+    /**
+     * Half a binding is not a binding. An execution with no goal would be an
+     * invalid model, and failing the build is the one thing this extension may
+     * never do.
+     */
+    @Test
+    void aBindingWithNoGoalBindsNothing() {
+        Plugin tomee = tomee("10.1.2");
+
+        afterProjectsRead(
+                bindProperties("org.apache.tomee.maven:tomee-maven-plugin",
+                        "package:"),
+                new Properties(), project(tomee));
+        afterProjectsRead(
+                bindProperties("org.apache.tomee.maven:tomee-maven-plugin",
+                        "package"),
+                new Properties(), project(tomee));
+
+        assertTrue(tomee.getExecutions().isEmpty());
+    }
+
+    /**
+     * The bound execution carries the plugin's own configuration, and it has to
+     * carry it <em>itself</em>: Maven merges a plugin-level configuration into
+     * each execution's while it builds the model, and after that consults the
+     * plugin-level one for a goal named on the command line alone. An execution
+     * added here has missed that merge. Measured against the TomEE fixture, the
+     * cost of getting this wrong was a server on 8080 under the module's
+     * finalName, with the pom's {@code <tomeeHttpPort>} and {@code <context>}
+     * both sitting in the effective model.
+     */
+    @Test
+    void theBoundExecutionCarriesThePluginsOwnConfiguration() {
+        Plugin tomee = tomee("10.1.2");
+        tomee.setConfiguration(configuration("tomeeHttpPort", "8892"));
+
+        afterProjectsRead(
+                bindProperties("org.apache.tomee.maven:tomee-maven-plugin",
+                        "package:run"),
+                new Properties(), project(tomee));
+
+        Xpp3Dom bound = (Xpp3Dom) tomee.getExecutions().get(0)
+                .getConfiguration();
+        assertEquals("8892", bound.getChild("tomeeHttpPort").getValue());
+        // A copy and not the same object: a mojo may rewrite what it is given,
+        // and the plugin's own configuration is not this execution's to edit.
+        assertNotSame(tomee.getConfiguration(), bound);
+    }
+
+    /**
+     * And it carries the forced value, not the one the pom wrote - which is
+     * only true because the copy is taken after the forcing. Taken before, the
+     * execution would carry the pom's value and beat the very override the
+     * extension exists for; and {@code apply} strips a forced element from
+     * every execution's configuration, so a copy made earlier would have lost
+     * it either way.
+     */
+    @Test
+    void theBoundExecutionCarriesTheForcedValueRatherThanThePoms() {
+        Plugin tomee = tomee("10.1.2");
+        tomee.setConfiguration(configuration("reloadOnUpdate", "true"));
+        Properties properties = bindProperties(
+                "org.apache.tomee.maven:tomee-maven-plugin", "package:run");
+        properties.setProperty(DevLoopBuildExtension.FORCE_PROPERTY,
+                "reloadOnUpdate=false");
+
+        afterProjectsRead(properties, new Properties(), project(tomee));
+
+        Xpp3Dom bound = (Xpp3Dom) tomee.getExecutions().get(0)
+                .getConfiguration();
+        assertEquals("false", bound.getChild("reloadOnUpdate").getValue());
+    }
+
+    private static Properties bindProperties(String coordinates, String bind) {
+        Properties properties = new Properties();
+        properties.setProperty(DevLoopBuildExtension.PLUGIN_PROPERTY,
+                coordinates);
+        properties.setProperty(DevLoopBuildExtension.MODULE_PROPERTY, APP);
+        properties.setProperty(DevLoopBuildExtension.BIND_PROPERTY, bind);
+        return properties;
     }
 
     private static Properties projectProperties(String coordinates, String name,
@@ -549,13 +695,46 @@ class DevLoopBuildExtensionTest {
         return project;
     }
 
-    private static Plugin jetty(String groupId, String artifactId,
+    /**
+     * Any plugin, by coordinates. The named helpers below are the ones the
+     * tests reach for; this is here for a plugin that turns up once - the
+     * compiler, standing in for "some other plugin in the same build".
+     */
+    private static Plugin plugin(String groupId, String artifactId,
             String version) {
         Plugin plugin = new Plugin();
         plugin.setGroupId(groupId);
         plugin.setArtifactId(artifactId);
         plugin.setVersion(version);
         return plugin;
+    }
+
+    /**
+     * Jetty's plugin at one Jakarta EE level, named the way
+     * {@code ServerPlugin.jetty} names it: the level is the only thing that
+     * differs between the two entries.
+     *
+     * @param ee
+     *            the Jakarta EE level, as the plugin spells it
+     * @param version
+     *            the version the pom declares, or {@code null} for a pom that
+     *            leaves it to Maven
+     */
+    private static Plugin jetty(String ee, String version) {
+        return plugin("org.eclipse.jetty." + ee,
+                "jetty-" + ee + "-maven-plugin", version);
+    }
+
+    /** TomEE's plugin, the one entry whose goal the extension binds. */
+    private static Plugin tomee(String version) {
+        return plugin("org.apache.tomee.maven", "tomee-maven-plugin", version);
+    }
+
+    /**
+     * Cargo's plugin, the one entry whose JVM flags go on a project property.
+     */
+    private static Plugin cargo(String version) {
+        return plugin("org.codehaus.cargo", "cargo-maven3-plugin", version);
     }
 
     private static Profile profile(String id) {

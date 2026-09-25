@@ -59,6 +59,15 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * extension also sets project properties for the run, named one at a time by
  * {@link #PROPERTY_PREFIX}.
  * <p>
+ * A third needs the goal itself. A goal named on a Maven command line runs in
+ * every project in the reactor, and TomEE's run mojo has no {@code skip} and no
+ * packaging check to escape that with - named, it starts a server in the
+ * reactor root and blocks the build before the application module is built. A
+ * goal <em>bound to a phase</em> runs only where the model carries it, so for
+ * that shape the daemon names no goal at all and asks the extension to add the
+ * execution here, in the application's module alone; see
+ * {@link #BIND_PROPERTY}.
+ * <p>
  * Both are applied to the one module the daemon names in
  * {@link #MODULE_PROPERTY} and to no other; see there for why an inherited
  * plugin makes that scope load-bearing rather than tidy.
@@ -125,6 +134,46 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      * semicolons.
      */
     public static final String PROPERTY_PREFIX = "vaadin.devloop.ext.property.";
+
+    /**
+     * A goal to bind in that module, as {@code <phase>:<goal>}.
+     * <p>
+     * How a goal is kept to one module when the plugin offers no way of its
+     * own. {@code -pl} chooses which projects are in the reactor, not which of
+     * them a named goal runs in - it runs in all of them - and no command line
+     * can say otherwise. A goal bound to a phase runs where the model carries
+     * it, and the model is what this extension edits. So the daemon names the
+     * phase alone and asks for the goal here.
+     * <p>
+     * Added to the plugin's executions rather than replacing them: the project
+     * may have executions of its own, and this run is still that project's
+     * build.
+     * <p>
+     * It is given a copy of the plugin's own {@code <configuration>}, and that
+     * is not a convenience. Maven merges a plugin-level configuration into each
+     * execution's while it is <em>building the model</em>, and afterwards
+     * consults the plugin-level one for a goal named on the command line alone
+     * ({@code DefaultLifecycleExecutionPlanCalculator} passes
+     * {@code allowPluginLevelConfig} only for
+     * {@code MojoExecution.Source.CLI}). An execution added after the model was
+     * built has missed that merge and would run on the mojo's defaults.
+     * Measured: {@code <tomeeHttpPort>8892</tomeeHttpPort>} and
+     * {@code <context>ROOT</context>} were both in the effective model and the
+     * server still came up on 8080 under the module's {@code finalName}.
+     * <p>
+     * Within a phase Maven runs executions in the order their plugins appear in
+     * the effective model, and merges the lifecycle-injected ones in first - so
+     * {@code war:war} is already scheduled ahead of an execution added to a
+     * pom-declared plugin at {@code package}, which is what the goal needs: it
+     * deploys the WAR that phase builds.
+     */
+    public static final String BIND_PROPERTY = "vaadin.devloop.ext.bind";
+
+    /**
+     * The id given to the execution {@link #BIND_PROPERTY} adds, which is also
+     * what makes adding it twice a no-op.
+     */
+    static final String BOUND_EXECUTION = "vaadin-devloop-run";
 
     /**
      * Where each module's effective model is left, relative to the module's own
@@ -318,8 +367,10 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         }
         String force = property(session, FORCE_PROPERTY);
         boolean forcing = force != null && !force.isBlank();
+        String bind = property(session, BIND_PROPERTY);
+        boolean binding = bind != null && !bind.isBlank();
         Map<String, String> properties = projectProperties(session);
-        if (!forcing && properties.isEmpty()) {
+        if (!forcing && !binding && properties.isEmpty()) {
             return;
         }
         int colon = coordinates.indexOf(':');
@@ -342,6 +393,9 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
                         apply(project, plugin, force);
                     }
                     applyProperties(project, plugin, properties);
+                    if (binding) {
+                        bind(project, plugin, bind);
+                    }
                 }
             }
         }
@@ -427,6 +481,69 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
             }
             model.setProperty(name, effective);
         });
+    }
+
+    /**
+     * Binds one goal of that plugin to a phase in that module.
+     * <p>
+     * {@link #BIND_PROPERTY} says why this is the only way to keep such a goal
+     * to one module, and why the execution needs a copy of the plugin's
+     * configuration. Three things are this method's own.
+     * <p>
+     * It must survive being asked twice - Maven may read a model more than once
+     * and two bound executions would be two servers on one port - so an
+     * execution already carrying the id is reused rather than added beside.
+     * <p>
+     * The copy is taken after {@link #apply} has run, because {@code apply}
+     * strips a forced element from every execution's configuration, which for
+     * this one would strip the value the copy exists to carry.
+     * <p>
+     * {@code flushExecutionMap} because {@link Plugin} caches its executions by
+     * id the first time it is asked for them, and a map built before this ran
+     * would not have the new one in it.
+     *
+     * @param project
+     *            the module running the plugin
+     * @param plugin
+     *            the plugin to add the execution to
+     * @param bind
+     *            the binding, as {@code <phase>:<goal>}
+     */
+    @SuppressWarnings("java:S106")
+    private void bind(MavenProject project, Plugin plugin, String bind) {
+        int colon = bind.indexOf(':');
+        if (colon <= 0 || colon == bind.length() - 1) {
+            return;
+        }
+        String phase = bind.substring(0, colon).trim();
+        String goal = bind.substring(colon + 1).trim();
+        PluginExecution execution = null;
+        for (PluginExecution existing : plugin.getExecutions()) {
+            if (BOUND_EXECUTION.equals(existing.getId())) {
+                execution = existing;
+            }
+        }
+        boolean added = execution == null;
+        if (added) {
+            execution = new PluginExecution();
+            execution.setId(BOUND_EXECUTION);
+            execution.setPhase(phase);
+            execution.addGoal(goal);
+            plugin.addExecution(execution);
+            plugin.flushExecutionMap();
+        }
+        if (plugin.getConfiguration() instanceof Xpp3Dom configuration) {
+            execution.setConfiguration(new Xpp3Dom(configuration));
+        }
+        if (!added) {
+            return;
+        }
+        // Said out loud for the reason a forced element is: this run is not the
+        // build the pom describes.
+        System.out.println("[vaadin-dev] " + plugin.getArtifactId()
+                + ": running " + goal + " at " + phase + " in "
+                + project.getArtifactId() + " for this run (the command line "
+                + "names no goal, so it runs in that module and no other)");
     }
 
     @SuppressWarnings("java:S106")

@@ -324,6 +324,62 @@ better and carries no user property, so no command line can set it. WildFly's
 on and the JBR carries over unasked; Cargo's `cargo.java.home` defaults the same
 way.
 
+**TomEE's goal is never named on the command line**, and it is the only one
+that is not.
+
+A goal named on a command line runs in *every* project in the reactor. `-pl`
+chooses which projects are in the reactor — and `-am` is what puts the sibling
+library there, which the loop needs — but neither chooses which of them the goal
+runs in, and no command line can. Measured on the three-module fixture,
+`mvn -pl :app -am package tomee:run` ran the goal on the reactor **root** first:
+
+```
+[INFO] Building Flow dev loop tests: Apache TomEE          [1/3]
+[INFO] --------------------------------[ pom ]--------------------------------
+[INFO] --- tomee:10.1.2:run (default-cli) @ flow-test-devloop-tomee ---
+[INFO] Waiting for command: [quit, exit, reload]
+```
+
+`AbstractTomEEMojo.execute` never looks at packaging: it unzipped a TomEE under
+the root's `target/`, started it and blocked. Modules 2 and 3 were never built,
+nothing was deployed — and nothing *failed*, so the daemon waits out its whole
+start window and abandons a launch that was never going to happen. A
+single-module project never shows this: there, "every project" is the app.
+
+Every other entry survives being named. Jetty's mojo supports `war` packaging
+alone; Liberty's picks the farthest downstream project out of the session
+itself; Cargo's, WildFly's and both Payaras' are switched off across the reactor
+by a `skip` user property and forced back on for the application's module. That
+last needs a `skip` to invert, and `tomee:run` has none — `skipCurrentProject`
+is the only parameter that sounds like one and it guards `copyWar` alone, which
+would leave the root's TomEE running and merely emptier.
+
+What a command line cannot say, a model can: **a goal bound to a phase runs only
+where the model carries it.** So the daemon names `package` and no goal, and
+passes `-Dvaadin.devloop.ext.bind=package:run`; `DevLoopBuildExtension` adds the
+execution to the plugin in the application's module alone.
+`ServerPlugin.boundInTheApplication` marks the entry. Measured on the same
+fixture, in the app module and in no other:
+
+```
+[INFO] --- war:3.5.1:war (default-war) @ flow-test-devloop-tomee-app ---
+[INFO] --- tomee:10.1.2:run (vaadin-devloop-run) @ flow-test-devloop-tomee-app ---
+```
+
+That order is not luck: within a phase Maven runs executions in the order their
+plugins appear in the effective model and merges the lifecycle-injected ones in
+first, so `war:war` is already ahead of an execution added to a pom-declared
+plugin.
+
+Binding is not the answer for the rest of the table: `wildfly:run` declares
+`@Execute(phase = PACKAGE)` and would fork the phase it was bound to.
+`tomee:run` forks nothing, which is why `package` is on its command line at all.
+
+Without the extension — a daemon running from an exploded build directory — there
+is no goal in the build, so this is the one case the daemon **refuses** rather
+than degrades: in a reactor it says so and stops. A single-module project has no
+other module to run in, so there the goal is named as before.
+
 ### Apache Tomcat, through Cargo
 
 Tomcat has no Maven plugin of its own a Vaadin project could use: Apache's
@@ -771,6 +827,27 @@ the effective model in memory before any mojo runs; nothing is written to the
 project, and the override is announced in the app log. From an exploded build
 directory there is no jar to point Maven at, and it can only warn.
 
+A third shape needs the goal itself rather than its configuration, and that is
+`vaadin.devloop.ext.bind` — `<phase>:<goal>`, added as an execution with the id
+`vaadin-devloop-run`. See "A container that forks" above for why TomEE is the
+one entry that needs it. It is added to the plugin's executions rather than
+instead of them, and reused rather than added twice when the id is already
+there — Maven may read a model more than once, and two bound executions would be
+two servers on one port.
+
+**It is given a copy of the plugin's `<configuration>`, and that is not a
+convenience.** Maven merges a plugin-level configuration into each execution's
+while it is *building the model*; afterwards it consults the plugin-level one
+for a goal named on the command line alone
+(`DefaultLifecycleExecutionPlanCalculator` passes `allowPluginLevelConfig` only
+for `MojoExecution.Source.CLI`). An execution added after the model was built
+has missed the merge and would run on the mojo's defaults. Measured against the
+TomEE fixture: `<tomeeHttpPort>8892</tomeeHttpPort>` and `<context>ROOT</context>`
+were both in the effective model, and the server still came up on 8080 under the
+module's `finalName`. The copy is taken *after* the forcing, because the forced
+value has to be in it and because `apply` strips a forced element from every
+execution's configuration.
+
 The application's module is named alongside the plugin, in
 `vaadin.devloop.ext.module`, and the rewrite is applied there and nowhere else.
 The model the extension edits is the *effective* one, so a plugin a reactor
@@ -918,6 +995,6 @@ flag both exist to prevent.
 **Run that by hand against a reactor, not a single module.** Two of the things a
 forked container has to get right are invisible to a project with no sibling: a
 goal named on a command line runs on every module in the reactor, which is what
-the skip and the forced `<skip>false</skip>` are for, and a sibling left at
-`compile` reaches the WAR as an empty directory, which is what `package` across
-the reactor is for.
+the skip and the forced `<skip>false</skip>` are for — and, for TomEE, the bound
+execution — and a sibling left at `compile` reaches the WAR as an empty
+directory, which is what `package` across the reactor is for.

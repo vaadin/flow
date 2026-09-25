@@ -737,15 +737,52 @@ class AppRuntimeTest {
         assertTrue(entry("cargo").skippedOutsideTheApplication());
         assertTrue(entry("wildfly").skippedOutsideTheApplication());
         assertFalse(entry("jetty-ee10").skippedOutsideTheApplication());
-        // TomEE is left as it was: what its mojo does on a reactor root is not
-        // known, and switching a goal off without knowing it needs to be is how
-        // a container ends up starting nothing at all.
+        // TomEE has no such half to set: its run mojo declares no skip
+        // parameter at all, which is why its goal is bound in the application
+        // module rather than switched off outside it - see below.
         assertFalse(entry("tomee").skippedOutsideTheApplication());
         // Liberty is the only forked container that keeps itself to one module
         // unasked: its mojo reads the session's ProjectDependencyGraph, runs
         // the server on the farthest downstream project alone and skips pom
         // packaging outright.
         assertFalse(entry("liberty").skippedOutsideTheApplication());
+    }
+
+    /**
+     * The fourth way of keeping a goal to one module, and the only one that
+     * needs no cooperation from the plugin: do not name the goal at all, and
+     * let the build extension bind it to a phase in the application's own
+     * model. TomEE is the entry that needs it - its run mojo has no skip of any
+     * kind, and {@code AbstractTomEEMojo.execute} unzips a TomEE and ends in
+     * {@code run()} whatever the module's packaging is - and it is the only
+     * one, because the rest of the table can be kept to one module by a means
+     * that leaves the command line saying what it runs.
+     */
+    @Test
+    void onlyTomeeIsBoundRatherThanNamed() {
+        for (ServerPlugin plugin : ServerPlugin.KNOWN) {
+            assertEquals("tomee".equals(plugin.name()),
+                    plugin.boundInTheApplication(), plugin.name());
+        }
+    }
+
+    /**
+     * Two things a bound entry cannot do without, and neither is checkable at
+     * the point of use: the phase is half of what the extension is told to
+     * bind, so an entry with none would ask for {@code :run}; and a goal that
+     * is never named cannot also be switched off by a user property, the skip
+     * inversion and the binding being two answers to the same question.
+     */
+    @Test
+    void aBoundEntryNamesItsPhaseAndSwitchesNothingOff() {
+        for (ServerPlugin plugin : ServerPlugin.KNOWN) {
+            if (!plugin.boundInTheApplication()) {
+                continue;
+            }
+            assertFalse(plugin.phase().isBlank(), plugin.name());
+            assertFalse(plugin.skippedOutsideTheApplication(), plugin.name());
+            assertEquals(Map.of(), plugin.goalProperties(), plugin.name());
+        }
     }
 
     /**

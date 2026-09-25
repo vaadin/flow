@@ -53,6 +53,13 @@ import java.util.regex.Pattern;
  * {@link #perPropertyFlags} is what says the flags are handed over one
  * {@code -D} each rather than whitespace-separated in one.
  * <p>
+ * TomEE then cost one more field, and that one is not about the channel but
+ * about how Maven is asked to run the goal. A goal named on a command line runs
+ * in <em>every</em> project in the reactor; a goal bound to a phase runs only
+ * where the model carries it. Every other entry survives being named; TomEE's
+ * does not, so {@link #boundInTheApplication} has the build extension bind it
+ * in the application's module instead.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @param name
@@ -97,6 +104,15 @@ import java.util.regex.Pattern;
  *            that shape, which is Liberty's: every {@code liberty.jvm.*}
  *            property becomes one line of the server's generated
  *            {@code jvm.options}
+ * @param boundInTheApplication
+ *            whether the loop runs this goal by having
+ *            {@link com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension}
+ *            bind it to {@link #phase} in the application's module, rather than
+ *            by naming it on the command line where it would run in every
+ *            module. True only for an entry with no way of its own to be kept
+ *            to one module - no skip to invert, no packaging check - and whose
+ *            goal forks no lifecycle, since a goal bound to a phase it forks
+ *            would fork itself
  * @param goalProperties
  *            properties passed on the Maven command line to keep the server in
  *            the build's own JVM and its rescanner switched off
@@ -109,8 +125,9 @@ import java.util.regex.Pattern;
 record ServerPlugin(String name, String groupId, String artifactId, String goal,
         String phase, String jvmFlagsProperty, boolean projectPropertyFlags,
         boolean shellEscapedFlags, boolean commaSplitFlags,
-        boolean perPropertyFlags, Map<String, String> goalProperties,
-        List<Competing> competing, Pattern serving) {
+        boolean perPropertyFlags, boolean boundInTheApplication,
+        Map<String, String> goalProperties, List<Competing> competing,
+        Pattern serving) {
 
     /**
      * Where a Jetty connector announces the port it bound.
@@ -297,7 +314,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin jetty(String ee) {
         return new ServerPlugin("jetty-" + ee, "org.eclipse.jetty." + ee,
                 "jetty-" + ee + "-maven-plugin", "run", "", "", false, false,
-                false, false,
+                false, false, false,
                 Map.of("jetty.deployMode", "EMBED", "jetty.scan", "0"),
                 List.of(new Competing("deployMode", List.of("EMBED"),
                         "the application would be a grandchild of the daemon, "
@@ -357,7 +374,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin wildfly() {
         return new ServerPlugin("wildfly", "org.wildfly.plugins",
                 "wildfly-maven-plugin", "run", "", "wildfly.javaOpts", false,
-                false, false, false, Map.of("wildfly.skip", "true"),
+                false, false, false, false, Map.of("wildfly.skip", "true"),
                 List.of(new Competing("skip", List.of("false"),
                         "the run goal would start a server for every module in "
                                 + "the reactor, or fail on the first one whose "
@@ -397,11 +414,35 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      * starter turns it on alongside a {@code <synchronization>} that copies
      * classes into the deployed webapp. Switching the reload off is what leaves
      * the loop in sole charge; the copying on its own changes nothing.
+     * <p>
+     * It is also the one entry whose goal is never named on a command line, and
+     * this is what that costs when it is. Measured on a three-module reactor,
+     * {@code mvn -pl :app -am package tomee:run} ran the goal on the reactor
+     * <em>root</em> first - the goal runs in every project, and {@code -pl}
+     * chooses which projects are in the reactor, not which of them it runs in.
+     * {@code AbstractTomEEMojo.execute} never looks at packaging: it unzipped a
+     * TomEE under the root's {@code target/}, started it and blocked. The build
+     * never reached modules 2 and 3, nothing was deployed, and nothing failed -
+     * so the daemon waits out its whole start window and abandons a launch that
+     * was never going to happen.
+     * <p>
+     * The inversion that answers this for Cargo, WildFly and both Payaras needs
+     * a {@code skip} to invert, and this mojo has none:
+     * {@code skipCurrentProject} is the only parameter that sounds like one and
+     * it guards {@code copyWar} alone, which would leave the root's TomEE
+     * running and merely emptier. What answers it instead is
+     * {@link #boundInTheApplication} - the command line names {@code package}
+     * and no goal, and the extension adds {@code run} to this plugin's
+     * executions in the application's module, bound to that same phase, where
+     * it runs after the {@code war:war} that builds what it deploys. Binding is
+     * not the answer for the rest of the table because {@code tomee:run} forks
+     * no lifecycle: a goal declaring {@code @Execute(phase = PACKAGE)}, as
+     * WildFly's does, would fork the phase it was bound to.
      */
     private static ServerPlugin tomee() {
         return new ServerPlugin("tomee", "org.apache.tomee.maven",
                 "tomee-maven-plugin", "run", "package", "tomee-plugin.args",
-                false, true, false, false, Map.of(),
+                false, true, false, false, true, Map.of(),
                 List.of(new Competing("reloadOnUpdate", List.of("false"),
                         "the plugin would redeploy the webapp whenever its "
                                 + "synchronization copied a class, competing "
@@ -478,7 +519,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         return new ServerPlugin("payara", "fish.payara.maven.plugins",
                 "payara-server-maven-plugin", "start", "package",
                 "payara.javaCommandLineOptions", false, false, true, false,
-                Map.of("skip", "true"),
+                false, Map.of("skip", "true"),
                 List.of(new Competing("skip", List.of("false"),
                         "the start goal would run on every module in the "
                                 + "reactor, and the first of them - the "
@@ -552,7 +593,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin payaraMicro() {
         return new ServerPlugin("payara-micro", "fish.payara.maven.plugins",
                 "payara-micro-maven-plugin", "start", "package", "exec.args",
-                false, false, false, false,
+                false, false, false, false, false,
                 Map.of("payara.skip", "true", "payara.deploy.war", "true"),
                 List.of(new Competing("skip", List.of("false"),
                         "the start goal would run on every module in the "
@@ -657,7 +698,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin liberty() {
         return new ServerPlugin("liberty", "io.openliberty.tools",
                 "liberty-maven-plugin", "run", "", "liberty.jvm.devloop", false,
-                false, false, true, Map.of("looseApplication", "false"),
+                false, false, true, false, Map.of("looseApplication", "false"),
                 List.of(new Competing("looseApplication", List.of("false"),
                         "Liberty's own application monitor polls the deployed "
                                 + "application and would restart it whenever a "
@@ -763,7 +804,7 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     private static ServerPlugin cargo() {
         return new ServerPlugin("cargo", "org.codehaus.cargo",
                 "cargo-maven3-plugin", "run", "package", "cargo.jvmargs", true,
-                false, false, false, Map.of("cargo.maven.skip", "true"),
+                false, false, false, false, Map.of("cargo.maven.skip", "true"),
                 List.of(new Competing("skip", List.of("false"),
                         "the run goal would start a container for every module "
                                 + "in the reactor, or fail on the first one "
