@@ -76,11 +76,10 @@ type DevToolsConf = {
 const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
 
 import {
-  captureScrollPositions,
   refreshWithScrollPreservation,
   registerRefreshUIHandler,
-  restoreScrollPositions,
-  ScrollSnapshot
+  restoreScrollPositionsAfterReload,
+  saveScrollPositionsForReload
 } from './hotswap-scroll';
 
 @customElement('vaadin-dev-tools')
@@ -643,8 +642,7 @@ export class VaadinDevTools extends LitElement {
       if (strategy === 'refresh' || strategy === 'full-refresh') {
         refreshWithScrollPreservation(strategy === 'full-refresh');
       } else {
-        const scrollSnapshot = captureScrollPositions();
-        window.sessionStorage.setItem('vaadin-hotswap-scroll', JSON.stringify(scrollSnapshot));
+        saveScrollPositionsForReload();
         const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
         const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
         window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
@@ -808,11 +806,7 @@ export class VaadinDevTools extends LitElement {
       window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
-    const savedScroll = window.sessionStorage.getItem('vaadin-hotswap-scroll');
-    if (savedScroll !== null) {
-      window.sessionStorage.removeItem('vaadin-hotswap-scroll');
-      restoreScrollPositions(JSON.parse(savedScroll) as ScrollSnapshot);
-    }
+    restoreScrollPositionsAfterReload(lastReload !== null);
 
     registerRefreshUIHandler();
 
