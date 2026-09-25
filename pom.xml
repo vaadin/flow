@@ -48,9 +48,9 @@
     <module>flow-bom</module>
     <module>flow-devloop-daemon</module>
     <module>vaadin-dev-server</module>
-    <module>flow-jandex</module>
     <module>vaadin-spring</module>
     <module>vaadin-cdi</module>
+    <module>vaadin-quarkus</module>
     <module>flow-polymer2lit</module>
   </modules>
   <scm>
@@ -115,7 +115,7 @@
     <spring.boot.version>4.1.1</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <hibernate.validator.version>9.1.4.Final</hibernate.validator.version>
-    <slf4j.version>2.0.19</slf4j.version>
+    <slf4j.version>2.0.20</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.5</jackson.version>
     <jaxb.version>4.0.9</jaxb.version>
@@ -123,6 +123,7 @@
     <junit.jupiter.version>6.1.3</junit.jupiter.version>
     <weld.version>6.0.4.Final</weld.version>
     <weld.junit.version>5.0.3.Final</weld.junit.version>
+    <quarkus.version>3.33.3.3</quarkus.version>
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
@@ -143,6 +144,10 @@
     <build-helper-maven-plugin.version>3.6.2</build-helper-maven-plugin.version>
     <maven.version>3.9.16</maven.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
+    <jandex.plugin.version>3.6.0</jandex.plugin.version>
+    <!-- Modules with no Jandex consumer (tooling, tests, the Spring and CDI
+         integrations) set this to true -->
+    <jandex.skip>false</jandex.skip>
     <spotless.plugin.version>3.10.2</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
@@ -855,6 +860,22 @@
           <execution>
             <goals>
               <goal>bnd-process</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Indexes a module's own classes into META-INF/jandex.idx, which
+             is where the Quarkus extension reads them from. Modules with no
+             Jandex consumer opt out by setting jandex.skip to true. -->
+        <groupId>io.smallrye</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+        <version>${jandex.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>make-index</id>
+            <goals>
+              <goal>jandex</goal>
             </goals>
           </execution>
         </executions>
