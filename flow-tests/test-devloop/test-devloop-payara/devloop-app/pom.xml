@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-test-devloop-payara</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-devloop-payara-app</artifactId>
+  <!-- A WAR, deployed rather than served in place: payara-server:start unzips
+       a Payara Server under target/, starts its domain as a process of its own
+       and deploys the packaged application into it. No src/main/webapp and no
+       web.xml, matching a generated WAR starter. -->
+  <packaging>war</packaging>
+  <name>Flow dev loop tests: Payara Server application</name>
+  <description>The WAR the Payara Server dev-loop fixture runs on Payara Server.</description>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- 8080 because it is not the pom's to choose: the port is domain1's, and
+         payara.http.port only tells the plugin where to connect (see the
+         plugin below). No other dev-loop fixture uses it. -->
+    <server.port>8080</server.port>
+    <!-- Pinned rather than left to the plugin, so a Payara release cannot
+         silently change the server this fixture runs on. -->
+    <payara.version>7.2026.9</payara.version>
+    <!-- Run the ITs on the JUnit Platform (JUnit 6), like the other fixtures. -->
+    <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
+    <!-- The parent's groups/excludedGroups are JUnit 4 @Category class names,
+         which mean nothing to the JUnit Platform provider. Cleared so this
+         module runs its ITs the way the other fixtures do. -->
+    <groups/>
+    <excludedGroups/>
+    <!-- One daemon, one application process, one browser page kept open across
+         applies: nothing here is parallelizable. -->
+    <failsafe.parallel>none</failsafe.parallel>
+    <failsafe.perCoreThreadCount>false</failsafe.perCoreThreadCount>
+    <failsafe.threadCount>1</failsafe.threadCount>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- This fixture has no Spring BOM to inherit the JUnit Platform version
+           from, so it imports the JUnit BOM directly: without it only the
+           artifacts the root pom manages by name are at
+           ${junit.jupiter.version}, and junit-platform-engine arrives at the
+           JUnit 5 version TestBench was built against, which the launcher
+           rejects as a mismatched platform. Declared before the TestBench BOM
+           so it wins for the artifacts both could manage. -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-bom</artifactId>
+        <version>${testbench.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- The dev loop travels in with the dev server, exactly as it does for a
+         user application that declares com.vaadin:vaadin-dev.
+
+         Deliberately NOT <optional>true</optional>, which is what the Jetty
+         fixture writes: maven-war-plugin leaves optional dependencies out of
+         WEB-INF/lib, so the dev loop would never reach the container and the
+         application would start but never register with the daemon. Jetty does
+         not show this, because in EMBED mode the webapp class loader is the
+         project's own classpath rather than a packaged WAR. A generated Vaadin
+         starter avoids it the other way round, by declaring vaadin-dev in a
+         non-optional `development` profile. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- The sibling library, depended on like any other jar. An edit there has
+         to reach the running app through a webapp class loader the container
+         built from the deployed WAR, which is the multi-module question this
+         fixture answers. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-devloop-payara-shared</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Driving the CLI and patching sources, shared with the other fixtures so
+         the harnesses cannot drift apart. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-devloop-support</artifactId>
+      <version>${project.version}</version>
+      <!-- Its ITs are test sources there, so they arrive as a test-jar. -->
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- DevLoopPomEditIT adds a dependency below this line and reverts it. The
+         anchor is explicit because "</dependencies>" also closes the one inside
+         <dependencyManagement>, where a dependency without a version is an
+         invalid model rather than a classpath change. -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- The ITs every fixture runs live in flow-test-devloop-support and are
+           run from there, rather than through a subclass per module that would
+           add a file and a name for nothing. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <dependenciesToScan>
+            <dependency>com.vaadin:flow-test-devloop-support</dependency>
+          </dependenciesToScan>
+          <!-- A deployed WAR cannot see a resource refreshed in the module's
+               own output; the same exclusion the Cargo fixture carries. -->
+          <excludes>
+            <exclude>**/DevLoopCssIT.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-frontend</goal>
+            </goals>
+          </execution>
+          <!-- Dogfooding: the CLI this fixture is driven with is the one the
+               goal installs. -->
+          <execution>
+            <id>install-dev-cli</id>
+            <goals>
+              <goal>install-dev-cli</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Payara Server unpacked into this module's own target/, rather than
+           where the plugin puts it by default: java.io.tmpdir, one domain
+           shared by every project on the machine. Its domain.xml keeps every
+           application ever deployed to it and boots them all, so the fixture
+           started next to deployments from other checkouts - measured, one
+           from another worktree of this repository loaded its own copies of
+           the fixture's classes, and the dev loop's redefines were rejected
+           for a TaskService that was not this module's. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack-payara</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>fish.payara.distributions</groupId>
+                  <artifactId>payara</artifactId>
+                  <version>${payara.version}</version>
+                  <type>zip</type>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>fish.payara.maven.plugins</groupId>
+        <artifactId>payara-server-maven-plugin</artifactId>
+        <version>1.3.0</version>
+        <configuration>
+          <payaraServerVersion>${payara.version}</payaraServerVersion>
+          <payaraServerPath>${project.build.directory}/payara7</payaraServerPath>
+          <!-- The HTTP port is the domain's, not the plugin's: payara.http.port
+               only tells the plugin where to connect. So this is domain1's
+               default 8080 and the pom cannot change it. -->
+          <contextRoot>/</contextRoot>
+          <!-- The daemon owns this process and decides when a change goes live,
+               so nothing else may push to the browser on its own. The loop's
+               own payara.javaCommandLineOptions is appended to this list rather
+               than replacing it. -->
+          <javaCommandLineOptions>
+            <option>
+              <value>-Dvaadin.frontend.hotdeploy=false</value>
+            </option>
+          </javaCommandLineOptions>
+        </configuration>
+        <!-- No executions: the daemon owns the application process. -->
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

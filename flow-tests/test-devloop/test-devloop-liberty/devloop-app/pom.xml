@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-test-devloop-liberty</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-devloop-liberty-app</artifactId>
+  <!-- A WAR, and unlike the Jetty fixture's one it is deployed rather than
+       served in place: Cargo installs a Tomcat under target/, copies the
+       packaged WAR into its webapps and starts it as a process of its own. No
+       src/main/webapp and no web.xml, matching a generated WAR starter - Flow
+       registers its servlet from an annotated listener the container scans, and
+       static files come from META-INF/resources in the jars on the webapp class
+       path. -->
+  <packaging>war</packaging>
+  <name>Flow dev loop tests: Open Liberty application</name>
+  <description>The WAR the Open Liberty dev-loop fixture runs on Open Liberty.</description>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- Not 8080, and not 8896, 8897, 8898 or 8899 either: those are the
+         other dev-loop fixtures, and no two of them may take each other's
+         port. Liberty's own default is 9080; this overrides it through the
+         bootstrap property the server.xml below reads. -->
+    <server.port>8894</server.port>
+    <!-- Pinned rather than left to the plugin, which otherwise resolves
+         whatever the runtime artifact's RELEASE version happens to be - so an
+         Open Liberty release would silently change what this runs on. -->
+    <openliberty.version>25.0.0.6</openliberty.version>
+    <!-- Not "/": see the <webApplication> in src/main/liberty/config/server.xml,
+         which reads it from <bootstrapProperties> below. The ITs read it from
+         here too, so the two cannot disagree. -->
+    <devloop.context.path>/devloop</devloop.context.path>
+    <!-- Run the ITs on the JUnit Platform (JUnit 6), like the other fixtures. -->
+    <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
+    <!-- The parent's groups/excludedGroups are JUnit 4 @Category class names,
+         which mean nothing to the JUnit Platform provider. Cleared so this
+         module runs its ITs the way the other fixtures do. -->
+    <groups/>
+    <excludedGroups/>
+    <!-- One daemon, one application process, one browser page kept open across
+         applies: nothing here is parallelizable. -->
+    <failsafe.parallel>none</failsafe.parallel>
+    <failsafe.perCoreThreadCount>false</failsafe.perCoreThreadCount>
+    <failsafe.threadCount>1</failsafe.threadCount>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- This fixture has no Spring BOM to inherit the JUnit Platform version
+           from, so it imports the JUnit BOM directly: without it only the
+           artifacts the root pom manages by name are at
+           ${junit.jupiter.version}, and junit-platform-engine arrives at the
+           JUnit 5 version TestBench was built against, which the launcher
+           rejects as a mismatched platform. Declared before the TestBench BOM
+           so it wins for the artifacts both could manage. -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-bom</artifactId>
+        <version>${testbench.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- The dev loop travels in with the dev server, exactly as it does for a
+         user application that declares com.vaadin:vaadin-dev.
+
+         Deliberately NOT <optional>true</optional>, which is what the Jetty
+         fixture writes: maven-war-plugin leaves optional dependencies out of
+         WEB-INF/lib, so the dev loop would never reach the container and the
+         application would start but never register with the daemon. Jetty does
+         not show this, because in EMBED mode the webapp class loader is the
+         project's own classpath rather than a packaged WAR. A generated Vaadin
+         starter avoids it the other way round, by declaring vaadin-dev in a
+         non-optional `development` profile. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- The sibling library, depended on like any other jar. An edit there has
+         to reach the running app through a webapp class loader the container
+         built from the deployed WAR, which is the multi-module question this
+         fixture answers. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-devloop-liberty-shared</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Driving the CLI and patching sources, shared with the other fixtures so
+         the harnesses cannot drift apart. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-devloop-support</artifactId>
+      <version>${project.version}</version>
+      <!-- Its ITs are test sources there, so they arrive as a test-jar. -->
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- DevLoopPomEditIT adds a dependency below this line and reverts it. The
+         anchor is explicit because "</dependencies>" also closes the one inside
+         <dependencyManagement>, where a dependency without a version is an
+         invalid model rather than a classpath change. -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- The ITs every fixture runs live in flow-test-devloop-support and are
+           run from there, rather than through a subclass per module that would
+           add a file and a name for nothing. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <dependenciesToScan>
+            <dependency>com.vaadin:flow-test-devloop-support</dependency>
+          </dependenciesToScan>
+          <!-- A deployed WAR cannot see a resource refreshed in the module's
+               own output; the same exclusion the Cargo fixture carries. -->
+          <excludes>
+            <exclude>**/DevLoopCssIT.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-frontend</goal>
+            </goals>
+          </execution>
+          <!-- Dogfooding: the CLI this fixture is driven with is the one the
+               goal installs. -->
+          <execution>
+            <id>install-dev-cli</id>
+            <goals>
+              <goal>install-dev-cli</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>io.openliberty.tools</groupId>
+        <artifactId>liberty-maven-plugin</artifactId>
+        <version>3.12.3</version>
+        <configuration>
+          <runtimeArtifact>
+            <groupId>io.openliberty</groupId>
+            <artifactId>openliberty-runtime</artifactId>
+            <version>${openliberty.version}</version>
+            <type>zip</type>
+          </runtimeArtifact>
+          <!-- src/main/liberty/config/server.xml reads ${httpPort} from here.
+               Liberty's HTTP port lives in server.xml rather than in a plugin
+               parameter, and the dev loop takes liberty.jvm.* for its agents -
+               but not liberty.bootstrap.*, so the port is still the pom's to
+               set. -->
+          <bootstrapProperties>
+            <httpPort>${server.port}</httpPort>
+            <contextRoot>${devloop.context.path}</contextRoot>
+          </bootstrapProperties>
+          <!-- The daemon owns this process and decides when a change goes live,
+               so nothing else may push to the browser on its own. Written after
+               the loop's own liberty.jvm.* lines in the generated jvm.options,
+               which it does not take away. -->
+          <jvmOptions>
+            <param>-Dvaadin.frontend.hotdeploy=false</param>
+          </jvmOptions>
+          <!-- Deployed from apps/ as named in server.xml, so the view is at
+               http://localhost:8894/devloop/ -->
+          <appsDirectory>apps</appsDirectory>
+          <stripVersion>true</stripVersion>
+        </configuration>
+        <!-- No executions: the daemon owns the application process. -->
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
