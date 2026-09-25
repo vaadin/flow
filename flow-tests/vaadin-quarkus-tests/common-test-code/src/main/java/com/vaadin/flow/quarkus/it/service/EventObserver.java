@@ -25,18 +25,17 @@ import com.vaadin.flow.server.UIInitEvent;
 
 public class EventObserver {
     @Inject
-    private Counter counter;
+    Counter counter;
 
-    private void onSessionInit(@Observes SessionInitEvent sessionInitEvent) {
+    void onSessionInit(@Observes SessionInitEvent sessionInitEvent) {
         counter.increment(SessionInitEvent.class.getSimpleName());
     }
 
-    private void onSessionDestroy(
-            @Observes SessionDestroyEvent sessionDestroyEvent) {
+    void onSessionDestroy(@Observes SessionDestroyEvent sessionDestroyEvent) {
         counter.increment(SessionDestroyEvent.class.getSimpleName());
     }
 
-    private void onUIInit(@Observes UIInitEvent uiInitEvent) {
+    void onUIInit(@Observes UIInitEvent uiInitEvent) {
         counter.increment(UIInitEvent.class.getSimpleName());
     }
 }

@@ -38,7 +38,7 @@ public class UIScopedBean {
     private int uiId;
 
     @Inject
-    private Counter counter;
+    Counter counter;
 
     public String getId() {
         return id;

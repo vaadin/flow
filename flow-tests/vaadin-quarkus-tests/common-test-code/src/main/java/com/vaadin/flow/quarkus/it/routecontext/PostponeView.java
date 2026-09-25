@@ -36,7 +36,7 @@ public class PostponeView extends AbstractCountedView
     private BeforeLeaveEvent.ContinueNavigationAction navigationAction;
 
     @PostConstruct
-    private void init() {
+    void init() {
         NativeButton navBtn = new NativeButton("navigate",
                 clickEvent -> navigationAction.proceed());
         navBtn.setId(NAVIGATE);

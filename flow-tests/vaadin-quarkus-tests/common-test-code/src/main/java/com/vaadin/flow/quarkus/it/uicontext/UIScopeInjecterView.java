@@ -31,7 +31,7 @@ public class UIScopeInjecterView extends Div {
     UIScopedLabel label;
 
     @PostConstruct
-    private void init() {
+    void init() {
         Div div = new Div();
         div.setId(UIContextRootView.UI_SCOPED_BEAN_ID);
         div.setText(bean.getId());

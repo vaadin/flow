@@ -28,7 +28,7 @@ import com.vaadin.quarkus.annotation.VaadinServiceScoped;
 public class TestErrorHandler implements ErrorHandler {
 
     @Inject
-    private Counter counter;
+    Counter counter;
 
     @Override
     public void error(ErrorEvent event) {

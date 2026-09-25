@@ -51,7 +51,7 @@ public class UIContextRootView extends Div {
     Event<SetTextEvent> setTextEventTrigger;
 
     @PostConstruct
-    private void init() {
+    void init() {
         final String uiIdStr = UI.getCurrent().getUIId() + "";
         label.setText(uiIdStr);
 

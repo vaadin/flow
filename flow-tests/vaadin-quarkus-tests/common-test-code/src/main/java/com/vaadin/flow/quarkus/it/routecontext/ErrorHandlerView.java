@@ -43,11 +43,11 @@ public class ErrorHandlerView extends AbstractCountedView
 
     @Inject
     @RouteScopeOwner(ErrorHandlerView.class)
-    private Instance<ErrorBean1> bean1;
+    Instance<ErrorBean1> bean1;
 
     @Inject
     @RouteScopeOwner(ErrorHandlerView.class)
-    private Instance<ErrorBean2> bean2;
+    Instance<ErrorBean2> bean2;
 
     private AbstractCountedBean current;
 

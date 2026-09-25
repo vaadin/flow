@@ -38,10 +38,10 @@ public class SessionContextView extends Div {
     public static final String EXPIREBTN_ID = "expirebtn";
 
     @Inject
-    private SessionScopedBean sessionScopedBean;
+    SessionScopedBean sessionScopedBean;
 
     @PostConstruct
-    private void init() {
+    void init() {
         NativeButton setBtn = new NativeButton("set");
         setBtn.addClickListener(event -> sessionScopedBean.setValue(VALUE));
         setBtn.setId(SETVALUEBTN_ID);
@@ -92,7 +92,7 @@ public class SessionContextView extends Div {
         }
 
         @PreDestroy
-        private void preDestroy() {
+        void preDestroy() {
             counter.increment(DESTROY_COUNT);
         }
     }

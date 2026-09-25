@@ -34,7 +34,7 @@ public class UIScopedView extends Div {
     public static final String UISCOPED_STATE = "UISCOPED_STATE";
 
     @PostConstruct
-    private void init() {
+    void init() {
         final Span state = new Span("");
         state.setId(VIEWSTATE_LABEL);
 

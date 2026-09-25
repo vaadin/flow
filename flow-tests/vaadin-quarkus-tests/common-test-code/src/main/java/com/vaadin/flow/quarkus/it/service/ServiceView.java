@@ -35,7 +35,7 @@ public class ServiceView extends Div {
     ServiceBean bean;
 
     @PostConstruct
-    private void init() {
+    void init() {
         NativeButton expireBtn = new NativeButton("expire",
                 event -> VaadinSession.getCurrent().getSession().invalidate());
         expireBtn.setId(EXPIRE);

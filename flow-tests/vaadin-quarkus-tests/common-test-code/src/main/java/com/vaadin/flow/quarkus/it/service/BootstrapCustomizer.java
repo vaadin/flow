@@ -25,7 +25,7 @@ public class BootstrapCustomizer {
     public static final String APPENDED_ID = "TEST_ID";
     public static final String APPENDED_TXT = "By Test";
 
-    private void onServiceInit(@Observes ServiceInitEvent serviceInitEvent) {
+    void onServiceInit(@Observes ServiceInitEvent serviceInitEvent) {
         serviceInitEvent.addIndexHtmlRequestListener(this::modifyBootstrapPage);
     }
 

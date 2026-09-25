@@ -46,7 +46,7 @@ public class MasterView extends AbstractCountedView
     private Span assignedLabel;
 
     @PostConstruct
-    private void init() {
+    void init() {
         assignedLabel = new Span();
         assignedLabel.setId(ASSIGNED_BEAN_LABEL);
         add(new Span("MASTER"), new Div(assignedLabel),

@@ -31,10 +31,10 @@ public class UINormalScopedBeanView extends Div {
     public static final String UIID_LABEL = "UIID_LABEL";
 
     @Inject
-    private SessionScopedUIidService sessionScopedUIidService;
+    SessionScopedUIidService sessionScopedUIidService;
 
     @PostConstruct
-    private void init() {
+    void init() {
         final Span label = new Span(sessionScopedUIidService.getUiIdStr());
         label.setId(UIID_LABEL);
         add(label);
@@ -57,7 +57,7 @@ public class UINormalScopedBeanView extends Div {
     @VaadinSessionScoped
     public static class SessionScopedUIidService {
         @Inject
-        private NormalUIScopedUIidService normalUIScopedUIidService;
+        NormalUIScopedUIidService normalUIScopedUIidService;
 
         public String getUiIdStr() {
             return normalUIScopedUIidService.getUiIdStr();

@@ -29,7 +29,7 @@ import java.io.IOException;
 public class CounterFilter implements jakarta.servlet.Filter {
 
     @Inject
-    private Counter counter;
+    Counter counter;
 
     @Override
     public void init(FilterConfig filterConfig) {

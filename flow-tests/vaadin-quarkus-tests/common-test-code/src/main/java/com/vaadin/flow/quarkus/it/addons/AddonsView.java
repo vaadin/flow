@@ -27,7 +27,7 @@ import com.vaadin.flow.router.Route;
 public class AddonsView extends Div {
 
     @PostConstruct
-    private void init() {
+    void init() {
         add(new HelloWorld(), new HelloWorldJandex());
     }
 }

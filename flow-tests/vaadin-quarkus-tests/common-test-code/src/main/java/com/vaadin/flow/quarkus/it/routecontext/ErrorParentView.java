@@ -32,7 +32,7 @@ public class ErrorParentView extends AbstractCountedView
     public static final String ROOT = "root";
 
     @PostConstruct
-    private void init() {
+    void init() {
         add(new RouterLink(ROOT, RootView.class));
     }
 

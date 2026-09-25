@@ -32,15 +32,15 @@ public class NavigationObserver implements Serializable {
 
     private List<EventObject> navigationEvents = new ArrayList<>();
 
-    private void onBeforeLeave(@Observes BeforeLeaveEvent event) {
+    void onBeforeLeave(@Observes BeforeLeaveEvent event) {
         navigationEvents.add(event);
     }
 
-    private void onBeforeEnter(@Observes BeforeEnterEvent event) {
+    void onBeforeEnter(@Observes BeforeEnterEvent event) {
         navigationEvents.add(event);
     }
 
-    private void onAfterNavigation(@Observes AfterNavigationEvent event) {
+    void onAfterNavigation(@Observes AfterNavigationEvent event) {
         navigationEvents.add(event);
     }
 

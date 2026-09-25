@@ -42,7 +42,7 @@ public class DetailAssignedView extends AbstractCountedView
     private Span assignedLabel;
 
     @PostConstruct
-    private void init() {
+    void init() {
         assignedLabel = new Span();
         assignedLabel.setId(BEAN_LABEL);
         assignedBean.setData("ASSIGNED");

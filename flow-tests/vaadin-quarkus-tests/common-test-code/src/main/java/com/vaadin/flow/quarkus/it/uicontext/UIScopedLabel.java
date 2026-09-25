@@ -30,7 +30,7 @@ public class UIScopedLabel extends Span {
     public static final String DESTROY_COUNT = "UIScopedLabelDestroy";
 
     @Inject
-    private Counter counter;
+    Counter counter;
 
     private int uiId;
 
@@ -42,7 +42,7 @@ public class UIScopedLabel extends Span {
     }
 
     @PreDestroy
-    private void destroy() {
+    void destroy() {
         counter.increment(DESTROY_COUNT + uiId);
     }
 

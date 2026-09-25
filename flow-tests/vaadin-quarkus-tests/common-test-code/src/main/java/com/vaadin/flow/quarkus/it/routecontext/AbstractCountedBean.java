@@ -23,12 +23,12 @@ public class AbstractCountedBean implements CountedPerUI {
     private String data = "";
 
     @PostConstruct
-    private void construct() {
+    void construct() {
         countConstruct();
     }
 
     @PreDestroy
-    private void destroy() {
+    void destroy() {
         countDestroy();
     }
 

@@ -37,7 +37,7 @@ public class EventView extends Div {
     @RouteScoped
     @RouteScopeOwner(EventView.class)
     public static class ObserverLabel extends Span {
-        private void onPrintEvent(@Observes PrintEvent printEvent) {
+        void onPrintEvent(@Observes PrintEvent printEvent) {
             setText(printEvent.getMessage());
         }
     }
@@ -56,12 +56,12 @@ public class EventView extends Div {
 
     @Inject
     @RouteScopeOwner(EventView.class)
-    private Span label;
+    Span label;
     @Inject
-    private Event<PrintEvent> printEventTrigger;
+    Event<PrintEvent> printEventTrigger;
 
     @PostConstruct
-    private void init() {
+    void init() {
         label.setId(OBSERVER_LABEL);
         NativeButton fireBtn = new NativeButton("fire event",
                 clickEvent -> printEventTrigger.fire(new PrintEvent("HELLO")));

@@ -49,7 +49,7 @@ public class SmokeTestView extends Div {
     }
 
     @PostConstruct
-    private void init() {
+    void init() {
         helloProvider.setHello("hello quarkus CDI");
     }
 

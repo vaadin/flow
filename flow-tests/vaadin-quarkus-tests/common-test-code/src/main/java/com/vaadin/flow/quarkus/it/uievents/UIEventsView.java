@@ -40,7 +40,7 @@ public class UIEventsView extends Div implements AfterNavigationObserver {
 
     @NormalUIScoped
     public static class PollObserver {
-        private void showPollEvent(@Observes PollEvent pollEvent) {
+        void showPollEvent(@Observes PollEvent pollEvent) {
             UI ui = pollEvent.getSource();
 
             List<HasElement> chain = ui.getInternals()
@@ -58,10 +58,10 @@ public class UIEventsView extends Div implements AfterNavigationObserver {
     }
 
     @Inject
-    private NavigationObserver navigationObserver;
+    NavigationObserver navigationObserver;
 
     @PostConstruct
-    private void init() {
+    void init() {
         UI.getCurrent().setPollInterval(500);
     }
 

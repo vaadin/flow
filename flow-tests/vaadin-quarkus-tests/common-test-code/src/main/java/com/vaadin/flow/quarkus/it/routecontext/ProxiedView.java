@@ -48,7 +48,7 @@ public class ProxiedView extends AbstractCountedView
     private Span presenterLabel;
 
     @PostConstruct
-    private void init() {
+    void init() {
         presenterLabel = new Span();
         presenterLabel.setId(PRESENTER_LABEL);
         add(new Span("PROXIED"), presenterLabel);

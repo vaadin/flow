@@ -27,7 +27,7 @@ import com.vaadin.quarkus.annotation.RouteScopeOwner;
 public class PreserveOnRefreshBean extends AbstractCountedBean {
 
     @PostConstruct
-    private void init() {
+    void init() {
         setData(UUID.randomUUID().toString());
     }
 

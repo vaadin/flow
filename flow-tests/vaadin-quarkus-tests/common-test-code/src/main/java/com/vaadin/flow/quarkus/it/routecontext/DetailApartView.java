@@ -41,7 +41,7 @@ public class DetailApartView extends AbstractCountedView
     private Span apartLabel;
 
     @PostConstruct
-    private void init() {
+    void init() {
         apartLabel = new Span();
         apartLabel.setId(BEAN_LABEL);
         apartBean.setData("APART");

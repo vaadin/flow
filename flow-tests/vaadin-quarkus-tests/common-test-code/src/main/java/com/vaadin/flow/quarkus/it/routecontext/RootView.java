@@ -35,7 +35,7 @@ public class RootView extends AbstractCountedView {
     public static final String PROXIED = "proxied-route-scope";
 
     @PostConstruct
-    private void init() {
+    void init() {
         add(new Div(new Span("ROOT")),
                 new Div(new RouterLink(MASTER, MasterView.class)),
                 new Div(new RouterLink(REROUTE, RerouteView.class)),

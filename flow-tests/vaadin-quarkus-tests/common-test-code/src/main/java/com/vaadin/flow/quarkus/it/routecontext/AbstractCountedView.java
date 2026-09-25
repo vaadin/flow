@@ -23,12 +23,12 @@ import com.vaadin.flow.component.html.Div;
 public abstract class AbstractCountedView extends Div implements CountedPerUI {
 
     @PostConstruct
-    private void construct() {
+    void construct() {
         countConstruct();
     }
 
     @PreDestroy
-    private void destroy() {
+    void destroy() {
         countDestroy();
     }
 
