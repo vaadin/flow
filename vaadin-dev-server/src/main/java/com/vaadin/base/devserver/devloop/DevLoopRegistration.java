@@ -82,6 +82,12 @@ final class DevLoopRegistration {
      */
     private static volatile VaadinService service;
 
+    /**
+     * The registration connection while it is open, so that an undeploy can
+     * close it; see {@link #start}.
+     */
+    private static volatile Socket registration;
+
     private DevLoopRegistration() {
     }
 
@@ -131,6 +137,17 @@ final class DevLoopRegistration {
         // state of my last change?" unanswerable again.
         PublicResourcesLiveUpdater.suspend(vaadinService.getContext());
         ThemeLiveUpdater.suspend(vaadinService.getContext());
+
+        // An application server can undeploy this application while the JVM
+        // lives on - WildFly and Payara Server do it at every start, booting
+        // the deployment their configuration persisted from the last run and
+        // then replacing it with the one the build plugin deploys. The JVM
+        // exiting is what closes this connection otherwise, so an undeployed
+        // copy would go on speaking for the process: the daemon would send
+        // its redefines to a service that no longer serves anything, and the
+        // open connection would keep that copy's class loader alive with the
+        // previous build's classes in it.
+        vaadinService.addServiceDestroyListener(event -> closeRegistration());
 
         String mode = modeOf(vaadinService);
 
@@ -281,6 +298,7 @@ final class DevLoopRegistration {
                 BufferedReader in = new BufferedReader(new InputStreamReader(
                         socket.getInputStream(), StandardCharsets.UTF_8))) {
             socket.setKeepAlive(true);
+            registration = socket;
             out.println(token + " register " + mode + " "
                     + ProcessHandle.current().pid());
             LOGGER.info("Registered with the dev-loop daemon on port {} ({})",
@@ -297,6 +315,25 @@ final class DevLoopRegistration {
         } catch (Exception e) {
             LOGGER.info("The dev-loop registration ended: {}", e.toString());
             LOGGER.debug("The dev-loop registration ended", e);
+        }
+    }
+
+    /**
+     * Closes the registration connection, which is how the daemon learns this
+     * application is gone while the JVM it ran in is not.
+     */
+    private static void closeRegistration() {
+        Socket open = registration;
+        registration = null;
+        if (open == null) {
+            return;
+        }
+        LOGGER.info(
+                "The application is being undeployed; closing the dev-loop registration");
+        try {
+            open.close();
+        } catch (IOException e) {
+            LOGGER.debug("Could not close the dev-loop registration", e);
         }
     }
 

@@ -108,6 +108,24 @@ interface AppRuntime {
     }
 
     /**
+     * Whether one line of the application's log says the deployment the launch
+     * itself made is in place.
+     * <p>
+     * For most runtimes that is the serving line: what is serving is what was
+     * launched. An application server that boots the deployments its
+     * configuration persisted and only then deploys the build's own over them
+     * is different - the first one registers, serves and is then undeployed -
+     * so a start is only over once the launch's own deployment says so.
+     *
+     * @param line
+     *            a log line
+     * @return {@code true} if the launch's own deployment is in place
+     */
+    default boolean deployed(String line) {
+        return serving(line);
+    }
+
+    /**
      * Configuration in this project that will fight the dev loop, in words, so
      * that a developer is told rather than left to deduce it from behaviour.
      *
