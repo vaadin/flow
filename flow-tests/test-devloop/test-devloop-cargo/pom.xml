@@ -9,7 +9,7 @@
   <artifactId>flow-test-devloop-cargo</artifactId>
   <packaging>pom</packaging>
   <name>Flow dev loop tests: Cargo</name>
-  <description>A WAR deployed into Apache Tomcat by the Cargo plugin, for running the dev loop by hand.</description>
+  <description>A WAR deployed into Apache Tomcat by the Cargo plugin, for the dev-loop tests that need a forked container.</description>
 
   <!-- Order matters for a plain `mvn install` here: the application resolves the
        library. Maven reorders by the dependency graph anyway; this is for a reader. -->
