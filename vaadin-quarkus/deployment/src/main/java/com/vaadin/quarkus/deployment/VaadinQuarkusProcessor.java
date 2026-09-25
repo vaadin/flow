@@ -113,15 +113,8 @@ class VaadinQuarkusProcessor {
     @BuildStep
     void indexOptionalVaadinDependencies(
             BuildProducer<IndexDependencyBuildItem> producer) {
-        // Optional dependencies
-        producer.produce(
-                new IndexDependencyBuildItem("com.vaadin", "flow-react"));
-        producer.produce(new IndexDependencyBuildItem("com.vaadin",
-                "flow-polymer-template"));
-
-        // Development dependencies
-        producer.produce(new IndexDependencyBuildItem("com.vaadin",
-                "vaadin-dev-server"));
+        // Development dependencies built outside Flow, which ship no Jandex
+        // index of their own. The Flow modules carry one.
         producer.produce(new IndexDependencyBuildItem("com.vaadin", "copilot"));
         producer.produce(
                 new IndexDependencyBuildItem("com.vaadin", "ui-tests"));
