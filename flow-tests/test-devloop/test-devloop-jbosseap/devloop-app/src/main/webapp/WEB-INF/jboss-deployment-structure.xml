@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The one thing this fixture needs that no other one does, and it is not the
+     dev loop's. EAP 8.1 Update 8.0 still ships Jackson 2, and its jaxrs
+     subsystem puts the server's own
+     com.fasterxml.jackson.core.jackson-annotations module on the deployment's
+     class path ahead of the Jackson 3 in WEB-INF/lib. Flow then fails every
+     UIDL request with
+     `NoSuchFieldError: com.fasterxml.jackson.annotation.JsonFormat$Shape.POJO`.
+
+     Both of the workarounds the Vaadin platform release notes give - the jaxrs
+     subsystem exclusion for EAP 8.0 and WildFly 36, and the
+     jackson-annotations module exclusion for WildFly 37+ - because on EAP 8.1
+     the module exclusion alone is not enough: the subsystem is what adds the
+     module dependency in the first place.
+
+     The release notes list JBoss EAP 8.1 with no workaround at all. Nothing
+     here is about the dev loop; the same file is needed to run this WAR on EAP
+     by hand. -->
+<jboss-deployment-structure>
+  <deployment>
+    <exclude-subsystems>
+      <subsystem name="jaxrs"/>
+    </exclude-subsystems>
+    <exclusions>
+      <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+    </exclusions>
+  </deployment>
+</jboss-deployment-structure>

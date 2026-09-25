@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The server the liberty-maven-plugin creates under target/liberty. Kept as
+     small as a Vaadin WAR allows: servlet for the application itself and
+     websocket for the dev-tools live-reload channel the dev loop pushes a
+     browser refresh over. -->
+<server description="Flow dev loop fixture">
+
+  <featureManager>
+    <feature>servlet-6.0</feature>
+    <feature>websocket-2.1</feature>
+  </featureManager>
+
+  <!-- httpPort comes from <bootstrapProperties> in the pom. No httpsPort: the
+       dev loop reads the port off Liberty's own "web application available"
+       line, and a second endpoint would log a second one. -->
+  <httpEndpoint id="defaultHttpEndpoint" host="*" httpPort="${httpPort}" />
+
+  <!-- Named here rather than dropped into dropins/ so the context root is the
+       fixture's to choose; stripVersion in the pom is what makes the file name
+       predictable.
+
+       Not "/": Liberty answers getContextPath() with "/" for a root-context
+       application rather than the "" the servlet spec asks for, and Flow then
+       builds every /VAADIN path with a doubled slash, so Vite is started on a
+       base of //VAADIN/ and serves nothing. That is Flow on Liberty and not
+       the dev loop, but a fixture is no place to meet it. The value is the
+       pom's devloop.context.path, which the ITs read as well. -->
+  <webApplication location="flow-test-devloop-liberty-app.war" contextRoot="${contextRoot}" />
+
+</server>
