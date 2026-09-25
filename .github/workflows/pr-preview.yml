@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  FLY_APP: flow-preview-pr-${{ github.event.number }}
+  FLY_APP: flow-pr-${{ github.event.number }}
   FLY_ORG: ${{ vars.FLY_ORG || 'personal' }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
