@@ -471,6 +471,31 @@ class MavenGoalRuntimeTest {
     }
 
     /**
+     * Liberty's goal, named, runs in the sibling modules too and replaces each
+     * one's jar with its target/classes before the WAR is packaged, so in a
+     * reactor it is bound to package in the application module instead.
+     */
+    @Test
+    void invocation_libertyInAReactor_bindsRunAfterThePackagedWar()
+            throws IOException {
+        Path extension = Files.writeString(repo.resolve("devloop.jar"), "");
+        setProperty("vaadin.dev.agentJar", extension.toString());
+        Launch launch = launchOf(moduleInAReactor(LIBERTY));
+
+        List<String> command = runtimeOf(launch)
+                .invocation(projectOf(launch), NEEDED, List.of()).command();
+
+        assertTrue(command.contains("package"), command.toString());
+        assertTrue(command.contains(
+                "-D" + DevLoopBuildExtension.BIND_PROPERTY + "=package:run"),
+                command.toString());
+        assertFalse(
+                command.stream().anyMatch(
+                        arg -> arg.startsWith("io.openliberty.tools:")),
+                command.toString());
+    }
+
+    /**
      * Payara splits its parameter on commas too, so a flag holding one goes to
      * an argument file the parameter names instead, and the log says where.
      */

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -631,10 +632,10 @@ class AppRuntimeTest {
         // lying about in target from a previous build.
         assertEquals("package", entry("payara").phase());
         assertEquals("package", entry("payara-micro").phase());
-        // Liberty declares no @Execute either and still needs no phase: its
-        // run mojo invokes resources, compile and - for the WAR it is told to
-        // package - war:war itself, so naming one would build the WAR twice.
-        assertEquals("", entry("liberty").phase());
+        // Liberty declares no @Execute either, and although its run mojo
+        // invokes war:war itself it names package: its goal is bound to that
+        // phase rather than named, and a bound goal needs a phase to run at.
+        assertEquals("package", entry("liberty").phase());
     }
 
     /**
@@ -736,10 +737,9 @@ class AppRuntimeTest {
         // parameter at all, which is why its goal is bound in the application
         // module rather than switched off outside it - see below.
         assertFalse(entry("tomee").skippedOutsideTheApplication());
-        // Liberty is the only forked container that keeps itself to one module
-        // unasked: its mojo reads the session's ProjectDependencyGraph, runs
-        // the server on the farthest downstream project alone and skips pom
-        // packaging outright.
+        // Nor has Liberty one it could use: the skip its run mojo reads has no
+        // prefix and would reach every plugin that reads ${skip}. Its goal is
+        // bound in the application module too.
         assertFalse(entry("liberty").skippedOutsideTheApplication());
     }
 
@@ -749,14 +749,18 @@ class AppRuntimeTest {
      * let the build extension bind it to a phase in the application's own
      * model. TomEE is the entry that needs it - its run mojo has no skip of any
      * kind, and {@code AbstractTomEEMojo.execute} unzips a TomEE and ends in
-     * {@code run()} whatever the module's packaging is - and it is the only
-     * one, because the rest of the table can be kept to one module by a means
-     * that leaves the command line saying what it runs.
+     * {@code run()} whatever the module's packaging is. Liberty needs it too,
+     * for the opposite reason: its run mojo does keep the server to the
+     * farthest downstream project, but on the way through every other module it
+     * replaces that module's jar with its {@code target/classes}, so the WAR it
+     * then packages carries an empty directory for each sibling. The rest of
+     * the table can be kept to one module by a means that leaves the command
+     * line saying what it runs.
      */
     @Test
-    void onlyTomeeIsBoundRatherThanNamed() {
+    void onlyTomeeAndLibertyAreBoundRatherThanNamed() {
         for (ServerPlugin plugin : ServerPlugin.KNOWN) {
-            assertEquals("tomee".equals(plugin.name()),
+            assertEquals(Set.of("tomee", "liberty").contains(plugin.name()),
                     plugin.boundInTheApplication(), plugin.name());
         }
     }
@@ -776,7 +780,8 @@ class AppRuntimeTest {
             }
             assertFalse(plugin.phase().isBlank(), plugin.name());
             assertFalse(plugin.skippedOutsideTheApplication(), plugin.name());
-            assertEquals(Map.of(), plugin.goalProperties(), plugin.name());
+            assertEquals(Optional.empty(), plugin.skipProperty(),
+                    plugin.name());
         }
     }
 

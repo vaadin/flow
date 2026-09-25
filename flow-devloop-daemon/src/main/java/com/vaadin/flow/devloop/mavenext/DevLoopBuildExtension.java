@@ -62,11 +62,13 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
  * A third needs the goal itself. A goal named on a Maven command line runs in
  * every project in the reactor, and TomEE's run mojo has no {@code skip} and no
  * packaging check to escape that with - named, it starts a server in the
- * reactor root and blocks the build before the application module is built. A
- * goal <em>bound to a phase</em> runs only where the model carries it, so for
- * that shape the daemon names no goal at all and asks the extension to add the
- * execution here, in the application's module alone; see
- * {@link #BIND_PROPERTY}.
+ * reactor root and blocks the build before the application module is built.
+ * Liberty's does start its server in the application's module alone, but runs
+ * in the others too and replaces each sibling's jar with its
+ * {@code target/classes} on the way. A goal <em>bound to a phase</em> runs only
+ * where the model carries it, so for that shape the daemon names no goal at all
+ * and asks the extension to add the execution here, in the application's module
+ * alone; see {@link #BIND_PROPERTY}.
  * <p>
  * Both are applied to the one module the daemon names in
  * {@link #MODULE_PROPERTY} and to no other; see there for why an inherited
