@@ -23,6 +23,11 @@ import java.util.regex.Pattern;
 /**
  * Version object for frontend versions comparison and handling.
  * <p>
+ * Equality, hash codes and ordering use version parts only, ignoring npm alias
+ * targets. Use {@link #isSameDependency(FrontendVersion)} when both the version
+ * and package target must match, or
+ * {@link #hasSamePackageTarget(FrontendVersion)} to compare targets alone.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 25.1

@@ -49,8 +49,13 @@ class FrontendVersionTest {
         assertTrue(alias.isSameDependency(
                 new FrontendVersion("npm:@typescript/typescript6@6.0.2")));
         assertFalse(alias.isSameDependency(new FrontendVersion("6.0.2")));
-        assertFalse(alias
-                .isSameDependency(new FrontendVersion("npm:typescript@6.0.2")));
+        FrontendVersion differentTarget = new FrontendVersion(
+                "npm:typescript@6.0.2");
+        assertFalse(alias.isSameDependency(differentTarget));
+        assertFalse(alias.hasSamePackageTarget(differentTarget));
+        assertEquals(alias, differentTarget);
+        assertEquals(alias.hashCode(), differentTarget.hashCode());
+        assertEquals(0, alias.compareTo(differentTarget));
     }
 
     @Test
