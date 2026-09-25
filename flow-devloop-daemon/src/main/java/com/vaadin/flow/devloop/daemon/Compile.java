@@ -106,7 +106,8 @@ final class Compile {
      * @param stamp
      *            the resource's stamp as of then
      * @param digest
-     *            a fingerprint of the bytes the daemon acted on
+     *            a fingerprint of the bytes the daemon acted on, or
+     *            {@code null} when they could not be read
      */
     private record Content(Stamp stamp, String digest) {
     }
@@ -464,9 +465,11 @@ final class Compile {
         if (!copyHasSameBytes(module, source)) {
             return true;
         }
-        // A resource whose digest cannot be taken is not one the daemon may
-        // quietly declare unchanged.
-        return known == null || digestOf(source)
+        // A resource whose digest cannot be taken - at either end - is not one
+        // the daemon may quietly declare unchanged. Reporting it is also what
+        // heals an entry recorded without one: it is acted on, and acting on it
+        // records the bytes.
+        return known == null || known.digest() == null || digestOf(source)
                 .map(digest -> !digest.equals(known.digest())).orElse(true);
     }
 
@@ -480,6 +483,11 @@ final class Compile {
      * Only ever called for {@link ResourceKind#LIVE} files. A startup-only
      * resource goes live when the application restarts, and
      * {@link #seedFromDisk()} is what records that.
+     * <p>
+     * A file whose bytes cannot be read is still recorded, with no digest, for
+     * the reason {@link #seedResources()} gives: the key is the inventory a
+     * deletion is reported from. It reports changed until the bytes can be
+     * read, which is the safe way round.
      */
     void markResourcesNotified(List<Path> resources) {
         for (Path source : resources) {
@@ -509,11 +517,19 @@ final class Compile {
      * It is paid once per application start, on a tree the walk has just
      * brought into the page cache - and it is what lets every apply after it
      * settle an unchanged resource on its stamp alone.
+     * <p>
+     * A resource whose bytes cannot be read - a lock, a scanner, a build
+     * rewriting it - is recorded anyway, with no digest. The key is what
+     * matters: {@code notified.keySet()} is also the inventory
+     * {@link #staleResources()} reports deletions from, so a resource left out
+     * of it could be deleted and never reported, and its copy under
+     * {@code target/classes} would go on being served until the next full Maven
+     * build.
      */
     void seedResources() {
         notified.clear();
-        forEachResource((module, source, stamp) -> digestOf(source).ifPresent(
-                digest -> notified.put(source, new Content(stamp, digest))));
+        forEachResource((module, source, stamp) -> notified.put(source,
+                new Content(stamp, digestOf(source).orElse(null))));
     }
 
     /**
@@ -699,8 +715,8 @@ final class Compile {
     }
 
     private Optional<Content> contentOf(Path file) {
-        return stampOf(file).flatMap(stamp -> digestOf(file)
-                .map(digest -> new Content(stamp, digest)));
+        return stampOf(file)
+                .map(stamp -> new Content(stamp, digestOf(file).orElse(null)));
     }
 
     /**
