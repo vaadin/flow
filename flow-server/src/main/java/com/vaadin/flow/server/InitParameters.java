@@ -461,4 +461,17 @@ public class InitParameters implements Serializable {
     @Deprecated
     public static final String URL_SAFE_SCHEMES_LEGACY = "com.vaadin.safeUrlSchemes";
 
+    /**
+     * Configuration name for letting the theme style plain HTML elements, such
+     * as a <code>&lt;table&gt;</code>, across the whole application. When
+     * enabled, the {@code <body>} of the application page carries the
+     * {@code vaadin-themed-html} class name, which the Aura and Lumo themes
+     * style the native elements under. A single element opts out with the
+     * {@code vaadin-unthemed-html} class name.
+     * <p>
+     * Disabled by default, so that upgrading does not change how an existing
+     * application looks. The default is planned to become enabled in Vaadin 26.
+     */
+    public static final String THEME_HTML_ELEMENTS_ENABLED = "theme.htmlElements.enabled";
+
 }

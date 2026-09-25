@@ -66,30 +66,38 @@ public class Table extends HtmlComponent
         implements ClickNotifier<Table>, HasAriaLabel {
 
     /**
-     * The class name that opts a native element into the styles the theme ships
-     * for it. On a <code>&lt;table&gt;</code> those are a bordered box on the
-     * theme's background, cell padding, a header and footer told apart from the
-     * body, and a line between the rows, in the colors and spacing of the theme
-     * in use. Both the Aura and the Lumo theme ship them.
+     * The class name that asks the theme to style a native element. On a
+     * <code>&lt;table&gt;</code> the Aura and Lumo themes draw a bordered box
+     * on the theme's background, cell padding, a header and footer told apart
+     * from the body, and a line between the rows, in the colors and spacing of
+     * the theme in use.
      * <p>
-     * The class name is not specific to a table: it is the one class the themes
-     * look for on any native element they style, and it works on an ancestor
-     * too, where it covers every native element inside it.
-     * <p>
-     * Every table adds the class name for itself. Remove it to keep the
-     * browser's own table styles instead:
+     * The usual way to get these styles is to enable
+     * {@code vaadin.theme.htmlElements.enabled}, which puts the class name on
+     * the page's {@code <body>} and so styles every table in the application.
+     * Add the class name to a single table to style just that one:
      *
      * <pre>
-     * table.removeClassName(Table.STYLES_CLASS_NAME);
+     * table.addClassName(Table.THEMED_CLASS_NAME);
      * </pre>
-     * <p>
-     * When an ancestor carries the class name too, removing it from the table
-     * is not enough; add the {@code vaadin-unthemed-html} class name to the
-     * table to leave it to the browser.
      *
-     * @since 25.4
+     * @see #UNTHEMED_CLASS_NAME
      */
-    public static final String STYLES_CLASS_NAME = "vaadin-themed-html";
+    public static final String THEMED_CLASS_NAME = "vaadin-themed-html";
+
+    /**
+     * The class name that keeps the theme's styles off a table when an
+     * ancestor, usually the page's {@code <body>} with
+     * {@code vaadin.theme.htmlElements.enabled}, asks for them. The table is
+     * then left to the browser, or to the application's own styles:
+     *
+     * <pre>
+     * table.addClassName(Table.UNTHEMED_CLASS_NAME);
+     * </pre>
+     *
+     * @see #THEMED_CLASS_NAME
+     */
+    public static final String UNTHEMED_CLASS_NAME = "vaadin-unthemed-html";
 
     /**
      * Ranks of the children of a <code>&lt;table&gt;</code>, in the order the
@@ -102,11 +110,10 @@ public class Table extends HtmlComponent
     private static final int RANK_FOOT = 4;
 
     /**
-     * Creates a new empty table. The table carries {@link #STYLES_CLASS_NAME},
-     * which the theme styles; remove the class name to opt out of those styles.
+     * Creates a new empty table.
      */
     public Table() {
-        addClassName(STYLES_CLASS_NAME);
+        super();
     }
 
     /**

@@ -531,11 +531,4 @@ class TableTest extends ComponentTest {
                 table.getBody(), table.getFoot()),
                 table.getChildren().toList());
     }
-
-    @Test
-    void newTable_carriesOnlyTheStylesClassName() {
-        assertEquals("vaadin-themed-html", Table.STYLES_CLASS_NAME);
-        assertEquals(Table.STYLES_CLASS_NAME,
-                table().getElement().getAttribute("class"));
-    }
 }
