@@ -54,8 +54,8 @@ import com.vaadin.flow.dom.Element;
  * {@code bindChildren}.
  * <p>
  * The Aura and Lumo themes style every table in the application when
- * {@link com.vaadin.flow.server.InitParameters#THEME_HTML_ELEMENTS_ENABLED} is
- * enabled. A single table is left to the browser with
+ * {@link com.vaadin.flow.server.InitParameters#THEME_HTML_ELEMENTS} is enabled.
+ * A single table is left to the browser with
  * {@code table.addClassName(Constants.UNTHEMED_HTML_CLASS_NAME)}, or styled on
  * its own, without the property, with
  * {@code table.addClassName(Constants.THEMED_HTML_CLASS_NAME)}; see

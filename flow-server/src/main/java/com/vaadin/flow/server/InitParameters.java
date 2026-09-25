@@ -472,6 +472,6 @@ public class InitParameters implements Serializable {
      * Disabled by default, so that upgrading does not change how an existing
      * application looks. The default is planned to become enabled in Vaadin 26.
      */
-    public static final String THEME_HTML_ELEMENTS_ENABLED = "theme.htmlElements.enabled";
+    public static final String THEME_HTML_ELEMENTS = "theme.htmlElements";
 
 }
