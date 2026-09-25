@@ -165,6 +165,7 @@ public abstract class Trigger implements Serializable {
             registrations.add(Objects.requireNonNull(install(action.toJs(this)),
                     "install must return a Registration"));
         }
+        Triggers.notifyArmed(this, List.of(actions));
     }
 
     /**
@@ -236,5 +237,6 @@ public abstract class Trigger implements Serializable {
     public final void remove() {
         registrations.forEach(Registration::remove);
         registrations.clear();
+        Triggers.notifyDisarmed(this);
     }
 }
