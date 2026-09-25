@@ -57,9 +57,9 @@ import java.util.regex.Pattern;
  * TomEE then cost one more field, and that one is not about the channel but
  * about how Maven is asked to run the goal. A goal named on a command line runs
  * in <em>every</em> project in the reactor; a goal bound to a phase runs only
- * where the model carries it. Every other entry survives being named; TomEE's
- * does not, so {@link #boundInTheApplication} has the build extension bind it
- * in the application's module instead.
+ * where the model carries it. TomEE's goal does not survive being named, and
+ * neither does Liberty's in a reactor, so {@link #boundInTheApplication} has
+ * the build extension bind them in the application's module instead.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -110,10 +110,12 @@ import java.util.regex.Pattern;
  *            {@link com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension}
  *            bind it to {@link #phase} in the application's module, rather than
  *            by naming it on the command line where it would run in every
- *            module. True only for an entry with no way of its own to be kept
- *            to one module - no skip to invert, no packaging check - and whose
- *            goal forks no lifecycle, since a goal bound to a phase it forks
- *            would fork itself
+ *            module. True only for an entry with no usable way of its own to be
+ *            kept to one module - no prefixed skip to invert, no packaging
+ *            check, or, for Liberty, a goal that alters the other modules even
+ *            while it declines to run in them - and whose goal forks no
+ *            lifecycle, since a goal bound to a phase it forks would fork
+ *            itself
  * @param goalProperties
  *            properties passed on the Maven command line to keep the server in
  *            the build's own JVM and its rescanner switched off
@@ -646,27 +648,32 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      * <p>
      * A fork, like the four entries above it: {@code embedded} defaults to
      * {@code false}, so {@code liberty:run} starts the server as a process of
-     * its own and blocks on it. It declares no {@code @Execute} and still needs
-     * no phase, which is a combination none of the others has -
+     * its own and blocks on it. It declares no {@code @Execute}, and
      * {@code RunServerMojo} runs {@code resources}, {@code compiler:compile}
-     * and, for a WAR it is to package, {@code war:war} itself. Naming
-     * {@code package} would only build the WAR twice.
+     * and, for a WAR it is to package, {@code war:war} itself - so a
+     * single-module project would need no phase at all, and naming
+     * {@code package} costs one extra {@code war:war}.
      * <p>
-     * That holds for a single-module project alone, exactly as WildFly's does,
-     * and {@link MavenGoalRuntime#invocation} names {@code package} in a
-     * reactor for both: what the mojo runs for itself, it runs for the
-     * application's module. A sibling stopped at {@code compile} has no jar,
-     * and {@code maven-war-plugin} writes its {@code target/classes} directory
-     * into {@code WEB-INF/lib} under the jar's name - an empty entry, and a
-     * {@code ClassNotFoundException} for every class in that module. One extra
-     * {@code war:war} is the cheaper of the two.
+     * A reactor is what makes it cost that, and the reason is where the goal
+     * runs. Named on a command line it runs in every module, and the mojo does
+     * start the server in the farthest downstream project alone - but in every
+     * other module it still runs {@code resources} and {@code compiler:compile}
+     * and then sets the project's artifact file to {@code target/classes},
+     * logging "Overwriting artifact's file". A sibling's jar, built by
+     * {@code package} a moment earlier, is replaced by that directory, and the
+     * mojo's own {@code war:war} in the application's module then writes the
+     * directory into {@code WEB-INF/lib} under the jar's name: an empty entry,
+     * and a {@code ClassNotFoundException} for every class in that module.
+     * Measured against this repository's Liberty fixture, the view never
+     * rendered and the sibling's stylesheet was never served.
      * <p>
-     * It is also the one forked container that keeps itself to the
-     * application's own module unasked: the mojo reads the session's
-     * {@code ProjectDependencyGraph}, runs the server on the farthest
-     * downstream project alone, merely compiles the rest and skips {@code pom}
-     * packaging outright. So none of the switch-the-goal-off-and-force-it-back
-     * machinery Cargo and both Payaras need appears here.
+     * So the goal is {@link #boundInTheApplication} as TomEE's is: the command
+     * line names {@code package} and no goal, and the extension binds
+     * {@code run} to that phase in the application's module alone, where it
+     * runs after the {@code war:war} of the lifecycle. None of the
+     * switch-the-goal-off-and-force-it-back machinery Cargo and both Payaras
+     * need is required, and the unprefixed {@code skip} the mojo reads is never
+     * touched.
      * <p>
      * The JVM it runs on is Maven's: the plugin sets {@code JAVA_HOME} for the
      * server only when a Maven toolchain names one, and otherwise the process
@@ -727,8 +734,9 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      */
     private static ServerPlugin liberty() {
         return new ServerPlugin("liberty", "io.openliberty.tools",
-                "liberty-maven-plugin", "run", "", "liberty.jvm.devloop", false,
-                false, false, true, false, Map.of("looseApplication", FALSE),
+                "liberty-maven-plugin", "run", PACKAGE, "liberty.jvm.devloop",
+                false, false, false, true, true,
+                Map.of("looseApplication", FALSE),
                 List.of(new Competing("looseApplication", List.of(FALSE),
                         "Liberty's own application monitor polls the deployed "
                                 + "application and would restart it whenever a "

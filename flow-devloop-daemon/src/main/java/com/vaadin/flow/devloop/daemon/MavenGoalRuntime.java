@@ -85,17 +85,18 @@ final class MavenGoalRuntime implements AppRuntime {
                 && reactor.isMultiModule()) {
             // The one launch the daemon will not compose. Without the
             // extension there is no way to bind the goal and naming it is all
-            // that is left - which for this entry starts a server in the
-            // reactor root and blocks the build there, so the start would not
-            // fail but hang until the window ran out. A message costs less.
+            // that is left - which for TomEE starts a server in the reactor
+            // root and blocks the build there, so the start would not fail but
+            // hang until the window ran out, and for Liberty deploys a WAR with
+            // every sibling module missing from it. A message costs less.
             throw new IOException(plugin.artifactId() + " cannot be kept to "
                     + reactor.app().artifactId() + " without the dev loop's "
                     + "build extension, and this daemon is not running from a "
-                    + "jar so it has none: its " + plugin.goal() + " goal has "
-                    + "no skip parameter, so a goal named on the command line "
-                    + "would start a server in " + reactor.root() + " with "
-                    + "nothing deployed in it and block the build there. "
-                    + "Please run the daemon from its jar");
+                    + "jar so it has none: its " + plugin.goal() + " goal, "
+                    + "named on the command line, would run in every module "
+                    + "of " + reactor.root() + " rather than in the "
+                    + "application's alone. Please run the daemon from its "
+                    + "jar");
         }
         List<String> command = new ArrayList<>();
         command.add(launch.mavenCommand().toString());
@@ -180,8 +181,8 @@ final class MavenGoalRuntime implements AppRuntime {
      * than naming it on the command line.
      * <p>
      * Both halves have to hold: the entry has to be one that is bound - see
-     * {@link ServerPlugin#boundInTheApplication} for why TomEE's is the only
-     * one - and there has to be an extension to bind it. Without the second,
+     * {@link ServerPlugin#boundInTheApplication} for why TomEE's and Liberty's
+     * are - and there has to be an extension to bind it. Without the second,
      * naming the goal is all that is left, and {@link #invocation} refuses the
      * launch outright rather than name it across a reactor.
      *
