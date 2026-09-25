@@ -1,0 +1,1 @@
+export{Signal,action,batch,computed,createModel,effect,signal,untracked}from"@preact/signals-core";export{useComputed,useModel,useSignal,useSignalEffect}from"@preact/signals-react/runtime";//# sourceMappingURL=signals.mjs.map

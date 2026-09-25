@@ -1,0 +1,2279 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/checked-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to manage the checked state.",
+          "name": "CheckedMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "checked",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "True if the element is checked.",
+              "attribute": "checked"
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field.",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "DisabledMixin",
+                "package": "@vaadin/a11y-base/src/disabled-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "checked",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "True if the element is checked.",
+              "fieldName": "checked"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "DisabledMixin",
+                "package": "@vaadin/a11y-base/src/disabled-mixin.js"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "DelegateStateMixin",
+              "package": "@vaadin/component-base/src/delegate-state-mixin.js"
+            },
+            {
+              "name": "DisabledMixin",
+              "package": "@vaadin/a11y-base/src/disabled-mixin.js"
+            },
+            {
+              "name": "InputMixin",
+              "module": "src/input-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "CheckedMixin",
+          "declaration": {
+            "name": "CheckedMixin",
+            "module": "src/checked-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/clear-button-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin that manages the clear button.",
+          "name": "ClearButtonMixin",
+          "members": [
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field.",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "clearButtonVisible",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "attribute": "clear-button-visible"
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "clear-button-visible",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "fieldName": "clearButtonVisible"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "InputMixin",
+              "module": "src/input-mixin.js"
+            },
+            {
+              "name": "KeyboardMixin",
+              "package": "@vaadin/a11y-base/src/keyboard-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ClearButtonMixin",
+          "declaration": {
+            "name": "ClearButtonMixin",
+            "module": "src/clear-button-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/field-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to provide common field logic: label, error message and helper text.",
+          "name": "FieldMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "accessibleName",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "attribute": "accessible-name"
+            },
+            {
+              "kind": "field",
+              "name": "accessibleNameRef",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "attribute": "accessible-name-ref"
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Returns true if the field value satisfies all constraints (if any).",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "errorMessage",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "attribute": "error-message"
+            },
+            {
+              "kind": "field",
+              "name": "helperText",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "attribute": "helper-text"
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "attribute": "invalid",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "attribute": "label",
+              "inheritedFrom": {
+                "name": "LabelMixin",
+                "module": "src/label-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "manualValidation",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "attribute": "manual-validation",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "attribute": "required",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "description": "Validates the field and sets the `invalid` property based on the result.\n\nThe method fires a `validated` event with the result of the validation.",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "accessible-name",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "fieldName": "accessibleName"
+            },
+            {
+              "name": "accessible-name-ref",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "fieldName": "accessibleNameRef"
+            },
+            {
+              "name": "error-message",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "fieldName": "errorMessage"
+            },
+            {
+              "name": "helper-text",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "fieldName": "helperText"
+            },
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "fieldName": "invalid",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "fieldName": "label",
+              "inheritedFrom": {
+                "name": "LabelMixin",
+                "module": "src/label-mixin.js"
+              }
+            },
+            {
+              "name": "manual-validation",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "fieldName": "manualValidation",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "fieldName": "required",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "ValidateMixin",
+              "module": "src/validate-mixin.js"
+            },
+            {
+              "name": "LabelMixin",
+              "module": "src/label-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "events": [
+            {
+              "name": "validated",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FieldMixin",
+          "declaration": {
+            "name": "FieldMixin",
+            "module": "src/field-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/input-constraints-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "InputConstraintsMixin",
+          "members": [
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Returns true if the current input value satisfies all constraints (if any).",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field.",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "attribute": "invalid",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "manualValidation",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "attribute": "manual-validation",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "attribute": "required",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "description": "Validates the field and sets the `invalid` property based on the result.\n\nThe method fires a `validated` event with the result of the validation.",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              }
+            },
+            {
+              "name": "validated",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "DelegateStateMixin",
+              "package": "@vaadin/component-base/src/delegate-state-mixin.js"
+            },
+            {
+              "name": "ValidateMixin",
+              "module": "src/validate-mixin.js"
+            },
+            {
+              "name": "InputMixin",
+              "module": "src/input-mixin.js"
+            },
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "fieldName": "invalid",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "manual-validation",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "fieldName": "manualValidation",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "fieldName": "required",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "InputConstraintsMixin",
+          "declaration": {
+            "name": "InputConstraintsMixin",
+            "module": "src/input-constraints-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/input-control-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to provide shared logic for the editable form input controls.",
+          "name": "InputControlMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "accessibleName",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "attribute": "accessible-name",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "accessibleNameRef",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "attribute": "accessible-name-ref",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowedCharPattern",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A pattern matched against individual characters the user inputs.\n\nWhen set, the field will prevent:\n- `keydown` events if the entered key doesn't match `/^allowedCharPattern$/`\n- `paste` events if the pasted text doesn't match `/^allowedCharPattern*$/`\n- `drop` events if the dropped text doesn't match `/^allowedCharPattern*$/`\n\nFor example, to allow entering only numbers and minus signs, use:\n`allowedCharPattern = \"[\\\\d-]\"`",
+              "attribute": "allowed-char-pattern"
+            },
+            {
+              "kind": "field",
+              "name": "autofocus",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "attribute": "autofocus",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autoselect",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the input text gets fully selected when the field is focused using click or touch / tap.",
+              "attribute": "autoselect"
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Returns true if the current input value satisfies all constraints (if any).",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field.",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "clearButtonVisible",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "attribute": "clear-button-visible",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "module": "src/clear-button-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "TabindexMixin",
+                "package": "@vaadin/a11y-base/src/tabindex-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "errorMessage",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "attribute": "error-message",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "helperText",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "attribute": "helper-text",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "attribute": "invalid",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "attribute": "label",
+              "inheritedFrom": {
+                "name": "LabelMixin",
+                "module": "src/label-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "manualValidation",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "attribute": "manual-validation",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The name of this field.",
+              "attribute": "name"
+            },
+            {
+              "kind": "field",
+              "name": "placeholder",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A hint to the user of what can be entered in the field.",
+              "attribute": "placeholder"
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "When present, it specifies that the field is read-only.",
+              "attribute": "readonly"
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "attribute": "required",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "title",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The text usually displayed in a tooltip popup when the mouse is over the field.",
+              "attribute": "title"
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "description": "Validates the field and sets the `invalid` property based on the result.\n\nThe method fires a `validated` event with the result of the validation.",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "accessible-name",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "fieldName": "accessibleName",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "accessible-name-ref",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "fieldName": "accessibleNameRef",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "allowed-char-pattern",
+              "type": {
+                "text": "string"
+              },
+              "description": "A pattern matched against individual characters the user inputs.\n\nWhen set, the field will prevent:\n- `keydown` events if the entered key doesn't match `/^allowedCharPattern$/`\n- `paste` events if the pasted text doesn't match `/^allowedCharPattern*$/`\n- `drop` events if the dropped text doesn't match `/^allowedCharPattern*$/`\n\nFor example, to allow entering only numbers and minus signs, use:\n`allowedCharPattern = \"[\\\\d-]\"`",
+              "fieldName": "allowedCharPattern"
+            },
+            {
+              "name": "autofocus",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "fieldName": "autofocus",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "name": "autoselect",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the input text gets fully selected when the field is focused using click or touch / tap.",
+              "fieldName": "autoselect"
+            },
+            {
+              "name": "clear-button-visible",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "fieldName": "clearButtonVisible",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "module": "src/clear-button-mixin.js"
+              }
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "TabindexMixin",
+                "package": "@vaadin/a11y-base/src/tabindex-mixin.js"
+              }
+            },
+            {
+              "name": "error-message",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "fieldName": "errorMessage",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "helper-text",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "fieldName": "helperText",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "fieldName": "invalid",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "fieldName": "label",
+              "inheritedFrom": {
+                "name": "LabelMixin",
+                "module": "src/label-mixin.js"
+              }
+            },
+            {
+              "name": "manual-validation",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "fieldName": "manualValidation",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "description": "The name of this field.",
+              "fieldName": "name"
+            },
+            {
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "description": "A hint to the user of what can be entered in the field.",
+              "fieldName": "placeholder"
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "When present, it specifies that the field is read-only.",
+              "fieldName": "readonly"
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "fieldName": "required",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "title",
+              "type": {
+                "text": "string"
+              },
+              "description": "The text usually displayed in a tooltip popup when the mouse is over the field.",
+              "fieldName": "title"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "SlotStylesMixin",
+              "package": "@vaadin/component-base/src/slot-styles-mixin.js"
+            },
+            {
+              "name": "DelegateFocusMixin",
+              "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+            },
+            {
+              "name": "InputConstraintsMixin",
+              "module": "src/input-constraints-mixin.js"
+            },
+            {
+              "name": "FieldMixin",
+              "module": "src/field-mixin.js"
+            },
+            {
+              "name": "ClearButtonMixin",
+              "module": "src/clear-button-mixin.js"
+            },
+            {
+              "name": "KeyboardMixin",
+              "package": "@vaadin/a11y-base/src/keyboard-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "InputConstraintsMixin",
+                "module": "src/input-constraints-mixin.js"
+              }
+            },
+            {
+              "name": "validated",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "InputControlMixin",
+          "declaration": {
+            "name": "InputControlMixin",
+            "module": "src/input-control-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/input-field-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to provide logic for vaadin-text-field and related components.",
+          "name": "InputFieldMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "accessibleName",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "attribute": "accessible-name",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "accessibleNameRef",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "attribute": "accessible-name-ref",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowedCharPattern",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A pattern matched against individual characters the user inputs.\n\nWhen set, the field will prevent:\n- `keydown` events if the entered key doesn't match `/^allowedCharPattern$/`\n- `paste` events if the pasted text doesn't match `/^allowedCharPattern*$/`\n- `drop` events if the dropped text doesn't match `/^allowedCharPattern*$/`\n\nFor example, to allow entering only numbers and minus signs, use:\n`allowedCharPattern = \"[\\\\d-]\"`",
+              "attribute": "allowed-char-pattern",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autocapitalize",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.",
+              "attribute": "autocapitalize"
+            },
+            {
+              "kind": "field",
+              "name": "autocomplete",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete",
+              "attribute": "autocomplete"
+            },
+            {
+              "kind": "field",
+              "name": "autocorrect",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.",
+              "attribute": "autocorrect"
+            },
+            {
+              "kind": "field",
+              "name": "autofocus",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "attribute": "autofocus",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autoselect",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the input text gets fully selected when the field is focused using click or touch / tap.",
+              "attribute": "autoselect",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Returns true if the current input value satisfies all constraints (if any).",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field.",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "module": "src/clear-button-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "clearButtonVisible",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "attribute": "clear-button-visible",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "module": "src/clear-button-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "errorMessage",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "attribute": "error-message",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "helperText",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "attribute": "helper-text",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "attribute": "invalid",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "attribute": "label",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "manualValidation",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "attribute": "manual-validation",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The name of this field.",
+              "attribute": "name",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "placeholder",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A hint to the user of what can be entered in the field.",
+              "attribute": "placeholder",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "When present, it specifies that the field is read-only.",
+              "attribute": "readonly",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "attribute": "required",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "title",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The text usually displayed in a tooltip popup when the mouse is over the field.",
+              "attribute": "title",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "description": "Validates the field and sets the `invalid` property based on the result.\n\nThe method fires a `validated` event with the result of the validation.",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "module": "src/clear-button-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "accessible-name",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "fieldName": "accessibleName",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "accessible-name-ref",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "fieldName": "accessibleNameRef",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "allowed-char-pattern",
+              "type": {
+                "text": "string"
+              },
+              "description": "A pattern matched against individual characters the user inputs.\n\nWhen set, the field will prevent:\n- `keydown` events if the entered key doesn't match `/^allowedCharPattern$/`\n- `paste` events if the pasted text doesn't match `/^allowedCharPattern*$/`\n- `drop` events if the dropped text doesn't match `/^allowedCharPattern*$/`\n\nFor example, to allow entering only numbers and minus signs, use:\n`allowedCharPattern = \"[\\\\d-]\"`",
+              "fieldName": "allowedCharPattern",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "autocapitalize",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.",
+              "fieldName": "autocapitalize"
+            },
+            {
+              "name": "autocomplete",
+              "type": {
+                "text": "string"
+              },
+              "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete",
+              "fieldName": "autocomplete"
+            },
+            {
+              "name": "autocorrect",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.",
+              "fieldName": "autocorrect"
+            },
+            {
+              "name": "autofocus",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "fieldName": "autofocus",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "name": "autoselect",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the input text gets fully selected when the field is focused using click or touch / tap.",
+              "fieldName": "autoselect",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "clear-button-visible",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "fieldName": "clearButtonVisible",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "module": "src/clear-button-mixin.js"
+              }
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "name": "error-message",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "fieldName": "errorMessage",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "helper-text",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "fieldName": "helperText",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "fieldName": "invalid",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "fieldName": "label",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "manual-validation",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "fieldName": "manualValidation",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "description": "The name of this field.",
+              "fieldName": "name",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "description": "A hint to the user of what can be entered in the field.",
+              "fieldName": "placeholder",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "When present, it specifies that the field is read-only.",
+              "fieldName": "readonly",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "fieldName": "required",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            },
+            {
+              "name": "title",
+              "type": {
+                "text": "string"
+              },
+              "description": "The text usually displayed in a tooltip popup when the mouse is over the field.",
+              "fieldName": "title",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "module": "src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "module": "src/clear-button-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "InputControlMixin",
+              "module": "src/input-control-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "InputConstraintsMixin",
+                "module": "src/input-constraints-mixin.js"
+              }
+            },
+            {
+              "name": "validated",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "module": "src/field-mixin.js"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "InputFieldMixin",
+          "declaration": {
+            "name": "InputFieldMixin",
+            "module": "src/input-field-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/input-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "InputMixin",
+          "members": [
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field."
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "InputMixin",
+          "declaration": {
+            "name": "InputMixin",
+            "module": "src/input-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/label-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to provide label via corresponding property or named slot.",
+          "name": "LabelMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "label",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "attribute": "label"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "fieldName": "label"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "LabelMixin",
+          "declaration": {
+            "name": "LabelMixin",
+            "module": "src/label-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/pattern-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to provide `pattern` property.",
+          "name": "PatternMixin",
+          "members": [
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Returns true if the current input value satisfies all constraints (if any).",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field.",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "attribute": "invalid",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "manualValidation",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "attribute": "manual-validation",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "pattern",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.",
+              "attribute": "pattern"
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "attribute": "required",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "description": "Validates the field and sets the `invalid` property based on the result.\n\nThe method fires a `validated` event with the result of the validation.",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "fieldName": "invalid",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "manual-validation",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "fieldName": "manualValidation",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "pattern",
+              "type": {
+                "text": "string"
+              },
+              "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.",
+              "fieldName": "pattern"
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "fieldName": "required",
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "InputMixin",
+                "module": "src/input-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "InputConstraintsMixin",
+              "module": "src/input-constraints-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "InputConstraintsMixin",
+                "module": "src/input-constraints-mixin.js"
+              }
+            },
+            {
+              "name": "validated",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "ValidateMixin",
+                "module": "src/validate-mixin.js"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "PatternMixin",
+          "declaration": {
+            "name": "PatternMixin",
+            "module": "src/pattern-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/validate-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to provide required state and validation logic.",
+          "name": "ValidateMixin",
+          "members": [
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Returns true if the field value satisfies all constraints (if any).",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              }
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "attribute": "invalid"
+            },
+            {
+              "kind": "field",
+              "name": "manualValidation",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "attribute": "manual-validation"
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "attribute": "required"
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "description": "Validates the field and sets the `invalid` property based on the result.\n\nThe method fires a `validated` event with the result of the validation.",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "validated",
+              "type": {
+                "text": "CustomEvent"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "fieldName": "invalid"
+            },
+            {
+              "name": "manual-validation",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "fieldName": "manualValidation"
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "fieldName": "required"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ValidateMixin",
+          "declaration": {
+            "name": "ValidateMixin",
+            "module": "src/validate-mixin.js"
+          }
+        }
+      ]
+    }
+  ]
+}

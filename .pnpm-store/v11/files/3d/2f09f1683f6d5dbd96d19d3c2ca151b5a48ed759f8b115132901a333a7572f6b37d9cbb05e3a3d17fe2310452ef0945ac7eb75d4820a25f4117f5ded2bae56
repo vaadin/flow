@@ -1,0 +1,476 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/active-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to toggle the `active` attribute.\n\nThe attribute is set whenever the user activates the element by a pointer\nor presses an activation key on the element from the keyboard.\n\nThe attribute is removed as soon as the element is deactivated\nby the pointer or by releasing the activation key.",
+          "name": "ActiveMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "DisabledMixin",
+                "module": "src/disabled-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "DisabledMixin",
+              "module": "src/disabled-mixin.js"
+            },
+            {
+              "name": "KeyboardMixin",
+              "module": "src/keyboard-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "DisabledMixin",
+                "module": "src/disabled-mixin.js"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ActiveMixin",
+          "declaration": {
+            "name": "ActiveMixin",
+            "module": "src/active-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/delegate-focus-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "DelegateFocusMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "autofocus",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "attribute": "autofocus"
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "DisabledMixin",
+                "module": "src/disabled-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "autofocus",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "fieldName": "autofocus"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "DisabledMixin",
+                "module": "src/disabled-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "FocusMixin",
+              "module": "src/focus-mixin.js"
+            },
+            {
+              "name": "TabindexMixin",
+              "module": "src/tabindex-mixin.js"
+            },
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DelegateFocusMixin",
+          "declaration": {
+            "name": "DelegateFocusMixin",
+            "module": "src/delegate-focus-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/disabled-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "DisabledMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DisabledMixin",
+          "declaration": {
+            "name": "DisabledMixin",
+            "module": "src/disabled-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/focus-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "FocusMixin",
+          "members": [],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "FocusMixin",
+          "declaration": {
+            "name": "FocusMixin",
+            "module": "src/focus-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/keyboard-direction-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin for navigating items with keyboard.",
+          "name": "KeyboardDirectionMixin",
+          "members": [],
+          "mixins": [
+            {
+              "name": "KeyboardMixin",
+              "module": "src/keyboard-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KeyboardDirectionMixin",
+          "declaration": {
+            "name": "KeyboardDirectionMixin",
+            "module": "src/keyboard-direction-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/keyboard-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "KeyboardMixin",
+          "members": [],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KeyboardMixin",
+          "declaration": {
+            "name": "KeyboardMixin",
+            "module": "src/keyboard-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/list-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin for list elements, facilitating navigation and selection of items.",
+          "name": "ListMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.\nWhen the element is disabled, the selected item is\nnot updated when `selected` property is changed.",
+              "attribute": "disabled"
+            },
+            {
+              "kind": "field",
+              "name": "items",
+              "privacy": "public",
+              "type": {
+                "text": "!Array<!Element> | undefined"
+              },
+              "description": "A read-only list of items from which a selection can be made.\nIt is populated from the elements passed to the light DOM,\nand updated dynamically when adding or removing items.",
+              "attribute": "items",
+              "readonly": true
+            },
+            {
+              "kind": "field",
+              "name": "orientation",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Define how items are disposed in the dom.\nPossible values are: `horizontal|vertical`.\nIt also changes navigation keys from left/right to up/down.",
+              "attribute": "orientation"
+            },
+            {
+              "kind": "field",
+              "name": "selected",
+              "privacy": "public",
+              "type": {
+                "text": "number"
+              },
+              "description": "The index of the item selected in the items array.\nNote: Not updated when used in `multiple` selection mode.",
+              "attribute": "selected"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.\nWhen the element is disabled, the selected item is\nnot updated when `selected` property is changed.",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "orientation",
+              "type": {
+                "text": "string"
+              },
+              "description": "Define how items are disposed in the dom.\nPossible values are: `horizontal|vertical`.\nIt also changes navigation keys from left/right to up/down.",
+              "fieldName": "orientation"
+            },
+            {
+              "name": "selected",
+              "type": {
+                "text": "number"
+              },
+              "description": "The index of the item selected in the items array.\nNote: Not updated when used in `multiple` selection mode.",
+              "fieldName": "selected"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "KeyboardDirectionMixin",
+              "module": "src/keyboard-direction-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superClass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ListMixin",
+          "declaration": {
+            "name": "ListMixin",
+            "module": "src/list-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/tabindex-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to toggle the `tabindex` attribute.\n\nThe attribute is set to -1 whenever the user disables the element\nand restored with the last known value once the element is enabled.",
+          "name": "TabindexMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "DisabledMixin",
+                "module": "src/disabled-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "DisabledMixin",
+                "module": "src/disabled-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "DisabledMixin",
+              "module": "src/disabled-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "TabindexMixin",
+          "declaration": {
+            "name": "TabindexMixin",
+            "module": "src/tabindex-mixin.js"
+          }
+        }
+      ]
+    }
+  ]
+}

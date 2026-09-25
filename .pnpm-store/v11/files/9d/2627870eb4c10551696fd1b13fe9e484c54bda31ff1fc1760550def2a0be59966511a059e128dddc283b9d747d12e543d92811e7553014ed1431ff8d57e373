@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "vaadin-input-container.js",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/vaadin-input-container.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/vaadin-input-container.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "InputContainer",
+          "members": [
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled"
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the element is invalid.",
+              "attribute": "invalid"
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to make this element read-only.",
+              "attribute": "readonly"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the element is invalid.",
+              "fieldName": "invalid"
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to make this element read-only.",
+              "fieldName": "readonly"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "ThemableMixin",
+              "package": "@vaadin/vaadin-themable-mixin/vaadin-themable-mixin.js"
+            },
+            {
+              "name": "DirMixin",
+              "package": "@vaadin/component-base/src/dir-mixin.js"
+            },
+            {
+              "name": "PolylitMixin",
+              "package": "@vaadin/component-base/src/polylit-mixin.js"
+            },
+            {
+              "name": "LumoInjectionMixin",
+              "package": "@vaadin/vaadin-themable-mixin/lumo-injection-mixin.js"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "vaadin-input-container",
+          "customElement": true,
+          "events": []
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "InputContainer",
+          "declaration": {
+            "name": "InputContainer",
+            "module": "src/vaadin-input-container.js"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1471 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "vaadin-text-field.js",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/vaadin-text-field.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/vaadin-text-field-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin providing common text field functionality.",
+          "name": "TextFieldMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "accessibleName",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "attribute": "accessible-name",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "accessibleNameRef",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "attribute": "accessible-name-ref",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowedCharPattern",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A pattern matched against individual characters the user inputs.\n\nWhen set, the field will prevent:\n- `keydown` events if the entered key doesn't match `/^allowedCharPattern$/`\n- `paste` events if the pasted text doesn't match `/^allowedCharPattern*$/`\n- `drop` events if the dropped text doesn't match `/^allowedCharPattern*$/`\n\nFor example, to allow entering only numbers and minus signs, use:\n`allowedCharPattern = \"[\\\\d-]\"`",
+              "attribute": "allowed-char-pattern",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autocapitalize",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.",
+              "attribute": "autocapitalize",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autocomplete",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete",
+              "attribute": "autocomplete",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autocorrect",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.",
+              "attribute": "autocorrect",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autofocus",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "attribute": "autofocus",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autoselect",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the input text gets fully selected when the field is focused using click or touch / tap.",
+              "attribute": "autoselect",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Returns true if the current input value satisfies all constraints (if any).",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field.",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "clearButtonVisible",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "attribute": "clear-button-visible",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "errorMessage",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "attribute": "error-message",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "helperText",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "attribute": "helper-text",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "attribute": "invalid",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "attribute": "label",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "manualValidation",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "attribute": "manual-validation",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "maxlength",
+              "privacy": "public",
+              "type": {
+                "text": "number"
+              },
+              "description": "Maximum number of characters (in Unicode code points) that the user can enter.",
+              "attribute": "maxlength"
+            },
+            {
+              "kind": "field",
+              "name": "minlength",
+              "privacy": "public",
+              "type": {
+                "text": "number"
+              },
+              "description": "Minimum number of characters (in Unicode code points) that the user can enter.",
+              "attribute": "minlength"
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The name of this field.",
+              "attribute": "name",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "pattern",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.",
+              "attribute": "pattern"
+            },
+            {
+              "kind": "field",
+              "name": "placeholder",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A hint to the user of what can be entered in the field.",
+              "attribute": "placeholder",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "When present, it specifies that the field is read-only.",
+              "attribute": "readonly",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "attribute": "required",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "title",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The text usually displayed in a tooltip popup when the mouse is over the field.",
+              "attribute": "title",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "description": "Validates the field and sets the `invalid` property based on the result.\n\nThe method fires a `validated` event with the result of the validation.",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "accessible-name",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "fieldName": "accessibleName",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "accessible-name-ref",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "fieldName": "accessibleNameRef",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "allowed-char-pattern",
+              "type": {
+                "text": "string"
+              },
+              "description": "A pattern matched against individual characters the user inputs.\n\nWhen set, the field will prevent:\n- `keydown` events if the entered key doesn't match `/^allowedCharPattern$/`\n- `paste` events if the pasted text doesn't match `/^allowedCharPattern*$/`\n- `drop` events if the dropped text doesn't match `/^allowedCharPattern*$/`\n\nFor example, to allow entering only numbers and minus signs, use:\n`allowedCharPattern = \"[\\\\d-]\"`",
+              "fieldName": "allowedCharPattern",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "autocapitalize",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.",
+              "fieldName": "autocapitalize",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "name": "autocomplete",
+              "type": {
+                "text": "string"
+              },
+              "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete",
+              "fieldName": "autocomplete",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "name": "autocorrect",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.",
+              "fieldName": "autocorrect",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "name": "autofocus",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "fieldName": "autofocus",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "name": "autoselect",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the input text gets fully selected when the field is focused using click or touch / tap.",
+              "fieldName": "autoselect",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "clear-button-visible",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "fieldName": "clearButtonVisible",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "name": "error-message",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "fieldName": "errorMessage",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "helper-text",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "fieldName": "helperText",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "fieldName": "invalid",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "fieldName": "label",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "manual-validation",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "fieldName": "manualValidation",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "maxlength",
+              "type": {
+                "text": "number"
+              },
+              "description": "Maximum number of characters (in Unicode code points) that the user can enter.",
+              "fieldName": "maxlength"
+            },
+            {
+              "name": "minlength",
+              "type": {
+                "text": "number"
+              },
+              "description": "Minimum number of characters (in Unicode code points) that the user can enter.",
+              "fieldName": "minlength"
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "description": "The name of this field.",
+              "fieldName": "name",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "pattern",
+              "type": {
+                "text": "string"
+              },
+              "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.",
+              "fieldName": "pattern"
+            },
+            {
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "description": "A hint to the user of what can be entered in the field.",
+              "fieldName": "placeholder",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "When present, it specifies that the field is read-only.",
+              "fieldName": "readonly",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "fieldName": "required",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "title",
+              "type": {
+                "text": "string"
+              },
+              "description": "The text usually displayed in a tooltip popup when the mouse is over the field.",
+              "fieldName": "title",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            }
+          ],
+          "mixins": [
+            {
+              "name": "InputFieldMixin",
+              "package": "@vaadin/field-base/src/input-field-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superClass"
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "InputConstraintsMixin",
+                "package": "@vaadin/field-base/src/input-constraints-mixin.js"
+              }
+            },
+            {
+              "name": "validated",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "TextFieldMixin",
+          "declaration": {
+            "name": "TextFieldMixin",
+            "module": "src/vaadin-text-field-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/vaadin-text-field.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "`<vaadin-text-field>` is a web component that allows the user to input and edit text.\n\n```html\n<vaadin-text-field label=\"First Name\"></vaadin-text-field>\n```\n\n### Prefixes and suffixes\n\nThese are child elements of a `<vaadin-text-field>` that are displayed\ninline with the input, before or after.\nIn order for an element to be considered as a prefix, it must have the slot\nattribute set to `prefix` (and similarly for `suffix`).\n\n```html\n<vaadin-text-field label=\"Email address\">\n  <div slot=\"prefix\">Sent to:</div>\n  <div slot=\"suffix\">@vaadin.com</div>\n</vaadin-text-field>\n```\n\n### Styling\n\nThe following shadow DOM parts are available for styling:\n\nPart name            | Description\n---------------------|----------------\n`label`              | The label element\n`input-field`        | The element that wraps prefix, value and suffix\n`field-button`       | Set on the clear button\n`clear-button`       | The clear button\n`error-message`      | The error message element\n`helper-text`        | The helper text element wrapper\n`required-indicator` | The `required` state indicator element\n\nThe following state attributes are available for styling:\n\nAttribute            | Description\n---------------------|---------------------------------\n`disabled`           | Set when the element is disabled\n`has-value`          | Set when the element has a value\n`has-label`          | Set when the element has a label\n`has-helper`         | Set when the element has helper text or slot\n`has-error-message`  | Set when the element has an error message\n`has-tooltip`        | Set when the element has a slotted tooltip\n`invalid`            | Set when the element is invalid\n`input-prevented`    | Temporarily set when invalid input is prevented\n`focused`            | Set when the element is focused\n`focus-ring`         | Set when the element is keyboard focused\n`readonly`           | Set when the element is readonly\n\nNote, the `input-prevented` state attribute is only supported when `allowedCharPattern` is set.\n\nThe following custom CSS properties are available for styling:\n\nCustom CSS property                                |\n:--------------------------------------------------|\n| `--vaadin-field-default-width`                   |\n| `--vaadin-input-field-background`                |\n| `--vaadin-input-field-border-color`              |\n| `--vaadin-input-field-border-radius`             |\n| `--vaadin-input-field-border-width`              |\n| `--vaadin-input-field-bottom-end-radius`         |\n| `--vaadin-input-field-bottom-start-radius`       |\n| `--vaadin-input-field-button-text-color`         |\n| `--vaadin-input-field-container-gap`             |\n| `--vaadin-input-field-disabled-background`       |\n| `--vaadin-input-field-disabled-text-color`       |\n| `--vaadin-input-field-error-color`               |\n| `--vaadin-input-field-error-font-size`           |\n| `--vaadin-input-field-error-font-weight`         |\n| `--vaadin-input-field-error-line-height`         |\n| `--vaadin-input-field-gap`                       |\n| `--vaadin-input-field-helper-color`              |\n| `--vaadin-input-field-helper-font-size`          |\n| `--vaadin-input-field-helper-font-weight`        |\n| `--vaadin-input-field-helper-line-height`        |\n| `--vaadin-input-field-label-color`               |\n| `--vaadin-input-field-label-font-size`           |\n| `--vaadin-input-field-label-font-weight`         |\n| `--vaadin-input-field-label-line-height`         |\n| `--vaadin-input-field-padding`                   |\n| `--vaadin-input-field-placeholder-color`         |\n| `--vaadin-input-field-required-indicator`        |\n| `--vaadin-input-field-required-indicator-color`  |\n| `--vaadin-input-field-top-end-radius`            |\n| `--vaadin-input-field-top-start-radius`          |\n| `--vaadin-input-field-value-color`               |\n| `--vaadin-input-field-value-font-size`           |\n| `--vaadin-input-field-value-font-weight`         |\n| `--vaadin-input-field-value-line-height`         |\n\nSee [Styling Components](https://vaadin.com/docs/latest/styling/styling-components) documentation.",
+          "name": "TextField",
+          "members": [
+            {
+              "kind": "field",
+              "name": "accessibleName",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "attribute": "accessible-name",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "accessibleNameRef",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "attribute": "accessible-name-ref",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "allowedCharPattern",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A pattern matched against individual characters the user inputs.\n\nWhen set, the field will prevent:\n- `keydown` events if the entered key doesn't match `/^allowedCharPattern$/`\n- `paste` events if the pasted text doesn't match `/^allowedCharPattern*$/`\n- `drop` events if the dropped text doesn't match `/^allowedCharPattern*$/`\n\nFor example, to allow entering only numbers and minus signs, use:\n`allowedCharPattern = \"[\\\\d-]\"`",
+              "attribute": "allowed-char-pattern",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autocapitalize",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.",
+              "attribute": "autocapitalize",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autocomplete",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete",
+              "attribute": "autocomplete",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autocorrect",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.",
+              "attribute": "autocorrect",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autofocus",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "attribute": "autofocus",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "autoselect",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the input text gets fully selected when the field is focused using click or touch / tap.",
+              "attribute": "autoselect",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Returns true if the current input value satisfies all constraints (if any).",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "InputConstraintsMixin",
+                "package": "@vaadin/field-base/src/input-constraints-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "clear",
+              "description": "Clear the value of the field.",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "clearButtonVisible",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "attribute": "clear-button-visible",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "attribute": "disabled",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "errorMessage",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "attribute": "error-message",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "helperText",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "attribute": "helper-text",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "invalid",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "attribute": "invalid",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "label",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "attribute": "label",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "manualValidation",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "attribute": "manual-validation",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "maxlength",
+              "privacy": "public",
+              "type": {
+                "text": "number"
+              },
+              "description": "Maximum number of characters (in Unicode code points) that the user can enter.",
+              "attribute": "maxlength",
+              "inheritedFrom": {
+                "name": "TextFieldMixin",
+                "module": "src/vaadin-text-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "minlength",
+              "privacy": "public",
+              "type": {
+                "text": "number"
+              },
+              "description": "Minimum number of characters (in Unicode code points) that the user can enter.",
+              "attribute": "minlength",
+              "inheritedFrom": {
+                "name": "TextFieldMixin",
+                "module": "src/vaadin-text-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "name",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The name of this field.",
+              "attribute": "name",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "pattern",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.",
+              "attribute": "pattern",
+              "inheritedFrom": {
+                "name": "TextFieldMixin",
+                "module": "src/vaadin-text-field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "placeholder",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A hint to the user of what can be entered in the field.",
+              "attribute": "placeholder",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "When present, it specifies that the field is read-only.",
+              "attribute": "readonly",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "required",
+              "privacy": "public",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "attribute": "required",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "title",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The text usually displayed in a tooltip popup when the mouse is over the field.",
+              "attribute": "title",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "kind": "method",
+              "name": "validate",
+              "description": "Validates the field and sets the `invalid` property based on the result.\n\nThe method fires a `validated` event with the result of the validation.",
+              "return": {
+                "type": {
+                  "text": "boolean"
+                }
+              },
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "attribute": "value",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            }
+          ],
+          "events": [
+            {
+              "name": "change",
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "Fired when the user commits a value change.",
+              "inheritedFrom": {
+                "name": "InputConstraintsMixin",
+                "package": "@vaadin/field-base/src/input-constraints-mixin.js"
+              }
+            },
+            {
+              "type": {
+                "text": "Event"
+              },
+              "description": "Fired when the value is changed by the user: on every typing keystroke, and the value is cleared using the clear button.",
+              "name": "input"
+            },
+            {
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "Fired when the `invalid` property changes.",
+              "name": "invalid-changed"
+            },
+            {
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "Fired whenever the field is validated.",
+              "name": "validated"
+            },
+            {
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "Fired when the `value` property changes.",
+              "name": "value-changed"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "TextFieldMixin",
+              "module": "src/vaadin-text-field-mixin.js"
+            },
+            {
+              "name": "ThemableMixin",
+              "package": "@vaadin/vaadin-themable-mixin/vaadin-themable-mixin.js"
+            },
+            {
+              "name": "ElementMixin",
+              "package": "@vaadin/component-base/src/element-mixin.js"
+            },
+            {
+              "name": "PolylitMixin",
+              "package": "@vaadin/component-base/src/polylit-mixin.js"
+            },
+            {
+              "name": "LumoInjectionMixin",
+              "package": "@vaadin/vaadin-themable-mixin/lumo-injection-mixin.js"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "vaadin-text-field",
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "accessible-name",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used to label the component to screen reader users.",
+              "fieldName": "accessibleName",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "accessible-name-ref",
+              "type": {
+                "text": "string"
+              },
+              "description": "Id of the element used as label of the component to screen reader users.",
+              "fieldName": "accessibleNameRef",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "allowed-char-pattern",
+              "type": {
+                "text": "string"
+              },
+              "description": "A pattern matched against individual characters the user inputs.\n\nWhen set, the field will prevent:\n- `keydown` events if the entered key doesn't match `/^allowedCharPattern$/`\n- `paste` events if the pasted text doesn't match `/^allowedCharPattern*$/`\n- `drop` events if the dropped text doesn't match `/^allowedCharPattern*$/`\n\nFor example, to allow entering only numbers and minus signs, use:\n`allowedCharPattern = \"[\\\\d-]\"`",
+              "fieldName": "allowedCharPattern",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "autocapitalize",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari and Chrome that is used to control whether\nautocapitalization should be enabled when the user is entering/editing the text.\nPossible values are:\ncharacters: Characters capitalization.\nwords: Words capitalization.\nsentences: Sentences capitalization.\nnone: No capitalization.",
+              "fieldName": "autocapitalize",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "name": "autocomplete",
+              "type": {
+                "text": "string"
+              },
+              "description": "Whether the value of the control can be automatically completed by the browser.\nList of available options at:\nhttps://developer.mozilla.org/en/docs/Web/HTML/Element/input#attr-autocomplete",
+              "fieldName": "autocomplete",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "name": "autocorrect",
+              "type": {
+                "text": "string"
+              },
+              "description": "This is a property supported by Safari that is used to control whether\nautocorrection should be enabled when the user is entering/editing the text.\nPossible values are:\non: Enable autocorrection.\noff: Disable autocorrection.",
+              "fieldName": "autocorrect",
+              "inheritedFrom": {
+                "name": "InputFieldMixin",
+                "package": "@vaadin/field-base/src/input-field-mixin.js"
+              }
+            },
+            {
+              "name": "autofocus",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specify that this control should have input focus when the page loads.",
+              "fieldName": "autofocus",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "name": "autoselect",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the input text gets fully selected when the field is focused using click or touch / tap.",
+              "fieldName": "autoselect",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "clear-button-visible",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to display the clear icon which clears the input.\nThis also enables clearing the input when pressing Esc key.",
+              "fieldName": "clearButtonVisible",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "If true, the user cannot interact with this element.",
+              "fieldName": "disabled",
+              "inheritedFrom": {
+                "name": "DelegateFocusMixin",
+                "package": "@vaadin/a11y-base/src/delegate-focus-mixin.js"
+              }
+            },
+            {
+              "name": "error-message",
+              "type": {
+                "text": "string"
+              },
+              "description": "Error to show when the field is invalid.",
+              "fieldName": "errorMessage",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "helper-text",
+              "type": {
+                "text": "string"
+              },
+              "description": "String used for the helper text.",
+              "fieldName": "helperText",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "invalid",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true when the field is invalid.",
+              "fieldName": "invalid",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "description": "The label text for the input node.\nWhen no light dom defined via [slot=label], this value will be used.",
+              "fieldName": "label",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "manual-validation",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Set to true to enable manual validation mode. This mode disables automatic\nconstraint validation, allowing you to control the validation process yourself.\nYou can still trigger constraint validation manually with the `validate()` method\nor use `checkValidity()` to assess the component's validity without affecting\nthe invalid state. In manual validation mode, you can also manipulate\nthe `invalid` property directly through your application logic without conflicts\nwith the component's internal validation.",
+              "fieldName": "manualValidation",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "maxlength",
+              "type": {
+                "text": "number"
+              },
+              "description": "Maximum number of characters (in Unicode code points) that the user can enter.",
+              "fieldName": "maxlength",
+              "inheritedFrom": {
+                "name": "TextFieldMixin",
+                "module": "src/vaadin-text-field-mixin.js"
+              }
+            },
+            {
+              "name": "minlength",
+              "type": {
+                "text": "number"
+              },
+              "description": "Minimum number of characters (in Unicode code points) that the user can enter.",
+              "fieldName": "minlength",
+              "inheritedFrom": {
+                "name": "TextFieldMixin",
+                "module": "src/vaadin-text-field-mixin.js"
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "text": "string"
+              },
+              "description": "The name of this field.",
+              "fieldName": "name",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "pattern",
+              "type": {
+                "text": "string"
+              },
+              "description": "A regular expression that the value is checked against.\nThe pattern must match the entire value, not just some subset.",
+              "fieldName": "pattern",
+              "inheritedFrom": {
+                "name": "TextFieldMixin",
+                "module": "src/vaadin-text-field-mixin.js"
+              }
+            },
+            {
+              "name": "placeholder",
+              "type": {
+                "text": "string"
+              },
+              "description": "A hint to the user of what can be entered in the field.",
+              "fieldName": "placeholder",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "When present, it specifies that the field is read-only.",
+              "fieldName": "readonly",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "description": "Specifies that the user must fill in a value.",
+              "fieldName": "required",
+              "inheritedFrom": {
+                "name": "FieldMixin",
+                "package": "@vaadin/field-base/src/field-mixin.js"
+              }
+            },
+            {
+              "name": "title",
+              "type": {
+                "text": "string"
+              },
+              "description": "The text usually displayed in a tooltip popup when the mouse is over the field.",
+              "fieldName": "title",
+              "inheritedFrom": {
+                "name": "InputControlMixin",
+                "package": "@vaadin/field-base/src/input-control-mixin.js"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "string"
+              },
+              "description": "The value of the field.",
+              "fieldName": "value",
+              "inheritedFrom": {
+                "name": "ClearButtonMixin",
+                "package": "@vaadin/field-base/src/clear-button-mixin.js"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "TextField",
+          "declaration": {
+            "name": "TextField",
+            "module": "src/vaadin-text-field.js"
+          }
+        }
+      ]
+    }
+  ]
+}

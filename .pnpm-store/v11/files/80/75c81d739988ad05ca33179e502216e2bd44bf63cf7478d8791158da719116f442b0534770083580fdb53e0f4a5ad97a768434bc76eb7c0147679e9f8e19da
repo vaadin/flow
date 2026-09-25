@@ -1,0 +1,298 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "src/delegate-state-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "DelegateStateMixin",
+          "members": [],
+          "attributes": [],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DelegateStateMixin",
+          "declaration": {
+            "name": "DelegateStateMixin",
+            "module": "src/delegate-state-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/dir-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin to handle `dir` attribute based on the one set on the `<html>` element.",
+          "name": "DirMixin",
+          "members": [],
+          "attributes": [],
+          "parameters": [
+            {
+              "name": "superClass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "DirMixin",
+          "declaration": {
+            "name": "DirMixin",
+            "module": "src/dir-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/element-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "ElementMixin",
+          "members": [],
+          "mixins": [
+            {
+              "name": "DirMixin",
+              "module": "src/dir-mixin.js"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superClass"
+            }
+          ],
+          "attributes": []
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementMixin",
+          "declaration": {
+            "name": "ElementMixin",
+            "module": "src/element-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/i18n-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin that allows to set partial I18N properties.\n\nSubclasses provide their default values by overriding the\n`defaultI18n` static getter:\n\n```js\nstatic get defaultI18n() {\n  return { foo: 'Foo', bar: 'Bar' };\n}\n```",
+          "name": "I18nMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "i18n",
+              "privacy": "public",
+              "type": {
+                "text": "Object"
+              },
+              "description": "The object used to localize this component. To change the default\nlocalization, replace this with an object that provides all properties, or\njust the individual properties you want to change.\n\nShould be overridden by subclasses to provide a custom JSDoc with the\ndefault I18N properties.",
+              "attribute": "i18n"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "i18n",
+              "type": {
+                "text": "Object"
+              },
+              "description": "The object used to localize this component. To change the default\nlocalization, replace this with an object that provides all properties, or\njust the individual properties you want to change.\n\nShould be overridden by subclasses to provide a custom JSDoc with the\ndefault I18N properties.",
+              "fieldName": "i18n"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superClass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "I18nMixin",
+          "declaration": {
+            "name": "I18nMixin",
+            "module": "src/i18n-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/overlay-class-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin that forwards CSS class names to the internal overlay element\nby setting the `overlayClass` property or `overlay-class` attribute.",
+          "name": "OverlayClassMixin",
+          "members": [
+            {
+              "kind": "field",
+              "name": "overlayClass",
+              "privacy": "public",
+              "type": {
+                "text": "string"
+              },
+              "description": "A space-delimited list of CSS class names to set on the overlay element.\nThis property does not affect other CSS class names set manually via JS.\n\nNote, if the CSS class name was set with this property, clearing it will\nremove it from the overlay, even if the same class name was also added\nmanually, e.g. by using `classList.add()` in the `renderer` function.",
+              "attribute": "overlay-class"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "overlay-class",
+              "type": {
+                "text": "string"
+              },
+              "description": "A space-delimited list of CSS class names to set on the overlay element.\nThis property does not affect other CSS class names set manually via JS.\n\nNote, if the CSS class name was set with this property, clearing it will\nremove it from the overlay, even if the same class name was also added\nmanually, e.g. by using `classList.add()` in the `renderer` function.",
+              "fieldName": "overlayClass"
+            }
+          ],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "OverlayClassMixin",
+          "declaration": {
+            "name": "OverlayClassMixin",
+            "module": "src/overlay-class-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/polylit-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "",
+          "name": "PolylitMixin",
+          "members": [],
+          "events": [],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "PolylitMixin",
+          "declaration": {
+            "name": "PolylitMixin",
+            "module": "src/polylit-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/resize-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "A mixin that uses a ResizeObserver to listen to host size changes.",
+          "name": "ResizeMixin",
+          "members": [],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ResizeMixin",
+          "declaration": {
+            "name": "ResizeMixin",
+            "module": "src/resize-mixin.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/slot-styles-mixin.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "description": "Mixin to insert styles into the outer scope to handle slotted components.\nThis is useful e.g. to hide native `<input type=\"number\">` controls.",
+          "name": "SlotStylesMixin",
+          "members": [],
+          "parameters": [
+            {
+              "name": "superclass"
+            }
+          ],
+          "mixins": [
+            {
+              "name": "dedupeMixin",
+              "package": "@open-wc/dedupe-mixin"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "SlotStylesMixin",
+          "declaration": {
+            "name": "SlotStylesMixin",
+            "module": "src/slot-styles-mixin.js"
+          }
+        }
+      ]
+    }
+  ]
+}

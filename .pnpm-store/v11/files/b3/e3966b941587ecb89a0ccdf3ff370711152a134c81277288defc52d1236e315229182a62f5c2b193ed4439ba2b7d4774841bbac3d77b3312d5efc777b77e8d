@@ -1,0 +1,58 @@
+{
+  "name": "@vaadin/common-frontend",
+  "version": "0.0.24",
+  "description": "Vaadin frontend utils used by Flow and Hilla",
+  "main": "index.js",
+  "module": "index.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vaadin/flow-hilla-common.git",
+    "directory": "packages/ts/common-frontend"
+  },
+  "keywords": [
+    "Vaadin",
+    "Hilla"
+  ],
+  "scripts": {
+    "clean:build": "git clean -fx  -e .vite -e node_modules",
+    "build": "concurrently npm:build:*",
+    "build:esbuild": "tsx ../../../scripts/build.ts",
+    "build:dts": "tsc --isolatedModules -p tsconfig.build.json",
+    "lint": "eslint src test",
+    "lint:fix": "eslint src test --fix",
+    "test": "vitest --run",
+    "test:watch": "vitest --inspect --no-file-parallelism",
+    "test:coverage": "npm test -- --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    },
+    "./ConnectionIndicator.js": {
+      "default": "./ConnectionIndicator.js"
+    },
+    "./ConnectionState.js": {
+      "default": "./ConnectionState.js"
+    },
+    "./index.js": {
+      "default": "./index.js"
+    }
+  },
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow-hilla-common/issues"
+  },
+  "homepage": "https://vaadin.com",
+  "files": [
+    "*.{d.ts.map,d.ts,js.map,js}"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "lit": "^3.0.0"
+  }
+}
