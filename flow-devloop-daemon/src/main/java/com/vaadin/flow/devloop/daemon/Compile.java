@@ -432,8 +432,30 @@ final class Compile {
 
     /** Seeds the fingerprints, so an untouched project reports no changes. */
     void seedResources() {
+        seedResources(Long.MAX_VALUE);
+    }
+
+    /**
+     * Seeds the fingerprints of the resources the running application can have
+     * read.
+     * <p>
+     * The same bound {@link #seedFromDisk(long, long)} puts on sources, and for
+     * a sharper reason: a startup-only resource has no other way back into a
+     * change-set. The re-resolve that rebuilds the baseline after a pom edit
+     * has also copied the file onto the classpath, so its copy is current, and
+     * a baseline that took the edit as acted on would report "no changes" for a
+     * config the running JVM never loaded - on this apply and every later one.
+     *
+     * @param startedAtMillis
+     *            when the running application was launched
+     */
+    void seedResources(long startedAtMillis) {
         notified.clear();
-        forEachResource((module, source, stamp) -> notified.put(source, stamp));
+        forEachResource((module, source, stamp) -> {
+            if (stamp.modified() <= startedAtMillis) {
+                notified.put(source, stamp);
+            }
+        });
     }
 
     /**
@@ -902,7 +924,7 @@ final class Compile {
                 applied.put(source, stamp);
             }
         });
-        seedResources();
+        seedResources(startedAtMillis);
         // Load-bearing for the frontend leg, not just tidiness: a bundled
         // frontend edit escalates to a restart, the restart re-registers, and
         // this runs again. Without it the same file would be offered after the
