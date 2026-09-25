@@ -18,7 +18,12 @@
        plugin. test-devloop-cargo is that second shape again with the one
        difference that costs the loop the most - the container runs as a process
        of its own and is handed a deployed copy of the WAR, rather than serving
-       the module's output inside the build's JVM. Each is its own multi-module
+       the module's output inside the build's JVM. The rest are that forked
+       shape on the other servers the dev loop drives, each through its own
+       build plugin - TomEE, JBoss EAP, Open Liberty, Payara Server and Payara
+       Micro - because each hands the loop's JVM flags to the server by a
+       channel of its own, and keeps its run goal to one module by a mechanism
+       of its own. Each is its own multi-module
        reactor, because the interesting case - an edit in a sibling library
        reaching the running page - only exists if there is a sibling, and each
        runs the shared ITs out of test-devloop-support against its own
@@ -33,6 +38,11 @@
     <module>test-devloop-spring</module>
     <module>test-devloop-jetty</module>
     <module>test-devloop-cargo</module>
+    <module>test-devloop-tomee</module>
+    <module>test-devloop-jbosseap</module>
+    <module>test-devloop-liberty</module>
+    <module>test-devloop-payara</module>
+    <module>test-devloop-payara-micro</module>
   </modules>
 
   <properties>

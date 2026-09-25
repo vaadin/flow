@@ -281,6 +281,14 @@ jobs:
             cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-spring/devloop-shared,test-devloop-jetty/devloop-shared,test-devloop-cargo/devloop-shared -am"
             $cmd || $cmd
           fi
+          if [ ${{matrix.current}} -eq 9 ]; then
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-tomee/devloop-shared,test-devloop-liberty/devloop-shared,test-devloop-payara-micro/devloop-shared -am"
+            $cmd || $cmd
+          fi
+          if [ ${{matrix.current}} -eq 10 ]; then
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-payara/devloop-shared,test-devloop-jbosseap/devloop-shared -am"
+            $cmd || $cmd
+          fi
       - name: Run ITs
         timeout-minutes: 22
         run: |
