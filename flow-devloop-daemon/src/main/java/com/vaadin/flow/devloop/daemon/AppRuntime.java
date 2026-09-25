@@ -118,6 +118,23 @@ interface AppRuntime {
     }
 
     /**
+     * The same, plus whatever the channel this runtime hands the flags to
+     * cannot carry intact.
+     * <p>
+     * A runtime that builds a real command line has nothing to add: an argument
+     * of its own carries a space. One that hands the flags to a string a shell
+     * or a plugin splits does, and only the runtime knows which string that is,
+     * which is why the question is asked here rather than answered for it.
+     *
+     * @param jvmFlags
+     *            the flags the launch will be composed with
+     * @return one line per problem, empty when there is none
+     */
+    default List<String> warnings(List<String> jvmFlags) {
+        return warnings();
+    }
+
+    /**
      * How long this runtime's application may take to register before a start
      * gives up on it.
      * <p>
