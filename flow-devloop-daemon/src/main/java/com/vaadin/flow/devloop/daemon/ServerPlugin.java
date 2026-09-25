@@ -689,12 +689,18 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      * application has not loaded yet reads its pre-edit bytes from the deployed
      * copy until the next restart.
      * <p>
-     * {@code embedded} is listed as competing but not passed as a {@code -D}:
-     * {@code false} is already the default, and the property is generic enough
-     * that setting it over the whole reactor would be worse than the warning. A
-     * pom that turned it on would run the server in Maven's own JVM, where the
-     * {@code jvm.options} just written is never read and the agents would be
-     * dropped in silence.
+     * Both {@code looseApplication} and {@code embedded} are declared with no
+     * plugin prefix, so a {@code -D} for either reaches every plugin in every
+     * module of the reactor - {@code liberty-maven-plugin:run} reads
+     * {@code ${skip}} too, and so do {@code dependency:tree} and
+     * {@code dependency:purge-local-repository}. Neither is worth that when the
+     * extension can write the value into this module's configuration instead,
+     * so {@link MavenGoalRuntime#goalProperties} sends {@code looseApplication}
+     * only when there is no extension, and {@code embedded} is never sent at
+     * all - {@code false} is already its default, so the warning is the whole
+     * of what it needs. A pom that turned it on would run the server in Maven's
+     * own JVM, where the {@code jvm.options} just written is never read and the
+     * agents would be dropped in silence.
      */
     private static ServerPlugin liberty() {
         return new ServerPlugin("liberty", "io.openliberty.tools",
@@ -883,6 +889,25 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         return goalProperties.keySet().stream()
                 .filter(name -> "skip".equals(name) || name.endsWith(".skip"))
                 .findFirst();
+    }
+
+    /**
+     * Whether the extension forces this {@code <configuration>} element in the
+     * application's module.
+     * <p>
+     * What {@link MavenGoalRuntime} asks before it sends a {@code -D} whose
+     * name carries no plugin prefix: such a setting reaches every plugin in
+     * every module of the reactor, so it is worth sending only when nothing
+     * else can do the job.
+     *
+     * @param element
+     *            the element to ask about
+     * @return {@code true} when {@link #forcedConfiguration} carries it
+     */
+    boolean forced(String element) {
+        return competing.stream()
+                .anyMatch(value -> value.element().equals(element)
+                        && !value.acceptable().isEmpty());
     }
 
     /**

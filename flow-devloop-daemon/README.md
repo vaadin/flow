@@ -529,7 +529,7 @@ appears here.
 ```
 JAVA_HOME=<the JDK Jvm chose>
   mvnw ... io.openliberty.tools:liberty-maven-plugin:<version>:run
-       -DlooseApplication=false
+       -DlooseApplication=false        <only when there is no extension>
        -Dliberty.jvm.devloop0=-javaagent:<hotswap-agent.jar>
        -Dliberty.jvm.devloop1=-javaagent:<daemon jar>
        -Dliberty.jvm.devloop2=-XX:+AllowEnhancedClassRedefinition
@@ -570,10 +570,19 @@ between restarts, so the monitor has nothing to react to and the loop is in sole
 charge without the project having to write anything — at the cost every other
 forked container already carries, the section below this one.
 
-`embedded` is listed as competing but not passed as a `-D`: `false` is already
-the default, and the property is generic enough that setting it over the whole
-reactor would be worse than the warning. A pom that turned it on would run the
-server in Maven's own JVM, which reads no `jvm.options` at all.
+Both `looseApplication` and `embedded` are declared with no plugin prefix, and a
+`-D` is a Maven user property: such a name belongs to nobody and reaches every
+plugin in every module of the reactor. `${skip}` is read by `liberty:run` itself
+and by `dependency:tree`. So `MavenGoalRuntime.goalProperties` sends
+`looseApplication` only when there is no extension to write it into this
+module's configuration, and `embedded` is never sent at all — `false` is already
+its default, so the warning is the whole of what it needs. A pom that turned it
+on would run the server in Maven's own JVM, which reads no `jvm.options` at all.
+
+The skip is the one exception to that rule, because it cannot be anything else:
+it is switched on across the *whole* reactor and off again for one module, so
+the forced `<skip>false</skip>` is its other half rather than its replacement —
+and Payara Server's parameter is declared `${skip}` under no other name.
 
 Readiness is Liberty's `CWWKT0016I: Web application available (default_host):
 http://host:9080/ctx/`, logged once the application is installed and reachable —

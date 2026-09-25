@@ -208,12 +208,26 @@ final class MavenGoalRuntime implements AppRuntime {
     /**
      * The same, as a function of the two things it depends on.
      * <p>
-     * Only the skip is dropped, and that is the point: the rest of the map is
-     * not about the reactor at all. Payara Micro's
+     * Without an extension, only the skip is dropped, and that is the point:
+     * the rest of the map is not about the reactor at all. Payara Micro's
      * {@code payara.deploy.war=true} is what makes {@code start} deploy the
      * application, {@code deployWar} defaulting to {@code false} - dropping the
      * whole map with the skip brought up a Micro with nothing in it, on a
      * single-module project too, where the skip was never needed.
+     * <p>
+     * With one, a setting whose name carries no plugin prefix is dropped when
+     * the extension forces the same element. A {@code -D} is a Maven user
+     * property, and a name like {@code looseApplication} belongs to nobody: it
+     * reaches every plugin in every module of the reactor, and {@code ${skip}}
+     * is read by {@code liberty:run} and by {@code maven-dependency-plugin} as
+     * well. A value the extension can write into the application module's own
+     * configuration does not need that reach.
+     * <p>
+     * The skip is the exception and has to be: it is switched on across the
+     * <em>whole</em> reactor and off again for one module, so the forced
+     * {@code <skip>false</skip>} is its other half rather than its replacement.
+     * Payara Server's is declared {@code ${skip}} and under no other name, so
+     * there the reach is the price of the mechanism.
      *
      * @param plugin
      *            the entry being launched
@@ -223,11 +237,16 @@ final class MavenGoalRuntime implements AppRuntime {
      */
     static Map<String, String> goalProperties(ServerPlugin plugin,
             boolean rewritten) {
-        if (rewritten || !plugin.skippedOutsideTheApplication()) {
-            return plugin.goalProperties();
-        }
         Map<String, String> kept = new LinkedHashMap<>(plugin.goalProperties());
-        plugin.skipProperty().ifPresent(kept::remove);
+        Optional<String> skip = plugin.skipProperty();
+        if (rewritten) {
+            kept.keySet()
+                    .removeIf(name -> !name.contains(".")
+                            && !skip.filter(name::equals).isPresent()
+                            && plugin.forced(name));
+        } else {
+            skip.ifPresent(kept::remove);
+        }
         return Map.copyOf(kept);
     }
 

@@ -91,6 +91,51 @@ class MavenGoalRuntimeTest {
         }
     }
 
+    /**
+     * A {@code -D} is a Maven user property, and an un-prefixed name belongs to
+     * nobody: {@code looseApplication} reaches every plugin in every module of
+     * the reactor. The extension can write it into the application module's own
+     * configuration instead, so with one there is nothing to broadcast - the
+     * same ground Liberty's entry already declines to send {@code embedded} on.
+     */
+    @Test
+    void goalProperties_anUnprefixedSettingTheExtensionCanForceIsNotSent() {
+        ServerPlugin liberty = entry("liberty");
+
+        assertEquals(Map.of(), MavenGoalRuntime.goalProperties(liberty, true));
+        // Without one it is the only lever there is, and a degraded run beats
+        // a rescanner competing with every apply.
+        assertEquals(Map.of("looseApplication", "false"),
+                MavenGoalRuntime.goalProperties(liberty, false));
+    }
+
+    /**
+     * The skip is the exception. It is switched on across the whole reactor and
+     * off again for one module, so the forced {@code <skip>false</skip>} is its
+     * other half rather than its replacement - and Payara Server's parameter is
+     * declared {@code ${skip}} under no other name.
+     */
+    @Test
+    void goalProperties_theSkipIsSentEvenWithNoPrefix() {
+        assertEquals(Map.of("skip", "true"),
+                MavenGoalRuntime.goalProperties(entry("payara"), true));
+    }
+
+    /** And nothing else in the table goes out without a prefix. */
+    @Test
+    void goalProperties_nothingElseIsBroadcastAcrossTheReactor() {
+        for (ServerPlugin plugin : ServerPlugin.KNOWN) {
+            for (String name : MavenGoalRuntime.goalProperties(plugin, true)
+                    .keySet()) {
+                assertTrue(
+                        name.contains(".") || plugin.skipProperty()
+                                .filter(name::equals).isPresent(),
+                        plugin.name() + " sends " + name
+                                + " to every plugin in the reactor");
+            }
+        }
+    }
+
     private static ServerPlugin entry(String name) {
         return ServerPlugin.KNOWN.stream()
                 .filter(plugin -> name.equals(plugin.name())).findFirst()
