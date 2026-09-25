@@ -1065,9 +1065,12 @@ public abstract class AbstractNavigationStateRenderer
         // Remove the top-level component from the tree
         root.getElement().removeFromTree(false);
 
-        // Transfer all remaining UI child elements (typically dialogs
-        // and notifications) to the new UI
+        // Keep the locale of the previous UI so that the preserved components
+        // are re-attached with the locale they were showing, and transfer all
+        // remaining UI child elements (typically dialogs and notifications)
+        // to the new UI
         maybePrevUI.ifPresent(prevUi -> {
+            ui.setLocale(prevUi.getLocale());
             ui.getInternals().moveElementsFrom(prevUi);
             prevUi.close();
         });
