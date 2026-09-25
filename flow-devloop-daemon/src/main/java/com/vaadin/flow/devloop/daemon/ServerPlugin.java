@@ -138,22 +138,6 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
         Map<String, String> goalProperties, List<Competing> competing,
         Pattern serving, Pattern deployed) {
 
-    /**
-     * An entry whose serving line already says the goal's own deployment is in
-     * place.
-     */
-    ServerPlugin(String name, String groupId, String artifactId, String goal,
-            String phase, String jvmFlagsProperty, boolean projectPropertyFlags,
-            boolean shellEscapedFlags, boolean commaSplitFlags,
-            boolean perPropertyFlags, boolean boundInTheApplication,
-            Map<String, String> goalProperties, List<Competing> competing,
-            Pattern serving) {
-        this(name, groupId, artifactId, goal, phase, jvmFlagsProperty,
-                projectPropertyFlags, shellEscapedFlags, commaSplitFlags,
-                perPropertyFlags, boundInTheApplication, goalProperties,
-                competing, serving, serving);
-    }
-
     private static final String FALSE = "false";
 
     private static final String PACKAGE = "package";
@@ -326,6 +310,22 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     static final List<ServerPlugin> KNOWN = List.of(jetty("ee10"),
             jetty("ee11"), wildfly(), tomee(), payara(), payaraMicro(),
             liberty(), cargo());
+
+    /**
+     * An entry whose serving line already says the goal's own deployment is in
+     * place.
+     */
+    ServerPlugin(String name, String groupId, String artifactId, String goal,
+            String phase, String jvmFlagsProperty, boolean projectPropertyFlags,
+            boolean shellEscapedFlags, boolean commaSplitFlags,
+            boolean perPropertyFlags, boolean boundInTheApplication,
+            Map<String, String> goalProperties, List<Competing> competing,
+            Pattern serving) {
+        this(name, groupId, artifactId, goal, phase, jvmFlagsProperty,
+                projectPropertyFlags, shellEscapedFlags, commaSplitFlags,
+                perPropertyFlags, boundInTheApplication, goalProperties,
+                competing, serving, serving);
+    }
 
     /**
      * A configuration value the dev loop needs to hold but cannot set.

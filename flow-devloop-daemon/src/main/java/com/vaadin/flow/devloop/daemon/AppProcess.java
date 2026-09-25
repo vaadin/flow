@@ -366,8 +366,8 @@ final class AppProcess {
                     log.line("the app's registration closed before it was "
                             + "serving; waiting for it to register again");
                 }
-                if (up && serving && deployed
-                        || up && System.nanoTime() >= settleBy) {
+                if ((up && serving && deployed)
+                        || (up && System.nanoTime() >= settleBy)) {
                     state = State.RUNNING;
                     return Startup.ok(serving ? "running"
                             : "running (registered; the app logged no server port)");
@@ -394,7 +394,7 @@ final class AppProcess {
                     // is
                     // decided by the flag the connector sets, not by the
                     // wake-up.
-                    if (up || latch.getCount() == 0 && !registered) {
+                    if (up || (latch.getCount() == 0 && !registered)) {
                         Thread.sleep(POLL_MILLIS);
                     }
                     if (!up && latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
