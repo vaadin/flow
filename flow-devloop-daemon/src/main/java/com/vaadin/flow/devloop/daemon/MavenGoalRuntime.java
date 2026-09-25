@@ -78,6 +78,22 @@ final class MavenGoalRuntime implements AppRuntime {
     public Invocation invocation(Launch.Project project, List<String> jvmFlags,
             List<String> systemProperties) throws IOException {
         Reactor reactor = launch.reactor();
+        if (plugin.boundInTheApplication() && !bound()
+                && reactor.isMultiModule()) {
+            // The one launch the daemon will not compose. Without the
+            // extension there is no way to bind the goal and naming it is all
+            // that is left - which for this entry starts a server in the
+            // reactor root and blocks the build there, so the start would not
+            // fail but hang until the window ran out. A message costs less.
+            throw new IOException(plugin.artifactId() + " cannot be kept to "
+                    + reactor.app().artifactId() + " without the dev loop's "
+                    + "build extension, and this daemon is not running from a "
+                    + "jar so it has none: its " + plugin.goal() + " goal has "
+                    + "no skip parameter, so a goal named on the command line "
+                    + "would start a server in " + reactor.root() + " with "
+                    + "nothing deployed in it and block the build there. "
+                    + "Please run the daemon from its jar");
+        }
         List<String> command = new ArrayList<>();
         command.add(launch.mavenCommand().toString());
         // -nsu rather than -o: the run has to be able to fetch the plugin the
@@ -116,7 +132,12 @@ final class MavenGoalRuntime implements AppRuntime {
         if (!phase.isBlank()) {
             command.add(phase);
         }
-        command.add(plugin.goalSpecification(declared));
+        // An entry the extension binds names no goal: that is the whole point
+        // of binding it, a goal named here running in every module of the
+        // reactor and one bound to a phase only where the model carries it.
+        if (!bound()) {
+            command.add(plugin.goalSpecification(declared));
+        }
         goalProperties()
                 .forEach((key, value) -> command.add("-D" + key + "=" + value));
         if (plugin.embedded()) {
@@ -149,6 +170,23 @@ final class MavenGoalRuntime implements AppRuntime {
         // root. Setting it explicitly takes that guess out of the picture.
         environment.put("MAVEN_BASEDIR", reactor.root().toString());
         return new Invocation(command, environment, false);
+    }
+
+    /**
+     * Whether this launch hands the goal to the build extension to bind rather
+     * than naming it on the command line.
+     * <p>
+     * Both halves have to hold: the entry has to be one that is bound - see
+     * {@link ServerPlugin#boundInTheApplication} for why TomEE's is the only
+     * one - and there has to be an extension to bind it. Without the second,
+     * naming the goal is all that is left, and {@link #invocation} refuses the
+     * launch outright rather than name it across a reactor.
+     *
+     * @return {@code true} when the goal is bound rather than named
+     */
+    private boolean bound() {
+        return plugin.boundInTheApplication()
+                && !configurationOverride().isEmpty();
     }
 
     /**
@@ -503,20 +541,37 @@ final class MavenGoalRuntime implements AppRuntime {
      * very {@code <skip>false</skip>} that is meant for the application alone.
      * It is the same {@code artifactId} the {@code -pl :<app>} above selects.
      * <p>
+     * For an entry that is <em>bound</em> rather than named, this is not a
+     * rewrite but the launch itself:
+     * {@link DevLoopBuildExtension#BIND_PROPERTY} is what puts the goal in the
+     * application module's model, and without it there is no goal in the build
+     * at all. That is why {@link #invocation} refuses such a launch in a
+     * reactor rather than warning about it.
+     * <p>
      * Empty when the daemon is running from an exploded build directory rather
      * than a jar, which is the one case there is nothing to point Maven at; the
      * warnings then stand as the fallback.
      */
     private List<String> configurationOverride() {
-        return launch.agentJar().filter(Files::isRegularFile)
-                .map(jar -> List.of("-Dmaven.ext.class.path=" + jar,
-                        "-D" + DevLoopBuildExtension.PLUGIN_PROPERTY + "="
-                                + plugin.groupId() + ":" + plugin.artifactId(),
-                        "-D" + DevLoopBuildExtension.MODULE_PROPERTY + "="
-                                + launch.reactor().app().artifactId(),
-                        "-D" + DevLoopBuildExtension.FORCE_PROPERTY + "="
-                                + plugin.forcedConfiguration()))
-                .orElseGet(List::of);
+        return launch.agentJar().filter(Files::isRegularFile).map(jar -> {
+            List<String> settings = new ArrayList<>(List.of(
+                    "-Dmaven.ext.class.path=" + jar,
+                    "-D" + DevLoopBuildExtension.PLUGIN_PROPERTY + "="
+                            + plugin.groupId() + ":" + plugin.artifactId(),
+                    "-D" + DevLoopBuildExtension.MODULE_PROPERTY + "="
+                            + launch.reactor().app().artifactId(),
+                    "-D" + DevLoopBuildExtension.FORCE_PROPERTY + "="
+                            + plugin.forcedConfiguration()));
+            if (plugin.boundInTheApplication()) {
+                // The phase the command line names anyway, so the goal runs
+                // immediately after the WAR it deploys has been packaged. An
+                // entry that is bound always names one; one that named none
+                // would have nothing to deploy either.
+                settings.add("-D" + DevLoopBuildExtension.BIND_PROPERTY + "="
+                        + plugin.phase() + ":" + plugin.goal());
+            }
+            return List.copyOf(settings);
+        }).orElseGet(List::of);
     }
 
     @Override
