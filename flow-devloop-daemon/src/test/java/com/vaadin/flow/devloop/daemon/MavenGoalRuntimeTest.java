@@ -175,11 +175,6 @@ class MavenGoalRuntimeTest {
     }
 
     /**
-     * Maven expands {@code $MAVEN_OPTS} unquoted, so a flag with a space in it
-     * reaches the JVM as two broken arguments. Nothing can fix that, so it is
-     * named at launch rather than left to fail as a JVM that will not start.
-     */
-    /**
      * WildFly sorts module options apart from the rest before it builds the
      * server's command line, and the two-token form comes apart in the sorting:
      * measured, every {@code --add-opens} arrived ahead of every value and the
@@ -208,6 +203,11 @@ class MavenGoalRuntimeTest {
         assertEquals(flags, MavenGoalRuntime.singleToken(flags));
     }
 
+    /**
+     * Maven expands {@code $MAVEN_OPTS} unquoted, so a flag with a space in it
+     * reaches the JVM as two broken arguments. Nothing can fix that, so it is
+     * named at launch rather than left to fail as a JVM that will not start.
+     */
     @Test
     void unsplittable_namesTheFlagWithASpaceAndNoOther() {
         List<String> warnings = MavenGoalRuntime.unsplittable(List.of(
