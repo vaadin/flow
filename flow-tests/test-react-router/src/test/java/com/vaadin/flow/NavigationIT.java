@@ -324,6 +324,37 @@ public class NavigationIT extends ChromeBrowserTest {
                 getDriver().getCurrentUrl().endsWith("?test=anchor"));
     }
 
+    @Test
+    public void testQueuedNavigation_queryAndHashPreserved() {
+        open();
+
+        AnchorElement first = $(AnchorElement.class)
+                .id(NavigationView.QUEUED_FIRST_ID);
+        AnchorElement second = $(AnchorElement.class)
+                .id(NavigationView.QUEUED_SECOND_ID);
+        // Start the second navigation while the first one is still waiting
+        // for the server, and record whether the first one had completed
+        executeScript("""
+                arguments[0].click();
+                setTimeout(() => {
+                    window.queryLogAtSecondClick =
+                        document.getElementById(arguments[2])?.textContent;
+                    arguments[1].click();
+                }, 100);
+                """, first, second, NavigationView.QUERY_LOG_ID);
+
+        waitUntil(driver -> $(SpanElement.class).id(NavigationView.QUERY_LOG_ID)
+                .getText().contains(","));
+
+        Assert.assertNull(
+                "Second navigation should start while the first one is in progress",
+                executeScript("return window.queryLogAtSecondClick"));
+        Assert.assertEquals("first,second",
+                $(SpanElement.class).id(NavigationView.QUERY_LOG_ID).getText());
+        waitUntil(driver -> driver.getCurrentUrl()
+                .endsWith("/second?qp=second#fragment"));
+    }
+
     private void checkNavigatedEvent(String log) {
         Object message = ((JavascriptExecutor) getDriver())
                 .executeScript("return window.testMessage;");
