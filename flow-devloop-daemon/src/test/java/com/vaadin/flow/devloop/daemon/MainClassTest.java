@@ -145,7 +145,8 @@ class MainClassTest {
     /**
      * The daemon outlives edits. Moving the application class to another
      * package used to leave every restart launching the class it had found at
-     * start, which no longer existed.
+     * start, which no longer existed - and a jar packaged before the move still
+     * names the old class, so it must not bring that answer back either.
      */
     @Test
     void movedApplicationClass_isRediscoveredOnRestart() throws IOException {
@@ -159,6 +160,12 @@ class MainClassTest {
                 package com.example;
                 public class Application { public static void main(String[] a) { } }
                 """);
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION,
+                "1.0");
+        manifest.getMainAttributes().putValue("Start-Class",
+                "com.example.Application");
+        jar(manifest);
         assertEquals("com.example.Application",
                 launchedClass(runtime, project));
 
