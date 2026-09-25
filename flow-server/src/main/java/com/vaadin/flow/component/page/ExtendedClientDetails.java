@@ -676,6 +676,8 @@ public class ExtendedClientDetails implements Serializable {
     /**
      * How the browser is asked about itself again, as a JavaScript definition
      * for {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ClientDetailsJs extends Serializable {

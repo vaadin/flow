@@ -26,6 +26,8 @@ import org.atmosphere.cpr.ApplicationConfig;
  * A {@link ServletConfig} wrapper that forces the usage of
  * {@link DelayedInitBroadcaster} to prevent executors to be started during
  * static init in a native build.
+ * 
+ * @since 2.1.1
  */
 public class AtmosphereServletConfig implements ServletConfig {
 

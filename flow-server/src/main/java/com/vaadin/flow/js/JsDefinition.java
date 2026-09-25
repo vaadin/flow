@@ -36,6 +36,7 @@ import com.vaadin.flow.dom.Element;
  *
  * @see JsExpression
  * @see Element#executeJs(Class)
+ * @since 25.4
  */
 @Documented
 @Target(ElementType.TYPE)

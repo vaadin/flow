@@ -309,6 +309,7 @@ public class Page implements Serializable {
      * @throws IllegalArgumentException
      *             if {@code type} is {@link JavaScript.Type#MODULE} and
      *             {@code loadMode} is {@link LoadMode#INLINE}
+     * @since 25.4
      */
     public void addJavaScript(String url, LoadMode loadMode,
             JavaScript.Type type) {
@@ -416,6 +417,7 @@ public class Page implements Serializable {
      *             if the type is not an interface, is not annotated with
      *             {@link JsDefinition}, or has a method that can not be
      *             answered
+     * @since 25.4
      */
     public <T> T executeJs(Class<T> definitionType) {
         // Queued the way an expression given to the page is, so that the two
@@ -926,6 +928,8 @@ public class Page implements Serializable {
      * {@link #executeJs(Class)}: the build collects it into the bundle, so none
      * of it needs an expression and all of it works under a content security
      * policy without <code>unsafe-eval</code>.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface PageJs extends Serializable {

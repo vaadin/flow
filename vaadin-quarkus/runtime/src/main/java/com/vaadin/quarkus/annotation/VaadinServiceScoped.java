@@ -34,6 +34,8 @@ import static java.lang.annotation.ElementType.TYPE;
  * <p>
  * Injecting with this annotation will create a proxy for the contextual
  * instance rather than provide the contextual instance itself.
+ * 
+ * @since 1.0
  */
 @NormalScope
 @Inherited

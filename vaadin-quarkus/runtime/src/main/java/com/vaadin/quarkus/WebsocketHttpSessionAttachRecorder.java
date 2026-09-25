@@ -50,6 +50,9 @@ import io.vertx.ext.web.RoutingContext;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
 
+/**
+ * @since 1.1
+ */
 @Recorder
 public class WebsocketHttpSessionAttachRecorder {
 
