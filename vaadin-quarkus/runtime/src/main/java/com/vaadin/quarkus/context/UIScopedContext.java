@@ -67,17 +67,32 @@ public class UIScopedContext extends AbstractContext {
         return Arc.container().beanManager();
     }
 
+    /**
+     * Manages the contextual storages of UI scoped beans, one for each UI.
+     */
     @VaadinSessionScoped
     @Unremovable
     public static class ContextualStorageManager
             extends AbstractContextualStorageManager<Integer> {
 
+        /**
+         * Creates a storage manager that relies on the session lock instead of
+         * locking on its own.
+         */
         public ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
             // getting the session attribute of this beans context.
             super(false);
         }
 
+        /**
+         * Gets the contextual storage of the current UI.
+         *
+         * @param createIfNotExist
+         *            whether to create the storage if it does not exist yet
+         * @return the storage, or {@code null} if it does not exist and
+         *         {@code createIfNotExist} is {@code false}
+         */
         public ContextualStorage getContextualStorage(
                 boolean createIfNotExist) {
             final Integer uiId = UI.getCurrentOrThrow().getUIId();

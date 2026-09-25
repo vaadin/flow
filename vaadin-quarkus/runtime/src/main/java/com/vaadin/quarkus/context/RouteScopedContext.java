@@ -51,9 +51,17 @@ import com.vaadin.quarkus.annotation.VaadinSessionScoped;
  */
 public class RouteScopedContext extends AbstractContext {
 
+    /**
+     * Manages the contextual storages of route scoped beans, one for each route
+     * owner in each browser window or UI.
+     */
     public abstract static class ContextualStorageManager
             extends AbstractContextualStorageManager<RouteStorageKey> {
 
+        /**
+         * Creates a storage manager that relies on the session lock instead of
+         * locking on its own.
+         */
         protected ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
             // getting the session attribute.

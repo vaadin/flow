@@ -255,7 +255,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void build(
+    void build(
             final BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer,
             final BuildProducer<BeanDefiningAnnotationBuildItem> additionalBeanDefiningAnnotationRegistry) {
         additionalBeanProducer.produce(AdditionalBeanBuildItem
@@ -267,7 +267,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void ensureSingleVaadinExecutor(
+    void ensureSingleVaadinExecutor(
             ValidationPhaseBuildItem validationPhaseBuildItem,
             BuildProducer<ValidationPhaseBuildItem.ValidationErrorBuildItem> validationErrors) {
 
@@ -305,7 +305,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void specifyRouterLayoutBeans(CombinedIndexBuildItem item,
+    void specifyRouterLayoutBeans(CombinedIndexBuildItem item,
             BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> layouts = item.getComputingIndex()
                 .getAllKnownImplementations(
@@ -317,7 +317,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void specifyErrorViewsBeans(CombinedIndexBuildItem item,
+    void specifyErrorViewsBeans(CombinedIndexBuildItem item,
             BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> errors = item.getComputingIndex()
                 .getAllKnownImplementations(DotName

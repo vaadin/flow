@@ -51,6 +51,15 @@ public class QuarkusInstantiator implements Instantiator {
 
     private BeanManager beanManager;
 
+    /**
+     * Creates an instantiator that looks up instances as CDI beans and falls
+     * back to the given instantiator for types that are not beans.
+     *
+     * @param delegate
+     *            the instantiator to use for types that are not CDI beans
+     * @param beanManager
+     *            the bean manager to look up beans with
+     */
     public QuarkusInstantiator(DefaultInstantiator delegate,
             BeanManager beanManager) {
         this.delegate = delegate;

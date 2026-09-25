@@ -52,7 +52,7 @@ class BeanLookup<T> {
     };
 
     @FunctionalInterface
-    public interface UnsatisfiedHandler {
+    interface UnsatisfiedHandler {
         void handle();
     }
 

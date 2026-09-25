@@ -53,6 +53,9 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
+ * Attaches the HTTP session of the upgrade request to WebSocket connections, so
+ * that Vaadin Push over WebSocket finds the Vaadin session.
+ *
  * @since 1.1
  */
 @Recorder

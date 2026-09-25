@@ -737,6 +737,10 @@ public class VaadinQuarkusNativeProcessor {
                 .build());
     }
 
+    /**
+     * Build step condition that is true when the application is built as a
+     * native image.
+     */
     public static class IsNativeBuild implements BooleanSupplier {
         @Inject
         NativeConfig nativeConfig;
