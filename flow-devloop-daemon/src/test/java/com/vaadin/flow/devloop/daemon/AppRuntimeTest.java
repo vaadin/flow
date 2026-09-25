@@ -714,8 +714,8 @@ class AppRuntimeTest {
      */
     @Test
     void payaraMicroIsToldToDeployTheApplication() {
-        assertEquals(Map.of("payara.skip", "true", "payara.deploy.war", "true"),
-                entry("payara-micro").goalProperties());
+        assertEquals("true", entry("payara-micro").goalProperties()
+                .get("payara.deploy.war"));
         assertTrue(
                 entry("payara-micro").forcedConfiguration()
                         .contains("deployWar=true"),
@@ -732,6 +732,24 @@ class AppRuntimeTest {
      * {@code <configuration>} value the extension writes, for the one module
      * that declares the plugin.
      */
+    /**
+     * Both plugins open the deployed application in a browser whatever goal
+     * runs, and on a Linux machine with none installed where they look, the
+     * driver download failed with an Error that stopped the server. An unknown
+     * browser name fails in a way they catch, and a headless Maven JVM keeps
+     * the desktop fallback from opening one instead.
+     */
+    @Test
+    void bothPayarasAreKeptFromOpeningABrowser() {
+        for (String name : List.of("payara", "payara-micro")) {
+            assertEquals("none",
+                    entry(name).goalProperties().get("payara.browser"), name);
+            assertEquals("true",
+                    entry(name).goalProperties().get("java.awt.headless"),
+                    name);
+        }
+    }
+
     @Test
     void bothPayarasRunOnTheApplicationsOwnModuleAlone() {
         assertEquals("true", entry("payara").goalProperties().get("skip"));
