@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 /**
  * Owns the app process. The daemon launches the app JVM directly rather than
@@ -61,6 +62,14 @@ final class AppProcess {
             .ofMillis(Long.getLong("vaadin.dev.startSettleMillis", 15_000L));
 
     private static final long POLL_MILLIS = 100L;
+
+    /**
+     * The token setting as it travels, up to the whitespace that ends it. The
+     * value itself is matched rather than named, so a change to how the token
+     * is built cannot leave part of it behind; see {@link #redact}.
+     */
+    private static final Pattern TOKEN_SETTING = Pattern
+            .compile("-Dvaadin\\.devloop\\.token=\\S*");
 
     /**
      * A start's verdict. Callers need the answer itself, not a message to match
@@ -401,11 +410,19 @@ final class AppProcess {
                 .collect(java.util.stream.Collectors.joining(" "));
     }
 
-    /** The auth token must never reach stdout or a log file. */
-    private static String redact(String value) {
-        return value.startsWith("-Dvaadin.devloop.token=")
-                ? "-Dvaadin.devloop.token=<redacted>"
-                : value;
+    /**
+     * The auth token must never reach stdout or a log file.
+     * <p>
+     * Matched wherever it sits in the value rather than only at its start. A
+     * forked container takes every flag of the loop's in one argument of its
+     * own - {@code -Dwildfly.javaOpts=...} and its equivalents, see
+     * {@code MavenGoalRuntime.forkedJvmFlags} - so the token is in the middle
+     * of that argument, and the same holds for the {@code MAVEN_OPTS} value
+     * logged beside the command.
+     */
+    static String redact(String value) {
+        return TOKEN_SETTING.matcher(value)
+                .replaceAll("-Dvaadin.devloop.token=<redacted>");
     }
 
     String stop() {

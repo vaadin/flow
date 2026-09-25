@@ -41,6 +41,18 @@ class AppProcessTest {
     Path root;
 
     @Test
+    void tokenInsideAForkedContainersFlags_isRedacted() {
+        assertEquals("-Dwildfly.javaOpts=-javaagent:a.jar "
+                + "-Dvaadin.devloop.token=<redacted> -Dvaadin.devloop.launch=x",
+                AppProcess.redact("-Dwildfly.javaOpts=-javaagent:a.jar "
+                        + "-Dvaadin.devloop.token=s3cr3t-value_9 "
+                        + "-Dvaadin.devloop.launch=x"));
+        assertEquals("-Dliberty.jvm.devloop2=-Dvaadin.devloop.token=<redacted>",
+                AppProcess.redact("-Dliberty.jvm.devloop2="
+                        + "-Dvaadin.devloop.token=s3cr3t"));
+    }
+
+    @Test
     void exitOfCurrentProcess_reportsCrash() throws Exception {
         AppProcess app = new AppProcess(root, null);
         AppProcess.Run current = app.beginRun(exited(), log());
