@@ -17,6 +17,7 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -487,8 +488,19 @@ class I18NUtilTest {
                     .map(e -> new MockVirtualFile(jarFile, e)).toList();
         }
 
-        public File getPhysicalFile() {
-            return new File(entry.getName());
+        public String getName() {
+            String name = entry.getName();
+            name = name.endsWith("/") ? name.substring(0, name.length() - 1)
+                    : name;
+            return name.substring(name.lastIndexOf('/') + 1);
+        }
+
+        public boolean isFile() {
+            return !entry.isDirectory();
+        }
+
+        public InputStream openStream() throws IOException {
+            return jarFile.getInputStream(entry);
         }
     }
 

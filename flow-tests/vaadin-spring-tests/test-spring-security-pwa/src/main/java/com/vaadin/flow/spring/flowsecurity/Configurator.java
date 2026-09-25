@@ -1,0 +1,32 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.spring.flowsecurity;
+
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.PWA;
+
+@PWA(name = Configurator.APP_NAME, shortName = "PWA Test", manifestPath = Configurator.MANIFEST_PATH, offlinePath = Configurator.OFFLINE_PATH, offlineResources = {
+        Configurator.OFFLINE_RESOURCE })
+public class Configurator implements AppShellConfigurator {
+
+    public static final String APP_NAME = "Spring Security PWA Test Project";
+
+    public static final String MANIFEST_PATH = "custom-manifest.webmanifest";
+
+    public static final String OFFLINE_PATH = "custom-offline.html";
+
+    public static final String OFFLINE_RESOURCE = "offline-assets/logo.txt";
+}

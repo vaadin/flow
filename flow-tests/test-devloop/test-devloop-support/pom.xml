@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-test-devloop</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-devloop-support</artifactId>
+  <packaging>jar</packaging>
+  <name>Flow dev loop tests: shared test support</name>
+  <description>Driving the vaadin-dev CLI and patching sources, for every dev-loop test application.</description>
+
+  <!-- Test sources, published as a test-jar: these are ITs, and the fixtures
+       that run them put their own ITs in the same package, so nothing here
+       belongs on an application's compile classpath.
+
+       They are never run *here*, though - there is no application in this
+       module to drive - and flow-tests declares failsafe for every child, whose
+       default includes match `*IT`. Hence skipITs below: this module compiles
+       and publishes them, and each fixture runs them against its own
+       application through failsafe's <dependenciesToScan>.
+
+       Everything stays in the com.vaadin.flow.devloop.test.it package and stays
+       package-private: every consumer puts its ITs in that same package, so the
+       classes are visible where they are used and nowhere else. -->
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- The ITs here are this module's output, not its own test run. -->
+    <skipITs>true</skipITs>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-bom</artifactId>
+        <version>${testbench.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- The ITs are written against the JUnit API; the engine that runs them
+         comes from whichever fixture scans this jar. -->
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- DevLoopBrowserIT drives a browser, so it needs TestBench's base class
+         and Selenium. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <!-- The parent points every jar at a MANIFEST.MF that bnd writes into
+             target/classes. This module has no main classes for bnd to process,
+             so both jars carry a manifest of their own instead. -->
+        <configuration>
+          <archive combine.self="override">
+            <index>false</index>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>test-jar</id>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

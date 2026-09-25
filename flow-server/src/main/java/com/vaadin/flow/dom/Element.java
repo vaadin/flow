@@ -25,8 +25,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
@@ -42,21 +40,32 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.Size;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.component.trigger.internal.SetSignalAction;
+import com.vaadin.flow.component.trigger.internal.SizeTrigger;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.DiscardAwareExecution;
+import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamResource;
@@ -65,6 +74,7 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.Signal;
+import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
  * Represents an element in the DOM.
@@ -1548,6 +1558,21 @@ public class Element extends Node<Element> {
      * remove the theme names, changes to the set will be reflected in the
      * attribute value.
      * <p>
+     * The returned set is a live view of the {@code theme} attribute, so it
+     * also reflects theme names that are added or removed by other means after
+     * this method has been called. Its iterator is the one exception: it
+     * iterates the theme names present when {@link Set#iterator()} was called.
+     * <p>
+     * Since the {@code theme} attribute value is space separated, a theme name
+     * cannot contain spaces. {@link Set#add(Object)} still accepts a space
+     * separated value for backwards compatibility, adding each theme name in it
+     * and logging a warning, but all the other operations treat the value they
+     * are given as a single theme name, so for example
+     * {@code contains("badge success")} is {@code false}. Use
+     * {@link com.vaadin.flow.component.HasTheme#addThemeNames(String...)} or
+     * {@link #setAttribute(String, String)} to set several theme names in one
+     * go.
+     * <p>
      * Despite the name implying a list being returned, the return type is
      * actually a {@link Set} since the in-browser return value behaves like a
      * {@link Set} in Java.
@@ -1663,6 +1688,85 @@ public class Element extends Node<Element> {
                 });
     }
 
+    /**
+     * Runs the given handler each time this element is attached to a UI, and
+     * runs the {@link Registration} returned by the handler when the element is
+     * detached again. The handler is run immediately if the element is already
+     * attached.
+     * <p>
+     * This makes it possible to set up state that should live exactly as long
+     * as the element is attached, and to carry that state over from an attach
+     * to the matching detach without keeping it in a field:
+     *
+     * <pre>
+     * element.whenAttached(ui -&gt; registerForPush(element, ui));
+     * </pre>
+     * <p>
+     * Removing the returned registration removes the handler and also runs any
+     * cleanup that is pending from the latest attach.
+     * <p>
+     * Exceptions thrown by the handler are propagated to the caller, whereas
+     * exceptions thrown by the cleanup are passed to the session error handler
+     * so that a failing cleanup does not prevent the rest of the detach
+     * handling from running.
+     *
+     * @param attachHandler
+     *            the handler to run on attach, returning the cleanup to run on
+     *            the matching detach or <code>null</code> if there is nothing
+     *            to clean up, not <code>null</code>
+     * @return a registration for removing the handler and running any pending
+     *         cleanup, not <code>null</code>
+     * @since 25.3
+     */
+    public Registration whenAttached(
+            SerializableFunction<UI, Registration> attachHandler) {
+        return new AttachScope(this, attachHandler);
+    }
+
+    /**
+     * Returns a signal that tracks the current size of this element as reported
+     * by the browser's {@code ResizeObserver} API.
+     * <p>
+     * The signal is lazily initialized on the first call and the same instance
+     * is returned for subsequent calls on the same element. The value is
+     * {@code Size(0, 0)} until the browser has reported the actual size, which
+     * happens shortly after the element has been attached. Sub-pixel sizes are
+     * rounded to whole pixels.
+     * <p>
+     * The browser observes the element as long as it is present in the DOM, and
+     * the signal is updated on every observed resize. The returned signal is
+     * read-only.
+     * <p>
+     * While the element is detached there is nothing to observe, so the signal
+     * keeps the size that was last reported for it rather than falling back to
+     * {@code Size(0, 0)}. Observation resumes when the element is attached
+     * again, and the value is updated as soon as the browser reports a size for
+     * it.
+     *
+     * @return a read-only signal with the current size of this element, never
+     *         <code>null</code>
+     * @since 25.3
+     */
+    public Signal<Size> sizeSignal() {
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
+        Signal<Size> existing = feature.getSignal(SignalBindingFeature.SIZE);
+        if (existing != null) {
+            return existing;
+        }
+
+        ValueSignal<Size> signal = new ValueSignal<>(new Size(0, 0));
+        Signal<Size> readonly = signal.asReadonly();
+        // Cached on the node so that repeated calls share one signal and one
+        // browser-side observer.
+        feature.setBinding(SignalBindingFeature.SIZE, readonly);
+
+        new SizeTrigger(this).triggers(new SetSignalAction<>(signal, Size.class,
+                SizeTrigger.EventData.size));
+
+        return readonly;
+    }
+
     @Override
     public String toString() {
         return getOuterHTML();
@@ -1721,6 +1825,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The name of the function and the arguments are sent to the browser, which
+     * looks the function up on the element and calls it. Nothing is compiled
+     * from a string there, so the call works under a content security policy
+     * that does not allow <code>unsafe-eval</code>.
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
@@ -1733,6 +1842,7 @@ public class Element extends Node<Element> {
      *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
@@ -1741,21 +1851,8 @@ public class Element extends Node<Element> {
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
 
-        // "$1,$2,$3,..."
-        String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
-                .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
-        // Inject the element as $0
-        Object[] jsParameters;
-        if (arguments.length == 0) {
-            jsParameters = new Object[] { this };
-        } else {
-            jsParameters = new Object[arguments.length + 1];
-            jsParameters[0] = this;
-            System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
-        }
-
-        return scheduleJavaScriptInvocation("return $0." + functionName + "("
-                + paramPlaceholderString + ")", jsParameters);
+        return executeJs(CallFunctionJs.class).callFunction(functionName,
+                arguments);
     }
 
     /**
@@ -1817,6 +1914,11 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * The expression is sent to the browser and compiled there, which a content
+     * security policy without <code>unsafe-eval</code> does not allow.
+     * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
+     * collected into the bundle instead, and sends no expression.
      *
      * @param expression
      *            the JavaScript expression to invoke
@@ -1824,27 +1926,109 @@ public class Element extends Node<Element> {
      *            parameters to pass to the expression
      * @return a pending result that can be used to get a value returned from
      *         the expression
+     * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        return scheduleExecuteJs(expression, parameters);
+    }
 
-        // Add "this" as the last parameter
-        Object[] wrappedParameters;
-        if (parameters.length == 0) {
-            wrappedParameters = new Object[] { this };
-        } else {
-            wrappedParameters = Arrays.copyOf(parameters,
-                    parameters.length + 1);
-            wrappedParameters[parameters.length] = this;
-        }
+    /**
+     * Asynchronously runs the JavaScript that the given interface declares in
+     * the browser in the context of this element, through an implementation of
+     * the interface that this method answers with: calling a method of the
+     * implementation runs the JavaScript that the method declares, with the
+     * arguments of the call as its parameters.
+     * <p>
+     * The interface is annotated with {@link JsDefinition}, and each of its
+     * methods declares the JavaScript it runs with {@link JsExpression}:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface GreeterJs extends Serializable {
+     *     &#64;JsExpression("window.alert($0)")
+     *     void showGreeting(String greeting);
+     * }
+     *
+     * element.executeJs(GreeterJs.class).showGreeting("Hello");
+     * </pre>
+     *
+     * The declared JavaScript runs the way an expression given to
+     * {@link #executeJs(String, Object...)} does: in an <code>async</code>
+     * JavaScript method, with this element available as <code>this</code> and
+     * the arguments of the call as <code>$0</code>, <code>$1</code>, and so on,
+     * after pending DOM updates, and deferred while the element is not attached
+     * or not visible. A method that returns {@link PendingJavaScriptResult} can
+     * be used to retrieve the <code>return</code> value the same way.
+     * <p>
+     * What differs is that nothing about the JavaScript is decided at the call
+     * site: the build collects the declarations of every JavaScript definition
+     * into the bundle, and the client runs the collected function after looking
+     * it up by an identifier of the JavaScript itself. No expression is sent
+     * and none is compiled in the browser, so the call works under a content
+     * security policy without <code>unsafe-eval</code>, and what declared the
+     * JavaScript in Java is not sent to a production browser either.
+     * <p>
+     * The scheduled invocation carries the call as a {@link JsCall}, so a
+     * driver of the client side that can not run JavaScript can recognize it,
+     * or run it on its own implementation of the same interface.
+     * <p>
+     * Every method of the interface declares JavaScript and returns either
+     * <code>void</code> or {@link PendingJavaScriptResult}. One that is
+     * implemented in Java instead - a <code>default</code> or a
+     * <code>static</code> method - is not what such an interface is for, so the
+     * interface is refused rather than partly run in the browser.
+     * <p>
+     * The interface is checked when the implementation is handed out, so one
+     * that can not work says so here rather than at the first call.
+     *
+     * @param <T>
+     *            the JavaScript definition type
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, or has a method that can not be
+     *             answered
+     */
+    public <T> T executeJs(Class<T> definitionType) {
+        return JsDefinitionProxy.create(definitionType, this::scheduleJsCall);
+    }
+
+    private PendingJavaScriptResult scheduleExecuteJs(String expression,
+            Object[] parameters) {
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
                 + "}).apply($" + parameters.length + ")";
 
-        return scheduleJavaScriptInvocation(wrappedExpression,
-                wrappedParameters);
+        return scheduleJavaScriptInvocation(null, wrappedExpression,
+                withElementAsLastParameter(parameters));
+    }
+
+    /**
+     * Schedules a call made through a JavaScript definition. The parameters are
+     * the arguments of the call followed by this element, which the client
+     * applies the generated function to, so there is no expression to wrap: the
+     * function that the build generated is already the equivalent of the
+     * wrapping that {@link #scheduleExecuteJs(String, Object[])} does around an
+     * expression.
+     */
+    private PendingJavaScriptResult scheduleJsCall(JsCall call) {
+        return scheduleJavaScriptInvocation(call, call.getExpression(),
+                call.parametersFor(this));
+    }
+
+    private Object[] withElementAsLastParameter(Object[] parameters) {
+        if (parameters.length == 0) {
+            return new Object[] { this };
+        }
+        Object[] withElement = Arrays.copyOf(parameters, parameters.length + 1);
+        withElement[parameters.length] = this;
+        return withElement;
     }
 
     /**
@@ -1909,24 +2093,57 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Object[] parameters) {
+            @Nullable JsCall jsCall, String expression, Object[] parameters) {
         StateNode node = getNode();
 
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(jsCall,
+                expression, parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);
 
-        node.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(node, context -> {
-                    if (!pending.isCanceled()) {
-                        context.getUI().getInternals()
-                                .addJavaScriptInvocation(pending);
-                    }
-                }));
+        node.runWhenAttached(ui -> {
+            // Counts the invocation if the node was not attached to any UI
+            // when it was scheduled, and there was no count to add it to
+            pending.countWhenAttached();
+            ui.getInternals().getStateTree().beforeClientResponse(node,
+                    new QueueJavaScriptInvocation(pending));
+        });
 
         return pending;
+    }
+
+    /**
+     * Queues a scheduled invocation for the client when a response is written
+     * for the tree of its owner, and keeps the invocation out of the count of
+     * undelivered invocations while no response is coming for it.
+     */
+    private static class QueueJavaScriptInvocation
+            implements DiscardAwareExecution {
+        private final PendingJavaScriptInvocation invocation;
+
+        private QueueJavaScriptInvocation(
+                PendingJavaScriptInvocation invocation) {
+            this.invocation = invocation;
+        }
+
+        @Override
+        public void accept(ExecutionContext context) {
+            if (invocation.isCanceled()) {
+                return;
+            }
+            context.getUI().getInternals().addJavaScriptInvocation(invocation);
+        }
+
+        @Override
+        public void executionDiscarded() {
+            invocation.stopCounting();
+        }
+
+        @Override
+        public void executionRestored() {
+            invocation.countWhenAttached();
+        }
     }
 
     /**
@@ -2164,14 +2381,14 @@ public class Element extends Node<Element> {
      */
     public Element scrollIntoView(ScrollIntoViewOption... options) {
         ObjectNode json = ScrollIntoViewOption.buildOptions(options);
-
-        // Use setTimeout to work on newly created elements
+        ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
+        // No options is not the same call as an empty options object, so the
+        // browser is handed the one argument or none, as it was written here
         if (json == null) {
-            executeJs("setTimeout(() => this.scrollIntoView(), 0)");
+            scroll.scrollIntoView();
         } else {
-            executeJs("setTimeout(() => this.scrollIntoView($0), 0)", json);
+            scroll.scrollIntoView(json);
         }
-
         return getSelf();
     }
 
@@ -2189,12 +2406,84 @@ public class Element extends Node<Element> {
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public Element scrollIntoView(ScrollOptions scrollOptions) {
-        // for an unknown reason, needs to be called deferred to work on a newly
-        // created element
-        String options = scrollOptions == null ? "" : scrollOptions.toJson();
-
-        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
-                + options + ");}, 0);");
+        ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
+        if (scrollOptions == null) {
+            scroll.scrollIntoView();
+        } else {
+            // The options are written as JavaScript by a class that is on its
+            // way out, and what the browser is sent is a value rather than an
+            // expression, so they are read back into the object they were
+            // built from
+            scroll.scrollIntoView(
+                    JacksonUtils.readTree(scrollOptions.toJson()));
+        }
         return getSelf();
+    }
+
+    /**
+     * The JavaScript behind {@link #callJsFunction(String, Object...)}, as a
+     * JavaScript definition for {@link #executeJs(Class)}.
+     * <p>
+     * One declaration serves every call, whatever the function is called and
+     * however many arguments it takes, so the bundle carries a single function
+     * for all of them and the browser is sent the name and the arguments of a
+     * call rather than JavaScript that names the function.
+     */
+    @JsDefinition
+    public interface CallFunctionJs extends Serializable {
+
+        /**
+         * Calls the named function on the element, with the element as
+         * <code>this</code> of a plain name and the property it is read from as
+         * <code>this</code> of a dotted one, which is how a function reached
+         * through a property is called in JavaScript.
+         *
+         * @param functionName
+         *            the name of the function to call, which may contain dots
+         *            to name a function on a property
+         * @param arguments
+         *            the arguments to pass to the function
+         * @return the pending result of the call, which answers with what the
+         *         function returned
+         */
+        @JsExpression("""
+                const path = $0.split('.');
+                const name = path.pop();
+                let target = this;
+                for (const step of path) {
+                    target = target[step];
+                }
+                return target[name](...$1);
+                """)
+        PendingJavaScriptResult callFunction(String functionName,
+                Object... arguments);
+    }
+
+    /**
+     * The JavaScript behind {@link #scrollIntoView(ScrollIntoViewOption...)},
+     * as a JavaScript definition for {@link #executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface ScrollIntoViewJs extends Serializable {
+
+        /**
+         * Scrolls the element into view the way the browser does by default,
+         * deferred so that it also works on an element that was created in the
+         * same response.
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView(), 0)")
+        void scrollIntoView();
+
+        /**
+         * Scrolls the element into view with the given options, deferred so
+         * that it also works on an element that was created in the same
+         * response.
+         *
+         * @param options
+         *            the options of the browser's <code>scrollIntoView</code>
+         *            function
+         */
+        @JsExpression("setTimeout(() => this.scrollIntoView($0), 0)")
+        void scrollIntoView(ObjectNode options);
     }
 }

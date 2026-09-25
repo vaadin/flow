@@ -22,6 +22,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @Route("com.vaadin.flow.prodbuild.ThemeComponentsCssView")
 public class ThemeComponentsCssView extends Div {
@@ -30,12 +31,18 @@ public class ThemeComponentsCssView extends Div {
         add(new MyComponent());
     }
 
-    // Same dependency as in test prod-bundle.
-    // If no <theme>/components/vaadin-horizontal-layout.css files are present,
-    // the bundle will not be rebuilt.
-    @JsModule("@vaadin/horizontal-layout")
-    @NpmPackage(value = "@vaadin/horizontal-layout", version = "25.1.0-beta1")
-    @Tag("vaadin-horizontal-layout")
+    // Backed by the faux-horizontal-layout.js custom element (a ThemableMixin
+    // element with a <slot>), matched by the <theme>/components/
+    // faux-horizontal-layout.css files. The tag is deliberately not that of a
+    // real Vaadin component, so nothing here can be confused with
+    // vaadin-horizontal-layout. The per-component CSS uses ::slotted(...) to
+    // color the light-DOM children, so a <slot> is required. If no
+    // components/faux-horizontal-layout.css files are present, the bundle will
+    // not be rebuilt. The themable mixin the faux element imports is declared
+    // here so it is installed in this module.
+    @JsModule("./faux-horizontal-layout.js")
+    @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.THEMABLE_MIXIN)
+    @Tag("faux-horizontal-layout")
     public static class MyComponent extends Component {
         public MyComponent() {
             getElement()

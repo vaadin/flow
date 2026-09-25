@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;abbr&gt;</code> element.
+ * <p>
+ * Marks an abbreviation or acronym. Set the title attribute when the expanded
+ * form should be available to users.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/abbr">MDN:
+ *      &lt;abbr&gt;</a>
  * @author Vaadin Ltd
  * @since 25.0
  */

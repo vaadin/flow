@@ -17,30 +17,18 @@ package com.vaadin.flow.i18n;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.nio.file.FileSystemNotFoundException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.internal.ResourceFolderUtil;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FILENAME;
-import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
 
 /**
  * Utility class for use with determining default i18n property files and
@@ -146,150 +134,12 @@ public final class I18NUtil {
 
     protected static List<File> getTranslationFiles(URL resource) {
         List<File> files = new ArrayList<>();
-
-        String protocol = resource.getProtocol();
-
-        if ("jar".equals(protocol) ||
-        // wsjar check is for OpenLiberty
-                "wsjar".equals(protocol)) {
-            try (JarFile jarFile = openJarFile(resource)) {
-                Enumeration<JarEntry> entries = jarFile.entries();
-                entries.asIterator().forEachRemaining(entry -> {
-                    String fileName = entry.getName();
-                    if (fileName.contains(BUNDLE_FOLDER)
-                            && fileName.endsWith(PROPERTIES_SUFFIX)) {
-                        files.add(new File(fileName));
-                    }
-                });
-            } catch (IOException ioe) {
-                getLogger().debug(
-                        "Failed to read the contents of the jar of resource '{}'",
-                        resource, ioe);
-            }
-        } else if ("vfs".equals(protocol)) {
-            files.addAll(listJBossVfsDirectory(resource));
-        } else {
-            File bundleFolder = toFile(resource);
-            if (bundleFolder.isDirectory()) {
-                Arrays.stream(bundleFolder.listFiles()).filter(File::isFile)
-                        .forEach(files::add);
-            } else {
-                getLogger().debug(
-                        "Translation folder '{}', resolved from resource '{}', is not an existing directory",
-                        bundleFolder, resource);
-            }
-        }
-        return files;
-    }
-
-    /**
-     * Converts a resource URL into a file.
-     * <p>
-     * A class loader returns percent-encoded URLs, so a path containing for
-     * example a space arrives as {@code %20}. Going through {@link URL#toURI()}
-     * decodes it back into a path that exists on disk.
-     *
-     * @param resource
-     *            the resource URL to convert
-     * @return the file the URL points to
-     */
-    private static File toFile(URL resource) {
         try {
-            return new File(resource.toURI());
-        } catch (URISyntaxException | IllegalArgumentException e) {
-            // Not an absolute file: URI, keep the previous behaviour
-            getLogger().debug("Cannot convert resource '{}' into a file path",
+            ResourceFolderUtil.visitFiles(resource,
+                    file -> files.add(new File(file.getName())));
+        } catch (IOException e) {
+            getLogger().debug("Failed to list the translation files in '{}'",
                     resource, e);
-            return new File(UrlUtil.decodeURIComponent(resource.getFile()));
-        }
-    }
-
-    /**
-     * Opens the jar that a {@code jar:} or {@code wsjar:} resource lives in.
-     * <p>
-     * The jar is opened through the connection of the resource, so that a jar
-     * which is not a plain file on disk, such as one nested inside a Spring
-     * Boot executable jar, is read by the handler that knows how to reach it.
-     * Only where the connection does not give access to a jar is the location
-     * resolved into a file instead.
-     *
-     * @param resource
-     *            the resource URL to open the jar for
-     * @return the jar containing the resource, to be closed by the caller
-     * @throws IOException
-     *             if the jar cannot be opened
-     */
-    private static JarFile openJarFile(URL resource) throws IOException {
-        try {
-            URLConnection connection = resource.openConnection();
-            if (connection instanceof JarURLConnection jarConnection) {
-                // The caller closes the jar, so it must not be the instance
-                // shared through the connection cache
-                jarConnection.setUseCaches(false);
-                return jarConnection.getJarFile();
-            }
-            getLogger().debug(
-                    "Resource '{}' is not served by a jar connection, resolving its jar as a file instead",
-                    resource);
-        } catch (IOException | RuntimeException e) {
-            getLogger().debug(
-                    "Cannot open the jar of resource '{}' through its connection, resolving it as a file instead",
-                    resource, e);
-        }
-        return new JarFile(getJarFile(resource));
-    }
-
-    /**
-     * Resolves the jar file that a {@code jar:} or {@code wsjar:} resource
-     * lives in.
-     * <p>
-     * The jar location is the part of the URL before the {@code !} separator,
-     * and it is percent-encoded just like any other URL.
-     *
-     * @param resource
-     *            the resource URL to resolve the jar for
-     * @return the jar file containing the resource
-     */
-    private static File getJarFile(URL resource) {
-        String file = resource.getFile();
-        int separatorIndex = file.indexOf('!');
-        String jarUrl = separatorIndex == -1 ? file
-                : file.substring(0, separatorIndex);
-        try {
-            return Paths.get(URI.create(jarUrl)).toFile();
-        } catch (IllegalArgumentException | FileSystemNotFoundException
-                | UnsupportedOperationException e) {
-            // Not a plain file: URL, for example a jar nested inside a war, or
-            // a path on a file system of its own that has no file to point at
-            getLogger().debug(
-                    "Cannot resolve a file path for the jar of resource '{}'",
-                    resource, e);
-            return new File(UrlUtil.decodeURIComponent(jarUrl));
-        }
-    }
-
-    // Borrowed from DevModeInitializer
-    private static List<File> listJBossVfsDirectory(URL url) {
-        List<File> files = new ArrayList<>();
-        try {
-            Object virtualFile = url.openConnection().getContent();
-            Class virtualFileClass = virtualFile.getClass();
-
-            // Reflection as we cannot afford a dependency to
-            // WildFly or JBoss
-            Method getChildren = virtualFileClass.getMethod("getChildren");
-            Method getPhysicalFileMethod = virtualFileClass
-                    .getMethod("getPhysicalFile");
-
-            List virtualFiles = (List) getChildren.invoke(virtualFile);
-            for (Object child : virtualFiles) {
-                // side effect: create real-world files
-                files.add((File) getPhysicalFileMethod.invoke(child));
-            }
-        } catch (Exception exc) {
-            getLogger().debug(
-                    "Failed to list entries in JBoss VFS directory {}", url,
-                    exc);
         }
         return files;
     }

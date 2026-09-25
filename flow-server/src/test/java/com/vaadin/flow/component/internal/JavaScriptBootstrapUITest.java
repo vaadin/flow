@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,7 +28,6 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -46,9 +47,12 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
@@ -98,9 +102,12 @@ class JavaScriptBootstrapUITest {
     @Tag(Tag.H1)
     public static class DirtyChild extends Component
             implements BeforeLeaveObserver {
+        // What the postponed leave hands out, for a case that decides it
+        static ContinueNavigationAction action;
+
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            event.postpone();
+            action = event.postpone();
         }
     }
 
@@ -376,6 +383,45 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
+    void postponedLeave_proceedLetsTheClientGoAndCancelTurnsItBack() {
+        // The client waits to hear what became of the navigation it handed
+        // over, so each way out of a postponed one has to answer - and answer
+        // the right way round
+        for (boolean proceed : new boolean[] { true, false }) {
+            ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/dirty", "",
+                    "", null, ""));
+            ui.leaveNavigation(new BrowserLeaveNavigationEvent(ui, true,
+                    "/client-view", ""));
+            dumpServerConnectedCalls();
+
+            if (proceed) {
+                DirtyChild.action.proceed();
+            } else {
+                DirtyChild.action.cancel();
+            }
+
+            assertEquals(List.of(!proceed), dumpServerConnectedCalls(),
+                    proceed ? "proceeding should not cancel the navigation"
+                            : "cancelling should turn the navigation back");
+        }
+    }
+
+    /**
+     * What the wrapper element has been told since last asked, as the cancel
+     * flag of each call.
+     */
+    private List<Object> dumpServerConnectedCalls() {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation().getJsCall())
+                .filter(call -> call != null
+                        && call.definitionType() == Element.CallFunctionJs.class
+                        && "serverConnected"
+                                .equals(call.flattenArguments().get(0)))
+                .map(call -> call.flattenArguments().get(1)).toList();
+    }
+
+    @Test
     void should_handle_forward_to_client_side_view_on_beforeEnter() {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true,
                 "/forwardToClientSideViewOnBeforeEnter", "", "", null, ""));
@@ -436,14 +482,10 @@ class JavaScriptBootstrapUITest {
         ui = Mockito.spy(ui);
         Page page = mockPage();
 
-        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> execArg = ArgumentCaptor.forClass(String.class);
-
         ui.navigate("whatever");
-        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
-        assertEquals(CLIENT_NAVIGATE_TO, execJs.getValue());
-        assertEquals("whatever", execArg.getValue());
+        assertEquals(CLIENT_NAVIGATE_TO, onlyPageCall().getExpression());
+        assertEquals(List.of("whatever"), onlyPageCall().arguments());
     }
 
     @Test
@@ -473,10 +515,6 @@ class JavaScriptBootstrapUITest {
                 .createStateNode("foo-element");
         Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
 
-        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
-                .forClass(Object[].class);
-
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                 .mockStatic(MenuRegistry.class)) {
 
@@ -485,21 +523,20 @@ class JavaScriptBootstrapUITest {
                     .thenReturn(false);
 
             ui.navigate("clean/1");
-            Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
             boolean reactEnabled = ui.getSession().getConfiguration()
                     .isReactEnabled();
 
-            final Object[] execValues = execArg.getValue();
+            JsCall call = onlyPageCall();
             if (reactEnabled) {
-                assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
-                assertEquals(1, execValues.length);
-                assertEquals("clean/1", execValues[0]);
+                assertEquals(REACT_PUSHSTATE_TO, call.getExpression());
+                assertEquals(3, call.arguments().size());
+                assertEquals("clean/1", call.arguments().get(1));
             } else {
-                assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
-                assertEquals(2, execValues.length);
-                assertNull(execValues[0]);
-                assertEquals("clean/1", execValues[1]);
+                assertEquals(CLIENT_PUSHSTATE_TO, call.getExpression());
+                assertEquals(2, call.arguments().size());
+                assertNull(call.arguments().get(0));
+                assertEquals("clean/1", call.arguments().get(1));
             }
         }
     }
@@ -517,8 +554,7 @@ class JavaScriptBootstrapUITest {
                 .thenReturn(lastLocation);
 
         ui.navigate("clean/");
-        Mockito.verify(page, Mockito.never()).executeJs(Mockito.anyString(),
-                Mockito.anyString());
+        assertEquals(List.of(), pageCalls);
     }
 
     @Test
@@ -533,29 +569,25 @@ class JavaScriptBootstrapUITest {
         ui = Mockito.spy(ui);
         Page page = mockPage();
 
-        ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
-                .forClass(Object[].class);
-
         // Dirty view is allowed after clean view
         ui.navigate("dirty");
         // A server navigation happens
         assertEquals(Tag.SPAN,
                 ui.getInternals().getWrapperElement().getChild(0).getTag());
-        Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
         boolean reactEnabled = ui.getSession().getConfiguration()
                 .isReactEnabled();
 
-        final Object[] execValues = execArg.getValue();
+        JsCall call = onlyPageCall();
         if (reactEnabled) {
-            assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
+            assertEquals(REACT_PUSHSTATE_TO, call.getExpression());
+            assertEquals(3, call.arguments().size());
         } else {
-            assertEquals(CLIENT_PUSHSTATE_TO, execJs.getValue());
+            assertEquals(CLIENT_PUSHSTATE_TO, call.getExpression());
+            assertEquals(2, call.arguments().size());
         }
-        assertEquals(3, execValues.length);
-        assertNull(execValues[0]);
-        assertEquals("dirty", execValues[1]);
+        assertNull(call.arguments().get(0));
+        assertEquals("dirty", call.arguments().get(1));
     }
 
     @Test
@@ -665,11 +697,28 @@ class JavaScriptBootstrapUITest {
     private Page mockPage() {
         Page page = Mockito.mock(Page.class);
         Mockito.when(ui.getPage()).thenReturn(page);
+        // The page runs declared JavaScript rather than an expression, so the
+        // mock hands out an implementation that records the call
+        Mockito.when(page.executeJs(Mockito.any(Class.class)))
+                .thenAnswer(invocation -> JsDefinitionProxy.create(
+                        invocation.getArgument(0, Class.class), call -> {
+                            pageCalls.add(call);
+                            return null;
+                        }));
 
         History history = new History(ui);
         Mockito.when(page.getHistory()).thenReturn(history);
 
         return page;
+    }
+
+    /** What the page was asked to run of the declared JavaScript. */
+    private final List<JsCall> pageCalls = new ArrayList<>();
+
+    /** The only call the page was asked to run. */
+    private JsCall onlyPageCall() {
+        assertEquals(1, pageCalls.size(), "calls: " + pageCalls);
+        return pageCalls.get(0);
     }
 
     private UIInternals mockUIInternals() {

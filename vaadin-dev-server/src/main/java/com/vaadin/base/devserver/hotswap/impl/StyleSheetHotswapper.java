@@ -87,7 +87,7 @@ import com.vaadin.flow.shared.ui.Dependency;
  */
 public class StyleSheetHotswapper implements VaadinHotswapper {
 
-    public static final Logger LOGGER = LoggerFactory
+    private static final Logger LOGGER = LoggerFactory
             .getLogger(StyleSheetHotswapper.class);
 
     /**
@@ -100,6 +100,13 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
     // using class name to match also when class is reloaded
     private final ConcurrentHashMap<String, Set<String>> appShellStylesheets = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Set<String>> componentStylesheets = new ConcurrentHashMap<>();
+
+    /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public StyleSheetHotswapper() {
+        // Default constructor
+    }
 
     @Override
     public void onInit(VaadinService vaadinService) {
@@ -418,9 +425,13 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
     }
 
     private void trackAppShellUrls(VaadinService vaadinService) {
-        ActiveStyleSheetTracker.get(vaadinService)
-                .trackForAppShell(appShellStylesheets.values().stream()
-                        .flatMap(Set::stream).collect(Collectors.toSet()));
+        // appShellStylesheets holds raw annotation values, while the tracker
+        // stores the canonical resolveToContextRoot form used by the component
+        // paths above, so resolve before handing them over.
+        ActiveStyleSheetTracker.get(vaadinService).trackForAppShell(
+                appShellStylesheets.values().stream().flatMap(Set::stream).map(
+                        FrontendDependencyUrlResolver::resolveToContextRoot)
+                        .filter(Objects::nonNull).collect(Collectors.toSet()));
     }
 
     private boolean isComponentInUse(UI ui, Class<?> componentClass) {

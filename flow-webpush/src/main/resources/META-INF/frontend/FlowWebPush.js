@@ -43,7 +43,7 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
 
   unsubscribe: async function () {
     const registration = await navigator.serviceWorker.getRegistration();
-    const subscription = await registration?.pushManager.getSubscription();
+    const subscription = await registration?.pushManager?.getSubscription();
     if (subscription) {
       await subscription.unsubscribe();
 
@@ -54,7 +54,7 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
 
   registrationStatus: async function () {
     const registration = await navigator.serviceWorker.getRegistration();
-    return !!(await registration?.pushManager.getSubscription());
+    return !!(await registration?.pushManager?.getSubscription());
   },
 
   notificationDenied: async function () {
@@ -67,7 +67,7 @@ window.Vaadin.Flow.webPush = window.Vaadin.Flow.webPush || {
 
   getSubscription: async function () {
     const registration = await navigator.serviceWorker.getRegistration();
-    const subscription = await registration?.pushManager.getSubscription();
+    const subscription = await registration?.pushManager?.getSubscription();
     if (subscription) {
       return subscription;
     }

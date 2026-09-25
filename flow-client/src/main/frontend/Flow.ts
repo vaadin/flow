@@ -211,7 +211,15 @@ export class Flow {
           await this.flowInit();
         } catch (error) {
           if (error instanceof FlowUiInitializationError) {
-            // error initializing Flow: assume connection lost
+            // error initializing Flow: assume connection lost. Report the
+            // cause first: the message carries the HTTP status and response
+            // body of the failed init request, and the offline stub returned
+            // below replaces the view without a trace of why, so swallowing
+            // this leaves nothing to diagnose but a missing UI.
+            console.error(
+              'Failed to initialize the Flow UI, assuming the connection was lost and showing the offline stub.',
+              error
+            );
             $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
             return this.offlineStubAction();
           } else {
@@ -347,8 +355,12 @@ export class Flow {
         await this.config.imports();
       }
 
-      // Load flow-client module
-      const clientMod = await import('./FlowClient');
+      // Load flow-client module. The bare specifier is intentional: the
+      // generated Vite config aliases it to FlowClient.js in jar-resources and
+      // lists it in optimizeDeps, and Vite only redirects bare specifiers to a
+      // pre-bundled dependency. Importing './FlowClient' relatively would make
+      // the dev server serve the ~90 modules of the client engine one by one.
+      const clientMod = await import('vaadin-flow-client');
       await this.flowInitClient(clientMod);
 
       // hide flow progress indicator

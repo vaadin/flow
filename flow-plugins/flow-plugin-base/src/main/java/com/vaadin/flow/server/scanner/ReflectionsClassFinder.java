@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -225,6 +226,12 @@ public class ReflectionsClassFinder implements ClassFinder, AutoCloseable {
     @Override
     public URL getResource(String name) {
         return disableJarCaching(classLoader.getResource(name));
+    }
+
+    @Override
+    public List<URL> getResources(String name) throws IOException {
+        return Collections.list(classLoader.getResources(name)).stream()
+                .map(ReflectionsClassFinder::disableJarCaching).toList();
     }
 
     /**

@@ -8,13 +8,17 @@ const globalExclusions = [
   'flow-tests/test-multi-war/test-war1',
   'flow-tests/test-multi-war/test-war2',
   'flow-tests/test-webpush',
+  // Deploys to a real application server, so it needs one of the container
+  // profiles and has its own job in validation.yml
+  'flow-tests/vaadin-cdi-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/generator',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/library',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/theme',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui'
+  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui',
+  'flow-tests/test-devloop/test-devloop-support'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
@@ -26,7 +30,6 @@ const globalExclusions = [
 // Container 1:
 //  When running `flow-tests/test-mixed/pom-npm.xml` together with the following modules they fail
 //  - flow-tests/test-live-reload
-//  - flow-tests/test-dev-mode
 // Containers 2 & 3:
 //  Tests that need shared modules, check validation.yml to see how they are generated before running ITs
 // Containers 4, 5 & 6:
@@ -116,6 +119,7 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-standalone-routepathaccesschecker': { pos: 6, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-routepathaccesschecker': { pos: 6, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-pwa': { pos: 6, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 6, weight: 2 },
   'flow-tests/test-live-reload-multimodule': {pos:6},
   'flow-tests/test-live-reload-multimodule/ui': {pos:6},
@@ -129,6 +133,10 @@ const moduleWeights = {
   'flow-tests/test-commercial-banner/commercial-addon': { pos: 7},
   'flow-tests/test-commercial-banner/flow-application': { pos: 7},
   'flow-tests/test-commercial-banner/integration-test': { pos: 7},
+  'flow-tests/test-devloop/test-devloop-spring/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-spring/devloop-app': { pos: 7, weight: 5 },
+  'flow-tests/test-devloop/test-devloop-jetty/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-jetty/devloop-app': { pos: 7, weight: 8 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
@@ -141,7 +149,7 @@ const moduleWeights = {
   'flow-tests/test-router-custom-context-encoded': { pos: 8 },
   'flow-tests/test-router-custom-context-encoded-prod': { pos: 8 },
   'flow-tests/test-frontend/vite-embedded': { weight: 5 },
-  'flow-tests/test-dev-mode': { weight: 5 },
+  'flow-tests/test-default': { weight: 5 },
   'flow-tests/test-custom-frontend-directory/test-themes-custom-frontend-directory': { weight: 5 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 5 },
   'flow-tests/test-ccdm': { weight: 4 },

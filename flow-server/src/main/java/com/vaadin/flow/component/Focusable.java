@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
+
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 
 /**
  * Represents a component that can gain and lose focus.
@@ -134,34 +139,8 @@ public interface Focusable<T extends Component>
      * @since 25.0
      */
     default void focus(FocusOption... options) {
-        Element element = getElement();
-        ObjectNode json = FocusOption.buildOptions(options);
-
-        if (json == null) {
-            // No options, call focus() without arguments
-            element.executeJs("""
-                    setTimeout(() => {
-                        try {
-                           this._nextFocusIsFromClient = false;
-                           this.focus();
-                        } finally {
-                           this._nextFocusIsFromClient = true;
-                        }
-                    }, 0)
-                    """);
-        } else {
-            // Call focus with options object passed as parameter
-            element.executeJs("""
-                    setTimeout(() => {
-                        try {
-                           this._nextFocusIsFromClient = false;
-                           this.focus($0);
-                        } finally {
-                           this._nextFocusIsFromClient = true;
-                        }
-                    }, 0)
-                    """, json);
-        }
+        getElement().executeJs(FocusJs.class)
+                .focus(FocusOption.buildOptions(options));
     }
 
     // for binary compatibility with the previous Vaadin versions
@@ -190,16 +169,7 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void blur() {
-        getElement().executeJs("""
-                setTimeout(() => {
-                    try {
-                        this._nextBlurIsFromClient = false;
-                        this.blur();
-                    } finally {
-                       this._nextBlurIsFromClient = true;
-                    }
-                }, 0)
-                """);
+        getElement().executeJs(FocusJs.class).blur();
     }
 
     /**
@@ -240,5 +210,53 @@ public interface Focusable<T extends Component>
         return new ShortcutRegistration((Component) this,
                 () -> new Component[] { thisComponent.getUI().get() },
                 event -> this.focus(), key).withModifiers(keyModifiers);
+    }
+
+    /**
+     * The client-side operations behind {@link Focusable}, as a JavaScript
+     * definition for {@link Element#executeJs(Class)}.
+     * <p>
+     * Focus and blur are marked as server-initiated for the client, so that the
+     * resulting event reports {@code isFromClient() == false}. A driver of the
+     * client side that implements this interface instead of running the scripts
+     * is responsible for the same.
+     */
+    @JsDefinition
+    interface FocusJs extends Serializable {
+
+        /**
+         * Focuses the element.
+         *
+         * @param options
+         *            the options of the browser's <code>focus</code> function,
+         *            or <code>null</code> for its defaults, which is what the
+         *            browser makes of an empty set of options
+         */
+        @JsExpression("""
+                setTimeout(() => {
+                    try {
+                       this._nextFocusIsFromClient = false;
+                       this.focus($0);
+                    } finally {
+                       this._nextFocusIsFromClient = true;
+                    }
+                }, 0)
+                """)
+        void focus(@Nullable ObjectNode options);
+
+        /**
+         * Removes focus from the element.
+         */
+        @JsExpression("""
+                setTimeout(() => {
+                    try {
+                        this._nextBlurIsFromClient = false;
+                        this.blur();
+                    } finally {
+                       this._nextBlurIsFromClient = true;
+                    }
+                }, 0)
+                """)
+        void blur();
     }
 }

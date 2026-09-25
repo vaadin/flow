@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
@@ -162,26 +163,8 @@ class NodeResolver implements java.io.Serializable {
                     nodeExecutable, nodeExecutable.getParentFile(), null);
 
             if (installation != null) {
-                // Check version range
-                FrontendVersion version = new FrontendVersion(
-                        installation.nodeVersion());
-                if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
-                    getLogger().info(
-                            "The globally installed Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
-                            installation.nodeVersion(),
-                            FrontendTools.SUPPORTED_NODE_VERSION
-                                    .getFullVersion(),
-                            alternativeDir);
-                    return null;
-                }
-
-                if (version
-                        .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
-                    getLogger().info(
-                            "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
-                            version.getMajorVersion(),
-                            FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
-                            alternativeDir);
+                if (!isSupportedGlobalVersion(
+                        new FrontendVersion(installation.nodeVersion()))) {
                     return null;
                 }
 
@@ -194,6 +177,40 @@ class NodeResolver implements java.io.Serializable {
             getLogger().error("Failed to get version for installed node.", e);
             return null;
         }
+    }
+
+    /**
+     * Checks that a globally installed Node.js is one that Flow is tested
+     * against: at least {@link FrontendTools#SUPPORTED_NODE_VERSION} and at
+     * most {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}, which is the
+     * long-term support line Flow is built on.
+     *
+     * @param version
+     *            the version of the globally installed Node.js
+     * @return true when the globally installed Node.js can be used, false when
+     *         the one in the alternative directory should be used instead
+     */
+    boolean isSupportedGlobalVersion(FrontendVersion version) {
+        if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+            getLogger().info(
+                    "The globally installed Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
+                    version.getFullVersion(),
+                    FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion(),
+                    alternativeDir);
+            return false;
+        }
+
+        if (version
+                .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
+            getLogger().info(
+                    "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
+                    version.getMajorVersion(),
+                    FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
+                    alternativeDir);
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -244,6 +261,8 @@ class NodeResolver implements java.io.Serializable {
                         nodeFolderFile.getAbsolutePath()));
             }
 
+            warnIfTooOld(installation.nodeVersion(), InitParameters.NODE_FOLDER,
+                    "a supported version");
             getLogger().info(
                     "Using Node.js from configured folder: {} (version {})",
                     nodeFolderFile.getAbsolutePath(),
@@ -258,6 +277,42 @@ class NodeResolver implements java.io.Serializable {
     }
 
     /**
+     * Warns when a configured Node.js version is too old for the frontend
+     * tooling, which reports the problem much later and without telling where
+     * the version came from. The configured version is used regardless, as
+     * overriding what somebody has asked for is worse than a build that fails
+     * for a stated reason.
+     *
+     * @param version
+     *            the Node.js version that will be used
+     * @param setting
+     *            the name of the setting that the version comes from
+     * @param replacement
+     *            what Vaadin uses instead once the setting is gone
+     */
+    private void warnIfTooOld(String version, String setting,
+            String replacement) {
+        try {
+            if (!new FrontendVersion(version)
+                    .isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+                return;
+            }
+        } catch (NumberFormatException e) {
+            // Left for the frontend tooling to report, as it knows what it
+            // accepts
+            getLogger().debug("Could not parse the Node.js version {}", version,
+                    e);
+            return;
+        }
+        getLogger().warn(
+                "Node.js version {} configured through '{}' is older than the minimum supported version {}, so the frontend build is likely to fail. "
+                        + "Remove the setting to let Vaadin use {} instead.",
+                version, setting,
+                FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion(),
+                replacement);
+    }
+
+    /**
      * Uses the requested node version from the alternative directory, or
      * installs it there.
      *
@@ -266,6 +321,8 @@ class NodeResolver implements java.io.Serializable {
      *             if installation fails
      */
     private ActiveNodeInstallation resolveOrInstallAlternativeNode() {
+        warnIfTooOld(nodeVersion, InitParameters.NODE_VERSION,
+                "Node.js " + FrontendTools.DEFAULT_NODE_VERSION);
         File alternativeDirFile = new File(alternativeDir);
         NodeInstaller nodeInstaller = new NodeInstaller(alternativeDirFile,
                 proxies);

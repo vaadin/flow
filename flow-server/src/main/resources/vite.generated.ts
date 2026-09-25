@@ -24,6 +24,7 @@ import {
 } from 'vite';
 
 import brotli from 'rollup-plugin-brotli';
+import MagicString from 'magic-string';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
@@ -58,6 +59,44 @@ const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
 const i18nFolder = path.resolve(dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
+
+// The Flow client engine, which Flow.ts loads through the bare
+// `vaadin-flow-client` specifier. The engine is shipped as ~90 individual ES
+// modules, so in dev mode the browser would fetch them one by one on every page
+// load. Aliasing a bare specifier to the entry and listing it in
+// optimizeDeps.include makes Vite pre-bundle it instead: Vite only redirects
+// bare specifiers to an optimized dependency, never relative ones.
+const flowClientId = 'vaadin-flow-client';
+const flowClientEntry = path.resolve(jarResourcesFolder, 'FlowClient.js');
+const hasFlowClient = existsSync(flowClientEntry);
+
+/**
+ * Hash of the client engine sources, appended to the alias target so that it
+ * takes part in the hash Vite derives from this config for its dependency
+ * optimizer cache. That cache is keyed on the lockfile and on the config only,
+ * not on the contents of the pre-bundled files, so without this a client that
+ * changed without a lockfile change (a Flow upgrade that keeps the same npm
+ * dependencies) would keep being served from the stale pre-bundle.
+ */
+function flowClientHash(): string {
+  const hash = createHash('sha256');
+  const hashFolder = (folder: string) => {
+    for (const entry of readdirSync(folder, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const entryPath = path.resolve(folder, entry.name);
+      if (entry.isDirectory()) {
+        hashFolder(entryPath);
+      } else if (entry.name.endsWith('.js')) {
+        hash.update(readFileSync(entryPath));
+      }
+    }
+  };
+  hash.update(readFileSync(flowClientEntry));
+  const engineFolder = path.resolve(jarResourcesFolder, 'internal', 'client');
+  if (existsSync(engineFolder)) {
+    hashFolder(engineFolder);
+  }
+  return hash.digest('hex').substring(0, 16);
+}
 
 // Resolved by the Java side: points at the user's frontend/index.html when
 // they have one, otherwise at the default copy generated into the frontend
@@ -98,8 +137,20 @@ const themeOptions = {
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 const commercialBannerComponent = path.resolve(frontendFolder, settings.generatedFolder, 'commercial-banner.js');
 const hasCommercialBanner = existsSync(commercialBannerComponent);
+// The JavaScript declared by the @JsDefinition interfaces, generated before the
+// build. Hashed into the stats like the banner above, so that a bundle whose
+// definitions changed is rebuilt instead of running with the functions it was
+// built with.
+const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
+const hasJsDefinitions = existsSync(jsDefinitionsFile);
 
-const target = ['es2023'];
+// The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
+// versions current today, Firefox ESR, and Safari 17 in its latest minor
+// version. Vite uses this as the cssTarget as well, and an ES year would map to
+// browsers that are much older than these, which makes Lightning CSS rewrite
+// light-dark() into custom properties that only follow the operating system
+// preference.
+const target = ['chrome152', 'edge152', 'firefox140', 'safari17.6', 'ios17.6'];
 
 // Block debug and trace logs.
 console.trace = () => {};
@@ -283,6 +334,12 @@ function statsExtracterPlugin(): PluginOption {
         const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
       }
+      if (hasJsDefinitions) {
+        const fileBuffer = readFileSync(jsDefinitionsFile, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+        frontendFiles[settings.generatedFolder + '/vaadin-js-definitions.js'] = createHash('sha256')
+          .update(fileBuffer, 'utf8')
+          .digest('hex');
+      }
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');
@@ -311,6 +368,8 @@ function statsExtracterPlugin(): PluginOption {
         bundleImports: generatedImports,
         frontendHashes: frontendFiles,
         themeJsonContents: themeJsonContents,
+        pwaOfflinePath: settings.offlinePath,
+        pwaOfflineEnabled: settings.offlineEnabled,
         entryScripts,
         webComponents,
         cvdlModules: cvdls,
@@ -386,6 +445,9 @@ function themePlugin(opts: { devMode: boolean }): PluginOption {
       }
       const resourceThemeFolder = bareId.startsWith(themeFolder) ? themeFolder : themeOptions.themeResourceFolder;
       const [themeName] =  bareId.substring(resourceThemeFolder.length + 1).split('/');
+      // Null for a file with no url to rewrite, and the rewritten css together
+      // with a sourcemap for it otherwise, so that the sourcemap chain of the
+      // css file stays intact
       return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(resourceThemeFolder, themeName), console, opts);
     }
   };
@@ -425,24 +487,31 @@ function preserveUsageStats() {
   return {
     name: 'vaadin:preserve-usage-stats',
 
+    // A hook that returns code must return a sourcemap for it as well, or
+    // return null to leave the module as it is. Code without a map makes the
+    // bundler drop the module from the sourcemap of the chunk it ends up in,
+    // and this hook sees every module of the bundle.
     transform(src: string, id: string) {
-      if (id.includes('vaadin-usage-statistics')) {
-        if (src.includes('vaadin-dev-mode:start')) {
-          const expectedComment = '/*! vaadin-dev-mode:start';
-          const newSrc = src.replace(DEV_MODE_START_REGEXP, expectedComment);
-          if (newSrc === src) {
-            if (!src.includes(expectedComment)) {
-              console.error('vaadin-dev-mode:start tag not found');
-            }
-          } else if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
-            console.error('New comment fails to match original regexp');
-          } else {
-            return { code: newSrc };
-          }
-        }
+      if (!id.includes('vaadin-usage-statistics') || !src.includes('vaadin-dev-mode:start')) {
+        return null;
       }
 
-      return { code: src };
+      const expectedComment = '/*! vaadin-dev-mode:start';
+      const magicString = new MagicString(src).replace(DEV_MODE_START_REGEXP, expectedComment);
+      if (!magicString.hasChanged()) {
+        if (!src.includes(expectedComment)) {
+          console.error('vaadin-dev-mode:start tag not found');
+        }
+        return null;
+      }
+
+      const code = magicString.toString();
+      if (!code.match(DEV_MODE_CODE_REGEXP)) {
+        console.error('New comment fails to match original regexp');
+        return null;
+      }
+
+      return { code, map: magicString.generateMap({ hires: true }) };
     }
   };
 }
@@ -465,7 +534,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
     resolve: {
       alias: {
         '@vaadin/flow-frontend': jarResourcesFolder,
-        Frontend: frontendFolder
+        Frontend: frontendFolder,
+        // The hash is only needed for the dev-mode dependency optimizer. A
+        // build must resolve to the bare path, so that the engine is not
+        // bundled a second time for the exported web component entry point,
+        // which imports it directly.
+        ...(hasFlowClient
+          ? { [flowClientId]: devMode ? `${flowClientEntry}?v=${flowClientHash()}` : flowClientEntry }
+          : {})
       },
       preserveSymlinks: true
     },
@@ -516,6 +592,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'
       ],
+      // Pre-bundle the client engine instead of serving its modules one by one.
+      // It is only reached through a dynamic import, so the dependency scanner
+      // does not find it on its own.
+      include: hasFlowClient ? [flowClientId] : [],
       exclude: [
         '@vaadin/router',
         '@vaadin/vaadin-license-checker',
@@ -691,12 +771,18 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // exposes the compiler API to Node, so the checker falls back to
           // running tsc as a separate process and resolves the config
           // strictly against this root without searching parent folders.
-          // The root is relative because the checker passes it to tsc as
-          // "-p <root>" in a command line that is split on spaces, which
-          // would break for a project directory containing a space. Vite is
-          // always spawned with the project root as its working directory,
-          // which is this directory, so "." resolves to the same tsconfig.
-          root: '.'
+          // The two commands need a different root because the checker
+          // starts tsc differently in each. A build assembles one command
+          // string and hands it to a shell, which splits it on spaces, so an
+          // absolute root breaks for a project directory containing a space.
+          // Vite is always spawned with the project root as its working
+          // directory, which is this directory, so "." resolves to the same
+          // tsconfig. The dev server instead locates the tsc binary with
+          // Node's require relative to this root, which only accepts an
+          // absolute path and otherwise silently falls back to running a bare
+          // "tsc" through a shell, which logs "tsc: command not found" and
+          // leaves the dev server without type checking.
+          root: env.command === 'build' ? '.' : dirname
         }
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })

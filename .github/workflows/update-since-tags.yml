@@ -39,7 +39,7 @@ jobs:
           cache: maven
 
       - id: since
-        uses: vaadin/github-actions/reconcile-since-tags@2a6fabc668c09424c29ca789789e9bf0720de8ee
+        uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
@@ -70,13 +70,28 @@ jobs:
       # and silently rewrite @since from its true 1.x-9.x value to 23.0 across most
       # of the framework. An isolated index-dir keeps vaadin-spring's versions off
       # the shared axis (a separate load + axis per invocation).
-      - uses: vaadin/github-actions/reconcile-since-tags@2a6fabc668c09424c29ca789789e9bf0720de8ee
+      - uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
           index-dir: .since-index-spring
           artifacts: |
             vaadin-spring
+
+      # vaadin-cdi needs its own isolated index for the same reason vaadin-spring
+      # does, and the reasoning above applies unchanged: under the same
+      # com.vaadin:vaadin-cdi GAV it kept its own scheme -- 46 releases from
+      # 1.0.0.alpha1 to 16.1.2 -- before the module was imported into this
+      # repository and started releasing with Flow's version number. Pooling
+      # those onto the shared axis would drop 16.x into the gap between Flow 9.2
+      # and 23.0 and rewrite @since across most of the framework.
+      - uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
+        with:
+          group-id: com.vaadin
+          version: ${{ inputs.dev }}
+          index-dir: .since-index-cdi
+          artifacts: |
+            vaadin-cdi
 
       - name: Open pull request
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0

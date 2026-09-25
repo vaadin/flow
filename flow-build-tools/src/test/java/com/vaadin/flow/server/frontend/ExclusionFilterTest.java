@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
@@ -23,7 +24,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.tests.util.MockOptions;
 
 public class ExclusionFilterTest {
 
@@ -34,6 +37,21 @@ public class ExclusionFilterTest {
         // Without versions files the only exclusions left are the packages
         // that come with a package Flow manages the version of.
         filter = new ExclusionFilter(Mockito.mock(ClassFinder.class), true);
+    }
+
+    @Test
+    public void exclusions_areTakenFromThePinnedNpmVersionsOfTheBuild()
+            throws IOException {
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
+        Options options = new MockOptions(finder, null);
+
+        new ExclusionFilter(options, true, false).exclude(Map.of());
+        new ExclusionFilter(options, true, false).exclude(Map.of());
+
+        Mockito.verify(finder, Mockito.times(1))
+                .getResources(Constants.PINNED_NPM_VERSIONS_FOLDER);
     }
 
     @Test

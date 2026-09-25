@@ -84,6 +84,14 @@ public class FrontendUtils {
     public static final String NODE_MODULES = "node_modules/";
 
     /**
+     * Oldest Node.js version that the frontend tooling runs on.
+     *
+     * @since 25.4
+     */
+    public static final FrontendVersion MINIMUM_SUPPORTED_NODE_VERSION = new FrontendVersion(
+            26, 0, 0);
+
+    /**
      * Default folder used for source and generated folders.
      */
     public static final String FRONTEND = "frontend/";
@@ -213,6 +221,13 @@ public class FrontendUtils {
      * application code.
      */
     public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
+
+    /**
+     * File name of the generated file that registers the JavaScript of the
+     * {@code @JsDefinition} interfaces on the class path, so that the client
+     * can run a server-initiated call without compiling an expression.
+     */
+    public static final String JS_DEFINITIONS_FILE_NAME = "vaadin-js-definitions.js";
 
     /**
      * File name of the index.html in client side.
@@ -357,6 +372,8 @@ public class FrontendUtils {
 
     /**
      * ANSI foreground colors usable with {@link #console(AnsiColor, String)}.
+     * 
+     * @since 25.2.8
      */
     public enum AnsiColor {
         YELLOW("\u001b[38;5;220m"),
@@ -702,12 +719,24 @@ public class FrontendUtils {
      * @return frontend directory to use
      */
     public static File getFrontendFolder(File projectRoot, File frontendDir) {
-        if (!frontendDir.exists() && frontendDir.toPath()
-                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
-            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
-            if (legacy.exists()) {
-                return legacy;
-            }
+        // The legacy folder is probed FIRST on purpose. frontendDir is
+        // src/main/frontend, which build tools create themselves (it is the
+        // parent of an optional task output) and which is gitignored, so it is
+        // absent on a fresh checkout and present after the first build. Under
+        // Gradle's configuration cache a File.exists() call made while
+        // configuring is recorded as an input of the entry, so probing that
+        // path first invalidates the entry on the build right after the one
+        // that created the directory - for a check whose answer never changes,
+        // since with no legacy folder both branches return frontendDir. The
+        // legacy folder is not created by any build, so probing it first is
+        // stable, and && short-circuits away the unstable probe on every
+        // project that has no legacy frontend folder.
+        File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+        if (legacy.exists()
+                && frontendDir.toPath()
+                        .endsWith(DEFAULT_FRONTEND_DIR.substring(2))
+                && !frontendDir.exists()) {
+            return legacy;
         }
         return frontendDir;
     }
@@ -1166,6 +1195,7 @@ public class FrontendUtils {
      *            the ANSI color to wrap the message with
      * @param message
      *            the message to show, printed literally
+     * @since 25.2.8
      */
     @SuppressWarnings("squid:S106")
     public static void console(AnsiColor ansiColor, String message) {

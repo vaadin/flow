@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-tests</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-default</artifactId>
   <packaging>jar</packaging>
@@ -26,16 +26,26 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-dependencies</artifactId>
-        <version>${spring.boot.version}</version>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-bom</artifactId>
+        <version>${testbench.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- A BOM imported here outranks the one inherited from flow-project,
+           so junit-bom goes before spring-boot-dependencies to keep the
+           JUnit version that Flow manages -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.jupiter.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
       <dependency>
-        <groupId>com.vaadin</groupId>
-        <artifactId>vaadin-testbench-bom</artifactId>
-        <version>${testbench.version}</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring.boot.version}</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -59,6 +69,12 @@
       <artifactId>vaadin-dev-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Static test resources (/test-files/**) used by the dependency tests -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-resources</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- React adapter (ReactAdapterComponent) for React-in-Flow views -->
     <dependency>
       <groupId>com.vaadin</groupId>
@@ -75,7 +91,6 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>${junit.jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

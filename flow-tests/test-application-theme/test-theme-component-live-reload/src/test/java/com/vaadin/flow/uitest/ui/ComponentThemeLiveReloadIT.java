@@ -57,7 +57,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             + PARENT_THEME + "/";
     private static final String THEME_GENERATED_PATTERN = FrontendUtils.DEFAULT_FRONTEND_DIR
             + "/generated/theme-%s.generated.js";
-    private static final String COMPONENT_STYLE_SHEET = "components/vaadin-text-field.css";
+    private static final String COMPONENT_STYLE_SHEET = "components/faux-text-field.css";
 
     private File currentThemeComponentCSSFile;
     private File currentThemeGeneratedFile;
@@ -174,9 +174,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             TestBenchElement themedTextField = $(TestBenchElement.class)
                     .id(THEMED_COMPONENT_ID);
             TestBenchElement input = themedTextField.$(DivElement.class)
-                    .attribute("class", "vaadin-field-container").first()
-                    .$("vaadin-input-container")
-                    .attribute("part", "input-field").first();
+                    .attribute("class", "field-container").first()
+                    .$(DivElement.class).attribute("part", "input-field")
+                    .first();
             return borderRadius.equals(input.getCssValue("border-radius"));
         } catch (StaleElementReferenceException e) {
             return false;

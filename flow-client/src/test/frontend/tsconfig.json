@@ -1,0 +1,12 @@
+{
+  "//": "Type-checks the test tree, which tsconfig.json cannot do: it emits, so its rootDir is limited to src/main/frontend. Without this, a test file with a broken import or a type error compiles only inside the test runner's esbuild transform, which strips types and resolves nothing - exactly how a stale import path once left two suites silently not running. It lives here rather than at the package root so that typescript-eslint's project service finds it: the service resolves a file's project by walking up for a file named tsconfig.json, so a project named otherwise would leave every suite without one, to be listed by directory under allowDefaultProject instead.",
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "rootDir": "../..",
+    "types": ["mocha"]
+  },
+  "//include": "Only the ported internal/ tree: the root-level FlowTests/FullscreenTests suites predate the port and are not type-clean. The modules under test enter the program through the suites' imports; src/main/frontend as a whole is covered by the root tsc in npm run build.",
+  "include": ["internal/**/*.ts"]
+}
