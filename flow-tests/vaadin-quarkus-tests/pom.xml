@@ -57,6 +57,10 @@
          tests need; see the surefire and failsafe argLine below. The empty
          default keeps @{argLine} resolvable when the extension adds none. -->
     <argLine/>
+    <!-- The Flow parent sets no default for this one: as the whole failsafe
+         argLine an unset property resolves to nothing, but inside the
+         combined argLine below it would reach the fork as a literal. -->
+    <failsafe.argLine/>
   </properties>
 
   <dependencyManagement>
