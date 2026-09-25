@@ -39,7 +39,14 @@ nothing but the daemon pushes to the browser.
 ## What the pom has to say, and why
 
 Only what any Payara Server project writes: the server version, the root
-context, and `-Dvaadin.frontend.hotdeploy=false` in `<javaCommandLineOptions>`.
+context, and `-Dvaadin.frontend.hotdeploy=false` in `<javaCommandLineOptions>` -
+plus one thing the fixture needs for itself. The plugin unpacks Payara into
+`java.io.tmpdir` by default, one domain shared by every project on the machine,
+and that domain boots every application ever deployed to it. Next to a
+deployment from another checkout of this repository, whose copies of the
+fixture's classes the dev loop then found, the redefines were rejected. So
+`maven-dependency-plugin` unpacks the same zip into `target/payara7` and
+`<payaraServerPath>` points there.
 
 The port is **8080**, and it is not the pom's to choose: it is `domain1`'s, and
 `payara.http.port` only tells the plugin where to connect. No other dev-loop

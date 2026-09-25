@@ -33,10 +33,17 @@ nothing but the daemon pushes to the browser.
   what changes instead: a packaged WAR does not change between restarts.
 - **`embedded` is forced off** for the same reason it is listed as competing: an
   embedded server runs in Maven's JVM, which reads no `jvm.options` at all.
-- **The run goal needs no phase and no skip.** `liberty:run` runs `resources`,
-  `compiler:compile` and `war:war` itself, and it keeps itself to the farthest
-  downstream project through the session's `ProjectDependencyGraph` — so unlike
-  Cargo and both Payaras it needs none of the switch-the-goal-off machinery.
+- **The run goal is bound, not named.** `liberty:run` starts the server in the
+  farthest downstream project alone, but named on a command line it still runs
+  in every other module, and there it replaces the module's jar with its
+  `target/classes` ("Overwriting artifact's file"). The WAR it packages then
+  carries an empty directory under the sibling's jar name, and the sibling's
+  classes and stylesheet are missing from the running application. So the
+  daemon names `package` and no goal, and `DevLoopBuildExtension` binds `run`
+  to that phase in `devloop-app` alone, as it does for TomEE. What to check in
+  `target/devloop/app.log`: one
+  `--- liberty:…:run (vaadin-devloop-run) @ flow-test-devloop-liberty-app ---`
+  and none against `flow-test-devloop-liberty-shared`.
 - **`vaadin-dev-server` is not `<optional>`.** `maven-war-plugin` leaves optional
   dependencies out of `WEB-INF/lib`, so the application would start, serve, and
   never register with the daemon.
