@@ -36,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.BaseJsonNode;
 
@@ -98,7 +97,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -652,6 +653,7 @@ class NavigationStateRendererTest {
         when(details.getWindowName()).thenReturn("ROOT.123");
         ui1.getInternals().setExtendedClientDetails(details);
         assertNotEquals(Locale.CHINA, ui1.getLocale());
+        view.lastLocale = null;
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("preserved"), ui1, NavigationTrigger.PAGE_LOAD));
@@ -971,8 +973,8 @@ class NavigationStateRendererTest {
 
         ui.getInternals().clearLastHandledNavigation();
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class, CALLS_REAL_METHODS)) {
 
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
                     .thenReturn(Collections.singletonMap("/client-route",
@@ -1263,8 +1265,8 @@ class NavigationStateRendererTest {
     private void testClientNavigationTitle(String expectedDocumentTitle,
             boolean clientRouteHasFlowLayout) {
         UI ui = createTestClientNavigationTitleUIForTitleTests();
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class, CALLS_REAL_METHODS)) {
 
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
                     .thenReturn(Collections.singletonMap("/client-route",
