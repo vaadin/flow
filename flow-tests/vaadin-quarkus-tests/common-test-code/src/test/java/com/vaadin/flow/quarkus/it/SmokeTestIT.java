@@ -33,13 +33,17 @@ public class SmokeTestIT extends AbstractChromeIT {
         open();
         checkLogs();
         waitForElementPresent(By.tagName("button"));
-        final NativeButtonElement button = $(NativeButtonElement.class).first();
+        final NativeButtonElement button = $(NativeButtonElement.class)
+                .single();
         Assertions.assertTrue(button.isDisplayed());
 
         button.click();
 
+        // Scoped to the view: the page carries spans of its own outside it,
+        // so only the one the click added is inside centered-content.
         Assertions.assertEquals("hello quarkus CDI",
-                $(SpanElement.class).first().getText());
+                $("div").withClassName("centered-content").single()
+                        .$(SpanElement.class).single().getText());
     }
 
     @Test

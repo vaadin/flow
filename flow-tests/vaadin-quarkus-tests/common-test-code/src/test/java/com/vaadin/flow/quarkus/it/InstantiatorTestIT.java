@@ -53,7 +53,7 @@ public class InstantiatorTestIT extends AbstractChromeIT {
 
             prevCounter.set(counter);
 
-            $("a").first().click();
+            $("a").single().click();
         }
     }
 

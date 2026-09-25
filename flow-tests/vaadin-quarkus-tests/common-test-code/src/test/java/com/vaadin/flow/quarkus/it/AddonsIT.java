@@ -33,13 +33,12 @@ public class AddonsIT extends AbstractChromeIT {
     @Test
     void addonWithoutJandexIndexedOnApplicationPropertiesShouldBeRendered() {
         open();
-        TestBenchElement addon = waitUntil(driver -> $("hello-world").first());
-        Assertions.assertTrue(
-                addon.$("span").attribute("id", "without-jandex").exists(),
+        TestBenchElement addon = waitUntil(driver -> $("hello-world").single());
+        Assertions.assertTrue(addon.$("span").withId("without-jandex").exists(),
                 "Expecting span element with id 'without-jandex' to be present in 'hello-world' shadow DOM, but was not");
         Assertions.assertTrue(
-                addon.$("axa-input-text").attribute("id", "npm-dep").first()
-                        .$("input").first().hasClassName("a-input-text__input"),
+                addon.$("axa-input-text").withId("npm-dep").single().$("input")
+                        .single().hasClassName("a-input-text__input"),
                 "Expecting axa-input-text element with id 'npm-dep' to be rendered in 'hello-world' shadow DOM, but was not");
     }
 
@@ -47,13 +46,12 @@ public class AddonsIT extends AbstractChromeIT {
     void addonWithJandexIndexedShouldBeRendered() {
         open();
         TestBenchElement addon = waitUntil(
-                driver -> $("hello-world-jandex").first());
-        Assertions.assertTrue(
-                addon.$("span").attribute("id", "with-jandex").exists(),
+                driver -> $("hello-world-jandex").single());
+        Assertions.assertTrue(addon.$("span").withId("with-jandex").exists(),
                 "Expecting span element with id 'with-jandex' to be present in 'hello-world-jandex' shadow DOM, but was not");
         Assertions.assertTrue(
-                addon.$("axa-input-text").attribute("id", "npm-dep-jandex")
-                        .first().$("input").first()
+                addon.$("axa-input-text").withId("npm-dep-jandex").single()
+                        .$("input").single()
                         .hasClassName("a-input-text__input"),
                 "Expecting axa-input-text element with id 'npm-dep-jandex' to be rendered in 'hello-world-jandex' shadow DOM, but was not");
     }

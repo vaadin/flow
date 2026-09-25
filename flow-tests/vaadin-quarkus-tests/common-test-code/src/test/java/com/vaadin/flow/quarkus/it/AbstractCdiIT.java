@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.net.URL;
 
 import org.junit.Assert;
@@ -72,7 +73,7 @@ abstract public class AbstractCdiIT extends AbstractChromeIT {
     }
 
     private String slurp(String uri) throws IOException {
-        URL url = new URL(getRootURL() + uri);
+        URL url = URI.create(getRootURL() + uri).toURL();
         InputStream is = url.openConnection().getInputStream();
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
         String line = reader.readLine();
