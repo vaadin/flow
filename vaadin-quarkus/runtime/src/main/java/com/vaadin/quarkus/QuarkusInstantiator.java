@@ -78,13 +78,10 @@ public class QuarkusInstantiator implements Instantiator {
                                 "Multiple CDI beans found. "
                                         + FALLING_BACK_TO_DEFAULT_INSTANTIATION,
                                 e))
-                .lookupOrElseGet(() -> {
-                    final T instance = delegate.getOrCreate(type);
-                    // BeanProvider.injectFields(instance); // TODO maybe it
-                    // could be fixed after Quarkus-Arc ticket
-                    // https://github.com/quarkusio/quarkus/issues/2378 is done
-                    return instance;
-                });
+                // The fields of an instance created outside the container are
+                // not injected: ArC has no API for injecting an unmanaged
+                // instance (quarkusio/quarkus#2378 was closed without it)
+                .lookupOrElseGet(() -> delegate.getOrCreate(type));
     }
 
     @Override

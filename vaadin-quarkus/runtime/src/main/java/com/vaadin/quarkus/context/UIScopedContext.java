@@ -96,14 +96,4 @@ public class UIScopedContext extends AbstractContext {
         }
     }
 
-    @Override
-    public void destroy() {
-        super.destroy();
-    }
-
-    @Override
-    public ContextState getState() {
-        return super.getState();
-    }
-
 }

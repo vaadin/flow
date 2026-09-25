@@ -39,6 +39,9 @@ import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
  */
 class BeanLookup<T> {
 
+    private static final Annotation[] ANY = new Annotation[] {
+            new AnyLiteral() };
+
     private final BeanManager beanManager;
     private final Class<T> type;
     private final Annotation[] qualifiers;
@@ -47,9 +50,6 @@ class BeanLookup<T> {
     private Consumer<AmbiguousResolutionException> ambiguousHandler = e -> {
         throw e;
     };
-
-    private static final Annotation[] ANY = new Annotation[] {
-            new AnyLiteral() };
 
     @FunctionalInterface
     public interface UnsatisfiedHandler {
