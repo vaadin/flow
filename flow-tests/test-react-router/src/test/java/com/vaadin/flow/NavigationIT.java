@@ -347,8 +347,8 @@ public class NavigationIT extends ChromeBrowserTest {
                 .getText().contains(","));
 
         Assert.assertNull(
-                executeScript("return window.queryLogAtSecondClick"),
-                "Second navigation should start while the first one is in progress");
+                "Second navigation should start while the first one is in progress",
+                executeScript("return window.queryLogAtSecondClick"));
         Assert.assertEquals("first,second",
                 $(SpanElement.class).id(NavigationView.QUERY_LOG_ID).getText());
         waitUntil(driver -> driver.getCurrentUrl()
