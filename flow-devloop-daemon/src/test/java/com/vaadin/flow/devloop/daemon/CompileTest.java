@@ -610,7 +610,10 @@ class CompileTest {
                 """);
         Path config = write("app/src/main/resources/application.properties",
                 "server.port=8080");
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
         Compile compile = new Compile(project(app));
+        compile.copyResources(List.of(served));
         long appStarted = System.currentTimeMillis();
         touch("app/src/main/resources/application.properties");
         // What the re-resolve's process-resources leaves behind: a copy at
@@ -620,8 +623,11 @@ class CompileTest {
 
         compile.seedFromDisk(appStarted, appStarted);
 
-        assertEquals(List.of(config),
-                compile.staleResources().startup().modified());
+        Compile.ResourceChanges changes = compile.staleResources();
+        assertEquals(List.of(config), changes.startup().modified());
+        // What the app did start with is still seeded, or every apply would
+        // report every resource.
+        assertTrue(changes.live().isEmpty());
     }
 
     @Test
