@@ -25,11 +25,15 @@ import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -44,10 +48,12 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.UidlRequestHandler.MprPushStateJs;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockUI;
 
@@ -287,10 +293,24 @@ class UidlRequestHandlerTest {
         uidl = JacksonUtils.readTree(out);
 
         assertEquals(
-                "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
-                whatRuns(uidl, 1),
+                UidlRequestHandler.functionId(MprPushStateJs.class,
+                        "pushLocation", 1),
+                functionRunBy(uidl, 1),
                 "the push state of the corrected location should replace the one the response carried: "
                         + uidl);
+
+        // The client applies the function to the parameter that follows the
+        // arguments of the call, and refuses to run one whose parameters do
+        // not add up, so the whole invocation is pinned here
+        ArrayNode invocation = (ArrayNode) uidl.get("execute").get(1);
+        assertEquals(3, invocation.size(),
+                "the invocation should carry the argument, the element and what it runs: "
+                        + invocation);
+        assertEquals("http://localhost:9998/#!away",
+                invocation.get(0).asString(),
+                "the corrected location should be the argument of the call");
+        assertTrue(invocation.get(1).isNull(),
+                "the call has nothing to run on, so nothing should follow the argument");
     }
 
     @Test
@@ -309,10 +329,136 @@ class UidlRequestHandlerTest {
         uidl = JacksonUtils.readTree(out);
 
         assertEquals(
-                "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
-                whatRuns(uidl, 1),
+                UidlRequestHandler.functionId(MprPushStateJs.class, "pushHash",
+                        1),
+                functionRunBy(uidl, 1),
                 "the push state of the corrected hash should replace the one the response carried: "
                         + uidl);
+        assertEquals("!away",
+                ((ArrayNode) uidl.get("execute").get(1)).get(0).asString(),
+                "the corrected hash should be the argument of the call: "
+                        + uidl);
+    }
+
+    @Test
+    void should_sendTheCorrectedLocation_as_aParameter() throws Exception {
+        UI ui = getUi();
+
+        handler = spy(new UidlRequestHandler());
+        StringWriter writer = new StringWriter();
+
+        // A location is application data. Whatever it holds has to reach the
+        // browser unchanged, and must not become part of what the browser
+        // runs, which an apostrophe in it otherwise ends up being.
+        ObjectNode uidl = generateUidl(true, false, "!it's");
+        doReturn(uidl).when(handler).createUidl(ui, false);
+
+        handler.writeUidl(ui, writer, false);
+
+        ObjectNode written = JacksonUtils.readTree(writer.toString());
+        ArrayNode invocation = (ArrayNode) written.get("execute").get(1);
+
+        assertTrue(hasParameter(invocation, "http://localhost:9998/#!it's"),
+                "the corrected location should be a parameter of the push state, was: "
+                        + invocation);
+        assertFalse(whatRuns(written, 1).toString().contains("it's"),
+                "the corrected location should not be part of what the push state runs, was: "
+                        + whatRuns(written, 1));
+    }
+
+    @Test
+    void should_runTheSameThing_when_theCorrectedLocationDiffers()
+            throws Exception {
+        UI ui = getUi();
+
+        handler = spy(new UidlRequestHandler());
+
+        // The constants a session has sent are remembered for good, so a push
+        // state that is its own constant per location makes a session grow
+        // with every hash the user navigates to.
+        String first = pushStateOf(ui, "!away");
+        String second = pushStateOf(ui, "!elsewhere");
+
+        assertEquals(first, second,
+                "two corrected locations should run the same thing, differing in the parameter");
+    }
+
+    @Test
+    void should_keepAnApplicationInvocation_that_mentionsPushState()
+            throws Exception {
+        UI ui = getUi();
+
+        handler = spy(new UidlRequestHandler());
+        StringWriter writer = new StringWriter();
+
+        ObjectNode uidl = generateUidl(true, true);
+
+        // An application may run the browser function that the router happens
+        // to use. Only what the router scheduled may be corrected.
+        String applicationScript = "history.pushState(null, '', '/tracked')";
+        ((ObjectNode) uidl.get("constants")).put("applicationScript",
+                applicationScript);
+        ArrayNode invocation = JacksonUtils.createArrayNode();
+        invocation.add("");
+        invocation.add("applicationScript");
+        int index = ((ArrayNode) uidl.get("execute")).size();
+        ((ArrayNode) uidl.get("execute")).add(invocation);
+
+        doReturn(uidl).when(handler).createUidl(ui, false);
+
+        handler.writeUidl(ui, writer, false);
+
+        ObjectNode written = JacksonUtils.readTree(writer.toString());
+        assertEquals(applicationScript, whatRuns(written, index).asString(),
+                "what the application scheduled should still be there: "
+                        + written);
+    }
+
+    @Test
+    void should_replaceThePushState_that_theWriterActuallyEncodes()
+            throws Exception {
+        UI ui = getUi();
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(ui.getSession().getService().getDeploymentConfiguration())
+                .thenReturn(configuration);
+        when(configuration.isReactEnabled()).thenReturn(false);
+
+        // The fix-up recognizes the router's push state by what names it among
+        // the constants of the response, which is a contract between it and
+        // the writer: this schedules a real location change and encodes it the
+        // way a response does, so that a change to either side that stops the
+        // two from naming the same thing fails here rather than silently
+        // leaving the wrong location pushed.
+        ui.getPage().getHistory().pushState(null, "away");
+        ArrayNode encoded = UidlWriter.encodeExecuteJavaScriptList(
+                ui.getInternals().dumpPendingJavaScriptInvocations(),
+                ui.getInternals().getConstantPool());
+        assertEquals(1, encoded.size(),
+                "the router should have scheduled one invocation, got: "
+                        + encoded);
+
+        ObjectNode uidl = generateUidl(true, true);
+        ((ArrayNode) uidl.get("execute")).set(1, encoded.get(0));
+        ((ObjectNode) uidl.get("constants"))
+                .setAll(ui.getInternals().getConstantPool().dumpConstants());
+        int invocations = uidl.get("execute").size();
+
+        handler = spy(new UidlRequestHandler());
+        doReturn(uidl).when(handler).createUidl(ui, false);
+        StringWriter writer = new StringWriter();
+
+        handler.writeUidl(ui, writer, false);
+
+        ObjectNode written = JacksonUtils.readTree(writer.toString());
+        assertEquals(invocations, written.get("execute").size(),
+                "the corrected push state should replace the one the router scheduled rather than be added next to it: "
+                        + written);
+        assertEquals(
+                UidlRequestHandler.functionId(MprPushStateJs.class,
+                        "pushLocation", 1),
+                functionRunBy(written, 1),
+                "and it should be what that invocation now runs: " + written);
     }
 
     @Test
@@ -353,8 +499,13 @@ class UidlRequestHandlerTest {
 
         handler.writeUidl(ui, writer, false);
 
-        String out = writer.toString();
-        assertFalse(out.contains("history.pushState"));
+        ObjectNode written = JacksonUtils.readTree(writer.toString());
+        assertEquals(1, written.get("execute").size(),
+                "nothing should be pushed when the v7 location carries no hash: "
+                        + written);
+        assertFalse(written.has("constants"),
+                "nothing should be pushed when the v7 location carries no hash: "
+                        + written);
     }
 
     @Test
@@ -530,15 +681,64 @@ class UidlRequestHandlerTest {
 
     /**
      * What the invocation at the given index of the given response runs, which
-     * the invocation names among the constants of the response.
+     * the invocation names among the constants of the response: the expression
+     * for one that runs an expression, and the function of the bundle for one
+     * that runs declared JavaScript.
      */
-    private static String whatRuns(ObjectNode uidl, int index) {
+    private static JsonNode whatRuns(ObjectNode uidl, int index) {
         ArrayNode invocation = (ArrayNode) uidl.get("execute").get(index);
         String name = invocation.get(invocation.size() - 1).asString();
-        return uidl.get("constants").get(name).asString();
+        return uidl.get("constants").get(name);
+    }
+
+    /**
+     * The identifier of the function that the invocation at the given index of
+     * the given response runs.
+     */
+    private static String functionRunBy(ObjectNode uidl, int index) {
+        return whatRuns(uidl, index).get(JsonConstants.UIDL_KEY_JS_FUNCTION)
+                .asString();
+    }
+
+    /**
+     * Whether the given invocation carries the given value as a parameter,
+     * which is any element but the last, that one naming what it runs.
+     */
+    private static boolean hasParameter(ArrayNode invocation, String value) {
+        for (int i = 0; i < invocation.size() - 1; i++) {
+            JsonNode parameter = invocation.get(i);
+            if (parameter.getNodeType().equals(JsonNodeType.STRING)
+                    && value.equals(parameter.asString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Writes a response that corrects the given hash and answers with what
+     * names the push state it runs. A constant belongs to the session rather
+     * than to the response, so a second response that runs the same thing names
+     * it and carries it no more.
+     */
+    private String pushStateOf(UI ui, String hash) throws IOException {
+        StringWriter writer = new StringWriter();
+        ObjectNode uidl = generateUidl(false, true, hash);
+        doReturn(uidl).when(handler).createUidl(ui, false);
+
+        handler.writeUidl(ui, writer, false);
+
+        ArrayNode invocation = (ArrayNode) JacksonUtils
+                .readTree(writer.toString()).get("execute").get(1);
+        return invocation.get(invocation.size() - 1).asString();
     }
 
     private ObjectNode generateUidl(boolean withLocation, boolean withHash) {
+        return generateUidl(withLocation, withHash, "!away");
+    }
+
+    private ObjectNode generateUidl(boolean withLocation, boolean withHash,
+            String hash) {
 
         // @formatter:off
         ObjectNode uidl = JacksonUtils.readTree(
@@ -587,10 +787,9 @@ class UidlRequestHandlerTest {
             "\"meta\": {}, \"resources\": {},\"typeMappings\": {},\"typeInheritanceMap\": {}, \"timings\": []";
 
         String locationChange =
-            "\"change\", {\"pid\": \"0\"}, [\"0\", {\"id\": \"0\", \"location\": \"http://localhost:9998/#!away\"}]";
+            "\"change\", {\"pid\": \"0\"}, [\"0\", {\"id\": \"0\", \"location\": \"http://localhost:9998/#" + hash + "\"}]";
 
-        String hashRpc =
-             "window.location.hash = '!away';";
+        String hashRpc = "window.location.hash = '" + hash + "';";
 
         // @formatter:on
 
@@ -603,6 +802,18 @@ class UidlRequestHandlerTest {
         }
 
         ((ArrayNode) uidl.get("execute").get(2)).set(1, v7String);
+
+        // The push state the router scheduled, as UidlWriter sends it: the
+        // invocation names the constant of the function the build generated
+        // for History.HistoryJs.pushState, and that is what the fix-up
+        // corrects.
+        ObjectNode routerPushState = UidlWriter.functionConstant(
+                UidlRequestHandler.functionId(HistoryJs.class, "pushState", 2));
+        String name = new ConstantPoolKey(routerPushState).getId();
+        ((ArrayNode) uidl.get("execute").get(1)).set(1, name);
+        ((ObjectNode) uidl.get("constants")).remove("pushState");
+        ((ObjectNode) uidl.get("constants")).set(name, routerPushState);
+
         return uidl;
     }
 

@@ -1002,6 +1002,32 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Checks whether a pending invocation is a call of the named method of the
+     * given JavaScript definition.
+     * <p>
+     * This is how a caller recognizes what it scheduled itself - the router,
+     * which asks whether it has already scheduled a location change - without
+     * looking for a browser function in the text of a script, which any
+     * invocation may hold and which changes whenever the declaration is
+     * reworded.
+     *
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @param methodName
+     *            the name of the called method, not <code>null</code>
+     * @return <code>true</code> if such a call is pending, <code>false</code>
+     *         otherwise
+     */
+    public boolean containsPendingJsCall(Class<?> definitionType,
+            String methodName) {
+        return getPendingJavaScriptInvocations()
+                .map(js -> js.getInvocation().getJsCall())
+                .anyMatch(call -> call != null
+                        && call.definitionType() == definitionType
+                        && call.methodName().equals(methodName));
+    }
+
+    /**
      * Records the page title set with {@link Page#setTitle(String)}.
      * <p>
      * You should not set the page title for the browser with this method, use

@@ -39,6 +39,7 @@ import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.trigger.internal.CallbackAction;
@@ -2248,11 +2249,14 @@ public class UI extends Component
         boolean locationChanged = !location.getPath().equals(route)
                 && route.startsWith("/")
                 && !location.getPath().equals(route.substring(1));
-        boolean containsPendingReplace = !getInternals()
-                .containsPendingJavascript("window.history.replaceState")
-                && !getInternals().containsPendingJavascript(
-                        "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
-        if (locationChanged && containsPendingReplace) {
+        // Whichever of the two routers is in use, the replace it scheduled is
+        // a call of the declaration behind it, so the two are recognized by
+        // what was called rather than by what the script reads like
+        boolean noReplacePending = !getInternals()
+                .containsPendingJsCall(HistoryJs.class, "replaceState")
+                && !getInternals().containsPendingJsCall(HistoryJs.class,
+                        "navigateReplacing");
+        if (locationChanged && noReplacePending) {
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }

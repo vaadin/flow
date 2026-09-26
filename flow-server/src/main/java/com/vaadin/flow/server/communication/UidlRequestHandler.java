@@ -17,8 +17,10 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -32,10 +34,14 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -81,8 +87,19 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     public static final Pattern HASH_PATTERN = Pattern
             .compile("window.location.hash ?= ?'(.*?)'");
     public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
-    public static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
-    public static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, null, '%s'));";
+    /**
+     * The JavaScript that pushes a corrected hash onto the location the browser
+     * is at, for a v7 UIDL that named no location to go with it. The hash is
+     * the parameter of the call rather than part of the JavaScript.
+     */
+    private static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, '', location.pathname + location.search + '#' + $0));";
+
+    /**
+     * The JavaScript that pushes a corrected location, which the v7 UIDL gave
+     * in full. The location is the parameter of the call rather than part of
+     * the JavaScript.
+     */
+    private static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, '', $0));";
 
     private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
     private static final String RPC = RPC_INVOCATIONS;
@@ -91,6 +108,26 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     private static final String CONSTANTS = "constants";
     private static final String EXECUTE = UIDL_KEY_EXECUTE;
+
+    /**
+     * What names the push state that the router scheduled among the constants
+     * of a response, which is the invocation the fix-up corrects.
+     * <p>
+     * An invocation names what it runs rather than carrying it, and a constant
+     * is named by a hash of its value, so the name of a given call is the same
+     * in every response and is known here without reading one. Only the push
+     * state of the non-React router is this: a replace state, a React
+     * navigation and an application invocation that runs the same browser
+     * function are all named differently.
+     */
+    private static final String ROUTER_PUSH_STATE = nameOfFunction(
+            functionId(HistoryJs.class, "pushState", 2));
+
+    private static final String CORRECTED_LOCATION_FUNCTION = functionId(
+            MprPushStateJs.class, "pushLocation", 1);
+
+    private static final String CORRECTED_HASH_FUNCTION = functionId(
+            MprPushStateJs.class, "pushHash", 1);
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -297,8 +334,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         int idx = -1;
         for (int i = 0; i < exec.size(); i++) {
             ArrayNode arr = (ArrayNode) exec.get(i);
-            String runs = whatRuns(arr, uidl);
-            if (runs != null && runs.contains("history.pushState")) {
+            if (runsRouterPushState(arr)) {
                 idx = i;
             }
             // Everything but the last element is a parameter, and the v7 UIDL
@@ -325,57 +361,94 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
 
         if (location != null) {
-            ArrayNode arr = JacksonUtils.createArrayNode();
-            arr.add("");
-            arr.add(asConstant(ui, uidl,
-                    String.format(
-                            location.startsWith("http") ? PUSH_STATE_LOCATION
-                                    : PUSH_STATE_HASH,
-                            location)));
+            ArrayNode corrected = correctedPushState(ui, uidl, location);
             if (idx >= 0) {
-                exec.set(idx, arr);
+                exec.set(idx, corrected);
             } else {
-                exec.add(arr);
+                exec.add(corrected);
             }
 
         }
     }
 
     /**
-     * What the given invocation runs, as this response carries it.
-     * <p>
-     * An invocation names what it runs among the constants of the response that
-     * sends it, so this answers for one that runs something the client has not
-     * been sent before, which is what an invocation of a location that is being
-     * navigated to is. One that runs something the client already has is
-     * answered for with <code>null</code>, and the push state of the corrected
-     * location is then added to the response rather than replacing it.
+     * Whether the given invocation is the push state that the router scheduled
+     * for the location being navigated to, which is the one the fix-up replaces
+     * with a push state of the corrected location.
+     *
+     * @see #ROUTER_PUSH_STATE
      */
-    private static String whatRuns(ArrayNode invocation, ObjectNode uidl) {
-        if (invocation.isEmpty() || !uidl.has(CONSTANTS)) {
-            return null;
+    private static boolean runsRouterPushState(ArrayNode invocation) {
+        if (invocation.isEmpty()) {
+            return false;
         }
         JsonNode name = invocation.get(invocation.size() - 1);
-        if (!name.getNodeType().equals(JsonNodeType.STRING)) {
-            return null;
-        }
-        JsonNode constant = uidl.get(CONSTANTS).get(name.asString());
-        return constant != null
-                && constant.getNodeType().equals(JsonNodeType.STRING)
-                        ? constant.asString()
-                        : null;
+        return name.getNodeType().equals(JsonNodeType.STRING)
+                && ROUTER_PUSH_STATE.equals(name.asString());
     }
 
     /**
-     * Registers the given script with the constant pool of the given UI, puts
-     * it among the constants of the given response when the client does not
-     * have it yet, and answers with what names it - which is what an invocation
-     * carries instead of the script.
+     * The invocation that pushes the corrected location, as a call of the
+     * JavaScript that {@link MprPushStateJs} declares.
+     * <p>
+     * The location is a parameter of the call, so whatever it holds reaches the
+     * browser rather than becoming part of what the browser runs, and the two
+     * declared functions serve every location a session navigates to rather
+     * than each of them adding a constant the session keeps for good. The
+     * browser runs a function the bundle already has, which is what a content
+     * security policy without <code>unsafe-eval</code> allows.
      */
-    private static String asConstant(UI ui, ObjectNode uidl, String script) {
+    private static ArrayNode correctedPushState(UI ui, ObjectNode uidl,
+            String location) {
+        ArrayNode invocation = JacksonUtils.createArrayNode();
+        invocation.add(location);
+        // The client applies the function to the parameter that follows the
+        // arguments of the call, and this call has nothing to run on: the
+        // declared JavaScript addresses the browser's history rather than an
+        // element, the same way page level JavaScript does.
+        invocation.addNull();
+        invocation.add(asConstant(ui, uidl,
+                UidlWriter.functionConstant(location.startsWith("http")
+                        ? CORRECTED_LOCATION_FUNCTION
+                        : CORRECTED_HASH_FUNCTION)));
+        return invocation;
+    }
+
+    /**
+     * The identifier of the function that the named method of the given
+     * JavaScript definition runs, which is what an invocation of it names.
+     * <p>
+     * A call is built to ask it, since the identifier belongs to the
+     * declaration rather than to the arguments: they only say which of the
+     * methods of that name is meant.
+     * <p>
+     * Package private for the tests of the fix-up, which assert on what it
+     * sends and recognizes.
+     */
+    static String functionId(Class<?> definitionType, String methodName,
+            int parameterCount) {
+        return new JsCall(definitionType, methodName,
+                Collections.nCopies(parameterCount, null)).getFunctionId();
+    }
+
+    /**
+     * What names the constant of the given function, which is what an
+     * invocation that runs it carries.
+     */
+    private static String nameOfFunction(String functionId) {
+        return new ConstantPoolKey(UidlWriter.functionConstant(functionId))
+                .getId();
+    }
+
+    /**
+     * Registers the given value with the constant pool of the given UI, puts it
+     * among the constants of the given response when the client does not have
+     * it yet, and answers with what names it - which is what an invocation
+     * carries instead of the value.
+     */
+    private static String asConstant(UI ui, ObjectNode uidl, JsonNode value) {
         ConstantPool constantPool = ui.getInternals().getConstantPool();
-        String name = constantPool.getConstantId(
-                new ConstantPoolKey(JacksonUtils.createNode(script)));
+        String name = constantPool.getConstantId(new ConstantPoolKey(value));
         if (constantPool.hasNewConstants()) {
             ObjectNode constants = uidl.has(CONSTANTS)
                     ? (ObjectNode) uidl.get(CONSTANTS)
@@ -385,6 +458,36 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                             constant.getValue()));
         }
         return name;
+    }
+
+    /**
+     * The push state that the MPR fix-up sends, as a JavaScript definition, so
+     * that the build collects it into the bundle and the corrected location is
+     * a parameter of the call rather than part of the JavaScript.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    @JsDefinition
+    public interface MprPushStateJs extends Serializable {
+
+        /**
+         * Pushes the given location, which the v7 UIDL gave in full.
+         *
+         * @param location
+         *            the location to push
+         */
+        @JsExpression(PUSH_STATE_LOCATION)
+        void pushLocation(String location);
+
+        /**
+         * Pushes the given hash onto the location the browser is at, for a v7
+         * UIDL that named no location to go with it.
+         *
+         * @param hash
+         *            the hash to push, without the leading <code>#</code>
+         */
+        @JsExpression(PUSH_STATE_HASH)
+        void pushHash(String hash);
     }
 
     private String removeHashInV7Uidl(ObjectNode json) {
