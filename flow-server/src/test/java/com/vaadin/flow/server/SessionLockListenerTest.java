@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
@@ -241,6 +242,40 @@ public class SessionLockListenerTest {
                 waitTime.compareTo(Duration.ofMillis(20)) >= 0);
         assertTrue(holdTime + " should be at least 20ms",
                 holdTime.compareTo(Duration.ofMillis(20)) >= 0);
+    }
+
+    @Test
+    public void lockInterruptiblyAndTimedTryLock_reportOutermostHoldWithTimes()
+            throws Exception {
+        MockVaadinServletService service = new MockVaadinServletService();
+        InstrumentedReentrantLock lock = new InstrumentedReentrantLock(service);
+        VaadinSession session = bindNewSession(service, lock);
+        List<AbstractSessionLockEvent> events = recordEvents(service);
+
+        lock.lockInterruptibly();
+        lock.lockInterruptibly();
+        lock.unlock();
+        lock.unlock();
+        assertTrue(lock.tryLock(1, TimeUnit.SECONDS));
+        assertTrue(lock.tryLock(1, TimeUnit.SECONDS));
+        assertTrue(lock.tryLock());
+        lock.unlock();
+        lock.unlock();
+        lock.unlock();
+
+        List<Class<?>> hold = List.of(SessionLockRequestedEvent.class,
+                SessionLockAcquiredEvent.class, SessionLockReleasedEvent.class);
+        assertEquals(hold.size() * 2, events.size());
+        for (int i = 0; i < events.size(); i++) {
+            AbstractSessionLockEvent event = events.get(i);
+            assertEquals(hold.get(i % hold.size()), event.getClass());
+            assertSame(session, event.getSession().orElseThrow());
+            if (event instanceof SessionLockAcquiredEvent acquired) {
+                assertFalse(acquired.getWaitTime().isNegative());
+            } else if (event instanceof SessionLockReleasedEvent released) {
+                assertFalse(released.getHoldTime().isNegative());
+            }
+        }
     }
 
     @Test

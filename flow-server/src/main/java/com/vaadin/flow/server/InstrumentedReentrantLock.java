@@ -62,8 +62,12 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 class InstrumentedReentrantLock extends ReentrantLock {
 
+    // Both references are only ever replaced as a whole, never mutated, so
+    // volatile is all it takes to publish them to other threads
+    @SuppressWarnings("java:S3077")
     private transient volatile VaadinService service;
 
+    @SuppressWarnings("java:S3077")
     private transient volatile WeakReference<VaadinSession> session;
 
     /*
@@ -151,8 +155,10 @@ class InstrumentedReentrantLock extends ReentrantLock {
 
     @Override
     public void unlock() {
+        VaadinService currentService = service;
         boolean ultimateRelease = getHoldCount() == 1;
-        boolean fireReleased = ultimateRelease && holdTimed;
+        boolean fireReleased = ultimateRelease && holdTimed
+                && currentService != null;
         // Read before unlocking, another thread may take the lock right after
         long heldNanos = fireReleased ? System.nanoTime() - acquiredAtNanos : 0;
         if (ultimateRelease) {
@@ -163,8 +169,8 @@ class InstrumentedReentrantLock extends ReentrantLock {
             // Released is fired in reverse registration order so that the
             // listeners nest: a listener notified first of the acquisition is
             // notified last of the release
-            service.getEventBus().fireEventInReverseOrder(
-                    new SessionLockReleasedEvent(service, getSession(),
+            currentService.getEventBus().fireEventInReverseOrder(
+                    new SessionLockReleasedEvent(currentService, getSession(),
                             Duration.ofNanos(heldNanos)));
         }
     }
@@ -178,23 +184,27 @@ class InstrumentedReentrantLock extends ReentrantLock {
     private void lockAcquired(boolean fireRequested, boolean timeWait,
             long requestedAt) {
         holdTimed = hasListener(SessionLockReleasedEvent.class);
-        long acquiredAt = timeWait || holdTimed ? System.nanoTime() : 0;
+        long acquiredAt = (timeWait || holdTimed) ? System.nanoTime() : 0;
         acquiredAtNanos = acquiredAt;
         if (fireRequested) {
             fireLockRequested();
         }
-        if (timeWait) {
-            service.getEventBus()
-                    .fireEvent(new SessionLockAcquiredEvent(service,
+        VaadinService currentService = service;
+        if (timeWait && currentService != null) {
+            currentService.getEventBus()
+                    .fireEvent(new SessionLockAcquiredEvent(currentService,
                             getSession(),
                             Duration.ofNanos(acquiredAt - requestedAt)));
         }
     }
 
     private void fireLockRequested() {
-        if (hasListener(SessionLockRequestedEvent.class)) {
-            service.getEventBus().fireEvent(
-                    new SessionLockRequestedEvent(service, getSession()));
+        VaadinService currentService = service;
+        if (currentService != null
+                && hasListener(SessionLockRequestedEvent.class)) {
+            currentService.getEventBus()
+                    .fireEvent(new SessionLockRequestedEvent(currentService,
+                            getSession()));
         }
     }
 
