@@ -1666,7 +1666,12 @@ public abstract class VaadinService implements Serializable {
      * @param request
      *            The Vaadin request for which the session should be
      *            reinitialized
+     * @deprecated use
+     *             {@link jakarta.servlet.http.HttpServletRequest#changeSessionId()}
+     *             instead, which changes the session id in place without
+     *             copying the session attributes
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static void reinitializeSession(VaadinRequest request) {
         WrappedSession oldSession = request.getWrappedSession();
 

@@ -158,6 +158,7 @@ public class UIInternals implements Serializable {
          *            the expression to invoke
          * @param parameters
          *            a list of parameters to use when invoking the script
+         * @since 25.4
          */
         public JavaScriptInvocation(@Nullable JsCall jsCall, String expression,
                 Object... parameters) {
@@ -203,6 +204,7 @@ public class UIInternals implements Serializable {
          *
          * @return the call, or <code>null</code> if the invocation is plain
          *         JavaScript scheduled with an expression
+         * @since 25.4
          */
         public @Nullable JsCall getJsCall() {
             return jsCall;
@@ -828,6 +830,7 @@ public class UIInternals implements Serializable {
      * @param call
      *            the call to run, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(JsCall call) {
         return addJavaScriptInvocation(new JavaScriptInvocation(call,
@@ -842,6 +845,7 @@ public class UIInternals implements Serializable {
      * @param invocation
      *            the invocation to add, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(
             JavaScriptInvocation invocation) {
@@ -859,6 +863,7 @@ public class UIInternals implements Serializable {
      * @param invocation
      *            the invocation to add, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(StateNode owner,
             JavaScriptInvocation invocation) {
@@ -2250,6 +2255,8 @@ public class UIInternals implements Serializable {
      * {@link Page#executeJs(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface TitleJs extends Serializable {

@@ -235,6 +235,8 @@ public final class ScreenOrientation implements Serializable {
     /**
      * What locking the screen orientation asks of its client-side bridge, as a
      * JavaScript definition for {@link Element#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ScreenOrientationJs extends Serializable {

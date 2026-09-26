@@ -11,6 +11,7 @@
   <name>Flow Frontend Build Tools</name>
   <description>A module to handle frontend build tools common to the plugins and dev server</description>
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!-- It appears that sonar does not like shade plugin -->
     <sonar.skip>true</sonar.skip>
   </properties>

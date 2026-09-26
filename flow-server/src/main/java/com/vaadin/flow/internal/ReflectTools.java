@@ -183,6 +183,7 @@ public class ReflectTools implements Serializable {
      *            the number of parameters the methods take
      * @return the methods with that name and that number of parameters, empty
      *         if the type has none
+     * @since 25.4
      */
     public static List<Method> getMethodsWithParameterCount(Class<?> cls,
             String methodName, int parameterCount) {

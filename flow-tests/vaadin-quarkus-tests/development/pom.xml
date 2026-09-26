@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>vaadin-quarkus-tests</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>vaadin-quarkus-development-tests</artifactId>
+  <packaging>quarkus</packaging>
+  <name>Vaadin Quarkus - Integration Tests in Development mode</name>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- When the quarkus-tests job in validation.yml runs this module; see
+         the suite POM. -->
+    <validation.run>when-changed</validation.run>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-client</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-html-components</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-dnd</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-react</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-quarkus-reusable-theme</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>test-addon-without-jandex</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>test-addon-with-jandex</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>custom-websockets</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-quarkus</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-websockets</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-html-components-testbench</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-util</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>${project.basedir}/../common-test-code/src/main/resources</directory>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-maven-plugin</artifactId>
+        <version>${project.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-frontend</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-maven-plugin</artifactId>
+        <extensions>true</extensions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <vaadin.devmode.hostsAllowed>*</vaadin.devmode.hostsAllowed>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+    <sourceDirectory>${project.basedir}/../common-test-code/src/main/java</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/../common-test-code/src/test/java</testSourceDirectory>
+  </build>
+
+</project>

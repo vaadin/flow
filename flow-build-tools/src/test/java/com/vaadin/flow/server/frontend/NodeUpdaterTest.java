@@ -192,6 +192,9 @@ class NodeUpdaterTest {
 
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
+        // Native TypeScript for Flow's checker and classic TypeScript for
+        // tooling that needs the compiler API.
+        expectedDependencies.add("@typescript/native");
         expectedDependencies.add("typescript");
         return expectedDependencies;
     }
@@ -246,12 +249,12 @@ class NodeUpdaterTest {
                 JacksonUtils.createObjectNode());
         packageJson.set(NodeUpdater.DEV_DEPENDENCIES,
                 JacksonUtils.createObjectNode());
-        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES))
-                .put("typescript", "1.0.0");
+        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES)).put("vite",
+                "1.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         assertNotEquals("1.0.0", packageJson.get(NodeUpdater.DEV_DEPENDENCIES)
-                .get("typescript").stringValue());
+                .get("vite").stringValue());
     }
 
     @Test // #6907 test when user has set newer versions
@@ -337,6 +340,37 @@ class NodeUpdaterTest {
         assertEquals(existingVersion,
                 packageJson.get(NodeUpdater.DEPENDENCIES).get(pkg).textValue());
 
+    }
+
+    @Test
+    void managedNpmAlias_isUpdatedAndRetainsTarget() throws IOException {
+        ObjectNode json = nodeUpdater.getPackageJson();
+        String oldVersion = "npm:@typescript/typescript6@6.0.2";
+        String newVersion = "npm:@typescript/typescript6@6.0.3";
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", oldVersion);
+
+        assertEquals(1, nodeUpdater.addDependency(json,
+                NodeUpdater.DEV_DEPENDENCIES, "compiler", newVersion));
+        assertEquals(newVersion, json.get(NodeUpdater.DEV_DEPENDENCIES)
+                .get("compiler").asString());
+        assertEquals(0, nodeUpdater.addDependency(json,
+                NodeUpdater.DEV_DEPENDENCIES, "compiler", newVersion));
+    }
+
+    @Test
+    void managedNpmAlias_userChangesTarget_sameVersionIsPreserved()
+            throws IOException {
+        ObjectNode json = nodeUpdater.getPackageJson();
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", "npm:@typescript/typescript6@6.0.2");
+        ((ObjectNode) json.get(NodeUpdater.DEV_DEPENDENCIES)).put("compiler",
+                "npm:custom-compiler@6.0.2");
+
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", "npm:@typescript/typescript6@6.0.3");
+        assertEquals("npm:custom-compiler@6.0.2", json
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("compiler").asString());
     }
 
     @Test
@@ -992,7 +1026,7 @@ class NodeUpdaterTest {
 
     private ObjectNode getMockCoreVersionsJson() {
         // @formatter:off
-        return (ObjectNode) JacksonUtils.readTree(
+        return JacksonUtils.readTree(
                 """
                 {
                     "core": {
@@ -1030,7 +1064,7 @@ class NodeUpdaterTest {
 
     private ObjectNode getMockCommercialVersionsJson() {
         // @formatter:off
-        return (ObjectNode) JacksonUtils.readTree(
+        return JacksonUtils.readTree(
                 """
                 {
                     "vaadin": {

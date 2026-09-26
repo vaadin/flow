@@ -56,7 +56,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     protected static final String VAADIN_APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
-    private File jarResourcesFolder;
+    private final File jarResourcesFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -768,13 +768,14 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         if ((vaadinDepsVersion != null && packageJsonVersion != null)
-                && !vaadinDepsVersion.equals(packageJsonVersion)) {
+                && !vaadinDepsVersion.isSameDependency(packageJsonVersion)) {
             // The user has overridden the version, use that
             return false;
         }
 
-        if (pinnedVersion.equals(packageJsonVersion)
-                && pinnedVersion.equals(vaadinDepsVersion)) {
+        if (packageJsonVersion != null && vaadinDepsVersion != null
+                && pinnedVersion.isSameDependency(packageJsonVersion)
+                && pinnedVersion.isSameDependency(vaadinDepsVersion)) {
             return false;
         }
 
