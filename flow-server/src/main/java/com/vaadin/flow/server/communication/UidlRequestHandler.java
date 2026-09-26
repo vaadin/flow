@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -120,13 +121,13 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * function are all named differently.
      */
     private static final String ROUTER_PUSH_STATE = nameOfFunction(
-            JsCall.functionId(HistoryJs.class, "pushState", 2));
+            functionId(HistoryJs.class, "pushState", 2));
 
-    private static final String CORRECTED_LOCATION_FUNCTION = JsCall
-            .functionId(MprPushStateJs.class, "pushLocation", 1);
+    private static final String CORRECTED_LOCATION_FUNCTION = functionId(
+            MprPushStateJs.class, "pushLocation", 1);
 
-    private static final String CORRECTED_HASH_FUNCTION = JsCall
-            .functionId(MprPushStateJs.class, "pushHash", 1);
+    private static final String CORRECTED_HASH_FUNCTION = functionId(
+            MprPushStateJs.class, "pushHash", 1);
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -411,6 +412,23 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                         ? CORRECTED_LOCATION_FUNCTION
                         : CORRECTED_HASH_FUNCTION)));
         return invocation;
+    }
+
+    /**
+     * The identifier of the function that the named method of the given
+     * JavaScript definition runs, which is what an invocation of it names.
+     * <p>
+     * A call is built to ask it, since the identifier belongs to the
+     * declaration rather than to the arguments: they only say which of the
+     * methods of that name is meant.
+     * <p>
+     * Package private for the tests of the fix-up, which assert on what it
+     * sends and recognizes.
+     */
+    static String functionId(Class<?> definitionType, String methodName,
+            int parameterCount) {
+        return new JsCall(definitionType, methodName,
+                Collections.nCopies(parameterCount, null)).getFunctionId();
     }
 
     /**

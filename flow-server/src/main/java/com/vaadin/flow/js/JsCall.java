@@ -120,38 +120,6 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Gets the identifier of the function that the named method of the given
-     * JavaScript definition runs, for a caller that recognizes a call rather
-     * than making one - the MPR fix-up, which picks the invocation of a
-     * location change out of a response by what it runs.
-     * <p>
-     * {@link #getFunctionId()} answers the same for a call that was made. This
-     * answers it for a declaration, which is what a caller that has no call to
-     * ask has.
-     *
-     * @param definitionType
-     *            the JavaScript definition, not <code>null</code>
-     * @param methodName
-     *            the name of the declaring method, not <code>null</code>
-     * @param parameterCount
-     *            the number of parameters of that method
-     * @return the function identifier, not <code>null</code>
-     */
-    public static String functionId(Class<?> definitionType, String methodName,
-            int parameterCount) {
-        Method method = resolveMethod(definitionType, methodName,
-                parameterCount);
-        JsExpression annotation = method.getAnnotation(JsExpression.class);
-        if (annotation == null) {
-            throw new IllegalStateException(
-                    "Method " + methodName + " of " + definitionType.getName()
-                            + " is not annotated with @JsExpression");
-        }
-        return functionId(annotation.value(), method.getParameterCount(),
-                method.isVarArgs());
-    }
-
-    /**
      * Whether the called method collects a variable number of arguments into
      * its last parameter.
      * <p>
@@ -286,17 +254,12 @@ public record JsCall(Class<?> definitionType, String methodName,
      * limitation of the prototype rather than of the idea.
      */
     private Method resolveMethod() {
-        return resolveMethod(definitionType, methodName, arguments.size());
-    }
-
-    private static Method resolveMethod(Class<?> definitionType,
-            String methodName, int parameterCount) {
         List<Method> candidates = ReflectTools.getMethodsWithParameterCount(
-                definitionType, methodName, parameterCount);
+                definitionType, methodName, arguments.size());
         if (candidates.size() != 1) {
             throw new IllegalStateException("Expected exactly one method named "
-                    + methodName + " with " + parameterCount + " parameters in "
-                    + definitionType.getName() + ", found "
+                    + methodName + " with " + arguments.size()
+                    + " parameters in " + definitionType.getName() + ", found "
                     + candidates.size());
         }
         return candidates.get(0);

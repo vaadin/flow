@@ -35,7 +35,6 @@ import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -293,7 +292,9 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
-        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushLocation", 1),
+        assertEquals(
+                UidlRequestHandler.functionId(MprPushStateJs.class,
+                        "pushLocation", 1),
                 functionRunBy(uidl, 1),
                 "the push state of the corrected location should replace the one the response carried: "
                         + uidl);
@@ -327,7 +328,9 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
-        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushHash", 1),
+        assertEquals(
+                UidlRequestHandler.functionId(MprPushStateJs.class, "pushHash",
+                        1),
                 functionRunBy(uidl, 1),
                 "the push state of the corrected hash should replace the one the response carried: "
                         + uidl);
@@ -451,7 +454,9 @@ class UidlRequestHandlerTest {
         assertEquals(invocations, written.get("execute").size(),
                 "the corrected push state should replace the one the router scheduled rather than be added next to it: "
                         + written);
-        assertEquals(JsCall.functionId(MprPushStateJs.class, "pushLocation", 1),
+        assertEquals(
+                UidlRequestHandler.functionId(MprPushStateJs.class,
+                        "pushLocation", 1),
                 functionRunBy(written, 1),
                 "and it should be what that invocation now runs: " + written);
     }
@@ -803,7 +808,7 @@ class UidlRequestHandlerTest {
         // for History.HistoryJs.pushState, and that is what the fix-up
         // corrects.
         ObjectNode routerPushState = UidlWriter.functionConstant(
-                JsCall.functionId(HistoryJs.class, "pushState", 2));
+                UidlRequestHandler.functionId(HistoryJs.class, "pushState", 2));
         String name = new ConstantPoolKey(routerPushState).getId();
         ((ArrayNode) uidl.get("execute").get(1)).set(1, name);
         ((ObjectNode) uidl.get("constants")).remove("pushState");
