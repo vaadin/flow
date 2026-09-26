@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -291,11 +292,11 @@ class VaadinServletServiceTest {
                 invocation -> attributes.get(invocation.getArgument(0)));
         Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
                 invocation.getArgument(1))).when(request)
-                .setAttribute(Mockito.anyString(), Mockito.anyString());
+                .setAttribute(Mockito.anyString(), Mockito.any());
     }
 
     @Test
-    void filtersAreCalledWhenHandlingARequest() throws Exception {
+    void filtersAreCalledAndEventsFiredWhenHandlingARequest() throws Exception {
         mocks = new MockServletServiceSessionSetup() {
             @Override
             public TestVaadinServlet createVaadinServlet() {
@@ -322,7 +323,13 @@ class VaadinServletServiceTest {
                 "http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         service.getRequestHandlers().clear();
-        service.getRequestHandlers().add(new ExceptionThrowingRequestHandler());
+        RequestHandler handler = new ExceptionThrowingRequestHandler();
+        service.getRequestHandlers().add(handler);
+        List<RequestStartedEvent> started = new ArrayList<>();
+        List<RequestEndedEvent> ended = new ArrayList<>();
+        service.getEventBus().addListener(RequestStartedEvent.class,
+                started::add);
+        service.getEventBus().addListener(RequestEndedEvent.class, ended::add);
 
         try {
             service.handleRequest(request, response);
@@ -337,6 +344,16 @@ class VaadinServletServiceTest {
                 "Filter was called on exception handling");
         assertEquals("true", request.getAttribute("ended"),
                 "Filter was called in the finally block");
+
+        assertEquals(1, started.size());
+        assertSame(request, started.get(0).getRequest());
+        assertEquals(1, ended.size());
+        RequestEndedEvent end = ended.get(0);
+        assertSame(request, end.getRequest());
+        assertSame(response, end.getResponse().orElseThrow());
+        assertSame(handler, end.getHandler().orElseThrow());
+        assertEquals("BOOM!", end.getFailure().orElseThrow().getMessage());
+        assertTrue(end.getSession().isPresent());
     }
 
     @Test
