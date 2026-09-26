@@ -24,7 +24,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -138,6 +140,50 @@ class MainClassTest {
     @Test
     void nothingToLaunch_isEmptyRatherThanAGuess() {
         assertTrue(MainClass.discover(module(), log).isEmpty());
+    }
+
+    /**
+     * The daemon outlives edits. Moving the application class to another
+     * package used to leave every restart launching the class it had found at
+     * start, which no longer existed - and a jar packaged before the move still
+     * names the old class, so it must not bring that answer back either.
+     */
+    @Test
+    void movedApplicationClass_isRediscoveredOnRestart() throws IOException {
+        Files.writeString(app.resolve("pom.xml"),
+                "<project><artifactId>app</artifactId></project>\n");
+        MainClassRuntime runtime = new MainClassRuntime(
+                new Launch(Reactor.discover(app, log), log), log);
+        Launch.Project project = new Launch.Project(List.of(module()), "",
+                Map.of(), OptionalInt.empty());
+        compile("""
+                package com.example;
+                public class Application { public static void main(String[] a) { } }
+                """);
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION,
+                "1.0");
+        manifest.getMainAttributes().putValue("Start-Class",
+                "com.example.Application");
+        jar(manifest);
+        assertEquals("com.example.Application",
+                launchedClass(runtime, project));
+
+        Files.delete(module().classFileOf("com.example.Application"));
+        compile("""
+                package net.example;
+                public class Application { public static void main(String[] a) { } }
+                """);
+
+        assertEquals("net.example.Application",
+                launchedClass(runtime, project));
+    }
+
+    private static String launchedClass(MainClassRuntime runtime,
+            Launch.Project project) throws IOException {
+        List<String> command = runtime.invocation(project, List.of(), List.of())
+                .command();
+        return command.get(command.size() - 1);
     }
 
     private Reactor.Module module() {

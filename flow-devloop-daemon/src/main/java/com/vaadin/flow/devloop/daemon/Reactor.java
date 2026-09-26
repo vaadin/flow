@@ -114,6 +114,14 @@ final class Reactor {
                     .resolve(resourceDir.relativize(resource).toString());
         }
 
+        /**
+         * The class file a binary name compiles to under this module's output.
+         */
+        Path classFileOf(String binaryName) {
+            return classesDir.resolve(
+                    binaryName.replace('.', File.separatorChar) + ".class");
+        }
+
         /** The binary name of a class file under this module's output. */
         String binaryNameOf(Path classFile) {
             String name = classesDir.relativize(classFile).toString()

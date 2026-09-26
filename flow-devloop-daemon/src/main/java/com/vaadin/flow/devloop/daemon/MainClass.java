@@ -109,7 +109,7 @@ final class MainClass {
         if (configured != null && !configured.isBlank()) {
             return Optional.of(configured.trim());
         }
-        Optional<String> fromManifest = fromPackagedJar(appModule.dir());
+        Optional<String> fromManifest = fromPackagedJar(appModule);
         if (fromManifest.isPresent()) {
             return fromManifest;
         }
@@ -122,9 +122,15 @@ final class MainClass {
      * {@code Start-Class} first: in a Spring Boot fat jar {@code Main-Class} is
      * the launcher, and handing that to a {@code -cp} launch would start
      * nothing.
+     * <p>
+     * An answer naming a class the compiled output no longer has is left out:
+     * the jar is only as current as the last {@code mvn package}, and a class
+     * moved to another package since would otherwise go on being launched after
+     * it is gone. An output with no classes at all is a module not yet
+     * compiled, which the jar still speaks for.
      */
-    private static Optional<String> fromPackagedJar(Path appModule) {
-        Path target = appModule.resolve("target");
+    private static Optional<String> fromPackagedJar(Reactor.Module appModule) {
+        Path target = appModule.dir().resolve("target");
         if (!Files.isDirectory(target)) {
             return Optional.empty();
         }
@@ -132,10 +138,16 @@ final class MainClass {
             return jars.filter(path -> path.toString().endsWith(".jar"))
                     .sorted(Comparator.comparing(Path::toString))
                     .map(MainClass::mainClassIn).filter(Optional::isPresent)
-                    .map(Optional::get).findFirst();
+                    .map(Optional::get)
+                    .filter(name -> !isStale(appModule, name)).findFirst();
         } catch (IOException e) {
             return Optional.empty();
         }
+    }
+
+    private static boolean isStale(Reactor.Module appModule, String name) {
+        return !Files.isRegularFile(appModule.classFileOf(name))
+                && !classFilesOf(appModule.classesDir()).isEmpty();
     }
 
     private static Optional<String> mainClassIn(Path jar) {
