@@ -11,7 +11,11 @@
 
 set -euo pipefail
 
-tools="$(dirname "$0")/../flow-build-tools/src/main/java/com/vaadin/flow/server/frontend/FrontendTools.java"
+# FrontendTools moved from flow-server to flow-build-tools in 25.1, so the
+# same script works on every maintenance branch.
+root="$(dirname "$0")/.."
+tools="$root/flow-build-tools/src/main/java/com/vaadin/flow/server/frontend/FrontendTools.java"
+[ -f "$tools" ] || tools="$root/flow-server/src/main/java/com/vaadin/flow/server/frontend/FrontendTools.java"
 
 node=$(sed -n 's/.*DEFAULT_NODE_VERSION = "v\{0,1\}\([0-9.]*\)".*/\1/p' "$tools")
 pnpm=$(sed -n 's/.*DEFAULT_PNPM_VERSION = "\([0-9.]*\)".*/\1/p' "$tools")
