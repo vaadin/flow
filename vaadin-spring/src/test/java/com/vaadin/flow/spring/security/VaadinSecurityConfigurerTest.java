@@ -66,7 +66,9 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -94,6 +96,7 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -539,6 +542,48 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
+    void successUrlResolver_withLoginView_redirectsToResolvedUrl()
+            throws Exception {
+        http.with(configurer, c -> c.loginView("/login")
+                .defaultSuccessUrl("/dashboard")
+                .successUrlResolver((request, authentication,
+                        savedUrl) -> "/landing-" + authentication.getName()))
+                .build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+        var loginResponse = new MockHttpServletResponse();
+        handler.onAuthenticationSuccess(
+                new MockHttpServletRequest("POST", "/login"), loginResponse,
+                new TestingAuthenticationToken("john", "pwd"));
+
+        assertThat(loginResponse.getRedirectedUrl()).isEqualTo("/landing-john");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void authenticationFailureHandler_customHandlerIsUsedByAuthenticationFilter(
+            boolean oauth2) throws Exception {
+        var failureHandler = mock(AuthenticationFailureHandler.class);
+
+        var filters = http.with(configurer, c -> {
+            if (oauth2) {
+                c.oauth2LoginPage("/oauth2/login");
+            } else {
+                c.loginView("/login");
+            }
+            c.authenticationFailureHandler(failureHandler);
+        }).build().getFilters();
+
+        var filter = filters.stream().filter(
+                AbstractAuthenticationProcessingFilter.class::isInstance)
+                .map(AbstractAuthenticationProcessingFilter.class::cast)
+                .findFirst().orElseThrow();
+        assertThat(invokeGetter(filter, "getFailureHandler"))
+                .isSameAs(failureHandler);
+    }
+
+    @Test
     void withoutOAuth2ClientOnClasspath_configurerStillLinks() {
         // spring-security-oauth2-client is an optional dependency, and a class
         // is verified as a whole when it is loaded, so a reference to one of
@@ -725,6 +770,14 @@ class VaadinSecurityConfigurerTest {
                 .getDeclaredMethod("getDefaultTargetUrl");
         method.setAccessible(true);
         return (String) method.invoke(handler);
+    }
+
+    private Object invokeGetter(AbstractAuthenticationProcessingFilter filter,
+            String getterName) throws Exception {
+        Method method = AbstractAuthenticationProcessingFilter.class
+                .getDeclaredMethod(getterName);
+        method.setAccessible(true);
+        return method.invoke(filter);
     }
 
     private boolean isAlwaysUseDefaultTargetUrl(
