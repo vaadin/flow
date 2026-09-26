@@ -845,6 +845,64 @@ class VaadinServiceTest {
     }
 
     @Test
+    void fireSessionDestroy_browserTabIsDestroyed() {
+        MockVaadinServletService service = createService();
+        MockVaadinSession session = new MockVaadinSession(service);
+        AtomicInteger destroyed = new AtomicInteger();
+        session.lock();
+        try {
+            BrowserTab.get(addUI(session, 1))
+                    .addDestroyListener(destroyed::incrementAndGet);
+            service.fireSessionDestroy(session);
+        } finally {
+            // Runs the session access task that destroys the session
+            session.unlock();
+        }
+
+        assertEquals(1, destroyed.get());
+    }
+
+    @Test
+    void cleanupSession_browserTabIsDestroyedWithInactiveUI() {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setHeartbeatInterval(10);
+        MockVaadinServletService service = new MockVaadinServletService(
+                configuration);
+        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        MockVaadinSession session = new MockVaadinSession(service) {
+            @Override
+            public WrappedSession getSession() {
+                return wrappedSession;
+            }
+        };
+        AtomicInteger reloadedTabDestroyed = new AtomicInteger();
+        AtomicInteger inactiveTabDestroyed = new AtomicInteger();
+        session.lock();
+        try {
+            long now = System.currentTimeMillis();
+            // The heartbeat timeout is 31 seconds for a 10 second interval.
+            // A UI closed by a reload keeps its tab within the timeout.
+            UI reloadedUI = addUI(session, 1);
+            reloadedUI.getInternals().setLastHeartbeatTimestamp(now - 25_000);
+            BrowserTab.get(reloadedUI)
+                    .addDestroyListener(reloadedTabDestroyed::incrementAndGet);
+            reloadedUI.close();
+            // A UI closed as inactive in this pass takes its tab along
+            UI inactiveUI = addUI(session, 2);
+            inactiveUI.getInternals().setLastHeartbeatTimestamp(now - 35_000);
+            BrowserTab.get(inactiveUI)
+                    .addDestroyListener(inactiveTabDestroyed::incrementAndGet);
+
+            service.cleanupSession(session);
+
+            assertEquals(0, reloadedTabDestroyed.get());
+            assertEquals(1, inactiveTabDestroyed.get());
+        } finally {
+            session.unlock();
+        }
+    }
+
+    @Test
     void removeFromHttpSession_setExplicitSessionCloseAttribute()
             throws ServiceException {
         WrappedSession httpSession = Mockito.mock(WrappedSession.class);
@@ -1114,6 +1172,18 @@ class VaadinServiceTest {
                 .thenReturn(instantiator);
 
         return factory;
+    }
+
+    private static UI addUI(VaadinSession session, int uiId) {
+        UI ui = new UI() {
+            @Override
+            public int getUIId() {
+                return uiId;
+            }
+        };
+        ui.getInternals().setSession(session);
+        session.addUI(ui);
+        return ui;
     }
 
     private static MockVaadinServletService createService() {

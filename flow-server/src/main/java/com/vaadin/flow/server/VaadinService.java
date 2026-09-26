@@ -1131,6 +1131,7 @@ public abstract class VaadinService implements Serializable {
                     session.getErrorHandler().error(new ErrorEvent(e));
                 }
             }
+            BrowserTab.destroyAllTabs(session);
             SessionDestroyEvent event = new SessionDestroyEvent(
                     VaadinService.this, session);
             // Listeners registered on the session are notified before the ones
@@ -1769,6 +1770,10 @@ public abstract class VaadinService implements Serializable {
     void cleanupSession(VaadinSession session) {
         if (isSessionActive(session)) {
             closeInactiveUIs(session);
+            // Before the closed UIs are removed, so that their last heartbeat
+            // still counts for the browser tab they were loaded in
+            BrowserTab.destroyInactiveTabs(session,
+                    1000L * getHeartbeatTimeout());
             removeClosedUIs(session);
         } else {
             if (session.getState() == VaadinSessionState.OPEN) {
