@@ -433,32 +433,6 @@ public final class VaadinSecurityConfigurer
     }
 
     /**
-     * Configures the handler for a successful authentication.
-     * <p>
-     * This overrides the default handler configured automatically with either
-     * {@link #loginView(Class)} or {@link #oauth2LoginPage(String)} (and their
-     * overloads). The handler must be a
-     * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler}, because that
-     * handler takes care of redirects after login from a Vaadin navigation and
-     * of login from a Hilla client. Use a subclass to add custom behavior.
-     * <p>
-     * The handler is used as is: {@link #defaultSuccessUrl(String)} and
-     * {@link #successUrlResolver(VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver)}
-     * are not applied to it, configure them on the handler instead.
-     *
-     * @param authenticationSuccessHandler
-     *            the authentication success handler
-     * @return the current configurer instance for method chaining
-     */
-    public VaadinSecurityConfigurer authenticationSuccessHandler(
-            VaadinSavedRequestAwareAuthenticationSuccessHandler authenticationSuccessHandler) {
-        setSharedObject(
-                VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
-                authenticationSuccessHandler);
-        return this;
-    }
-
-    /**
      * Configures the handler for a failed authentication, for example to audit
      * failed login attempts or to redirect to a custom error page.
      * <p>

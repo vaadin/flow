@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.log.LogMessage;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
@@ -144,8 +145,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
          * @return the URL to redirect to, or {@code null} to redirect to the
          *         saved URL or the default target URL as if no resolver was set
          */
+        @Nullable
         String resolveSuccessUrl(HttpServletRequest request,
-                Authentication authentication, String savedUrl);
+                Authentication authentication, @Nullable String savedUrl);
     }
 
     /**

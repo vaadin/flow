@@ -562,9 +562,8 @@ class VaadinSecurityConfigurerTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
-    void authenticationHandlers_customHandlersAreUsedByAuthenticationFilter(
+    void authenticationFailureHandler_customHandlerIsUsedByAuthenticationFilter(
             boolean oauth2) throws Exception {
-        var successHandler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
         var failureHandler = mock(AuthenticationFailureHandler.class);
 
         var filters = http.with(configurer, c -> {
@@ -573,16 +572,13 @@ class VaadinSecurityConfigurerTest {
             } else {
                 c.loginView("/login");
             }
-            c.authenticationSuccessHandler(successHandler)
-                    .authenticationFailureHandler(failureHandler);
+            c.authenticationFailureHandler(failureHandler);
         }).build().getFilters();
 
         var filter = filters.stream().filter(
                 AbstractAuthenticationProcessingFilter.class::isInstance)
                 .map(AbstractAuthenticationProcessingFilter.class::cast)
                 .findFirst().orElseThrow();
-        assertThat(invokeGetter(filter, "getSuccessHandler"))
-                .isSameAs(successHandler);
         assertThat(invokeGetter(filter, "getFailureHandler"))
                 .isSameAs(failureHandler);
     }
