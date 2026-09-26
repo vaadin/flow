@@ -17,7 +17,8 @@ package com.vaadin.flow.server;
 
 /**
  * Event fired through the {@link VaadinService#getEventBus() service event bus}
- * when a Vaadin session lock is about to be requested.
+ * when a Vaadin session lock is about to be requested, for the outermost
+ * acquisition only.
  *
  * @see AbstractSessionLockEvent
  * @since 25.3
@@ -25,13 +26,28 @@ package com.vaadin.flow.server;
 public class SessionLockRequestedEvent extends AbstractSessionLockEvent {
 
     /**
-     * Creates a new event.
+     * Creates a new event without a session.
      *
      * @param service
-     *            the Vaadin service whose session lock is being acquired or
-     *            released, not {@code null}
+     *            the Vaadin service whose session lock is requested, not
+     *            {@code null}
      */
     public SessionLockRequestedEvent(VaadinService service) {
         super(service);
+    }
+
+    /**
+     * Creates a new event for the given session.
+     *
+     * @param service
+     *            the Vaadin service whose session lock is requested, not
+     *            {@code null}
+     * @param session
+     *            the Vaadin session the lock belongs to, or {@code null} if it
+     *            is not known
+     */
+    public SessionLockRequestedEvent(VaadinService service,
+            VaadinSession session) {
+        super(service, session);
     }
 }
