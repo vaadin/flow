@@ -1,7 +1,7 @@
 name: Flow Validation
 on:
   push:
-    branches: ['25.2', '25.1', '25.0', '24.10', '24.9', '23.7', '23.6']
+    branches: ['25.3', '25.2', '25.1', '25.0', '24.10', '24.9', '24.8', '24.7', '24.6', '24.5', '24.4', '23.7', '23.6']
   workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
@@ -29,6 +29,22 @@ env:
   _PR_NUMBER: ${{ github.event.number }}
   # PRs use github.base_ref, pushes use github.ref_name
   JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
+  # Picked up by every mvn this workflow starts, including the ones the plugin
+  # integration tests fork, which is why it is set here rather than on the
+  # steps that download the most.
+  #
+  # Maven 3.9 resolves over maven-resolver's own HTTP transport, which reads
+  # aether.connector.* and ignores the maven.wagon.* equivalents the `Run ITs`
+  # step used to pass, so that step was not retrying anything and no other one
+  # asked to. Central answers a client it has blocked with 403, and the retry
+  # handler treats a status outside its retryable list as the final answer:
+  # that list defaults to 429,503, so a 403 failed the build on the first
+  # artifact a job asked for. connectionMaxTtl keeps the 25 seconds the wagon
+  # property was meant to set, against a resolver default of 300.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.connectionMaxTtl=25
 jobs:
   build:
     timeout-minutes: 30
@@ -36,6 +52,10 @@ jobs:
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
+      # The Node.js and pnpm versions Flow installs by default, read from
+      # FrontendTools so that CI does not carry its own copy of them.
+      node-version: ${{ steps.frontend-tools.outputs.node-version }}
+      pnpm-version: ${{ steps.frontend-tools.outputs.pnpm-version }}
     steps:
       - run: echo "Concurrency Group = $GITHUB_WORKFLOW-${_MERGE_GROUP_SHA:-${_HEAD_REF:-$_REF_NAME}}"
       - name: Check secrets
@@ -49,9 +69,12 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
+      - name: Read the frontend tool versions
+        id: frontend-tools
+        run: scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.21.0'
+          node-version: ${{ steps.frontend-tools.outputs.node-version }}
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -117,18 +140,20 @@ jobs:
           set -x
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Set TB License
+        # Written before the fallback compile below, so a re-run does
+        # not build the reactor without a license.
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         if: ${{ github.run_attempt > 1 }}
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
-      - name: Set TB License
-        env:
-          TB_LICENSE: ${{ secrets.TB_LICENSE }}
-        run: |
-          mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Unit Test
         run: |
           echo Running TESTS: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
@@ -197,10 +222,10 @@ jobs:
           ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.21.0'
+          node-version: ${{ needs.build.outputs.node-version }}
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
-          version: '11.26.0'
+          version: ${{ needs.build.outputs.pnpm-version }}
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 'latest'
@@ -226,18 +251,20 @@ jobs:
         run: |
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Set TB License
+        # Written before the fallback compile below, so a re-run does
+        # not build the reactor without a license.
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         if: ${{ github.run_attempt > 1 }}
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
-      - name: Set TB License
-        env:
-          TB_LICENSE: ${{ secrets.TB_LICENSE }}
-        run: |
-          mkdir -p ~/.vaadin/
-          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile Shared modules
         run: |
           if [ ${{matrix.current}} -eq 2 -o ${{matrix.current}} -eq 3 ]; then
@@ -254,7 +281,7 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 -Pbun $ARGS"
+          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Pbun $ARGS"
           set -x -e
           LOG=mvn-it-tests-${{matrix.current}}.out
           : > "$LOG"
@@ -287,6 +314,7 @@ jobs:
     # pass immediately. Unlike the other test jobs this one needs no secrets,
     # so it runs for pull requests from forks too.
     needs: build
+    if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
     runs-on: ubuntu-24.04
     steps:
@@ -352,7 +380,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: '24.21.0'
+          node-version: ${{ needs.build.outputs.node-version }}
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -372,14 +400,47 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      # Caching the Gradle home by hand meant every pull request saved its own
+      # copy of it. Those copies alone held 7 of the 10 GB the repository is
+      # allowed, so entries evicted each other within hours and even a second
+      # run of the same pull request started cold. What keeps them down now is
+      # the key: a pull request that edits none of the files it hashes restores
+      # the entry main warmed on the primary key, and the provider skips its
+      # save on an exact hit, so only the ones that change a build script write
+      # at all. The gating below is not what does it, it was already there
+      # while those copies accumulated.
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('flow-plugins/flow-gradle-plugin/**/*.gradle', 'flow-plugins/flow-gradle-plugin/gradle.properties', 'flow-plugins/flow-gradle-plugin/gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
+          # The default 'enhanced' provider is a proprietary component that the
+          # MIT licence of the action does not cover, and it is free only as a
+          # preview. 'basic' is the MIT implementation. It saves one entry over
+          # ~/.gradle/caches and ~/.gradle/wrapper, the same tree the hand
+          # written step cached, and deliberately passes no restore keys, so a
+          # change to anything the key covers starts from an empty Gradle home
+          # rather than a near match. gradle-home-cache-includes and its
+          # siblings are read only by the enhanced provider and do nothing here.
+          #
+          # Its key is not the one the replaced step computed either. It hashes
+          # **/*.gradle*, **/gradle-wrapper.properties, gradle/*.versions.toml,
+          # **/versions.properties and a couple of buildSrc paths, across the
+          # whole repository. So flow-gradle-plugin/gradle.properties no longer
+          # takes part, a basename needs a literal .gradle in it, and the two
+          # settings.gradle fixtures under vaadin-dev-server/src/test/resources
+          # now do: editing one of those invalidates the Gradle home.
+          cache-provider: basic
+          # The action would otherwise write only on the default branch, which
+          # this workflow no longer builds.
+          #
+          # Everything but the merge queue writes. Read only would be cheaper,
+          # but the provider has no restore keys, so a pull request that edits a
+          # build script computes a key that exists in no scope and could not
+          # save one either: it would download the whole Kotlin, Dokka and
+          # plugin-publish set again on every push to that branch. Those are
+          # exactly the pull requests this job runs for, and the hand written
+          # step it replaced degraded to a prefix match instead. A merge queue
+          # branch is single use, so what it saves is read by nothing.
+          cache-read-only: ${{ github.event_name == 'merge_group' }}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         if: ${{ steps.decide.outputs.run == 'true' && github.run_attempt == 1 }}
         with:
@@ -588,7 +649,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         with:
-          node-version: '24.21.0'
+          node-version: '26.10.0'
       - name: Auto-merge PR
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         env:
@@ -609,6 +670,17 @@ jobs:
         with:
           ref: ${{env._HEAD_SHA}}
           fetch-depth: 0
+      - name: Read the frontend tool versions
+        id: frontend-tools
+        run: scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
+      # The base build and the apicmp build each run npm install in
+      # flow-client, flow-polymer2lit and vaadin-dev-server. Without a warm
+      # ~/.npm those six installs dominate the job and exhaust its timeout.
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: ${{ steps.frontend-tools.outputs.node-version }}
+          cache: npm
+          cache-dependency-path: 'flow-client/package-lock.json'
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
