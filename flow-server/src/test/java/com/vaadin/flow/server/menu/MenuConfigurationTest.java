@@ -209,6 +209,32 @@ class MenuConfigurationTest {
     }
 
     @Test
+    void getMenuEntriesTree_exposesNestedEntries() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(MenuRegistryTest.TreeDashboard.class,
+                MenuRegistryTest.TreeSettings.class,
+                MenuRegistryTest.TreeBilling.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<MenuEntry> tree = MenuConfiguration.getMenuEntriesTree();
+
+        assertEquals(1, tree.size());
+        MenuEntry dashboard = tree.get(0);
+        assertEquals("Dashboard", dashboard.title());
+        assertEquals("/", dashboard.path());
+
+        MenuEntry settings = dashboard.children().get(0);
+        assertEquals("/settings", settings.path());
+
+        MenuEntry billing = settings.children().get(0);
+        assertEquals("Billing", billing.title());
+        assertEquals("/billing", billing.path());
+        assertTrue(billing.children().isEmpty(),
+                "A leaf entry is expected to have no children");
+    }
+
+    @Test
     void getPageHeader_serverSideRoutes_withContentComponent_pageHeadersFromAnnotationAndName() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
