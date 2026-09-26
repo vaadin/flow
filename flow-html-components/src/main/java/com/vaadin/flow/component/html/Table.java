@@ -52,6 +52,14 @@ import com.vaadin.flow.dom.Element;
  * row group by itself. Reach for {@link #getHead()} and friends only when you
  * need to address a section as a whole — to style it, or to hand it to
  * {@code bindChildren}.
+ * <p>
+ * The Aura and Lumo themes style every table in the application when
+ * {@link com.vaadin.flow.server.InitParameters#THEME_HTML_ELEMENTS} is enabled.
+ * A single table is left to the browser with
+ * {@code table.addClassName(Constants.UNTHEMED_HTML_CLASS_NAME)}, or styled on
+ * its own, without the property, with
+ * {@code table.addClassName(Constants.THEMED_HTML_CLASS_NAME)}; see
+ * {@link com.vaadin.flow.server.Constants}.
  *
  * @see <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
  *      HTML: Tabular data</a>

@@ -594,6 +594,24 @@ public final class Constants implements Serializable {
      */
     public static final String URL_SAFE_SCHEMES_WILDCARD = "*";
 
+    /**
+     * The class name that asks the Aura and Lumo themes to style plain HTML
+     * elements, such as a <code>&lt;table&gt;</code>. It works on the element
+     * itself and on an ancestor, where it covers every native element inside
+     * it; with {@link InitParameters#THEME_HTML_ELEMENTS}, the page's
+     * {@code <body>} carries it.
+     *
+     * @see #UNTHEMED_HTML_CLASS_NAME
+     */
+    public static final String THEMED_HTML_CLASS_NAME = "vaadin-themed-html";
+
+    /**
+     * The class name that keeps the theme's styles off a plain HTML element
+     * under an ancestor with {@link #THEMED_HTML_CLASS_NAME}, leaving the
+     * element to the browser or to the application's own styles.
+     */
+    public static final String UNTHEMED_HTML_CLASS_NAME = "vaadin-unthemed-html";
+
     private Constants() {
         // prevent instantiation constants class only
     }

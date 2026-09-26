@@ -416,6 +416,18 @@ public interface DeploymentConfiguration
     }
 
     /**
+     * Checks whether the theme styles plain HTML elements, such as a
+     * <code>&lt;table&gt;</code>, across the whole application.
+     *
+     * @return {@code true} if HTML elements are themed, default is
+     *         {@code false}
+     * @see InitParameters#THEME_HTML_ELEMENTS
+     */
+    default boolean isThemeHtmlElements() {
+        return getBooleanProperty(InitParameters.THEME_HTML_ELEMENTS, false);
+    }
+
+    /**
      * Gets the application name that is by default generated based on the
      * project build settings, e.g. maven's groupId and artifactId, and can be
      * configured with the 'vaadin.applicationIdentifier' configuration
