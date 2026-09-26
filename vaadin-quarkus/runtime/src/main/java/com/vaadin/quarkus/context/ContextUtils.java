@@ -27,6 +27,8 @@ import io.quarkus.arc.Arc;
  * A modified copy of org.apache.deltaspike.core.util.ContextUtils.
  *
  * A set of utility methods for working with contexts.
+ * 
+ * @since 1.0
  */
 @Typed()
 public abstract class ContextUtils {

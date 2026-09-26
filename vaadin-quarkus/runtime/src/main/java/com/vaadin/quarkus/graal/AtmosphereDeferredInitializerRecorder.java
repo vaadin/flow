@@ -20,6 +20,8 @@ import io.undertow.servlet.api.DeploymentManager;
 
 /**
  * Initializes the Atmosphere framework at RUNTIME_INIT phase.
+ * 
+ * @since 2.1.1
  */
 @Recorder
 public class AtmosphereDeferredInitializerRecorder {

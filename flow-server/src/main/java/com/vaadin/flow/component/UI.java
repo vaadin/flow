@@ -2406,6 +2406,8 @@ public class UI extends Component
     /**
      * What this UI asks of the page it is shown on, as a JavaScript definition
      * for {@link Page#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface UiJs extends Serializable {

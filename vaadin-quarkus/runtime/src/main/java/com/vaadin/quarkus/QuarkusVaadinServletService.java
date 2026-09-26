@@ -67,6 +67,7 @@ import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
  * It also forwards Vaadin events to CDI listeners.
  *
  * @author Vaadin Ltd
+ * @since 1.0
  */
 public class QuarkusVaadinServletService extends VaadinServletService {
 

@@ -320,6 +320,8 @@ public interface WebStorage extends Serializable {
      * <p>
      * Which storage is worked on is a parameter rather than a declaration of
      * its own, so the bundle carries one function per operation.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface WebStorageJs extends Serializable {

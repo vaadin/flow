@@ -29,6 +29,8 @@ import java.util.concurrent.ConcurrentMap;
  * a Context.
  *
  * It also addresses Serialisation in case of passivating scopes.
+ * 
+ * @since 1.0
  */
 public class ContextualStorage implements Serializable {
 

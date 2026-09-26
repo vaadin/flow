@@ -46,6 +46,8 @@ import static java.lang.annotation.ElementType.TYPE;
  * The sister annotation to this is the {@link NormalUIScoped}. Both annotations
  * reference the same underlying scope, so it is possible to get both a proxy
  * and a direct reference to the same object by using different annotations.
+ * 
+ * @since 1.0
  */
 @Scope
 @Inherited

@@ -21,22 +21,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.atmosphere.cpr.ApplicationConfig;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 import com.vaadin.flow.spring.springnative.ClientCallableAotProcessor;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
 
@@ -51,6 +55,10 @@ import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotPro
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringBootAutoConfiguration {
+
+    // By name, as @ConditionalOnMissingClass only accepts class names, so
+    // that both conditions visibly check the same class
+    private static final String SERVER_ENDPOINT_EXPORTER = "org.springframework.web.socket.server.standard.ServerEndpointExporter";
 
     @Autowired
     private WebApplicationContext context;
@@ -160,13 +168,37 @@ public class SpringBootAutoConfiguration {
     }
 
     /**
-     * Deploys JSR-356 websocket endpoints when Atmosphere is available.
-     *
-     * @return the server endpoint exporter which does the actual work.
+     * Deploys JSR-356 websocket endpoints when Atmosphere is available. Only
+     * active when the application has Spring WebSocket on the classpath, e.g.
+     * through <code>spring-boot-starter-websocket</code>.
      */
-    @Bean
-    public ServerEndpointExporter websocketEndpointDeployer() {
-        return new VaadinWebsocketEndpointExporter();
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnClass(name = SERVER_ENDPOINT_EXPORTER)
+    static class WebsocketConfiguration {
+
+        @Bean
+        ServerEndpointExporter websocketEndpointDeployer() {
+            return new VaadinWebsocketEndpointExporter();
+        }
+    }
+
+    /**
+     * Warns when push is available but its websocket endpoints can not be
+     * deployed, because push then silently falls back to long polling.
+     */
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnMissingClass(SERVER_ENDPOINT_EXPORTER)
+    static class MissingWebsocketConfiguration {
+
+        MissingWebsocketConfiguration() {
+            if (JSR356WebsocketInitializer.isAtmosphereAvailable()) {
+                LoggerFactory.getLogger(SpringBootAutoConfiguration.class)
+                        .warn("Spring WebSocket is not on the classpath, so "
+                                + "push can not use websockets in an embedded "
+                                + "server. Add spring-boot-starter-websocket "
+                                + "to the application to enable them.");
+            }
+        }
     }
 
 }
