@@ -71,18 +71,8 @@ public class NavigationStartedEvent extends EventObject {
      *
      * @return the UI, never {@code null}
      */
-    @Override
-    public UI getSource() {
-        return (UI) super.getSource();
-    }
-
-    /**
-     * Gets the UI that navigates.
-     *
-     * @return the UI, never {@code null}
-     */
     public UI getUI() {
-        return getSource();
+        return (UI) getSource();
     }
 
     /**
