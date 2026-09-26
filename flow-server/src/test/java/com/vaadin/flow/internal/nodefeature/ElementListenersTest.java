@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
@@ -37,13 +38,18 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -228,6 +234,150 @@ public class ElementListenersTest
 
         assertEquals(1, JacksonUtils.getKeys(capturedJson).size());
         assertEquals("true", capturedJson.get("baz").toString());
+    }
+
+    @Test
+    void addEventDataWithCaptures_valueReportedUnderName() {
+        AtomicReference<JsonNode> eventDataReference = new AtomicReference<>();
+        DomListenerRegistration registration = ns.add("foo",
+                e -> eventDataReference.set(e.getEventData()));
+        registration.addEventData("closest", "element.closest($0).tagName",
+                ".container");
+
+        assertEquals(Collections.singleton("element.closest($0).tagName"),
+                getExpressions("foo"));
+
+        // The client reports the value under a derived key that contains
+        // neither the expression nor the capture
+        String key = ElementListenerMap.getEventDataKey(registration,
+                "closest");
+        assertFalse(key.contains("element.closest"));
+        assertFalse(key.contains(".container"));
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(key, "DIV");
+
+        ns.fireEvent(new DomEvent(new Element("element"), "foo",
+                ns.translateEventData("foo", fromClient)));
+
+        assertEquals("DIV", eventDataReference.get().get("closest").asString());
+    }
+
+    @Test
+    void addEventDataWithoutCaptures_reportedUnderExpression() {
+        AtomicReference<JsonNode> eventDataReference = new AtomicReference<>();
+        DomListenerRegistration registration = ns.add("foo",
+                e -> eventDataReference.set(e.getEventData()));
+        registration.addEventData("event.key");
+
+        // #13834: the expression is not used as the key on the wire
+        String key = ElementListenerMap.getEventDataKey(registration,
+                "event.key");
+        assertNotEquals("event.key", key);
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(key, "Enter");
+
+        ns.fireEvent(new DomEvent(new Element("element"), "foo",
+                ns.translateEventData("foo", fromClient)));
+
+        // The expression is still the name used on the server
+        assertEquals("Enter",
+                eventDataReference.get().get("event.key").asString());
+    }
+
+    @Test
+    void sameExpressionDifferentCaptures_separateValuesAndFilters() {
+        AtomicInteger firstCount = new AtomicInteger();
+        AtomicInteger secondCount = new AtomicInteger();
+
+        DomListenerRegistration first = ns.add("foo",
+                e -> firstCount.incrementAndGet());
+        first.setFilter("event.key === $0", "Enter");
+        DomListenerRegistration second = ns.add("foo",
+                e -> secondCount.incrementAndGet());
+        second.setFilter("event.key === $0", "Escape");
+
+        // One shared expression, but one key per set of captures
+        assertEquals(Collections.singleton("event.key === $0"),
+                getExpressions("foo"));
+        String firstKey = ElementListenerMap.getFilterKey(first);
+        String secondKey = ElementListenerMap.getFilterKey(second);
+        assertNotEquals(firstKey, secondKey);
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(firstKey, true);
+        fromClient.put(secondKey, false);
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", fromClient));
+
+        assertEquals(1, firstCount.get());
+        assertEquals(0, secondCount.get());
+    }
+
+    @Test
+    void capturesAreSentOutsideTheConstantPool() {
+        ElementListenerMap first = createFeature();
+        first.add("foo", noOp).setFilter("event.key === $0", "Enter");
+
+        ElementListenerMap second = createFeature();
+        second.add("foo", noOp).setFilter("event.key === $0", "Escape");
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode firstValue = encodeSettings(first, "foo", constantPool);
+        ArrayNode secondValue = encodeSettings(second, "foo", constantPool);
+
+        // The shared part is identical even though the captures differ, so it
+        // is only sent to the client once
+        assertEquals(firstValue.get(0), secondValue.get(0));
+        assertEquals(1,
+                JacksonUtils.getKeys(constantPool.dumpConstants()).size());
+        assertNotEquals(firstValue.get(1), secondValue.get(1));
+
+        // The captures are sent as [sharedKey, capture...] for each key
+        ObjectNode captures = (ObjectNode) firstValue.get(1);
+        assertEquals(1, JacksonUtils.getKeys(captures).size());
+        ArrayNode capture = (ArrayNode) captures
+                .get(JacksonUtils.getKeys(captures).get(0));
+        assertEquals("Enter", capture.get(1).asString());
+    }
+
+    @Test
+    void setFilterWithCaptures_getFilterReturnsExpression() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+        registration.setFilter("event.key === $0", "Enter");
+
+        assertEquals("event.key === $0", registration.getFilter());
+
+        registration.setFilter(null);
+        assertNull(registration.getFilter());
+        assertNull(ElementListenerMap.getFilterKey(registration));
+
+        // No event data has been added, so there is no key for any name
+        assertNull(ElementListenerMap.getEventDataKey(registration, "label"));
+    }
+
+    @Test
+    void nullNameOrExpression_throws() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventData(null, "$0"));
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventData("data", null));
+    }
+
+    private static ArrayNode encodeSettings(ElementListenerMap listenerMap,
+            String eventType, ConstantPool constantPool) {
+        List<NodeChange> changes = new java.util.ArrayList<>();
+        listenerMap.collectChanges(changes::add);
+
+        MapPutChange change = (MapPutChange) changes.stream()
+                .filter(MapPutChange.class::isInstance)
+                .filter(c -> eventType.equals(((MapPutChange) c).getKey()))
+                .findFirst().orElseThrow();
+
+        return ((ParameterizedConstantPoolKey) change.getValue())
+                .encode(constantPool);
     }
 
     @Test
@@ -494,7 +644,7 @@ public class ElementListenersTest
         assertEquals(0, eventCount.get());
 
         ObjectNode eventData = JacksonUtils.createObjectNode();
-        eventData.put("filterKey", true);
+        eventData.put(ElementListenerMap.getFilterKey(registration), true);
         ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
         assertEquals(1, eventCount.get());
     }
@@ -528,6 +678,77 @@ public class ElementListenersTest
         // The unconditional preventDefault should NOT be present
         assertFalse(expressions.contains("event.preventDefault()"),
                 "Should NOT have unconditional preventDefault");
+    }
+
+    @Test
+    void preventDefaultWithCapturedFilter_keepsFilterCaptures() {
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === $0", "Enter");
+        registration.preventDefault();
+
+        assertTrue(
+                getExpressions("keydown").contains(
+                        "(event.key === $0) && event.preventDefault()"),
+                "preventDefault should be conditional on the filter");
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode value = encodeSettings(ns, "keydown", constantPool);
+
+        // Both the filter and the combined expression are evaluated with the
+        // capture of the filter
+        ObjectNode captures = (ObjectNode) value.get(1);
+        assertEquals(2, JacksonUtils.getKeys(captures).size());
+        JacksonUtils.getKeys(captures).forEach(key -> assertEquals("Enter",
+                ((ArrayNode) captures.get(key)).get(1).asString()));
+
+        ObjectNode shared = (ObjectNode) constantPool.dumpConstants()
+                .get(value.get(0).stringValue());
+        JacksonUtils.getKeys(shared)
+                .forEach(key -> assertEquals(1,
+                        shared.get(key).get("c").asInt(),
+                        "Both entries should be evaluated with one capture"));
+    }
+
+    @Test
+    void duplicateEventDataName_valueIsSharedByBothListeners() {
+        AtomicReference<JsonNode> firstData = new AtomicReference<>();
+        AtomicReference<JsonNode> secondData = new AtomicReference<>();
+
+        DomListenerRegistration first = ns.add("foo",
+                e -> firstData.set(e.getEventData()));
+        first.addEventData("label", "element.getAttribute($0)", "data-a");
+        DomListenerRegistration second = ns.add("foo",
+                e -> secondData.set(e.getEventData()));
+        second.addEventData("label", "element.getAttribute($0)", "data-b");
+
+        // The name is the key towards the server, so the two entries cannot
+        // both be available; this is why the name has to be unique
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(ElementListenerMap.getEventDataKey(first, "label"), "a");
+        fromClient.put(ElementListenerMap.getEventDataKey(second, "label"),
+                "b");
+
+        JsonNode translated = ns.translateEventData("foo", fromClient);
+        assertEquals(1, JacksonUtils.getKeys(translated).size());
+
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", translated));
+        assertEquals(firstData.get(), secondData.get());
+    }
+
+    @Test
+    void translateEventDataForUnknownEventType_nothingIsCached() {
+        ns.add("foo", noOp).addEventData("data", "$0", "capture");
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put("whatever", true);
+
+        assertEquals(1, ns.getCachedSettingsCount());
+
+        // The event type comes from the client, so an unknown type must not
+        // leave anything behind
+        assertSame(fromClient, ns.translateEventData("bar", fromClient));
+        assertEquals(1, ns.getCachedSettingsCount(),
+                "Settings should not be cached for an event type without listeners");
     }
 
     @Test

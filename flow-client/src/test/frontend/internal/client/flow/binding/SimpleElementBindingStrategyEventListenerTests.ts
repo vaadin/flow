@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { Reactive } from '../../../../../../main/frontend/internal/client/flow/reactive/Reactive';
 import { Debouncer } from '../../../../../../main/frontend/internal/client/flow/binding/Debouncer';
-import { BindGuardStateNode, makeCollectingTree } from '../bindingTestHelpers';
+import { BindGuardStateNode, makeCollectingTree, sharedEventSettings } from '../bindingTestHelpers';
 import { NodeFeatures } from '../../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
 import { StateNode } from '../../../../../../main/frontend/internal/client/flow/StateNode';
 import { bind } from '../../../../../../main/frontend/internal/client/flow/binding/Binder';
@@ -33,14 +33,14 @@ describe('SimpleElementBindingStrategy DOM event listeners', () => {
   });
 
   function addListenerConstant(key: string, expressions: Record<string, unknown>): void {
-    harness.constantPool.importFromJson({ [key]: expressions });
+    harness.constantPool.importFromJson({ [key]: sharedEventSettings(expressions) });
     node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('event1').setValue(key);
   }
 
   // Adds a constant-pool entry for a "click" listener, mirroring the GWT
   // addToConstantPool + ELEMENT_LISTENERS setup.
   function addClickListenerConstant(key: string, expressions: Record<string, unknown>): void {
-    harness.constantPool.importFromJson({ [key]: expressions });
+    harness.constantPool.importFromJson({ [key]: sharedEventSettings(expressions) });
     node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('click').setValue(key);
   }
 
@@ -210,7 +210,7 @@ describe('SimpleElementBindingStrategy DOM event listeners', () => {
     bind(guarded, guardedElement);
 
     harness.constantPool.importFromJson({
-      expressionsKey: { "window.navigator.userAgent[0] === 'M'": false }
+      expressionsKey: sharedEventSettings({ "window.navigator.userAgent[0] === 'M'": false })
     });
     guarded.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty('click').setValue('expressionsKey');
     Reactive.flush();
