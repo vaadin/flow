@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,11 +45,12 @@ public class ArchiveProvider {
                 .loadPomFromFile("target/effective-pom.xml");
         WebArchive archive = ShrinkWrap
                 .create(WebArchive.class, warName + ".war")
-                .addAsLibraries(pom.resolve("com.vaadin:vaadin-cdi",
-                        "com.vaadin:flow-server", "com.vaadin:flow-client",
-                        "com.vaadin:flow-html-components",
-                        "com.vaadin:flow-polymer-template").withTransitivity()
-                        .asFile())
+                .addAsLibraries(pom
+                        .resolve("com.vaadin:vaadin-cdi",
+                                "com.vaadin:flow-server",
+                                "com.vaadin:flow-html-components",
+                                "com.vaadin:flow-polymer-template")
+                        .withTransitivity().asFile())
                 .addAsWebInfResource(EmptyAsset.INSTANCE,
                         ArchivePaths.create("beans.xml"))
                 .addClasses(Counter.class, CounterFilter.class);

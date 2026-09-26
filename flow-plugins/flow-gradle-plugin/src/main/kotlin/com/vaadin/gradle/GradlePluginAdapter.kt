@@ -28,7 +28,10 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleIdentifier
+import org.gradle.api.artifacts.component.ComponentIdentifier
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.provider.Provider
@@ -52,6 +55,7 @@ internal class GradlePluginAdapter private constructor(
     private val jarFiles: FileCollection
     private val resolvedArtifacts: Provider<Set<ModuleIdentifier>>
     private val classFinderClasspath: FileCollection
+    private val flowClient: FileCollection
 
     constructor(
         task: Task,
@@ -73,6 +77,79 @@ internal class GradlePluginAdapter private constructor(
         jarFiles = dependencyConfiguration.incoming.files.filter {
             it.name.endsWith(".jar", true)
         } ?: project.files()
+        flowClient = resolveFlowClient(project, dependencyConfiguration)
+    }
+
+    /**
+     * Returns the jar of the Flow client for the frontend build to copy the
+     * client frontend sources from.
+     *
+     * The client holds the frontend sources of the client engine, which are
+     * input to the frontend build, and a production application serves the
+     * build output rather than the client itself. A project therefore does not
+     * depend on the client, and a build resolves it here, pinned to the
+     * version of flow-server the project resolves - a build must not compile a
+     * client of one version into an application running the server of another.
+     *
+     * The collection is empty when the project resolves a client of its own,
+     * as one with the development server on the classpath does, and when there
+     * is no flow-server module to take a version from - the class finder
+     * reports a project without the server dependency.
+     */
+    private fun resolveFlowClient(
+        project: Project,
+        dependencyConfiguration: Configuration
+    ): FileCollection {
+        // The graph of the dependencies rather than their artifacts: a
+        // version is metadata, while asking for artifacts would ask for the
+        // jar of a project dependency before the task that builds it has run
+        val version = dependencyConfiguration.incoming.resolutionResult
+            .rootComponent.map { root ->
+                val modules = collectVaadinModules(root)
+                if (modules.any { it.module == FLOW_CLIENT_MODULE }) {
+                    NO_VERSION
+                } else {
+                    modules.firstOrNull { it.module == FLOW_SERVER_MODULE }
+                        ?.version ?: NO_VERSION
+                }
+            }
+        // Held on to rather than the project, which a task must not keep
+        val dependencies = project.dependencies
+        val client = project.configurations.detachedConfiguration()
+        client.isTransitive = false
+        client.withDependencies { declared ->
+            version.get().takeIf { it != NO_VERSION }?.let {
+                declared.add(
+                    dependencies.create("$VAADIN_GROUP:$FLOW_CLIENT_MODULE:$it")
+                )
+            }
+        }
+        return project.files(client)
+    }
+
+    /**
+     * Returns the Vaadin modules of the dependency graph the given component
+     * is the root of.
+     */
+    private fun collectVaadinModules(
+        root: ResolvedComponentResult
+    ): List<ModuleComponentIdentifier> {
+        val modules = mutableListOf<ModuleComponentIdentifier>()
+        val visited = mutableSetOf<ComponentIdentifier>()
+        val pending = ArrayDeque(listOf(root))
+        while (pending.isNotEmpty()) {
+            val component = pending.removeFirst()
+            if (!visited.add(component.id)) {
+                continue
+            }
+            (component.id as? ModuleComponentIdentifier)
+                ?.takeIf { it.group == VAADIN_GROUP }
+                ?.let { modules.add(it) }
+            component.dependencies
+                .filterIsInstance<ResolvedDependencyResult>()
+                .forEach { pending.add(it.selected) }
+        }
+        return modules
     }
 
     // ClassFinder instance is created the first time it is accessed with the
@@ -159,7 +236,8 @@ internal class GradlePluginAdapter private constructor(
             })
     }
 
-    override fun getJarFiles(): MutableSet<File> = jarFiles.toMutableSet()
+    override fun getJarFiles(): MutableSet<File> =
+        jarFiles.toMutableSet().apply { addAll(flowClient) }
 
     override fun isJarProject(): Boolean = jarProject
 
@@ -370,5 +448,15 @@ internal class GradlePluginAdapter private constructor(
     // manager itself is used instead of being overridden
     override fun minimumFrontendPackageAgeDays(): Int? =
         config.minimumFrontendPackageAgeDays.orNull
+
+    private companion object {
+        const val VAADIN_GROUP = "com.vaadin"
+        const val FLOW_SERVER_MODULE = "flow-server"
+        const val FLOW_CLIENT_MODULE = "flow-client"
+
+        // Providers have no absent value once mapped, so this stands for
+        // "there is no client to resolve"
+        const val NO_VERSION = ""
+    }
 
 }

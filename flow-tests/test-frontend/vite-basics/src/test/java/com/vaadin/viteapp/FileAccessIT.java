@@ -69,20 +69,4 @@ public class FileAccessIT extends ViteDevModeIT {
 
     }
 
-    private URL getFsUrl(String fileInProject) throws IOException {
-        // For Windows, the URLs should be like
-        // http://localhost:8888/VAADIN/@fs/C:/Code/flow/flow-tests/test-frontend/vite-basics/target/vaadin-dev-server-settings.json
-
-        String currentPath = new java.io.File(".").getCanonicalPath()
-                .replace("\\", "/");
-        if (!currentPath.startsWith("/")) {
-            currentPath = "/" + currentPath;
-        }
-        if (currentPath.endsWith("/")) {
-            currentPath = currentPath.substring(0, currentPath.length() - 1);
-        }
-        return new URL("http://localhost:8888/VAADIN/@fs" + currentPath + "/"
-                + fileInProject);
-    }
-
 }

@@ -75,11 +75,6 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-client</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
       <artifactId>flow-dnd</artifactId>
       <version>${project.version}</version>
     </dependency>

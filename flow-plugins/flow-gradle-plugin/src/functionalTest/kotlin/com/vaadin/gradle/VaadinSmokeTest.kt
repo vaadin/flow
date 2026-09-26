@@ -80,6 +80,20 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
+    fun testPrepareFrontend_resolvesTheFlowClient() {
+        testProject.build("vaadinPrepareFrontend")
+
+        // The project has no dependency on the client, the way an application
+        // has none: the build resolves it for the frontend build to compile
+        // into the bundle
+        val client = File(
+            testProject.dir,
+            "src/main/frontend/generated/jar-resources/FlowClient.js"
+        )
+        expect(true, client.toString()) { client.isFile }
+    }
+
+    @Test
     fun `vaadin tasks not ran by default in development mode`() {
         val result: BuildResult = testProject.build("build")
         // Since Vaadin 25, the dev server handles frontend preparation at

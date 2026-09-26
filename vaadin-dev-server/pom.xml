@@ -45,6 +45,18 @@
       <artifactId>flow-devloop-daemon</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- The Flow client. Not used from this module's code either: it carries
+         the frontend sources the dev server hands to Vite, and it travels the
+         same route - in through the optional com.vaadin:vaadin-dev dependency
+         a starter declares, and out of a production build by the same
+         mechanism that excludes the dev server. A production build gets the
+         very same files from the build plugin instead, so nothing an
+         application deploys has to carry them. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>license-checker</artifactId>

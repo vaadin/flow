@@ -30,10 +30,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
@@ -46,6 +49,10 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.build.BuildContext;
+import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.resolution.ArtifactRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Platform;
@@ -74,6 +81,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Additionally include compile-time-only dependencies matching the pattern.
      */
     public static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
+
+    private static final String VAADIN_GROUP_ID = "com.vaadin";
+    private static final String FLOW_SERVER_ARTIFACT_ID = "flow-server";
+    private static final String FLOW_CLIENT_ARTIFACT_ID = "flow-client";
 
     /**
      * Application properties file in Spring project.
@@ -356,6 +367,22 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         buildContextRefresher = buildContext::refresh;
     }
 
+    /**
+     * Resolves the Flow client of the given version into its jar.
+     * <p>
+     * The mojo a build runs is a copy of this one, loaded in an isolated class
+     * loader, and a field of a type that loader does not share can not be
+     * copied into it. The copy therefore gets this function rather than the
+     * repository system it is made of.
+     */
+    private Function<String, File> flowClientResolver;
+
+    @Inject
+    void setRepositorySystem(RepositorySystem repositorySystem) {
+        flowClientResolver = version -> resolveFlowClient(repositorySystem,
+                version);
+    }
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (skip) {
@@ -535,10 +562,79 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public Set<File> getJarFiles() {
 
-        return project.getArtifacts().stream()
-                .filter(artifact -> "jar".equals(artifact.getType()))
-                .map(Artifact::getFile).collect(Collectors.toSet());
+        return Stream
+                .concat(project.getArtifacts().stream()
+                        .filter(artifact -> "jar".equals(artifact.getType()))
+                        .map(Artifact::getFile), findFlowClient().stream())
+                .collect(Collectors.toSet());
 
+    }
+
+    /**
+     * Returns the jar of the Flow client for the frontend build to copy the
+     * client frontend sources from.
+     * <p>
+     * The client holds the frontend sources of the client engine, which are
+     * input to the frontend build, and an application serves the build output
+     * rather than the client itself, so an application does not depend on the
+     * client. What brings the client to a project is the development server,
+     * which a project declares as an optional dependency, and a project that
+     * declares none has nothing on the classpath to copy the client from. So
+     * that a frontend build does not depend on how a project declares its
+     * development time dependencies, the client is resolved here, pinned to the
+     * version of {@code flow-server} the project resolves - a build must not
+     * compile a client of one version into an application running the server of
+     * another.
+     * <p>
+     * A project that does resolve the client itself, as one with the
+     * development server on the classpath does, keeps that client and nothing
+     * is resolved here.
+     *
+     * @return the jar of the Flow client, or an empty optional when the project
+     *         resolves the client itself
+     */
+    private Optional<File> findFlowClient() {
+        Set<Artifact> artifacts = project.getArtifacts();
+        if (artifacts.stream().anyMatch(artifact -> isVaadinArtifact(artifact,
+                FLOW_CLIENT_ARTIFACT_ID))) {
+            return Optional.empty();
+        }
+        Optional<String> version = artifacts.stream().filter(
+                artifact -> isVaadinArtifact(artifact, FLOW_SERVER_ARTIFACT_ID))
+                .map(Artifact::getVersion).findFirst();
+        if (version.isEmpty()) {
+            // Not a project with a Flow version to build the client of. The
+            // class finder reports the missing server dependency
+            getLog().debug("Not resolving the Flow client, the project does "
+                    + "not depend on " + VAADIN_GROUP_ID + ":"
+                    + FLOW_SERVER_ARTIFACT_ID);
+            return Optional.empty();
+        }
+        return Optional.of(flowClientResolver.apply(version.get()));
+    }
+
+    private File resolveFlowClient(RepositorySystem repositorySystem,
+            String version) {
+        ArtifactRequest request = new ArtifactRequest(
+                new DefaultArtifact(VAADIN_GROUP_ID, FLOW_CLIENT_ARTIFACT_ID,
+                        "jar", version),
+                project.getRemoteProjectRepositories(), null);
+        try {
+            return repositorySystem
+                    .resolveArtifact(session.getRepositorySession(), request)
+                    .getArtifact().getFile();
+        } catch (ArtifactResolutionException e) {
+            throw new IllegalStateException("Unable to resolve "
+                    + VAADIN_GROUP_ID + ":" + FLOW_CLIENT_ARTIFACT_ID + ":"
+                    + version + ", which the frontend build compiles into the "
+                    + "application bundle.", e);
+        }
+    }
+
+    private static boolean isVaadinArtifact(Artifact artifact,
+            String artifactId) {
+        return VAADIN_GROUP_ID.equals(artifact.getGroupId())
+                && artifactId.equals(artifact.getArtifactId());
     }
 
     @Override
