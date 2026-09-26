@@ -40,6 +40,7 @@ import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -496,6 +497,52 @@ class PublicResourcesLiveUpdaterTest {
                         argThat(c -> c != null
                                 && c.contains(".addon{color:teal;}")));
             });
+        }
+    }
+
+    @Test
+    void push_extraRootWinsOverStaleJarResourcesCopy() throws Exception {
+        // A build that has a sibling module's target/classes on its classpath
+        // copies that module's META-INF/resources into jar-resources. The copy
+        // is a snapshot, so the sibling's own source root must win over it.
+        File project = new File(temporaryFolder, "project-sibling");
+        File publicRoot = new File(project,
+                "src/main/resources/META-INF/resources");
+        assertTrue(publicRoot.mkdirs());
+        File jarResources = new File(project,
+                "src/main/frontend/generated/jar-resources");
+        assertTrue(jarResources.mkdirs());
+        File siblingRoot = new File(temporaryFolder,
+                "sibling/src/main/resources/META-INF/resources");
+        assertTrue(siblingRoot.mkdirs());
+
+        Files.writeString(new File(jarResources, "sibling.css").toPath(),
+                ".sibling{gap:12px;}", StandardCharsets.UTF_8);
+        Files.writeString(new File(siblingRoot, "sibling.css").toPath(),
+                ".sibling{gap:37px;}", StandardCharsets.UTF_8);
+
+        VaadinContext context = new MockVaadinContext();
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        liveReloadAccessorStatic = Mockito
+                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic
+                .when(() -> BrowserLiveReloadAccessor
+                        .getLiveReloadFromContext(Mockito.eq(context)))
+                .thenReturn(Optional.of(liveReload));
+
+        ActiveStyleSheetTracker.get(context)
+                .trackForAppShell(Set.of("context://sibling.css"));
+
+        try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                List.of(publicRoot.getAbsolutePath(),
+                        jarResources.getAbsolutePath()),
+                context)) {
+            PublicResourcesLiveUpdater.suspend(context);
+
+            assertEquals(1, PublicResourcesLiveUpdater.push(context,
+                    List.of(siblingRoot)));
+            Mockito.verify(liveReload).update(eq("context://sibling.css"),
+                    argThat(c -> c != null && c.contains("gap:37px")));
         }
     }
 

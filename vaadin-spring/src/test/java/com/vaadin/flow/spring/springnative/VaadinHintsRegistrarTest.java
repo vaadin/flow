@@ -74,4 +74,17 @@ class VaadinHintsRegistrarTest {
                 .accepts(hints);
     }
 
+    @Test
+    void shouldRegisterRuntimeLoadedClientHelpers() {
+        RuntimeHints hints = new RuntimeHints();
+        new VaadinHintsRegistrar().registerHints(hints,
+                getClass().getClassLoader());
+        assertThat(RuntimeHintsPredicates.resource()
+                .forResource("META-INF/frontend/FlowShortcut.js"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.resource()
+                .forResource("META-INF/frontend/FlowWebPush.js"))
+                .accepts(hints);
+    }
+
 }

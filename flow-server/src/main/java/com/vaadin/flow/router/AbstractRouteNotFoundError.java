@@ -17,6 +17,7 @@ package com.vaadin.flow.router;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,8 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.HttpStatusCode;
 
 /**
@@ -100,16 +103,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
 
         getElement().setChild(0, new Html(template).getElement());
         if (noRoutes && !productionMode) {
-            String copilotNoRoutes = """
-                    (function poll() {
-                        if (window.Vaadin?.copilot?.noRoutesInProject) {
-                            window.Vaadin.copilot.noRoutesInProject();
-                        } else {
-                            setTimeout(poll, 100);
-                        }
-                    })();
-                    """;
-            getElement().executeJs(copilotNoRoutes);
+            getElement().executeJs(CopilotJs.class).reportNoRoutes();
         }
         return HttpStatusCode.NOT_FOUND.getCode();
     }
@@ -205,5 +199,30 @@ public abstract class AbstractRouteNotFoundError extends Component {
 
         private static final String PRODUCTION_MODE_TEMPLATE = readHtmlFile(
                 "RouteNotFoundError_prod.html");
+    }
+
+    /**
+     * What this page tells Copilot, as a JavaScript definition for
+     * {@link com.vaadin.flow.dom.Element#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface CopilotJs extends Serializable {
+
+        /**
+         * Tells Copilot that the project has no routes yet, waiting for it to
+         * load rather than assuming it already has.
+         */
+        @JsExpression("""
+                (function poll() {
+                    if (window.Vaadin?.copilot?.noRoutesInProject) {
+                        window.Vaadin.copilot.noRoutesInProject();
+                    } else {
+                        setTimeout(poll, 100);
+                    }
+                })();
+                """)
+        void reportNoRoutes();
     }
 }

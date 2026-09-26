@@ -20,18 +20,6 @@ took.
 - **Editing.** This skill restricts no tools on purpose. You are expected to Edit and Write
   application source while it is loaded — batching edits and then applying them *is* the cycle,
   so stay in the skill rather than loading it once the work is already finished.
-- **Browser verification** — the cycle's step 5, for a change with a visual surface.
-  *Preferred:* a Playwright or browser MCP server. `browser_navigate` once, before the first
-  `apply` (a CSS push needs a page already connected), then `browser_snapshot` /
-  `browser_evaluate` for the assertions the shared reference describes, and
-  `browser_console_messages` after each change (a `/favicon.ico` 404 is normal noise). The first
-  snapshot after navigating is usually empty — Vaadin renders client-side, so wait for a known
-  element or re-snapshot before asserting. *Without one:* extend the browser tests the project
-  already has — a `*BrowserTest` or `*IT` class and the element API it already depends on — and
-  say you verified there. Do not write a new browser harness for one change: that costs more
-  than the change, and *Verifying in the browser* in
-  [reference.md](../../../.agents/skills/vaadin-devloop/reference.md) says what a run with no
-  browser at all can and cannot claim.
 - **Vaadin API and docs.** *Preferred:* the Vaadin MCP server (`search_vaadin_docs`,
   `get_component_java_api`, `get_component_styling`, `get_theme_css_properties`), against the
   version in the application's `pom.xml`. *Without it:* vaadin.com/docs for that version, or

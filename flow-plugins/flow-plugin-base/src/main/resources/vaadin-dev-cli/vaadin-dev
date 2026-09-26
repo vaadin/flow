@@ -213,6 +213,24 @@ daemon_jar_cached() {
     printf '%s' "$jar"
 }
 
+# -Dvaadin.dev.mavenArgs=<args> out of VAADIN_DEV_DAEMON_OPTS. Read here as well
+# as passed through to the daemon JVM. The daemon applies it to the resolves it
+# runs itself, but the resolve below runs before any daemon exists, against the
+# same poms and so subject to the same profiles: a project that declares the
+# dev-loop dependency - or the Vaadin version carrying it - inside a profile
+# would never get as far as starting one, and a project that has to switch a
+# profile off would fail here exactly as it would have on the daemon's resolve.
+#
+# Split on whitespace by the expansion at the call site, the same trade
+# Launch.extraMavenArguments makes: several profiles go in one comma-joined -P,
+# and an argument containing a space cannot be passed.
+maven_args_option() {
+    local opts="${VAADIN_DEV_DAEMON_OPTS:-}"
+    [[ "$opts" == *-Dvaadin.dev.mavenArgs=* ]] || return 1
+    local rest="${opts#*-Dvaadin.dev.mavenArgs=}"
+    printf '%s' "${rest%% -D*}"
+}
+
 # Asks Maven where the daemon jar is, once, and caches the answer.
 #
 # build-classpath rather than a hard-coded local-repository path: the jar's
@@ -231,6 +249,8 @@ daemon_jar_resolve() {
         return 70
     fi
     mkdir -p "$WORK_DIR"
+    local extra
+    extra="$(maven_args_option)" || extra=""
     local relative="target/devloop/daemon-jar.txt"
     spin_begin "resolving the dev-loop daemon"
     local log output=1
@@ -241,8 +261,8 @@ daemon_jar_resolve() {
     # Offline first: it is the fast path, and the jar is already in the local
     # repository whenever the project has been built once.
     for offline in -o -nsu; do
-        printf -- '--- %s %s ---\n' "$maven" "$offline" >>"$log"
-        if ( cd "$ROOT" && "$maven" -B -ntp -q $offline \
+        printf -- '--- %s %s %s ---\n' "$maven" "$offline" "$extra" >>"$log"
+        if ( cd "$ROOT" && "$maven" -B -ntp -q $offline $extra \
                 dependency:build-classpath \
                 -DincludeArtifactIds=flow-devloop-daemon \
                 -Dmdep.outputFile="$relative" \

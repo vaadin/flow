@@ -74,9 +74,15 @@ class IFrameTest extends ComponentTest {
         f.setAccessible(true);
         f.set(iframe, element);
 
+        IFrame.ReloadJs reloadJs = Mockito.mock(IFrame.ReloadJs.class);
+        Mockito.when(element.executeJs(IFrame.ReloadJs.class))
+                .thenReturn(reloadJs);
+
         iframe.reload();
 
-        Mockito.verify(element).executeJs("this.src = this.src");
+        // Reached through the declared JavaScript rather than through an
+        // expression, so that it runs from the bundle
+        Mockito.verify(reloadJs).reload();
     }
 
     @Test

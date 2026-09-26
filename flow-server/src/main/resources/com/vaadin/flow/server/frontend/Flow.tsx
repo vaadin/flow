@@ -16,7 +16,7 @@
 /// <reference lib="es2018" />
 import { Flow as _Flow } from 'Frontend/generated/jar-resources/Flow.js';
 import React, { useCallback, useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
-import { matchRoutes, useBlocker, useLocation, useNavigate, type NavigateOptions, useHref } from 'react-router';
+import { matchRoutes, useBlocker, useLocation, useNavigate, type Blocker, type NavigateOptions, useHref } from 'react-router';
 import { createPortal } from 'react-dom';
 
 const flow = new _Flow({
@@ -358,6 +358,30 @@ function Flow() {
     const roundTrip = useRef<Promise<void> | undefined>(undefined);
     const queuedNavigate = useQueuedNavigate(roundTrip, navigated);
     const basename = useHref('/');
+    const blockerRef = useRef<Blocker>(blocker);
+    blockerRef.current = blocker;
+
+    // The blocker is resolved from asynchronous callbacks: a server round-trip
+    // for onBeforeEnter/onBeforeLeave, or 'serverConnected' for a postponed
+    // navigation. By the time such a callback runs, React Router may have moved
+    // the blocker on already - completing a queued navigation, for instance,
+    // resets every blocker back to 'unblocked'. Calling proceed() on the stale
+    // blocker captured by the effect then throws 'Invalid blocker state
+    // transition: unblocked -> proceeding', so always resolve the blocker that
+    // is current and only while it is still blocking.
+    const proceedBlocker = useCallback(() => {
+        const current = blockerRef.current;
+        if (current.state === 'blocked') {
+            current.proceed();
+        }
+    }, []);
+
+    const resetBlocker = useCallback(() => {
+        const current = blockerRef.current;
+        if (current.state === 'blocked') {
+            current.reset();
+        }
+    }, []);
 
     // portalsReducer function is used as state outside the Flow component.
     const [portals, dispatchPortalAction] = useReducer(flowPortalsReducer, []);
@@ -496,11 +520,12 @@ function Flow() {
             if (blockerHandled.current) {
                 // Blocker is handled and the new navigation
                 // gets queued to be executed after the current handling ends.
-                const { pathname, state } = blocker.location;
+                const { pathname, search, hash, state } = blocker.location;
                 // Clear base name to not get /baseName/basename/path
                 const pathNoBase = pathname.substring(basename.length);
                 // path should always start with / else react-router will append to current url
-                queuedNavigate(pathNoBase.startsWith('/') ? pathNoBase : '/' + pathNoBase, true, {
+                const path = pathNoBase.startsWith('/') ? pathNoBase : '/' + pathNoBase;
+                queuedNavigate(path + search + hash, true, {
                     state: state,
                     replace: true
                 });
@@ -520,7 +545,7 @@ function Flow() {
             // Proceed to the blocked location, unless the navigation originates from a click on a link.
             // In that case continue with function execution and perform a server round-trip
             if (navigated.current && !fromAnchor.current) {
-                blocker.proceed();
+                proceedBlocker();
                 blockingPromise.resolve();
                 navigateInProgress = false;
                 return;
@@ -538,14 +563,14 @@ function Flow() {
                     { pathname, search },
                     {
                         prevent() {
-                            blocker.reset();
+                            resetBlocker();
                             blockingPromise.resolve();
                             navigateInProgress = false;
                             navigated.current = false;
                         },
                         redirect,
                         continue() {
-                            blocker.proceed();
+                            proceedBlocker();
                             blockingPromise.resolve();
                             navigateInProgress = false;
                         }
@@ -570,16 +595,16 @@ function Flow() {
                         // postponed navigation: expose existing blocker to Flow
                         containerRef.current.serverConnected = (cancel) => {
                             if (cancel) {
-                                blocker.reset();
+                                resetBlocker();
                             } else {
-                                blocker.proceed();
+                                proceedBlocker();
                             }
                             blockingPromise.resolve();
                             navigateInProgress = false;
                         };
                     } else {
                         // permitted navigation: proceed with the blocker
-                        blocker.proceed();
+                        proceedBlocker();
                         blockingPromise.resolve();
                         navigateInProgress = false;
                     }

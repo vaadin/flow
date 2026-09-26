@@ -20,3 +20,4 @@ com.vaadin.base.devserver.hotswap.impl.DefaultTranslationsHotswapper
 com.vaadin.base.devserver.hotswap.impl.RouteRegistryHotswapper
 com.vaadin.base.devserver.hotswap.impl.ErrorViewHotswapper
 com.vaadin.base.devserver.devloop.DevLoopHotswapper
+com.vaadin.base.devserver.hotswap.impl.JsDefinitionHotswapper

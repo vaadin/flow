@@ -72,6 +72,10 @@ public class NavigationTriggerIT extends ChromeBrowserTest {
         assertMessageCount(8);
         assertLastMessage("/rerouted", NavigationTrigger.PROGRAMMATIC,
                 "rerouted");
+
+        // Resolving the client-side navigation blocker fails silently on the
+        // server, so history navigation is also checked for browser errors.
+        checkLogsForErrors();
     }
 
     private void assertLastMessage(String path, NavigationTrigger trigger,

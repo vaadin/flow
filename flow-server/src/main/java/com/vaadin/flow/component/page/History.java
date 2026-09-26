@@ -22,6 +22,8 @@ import java.util.Optional;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -235,13 +237,11 @@ public class History implements Serializable {
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         if (ui.getSession().getService().getDeploymentConfiguration()
                 .isReactEnabled()) {
-            ui.getPage().executeJs(
-                    "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));",
-                    state, pathWithQueryParameters, callback);
+            ui.getPage().executeJs(HistoryJs.class).navigatePushing(state,
+                    pathWithQueryParameters, callback);
         } else {
-            ui.getPage().executeJs(
-                    "setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
-                    state, pathWithQueryParameters);
+            ui.getPage().executeJs(HistoryJs.class).pushState(state,
+                    pathWithQueryParameters);
         }
     }
 
@@ -327,13 +327,11 @@ public class History implements Serializable {
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         if (ui.getSession().getService().getDeploymentConfiguration()
                 .isReactEnabled()) {
-            ui.getPage().executeJs(
-                    "window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));",
-                    state, pathWithQueryParameters, callback);
+            ui.getPage().executeJs(HistoryJs.class).navigateReplacing(state,
+                    pathWithQueryParameters, callback);
         } else {
-            ui.getPage().executeJs(
-                    "setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })",
-                    state, pathWithQueryParameters);
+            ui.getPage().executeJs(HistoryJs.class).replaceState(state,
+                    pathWithQueryParameters);
         }
     }
 
@@ -373,7 +371,7 @@ public class History implements Serializable {
      * onpopstate documentation</a> are met.
      */
     public void back() {
-        ui.getPage().executeJs("history.back()");
+        ui.getPage().executeJs(HistoryJs.class).back();
     }
 
     /**
@@ -385,7 +383,7 @@ public class History implements Serializable {
      * onpopstate documentation</a> are met.
      */
     public void forward() {
-        ui.getPage().executeJs("history.forward()");
+        ui.getPage().executeJs(HistoryJs.class).forward();
     }
 
     /**
@@ -402,7 +400,7 @@ public class History implements Serializable {
      *            current page to be reloaded
      */
     public void go(int steps) {
-        ui.getPage().executeJs("history.go($0)", steps);
+        ui.getPage().executeJs(HistoryJs.class).go(steps);
     }
 
     private String getPathWithQueryParameters(Location location) {
@@ -412,5 +410,90 @@ public class History implements Serializable {
         return Optional.ofNullable(location)
                 .map(Location::getPathWithQueryParameters)
                 .map(path -> path.isEmpty() ? "." : path).orElse(null);
+    }
+
+    /**
+     * What this history asks of the browser, as a JavaScript definition for
+     * {@link Page#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface HistoryJs extends Serializable {
+
+        /**
+         * Hands the address to the client side router, which pushes the history
+         * entry itself once it has navigated.
+         *
+         * @param state
+         *            the state of the entry, or <code>null</code> for none
+         * @param url
+         *            the address to navigate to
+         * @param callback
+         *            whether the client calls back once it has navigated
+         */
+        @JsExpression("window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: false, callback: $2 } }));")
+        void navigatePushing(BaseJsonNode state, String url, boolean callback);
+
+        /**
+         * Hands the address to the client side router, which replaces the
+         * current history entry once it has navigated.
+         *
+         * @param state
+         *            the state of the entry, or <code>null</code> for none
+         * @param url
+         *            the address to navigate to
+         * @param callback
+         *            whether the client calls back once it has navigated
+         */
+        @JsExpression("window.dispatchEvent(new CustomEvent('vaadin-navigate', { detail: { state: $0, url: $1, replace: true, callback: $2 } }));")
+        void navigateReplacing(BaseJsonNode state, String url,
+                boolean callback);
+
+        /**
+         * Pushes a history entry, for an application whose client side router
+         * does not write one itself.
+         *
+         * @param state
+         *            the state of the entry, or <code>null</code> for none
+         * @param url
+         *            the address of the entry
+         */
+        @JsExpression("setTimeout(() => { window.history.pushState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })")
+        void pushState(BaseJsonNode state, String url);
+
+        /**
+         * Replaces the current history entry, for an application whose client
+         * side router does not write one itself.
+         *
+         * @param state
+         *            the state of the entry, or <code>null</code> for none
+         * @param url
+         *            the address of the entry
+         */
+        @JsExpression("setTimeout(() => { window.history.replaceState($0, '', $1); window.dispatchEvent(new CustomEvent('vaadin-navigated')); })")
+        void replaceState(BaseJsonNode state, String url);
+
+        /**
+         * Goes back one entry, as the back button of the browser does.
+         */
+        @JsExpression("history.back()")
+        void back();
+
+        /**
+         * Goes forward one entry, as the forward button of the browser does.
+         */
+        @JsExpression("history.forward()")
+        void forward();
+
+        /**
+         * Goes the given number of entries forward, or backward for a negative
+         * number.
+         *
+         * @param steps
+         *            how many entries to go, where zero reloads the page
+         */
+        @JsExpression("history.go($0)")
+        void go(int steps);
     }
 }

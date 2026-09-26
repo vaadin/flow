@@ -26,6 +26,19 @@ describe('ConstantPool', () => {
     expect(pool.get<string>('missing')).to.equal(null);
   });
 
+  it('takes a key it already holds, and refuses another value under it', () => {
+    // The message a constant arrives in can reach the client more than once,
+    // and a key is a hash of the value it names, so the same key is the same
+    // value. Anything else is a key that means two things.
+    const pool = new ConstantPool();
+    pool.importFromJson({ a: { text: 'value-a' } });
+
+    pool.importFromJson({ a: { text: 'value-a' } });
+    expect(pool.get<Record<string, string>>('a')).to.deep.equal({ text: 'value-a' });
+
+    expect(() => pool.importFromJson({ a: { text: 'something else' } })).to.throw();
+  });
+
   it('accumulates constants across imports', () => {
     const pool = new ConstantPool();
     pool.importFromJson({ a: '1' });

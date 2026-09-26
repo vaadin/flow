@@ -94,6 +94,34 @@ class TransactionEngineTest {
     }
 
     @Test
+    void blockedReason_escalatesForAChangedClassHierarchy() {
+        // The import a class inherits rather than declares: adding "implements
+        // SomeMixin" leaves the declared imports identical, so frontendImports
+        // stays empty, and an enhanced-redefinition JVM accepts the change - so
+        // without this the apply reports Stable over a bundle the page cannot
+        // load the mixin's module from.
+        assertEquals(
+                Optional.of("class hierarchy changed (TaskListView): a new"
+                        + " supertype or interface brings imports that are read"
+                        + " at startup (dev bundle rebuild)"),
+                TransactionEngine.blockedReason(
+                        Connector.fields("OK entities=- frontendImports=-"
+                                + " hierarchy=TaskListView structural=-"),
+                        List.of()));
+        // An ordinary edit leaves it empty, and that must stay a hot reload.
+        assertTrue(TransactionEngine.blockedReason(
+                Connector.fields("OK entities=-"
+                        + " frontendImports=- hierarchy=- structural=-"),
+                List.of()).isEmpty());
+        // A connector too old to report the field says nothing either way, and
+        // "no field" is not "the hierarchy changed".
+        assertTrue(TransactionEngine.blockedReason(
+                Connector
+                        .fields("OK entities=- frontendImports=- structural=-"),
+                List.of()).isEmpty());
+    }
+
+    @Test
     void blockedReason_escalatesForABeanTheRunningApplicationHasNeverHad() {
         // Two half-answers make this verdict: the app says which classes carry
         // a stereotype, the change-set says which of them the application

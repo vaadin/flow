@@ -66,6 +66,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
@@ -153,8 +154,14 @@ public class VaadinServletContextInitializer
             .of(Component.class.getPackage().getName(),
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
-                    "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
-                    "com.vaadin.copilot.startup", "com.vaadin.hilla.startup")
+                    "com.vaadin.flow.data.renderer",
+                    // hold JavaScript definitions of the framework, which
+                    // development mode generates from the scanned classes
+                    Element.class.getPackage().getName(),
+                    Route.class.getPackage().getName(),
+                    IndexHtmlRequestHandler.class.getPackage().getName(),
+                    "com.vaadin.shrinkwrap", "com.vaadin.copilot.startup",
+                    "com.vaadin.hilla.startup")
             .collect(Collectors.toList());
 
     /**

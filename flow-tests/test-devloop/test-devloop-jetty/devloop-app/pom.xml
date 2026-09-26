@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-test-devloop-jetty</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-devloop-jetty-app</artifactId>
+  <!-- A WAR, which is the whole point: it has no entry point, and the servlet
+       container that runs it is a build plugin rather than a dependency. There
+       is deliberately no src/main/webapp either, matching a generated WAR
+       starter, and no web.xml, because Flow registers its servlet from an
+       annotated listener the container scans. Static files a container will
+       serve therefore come from META-INF/resources in the jars on the webapp
+       class path - the sibling module here - since this module's own
+       src/main/resources is packaged into WEB-INF/classes, which the servlet
+       spec has no container serve from. -->
+  <packaging>war</packaging>
+  <name>Flow dev loop tests: servlet container application</name>
+  <description>The WAR the servlet-container dev-loop ITs drive.</description>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- Not 8080, and not test-devloop's 8899 either: a developer very likely
+         has something on 8080, and the two dev-loop IT modules must never be
+         able to take each other's port. -->
+    <server.port>8898</server.port>
+    <!-- Run the ITs on the JUnit Platform (JUnit 6), like test-devloop. -->
+    <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
+    <!-- The parent's groups/excludedGroups are JUnit 4 @Category class names,
+         which mean nothing to the JUnit Platform provider. Cleared so this
+         module runs its ITs the way test-devloop does. -->
+    <groups/>
+    <excludedGroups/>
+    <!-- One daemon, one application process, one browser page kept open across
+         applies: nothing here is parallelizable. -->
+    <failsafe.parallel>none</failsafe.parallel>
+    <failsafe.perCoreThreadCount>false</failsafe.perCoreThreadCount>
+    <failsafe.threadCount>1</failsafe.threadCount>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Every other module that runs its ITs on the JUnit Platform gets this
+           from the Spring Boot BOM it imports for the application itself. This
+           one has no Spring, so it imports the JUnit BOM directly: without it
+           only the artifacts the root pom manages by name are at
+           ${junit.jupiter.version}, and junit-platform-engine arrives at the
+           JUnit 5 version TestBench was built against, which the launcher
+           rejects as a mismatched platform. Declared before the TestBench BOM
+           so it wins for the artifacts both could manage. -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-testbench-bom</artifactId>
+        <version>${testbench.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- The dev loop travels in with the dev server, exactly as it does for a
+         user application that declares com.vaadin:vaadin-dev. Optional, so it
+         can never reach a production build. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- The sibling library, depended on like any other jar. An edit there has
+         to reach the running app through a webapp class loader the build plugin
+         assembled, which is the multi-module question this module answers. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-devloop-jetty-shared</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>${junit.jupiter.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Driving the CLI and patching sources, shared with test-devloop so the
+         two harnesses cannot drift apart. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-devloop-support</artifactId>
+      <version>${project.version}</version>
+      <!-- Its ITs are test sources there, so they arrive as a test-jar. -->
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-testbench-core-junit5</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- DevLoopPomEditIT adds a dependency below this line and reverts it. The
+         anchor is explicit because "</dependencies>" also closes the one inside
+         <dependencyManagement>, where a dependency without a version is an
+         invalid model rather than a classpath change. -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- The ITs every fixture runs live in flow-test-devloop-support and are
+           run from there, rather than through a subclass per module that would
+           add a file and a name for nothing. Failsafe scans the dependency for
+           test classes and runs them against this application, beside the
+           DevLoopJettyIT classes below, which hold what is true only here. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <dependenciesToScan>
+            <dependency>com.vaadin:flow-test-devloop-support</dependency>
+          </dependenciesToScan>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-frontend</goal>
+            </goals>
+          </execution>
+          <!-- Dogfooding: the CLI the ITs drive is the one the goal installs. -->
+          <execution>
+            <id>install-dev-cli</id>
+            <goals>
+              <goal>install-dev-cli</goal>
+            </goals>
+            <phase>process-resources</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+        <version>${jetty.version}</version>
+        <configuration>
+          <!-- Deliberately left at what a generated WAR starter ships, and
+               deliberately not zero. The plugin's rescanner is a second thing
+               redeploying the webapp on a schedule of its own, which is what
+               the transaction model exists to prevent - and Maven gives this
+               precedence over the -Djetty.scan=0 the daemon passes on the
+               command line. The daemon overrides it through a build extension
+               instead, so that no project has to change its pom; keeping the
+               competing value here is what proves that override still works. -->
+          <scan>2</scan>
+          <httpConnector>
+            <port>${server.port}</port>
+          </httpConnector>
+          <systemProperties>
+            <!-- The daemon owns this process and decides when a change goes
+                 live, so nothing else may push to the browser on its own. -->
+            <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+          </systemProperties>
+        </configuration>
+        <executions>
+          <!-- The parent's pluginManagement binds jetty:start and jetty:stop to
+               the integration-test phases, which is right for every other WAR
+               module here and wrong for this one: the daemon owns the
+               application process, and a second launcher would fight it for the
+               port. The IT lifecycle is `vaadin-dev start` and
+               `vaadin-dev shutdown`, driven by the ITs themselves so that a
+               failure to start is a test failure with the daemon's own reason
+               attached rather than a build error. -->
+          <execution>
+            <id>start-jetty</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>stop-jetty</id>
+            <phase>none</phase>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

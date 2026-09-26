@@ -51,6 +51,7 @@ import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
+import com.vaadin.flow.server.frontend.scanner.samples.RuntimeJavaScriptComponent;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -96,6 +97,16 @@ class FrontendDependenciesTest {
 
         DepsTests.assertImportsExcludingUI(dependencies.getModules(), "foo.js");
         DepsTests.assertImports(dependencies.getScripts(), "bar.js");
+    }
+
+    @Test
+    void javaScriptWithTypeModule_excludedFromBundleImports() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        DepsTests.assertImports(dependencies.getScripts(), "bundled.js");
     }
 
     @Test

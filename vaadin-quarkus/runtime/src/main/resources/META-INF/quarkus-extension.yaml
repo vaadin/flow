@@ -1,0 +1,18 @@
+name: Vaadin Flow
+description: Vaadin Flow is a unique framework that lets you build web apps without writing HTML or JavaScript
+metadata:
+  keywords:
+    - vaadin
+    - flow
+    - web
+  guide: "https://vaadin.com/docs/latest/flow/integrations/quarkus"
+  icon-url: "https://vaadin.com/images/trademark/PNG/VaadinLogomark_RGB_500x500.png"
+  categories:
+    - "web"
+  status: "stable"
+  unlisted: "true"
+  codestart:
+    name: "vaadin-flow"
+    languages:
+    - "java"
+    artifact: "com.vaadin:vaadin-quarkus:codestarts:jar:${project.version}"

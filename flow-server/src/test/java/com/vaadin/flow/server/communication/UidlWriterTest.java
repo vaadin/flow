@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -47,9 +49,15 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -185,20 +193,213 @@ class UidlWriterTest {
                         element.getNode(), invocation))
                 .collect(Collectors.toList());
 
-        ArrayNode json = UidlWriter
-                .encodeExecuteJavaScriptList(executeJavaScriptList);
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
+                executeJavaScriptList, constantPool);
+        ObjectNode constants = constantPool.dumpConstants();
 
         ArrayNode expectedJson = JacksonUtils.createArray(
                 JacksonUtils.createArray(
                         // Null since element is not attached
                         JacksonUtils.nullNode(),
-                        JacksonUtils.createNode("$0.focus()")),
+                        JacksonUtils.createNode(nameOfWhatRuns(
+                                JacksonUtils.createNode("$0.focus()"),
+                                constants))),
                 JacksonUtils.createArray(
                         JacksonUtils.createNode("Lives remaining:"),
                         JacksonUtils.createNode(3),
-                        JacksonUtils.createNode("console.log($0, $1)")));
+                        JacksonUtils.createNode(nameOfWhatRuns(
+                                JacksonUtils.createNode("console.log($0, $1)"),
+                                constants))));
 
-        assertTrue(JacksonUtils.jsonEquals(expectedJson, json));
+        assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
+                "an invocation should name what it runs among the constants of the message: "
+                        + json + " " + constants);
+    }
+
+    /**
+     * What names the given constant among the given ones, which is what an
+     * invocation that runs it carries instead of the constant itself.
+     */
+    private static String nameOfWhatRuns(JsonNode whatRuns,
+            ObjectNode constants) {
+        return JacksonUtils.getKeys(constants).stream()
+                .filter(key -> JacksonUtils.jsonEquals(whatRuns,
+                        constants.get(key)))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("The constants "
+                        + constants + " should carry " + whatRuns));
+    }
+
+    /**
+     * The constant that names the function of the JavaScript declared for the
+     * given number of arguments, which is what a call of it runs.
+     */
+    private static ObjectNode functionConstant(String expression,
+            int argumentCount) {
+        ObjectNode constant = JacksonUtils.createObjectNode();
+        constant.put("f", JsCall.functionId(expression, argumentCount, false));
+        return constant;
+    }
+
+    /**
+     * The constant that names the function of the JavaScript declared for a
+     * variable number of arguments, which carries how many of them a call has
+     * because the function collects them into a rest parameter and does not
+     * report them in its length.
+     */
+    private static ObjectNode variadicFunctionConstant(String expression,
+            int parameterCount, int argumentCount) {
+        ObjectNode constant = JacksonUtils.createObjectNode();
+        constant.put("f", JsCall.functionId(expression, parameterCount, true));
+        constant.put("n", argumentCount);
+        return constant;
+    }
+
+    @Test
+    void encodeExecuteJavaScript_sameScriptTwice_sentOnceAndNamedTwice() {
+        Element element = ElementFactory.createDiv();
+        ConstantPool constantPool = new ConstantPool();
+
+        ArrayNode first = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        new JavaScriptInvocation("$0.focus()", element))),
+                constantPool);
+        constantPool.dumpConstants();
+        ArrayNode second = UidlWriter.encodeExecuteJavaScriptList(
+                List.of(new PendingJavaScriptInvocation(element.getNode(),
+                        new JavaScriptInvocation("$0.focus()", element))),
+                constantPool);
+
+        assertEquals(nameOfWhatRuns(first), nameOfWhatRuns(second),
+                "the same script should be named the same way");
+        assertFalse(constantPool.hasNewConstants(),
+                "and sent once, not with every invocation that runs it");
+    }
+
+    /**
+     * What the first invocation of the given list names as the thing it runs.
+     */
+    private static String nameOfWhatRuns(ArrayNode invocations) {
+        ArrayNode invocation = (ArrayNode) invocations.get(0);
+        return invocation.get(invocation.size() - 1).asString();
+    }
+
+    @Test
+    void encodeExecuteJavaScript_jsCall_sendsTheTargetInsteadOfTheScript() {
+        Element element = ElementFactory.createDiv();
+
+        JsCall call = new JsCall(TestJs.class, "method", List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", element);
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+        ObjectNode constants = constantPool.dumpConstants();
+
+        ArrayNode expectedJson = JacksonUtils.createArray(
+                JacksonUtils.createArray(JacksonUtils.createNode("foo"),
+                        // Null since element is not attached
+                        JacksonUtils.nullNode(),
+                        JacksonUtils.createNode(nameOfWhatRuns(
+                                functionConstant("this.method($0)", 1),
+                                constants))));
+
+        assertTrue(JacksonUtils.jsonEquals(expectedJson, json),
+                "a call of declared JavaScript should name a function, the same way an expression names a script: "
+                        + json + " " + constants);
+        assertFalse(constants.toString().contains(TestJs.class.getName()),
+                "and the constant should carry neither JavaScript nor what declared it: "
+                        + constants);
+    }
+
+    @Test
+    void encodeExecuteJavaScript_subscribedDefinitionCall_addsTheReturnChannels() {
+        Element element = ElementFactory.createDiv();
+
+        JsCall call = new JsCall(TestJs.class, "method", List.of("foo"));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", element);
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                element.getNode(), invocation);
+        pending.then(value -> {
+        });
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter
+                .encodeExecuteJavaScriptList(List.of(pending), constantPool);
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(5, encoded.size(),
+                "the argument and the element should be followed by the two channels and the function to run: "
+                        + encoded);
+        assertEquals(
+                nameOfWhatRuns(functionConstant("this.method($0)", 1),
+                        constantPool.dumpConstants()),
+                encoded.get(4).asString(),
+                "and the function should be the same one as for a call that is not subscribed to: "
+                        + encoded);
+    }
+
+    @Test
+    void encodeExecuteJavaScript_variadicCall_sendsHowManyArgumentsItCarries() {
+        Element element = ElementFactory.createDiv();
+
+        JsCall call = new JsCall(TestJs.class, "methodWithMany",
+                List.of("foo", new Object[] { 1, 2 }));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), "foo", 1, 2, element);
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+        ObjectNode constants = constantPool.dumpConstants();
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertEquals(
+                nameOfWhatRuns(variadicFunctionConstant(
+                        "this.method($0, ...$1)", 2, 3), constants),
+                encoded.get(encoded.size() - 1).asString(),
+                "the three arguments the call spread should be counted for the client, which cannot read them off the function: "
+                        + encoded + " " + constants);
+    }
+
+    @Test
+    void encodeExecuteJavaScript_variadicCall_trailingFunctionSentAsAFunction() {
+        Element element = ElementFactory.createDiv();
+        JsFunction callback = JsFunction.of("return 1;");
+
+        JsCall call = new JsCall(TestJs.class, "methodWithMany",
+                List.of("foo", new Object[] { callback }));
+        // The parameters an element schedules: the arguments of the call as
+        // the client receives them, followed by the element itself
+        List<Object> parameters = new ArrayList<>(call.flattenArguments());
+        parameters.add(element);
+        JavaScriptInvocation invocation = new JavaScriptInvocation(call,
+                call.getExpression(), parameters.toArray());
+
+        ConstantPool constantPool = new ConstantPool();
+        ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(List.of(
+                new PendingJavaScriptInvocation(element.getNode(), invocation)),
+                constantPool);
+
+        ArrayNode encoded = (ArrayNode) json.get(0);
+        assertTrue(JacksonUtils.jsonEquals(
+                JacksonCodec.encodeWithTypeInfo(callback), encoded.get(1)),
+                "a function among the trailing arguments should reach the browser as the function it is, which is what sending them one by one rather than as one array is for: "
+                        + encoded);
+    }
+
+    @JsDefinition
+    interface TestJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
+
+        @JsExpression("this.method($0, ...$1)")
+        void methodWithMany(String value, Object... rest);
     }
 
     @Test

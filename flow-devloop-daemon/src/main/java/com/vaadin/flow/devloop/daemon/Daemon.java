@@ -400,6 +400,7 @@ public final class Daemon {
         if (app.state() == AppProcess.State.RUNNING) {
             sb.append("  owner=daemon  registered=").append(app.isRegistered());
         }
+        runtimeName().ifPresent(name -> sb.append("  runtime=").append(name));
         List<String> lines = new java.util.ArrayList<>();
         lines.add(sb.toString());
         modulesLine().ifPresent(lines::add);
@@ -521,6 +522,29 @@ public final class Daemon {
                         .map(TransactionEngine.Transaction::json).orElse("null")
                 + "}}";
         return List.of(json);
+    }
+
+    /**
+     * How this project's application is started, for {@code status}.
+     * <p>
+     * Worth a word because it is a decision the daemon made about the
+     * developer's project rather than something they configured: a WAR run
+     * through its own build plugin and a Spring Boot jar launched directly look
+     * identical from outside, and when the daemon has guessed wrong this line
+     * is the only place that says so. Empty when the project looks like neither
+     * shape - {@code start} is where that is worth a full explanation, not
+     * here.
+     */
+    @SuppressWarnings("java:S106")
+    private Optional<String> runtimeName() {
+        try {
+            return Optional.of(launch.runtime().name());
+        } catch (IOException e) {
+            // Into daemon.log, which is where this daemon logs; start is
+            // where the same question gets a full answer.
+            System.out.println("runtime undecided: " + e.getMessage());
+            return Optional.empty();
+        }
     }
 
     /**

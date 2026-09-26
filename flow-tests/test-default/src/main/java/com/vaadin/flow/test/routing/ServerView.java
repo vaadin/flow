@@ -28,6 +28,7 @@ public class ServerView extends Div implements HasUrlParameter<String> {
 
     private final Span setParameterSpan = new Span();
     private int setParameterCount = 0;
+    private final Span queryLogSpan = new Span();
 
     public ServerView() {
         NativeButton serverNavigation = new NativeButton(
@@ -37,14 +38,31 @@ public class ServerView extends Div implements HasUrlParameter<String> {
                 });
         serverNavigation.setId(NavigationView.SERVER_ID);
         setParameterSpan.setId(NavigationView.SET_PARAMETER_COUNTER_ID);
+        queryLogSpan.setId(NavigationView.QUERY_LOG_ID);
 
         add(new Span("ServerView"), new Div(), serverNavigation, new Div(),
-                setParameterSpan);
+                setParameterSpan, new Div(), queryLogSpan);
     }
 
     @Override
     public void setParameter(BeforeEvent event,
             @WildcardParameter String parameter) {
         setParameterSpan.setText("" + ++setParameterCount);
+        if (!parameter.isEmpty()) {
+            logQuery(event);
+        }
+    }
+
+    private void logQuery(BeforeEvent event) {
+        // Slow navigation so that a navigation started meanwhile gets queued
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        String query = event.getLocation().getQueryParameters()
+                .getSingleParameter("qp").orElse("");
+        queryLogSpan.setText(queryLogSpan.getText().isEmpty() ? query
+                : queryLogSpan.getText() + "," + query);
     }
 }

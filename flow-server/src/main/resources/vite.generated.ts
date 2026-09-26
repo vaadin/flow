@@ -137,6 +137,12 @@ const themeOptions = {
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 const commercialBannerComponent = path.resolve(frontendFolder, settings.generatedFolder, 'commercial-banner.js');
 const hasCommercialBanner = existsSync(commercialBannerComponent);
+// The JavaScript declared by the @JsDefinition interfaces, generated before the
+// build. Hashed into the stats like the banner above, so that a bundle whose
+// definitions changed is rebuilt instead of running with the functions it was
+// built with.
+const jsDefinitionsFile = path.resolve(frontendFolder, settings.generatedFolder, 'vaadin-js-definitions.js');
+const hasJsDefinitions = existsSync(jsDefinitionsFile);
 
 // The browsers that Vaadin supports: Chrome, Edge and Firefox evergreen at the
 // versions current today, Firefox ESR, and Safari 17 in its latest minor
@@ -327,6 +333,12 @@ function statsExtracterPlugin(): PluginOption {
       if (hasCommercialBanner) {
         const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
         frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
+      }
+      if (hasJsDefinitions) {
+        const fileBuffer = readFileSync(jsDefinitionsFile, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+        frontendFiles[settings.generatedFolder + '/vaadin-js-definitions.js'] = createHash('sha256')
+          .update(fileBuffer, 'utf8')
+          .digest('hex');
       }
 
       const themeJsonContents: Record<string, string> = {};
@@ -766,11 +778,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // Vite is always spawned with the project root as its working
           // directory, which is this directory, so "." resolves to the same
           // tsconfig. The dev server instead locates the tsc binary with
-          // Node's require relative to this root, which only accepts an
-          // absolute path and otherwise silently falls back to running a bare
-          // "tsc" through a shell, which logs "tsc: command not found" and
-          // leaves the dev server without type checking.
-          root: env.command === 'build' ? '.' : dirname
+          // Node's require relative to this root. We point it at the alias
+          // Flow ships TypeScript under (@typescript/native) so the checker
+          // spawns the native compiler through its bin/tsc entry point.
+          // The separate typescript alias provides the classic TS6 compiler
+          // API for tools such as eslint.
+          root: env.command === 'build' ? '.' : dirname,
+          typescriptPath: '@typescript/native',
         }
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })

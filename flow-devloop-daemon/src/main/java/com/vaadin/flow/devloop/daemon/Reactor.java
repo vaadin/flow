@@ -137,6 +137,7 @@ final class Reactor {
             return Files.isDirectory(sourceDir)
                     || Files.isDirectory(resourceDir);
         }
+
     }
 
     /**
@@ -147,6 +148,9 @@ final class Reactor {
 
     /** How many module names {@link #describe()} spells out before counting. */
     private static final int NAMES_SHOWN = 8;
+
+    /** The pom element read for a module's own name and for a plugin's. */
+    private static final String ARTIFACT_ID = "artifactId";
 
     private final Path root;
     private final Module app;
@@ -361,6 +365,84 @@ final class Reactor {
     }
 
     /**
+     * A build plugin as Maven resolved it: enough to invoke one of its goals,
+     * and enough to see configuration that would fight the dev loop.
+     *
+     * @param groupId
+     *            the plugin's group
+     * @param artifactId
+     *            the plugin's artifact
+     * @param version
+     *            the version this build pins it to, empty when the project
+     *            leaves that to Maven - the goal is then named without one, as
+     *            it would be for any other invocation
+     * @param configuration
+     *            the simple {@code <configuration>} values in effect for it,
+     *            its executions' included
+     */
+    record PluginConfig(String groupId, String artifactId, String version,
+            Map<String, String> configuration) {
+
+        /** How a goal of this plugin is named on a command line. */
+        String coordinates() {
+            return groupId + ":" + artifactId
+                    + (version.isBlank() ? "" : (":" + version));
+        }
+
+        /**
+         * A configured value, or empty when the pom leaves it at the default.
+         */
+        Optional<String> configured(String name) {
+            String value = configuration.get(name);
+            return value == null || value.isBlank() ? Optional.empty()
+                    : Optional.of(value);
+        }
+    }
+
+    /**
+     * The application module's packaging, {@code jar} when its pom names none.
+     * <p>
+     * {@code war} is what says the application is deployed into a servlet
+     * container rather than started by a main class, which is the first thing
+     * {@link AppRuntime} has to know.
+     *
+     * @return the packaging
+     */
+    String packaging() {
+        return Pom.read(app.dir().resolve("pom.xml")).packaging();
+    }
+
+    /**
+     * A plugin this build runs, as Maven assembled it.
+     * <p>
+     * Read from the model Maven itself wrote (see {@link EffectiveModel}), and
+     * from nothing else. Whether a profile is active and what a module inherits
+     * from a parent outside the checkout are Maven's to decide, and a reader
+     * with no Maven on its classpath can only approximate both - so it does not
+     * try: a plugin is one this project runs when Maven's own
+     * {@code <build><plugins>} says so, and otherwise it is not. A
+     * {@code <pluginManagement>} version is absent from that by construction,
+     * which is the distinction the pom alone could not draw.
+     * <p>
+     * Empty until a build has run, which the daemon does before it launches
+     * anything: {@code compose} resolves and only then asks how to start the
+     * application.
+     *
+     * @param groupId
+     *            the plugin's group
+     * @param artifactId
+     *            the plugin's artifact
+     * @return the plugin, or empty when this build does not run it
+     */
+    Optional<PluginConfig> plugin(String groupId, String artifactId) {
+        return EffectiveModel
+                .read(app.dir(),
+                        List.of(app.dir().resolve("pom.xml"),
+                                root.resolve("pom.xml")))
+                .flatMap(model -> model.plugin(groupId, artifactId));
+    }
+
+    /**
      * The Java release this project is built for, when a pom says so.
      * <p>
      * The application module first and the reactor root second, because a
@@ -451,7 +533,7 @@ final class Reactor {
                         properties.put(property.getTagName(), text(property));
                     }
                 }
-                String artifactId = childText(project, "artifactId");
+                String artifactId = childText(project, ARTIFACT_ID);
                 String packaging = childText(project, "packaging");
                 return new Pom(artifactId == null ? "" : artifactId,
                         packaging == null ? "jar" : packaging, modules,
@@ -475,7 +557,7 @@ final class Reactor {
         private static String compilerRelease(Document document) {
             for (Element plugin : elementsNamed(document, "plugin")) {
                 if (!"maven-compiler-plugin"
-                        .equals(childText(plugin, "artifactId"))) {
+                        .equals(childText(plugin, ARTIFACT_ID))) {
                     continue;
                 }
                 for (Element configuration : children(plugin,

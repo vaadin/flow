@@ -314,20 +314,31 @@ class BuildFrontendUtilTest {
     @Test
     void updateBuildFile_tokenExisting_developmentEntriesRemoved()
             throws Exception {
+        // make prepare-frontend write every optional development entry as well
+        Mockito.when(adapter.nodeFolder()).thenReturn("/home/somebody/node");
+        Mockito.when(adapter.isPrepareFrontendCacheDisabled()).thenReturn(true);
+        Mockito.when(adapter.isFrontendHotdeploy()).thenReturn(true);
+        Mockito.when(adapter.isNpmExcludeWebComponents()).thenReturn(true);
+        Mockito.when(adapter.frontendExtraFileExtensions())
+                .thenReturn(List.of("svg"));
+
         File tokenFile = prepareAndAssertTokenFile();
-        JsonNode buildInfoJsonDev = JacksonUtils
-                .readTree(Files.readString(tokenFile.toPath()));
 
         BuildFrontendUtil.updateBuildFile(adapter, false, false);
         assertTrue(tokenFile.exists(), "Token file should still exist");
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
 
-        Set<String> removedKeys = JacksonUtils.getKeys(buildInfoJsonDev)
-                .stream().filter(key -> !buildInfoJsonProd.has(key))
-                .collect(Collectors.toSet());
-        assertFalse(removedKeys.isEmpty(),
-                "Development entries have not been removed from token file");
+        // The production token file is packaged into the application artifact,
+        // so it must contain only entries the runtime uses in production mode,
+        // and in particular no path from the machine that ran the build.
+        assertEquals(
+                Set.of(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                        InitParameters.SERVLET_PARAMETER_INITIAL_UIDL,
+                        InitParameters.REACT_ENABLE,
+                        InitParameters.APPLICATION_IDENTIFIER),
+                new HashSet<>(JacksonUtils.getKeys(buildInfoJsonProd)),
+                "Unexpected entries in the production token file");
     }
 
     @Test

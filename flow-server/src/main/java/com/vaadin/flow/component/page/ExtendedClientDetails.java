@@ -34,6 +34,8 @@ import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
 import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 
 /**
  * Provides extended information about the web browser, such as screen
@@ -657,7 +659,6 @@ public class ExtendedClientDetails implements Serializable {
      * @since 25.0
      */
     public void refresh(SerializableConsumer<ExtendedClientDetails> callback) {
-        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
         final SerializableConsumer<JsonNode> resultHandler = json -> {
             ExtendedClientDetails details = updateFromJson(ui, json);
             if (callback != null) {
@@ -668,6 +669,26 @@ public class ExtendedClientDetails implements Serializable {
             throw new RuntimeException("Unable to retrieve extended "
                     + "client details. JS error is '" + err + "'");
         };
-        ui.getPage().executeJs(js).then(resultHandler, errorHandler);
+        ui.getPage().executeJs(ClientDetailsJs.class).readDetails()
+                .then(resultHandler, errorHandler);
+    }
+
+    /**
+     * How the browser is asked about itself again, as a JavaScript definition
+     * for {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface ClientDetailsJs extends Serializable {
+
+        /**
+         * Reads what the browser reports about itself, which is the same set of
+         * values the bootstrap collects.
+         *
+         * @return the pending details
+         */
+        @JsExpression("return Vaadin.Flow.getBrowserDetailsParameters();")
+        PendingJavaScriptResult readDetails();
     }
 }

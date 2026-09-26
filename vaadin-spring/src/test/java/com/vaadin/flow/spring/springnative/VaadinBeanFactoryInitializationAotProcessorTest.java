@@ -17,7 +17,6 @@ package com.vaadin.flow.spring.springnative;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -44,6 +43,8 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -681,6 +682,33 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
+    void processAheadOfTime_jsDefinition_jdkProxyAndReflectionHintsRegistered() {
+        RuntimeHints hints = processAotForHints(
+                createProcessorWithJsDefinitions(TestJsDefinition.class));
+
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestJsDefinition.class))
+                .as("JavaScript definition should be registered as a JDK proxy")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestJsDefinition.class, "addClass"))
+                .as("JavaScript definition methods should be invokable through reflection")
+                .accepts(hints);
+    }
+
+    @Test
+    void getJsDefinitionTypes_findsAnnotatedInterfaces() {
+        VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
+
+        Collection<Class<?>> definitions = processor
+                .getJsDefinitionTypes(getClass().getPackageName());
+
+        assertThat(definitions)
+                .as("Should find @JsDefinition annotated interfaces")
+                .containsExactly(TestJsDefinition.class);
+    }
+
+    @Test
     void getAnnotatedClasses_findsClassesWithSpecificAnnotation() {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
@@ -707,9 +735,38 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
     // ================== Helper Methods ==================
 
+    /**
+     * Processor that finds nothing, so that a case decides what a scan answers
+     * by overriding the one method it is about.
+     */
+    private static class StubProcessor
+            extends VaadinBeanFactoryInitializationAotProcessor {
+        @Override
+        Collection<Class<?>> getRouteTypesFor(String packageName) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getSubtypesOf(String basePackage,
+                Class<?> parentType) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getAnnotatedClasses(String basePackage,
+                Class<?>... annotations) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+            return List.of();
+        }
+    }
+
     private VaadinBeanFactoryInitializationAotProcessor createProcessor(
             Class<?>... routeClasses) {
-        return new VaadinBeanFactoryInitializationAotProcessor() {
+        return new StubProcessor() {
             @Override
             Collection<Class<?>> getRouteTypesFor(String packageName) {
                 return Arrays.asList(routeClasses);
@@ -722,23 +779,12 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                         .filter(parentType::isAssignableFrom)
                         .collect(Collectors.toList());
             }
-
-            @Override
-            Collection<Class<?>> getAnnotatedClasses(String basePackage,
-                    Class<?>... annotations) {
-                return Collections.emptyList();
-            }
         };
     }
 
     private VaadinBeanFactoryInitializationAotProcessor createProcessorWithSubtypes(
             Class<?> subtypeClass, Class<?> parentType) {
-        return new VaadinBeanFactoryInitializationAotProcessor() {
-            @Override
-            Collection<Class<?>> getRouteTypesFor(String packageName) {
-                return Collections.emptyList();
-            }
-
+        return new StubProcessor() {
             @Override
             Collection<Class<?>> getSubtypesOf(String basePackage,
                     Class<?> parentTypeParam) {
@@ -746,13 +792,17 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                         || parentTypeParam.isAssignableFrom(subtypeClass)) {
                     return List.of(subtypeClass);
                 }
-                return Collections.emptyList();
+                return List.of();
             }
+        };
+    }
 
+    private VaadinBeanFactoryInitializationAotProcessor createProcessorWithJsDefinitions(
+            Class<?>... definitionTypes) {
+        return new StubProcessor() {
             @Override
-            Collection<Class<?>> getAnnotatedClasses(String basePackage,
-                    Class<?>... annotations) {
-                return Collections.emptyList();
+            Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+                return Arrays.asList(definitionTypes);
             }
         };
     }
@@ -783,42 +833,17 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     private RuntimeHints processAotForHints(Class<?>... routeClasses) {
-        ConfigurableListableBeanFactory beanFactory = mock(
-                ConfigurableListableBeanFactory.class,
-                withSettings().extraInterfaces(BeanDefinitionRegistry.class));
-        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
-            mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
-                    .thenReturn(List.of(getClass().getPackageName()));
-
-            when(beanFactory.getBeanClassLoader())
-                    .thenReturn(getClass().getClassLoader());
-            when(beanFactory.getBeanDefinitionNames())
-                    .thenReturn(new String[0]);
-            when(registry.containsBeanDefinition(any())).thenReturn(false);
-
-            VaadinBeanFactoryInitializationAotProcessor processor = createProcessor(
-                    routeClasses);
-            BeanFactoryInitializationAotContribution contribution = processor
-                    .processAheadOfTime(beanFactory);
-
-            RuntimeHints hints = new RuntimeHints();
-            if (contribution != null) {
-                GenerationContext generationContext = mock(
-                        GenerationContext.class);
-                when(generationContext.getRuntimeHints()).thenReturn(hints);
-                BeanFactoryInitializationCode code = mock(
-                        BeanFactoryInitializationCode.class);
-                contribution.applyTo(generationContext, code);
-            }
-            return hints;
-        }
+        return processAotForHints(createProcessor(routeClasses));
     }
 
     private RuntimeHints processAotForHintsWithSubtypes(Class<?> subtypeClass,
             Class<?> parentType) {
+        return processAotForHints(
+                createProcessorWithSubtypes(subtypeClass, parentType));
+    }
+
+    private RuntimeHints processAotForHints(
+            VaadinBeanFactoryInitializationAotProcessor processor) {
         ConfigurableListableBeanFactory beanFactory = mock(
                 ConfigurableListableBeanFactory.class,
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
@@ -835,8 +860,6 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                     .thenReturn(new String[0]);
             when(registry.containsBeanDefinition(any())).thenReturn(false);
 
-            VaadinBeanFactoryInitializationAotProcessor processor = createProcessorWithSubtypes(
-                    subtypeClass, parentType);
             BeanFactoryInitializationAotContribution contribution = processor
                     .processAheadOfTime(beanFactory);
 
@@ -982,6 +1005,12 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 Object... params) {
             return key;
         }
+    }
+
+    @JsDefinition
+    public interface TestJsDefinition {
+        @JsExpression("this.classList.add($0)")
+        void addClass(String className);
     }
 
     public static class TestMenuAccessControl implements MenuAccessControl {

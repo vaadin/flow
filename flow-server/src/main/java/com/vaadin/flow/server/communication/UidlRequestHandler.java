@@ -26,11 +26,14 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.HandlerHelper;
@@ -85,6 +88,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     private static final String RPC = RPC_INVOCATIONS;
     private static final String LOCATION = RPC_NAVIGATION_LOCATION;
     private static final String CHANGES = "changes";
+
+    private static final String CONSTANTS = "constants";
     private static final String EXECUTE = UIDL_KEY_EXECUTE;
 
     @Override
@@ -208,7 +213,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     void writeUidl(UI ui, Writer writer, boolean resync) throws IOException {
         ObjectNode uidl = createUidl(ui, resync);
 
-        removeOffendingMprHashFragment(uidl);
+        removeOffendingMprHashFragment(ui, uidl);
 
         String responseString = uidl.toString();
         ui.getInternals().setLastRequestResponse(responseString);
@@ -282,7 +287,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         outputStream.flush();
     }
 
-    private void removeOffendingMprHashFragment(ObjectNode uidl) {
+    private void removeOffendingMprHashFragment(UI ui, ObjectNode uidl) {
         if (!uidl.has(EXECUTE)) {
             return;
         }
@@ -292,15 +297,18 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         int idx = -1;
         for (int i = 0; i < exec.size(); i++) {
             ArrayNode arr = (ArrayNode) exec.get(i);
-            for (int j = 0; j < arr.size(); j++) {
+            String runs = whatRuns(arr, uidl);
+            if (runs != null && runs.contains("history.pushState")) {
+                idx = i;
+            }
+            // Everything but the last element is a parameter, and the v7 UIDL
+            // this reaches into is one of them. The last one names what the
+            // invocation runs rather than being it.
+            for (int j = 0; j < arr.size() - 1; j++) {
                 if (!arr.get(j).getNodeType().equals(JsonNodeType.STRING)) {
                     continue;
                 }
                 String script = arr.get(j).asString();
-                if (script.contains("history.pushState")) {
-                    idx = i;
-                    continue;
-                }
                 if (!script.startsWith(SYNC_ID)) {
                     continue;
                 }
@@ -319,9 +327,11 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (location != null) {
             ArrayNode arr = JacksonUtils.createArrayNode();
             arr.add("");
-            arr.add(String
-                    .format(location.startsWith("http") ? PUSH_STATE_LOCATION
-                            : PUSH_STATE_HASH, location));
+            arr.add(asConstant(ui, uidl,
+                    String.format(
+                            location.startsWith("http") ? PUSH_STATE_LOCATION
+                                    : PUSH_STATE_HASH,
+                            location)));
             if (idx >= 0) {
                 exec.set(idx, arr);
             } else {
@@ -329,6 +339,52 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             }
 
         }
+    }
+
+    /**
+     * What the given invocation runs, as this response carries it.
+     * <p>
+     * An invocation names what it runs among the constants of the response that
+     * sends it, so this answers for one that runs something the client has not
+     * been sent before, which is what an invocation of a location that is being
+     * navigated to is. One that runs something the client already has is
+     * answered for with <code>null</code>, and the push state of the corrected
+     * location is then added to the response rather than replacing it.
+     */
+    private static String whatRuns(ArrayNode invocation, ObjectNode uidl) {
+        if (invocation.isEmpty() || !uidl.has(CONSTANTS)) {
+            return null;
+        }
+        JsonNode name = invocation.get(invocation.size() - 1);
+        if (!name.getNodeType().equals(JsonNodeType.STRING)) {
+            return null;
+        }
+        JsonNode constant = uidl.get(CONSTANTS).get(name.asString());
+        return constant != null
+                && constant.getNodeType().equals(JsonNodeType.STRING)
+                        ? constant.asString()
+                        : null;
+    }
+
+    /**
+     * Registers the given script with the constant pool of the given UI, puts
+     * it among the constants of the given response when the client does not
+     * have it yet, and answers with what names it - which is what an invocation
+     * carries instead of the script.
+     */
+    private static String asConstant(UI ui, ObjectNode uidl, String script) {
+        ConstantPool constantPool = ui.getInternals().getConstantPool();
+        String name = constantPool.getConstantId(
+                new ConstantPoolKey(JacksonUtils.createNode(script)));
+        if (constantPool.hasNewConstants()) {
+            ObjectNode constants = uidl.has(CONSTANTS)
+                    ? (ObjectNode) uidl.get(CONSTANTS)
+                    : uidl.putObject(CONSTANTS);
+            constantPool.dumpConstants().properties()
+                    .forEach(constant -> constants.set(constant.getKey(),
+                            constant.getValue()));
+        }
+        return name;
     }
 
     private String removeHashInV7Uidl(ObjectNode json) {
