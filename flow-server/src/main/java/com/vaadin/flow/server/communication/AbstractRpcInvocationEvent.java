@@ -16,8 +16,13 @@
 package com.vaadin.flow.server.communication;
 
 import java.util.EventObject;
+import java.util.Optional;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -40,12 +45,16 @@ import com.vaadin.flow.server.VaadinService;
  * <p>
  * The started, (optional) failed and ended events of one invocation are fired
  * on the same thread, in that order, with the ended event always fired after
- * the started one regardless of outcome, so a listener may keep timing state in
- * a {@link ThreadLocal}. Within the handling of one request the events do not
- * nest: those of one invocation are all fired before those of the next.
- * Requests belonging to different sessions are handled concurrently, however,
- * so a listener on the service event bus must expect invocations of several
- * sessions to be in flight on several threads at once.
+ * the started one regardless of outcome, so a listener may keep state in a
+ * {@link ThreadLocal}. The ended event carries what such state is most often
+ * kept for, the {@link RpcInvocationEndedEvent#getDuration() duration} and the
+ * {@link RpcInvocationEndedEvent#getError() error} of the invocation, so a
+ * listener that only needs those can listen to the ended event alone. Within
+ * the handling of one request the events do not nest: those of one invocation
+ * are all fired before those of the next. Requests belonging to different
+ * sessions are handled concurrently, however, so a listener on the service
+ * event bus must expect invocations of several sessions to be in flight on
+ * several threads at once.
  * <p>
  * Synchronized property updates ({@code mSync}) deserve a few remarks, because
  * they are handled in two steps: the value of every synchronized property in
@@ -133,6 +142,31 @@ public abstract class AbstractRpcInvocationEvent extends EventObject {
      */
     public int getNodeId() {
         return nodeId;
+    }
+
+    /**
+     * Gets the component the invocation targets, so that an observer can
+     * attribute the invocation to a {@code Button} or a {@code Grid} rather
+     * than only to a node id.
+     * <p>
+     * The component is looked up in the state tree of the UI each time this
+     * method is called, so call it from the listener, while the request is
+     * being handled. The result reflects the tree at that moment: when the
+     * invocation detaches the component it targets, for example a button that
+     * closes the dialog it is in, the component is found for the started event
+     * but not for the ended one.
+     *
+     * @return the component, or an empty optional if the invocation does not
+     *         target a node, the node is no longer in the UI, or the node is
+     *         not the element of a component
+     */
+    public Optional<Component> getComponent() {
+        StateNode node = getUI().getInternals().getStateTree()
+                .getNodeById(nodeId);
+        if (node == null) {
+            return Optional.empty();
+        }
+        return ElementUtil.from(node).flatMap(Element::getComponent);
     }
 
     /**
