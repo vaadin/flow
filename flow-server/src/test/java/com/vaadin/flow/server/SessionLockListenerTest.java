@@ -15,14 +15,22 @@
  */
 package com.vaadin.flow.server;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.Assert;
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
 import com.vaadin.flow.shared.Registration;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SessionLockListenerTest {
 
@@ -60,7 +68,7 @@ public class SessionLockListenerTest {
             lock.unlock();
         }
 
-        Assert.assertEquals(List.of("requested", "acquired", "released"),
+        assertEquals(List.of("requested", "acquired", "released"),
                 listener.events);
     }
 
@@ -71,11 +79,11 @@ public class SessionLockListenerTest {
         service.addSessionLockListener(listener);
 
         InstrumentedReentrantLock lock = new InstrumentedReentrantLock(service);
-        Assert.assertTrue(lock.tryLock());
+        assertTrue(lock.tryLock());
 
         lock.unlock();
 
-        Assert.assertEquals(List.of("requested", "acquired", "released"),
+        assertEquals(List.of("requested", "acquired", "released"),
                 listener.events);
     }
 
@@ -106,8 +114,8 @@ public class SessionLockListenerTest {
         // if the failing tryLock wrongly emits an event.
         service.addSessionLockListener(listener);
 
-        Assert.assertFalse(lock.tryLock());
-        Assert.assertTrue(listener.events.isEmpty());
+        assertFalse(lock.tryLock());
+        assertTrue(listener.events.isEmpty());
 
         release.countDown();
         holder.join();
@@ -125,7 +133,7 @@ public class SessionLockListenerTest {
         lock.unlock();
         lock.unlock();
 
-        Assert.assertEquals(List.of("requested", "acquired", "released"),
+        assertEquals(List.of("requested", "acquired", "released"),
                 listener.events);
     }
 
@@ -164,7 +172,7 @@ public class SessionLockListenerTest {
             lock.unlock();
         }
 
-        Assert.assertEquals(List.of("acquired-first", "acquired-second",
+        assertEquals(List.of("acquired-first", "acquired-second",
                 "released-second", "released-first"), order);
     }
 
@@ -179,6 +187,104 @@ public class SessionLockListenerTest {
         lock.lock();
         lock.unlock();
 
-        Assert.assertTrue(listener.events.isEmpty());
+        assertTrue(listener.events.isEmpty());
+    }
+
+    @Test
+    public void lockAfterWaiting_reportsSessionWaitTimeAndHoldTime()
+            throws Exception {
+        MockVaadinServletService service = new MockVaadinServletService();
+        InstrumentedReentrantLock lock = new InstrumentedReentrantLock(service);
+        VaadinSession session = bindNewSession(service, lock);
+
+        // Hold the lock from another thread until this thread has waited for
+        // it for a while.
+        CountDownLatch locked = new CountDownLatch(1);
+        Thread holder = new Thread(() -> {
+            lock.lock();
+            try {
+                locked.countDown();
+                while (!lock.hasQueuedThreads()) {
+                    Thread.onSpinWait();
+                }
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                lock.unlock();
+            }
+        });
+        holder.start();
+        locked.await();
+        // Listeners added while the holder has the lock are not notified of
+        // the release of that hold, since its acquisition was not observed.
+        List<AbstractSessionLockEvent> events = recordEvents(service);
+
+        lock.lock();
+        try {
+            Thread.sleep(20);
+        } finally {
+            lock.unlock();
+        }
+        holder.join();
+
+        assertEquals(List.of(SessionLockRequestedEvent.class,
+                SessionLockAcquiredEvent.class, SessionLockReleasedEvent.class),
+                events.stream().map(Object::getClass).toList());
+        events.forEach(
+                event -> assertSame(session, event.getSession().orElseThrow()));
+        Duration waitTime = ((SessionLockAcquiredEvent) events.get(1))
+                .getWaitTime();
+        Duration holdTime = ((SessionLockReleasedEvent) events.get(2))
+                .getHoldTime();
+        assertTrue(waitTime + " should be at least 20ms",
+                waitTime.compareTo(Duration.ofMillis(20)) >= 0);
+        assertTrue(holdTime + " should be at least 20ms",
+                holdTime.compareTo(Duration.ofMillis(20)) >= 0);
+    }
+
+    @Test
+    public void deserializedLock_reportsNothingUntilSessionIsBound() {
+        MockVaadinServletService service = new MockVaadinServletService();
+        InstrumentedReentrantLock lock = SerializationUtils
+                .roundtrip(new InstrumentedReentrantLock(service));
+        List<AbstractSessionLockEvent> events = recordEvents(service);
+
+        // The service is bound while the lock is held, the release of that
+        // hold is not reported either
+        VaadinSession session = bindNewSession(service, lock);
+        assertTrue(events.isEmpty());
+
+        lock.lock();
+        lock.unlock();
+
+        assertEquals(3, events.size());
+        events.forEach(
+                event -> assertSame(session, event.getSession().orElseThrow()));
+    }
+
+    private static VaadinSession bindNewSession(VaadinService service,
+            InstrumentedReentrantLock lock) {
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        when(wrappedSession.getAttribute(service.getServiceName() + ".lock"))
+                .thenReturn(lock);
+        VaadinSession session = new VaadinSession(service);
+        lock.lock();
+        try {
+            session.refreshTransients(wrappedSession, service);
+        } finally {
+            lock.unlock();
+        }
+        return session;
+    }
+
+    private static List<AbstractSessionLockEvent> recordEvents(
+            VaadinService service) {
+        List<AbstractSessionLockEvent> events = new ArrayList<>();
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        eventBus.addListener(SessionLockRequestedEvent.class, events::add);
+        eventBus.addListener(SessionLockAcquiredEvent.class, events::add);
+        eventBus.addListener(SessionLockReleasedEvent.class, events::add);
+        return events;
     }
 }

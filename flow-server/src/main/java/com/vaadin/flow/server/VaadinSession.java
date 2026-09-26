@@ -360,6 +360,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 : "Cannot change the lock from one instance to another";
         assert hasLock(service, session);
         lock = service.getSessionLock(session);
+        if (lock instanceof InstrumentedReentrantLock instrumentedLock) {
+            instrumentedLock.bind(service, this);
+        }
     }
 
     /**
