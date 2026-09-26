@@ -27,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -145,6 +146,12 @@ public abstract class VaadinService implements Serializable {
             .getName() + ".reinitializing";
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
+
+    private static final String REQUEST_HANDLER_ATTRIBUTE = VaadinService.class
+            .getName() + ".requestHandler";
+
+    private static final String REQUEST_FAILURE_ATTRIBUTE = VaadinService.class
+            .getName() + ".requestFailure";
 
     /**
      * Should never be used directly, always use
@@ -1968,6 +1975,10 @@ public abstract class VaadinService implements Serializable {
         vaadinRequestInterceptors
                 .forEach(requestInterceptor -> requestInterceptor
                         .requestStart(request, response));
+        if (eventBus.hasListener(RequestStartedEvent.class)) {
+            eventBus.fireEvent(
+                    new RequestStartedEvent(this, request, response));
+        }
     }
 
     /**
@@ -1984,6 +1995,17 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
+        if (eventBus.hasListener(RequestEndedEvent.class)) {
+            Duration duration = Duration
+                    .ofNanos(System.nanoTime() - (Long) request
+                            .getAttribute(REQUEST_START_TIME_ATTRIBUTE));
+            eventBus.fireEvent(new RequestEndedEvent(this, request, response,
+                    session,
+                    (RequestHandler) request
+                            .getAttribute(REQUEST_HANDLER_ATTRIBUTE),
+                    (Exception) request.getAttribute(REQUEST_FAILURE_ATTRIBUTE),
+                    duration));
+        }
         vaadinRequestInterceptors.forEach(requestInterceptor -> {
             try {
                 requestInterceptor.requestEnd(request, response, session);
@@ -2079,10 +2101,19 @@ public abstract class VaadinService implements Serializable {
                 return;
             }
 
+            // The handler is recorded before it runs, so that a request
+            // ended event names the handler that threw if handling fails
+            boolean observed = eventBus.hasListener(RequestEndedEvent.class);
             for (RequestHandler handler : getRequestHandlers()) {
+                if (observed) {
+                    request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, handler);
+                }
                 if (handler.handleRequest(vaadinSession, request, response)) {
                     return;
                 }
+            }
+            if (observed) {
+                request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, null);
             }
 
             // Request not handled by any RequestHandler
@@ -2092,6 +2123,9 @@ public abstract class VaadinService implements Serializable {
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
         } catch (final Exception e) {
+            if (eventBus.hasListener(RequestEndedEvent.class)) {
+                request.setAttribute(REQUEST_FAILURE_ATTRIBUTE, e);
+            }
             handleExceptionDuringRequest(request, response, vaadinSession, e);
         } finally {
             requestEnd(request, response, vaadinSession);
