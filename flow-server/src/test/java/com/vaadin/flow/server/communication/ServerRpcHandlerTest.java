@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -51,6 +54,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,6 +62,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class ServerRpcHandlerTest {
+
+    private static final Duration PAUSE = Duration.ofMillis(5);
+
+    @Tag("button")
+    private static class TestButton extends Component {
+    }
+
     private VaadinRequest request;
     private VaadinService service;
     private VaadinSession session;
@@ -322,10 +333,15 @@ class ServerRpcHandlerTest {
                 started::add);
         service.getEventBus().addListener(RpcInvocationEndedEvent.class,
                 ended::add);
-        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
-                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
         ui = new UI();
         ui.getInternals().setSession(session);
+        TestButton button = new TestButton();
+        button.getElement().addEventListener("click", event -> pause(PAUSE));
+        ui.add(button);
+        int nodeId = button.getElement().getNode().getId();
+        StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
+                + "\", \"rpc\":[{\"type\": \"event\", \"node\" : " + nodeId
+                + ", \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
 
         serverRpcHandler.handleRpc(ui, reader, request);
 
@@ -335,7 +351,12 @@ class ServerRpcHandlerTest {
         RpcInvocationStartedEvent event = started.get(0);
         assertEquals("event", event.getType());
         assertEquals("click", event.getName());
-        assertEquals(1, event.getNodeId());
+        assertEquals(nodeId, event.getNodeId());
+        assertSame(button, event.getComponent().orElseThrow());
+        // Measured by Flow around the handling, so it covers the listener
+        assertTrue(ended.get(0).getDuration().compareTo(PAUSE) >= 0,
+                "duration " + ended.get(0).getDuration());
+        assertTrue(ended.get(0).getError().isEmpty());
     }
 
     @Test
@@ -384,6 +405,7 @@ class ServerRpcHandlerTest {
                 .thenReturn(Mockito.mock(ErrorHandler.class));
         List<String> sequence = new ArrayList<>();
         List<RpcInvocationFailedEvent> failed = new ArrayList<>();
+        List<RpcInvocationEndedEvent> ended = new ArrayList<>();
         service.getEventBus().addListener(RpcInvocationStartedEvent.class,
                 event -> sequence.add("started"));
         service.getEventBus().addListener(RpcInvocationFailedEvent.class,
@@ -392,7 +414,10 @@ class ServerRpcHandlerTest {
                     sequence.add("failed");
                 });
         service.getEventBus().addListener(RpcInvocationEndedEvent.class,
-                event -> sequence.add("ended"));
+                event -> {
+                    ended.add(event);
+                    sequence.add("ended");
+                });
 
         ui = new UI();
         ui.getInternals().setSession(session);
@@ -413,6 +438,10 @@ class ServerRpcHandlerTest {
         assertEquals(List.of("started", "failed", "ended"), sequence);
         assertEquals("value", failed.get(0).getName());
         assertSame(failure, failed.get(0).getError());
+        // The ended event reports the failure itself, so a listener timing
+        // invocations does not have to pair it with the failed event
+        assertSame(failure, ended.get(0).getError().orElseThrow());
+        assertFalse(ended.get(0).getDuration().isNegative());
     }
 
     @Test
@@ -438,6 +467,8 @@ class ServerRpcHandlerTest {
 
         assertEquals(1, started.size());
         assertEquals(JsonConstants.RPC_TYPE_EVENT, started.get(0).getType());
+        assertTrue(started.get(0).getComponent().isEmpty(),
+                "a node that is not in the UI has no component");
     }
 
     @Test
@@ -614,6 +645,15 @@ class ServerRpcHandlerTest {
                 () -> serverRpcHandler.handleRpc(ui, reader, request));
         // There is no handler to route to, so nothing was ever invoked
         assertTrue(started.isEmpty());
+    }
+
+    private static void pause(Duration duration) {
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
     }
 
     private void enableDau() {

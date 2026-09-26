@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
 import java.security.GeneralSecurityException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -683,7 +684,7 @@ public class ServerRpcHandler implements Serializable {
      * <p>
      * The details they carry are extracted once, and only when the event bus
      * has a listener for one of the phases, so that an application observing
-     * nothing allocates nothing per invocation.
+     * nothing allocates nothing per invocation and reads no clock.
      */
     private static final class InvocationEvents implements Serializable {
 
@@ -693,6 +694,8 @@ public class ServerRpcHandler implements Serializable {
         private final int nodeId;
         private final String name;
         private final boolean observed;
+        private long startNanos;
+        private transient Throwable error;
 
         private InvocationEvents(UI ui, String type, JsonNode invocationJson) {
             this.ui = ui;
@@ -707,6 +710,7 @@ public class ServerRpcHandler implements Serializable {
 
         private void started() {
             if (observed) {
+                startNanos = System.nanoTime();
                 eventBus.fireEvent(
                         new RpcInvocationStartedEvent(ui, type, nodeId, name));
             }
@@ -714,6 +718,7 @@ public class ServerRpcHandler implements Serializable {
 
         private void failed(Throwable error) {
             if (observed) {
+                this.error = error;
                 eventBus.fireEvent(new RpcInvocationFailedEvent(ui, type,
                         nodeId, name, error));
             }
@@ -721,8 +726,10 @@ public class ServerRpcHandler implements Serializable {
 
         private void ended() {
             if (observed) {
-                eventBus.fireEvent(
-                        new RpcInvocationEndedEvent(ui, type, nodeId, name));
+                Duration duration = Duration
+                        .ofNanos(System.nanoTime() - startNanos);
+                eventBus.fireEvent(new RpcInvocationEndedEvent(ui, type, nodeId,
+                        name, duration, error));
             }
         }
     }

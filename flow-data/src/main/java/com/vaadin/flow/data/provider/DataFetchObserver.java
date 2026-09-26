@@ -16,6 +16,8 @@
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
+import java.time.Duration;
+import java.util.EventObject;
 import java.util.function.IntSupplier;
 
 import com.vaadin.flow.component.Component;
@@ -45,7 +47,8 @@ import com.vaadin.flow.server.data.DataFetchStartedEvent;
  * {@link DataCommunicator#enablePushUpdates(java.util.concurrent.Executor)}
  * runs fetches on the supplied executor without propagating
  * {@link com.vaadin.flow.internal.CurrentInstance}. When the component is not
- * attached to a live UI the query simply runs unreported.
+ * attached to a live UI, or nothing listens for the events of the query, the
+ * query simply runs unreported and untimed.
  *
  * @since 25.3
  */
@@ -56,9 +59,12 @@ public final class DataFetchObserver implements Serializable {
 
     /**
      * Resolves the event bus to report on, or {@code null} when there is
-     * nothing to report to.
+     * nothing to report to: no live UI, or no listener for any of the given
+     * event types, in which case the query runs without being timed.
      */
-    private static VaadinServiceEventBus getEventBus(UI ui) {
+    @SafeVarargs
+    private static VaadinServiceEventBus getEventBus(UI ui,
+            Class<? extends EventObject>... eventTypes) {
         if (ui == null) {
             return null;
         }
@@ -70,7 +76,13 @@ public final class DataFetchObserver implements Serializable {
         if (service == null) {
             return null;
         }
-        return service.getEventBus();
+        VaadinServiceEventBus eventBus = service.getEventBus();
+        for (Class<? extends EventObject> eventType : eventTypes) {
+            if (eventBus.hasListener(eventType)) {
+                return eventBus;
+            }
+        }
+        return null;
     }
 
     /**
@@ -90,10 +102,13 @@ public final class DataFetchObserver implements Serializable {
      */
     public static int count(UI ui, Component component, boolean filtered,
             IntSupplier query) {
-        VaadinServiceEventBus eventBus = getEventBus(ui);
+        VaadinServiceEventBus eventBus = getEventBus(ui,
+                DataCountStartedEvent.class, DataCountFailedEvent.class,
+                DataCountEndedEvent.class);
         if (eventBus == null) {
             return query.getAsInt();
         }
+        long startNanos = System.nanoTime();
         eventBus.fireEvent(new DataCountStartedEvent(ui, component, filtered));
         // Stays -1 unless the query produces a count, which is what the event
         // contract defines as "the query failed".
@@ -113,7 +128,8 @@ public final class DataFetchObserver implements Serializable {
             throw t;
         } finally {
             eventBus.fireEventInReverseOrder(
-                    new DataCountEndedEvent(ui, component, filtered, reported));
+                    new DataCountEndedEvent(ui, component, filtered, reported,
+                            Duration.ofNanos(System.nanoTime() - startNanos)));
         }
     }
 
@@ -141,12 +157,15 @@ public final class DataFetchObserver implements Serializable {
      */
     public static int fetch(UI ui, Component component, Range range,
             boolean filtered, IntSupplier query) {
-        VaadinServiceEventBus eventBus = getEventBus(ui);
+        VaadinServiceEventBus eventBus = getEventBus(ui,
+                DataFetchStartedEvent.class, DataFetchFailedEvent.class,
+                DataFetchEndedEvent.class);
         if (eventBus == null) {
             return query.getAsInt();
         }
         int offset = range.getStart();
         int limit = range.length();
+        long startNanos = System.nanoTime();
         eventBus.fireEvent(new DataFetchStartedEvent(ui, component, offset,
                 limit, filtered));
         int reported = -1;
@@ -161,7 +180,8 @@ public final class DataFetchObserver implements Serializable {
             throw t;
         } finally {
             eventBus.fireEventInReverseOrder(new DataFetchEndedEvent(ui,
-                    component, offset, limit, filtered, reported));
+                    component, offset, limit, filtered, reported,
+                    Duration.ofNanos(System.nanoTime() - startNanos)));
         }
     }
 }
