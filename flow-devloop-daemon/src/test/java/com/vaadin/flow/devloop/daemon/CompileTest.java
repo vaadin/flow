@@ -597,6 +597,40 @@ class CompileTest {
     }
 
     @Test
+    void staleResources_seedingKeepsAnEditMadeSinceTheAppStarted()
+            throws IOException {
+        // A pom edit re-seeds the baseline while the app runs, and the Maven
+        // re-resolve before it has already copied the edited config onto the
+        // classpath. Taking that edit as acted on would report "no changes"
+        // for a config the running JVM never loaded, and no later apply could
+        // see it again.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(List.of(served));
+        long appStarted = System.currentTimeMillis();
+        touch("app/src/main/resources/application.properties");
+        // What the re-resolve's process-resources leaves behind: a copy at
+        // least as new as its source.
+        compile.copyResources(List.of(config));
+        touch("app/target/classes/application.properties");
+
+        compile.seedFromDisk(appStarted, appStarted);
+
+        Compile.ResourceChanges changes = compile.staleResources();
+        assertEquals(List.of(config), changes.startup().modified());
+        // What the app did start with is still seeded, or every apply would
+        // report every resource.
+        assertTrue(changes.live().isEmpty());
+    }
+
+    @Test
     void staleResources_reportADeletedResourceTheWalkCannotSee()
             throws IOException {
         Reactor.Module app = module("app", "Main", """
