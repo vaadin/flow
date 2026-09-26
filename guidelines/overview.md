@@ -19,6 +19,7 @@ For repository-level commands (build, test, format) see [`CLAUDE.md`](../CLAUDE.
 | [Architecture](architecture.md)             | State tree, `Element`, the Jackson codec, routing, component development.      |
 | [Design](design.md)                         | Shape of new public Java API: facades, signals, sealed types, naming, lifecycle. |
 | [Browser Integration](browser-integration.md) | Wrapping browser APIs, `executeJs`, DOM events, bootstrap data, capability detection. |
+| [Wire Protocol](wire-protocol.md)           | The UIDL response, the constant pool, how `executeJs` is encoded and executed. |
 | [Frontend Hotswap](frontend-hotswap.md)     | Keeping generated frontend files in sync with Java classes in development mode. |
 | [Documenting](documenting.md)               | Javadoc expectations, documenting wrapped browser APIs.                        |
 | [Testing](testing.md)                       | Unit tests, integration tests, debugging failures.                             |

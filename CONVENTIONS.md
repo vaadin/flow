@@ -161,7 +161,8 @@ debug output.
 Send a payload that repeats through the constant pool the client already
 caches, and keep the message shape the same for a new path and the existing one
 instead of adding a second cache beside it. Put arriving constants in the pool
-before anything resolves a reference to them.
+before anything resolves a reference to them. See
+`guidelines/wire-protocol.md` for what the pool holds today and what it costs.
 
 Keep a wire object down to what the receiver cannot derive: no key it ignores,
 no value it can read off the payload it already has.
