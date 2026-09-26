@@ -62,6 +62,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -71,6 +72,7 @@ import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -3191,7 +3193,7 @@ public class RouterTest extends RoutingTestBase {
     public void postpone_forever_on_before_navigation_event()
             throws InvalidRouteConfigurationException {
         RootNavigationTarget.events.clear();
-        PostponingAndResumingNavigationTarget.events.clear();
+        PostponingForeverNavigationTarget.events.clear();
         setNavigationTargets(RootNavigationTarget.class,
                 PostponingForeverNavigationTarget.class);
 
@@ -4812,6 +4814,75 @@ public class RouterTest extends RoutingTestBase {
         } else {
             return routeNotFoundError.getElement().getText();
         }
+    }
+
+    @Test
+    public void navigate_firesStartedAndCompletedEventsOnce() {
+        setNavigationTargets(FooNavigationTarget.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("foo");
+
+        assertEquals(2, events.size());
+        NavigationStartedEvent started = (NavigationStartedEvent) events.get(0);
+        assertEquals("foo", started.getLocation().getPath());
+        assertEquals(NavigationTrigger.PROGRAMMATIC, started.getTrigger());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertEquals("foo", ended.getLocation().getPath());
+        assertEquals(
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class),
+                ended.getOutcome());
+    }
+
+    @Test
+    public void navigate_reroute_firesOnePairWithFinalTarget() {
+        setNavigationTargets(SecurityDocument.class, SecurityLogin.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("security/document");
+
+        assertEquals(2, events.size());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertEquals("security/document", ended.getLocation().getPath());
+        assertEquals(new NavigationEndedEvent.Completed(SecurityLogin.class),
+                ended.getOutcome());
+    }
+
+    @Test
+    public void navigate_postponed_firesPostponedOutcome() {
+        setNavigationTargets(RootNavigationTarget.class,
+                PostponingForeverNavigationTarget.class);
+        navigate("postpone");
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("");
+
+        assertEquals(2, events.size());
+        assertEquals(new NavigationEndedEvent.Postponed(),
+                ((NavigationEndedEvent) events.get(1)).getOutcome());
+    }
+
+    @Test
+    public void navigate_errorView_firesOnePairWithFailedOutcome() {
+        setNavigationTargets(FooNavigationTarget.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("missing");
+
+        assertEquals(2, events.size());
+        NavigationEndedEvent.Outcome outcome = ((NavigationEndedEvent) events
+                .get(1)).getOutcome();
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) outcome).error());
+    }
+
+    private List<EventObject> recordNavigationEvents() {
+        List<EventObject> events = new ArrayList<>();
+        VaadinServiceEventBus eventBus = ui.getSession().getService()
+                .getEventBus();
+        eventBus.addListener(NavigationStartedEvent.class, events::add);
+        eventBus.addListener(NavigationEndedEvent.class, events::add);
+        return events;
     }
 
     private void navigate(String url) {

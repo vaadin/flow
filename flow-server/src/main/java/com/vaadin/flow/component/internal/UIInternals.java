@@ -287,6 +287,11 @@ public class UIInternals implements Serializable {
 
     private ContinueNavigationAction continueNavigationAction = null;
 
+    // Both only have a value while the router handles a navigation, which
+    // happens within one request, so they are not serialized
+    private transient int navigationDepth;
+    private transient Exception navigationFailure;
+
     /**
      * The Vaadin session to which the related UI belongs.
      */
@@ -1621,6 +1626,56 @@ public class UIInternals implements Serializable {
     public void setContinueNavigationAction(
             ContinueNavigationAction continueNavigationAction) {
         this.continueNavigationAction = continueNavigationAction;
+    }
+
+    /**
+     * Marks that the router has started handling a navigation for this UI.
+     * Every call must be matched by a call to {@link #exitNavigation()}, also
+     * when the navigation fails. For framework use only.
+     *
+     * @return {@code true} if this is the outermost navigation, {@code false}
+     *         if it is nested inside a navigation that is already being
+     *         handled, such as a forward, a reroute or an error view
+     */
+    public boolean enterNavigation() {
+        return navigationDepth++ == 0;
+    }
+
+    /**
+     * Marks that the router has finished handling a navigation started with
+     * {@link #enterNavigation()}. For framework use only.
+     */
+    public void exitNavigation() {
+        navigationDepth--;
+        if (navigationDepth == 0) {
+            navigationFailure = null;
+        }
+    }
+
+    /**
+     * Records the exception for which an error view is rendered during the
+     * ongoing navigation. Only the first exception of a navigation is kept,
+     * since any later one comes from handling the first. For framework use
+     * only.
+     *
+     * @param exception
+     *            the exception the error view is rendered for, not {@code null}
+     */
+    public void recordNavigationFailure(Exception exception) {
+        if (navigationFailure == null) {
+            navigationFailure = exception;
+        }
+    }
+
+    /**
+     * Gets the exception for which an error view was rendered during the
+     * ongoing navigation. For framework use only.
+     *
+     * @return the exception, or {@code null} if no error view has been rendered
+     *         during the ongoing navigation
+     */
+    public @Nullable Exception getNavigationFailure() {
+        return navigationFailure;
     }
 
     /**
