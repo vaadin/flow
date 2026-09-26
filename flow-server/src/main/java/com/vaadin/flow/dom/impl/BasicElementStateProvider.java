@@ -208,6 +208,16 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public SignalBinding<Boolean> bindAttributeBooleanSignal(Element owner,
+            String attribute, Signal<Boolean> signal) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
+        return getAttributeFeature(owner.getNode()).bindBooleanSignal(owner,
+                attribute, signal);
+    }
+
+    @Override
     public String getAttribute(StateNode node, String attribute) {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));

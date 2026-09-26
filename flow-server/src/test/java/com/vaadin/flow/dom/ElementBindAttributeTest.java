@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
@@ -282,6 +285,106 @@ class ElementBindAttributeTest extends SignalsUnitTest {
         assertTrue(element.hasAttribute("foo"));
         assertTrue(element.getAttributeNames().anyMatch("foo"::equals));
         assertTrue(events.isEmpty());
+    }
+
+    @Test
+    void bindAttributeBoolean_toggleSignal_attributePresenceFollows() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
+
+        Element element = component.getElement();
+        element.bindAttributeBoolean("noborder", signal);
+
+        assertFalse(element.hasAttribute("noborder"));
+        assertNull(element.getAttribute("noborder"));
+        assertFalse(element.getAttributeNames().anyMatch("noborder"::equals));
+
+        signal.set(true);
+
+        assertTrue(element.hasAttribute("noborder"));
+        // a present boolean attribute renders as <div noborder>
+        assertEquals("", element.getAttribute("noborder"));
+        assertTrue(element.getAttributeNames().anyMatch("noborder"::equals));
+
+        signal.set(false);
+
+        assertFalse(element.hasAttribute("noborder"));
+        assertFalse(element.getAttributeNames().anyMatch("noborder"::equals));
+        assertTrue(events.isEmpty());
+    }
+
+    @Test
+    void bindAttributeBoolean_nullSignalValue_attributeAbsent() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        // a null value is treated the same as false
+        ValueSignal<Boolean> signal = new ValueSignal<>(null);
+
+        Element element = component.getElement();
+        element.bindAttributeBoolean("noborder", signal);
+
+        assertFalse(element.hasAttribute("noborder"));
+
+        signal.set(true);
+
+        assertTrue(element.hasAttribute("noborder"));
+
+        signal.set(null);
+
+        assertFalse(element.hasAttribute("noborder"));
+        assertFalse(element.getAttributeNames().anyMatch("noborder"::equals));
+        assertTrue(events.isEmpty());
+    }
+
+    @Test
+    void bindAttributeBoolean_onChange_receivesBooleanValues() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
+
+        List<String> changes = new ArrayList<>();
+        SignalBinding<Boolean> binding = component.getElement()
+                .bindAttributeBoolean("noborder", signal);
+        binding.onChange(context -> changes
+                .add(context.getOldValue() + "->" + context.getNewValue()));
+
+        assertEquals(List.of("false->false"), changes);
+
+        signal.set(true);
+
+        assertEquals(List.of("false->false", "false->true"), changes);
+        assertTrue(events.isEmpty());
+    }
+
+    @Test
+    void bindAttributeBoolean_bindWhileBindingIsActive_throwException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        Element element = component.getElement();
+        element.bindAttributeBoolean("noborder", new ValueSignal<>(true));
+
+        assertThrows(BindingActiveException.class, () -> element
+                .bindAttributeBoolean("noborder", new ValueSignal<>(false)));
+        assertThrows(BindingActiveException.class, () -> element
+                .bindAttribute("noborder", new ValueSignal<>("value")));
+        assertThrows(BindingActiveException.class,
+                () -> element.setAttribute("noborder", false));
+        assertTrue(events.isEmpty());
+    }
+
+    @Test
+    void bindAttributeBoolean_classOrStyleAttribute_throwException() {
+        Element element = new Element("foo");
+
+        assertThrows(UnsupportedOperationException.class, () -> element
+                .bindAttributeBoolean("class", new ValueSignal<>(true)));
+        assertThrows(UnsupportedOperationException.class, () -> element
+                .bindAttributeBoolean("style", new ValueSignal<>(true)));
     }
 
     @Tag("div")
