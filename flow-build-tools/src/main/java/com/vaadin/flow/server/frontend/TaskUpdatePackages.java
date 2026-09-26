@@ -84,6 +84,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
+            warnOnVersionRangeMismatch(packageJson);
+
             generateVersionsJson(packageJson);
             modified = pinVersionsForNpm(packageJson) || modified;
 
@@ -782,6 +784,119 @@ public class TaskUpdatePackages extends NodeUpdater {
         packageJsonDeps.put(pkg, pinnedVersion.getFullVersion());
         vaadinDeps.put(pkg, pinnedVersion.getFullVersion());
         return true;
+    }
+
+    /**
+     * Warns about packages the versions files pin, that the project has
+     * declared in the {@code dependencies} or {@code devDependencies} of
+     * {@code package.json} with a version from a different minor or major range
+     * than the one the current Vaadin version pins them to.
+     * <p>
+     * This is checked once the dependencies have been updated, so that a
+     * version the build overwrites with the one it ships is not reported. Only
+     * values that differ from the ones Vaadin manages (kept in the
+     * {@code vaadin} section) are considered, as those are the explicit
+     * opt-outs that the build leaves untouched. Entries in the
+     * {@code overrides} section are intentionally not reported here, as those
+     * are reconciled with the pinned versions by the override management.
+     * Declaring a package with another maintenance (patch) release of the same
+     * minor is a supported way of picking up a fix early, but using a different
+     * minor or major version is usually a mistake, since the rest of the
+     * platform is built and tested against the pinned version. Such mismatches
+     * can lead to runtime errors or broken generated frontend files (a blank
+     * page).
+     *
+     * @param packageJson
+     *            the package.json with the dependencies updated, before the
+     *            overrides pin the versions
+     * @throws IOException
+     *             if the versions files cannot be read
+     */
+    void warnOnVersionRangeMismatch(ObjectNode packageJson) throws IOException {
+        final ObjectNode expectedVersions = getAllPinnedNpmDependencies();
+        final JsonNode vaadin = packageJson.get(VAADIN_DEP_KEY);
+
+        // Collect mismatches into a single warning to avoid flooding the log
+        // when a whole platform worth of packages has drifted.
+        final List<String> mismatches = new ArrayList<>();
+        collectRangeMismatches(sectionToMap(packageJson.get(DEPENDENCIES)),
+                sectionToMap(vaadin == null ? null : vaadin.get(DEPENDENCIES)),
+                expectedVersions, DEPENDENCIES, mismatches);
+        collectRangeMismatches(sectionToMap(packageJson.get(DEV_DEPENDENCIES)),
+                sectionToMap(
+                        vaadin == null ? null : vaadin.get(DEV_DEPENDENCIES)),
+                expectedVersions, DEV_DEPENDENCIES, mismatches);
+
+        if (!mismatches.isEmpty()) {
+            log().warn(
+                    """
+                            The following packages are pinned in package.json to a different \
+                            minor/major version than the version expected by the current Vaadin \
+                            version. Pinning to another maintenance release is supported, but \
+                            using a different minor or major version is usually a mistake and may \
+                            cause runtime errors or a blank page:
+                            {}
+                            Unless these versions are intentional, remove the entries from \
+                            package.json and run 'mvn vaadin:clean-frontend' to reset the \
+                            frontend to a clean state.""",
+                    String.join("\n", mismatches));
+        }
+    }
+
+    private void collectRangeMismatches(Map<String, String> projectSection,
+            Map<String, String> vaadinSection, ObjectNode expectedVersions,
+            String location, List<String> mismatches) {
+        for (Map.Entry<String, String> entry : projectSection.entrySet()) {
+            final String pkg = entry.getKey();
+            final FrontendVersion expected = parseVersion(
+                    expectedVersions.has(pkg)
+                            ? expectedVersions.get(pkg).asString()
+                            : null);
+            if (expected == null) {
+                continue;
+            }
+            // Skip values managed by Vaadin: the build updates those itself, so
+            // any range difference is transient and not a user mistake.
+            if (entry.getValue().equals(vaadinSection.get(pkg))) {
+                continue;
+            }
+            final FrontendVersion pinned = parseVersion(entry.getValue());
+            if (pinned != null && isDifferentRange(expected, pinned)) {
+                mismatches.add(String.format("  - %s: %s (in %s), expected %s",
+                        pkg, pinned.getFullVersion(), location,
+                        expected.getFullVersion()));
+            }
+        }
+    }
+
+    private FrontendVersion parseVersion(String version) {
+        if (version == null) {
+            return null;
+        }
+        try {
+            return new FrontendVersion(version);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private boolean isDifferentRange(FrontendVersion expected,
+            FrontendVersion actual) {
+        return expected.getMajorVersion() != actual.getMajorVersion()
+                || expected.getMinorVersion() != actual.getMinorVersion();
+    }
+
+    private Map<String, String> sectionToMap(JsonNode section) {
+        if (section == null) {
+            return Map.of();
+        }
+        // Keeps the package.json order, so that the warning lists the
+        // packages the same way from one build to the next
+        final Map<String, String> map = new LinkedHashMap<>();
+        for (String key : JacksonUtils.getKeys(section)) {
+            map.put(key, section.get(key).asString());
+        }
+        return map;
     }
 
     /**
