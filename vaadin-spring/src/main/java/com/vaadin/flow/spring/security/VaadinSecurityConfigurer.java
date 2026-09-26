@@ -49,6 +49,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
 import org.springframework.security.web.access.RequestMatcherDelegatingAccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -161,6 +162,10 @@ public final class VaadinSecurityConfigurer
     private String defaultSuccessUrl;
 
     private boolean alwaysUseDefaultSuccessUrl;
+
+    private VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver successUrlResolver;
+
+    private AuthenticationFailureHandler authenticationFailureHandler;
 
     private String logoutSuccessUrl;
 
@@ -391,6 +396,88 @@ public final class VaadinSecurityConfigurer
             boolean alwaysUse) {
         this.defaultSuccessUrl = defaultSuccessUrl;
         this.alwaysUseDefaultSuccessUrl = alwaysUse;
+        return this;
+    }
+
+    /**
+     * Sets the resolver for the URL to redirect to after authentication, for
+     * example to send users to a landing page that depends on their roles. When
+     * the resolver returns a URL, it takes precedence over both the previously
+     * accessed page and the {@link #defaultSuccessUrl(String) default success
+     * URL}. When it returns {@code null}, the user is redirected as if no
+     * resolver was set. Works only together with {@link #loginView(String)} or
+     * {@link #oauth2LoginPage(String)} and their variants.
+     * <p>
+     * Usage example:
+     *
+     * <pre>
+     * <code>
+     * configurer.loginView(LoginView.class).successUrlResolver(
+     *         (request, authentication, savedUrl) -&gt; authentication
+     *                 .getAuthorities().stream()
+     *                 .anyMatch(a -&gt; "ROLE_ADMIN".equals(a.getAuthority()))
+     *                         ? "/admin"
+     *                         : null);
+     * </code>
+     * </pre>
+     *
+     * @param successUrlResolver
+     *            the resolver for the URL to redirect to after authentication
+     * @return the current configurer instance for method chaining
+     * @see VaadinSavedRequestAwareAuthenticationSuccessHandler#setSuccessUrlResolver(VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver)
+     */
+    public VaadinSecurityConfigurer successUrlResolver(
+            VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver successUrlResolver) {
+        this.successUrlResolver = successUrlResolver;
+        return this;
+    }
+
+    /**
+     * Configures the handler for a successful authentication.
+     * <p>
+     * This overrides the default handler configured automatically with either
+     * {@link #loginView(Class)} or {@link #oauth2LoginPage(String)} (and their
+     * overloads). The handler must be a
+     * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler}, because that
+     * handler takes care of redirects after login from a Vaadin navigation and
+     * of login from a Hilla client. Use a subclass to add custom behavior.
+     * <p>
+     * The handler is used as is: {@link #defaultSuccessUrl(String)} and
+     * {@link #successUrlResolver(VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver)}
+     * are not applied to it, configure them on the handler instead.
+     *
+     * @param authenticationSuccessHandler
+     *            the authentication success handler
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer authenticationSuccessHandler(
+            VaadinSavedRequestAwareAuthenticationSuccessHandler authenticationSuccessHandler) {
+        setSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
+                authenticationSuccessHandler);
+        return this;
+    }
+
+    /**
+     * Configures the handler for a failed authentication, for example to audit
+     * failed login attempts or to redirect to a custom error page.
+     * <p>
+     * This overrides the default behavior of redirecting back to the login view
+     * with an {@code error} parameter. Works only together with
+     * {@link #loginView(String)} or {@link #oauth2LoginPage(String)} and their
+     * variants.
+     * <p>
+     * For auditing only, listening to Spring Security's
+     * {@code AbstractAuthenticationFailureEvent} is an alternative that keeps
+     * the default behavior.
+     *
+     * @param authenticationFailureHandler
+     *            the authentication failure handler
+     * @return the current configurer instance for method chaining
+     */
+    public VaadinSecurityConfigurer authenticationFailureHandler(
+            AuthenticationFailureHandler authenticationFailureHandler) {
+        this.authenticationFailureHandler = authenticationFailureHandler;
         return this;
     }
 
@@ -637,11 +724,17 @@ public final class VaadinSecurityConfigurer
             http.formLogin(configurer -> {
                 configurer.loginPage(formLoginPage).permitAll();
                 configurer.successHandler(getAuthenticationSuccessHandler());
+                if (authenticationFailureHandler != null) {
+                    configurer.failureHandler(authenticationFailureHandler);
+                }
             });
         } else if (oauth2LoginPage != null) {
             http.oauth2Login(configurer -> {
                 configurer.loginPage(oauth2LoginPage).permitAll();
                 configurer.successHandler(getAuthenticationSuccessHandler());
+                if (authenticationFailureHandler != null) {
+                    configurer.failureHandler(authenticationFailureHandler);
+                }
                 if (keycloakRoleMapping) {
                     // The role prefix holder is only populated with the prefix
                     // of the filter chain in configure(), which runs after
@@ -870,6 +963,7 @@ public final class VaadinSecurityConfigurer
         } else {
             handler.setDefaultTargetUrl(getRequestUtil().applyUrlMapping(""));
         }
+        handler.setSuccessUrlResolver(successUrlResolver);
         getSharedObject(RequestCache.class).ifPresent(handler::setRequestCache);
         getBuilder().setSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
