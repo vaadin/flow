@@ -23,27 +23,31 @@ keys that matter for new code, in the order the client applies them:
 | `changes`   | State tree changes, each encoded by a `NodeChange`.              |
 | `execute`   | Pending `executeJs` invocations, one array per invocation.       |
 
-`MessageHandler` applies them in exactly that order: constants are
-imported first (so a change can reference one), changes are applied next,
-and the `execute` list runs last — behind a doubly nested post-flush
-listener, so the scripts see the DOM that the same response's changes
-produced, including any post-flush listener added while applying them.
+`MessageHandler` applies them in exactly that order. Constants are
+imported as soon as a message arrives, before it is even decided whether
+the message is handled now or queued — both changes and invocations
+refer to constants, and so does the check for a forced reload during
+resynchronization. Changes are applied next, and the `execute` list runs
+last, behind a doubly nested post-flush listener, so the scripts see the
+DOM that the same response's changes produced, including any post-flush
+listener added while applying them.
 
 **The server writes them in a different order: `changes`, then
-`constants`, then `execute`.** `encodeChanges` runs first because
-encoding a change is what registers the constants it references;
-`dumpConstants` runs after it and clears the new-key set, so a constant
-registered later in the response would miss the message;
-`dumpPendingJavaScriptInvocations` runs last, because the
+`execute`, then `constants`.** `encodeChanges` runs first; the
 `beforeClientResponse` executions that run during change encoding can
-queue more JavaScript. Anything new that contributes to the response has
-to be slotted into that sequence rather than appended at the end.
+queue more JavaScript, so `dumpPendingJavaScriptInvocations` comes after
+it. Both steps register constants — a change for the values it refers
+to, an invocation for what it runs — so `dumpConstants` comes last: it
+clears the new-key set, and a constant registered after it would miss the
+message. Anything new that contributes to the response has to be slotted
+into that sequence rather than appended at the end.
 
 ## Constant pool
 
-The constant pool deduplicates JSON values that would otherwise be
-repeated in the response for many state nodes. The value is sent once
-under a short id, and each node's change carries only the id.
+The constant pool deduplicates JSON values that would otherwise be sent
+again and again: listener settings shared by many state nodes, and what
+each `executeJs` invocation runs. The value is sent once per UI under a
+short id, and everything that uses it carries only the id.
 
 - `ConstantPoolKey` wraps the `JsonNode`. Its id is the Base64 encoding
   of the first 64 bits of the SHA-256 digest of `json.toString()`, so
@@ -57,17 +61,22 @@ under a short id, and each node's change carries only the id.
   `knownValues` (every id ever sent to this client) and `newKeys` (the
   ids first seen since the last response). `getConstantId` registers,
   `dumpConstants` emits the new ones and clears the set.
-- A value only becomes a constant by being stored in a state node as a
-  `ConstantPoolKey`. The `NodeChange` encoders call
-  `JacksonCodec.encodeWithConstantPool`, which replaces the key with its
-  id string; every other value is encoded inline.
+- There are two ways in. A value stored in a state node as a
+  `ConstantPoolKey` is replaced by its id when the `NodeChange` encoders
+  call `JacksonCodec.encodeWithConstantPool`; every other node value is
+  encoded inline. And `UidlWriter` registers what each `executeJs`
+  invocation runs directly with the pool while encoding it —
+  `UidlRequestHandler` does the same for a reload script it adds to a
+  response that is already written, which is why it patches `constants`
+  in place.
 
 ### What is in the pool today
 
-Two node features put values there, and both store the settings of a DOM
-event listener. `ElementListenerMap` stores one constant per event type
-on an element; `PolymerEventListenerMap` does the same for the event data
-expressions of a Polymer template listener.
+Three kinds of value. Two node features store the settings of a DOM event
+listener: `ElementListenerMap` one constant per event type on an element,
+`PolymerEventListenerMap` the event data expressions of a Polymer
+template listener. The third kind is what an `executeJs` invocation
+runs, covered [below](#wire-shape).
 
 An `ElementListenerMap` value is an object keyed by the JavaScript
 expressions the client evaluates when the event fires. The value of each
@@ -123,12 +132,14 @@ form, key order included, changes the id.
   distinct shapes repeated over many nodes, and wrong for anything that
   varies per node or per interaction — that just leaks a JSON value per
   interaction into a map that is never cleaned.
-- **Sending the same id twice is a client-side error, not a no-op.** The
-  client's `ConstantPool.importFromJson` asserts that the key is not
-  already present, and the TypeScript assertions are always on (unlike
-  the GWT ones they were ported from, which production stripped). The
-  server's `knownValues` set is the only thing preventing that, so the
-  two sides' bookkeeping must stay in step: do not clear or rebuild one
+- **An id names one value, forever.** The client's
+  `ConstantPool.importFromJson` accepts a key it already holds only with
+  the value it already holds — the same message can legitimately be read
+  twice, when it is queued or re-sent — and fails an assertion for a key
+  that arrives with a different value. The TypeScript assertions are
+  always on, unlike the GWT ones they were ported from. The server's
+  `knownValues` set is what keeps each id to one message, so the two
+  sides' bookkeeping must stay in step: do not clear or rebuild one
   without the other. Resynchronization deliberately resets neither —
   `StateTree.prepareForResync` rebuilds the client's state tree, and the
   ids in the replayed changes still have to resolve.
@@ -141,10 +152,23 @@ form, key order included, changes the id.
 
 ## `executeJs` over the wire
 
+There are two ways to run JavaScript from the server, and they share one
+wire shape:
+
+- **An expression** — `Page.executeJs(String, Object...)` and
+  `Element.executeJs(String, Object...)`. The JavaScript is a string built
+  at the call site and compiled in the browser.
+- **Declared JavaScript** — `Page.executeJs(Class)` and
+  `Element.executeJs(Class)` with an interface annotated with
+  `@JsDefinition`, whose methods carry their JavaScript in
+  `@JsExpression`. The build collects every such method into the bundle as
+  a function, so nothing is compiled in the browser: this is the path that
+  works under a content security policy without `unsafe-eval`.
+
 ### Server side
 
-`Page.executeJs` and `Element.executeJs` build a `JavaScriptInvocation`
-(the expression plus its parameters), wrap it in a
+Both build a `JavaScriptInvocation` — an expression plus its parameters,
+and for declared JavaScript also the `JsCall` it came from — wrap it in a
 `PendingJavaScriptInvocation` owned by a `StateNode`, and queue it on
 `UIInternals`.
 
@@ -153,8 +177,8 @@ form, key order included, changes the id.
   useful. The encoding that actually ships happens when the response is
   written, which is why an `Element` parameter resolves against its
   attachment state at flush time, not at call time.
-- `Element.executeJs` appends the element itself as an extra trailing
-  parameter and wraps the expression in
+- `Element.executeJs(String, …)` appends the element itself as an extra
+  trailing parameter and wraps the expression in
   `return (async function() { … }).apply($n)`, which is what makes `this`
   the element. A parameter index in user code therefore does not have to
   be the last index on the wire.
@@ -165,19 +189,48 @@ form, key order included, changes the id.
   request's response.**
 - `then(...)` subscribes to the return value and throws
   `IllegalStateException` once the invocation has been sent. When there
-  is a subscriber, `UidlWriter` rewrites the expression into a
+  is a subscriber, `UidlWriter` appends two return-channel parameters,
+  success and then error. For an expression it also rewrites the
+  expression into a
   `try { Promise.resolve((async function(){ … })()).then($ok, $err) }
-  catch { … }` wrapper and appends two extra return-channel parameters.
-  The expression the client runs is therefore not the string that was
-  passed in. The second of those channels is the error channel a call
+  catch { … }` wrapper, so the expression the client runs is not the
+  string that was passed in; for declared JavaScript the client does the
+  same wrapping itself. The second channel is the error channel a call
   has to report through: anything the client cannot execute must reach
   it, or the `PendingJavaScriptResult` never completes.
 
 ### Wire shape
 
-Each invocation is a JSON array of `[param0, param1, …, expression]` —
-**the expression is the last element**, not the first. The client reads
-the last entry as the code and names the remaining ones `$0`, `$1`, ….
+Each invocation is a JSON array whose **last element is a constant pool
+id naming what to run** — not the JavaScript itself. The rest are the
+parameters. The constant is one of two things:
+
+```json
+"constants": {
+  "7ItLxuJbO4w=": "return (async function() { this.focus()}).apply($0)",
+  "9SyADOkTfys=": { "f": "ef73ee9ae94cdca543ea12f4263d0fcaeec3bdd7f22ce6b1eef43c177cce865e" }
+},
+"execute": [
+  [{ "@v-node": 5 }, "7ItLxuJbO4w="],
+  [120, { "@v-node": 5 }, "9SyADOkTfys="]
+]
+```
+
+- **A string** is an expression: here `element.executeJs("this.focus()")`,
+  with the element as its one parameter. The client names the parameters
+  `$0`, `$1`, … and compiles the string with them.
+- **An object** is declared JavaScript. `f` (`UIDL_KEY_JS_FUNCTION`) is
+  the function id — a hex SHA-256 of the method's parameter count, whether
+  it is variadic, and its `@JsExpression`, see `JsCall.functionId` — so
+  no Java class or method name reaches the browser. Here it is a one-argument method declaring
+  `this.scrollTop = $0`. `n` (`UIDL_KEY_JS_ARGUMENT_COUNT`) is added only
+  for a variadic method, whose rest parameter the client cannot count.
+  The parameters are `[arguments…, element, success?, error?]`, with
+  `null` as the element for `Page.executeJs(Class)`.
+
+Because an invocation carries only the id, an expression that runs again
+costs a reference, not its text. Declared JavaScript goes one step
+further and sends no JavaScript at all.
 
 Parameters are encoded by `JacksonCodec.encodeWithTypeInfo`. Native JSON
 types travel as themselves; everything JSON has no representation for
@@ -201,12 +254,21 @@ codecs at once, under a new `@v-` key.
 
 ### Client side
 
-`ExecuteJavaScriptProcessor` decodes the parameters, builds
-`new Function('$0', …, expression)` and applies it with a context object
-as `this`. That context carries `getNode`, `$appId`, the registry and the
-framework callbacks (`attachExistingElement`, `registerInitializer`,
-`disposeInitializer`, `stopApplication`, …) that framework-authored
-expressions rely on.
+`ExecuteJavaScriptProcessor` decodes the parameters and looks up the
+constant the invocation names. A missing constant is logged and the
+invocation dropped.
+
+- For a string it builds `new Function('$0', …, expression)` and applies
+  it with a context object as `this`. That context carries `getNode`,
+  `$appId`, the registry and the framework callbacks
+  (`attachExistingElement`, `registerInitializer`, `disposeInitializer`,
+  `stopApplication`, …) that framework-authored expressions rely on.
+- For an object it looks the function up in
+  `window.Vaadin.Flow.jsDefinitions`, which the generated bundle fills,
+  and applies it to the element with the arguments. There is no context
+  object on this path. A function missing from the bundle, or a
+  parameter count that does not match it, is reported through the error
+  channel rather than run.
 
 **An invocation referencing a node that is not bound yet is deferred, not
 dropped**: the processor registers a DOM-node listener and retries the
@@ -214,20 +276,23 @@ whole invocation afterwards. An invocation can therefore run after
 invocations from a later message, so do not rely on ordering between
 `executeJs` calls targeting different elements.
 
-Exceptions thrown by the expression are caught and reported; outside
-production mode the failing code is logged as well.
+Exceptions thrown by the JavaScript are caught and reported. Outside
+production mode the failing expression is logged too; a declared function
+is named by what the developer wrote when the development bundle carries
+it, and by its function id otherwise.
 
 ### Constraints this puts on new code
 
-- **Never concatenate values into the expression string** — pass them as
+- **Prefer declared JavaScript for new framework code.** It works without
+  `unsafe-eval`, sends no JavaScript, and keeps Java names off the wire.
+- **Never concatenate values into an expression** — pass them as
   parameters. See [Browser Integration](browser-integration.md) for the
-  full set of rules around calling into the browser.
-- **The expression string is not deduplicated.** Unlike event settings, it
-  is sent verbatim on every invocation and never goes through the constant
-  pool. A long expression called on every interaction, or once per element
-  in a large component, pays for its full text every time. Put the body in
-  a module (`@JsModule`, or `window.Vaadin.Flow.*`) and send a short call
-  instead — this is the wire-level reason behind the "non-trivial JS goes
-  in its own file" rule.
+  full set of rules around calling into the browser. On the wire this is
+  also a leak: every distinct expression string becomes a pool entry
+  that is never evicted, so an expression with a value baked in adds one
+  per call for the lifetime of the UI.
+- **Keep what an invocation runs stable.** For the same reason, do not
+  generate expression variants per case — one expression with parameters
+  is one constant, sent once.
 - **Subscribe before it is sent.** Attach `then(...)` on the same server
   visit that created the invocation.

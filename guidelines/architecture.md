@@ -39,9 +39,9 @@ one.
 - `Element` instances are sent as DOM references (or `null`).
 - Arbitrary objects are supported via Jackson serialization.
 
-Values that would be repeated across many state nodes — DOM event settings,
-for instance — are sent once through the shared constant pool and referenced
-by id in each node's change.
+Values that would otherwise be sent again and again — DOM event settings
+shared by many state nodes, and what each `executeJs` invocation runs — are
+sent once through the shared constant pool and referenced by id.
 
 Always pass values to `executeJs()` as parameters, never concatenated into the
 expression string. See [Browser Integration](browser-integration.md) for the

@@ -46,8 +46,9 @@ anything else:
 
 ## `executeJs` parameter passing
 
-For how an invocation is encoded, when it is actually sent, and why the
-expression string itself is worth keeping short, see
+For how an invocation is encoded, when it is actually sent, why an
+expression must not vary from call to call, and when to declare the
+JavaScript with `@JsDefinition` instead, see
 [Wire Protocol](wire-protocol.md).
 
 - **Never** concatenate values into the expression string. Always pass
