@@ -614,6 +614,14 @@ jobs:
             !~/.m2/repository/com/vaadin
           key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Set TB License
+        # Both builds below cover the whole reactor, and building
+        # test-prod-bundle validates the license on this branch.
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Resolve merge base with target branch
         id: merge-base
         run: |
