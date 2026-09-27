@@ -627,9 +627,13 @@ jobs:
           echo "Setting temporary version for PR branch"
           mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Calculate API version difference
+        # The apicmp profile on this branch comes from vaadin-parent, which
+        # compares the file named after the packaging, and there is none for
+        # the maven-plugin packaged flow-maven-plugin. So only the modules
+        # whose API is tracked are compared.
         run: |
           echo "Running in $(pwd)"
-          mvn clean install -B -ntp -e -V -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+          mvn clean install -B -ntp -e -V -pl=flow-server,flow-data,flow-html-components,vaadin-spring -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
           #!/bin/bash
