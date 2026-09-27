@@ -636,7 +636,9 @@ jobs:
         run: |
           echo "Running in $(pwd)"
           MODULES=$(sed -n 's|.*<module>\(.*\)</module>.*|\1|p' pom.xml | while read -r m; do
-            [ -f "$m/pom.xml" ] && ! grep -q '<packaging>pom</packaging>' "$m/pom.xml" && echo "$m"
+            if [ -f "$m/pom.xml" ] && ! grep -q '<packaging>pom</packaging>' "$m/pom.xml"; then
+              echo "$m"
+            fi
           done | paste -sd, -)
           echo "Comparing $MODULES"
           mvn clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
