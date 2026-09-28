@@ -25,7 +25,10 @@ import java.util.Optional;
  * run.
  * <p>
  * A message that a client sends through a push connection is reported as a
- * request of its own, without a response.
+ * request of its own, without a response. The daily active user tracking that
+ * runs for some requests before they reach Flow also reports them without a
+ * response in the {@link RequestEndedEvent}, although this event has one, so a
+ * missing response does not by itself mean a push message.
  * <p>
  * Every started event is followed by a {@link RequestEndedEvent} for the same
  * request on the same thread, so a listener may keep timing state in a

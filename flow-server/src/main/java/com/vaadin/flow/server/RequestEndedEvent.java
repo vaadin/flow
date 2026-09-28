@@ -28,6 +28,13 @@ import java.util.Optional;
  * Besides the request, the event tells which request handler handled the
  * request and which exception, if any, made handling it fail. The exception has
  * already been passed to the session {@link ErrorHandler} at that point.
+ * <p>
+ * A message that a client sends through a push connection is reported without a
+ * response and without a request handler. The daily active user tracking that
+ * runs for some requests before they reach Flow reports its requests without a
+ * response, session or request handler, even though the matching
+ * {@link RequestStartedEvent} has a response, so a missing response does not by
+ * itself mean a push message.
  *
  * @see RequestStartedEvent
  */
@@ -95,7 +102,8 @@ public class RequestEndedEvent extends EventObject {
     /**
      * Gets the response.
      *
-     * @return the response, or an empty optional for a push message
+     * @return the response, or an empty optional for a push message or a
+     *         request reported by the daily active user tracking
      */
     public Optional<VaadinResponse> getResponse() {
         return Optional.ofNullable(response);
@@ -129,6 +137,10 @@ public class RequestEndedEvent extends EventObject {
 
     /**
      * Gets the exception that made handling the request fail.
+     * <p>
+     * Failures of push messages are reported as well: the push handling records
+     * them with
+     * {@link VaadinService#recordRequestFailure(VaadinRequest, Exception)}.
      *
      * @return the exception, or an empty optional if handling the request did
      *         not fail

@@ -1982,6 +1982,30 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Records the exception that made handling a request fail, so that the
+     * {@link RequestEndedEvent} of the request reports it.
+     * <p>
+     * Failures in {@link #handleRequest(VaadinRequest, VaadinResponse)} are
+     * recorded automatically. Code that handles a request between its own calls
+     * to {@link #requestStart(VaadinRequest, VaadinResponse)} and
+     * {@link #requestEnd(VaadinRequest, VaadinResponse, VaadinSession)}, such
+     * as the handling of push messages, calls this method when it catches an
+     * exception, typically next to passing it to the session
+     * {@link ErrorHandler}.
+     *
+     * @param request
+     *            the request that failed, not {@code null}
+     * @param failure
+     *            the exception that made handling the request fail, not
+     *            {@code null}
+     */
+    public void recordRequestFailure(VaadinRequest request, Exception failure) {
+        if (eventBus.hasListener(RequestEndedEvent.class)) {
+            request.setAttribute(REQUEST_FAILURE_ATTRIBUTE, failure);
+        }
+    }
+
+    /**
      * Called after the framework has handled a request and the response has
      * been written.
      *
@@ -1999,8 +2023,8 @@ public abstract class VaadinService implements Serializable {
             Duration duration = Duration
                     .ofNanos(System.nanoTime() - (Long) request
                             .getAttribute(REQUEST_START_TIME_ATTRIBUTE));
-            eventBus.fireEvent(new RequestEndedEvent(this, request, response,
-                    session,
+            eventBus.fireEventInReverseOrder(new RequestEndedEvent(this,
+                    request, response, session,
                     (RequestHandler) request
                             .getAttribute(REQUEST_HANDLER_ATTRIBUTE),
                     (Exception) request.getAttribute(REQUEST_FAILURE_ATTRIBUTE),
@@ -2123,9 +2147,7 @@ public abstract class VaadinService implements Serializable {
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
         } catch (final Exception e) {
-            if (eventBus.hasListener(RequestEndedEvent.class)) {
-                request.setAttribute(REQUEST_FAILURE_ATTRIBUTE, e);
-            }
+            recordRequestFailure(request, e);
             handleExceptionDuringRequest(request, response, vaadinSession, e);
         } finally {
             requestEnd(request, response, vaadinSession);
