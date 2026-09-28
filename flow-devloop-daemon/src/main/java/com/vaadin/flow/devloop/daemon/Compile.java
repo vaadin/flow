@@ -104,11 +104,18 @@ final class Compile {
      * timestamp says a file was written and not that its content changed.
      *
      * @param stamp
-     *            the resource's stamp as of then
+     *            the resource's stamp as of then, or {@code null} for one the
+     *            running application has not read
      * @param digest
-     *            a fingerprint of the bytes the daemon acted on
+     *            a fingerprint of the bytes the daemon acted on, or
+     *            {@code null} when they could not be read
      */
     private record Content(Stamp stamp, String digest) {
+        /**
+         * A resource the running application has not read: in the inventory, so
+         * a deletion is still reported, but matching nothing on disk.
+         */
+        static final Content UNSEEN = new Content(null, null);
     }
 
     record Changes(List<Path> modified, List<Path> deleted) {
@@ -464,9 +471,11 @@ final class Compile {
         if (!copyHasSameBytes(module, source)) {
             return true;
         }
-        // A resource whose digest cannot be taken is not one the daemon may
-        // quietly declare unchanged.
-        return known == null || digestOf(source)
+        // A resource whose digest cannot be taken - at either end - is not one
+        // the daemon may quietly declare unchanged. Reporting it is also what
+        // heals an entry recorded without one: it is acted on, and acting on it
+        // records the bytes.
+        return known == null || known.digest() == null || digestOf(source)
                 .map(digest -> !digest.equals(known.digest())).orElse(true);
     }
 
@@ -480,6 +489,11 @@ final class Compile {
      * Only ever called for {@link ResourceKind#LIVE} files. A startup-only
      * resource goes live when the application restarts, and
      * {@link #seedFromDisk()} is what records that.
+     * <p>
+     * A file whose bytes cannot be read is still recorded, with no digest, for
+     * the reason {@link #seedResources()} gives: the key is the inventory a
+     * deletion is reported from. It reports changed until the bytes can be
+     * read, which is the safe way round.
      */
     void markResourcesNotified(List<Path> resources) {
         for (Path source : resources) {
@@ -509,6 +523,14 @@ final class Compile {
      * It is paid once per application start, on a tree the walk has just
      * brought into the page cache - and it is what lets every apply after it
      * settle an unchanged resource on its stamp alone.
+     * <p>
+     * A resource whose bytes cannot be read - a lock, a scanner, a build
+     * rewriting it - is recorded anyway, with no digest. The key is what
+     * matters: {@code notified.keySet()} is also the inventory
+     * {@link #staleResources()} reports deletions from, so a resource left out
+     * of it could be deleted and never reported, and its copy under
+     * {@code target/classes} would go on being served until the next full Maven
+     * build.
      */
     void seedResources() {
         seedResources(Long.MAX_VALUE);
@@ -524,18 +546,26 @@ final class Compile {
      * has also copied the file onto the classpath, so its copy is current, and
      * a baseline that took the edit as acted on would report "no changes" for a
      * config the running JVM never loaded - on this apply and every later one.
+     * <p>
+     * Such a resource is still recorded, as {@link Content#UNSEEN}, for the
+     * reason an unreadable one is: its key is the inventory a deletion is
+     * reported from, so an edit deleted again before the next apply is still
+     * reported.
      *
      * @param startedAtMillis
      *            when the running application was launched
      */
     void seedResources(long startedAtMillis) {
         notified.clear();
-        forEachResource((module, source, stamp) -> {
-            if (stamp.modified() <= startedAtMillis) {
-                digestOf(source).ifPresent(digest -> notified.put(source,
-                        new Content(stamp, digest)));
-            }
-        });
+        forEachResource(
+                (module, source,
+                        stamp) -> notified
+                                .put(source,
+                                        stamp.modified() <= startedAtMillis
+                                                ? new Content(stamp,
+                                                        digestOf(source)
+                                                                .orElse(null))
+                                                : Content.UNSEEN));
     }
 
     /**
@@ -721,8 +751,8 @@ final class Compile {
     }
 
     private Optional<Content> contentOf(Path file) {
-        return stampOf(file).flatMap(stamp -> digestOf(file)
-                .map(digest -> new Content(stamp, digest)));
+        return stampOf(file)
+                .map(stamp -> new Content(stamp, digestOf(file).orElse(null)));
     }
 
     /**

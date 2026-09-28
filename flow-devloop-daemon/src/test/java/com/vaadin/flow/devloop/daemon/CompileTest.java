@@ -760,6 +760,30 @@ class CompileTest {
     }
 
     @Test
+    void staleResources_seedingKeepsAnEditMadeSinceTheAppStartedInTheInventory()
+            throws IOException {
+        // Left out of the baseline, a config edited since the app started and
+        // then deleted before the next apply would be reported neither as a
+        // change nor as a deletion, while the running JVM still holds it.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        long appStarted = System.currentTimeMillis();
+        touch("app/src/main/resources/application.properties");
+        compile.copyResources(List.of(config));
+
+        compile.seedFromDisk(appStarted, appStarted);
+        Files.delete(config);
+
+        assertEquals(List.of(config),
+                compile.staleResources().startup().deleted());
+    }
+
+    @Test
     void staleResources_reportADeletedResourceTheWalkCannotSee()
             throws IOException {
         Reactor.Module app = module("app", "Main", """
