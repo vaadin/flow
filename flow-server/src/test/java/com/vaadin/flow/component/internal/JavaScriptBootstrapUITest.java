@@ -121,6 +121,12 @@ public class JavaScriptBootstrapUITest {
     public static class PreservedView extends Component {
     }
 
+    @Route("partially-preserved")
+    @Tag(Tag.SPAN)
+    @PreserveOnRefresh(partialMatch = true)
+    public static class PartiallyPreservedView extends Component {
+    }
+
     @Route("product")
     @Tag(Tag.SPAN)
     @PageTitle("my-product")
@@ -205,6 +211,12 @@ public class JavaScriptBootstrapUITest {
                 ProductView.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("preserved",
                 PreservedView.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "partially-preserved", PartiallyPreservedView.class,
+                Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "partially-preserved/1", PartiallyPreservedView.class,
+                Collections.emptyList());
 
         Class<? extends ProductView> routeProxyClass = new ByteBuddy()
                 .subclass(ProductView.class)
@@ -592,6 +604,18 @@ public class JavaScriptBootstrapUITest {
 
     @Test
     public void should_restoreIndexHtmlTitle_when_preserveOnRefreshViewReloadedBeforeWindowNameKnown() {
+        assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown("preserved",
+                "preserved");
+    }
+
+    @Test
+    public void should_restoreIndexHtmlTitle_when_partialMatchPreserveOnRefreshViewReloadedBeforeWindowNameKnown() {
+        assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown(
+                "partially-preserved", "partially-preserved/1");
+    }
+
+    private void assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown(
+            String location, String reloadLocation) {
         // The preserved chain is cached in a session attribute
         VaadinSession session = mocks.getSession();
         Map<Class<?>, Object> attributes = new HashMap<>();
@@ -608,7 +632,7 @@ public class JavaScriptBootstrapUITest {
                 .mock(ExtendedClientDetails.class);
         Mockito.when(details.getWindowName()).thenReturn("window");
         ui.getInternals().setExtendedClientDetails(details);
-        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "preserved", "",
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, location, "",
                 "app-shell-title", null, ""));
         assertEquals("app-shell-title", ui.getInternals().getTitle());
 
@@ -618,7 +642,7 @@ public class JavaScriptBootstrapUITest {
         reloadedUI.getInternals().setSession(mocks.getSession());
         reloadedUI.doInit(null, 0, "reloadedUiId");
         reloadedUI.browserNavigate(new BrowserNavigateEvent(reloadedUI, true,
-                "preserved", "", "app-shell-title", null, ""));
+                reloadLocation, "", "app-shell-title", null, ""));
 
         JsonObject browserDetails = Json.createObject();
         browserDetails.put("v-wn", "window");
