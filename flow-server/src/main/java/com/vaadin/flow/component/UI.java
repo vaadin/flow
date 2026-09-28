@@ -2367,14 +2367,17 @@ public class UI extends Component
 
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
-        Router router = getInternals().getRouter();
+        // Client-side navigation only reaches this UI when it supports
+        // navigation, which is when it has a router
+        Router router = Objects.requireNonNull(getInternals().getRouter(),
+                "Navigation is not supported by this UI");
         NavigationEvent navigationEvent = new NavigationEvent(router, location,
                 this, trigger);
 
         JavaScriptNavigationStateRenderer renderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
         router.executeNavigation(this, location, navigationEvent, renderer,
-                (httpStatus) -> {
+                httpStatus -> {
                     forwardToClientUrl = renderer.getClientForwardRoute();
                     adjustPageTitle();
                 });
