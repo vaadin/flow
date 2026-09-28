@@ -93,6 +93,14 @@ jobs:
         run: |
           echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=15 current module args)" >> $GITHUB_OUTPUT
           echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=4 current module args)" >> $GITHUB_OUTPUT
+      - name: Set TB License
+        # Building test-prod-bundle validates the license on the maintenance
+        # branches that check it.
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -294,8 +302,10 @@ jobs:
     # Ports the TeamCity 'Gradle Tests' build. Always runs so it can be marked
     # as a required check, but the expensive steps are gated on whether
     # anything the Gradle plugin builds on actually changed, so unrelated PRs
-    # pass immediately. Unlike the other test jobs this one needs no secrets,
-    # so it runs for pull requests from forks too.
+    # pass immediately. Some maintenance branches validate the license in the
+    # production mode builds the functional tests run, so the job writes the
+    # TestBench license and, like the other test jobs, is skipped for pull
+    # requests from forks.
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
@@ -435,6 +445,13 @@ jobs:
         run: |
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Set TB License
+        if: ${{ steps.decide.outputs.run == 'true' }}
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile and Install Flow
         # On re-runs the saved-workspace artifact has already been deleted,
         # so compile from scratch like the test jobs do.
@@ -598,6 +615,14 @@ jobs:
             !~/.m2/repository/com/vaadin
           key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Set TB License
+        # The base build covers the whole reactor, and building test-prod-bundle
+        # validates the license on the maintenance branches that check it.
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Resolve merge base with target branch
         id: merge-base
         run: |
@@ -627,16 +652,17 @@ jobs:
           echo "Setting temporary version for PR branch"
           mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Calculate API version difference
-        # The apicmp profile on this branch comes from vaadin-parent, which
-        # compares the file named after the packaging, and there is none for
-        # the maven-plugin packaged modules. So the build is limited to the
-        # top-level modules that produce a jar, which are the ones the next
-        # step collects reports from anyway; the plugins and flow-tests,
-        # which builds with flow-maven-plugin, are left out.
+        # Only the top-level modules that produce a jar are compared. They are
+        # the ones the next step collects reports from, and on 24.x the apicmp
+        # profile comes from vaadin-parent, which compares the file named
+        # after the packaging and so cannot handle the maven-plugin modules.
+        # flow-tests is left out too, as it builds with flow-maven-plugin.
         run: |
           echo "Running in $(pwd)"
           MODULES=$(sed -n 's|.*<module>\(.*\)</module>.*|\1|p' pom.xml | while read -r m; do
-            [ -f "$m/pom.xml" ] && ! grep -q '<packaging>pom</packaging>' "$m/pom.xml" && echo "$m"
+            if [ -f "$m/pom.xml" ] && ! grep -q '<packaging>pom</packaging>' "$m/pom.xml"; then
+              echo "$m"
+            fi
           done | paste -sd, -)
           echo "Comparing $MODULES"
           mvn clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
