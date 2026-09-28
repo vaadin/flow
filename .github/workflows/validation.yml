@@ -94,7 +94,8 @@ jobs:
           echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=15 current module args)" >> $GITHUB_OUTPUT
           echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=4 current module args)" >> $GITHUB_OUTPUT
       - name: Set TB License
-        # The build validates the license when it builds test-prod-bundle.
+        # Building test-prod-bundle validates the license on the maintenance
+        # branches that check it.
         env:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
@@ -301,10 +302,10 @@ jobs:
     # Ports the TeamCity 'Gradle Tests' build. Always runs so it can be marked
     # as a required check, but the expensive steps are gated on whether
     # anything the Gradle plugin builds on actually changed, so unrelated PRs
-    # pass immediately. On this branch a production mode build always validates
-    # the license, which the functional tests do, so the job needs the
-    # TestBench secret and is skipped for pull requests from forks, as the
-    # other test jobs are.
+    # pass immediately. Some maintenance branches validate the license in the
+    # production mode builds the functional tests run, so the job writes the
+    # TestBench license and, like the other test jobs, is skipped for pull
+    # requests from forks.
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
@@ -615,8 +616,8 @@ jobs:
           key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Set TB License
-        # Both builds below cover the whole reactor, and building
-        # test-prod-bundle validates the license on this branch.
+        # The base build covers the whole reactor, and building test-prod-bundle
+        # validates the license on the maintenance branches that check it.
         env:
           TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
@@ -651,12 +652,11 @@ jobs:
           echo "Setting temporary version for PR branch"
           mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Calculate API version difference
-        # The apicmp profile on this branch comes from vaadin-parent, which
-        # compares the file named after the packaging, and there is none for
-        # the maven-plugin packaged modules. So the build is limited to the
-        # top-level modules that produce a jar, which are the ones the next
-        # step collects reports from anyway; the plugins and flow-tests,
-        # which builds with flow-maven-plugin, are left out.
+        # Only the top-level modules that produce a jar are compared. They are
+        # the ones the next step collects reports from, and on 24.x the apicmp
+        # profile comes from vaadin-parent, which compares the file named
+        # after the packaging and so cannot handle the maven-plugin modules.
+        # flow-tests is left out too, as it builds with flow-maven-plugin.
         run: |
           echo "Running in $(pwd)"
           MODULES=$(sed -n 's|.*<module>\(.*\)</module>.*|\1|p' pom.xml | while read -r m; do
