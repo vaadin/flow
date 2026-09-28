@@ -201,6 +201,13 @@ Derive the version of a provisioned tool from the project's own dependency tree
 instead of pinning it in the plugin, otherwise the pre-provisioned artifact
 does not match what the running process expects and the network is hit anyway.
 
+Derive the set of modules a script or CI workflow iterates over from the poms
+that declare them, never from a list written into the script — a hard-coded
+list drifts the moment someone adds a module and forgets it. Read the
+`<module>` entries of `flow-tests/pom.xml`, or a per-module marker such as the
+`validation.run` property, so a new module is picked up without being listed
+anywhere else. See `scripts/computeMatrix.js` and `scripts/previewModule.js`.
+
 Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
 on.
