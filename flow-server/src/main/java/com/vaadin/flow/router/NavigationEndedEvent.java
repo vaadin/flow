@@ -140,6 +140,7 @@ public class NavigationEndedEvent extends EventObject {
     private final Location location;
     private final NavigationTrigger trigger;
     private final Outcome outcome;
+    private final int statusCode;
 
     /**
      * Creates a new event.
@@ -152,13 +153,17 @@ public class NavigationEndedEvent extends EventObject {
      *            the action that triggered the navigation, not {@code null}
      * @param outcome
      *            how the navigation ended, not {@code null}
+     * @param statusCode
+     *            the HTTP status code of the navigation, or {@code -1} if the
+     *            navigation threw
      */
     public NavigationEndedEvent(UI ui, Location location,
-            NavigationTrigger trigger, Outcome outcome) {
+            NavigationTrigger trigger, Outcome outcome, int statusCode) {
         super(ui);
         this.location = location;
         this.trigger = trigger;
         this.outcome = outcome;
+        this.statusCode = statusCode;
     }
 
     /**
@@ -197,5 +202,17 @@ public class NavigationEndedEvent extends EventObject {
      */
     public Outcome getOutcome() {
         return outcome;
+    }
+
+    /**
+     * Gets the HTTP status code of the navigation, such as 200 for a view that
+     * was shown or 404 for the "not found" error view. On the initial page load
+     * it is the status code of the response. A navigation that throws has no
+     * status code, which is reported as {@code -1}.
+     *
+     * @return the HTTP status code, or {@code -1} if the navigation threw
+     */
+    public int getStatusCode() {
+        return statusCode;
     }
 }

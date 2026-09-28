@@ -633,17 +633,20 @@ public class Router implements Serializable {
             eventBus.fireEvent(
                     new NavigationStartedEvent(ui, location, trigger));
             Throwable thrown = null;
+            int statusCode = -1;
             try {
-                return navigation.getAsInt();
+                statusCode = navigation.getAsInt();
+                return statusCode;
             } catch (Throwable t) {
                 // Throwable rather than Exception so that the ended event
                 // reports an Error too; it is rethrown right away
                 thrown = t;
                 throw t;
             } finally {
-                eventBus.fireEventInReverseOrder(new NavigationEndedEvent(ui,
-                        location, trigger,
-                        resolveOutcome(internals, stateBefore, thrown)));
+                eventBus.fireEventInReverseOrder(
+                        new NavigationEndedEvent(ui, location, trigger,
+                                resolveOutcome(internals, stateBefore, thrown),
+                                statusCode));
             }
         } finally {
             internals.exitNavigation();

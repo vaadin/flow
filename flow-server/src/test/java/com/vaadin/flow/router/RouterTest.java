@@ -4832,6 +4832,7 @@ public class RouterTest extends RoutingTestBase {
         assertEquals(
                 new NavigationEndedEvent.Completed(FooNavigationTarget.class),
                 ended.getOutcome());
+        assertEquals(200, ended.getStatusCode());
     }
 
     @Test
@@ -4870,10 +4871,10 @@ public class RouterTest extends RoutingTestBase {
         navigate("missing");
 
         assertEquals(2, events.size());
-        NavigationEndedEvent.Outcome outcome = ((NavigationEndedEvent) events
-                .get(1)).getOutcome();
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
         assertInstanceOf(NotFoundException.class,
-                ((NavigationEndedEvent.Failed) outcome).error());
+                ((NavigationEndedEvent.Failed) ended.getOutcome()).error());
+        assertEquals(404, ended.getStatusCode());
     }
 
     private List<EventObject> recordNavigationEvents() {
