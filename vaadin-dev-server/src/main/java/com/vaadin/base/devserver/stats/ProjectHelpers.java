@@ -50,11 +50,11 @@ public class ProjectHelpers {
 
     /**
      * Generates a unique pseudonymised hash string for the project in folder.
-     * Uses either pom.xml or settings.gradle.
+     * Uses either pom.xml or the Gradle settings script.
      *
      * @param projectFolder
      *            Project root folder. Should contain either pom.xml or
-     *            settings.gradle.
+     *            settings.gradle(.kts).
      * @return Pseudonymised hash id of project or
      *         <code>DEFAULT_PROJECT_ID</code> if no valid project was found in
      *         the folder.
@@ -70,8 +70,8 @@ public class ProjectHelpers {
         }
 
         // Gradle project
-        File gradleFile = new File(projectFolder, "settings.gradle");
-        if (gradleFile.exists()) {
+        File gradleFile = findGradleSettingsFile(projectFolder);
+        if (gradleFile != null) {
             try (Stream<String> stream = Files.lines(gradleFile.toPath())) {
                 String projectName = stream
                         .filter(line -> line.contains("rootProject.name"))
@@ -80,7 +80,7 @@ public class ProjectHelpers {
                 if (projectName.contains("=")) {
                     projectName = projectName
                             .substring(projectName.indexOf("=") + 1)
-                            .replace('\'', ' ').trim();
+                            .replace('\'', ' ').replace('"', ' ').trim();
                 }
                 return "gradle" + createHash(projectName);
             } catch (IOException e) {
@@ -127,12 +127,12 @@ public class ProjectHelpers {
     /**
      * Get the source URL for the project.
      * <p>
-     * Looks for comment in either pom.xml or or settings.gradle that points
-     * back original source or repository of the project.
+     * Looks for comment in either pom.xml or the Gradle settings script that
+     * points back original source or repository of the project.
      *
      * @param projectFolder
      *            Project root folder. Should contain either pom.xml or
-     *            settings.gradle.
+     *            settings.gradle(.kts).
      * @return URL of the project source or <code>MISSING_DATA</code>, if no
      *         valid URL was found.
      */
@@ -195,8 +195,8 @@ public class ProjectHelpers {
 
     private static String getGradleProjectSource(File projectFolder)
             throws IOException {
-        File gradleFile = new File(projectFolder, "settings.gradle");
-        if (gradleFile.exists()) {
+        File gradleFile = findGradleSettingsFile(projectFolder);
+        if (gradleFile != null) {
             try (Stream<String> stream = Files.lines(gradleFile.toPath())) {
                 String comment = stream.filter(line -> line.contains(
                         StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
@@ -211,6 +211,32 @@ public class ProjectHelpers {
         }
         return null;
 
+    }
+
+    private static File findGradleSettingsFile(File projectFolder) {
+        return Stream.of("settings.gradle", "settings.gradle.kts")
+                .map(name -> new File(projectFolder, name)).filter(File::isFile)
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * Gets the build tool of the project in the folder.
+     *
+     * @param projectFolder
+     *            Project root folder
+     * @return <code>BUILD_TOOL_MAVEN</code> if the folder has a pom.xml,
+     *         <code>BUILD_TOOL_GRADLE</code> if it has a Gradle build or
+     *         settings script, or <code>MISSING_DATA</code> otherwise.
+     */
+    static String getBuildTool(File projectFolder) {
+        if (new File(projectFolder, "pom.xml").isFile()) {
+            return StatisticsConstants.BUILD_TOOL_MAVEN;
+        }
+        boolean gradle = findGradleSettingsFile(projectFolder) != null
+                || Stream.of("build.gradle", "build.gradle.kts").anyMatch(
+                        name -> new File(projectFolder, name).isFile());
+        return gradle ? StatisticsConstants.BUILD_TOOL_GRADLE
+                : StatisticsConstants.MISSING_DATA;
     }
 
     /**

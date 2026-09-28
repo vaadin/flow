@@ -35,6 +35,7 @@ import com.vaadin.flow.dom.Element;
  * constant of the interface instead of a string built at the call site.
  *
  * @see Element#executeJs(Class)
+ * @since 25.4
  */
 @Documented
 @Target(ElementType.METHOD)

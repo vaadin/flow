@@ -11,3 +11,9 @@ updates:
       interval: "daily"
     exclude-paths:
       - "flow-plugins/flow-maven-plugin/src/it"
+    ignore:
+      # vaadin-quarkus targets the latest Quarkus LTS release as its baseline.
+      # Moving to a newer minor or major version is a deliberate decision, so
+      # only patch releases of the current LTS are proposed.
+      - dependency-name: "io.quarkus:*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]

@@ -14,6 +14,7 @@
   <description>Provides CDI integration for Vaadin applications.</description>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!--
       com.vaadin.cdi.util is CDI plumbing derived from Apache DeltaSpike and
       carried along unchanged. What exercises it is the Arquillian suite in

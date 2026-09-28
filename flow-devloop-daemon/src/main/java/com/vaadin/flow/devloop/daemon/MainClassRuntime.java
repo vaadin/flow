@@ -16,6 +16,7 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,8 @@ final class MainClassRuntime implements AppRuntime {
     private final Launch.Log log;
 
     /**
-     * The discovered application class, so a restart does not rediscover it.
+     * The discovered application class, so a restart does not rediscover it
+     * while it is still there.
      */
     private volatile String mainClass;
 
@@ -77,10 +79,15 @@ final class MainClassRuntime implements AppRuntime {
      * The class the app JVM is launched with, discovered once and remembered:
      * scanning an output directory is cheap, but a restart should not pay for
      * it twice.
+     * <p>
+     * Remembered only while its class file is still in the output, though. The
+     * daemon outlives edits, and moving the application class to another
+     * package would otherwise leave every restart launching a class that no
+     * longer exists.
      */
     private String mainClass(Reactor.Module app) throws IOException {
         String known = mainClass;
-        if (known != null) {
+        if (known != null && Files.isRegularFile(app.classFileOf(known))) {
             return known;
         }
         String found = MainClass.discover(app, log)

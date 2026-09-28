@@ -28,9 +28,12 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -79,9 +82,7 @@ final class BrowserGeolocationClient implements GeolocationClient {
     public CompletableFuture<GeolocationOutcome> get(
             GeolocationOptions options) {
         CompletableFuture<GeolocationOutcome> future = new CompletableFuture<>();
-        ui.getElement()
-                .executeJs("return window.Vaadin.Flow.geolocation.get($0)",
-                        options)
+        ui.getElement().executeJs(GeolocationJs.class).get(options)
                 .then(GetResult.class, result -> {
                     updateAvailability(result.availability());
                     if (result.position() != null) {
@@ -167,8 +168,8 @@ final class BrowserGeolocationClient implements GeolocationClient {
                             e -> onUpdate.accept(
                                     e.getEventDetail(GeolocationError.class)))
                     .addEventDetail().allowInert();
-            el.executeJs("window.Vaadin.Flow.geolocation.watch(this, $0, $1)",
-                    options, watchKey).then(ignored -> {
+            el.executeJs(GeolocationJs.class).watch(options, watchKey)
+                    .then(ignored -> {
                     }, err -> {
                         LOGGER.debug("Client-side geolocation.watch failed: {}",
                                 err);
@@ -192,9 +193,10 @@ final class BrowserGeolocationClient implements GeolocationClient {
                 errorListener.remove();
                 errorListener = null;
             }
-            ui.getPage()
-                    .executeJs("window.Vaadin.Flow.geolocation.clearWatch($0)",
-                            watchKey)
+            // The UI element rather than the page: the JavaScript works on
+            // globals and has nothing to run against, and this is the element
+            // of the node a page call is scheduled on anyway
+            ui.getElement().executeJs(GeolocationJs.class).clearWatch(watchKey)
                     .then(ignored -> {
                     }, err -> LOGGER.debug(
                             "Client-side geolocation.clearWatch failed: {}",
@@ -205,5 +207,48 @@ final class BrowserGeolocationClient implements GeolocationClient {
         public boolean isActive() {
             return active;
         }
+    }
+
+    /**
+     * What the geolocation client asks of its client-side bridge, as a
+     * JavaScript definition for {@link Element#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface GeolocationJs extends Serializable {
+
+        /**
+         * Asks the browser for the current position, once.
+         *
+         * @param options
+         *            what to ask the browser for
+         * @return the pending result, which answers with the position or with
+         *         why there is none
+         */
+        @JsExpression("return window.Vaadin.Flow.geolocation.get($0)")
+        PendingJavaScriptResult get(GeolocationOptions options);
+
+        /**
+         * Starts reporting the position of the element as it changes, through
+         * the DOM events the caller listens for.
+         *
+         * @param options
+         *            what to ask the browser for
+         * @param watchKey
+         *            what {@link #clearWatch(String)} stops this watch by
+         * @return the pending result, which completes once the watch is running
+         */
+        @JsExpression("window.Vaadin.Flow.geolocation.watch(this, $0, $1)")
+        PendingJavaScriptResult watch(GeolocationOptions options,
+                String watchKey);
+
+        /**
+         * Stops the watch started under the given key.
+         *
+         * @param watchKey
+         *            the key the watch was started with
+         * @return the pending result, which completes once the watch is stopped
+         */
+        @JsExpression("window.Vaadin.Flow.geolocation.clearWatch($0)")
+        PendingJavaScriptResult clearWatch(String watchKey);
     }
 }

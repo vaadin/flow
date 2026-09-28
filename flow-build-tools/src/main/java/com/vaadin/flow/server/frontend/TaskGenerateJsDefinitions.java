@@ -57,6 +57,8 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * than a hash. A production bundle carries the functions alone.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.4
  */
 public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 

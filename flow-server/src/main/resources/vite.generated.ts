@@ -778,11 +778,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // Vite is always spawned with the project root as its working
           // directory, which is this directory, so "." resolves to the same
           // tsconfig. The dev server instead locates the tsc binary with
-          // Node's require relative to this root, which only accepts an
-          // absolute path and otherwise silently falls back to running a bare
-          // "tsc" through a shell, which logs "tsc: command not found" and
-          // leaves the dev server without type checking.
-          root: env.command === 'build' ? '.' : dirname
+          // Node's require relative to this root. We point it at the alias
+          // Flow ships TypeScript under (@typescript/native) so the checker
+          // spawns the native compiler through its bin/tsc entry point.
+          // The separate typescript alias provides the classic TS6 compiler
+          // API for tools such as eslint.
+          root: env.command === 'build' ? '.' : dirname,
+          typescriptPath: '@typescript/native',
         }
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
