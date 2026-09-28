@@ -421,10 +421,10 @@ public interface DeploymentConfiguration
      *
      * @return {@code true} if HTML elements are themed, default is
      *         {@code false}
-     * @see InitParameters#THEME_HTML_ELEMENTS
+     * @see InitParameters#THEMED_HTML
      */
-    default boolean isThemeHtmlElements() {
-        return getBooleanProperty(InitParameters.THEME_HTML_ELEMENTS, false);
+    default boolean isThemedHtml() {
+        return getBooleanProperty(InitParameters.THEMED_HTML, false);
     }
 
     /**

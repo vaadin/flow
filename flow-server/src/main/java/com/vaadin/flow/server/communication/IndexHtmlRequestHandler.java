@@ -202,7 +202,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         addDevBundleTheme(indexDocument, context);
         applyColorScheme(indexDocument, context);
-        if (config.isThemeHtmlElements()) {
+        if (config.isThemedHtml()) {
             indexDocument.body().addClass(Constants.THEMED_HTML_CLASS_NAME);
         }
 

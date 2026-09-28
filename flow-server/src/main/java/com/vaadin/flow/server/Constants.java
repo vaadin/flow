@@ -598,8 +598,8 @@ public final class Constants implements Serializable {
      * The class name that asks the Aura and Lumo themes to style plain HTML
      * elements, such as a <code>&lt;table&gt;</code>. It works on the element
      * itself and on an ancestor, where it covers every native element inside
-     * it; with {@link InitParameters#THEME_HTML_ELEMENTS}, the page's
-     * {@code <body>} carries it.
+     * it; with {@link InitParameters#THEMED_HTML}, the page's {@code <body>}
+     * carries it.
      *
      * @see #UNTHEMED_HTML_CLASS_NAME
      */

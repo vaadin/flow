@@ -53,12 +53,12 @@ import com.vaadin.flow.dom.Element;
  * need to address a section as a whole — to style it, or to hand it to
  * {@code bindChildren}.
  * <p>
- * The Aura and Lumo themes style every table in the application when
- * {@link com.vaadin.flow.server.InitParameters#THEME_HTML_ELEMENTS} is enabled.
- * A single table is left to the browser with
- * {@code table.addClassName(Constants.UNTHEMED_HTML_CLASS_NAME)}, or styled on
+ * When {@link com.vaadin.flow.server.InitParameters#THEMED_HTML} is enabled,
+ * the Aura and Lumo themes apply their styles to the native HTML elements of
+ * the application, and so to a table. A single element is left to the browser
+ * with {@code addClassName(Constants.UNTHEMED_HTML_CLASS_NAME)}, or styled on
  * its own, without the property, with
- * {@code table.addClassName(Constants.THEMED_HTML_CLASS_NAME)}; see
+ * {@code addClassName(Constants.THEMED_HTML_CLASS_NAME)}; see
  * {@link com.vaadin.flow.server.Constants}.
  *
  * @see <a href="https://html.spec.whatwg.org/multipage/tables.html">WHATWG
