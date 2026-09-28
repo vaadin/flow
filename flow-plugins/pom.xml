@@ -14,21 +14,11 @@
     <module>flow-plugin-base</module>
     <module>flow-maven-plugin</module>
     <module>flow-dev-bundle-plugin</module>
+    <module>flow-gradle-plugin</module>
   </modules>
   <properties>
     <jandex.skip>true</jandex.skip>
     <bnd.skip>true</bnd.skip>
     <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
-  <profiles>
-    <profile>
-      <id>gradle</id>
-      <activation>
-        <jdk>(,22]</jdk>
-      </activation>
-      <modules>
-        <module>flow-gradle-plugin</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>
