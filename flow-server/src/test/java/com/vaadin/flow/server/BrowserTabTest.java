@@ -84,7 +84,7 @@ class BrowserTabTest {
         UI ui = addUI("tab-a");
         BrowserTab tab = BrowserTab.get(ui);
         AtomicInteger destroyed = new AtomicInteger();
-        tab.addDestroyListener(destroyed::incrementAndGet);
+        tab.addDestroyListener(destroyedTab -> destroyed.incrementAndGet());
 
         // An open UI that never used the tab also keeps it, by window name
         removeUI(ui);
@@ -101,8 +101,8 @@ class BrowserTabTest {
         BrowserTab tab = BrowserTab.get(ui);
         tab.setAttribute("key", "value");
         AtomicInteger destroyed = new AtomicInteger();
-        tab.addDestroyListener(() -> {
-            assertEquals("value", tab.getAttribute("key"));
+        tab.addDestroyListener(destroyedTab -> {
+            assertEquals("value", destroyedTab.getAttribute("key"));
             destroyed.incrementAndGet();
         });
 
@@ -117,7 +117,8 @@ class BrowserTabTest {
 
         BrowserTab.destroyInactiveTabs(session, 0);
         assertEquals(1, destroyed.get());
-        assertNull(tab.getAttribute("key"));
+        assertThrows(IllegalStateException.class,
+                () -> tab.getAttribute("key"));
         assertThrows(IllegalStateException.class,
                 () -> tab.setAttribute("key", "value"));
         assertNotSame(tab, BrowserTab.get(addUI("tab-a")));
@@ -130,12 +131,12 @@ class BrowserTabTest {
         IllegalStateException failure = new IllegalStateException("failure");
         AtomicInteger destroyed = new AtomicInteger();
         BrowserTab tab = BrowserTab.get(addUI("tab-a"));
-        tab.addDestroyListener(() -> {
+        tab.addDestroyListener(destroyedTab -> {
             throw failure;
         });
-        tab.addDestroyListener(destroyed::incrementAndGet);
-        BrowserTab.get(addUI("tab-b"))
-                .addDestroyListener(destroyed::incrementAndGet);
+        tab.addDestroyListener(destroyedTab -> destroyed.incrementAndGet());
+        BrowserTab.get(addUI("tab-b")).addDestroyListener(
+                destroyedTab -> destroyed.incrementAndGet());
 
         BrowserTab.destroyAllTabs(session);
 

@@ -1321,6 +1321,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         // After init and adding UI to session fire init listeners.
         VaadinService service = session.getService();
+        if (service.getEventBus().hasListener(BrowserTabInitEvent.class)) {
+            // Creates the browser tab of a new tab eagerly, so that its init
+            // listeners run before anything of the UI is built
+            BrowserTab.get(ui);
+        }
         service.getEventBus().fireEvent(new UIInitEvent(ui, service));
 
         initializeUIWithRouter(context, ui);

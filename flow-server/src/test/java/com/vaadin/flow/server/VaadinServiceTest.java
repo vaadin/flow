@@ -852,7 +852,7 @@ class VaadinServiceTest {
         session.lock();
         try {
             BrowserTab.get(addUI(session, 1))
-                    .addDestroyListener(destroyed::incrementAndGet);
+                    .addDestroyListener(tab -> destroyed.incrementAndGet());
             service.fireSessionDestroy(session);
         } finally {
             // Runs the session access task that destroys the session
@@ -884,14 +884,14 @@ class VaadinServiceTest {
             // A UI closed by a reload keeps its tab within the timeout.
             UI reloadedUI = addUI(session, 1);
             reloadedUI.getInternals().setLastHeartbeatTimestamp(now - 25_000);
-            BrowserTab.get(reloadedUI)
-                    .addDestroyListener(reloadedTabDestroyed::incrementAndGet);
+            BrowserTab.get(reloadedUI).addDestroyListener(
+                    tab -> reloadedTabDestroyed.incrementAndGet());
             reloadedUI.close();
             // A UI closed as inactive in this pass takes its tab along
             UI inactiveUI = addUI(session, 2);
             inactiveUI.getInternals().setLastHeartbeatTimestamp(now - 35_000);
-            BrowserTab.get(inactiveUI)
-                    .addDestroyListener(inactiveTabDestroyed::incrementAndGet);
+            BrowserTab.get(inactiveUI).addDestroyListener(
+                    tab -> inactiveTabDestroyed.incrementAndGet());
 
             service.cleanupSession(session);
 

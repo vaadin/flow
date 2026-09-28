@@ -966,6 +966,22 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Adds a listener that gets notified once for each new browser tab, before
+     * any route target or layout of the first UI in the tab is created.
+     *
+     * @param listener
+     *            the browser tab initialization listener
+     * @return a handle that can be used for removing the listener
+     * @see BrowserTabInitListener
+     * @see BrowserTab
+     */
+    public Registration addBrowserTabInitListener(
+            BrowserTabInitListener listener) {
+        return eventBus.addListener(BrowserTabInitEvent.class,
+                listener::browserTabInit);
+    }
+
+    /**
      * Adds a listener that gets notified around the handling of individual
      * client-to-server RPC invocations, enabling per-invocation observation
      * (for example to emit a tracing span per DOM event or

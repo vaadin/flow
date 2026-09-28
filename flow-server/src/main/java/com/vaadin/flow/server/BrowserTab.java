@@ -31,6 +31,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -55,15 +56,21 @@ import com.vaadin.flow.shared.Registration;
  * </pre>
  *
  * The browser tab of a UI is available already in a {@code UIInitListener},
- * before any route target or layout of the UI is created.
+ * before any route target or layout of the UI is created. To initialize every
+ * browser tab of the application in one place, register a
+ * {@link BrowserTabInitListener} with
+ * {@link VaadinService#addBrowserTabInitListener(BrowserTabInitListener)}. It
+ * is notified once for each new browser tab, before the UIInitListeners of the
+ * UI that is loaded first in the tab.
  * <p>
  * The tab is identified by the {@code window.name} of the browser window, which
  * the Vaadin client sets to a random value when the application is loaded in a
  * window that does not have a name yet. The identification is therefore best
  * effort, with these caveats:
  * <ul>
- * <li>Duplicating a tab copies its window name in most browsers, so the
- * original and the duplicate share one browser tab on the server.</li>
+ * <li>Reopening a closed tab and restoring tabs after the browser was quit or
+ * crashed gives the tab a new window name, so it starts a new browser tab. So
+ * does duplicating a tab in current Chromium, Firefox and Safari versions.</li>
  * <li>Browsers clear the window name when the tab navigates to another site, so
  * returning to the application from another site, for example after a redirect
  * from a payment provider or a login service, starts a new browser tab.</li>
@@ -82,7 +89,8 @@ import com.vaadin.flow.shared.Registration;
  * {@link com.vaadin.flow.function.DeploymentConfiguration#getHeartbeatInterval()}),
  * or when the session is destroyed. The check runs at the end of a request to
  * the session, so a browser tab can stay around for longer. Use
- * {@link #addDestroyListener(Command)} to release resources held by the tab.
+ * {@link #addDestroyListener(SerializableConsumer)} to release resources held
+ * by the tab.
  * <p>
  * The browser tab is stored in the {@link VaadinSession} and all its methods
  * require the session to be locked, like the session attributes.
@@ -96,7 +104,7 @@ public final class BrowserTab implements Serializable {
 
     private final Map<String, Object> attributes = new HashMap<>();
 
-    private final List<Command> destroyListeners = new ArrayList<>();
+    private final List<SerializableConsumer<BrowserTab>> destroyListeners = new ArrayList<>();
 
     private long lastActiveTimestamp;
 
@@ -124,7 +132,8 @@ public final class BrowserTab implements Serializable {
 
     /**
      * Gets the browser tab that the given UI is loaded in. Creates the browser
-     * tab if none of the UIs in the tab has used it yet.
+     * tab if none of the UIs in the tab has used it yet, and notifies the
+     * {@link BrowserTabInitListener}s of the service about it.
      *
      * @param ui
      *            the UI to get the browser tab for, not {@code null}
@@ -148,8 +157,13 @@ public final class BrowserTab implements Serializable {
                             : windowName,
                     ui.getInternals().getLastHeartbeatTimestamp());
             getOrCreateRegistry(session).tabs.put(tab.id, tab);
+            ComponentUtil.setData(ui, BrowserTab.class, tab);
+            VaadinService service = session.getService();
+            service.getEventBus()
+                    .fireEvent(new BrowserTabInitEvent(tab, ui, service));
+        } else {
+            ComponentUtil.setData(ui, BrowserTab.class, tab);
         }
-        ComponentUtil.setData(ui, BrowserTab.class, tab);
         return tab;
     }
 
@@ -190,11 +204,7 @@ public final class BrowserTab implements Serializable {
      */
     public void setAttribute(String name, @Nullable Object value) {
         Objects.requireNonNull(name, "Attribute name can not be null");
-        session.checkHasLock();
-        if (destroyed) {
-            throw new IllegalStateException(
-                    "The browser tab has been destroyed");
-        }
+        checkNotDestroyed();
         if (value == null) {
             attributes.remove(name);
         } else {
@@ -234,10 +244,12 @@ public final class BrowserTab implements Serializable {
      * @param name
      *            the name of the attribute, not {@code null}
      * @return the stored value, or {@code null} if there is none
+     * @throws IllegalStateException
+     *             if this browser tab has been destroyed
      */
     public @Nullable Object getAttribute(String name) {
         Objects.requireNonNull(name, "Attribute name can not be null");
-        session.checkHasLock();
+        checkNotDestroyed();
         return attributes.get(name);
     }
 
@@ -253,6 +265,8 @@ public final class BrowserTab implements Serializable {
      * @param type
      *            the type that names the attribute, not {@code null}
      * @return the stored value, or {@code null} if there is none
+     * @throws IllegalStateException
+     *             if this browser tab has been destroyed
      */
     public <T> @Nullable T getAttribute(Class<T> type) {
         Objects.requireNonNull(type, "Attribute type can not be null");
@@ -262,16 +276,22 @@ public final class BrowserTab implements Serializable {
     /**
      * Adds a listener that is run when this browser tab is destroyed, either
      * because none of its UIs has been active for the heartbeat timeout or
-     * because the session is destroyed. The attributes of the browser tab are
-     * still available while the listeners run.
+     * because the session is destroyed. The listener receives the destroyed
+     * browser tab, whose attributes are still available while the listeners
+     * run. Use the given browser tab rather than {@link #getCurrent()}, which
+     * returns the browser tab of the UI of the request that happens to run the
+     * cleanup, or {@code null} when the session is being destroyed.
      *
      * @param listener
      *            the listener to add, not {@code null}
      * @return a handle for removing the listener
+     * @throws IllegalStateException
+     *             if this browser tab has been destroyed
      */
-    public Registration addDestroyListener(Command listener) {
+    public Registration addDestroyListener(
+            SerializableConsumer<BrowserTab> listener) {
         Objects.requireNonNull(listener, "Listener can not be null");
-        session.checkHasLock();
+        checkNotDestroyed();
         return Registration.addAndRemove(destroyListeners, listener);
     }
 
@@ -331,16 +351,25 @@ public final class BrowserTab implements Serializable {
     }
 
     private void destroy() {
-        destroyed = true;
-        for (Command listener : new ArrayList<>(destroyListeners)) {
+        for (SerializableConsumer<BrowserTab> listener : new ArrayList<>(
+                destroyListeners)) {
             try {
-                listener.execute();
+                listener.accept(this);
             } catch (Exception e) {
                 session.getErrorHandler().error(new ErrorEvent(e));
             }
         }
+        destroyed = true;
         destroyListeners.clear();
         attributes.clear();
+    }
+
+    private void checkNotDestroyed() {
+        session.checkHasLock();
+        if (destroyed) {
+            throw new IllegalStateException(
+                    "The browser tab has been destroyed");
+        }
     }
 
     private static @Nullable BrowserTab findTab(VaadinSession session, UI ui) {
