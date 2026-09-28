@@ -4892,6 +4892,20 @@ public class RouterTest extends RoutingTestBase {
         assertEquals(-1, ended.getStatusCode());
     }
 
+    @Test
+    public void navigate_rerouteToError_firesFailedOutcome() {
+        setNavigationTargets(RedirectToNotFoundInHasParam.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("toNotFound/error");
+
+        assertEquals(2, events.size());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) ended.getOutcome()).error());
+        assertEquals(404, ended.getStatusCode());
+    }
+
     private static class NavigationError extends Error {
     }
 

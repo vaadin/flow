@@ -495,7 +495,6 @@ public class Router implements Serializable {
 
     private int renderErrorView(UI ui, Location location, Exception exception,
             NavigationTrigger trigger, BaseJsonNode state) {
-        ui.getInternals().recordNavigationFailure(exception);
         Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
                 exception);
 
