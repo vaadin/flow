@@ -79,6 +79,10 @@ public class DevToolsWrapper {
                 Map.of("cacheDisabled", isDisabled)));
     }
 
+    /**
+     * Closes the custom CDP connection, if one has been created, and forgets
+     * the attached targets. A later command creates a new connection.
+     */
     public void close() {
         if (connection != null) {
             connection.close();
