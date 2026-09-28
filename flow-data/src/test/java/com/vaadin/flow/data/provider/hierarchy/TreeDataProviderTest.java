@@ -74,6 +74,12 @@ class TreeDataProviderTest
     }
 
     @Test
+    void toString_containsRootItemCount() {
+        assertEquals("TreeDataProvider(10 root items)",
+                getDataProvider().toString());
+    }
+
+    @Test
     void treeData_add_item_parent_not_in_hierarchy_throws() {
         assertThrows(IllegalArgumentException.class, () -> new TreeData<>()
                 .addItem(new StrBean("", 0, 0), new StrBean("", 0, 0)));

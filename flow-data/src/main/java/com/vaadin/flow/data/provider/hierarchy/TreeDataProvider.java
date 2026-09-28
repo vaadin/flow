@@ -81,4 +81,10 @@ public class TreeDataProvider<T>
     public TreeData<T> getTreeData() {
         return getHierarchicalData();
     }
+
+    @Override
+    public String toString() {
+        return "TreeDataProvider(" + getHierarchicalData().getRootItems().size()
+                + " root items)";
+    }
 }

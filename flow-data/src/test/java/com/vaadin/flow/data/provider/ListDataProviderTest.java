@@ -38,6 +38,12 @@ class ListDataProviderTest
     }
 
     @Test
+    void toString_containsItemCount() {
+        assertEquals("ListDataProvider(100 items)",
+                getDataProvider().toString());
+    }
+
+    @Test
     void setSortByProperty_ascending() {
         ListDataProvider<StrBean> dataProvider = getDataProvider();
 
