@@ -26,6 +26,8 @@ import org.atmosphere.cpr.AtmosphereFramework;
 /**
  * Defers the initialization of executors at runtime to prevent failures during
  * native build.
+ * 
+ * @since 2.1.1
  */
 public class AtmosphereDeferredInitializer {
 

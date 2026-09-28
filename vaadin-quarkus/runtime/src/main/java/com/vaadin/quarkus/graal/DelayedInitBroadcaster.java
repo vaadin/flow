@@ -32,6 +32,8 @@ import org.atmosphere.cpr.DefaultBroadcaster;
  * prevents a native build to complete because starting threads at build time is
  * not supported. Postponed initialization is activated by a call to
  * {@link #startExecutors(AtmosphereFramework)}.
+ * 
+ * @since 2.1.1
  */
 public class DelayedInitBroadcaster extends DefaultBroadcaster {
 

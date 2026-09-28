@@ -39,6 +39,8 @@ import com.vaadin.flow.server.VaadinServletService;
  * {@link QuarkusVaadinServletService} implementation, in which case
  * {@link #createServletService(DeploymentConfiguration)} must call
  * {@code service.init()}.
+ * 
+ * @since 1.0
  */
 public class QuarkusVaadinServlet extends VaadinServlet {
 

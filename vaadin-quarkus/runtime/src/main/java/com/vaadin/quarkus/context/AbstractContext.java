@@ -36,6 +36,8 @@ import io.quarkus.arc.InjectableContext;
  * implementing Context needs to implement the missing methods from the
  * {@link AlterableContext} interface and
  * {@link #getContextualStorage(Contextual, boolean)}.
+ * 
+ * @since 1.0
  */
 public abstract class AbstractContext implements InjectableContext {
 

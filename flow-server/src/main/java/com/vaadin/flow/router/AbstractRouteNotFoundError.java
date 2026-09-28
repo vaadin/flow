@@ -204,6 +204,8 @@ public abstract class AbstractRouteNotFoundError extends Component {
     /**
      * What this page tells Copilot, as a JavaScript definition for
      * {@link com.vaadin.flow.dom.Element#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface CopilotJs extends Serializable {

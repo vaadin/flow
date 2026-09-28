@@ -223,6 +223,8 @@ public final class WebComponent<C extends Component> implements Serializable {
     /**
      * How an event of an exported web component is fired, as a JavaScript
      * definition for {@link Element#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface CustomEventJs extends Serializable {

@@ -33,6 +33,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *
  * Qualified CDI beans implementing {@link com.vaadin.flow.i18n.I18NProvider},
  * and {@link com.vaadin.flow.di.InstantiatorFactory} interfaces are loaded.
+ * 
+ * @since 1.0
  */
 @Qualifier
 @Retention(RUNTIME)
