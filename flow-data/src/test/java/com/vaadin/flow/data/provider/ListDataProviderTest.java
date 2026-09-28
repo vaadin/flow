@@ -38,9 +38,17 @@ class ListDataProviderTest
     }
 
     @Test
-    void toString_containsItemCount() {
-        assertEquals("ListDataProvider(100 items)",
-                getDataProvider().toString());
+    void toString_containsIdentityAndBackendItemCount() {
+        ListDataProvider<StrBean> dataProvider = new ListDataProvider<>(data) {
+        };
+        String identity = dataProvider.getClass().getName() + "@"
+                + Integer.toHexString(dataProvider.hashCode());
+
+        assertEquals(identity + "(100 backend items)", dataProvider.toString());
+
+        dataProvider.setFilter(bean -> false);
+        assertEquals(identity + "(100 backend items, filtered)",
+                dataProvider.toString());
     }
 
     @Test

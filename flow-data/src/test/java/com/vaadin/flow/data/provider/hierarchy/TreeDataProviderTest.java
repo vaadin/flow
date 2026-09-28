@@ -74,9 +74,17 @@ class TreeDataProviderTest
     }
 
     @Test
-    void toString_containsRootItemCount() {
-        assertEquals("TreeDataProvider(10 root items)",
-                getDataProvider().toString());
+    void toString_containsIdentityAndBackendRootItemCount() {
+        TreeDataProvider<StrBean> dataProvider = getDataProvider();
+        String identity = dataProvider.getClass().getName() + "@"
+                + Integer.toHexString(dataProvider.hashCode());
+
+        assertEquals(identity + "(10 backend root items)",
+                dataProvider.toString());
+
+        dataProvider.setFilter(bean -> false);
+        assertEquals(identity + "(10 backend root items, filtered)",
+                dataProvider.toString());
     }
 
     @Test
