@@ -127,6 +127,6 @@ public class ListDataProvider<T>
     @Override
     public String toString() {
         return super.toString() + "(" + backend.size() + " backend items"
-                + (filter != null ? ", filtered" : "") + ")";
+                + (getFilter() != null ? ", filtered" : "") + ")";
     }
 }
