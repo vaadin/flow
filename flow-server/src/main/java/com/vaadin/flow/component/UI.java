@@ -2083,25 +2083,12 @@ public class UI extends Component
         getInternals().getRouter().executeNavigation(this, location,
                 navigationEvent, renderer, (httpStatus) -> {
                     forwardToClientUrl = renderer.getClientForwardRoute();
-                    adjustPageTitle();
+                    getInternals().restoreAppShellTitleIfEmpty();
                 });
     }
 
     private boolean isPostponed() {
         return getInternals().getContinueNavigationAction() != null;
-    }
-
-    private void adjustPageTitle() {
-        // new title is empty if the flow route does not have a title
-        String newTitle = getInternals().getTitle();
-        // app shell title is computed from the title tag in index.html
-        String appShellTitle = getInternals().getAppShellTitle();
-        // restore the app shell title when there is no one for the route
-        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null
-                && !appShellTitle.isEmpty()) {
-            getInternals().cancelPendingTitleUpdate();
-            getInternals().setTitle(appShellTitle);
-        }
     }
 
     private NavigationState getDefaultNavigationError() {
