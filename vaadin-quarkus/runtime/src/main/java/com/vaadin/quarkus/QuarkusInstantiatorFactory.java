@@ -36,6 +36,7 @@ import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
  * Reference</a> for further details.
  *
  * @see InstantiatorFactory
+ * @since 2.0
  */
 @VaadinServiceEnabled
 @ApplicationScoped

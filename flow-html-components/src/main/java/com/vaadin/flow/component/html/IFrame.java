@@ -457,6 +457,8 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     /**
      * The client-side operation behind {@link IFrame#reload()}, as a JavaScript
      * definition for {@link Element#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ReloadJs extends Serializable {
