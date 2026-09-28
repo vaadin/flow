@@ -4877,6 +4877,34 @@ public class RouterTest extends RoutingTestBase {
         assertEquals(404, ended.getStatusCode());
     }
 
+    @Test
+    public void navigate_throws_firesFailedOutcomeWithoutStatusCode() {
+        setNavigationTargets(ThrowingErrorTarget.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        // Only exceptions are turned into an error view, so an error escapes
+        assertThrows(NavigationError.class, () -> navigate("throwing"));
+
+        assertEquals(2, events.size());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertInstanceOf(NavigationError.class,
+                ((NavigationEndedEvent.Failed) ended.getOutcome()).error());
+        assertEquals(-1, ended.getStatusCode());
+    }
+
+    private static class NavigationError extends Error {
+    }
+
+    @Route("throwing")
+    @Tag(Tag.DIV)
+    public static class ThrowingErrorTarget extends Component
+            implements BeforeEnterObserver {
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            throw new NavigationError();
+        }
+    }
+
     private List<EventObject> recordNavigationEvents() {
         List<EventObject> events = new ArrayList<>();
         VaadinServiceEventBus eventBus = ui.getSession().getService()

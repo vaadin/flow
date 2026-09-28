@@ -55,6 +55,8 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEndedEvent;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
@@ -67,6 +69,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -363,6 +366,44 @@ class JavaScriptBootstrapUITest {
                 new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
 
         assertEquals(0, ui.getInternals().getWrapperElement().getChildCount());
+    }
+
+    @Test
+    void leaveNavigation_toClientView_firesNotShownOutcome() {
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
+        List<NavigationEndedEvent> ended = recordNavigationEndedEvents();
+
+        ui.leaveNavigation(
+                new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
+
+        assertEquals(1, ended.size());
+        assertEquals(new NavigationEndedEvent.NotShown(),
+                ended.get(0).getOutcome());
+    }
+
+    @Test
+    void browserNavigate_unknownRoute_firesOneFailedNavigation() {
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
+        List<NavigationEndedEvent> ended = recordNavigationEndedEvents();
+
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/unknown", "",
+                "", null, "link"));
+
+        assertEquals(1, ended.size());
+        NavigationEndedEvent event = ended.get(0);
+        assertEquals("unknown", event.getLocation().getPath());
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) event.getOutcome()).error());
+        assertEquals(404, event.getStatusCode());
+    }
+
+    private List<NavigationEndedEvent> recordNavigationEndedEvents() {
+        List<NavigationEndedEvent> ended = new ArrayList<>();
+        mocks.getService().getEventBus().addListener(NavigationEndedEvent.class,
+                ended::add);
+        return ended;
     }
 
     @Test

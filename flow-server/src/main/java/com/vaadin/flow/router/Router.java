@@ -604,6 +604,8 @@ public class Router implements Serializable {
      * navigation of the UI and the service event bus has a listener for either.
      * A navigation nested inside another one, such as a forward, a trailing
      * slash redirect or an error view, only runs.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      *
      * @param ui
      *            the UI that navigates
@@ -615,7 +617,7 @@ public class Router implements Serializable {
      *            handles the navigation and returns its HTTP status code
      * @return the HTTP status code of the navigation
      */
-    private static int observeNavigation(UI ui, Location location,
+    public static int observeNavigation(UI ui, Location location,
             NavigationTrigger trigger, IntSupplier navigation) {
         UIInternals internals = ui.getInternals();
         boolean outermost = internals.enterNavigation();
@@ -669,8 +671,12 @@ public class Router implements Serializable {
         // state with a new instance
         RouterState stateAfter = internals.getRouterStateSignal().peek();
         if (stateAfter != stateBefore) {
-            return new NavigationEndedEvent.Completed(
-                    stateAfter.navigationTarget());
+            Class<? extends Component> target = stateAfter.navigationTarget();
+            // The placeholder only clears the server view for a client-side
+            // view that the browser renders
+            return UI.ClientViewPlaceholder.class.isAssignableFrom(target)
+                    ? new NavigationEndedEvent.NotShown()
+                    : new NavigationEndedEvent.Completed(target);
         }
         return new NavigationEndedEvent.NotShown();
     }
