@@ -2367,13 +2367,14 @@ public class UI extends Component
 
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
-        NavigationEvent navigationEvent = new NavigationEvent(
-                getInternals().getRouter(), location, this, trigger);
+        Router router = getInternals().getRouter();
+        NavigationEvent navigationEvent = new NavigationEvent(router, location,
+                this, trigger);
 
         JavaScriptNavigationStateRenderer renderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
-        getInternals().getRouter().executeNavigation(this, location,
-                navigationEvent, renderer, (httpStatus) -> {
+        router.executeNavigation(this, location, navigationEvent, renderer,
+                (httpStatus) -> {
                     forwardToClientUrl = renderer.getClientForwardRoute();
                     adjustPageTitle();
                 });
