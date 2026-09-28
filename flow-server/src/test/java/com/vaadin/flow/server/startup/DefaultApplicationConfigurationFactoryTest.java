@@ -29,6 +29,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -52,6 +54,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultApplicationConfigurationFactoryTest {
+
+    // A version the token file check accepts, so that a test only fails on
+    // the rule under test
+    private static final String USABLE_NODE_VERSION = "v"
+            + FrontendUtils.MINIMUM_SUPPORTED_NODE_VERSION.getFullVersion();
 
     @TempDir
     Path temporaryFolder;
@@ -208,9 +215,10 @@ class DefaultApplicationConfigurationFactoryTest {
         assertFalse(configuration.isProductionMode());
     }
 
-    @Test
-    void create_developmentModeTokenFileInsideJarForThisProject_tokenFileIsUsed()
-            throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void create_developmentModeTokenFileInsideJarForThisProject_tokenFileIsUsed(
+            boolean projectFolderKnown) throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
         ResourceProvider resourceProvider = mockResourceProvider(config,
@@ -218,22 +226,52 @@ class DefaultApplicationConfigurationFactoryTest {
 
         // An application packaged into a jar in development mode and run on
         // the machine it was built on, where the project is still there
-        String npmFolder = temporaryFolder.toFile().getAbsolutePath()
-                .replace("\\", "\\\\");
+        File projectFolder = temporaryFolder.toFile();
         mockJarTokenFile(resourceProvider, "application.jar",
-                "{ \"productionMode\": false, \"npmFolder\": \"" + npmFolder
-                        + "\", \"node.version\": \"v24.10.0\" }");
+                developmentModeTokenFile(projectFolder, USABLE_NODE_VERSION));
 
-        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
-        ApplicationConfiguration configuration = factory.create(context);
+        ApplicationConfiguration configuration = factoryRunningFrom(
+                projectFolderKnown ? projectFolder : null).create(context);
 
-        assertEquals("v24.10.0",
+        assertEquals(USABLE_NODE_VERSION,
                 configuration.getStringProperty(InitParameters.NODE_VERSION,
                         null),
                 "A development mode token file of this project should be used");
-        assertEquals(temporaryFolder.toFile().getAbsolutePath(), configuration
+        assertEquals(projectFolder.getAbsolutePath(), configuration
                 .getStringProperty(FrontendUtils.PROJECT_BASEDIR, null));
         assertFalse(configuration.isProductionMode());
+    }
+
+    @Test
+    void create_developmentModeTokenFileInsideJarOfDependencyBuiltOnThisMachine_tokenFileIsIgnored()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        // An add-on built on this machine packages the token file of its own
+        // project, which is still there, while the application is run from
+        // another project
+        File addonFolder = Files
+                .createDirectory(temporaryFolder.resolve("addon")).toFile();
+        File applicationFolder = Files
+                .createDirectory(temporaryFolder.resolve("application"))
+                .toFile();
+        mockJarTokenFile(resourceProvider, "addon.jar",
+                developmentModeTokenFile(addonFolder, USABLE_NODE_VERSION));
+
+        ApplicationConfiguration configuration = factoryRunningFrom(
+                applicationFolder).create(context);
+
+        assertNull(
+                configuration.getStringProperty(InitParameters.NODE_VERSION,
+                        null),
+                "Node version of another project should not be used");
+        assertNull(
+                configuration.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                        null),
+                "Project folder of another project should not be used");
     }
 
     @Test
@@ -440,6 +478,23 @@ class DefaultApplicationConfigurationFactoryTest {
             assertEquals(configuration.getStringProperty(attributeName, null),
                     value.toString());
         }
+    }
+
+    private static String developmentModeTokenFile(File projectFolder,
+            String nodeVersion) {
+        return "{ \"productionMode\": false, \"npmFolder\": \""
+                + projectFolder.getAbsolutePath().replace("\\", "\\\\")
+                + "\", \"node.version\": \"" + nodeVersion + "\" }";
+    }
+
+    private static DefaultApplicationConfigurationFactory factoryRunningFrom(
+            File applicationProjectFolder) {
+        return new DefaultApplicationConfigurationFactory() {
+            @Override
+            File getApplicationProjectFolder() {
+                return applicationProjectFolder;
+            }
+        };
     }
 
     private void mockClassPathTokenFile(ResourceProvider resourceProvider,

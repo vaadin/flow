@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -35,6 +36,7 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AbstractPropertyConfiguration;
@@ -264,10 +266,13 @@ public class DefaultApplicationConfigurationFactory
      * <p>
      * A file from a production build carries no folders of the machine it was
      * built on and is always used, as it is the file of a packaged application.
-     * A file from a development build is used only when the project it was
-     * written for is on this machine, which is the case when the application
-     * itself is packaged in development mode, but not when the file is packaged
-     * into a dependency built somewhere else.
+     * A file from a development build is used only when it was written for the
+     * application that is being run: the project it names has to be on this
+     * machine and, when the project folder of the application can be told from
+     * the class path or the working directory, has to be that folder. This
+     * keeps an application packaged in development mode working, and leaves out
+     * a file packaged into a dependency, whether the dependency was built
+     * somewhere else or on this machine.
      *
      * @param content
      *            the token file content, not {@code null}
@@ -295,7 +300,36 @@ public class DefaultApplicationConfigurationFactory
                     "it is not from a production build and the project it was written for, '%s', is not on this machine, so it is packaged into a dependency by mistake",
                     projectFolder);
         }
+        File applicationProjectFolder = getApplicationProjectFolder();
+        if (applicationProjectFolder != null
+                && !isSameFolder(new File(projectFolder),
+                        applicationProjectFolder)) {
+            return String.format(
+                    "it is not from a production build and was written for the project in '%s', not for the application being run from '%s', so it is packaged into a dependency by mistake",
+                    projectFolder, applicationProjectFolder);
+        }
         return null;
+    }
+
+    /**
+     * Gets the project folder of the application that is being run, as far as
+     * it can be told without a token file.
+     *
+     * @return the project folder, or {@code null} if it cannot be told
+     */
+    // Package-private for testing
+    File getApplicationProjectFolder() {
+        File projectFolder = FileIOUtils.getProjectFolderFromClasspath();
+        return projectFolder != null ? projectFolder
+                : FileIOUtils.getProjectFolderFromWorkingDirectory();
+    }
+
+    private static boolean isSameFolder(File folder, File other) {
+        try {
+            return Files.isSameFile(folder.toPath(), other.toPath());
+        } catch (IOException e) {
+            return folder.getAbsoluteFile().equals(other.getAbsoluteFile());
+        }
     }
 
     /**

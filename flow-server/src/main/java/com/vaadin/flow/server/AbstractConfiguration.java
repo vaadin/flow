@@ -260,13 +260,12 @@ public interface AbstractConfiguration extends Serializable {
          * be a Maven or Gradle project. Check to avoid cluttering server
          * directories (see tickets #8249, #8403).
          */
-        String baseDirCandidate = System.getProperty("user.dir", ".");
-        Path path = Paths.get(baseDirCandidate);
-        if (path.toFile().isDirectory() && (path.resolve("pom.xml").toFile()
-                .exists() || path.resolve("build.gradle").toFile().exists()
-                || path.resolve("build.gradle.kts").toFile().exists())) {
-            return path.toAbsolutePath().toFile();
+        File workingDirectory = FileIOUtils
+                .getProjectFolderFromWorkingDirectory();
+        if (workingDirectory != null) {
+            return workingDirectory;
         } else {
+            Path path = Paths.get(System.getProperty("user.dir", "."));
             throw new IllegalStateException(String.format(
                     "Failed to determine project directory for dev mode. "
                             + "Directory '%s' does not look like a Maven or "
