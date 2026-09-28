@@ -154,6 +154,7 @@ public @interface JavaScript {
      * instead.
      *
      * @return the kind of script tag to render
+     * @since 25.4
      */
     Type type() default Type.SCRIPT;
 

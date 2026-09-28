@@ -41,6 +41,8 @@ import org.atmosphere.util.ExecutorsFactory;
  * {@link #getScheduler(AtmosphereConfig)}. The
  * {@link #newScheduler(AtmosphereConfig)} method is also rewritten to call the
  * renamed {@link ExecutorsFactory#getScheduler(AtmosphereConfig)} method.
+ * 
+ * @since 2.1.1
  */
 public class DelayedSchedulerExecutorsFactory {
 

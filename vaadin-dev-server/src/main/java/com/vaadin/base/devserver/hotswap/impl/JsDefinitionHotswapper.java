@@ -58,6 +58,8 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * takes have to match for an interface to pass silently.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.4
  */
 public class JsDefinitionHotswapper implements VaadinHotswapper {
 

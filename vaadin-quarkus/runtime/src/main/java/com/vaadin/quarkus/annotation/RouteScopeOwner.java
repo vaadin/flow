@@ -36,6 +36,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * Owner is a router component. A {@link Route @Route}, or a
  * {@link RouterLayout}, or a {@link HasErrorParameter}.
+ * 
+ * @since 1.0
  */
 @Qualifier
 @Retention(RUNTIME)
