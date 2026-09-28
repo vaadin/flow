@@ -24,6 +24,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.junit.Test
 import java.io.File
 import java.nio.file.Files
+import kotlin.io.path.createTempDirectory
 import kotlin.io.path.writeText
 import kotlin.test.assertContains
 import kotlin.test.expect
@@ -129,7 +130,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
 
     @Test
     fun projectDependency_coldAndRelocatedBuilds_remainIncremental() {
-        val buildCacheDir = createTempDir("junit-vaadin-gradle-buildcache")
+        val buildCacheDir = createTempDirectory("junit-vaadin-gradle-buildcache").toFile()
         val buildCachePath = buildCacheDir.absolutePath.replace('\\', '/')
 
         testProject.settingsFile.writeText(
