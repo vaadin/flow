@@ -80,6 +80,25 @@ class BrowserTabTest {
     }
 
     @Test
+    void get_newTab_notifiesInitListenersOnce() {
+        List<BrowserTabInitEvent> events = new ArrayList<>();
+        session.getService().addBrowserTabInitListener(event -> {
+            // The tab being initialized is already the tab of its UI
+            assertSame(event.getBrowserTab(), BrowserTab.get(event.getUI()));
+            events.add(event);
+        });
+        UI ui = addUI("tab-a");
+
+        BrowserTab tab = BrowserTab.get(ui);
+        BrowserTab.get(ui);
+        BrowserTab.get(addUI("tab-a"));
+
+        assertEquals(1, events.size());
+        assertSame(tab, events.get(0).getBrowserTab());
+        assertSame(ui, events.get(0).getUI());
+    }
+
+    @Test
     void destroyInactiveTabs_tabWithOpenUI_isKept() {
         UI ui = addUI("tab-a");
         BrowserTab tab = BrowserTab.get(ui);
@@ -103,6 +122,11 @@ class BrowserTabTest {
         AtomicInteger destroyed = new AtomicInteger();
         tab.addDestroyListener(destroyedTab -> {
             assertEquals("value", destroyedTab.getAttribute("key"));
+            assertThrows(IllegalStateException.class,
+                    () -> destroyedTab.setAttribute("key", "other"));
+            assertThrows(IllegalStateException.class,
+                    () -> destroyedTab.addDestroyListener(t -> {
+                    }));
             destroyed.incrementAndGet();
         });
 
@@ -121,6 +145,9 @@ class BrowserTabTest {
                 () -> tab.getAttribute("key"));
         assertThrows(IllegalStateException.class,
                 () -> tab.setAttribute("key", "value"));
+        assertThrows(IllegalStateException.class,
+                () -> tab.addDestroyListener(t -> {
+                }));
         assertNotSame(tab, BrowserTab.get(addUI("tab-a")));
     }
 
@@ -130,8 +157,11 @@ class BrowserTabTest {
         session.setErrorHandler(event -> errors.add(event.getThrowable()));
         IllegalStateException failure = new IllegalStateException("failure");
         AtomicInteger destroyed = new AtomicInteger();
-        BrowserTab tab = BrowserTab.get(addUI("tab-a"));
+        UI ui = addUI("tab-a");
+        BrowserTab tab = BrowserTab.get(ui);
         tab.addDestroyListener(destroyedTab -> {
+            // A tab being destroyed is no longer handed out for its UIs
+            assertNotSame(destroyedTab, BrowserTab.get(ui));
             throw failure;
         });
         tab.addDestroyListener(destroyedTab -> destroyed.incrementAndGet());

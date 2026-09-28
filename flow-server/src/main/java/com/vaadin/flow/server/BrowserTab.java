@@ -68,9 +68,11 @@ import com.vaadin.flow.shared.Registration;
  * window that does not have a name yet. The identification is therefore best
  * effort, with these caveats:
  * <ul>
- * <li>Reopening a closed tab and restoring tabs after the browser was quit or
- * crashed gives the tab a new window name, so it starts a new browser tab. So
- * does duplicating a tab in current Chromium, Firefox and Safari versions.</li>
+ * <li>Whether a duplicated tab, a reopened closed tab or a tab restored after
+ * the browser was quit or crashed keeps its window name is up to the browser.
+ * In tests with current Chromium, Firefox and Safari versions, all of them got
+ * a new window name and therefore a new browser tab, but do not rely on either
+ * outcome.</li>
  * <li>Browsers clear the window name when the tab navigates to another site, so
  * returning to the application from another site, for example after a redirect
  * from a payment provider or a login service, starts a new browser tab.</li>
@@ -107,6 +109,10 @@ public final class BrowserTab implements Serializable {
     private final List<SerializableConsumer<BrowserTab>> destroyListeners = new ArrayList<>();
 
     private long lastActiveTimestamp;
+
+    // Set when the destroy listeners start running, so that the browser tab
+    // is no longer handed out or changed while they read its attributes
+    private boolean destroying;
 
     private boolean destroyed;
 
@@ -200,11 +206,11 @@ public final class BrowserTab implements Serializable {
      * @param value
      *            the value to store, or {@code null} to remove the attribute
      * @throws IllegalStateException
-     *             if this browser tab has been destroyed
+     *             if this browser tab is being destroyed or has been destroyed
      */
     public void setAttribute(String name, @Nullable Object value) {
         Objects.requireNonNull(name, "Attribute name can not be null");
-        checkNotDestroyed();
+        checkNotDestroying();
         if (value == null) {
             attributes.remove(name);
         } else {
@@ -227,7 +233,7 @@ public final class BrowserTab implements Serializable {
      * @param value
      *            the value to store, or {@code null} to remove the attribute
      * @throws IllegalStateException
-     *             if this browser tab has been destroyed
+     *             if this browser tab is being destroyed or has been destroyed
      */
     public <T> void setAttribute(Class<T> type, @Nullable T value) {
         Objects.requireNonNull(type, "Attribute type can not be null");
@@ -277,21 +283,22 @@ public final class BrowserTab implements Serializable {
      * Adds a listener that is run when this browser tab is destroyed, either
      * because none of its UIs has been active for the heartbeat timeout or
      * because the session is destroyed. The listener receives the destroyed
-     * browser tab, whose attributes are still available while the listeners
-     * run. Use the given browser tab rather than {@link #getCurrent()}, which
-     * returns the browser tab of the UI of the request that happens to run the
-     * cleanup, or {@code null} when the session is being destroyed.
+     * browser tab, whose attributes can still be read, but not changed, while
+     * the listeners run. Use the given browser tab rather than
+     * {@link #getCurrent()}, which returns the browser tab of the UI of the
+     * request that happens to run the cleanup, or {@code null} when the session
+     * is being destroyed.
      *
      * @param listener
      *            the listener to add, not {@code null}
      * @return a handle for removing the listener
      * @throws IllegalStateException
-     *             if this browser tab has been destroyed
+     *             if this browser tab is being destroyed or has been destroyed
      */
     public Registration addDestroyListener(
             SerializableConsumer<BrowserTab> listener) {
         Objects.requireNonNull(listener, "Listener can not be null");
-        checkNotDestroyed();
+        checkNotDestroying();
         return Registration.addAndRemove(destroyListeners, listener);
     }
 
@@ -351,6 +358,7 @@ public final class BrowserTab implements Serializable {
     }
 
     private void destroy() {
+        destroying = true;
         for (SerializableConsumer<BrowserTab> listener : new ArrayList<>(
                 destroyListeners)) {
             try {
@@ -372,9 +380,17 @@ public final class BrowserTab implements Serializable {
         }
     }
 
+    private void checkNotDestroying() {
+        checkNotDestroyed();
+        if (destroying) {
+            throw new IllegalStateException(
+                    "The browser tab is being destroyed");
+        }
+    }
+
     private static @Nullable BrowserTab findTab(VaadinSession session, UI ui) {
         BrowserTab tab = ComponentUtil.getData(ui, BrowserTab.class);
-        if (tab != null && !tab.destroyed) {
+        if (tab != null && !tab.destroying) {
             return tab;
         }
         Registry registry = session.getAttribute(Registry.class);
