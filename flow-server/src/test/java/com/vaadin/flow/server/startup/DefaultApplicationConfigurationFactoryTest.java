@@ -242,6 +242,72 @@ class DefaultApplicationConfigurationFactoryTest {
         assertFalse(configuration.isProductionMode());
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void create_developmentModeTokenFileInsideJarStartedFromWorkingDirectory_projectInsideItIsUsed(
+            boolean projectInsideWorkingDirectory) throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        // A multi-module build started from its root with java -jar: the
+        // class path tells nothing, the working directory is the root
+        File root = Files.createDirectory(temporaryFolder.resolve("root"))
+                .toFile();
+        File project = Files.createDirectories(
+                projectInsideWorkingDirectory ? root.toPath().resolve("app")
+                        : temporaryFolder.resolve("addon"))
+                .toFile();
+        mockJarTokenFile(resourceProvider, "application.jar",
+                developmentModeTokenFile(project, USABLE_NODE_VERSION));
+
+        ApplicationConfiguration configuration = factoryRunningFrom(null, root)
+                .create(context);
+
+        assertEquals(projectInsideWorkingDirectory ? USABLE_NODE_VERSION : null,
+                configuration.getStringProperty(InitParameters.NODE_VERSION,
+                        null));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void create_developmentModeTokenFileInsideJar_workingDirectoryIsUsedOnlyWhenItIsAProject(
+            boolean workingDirectoryIsProject) throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+
+        File workingDirectory = Files
+                .createDirectory(temporaryFolder.resolve("application"))
+                .toFile();
+        if (workingDirectoryIsProject) {
+            Files.createFile(workingDirectory.toPath().resolve("pom.xml"));
+        }
+        File addonFolder = Files
+                .createDirectory(temporaryFolder.resolve("addon")).toFile();
+        mockJarTokenFile(resourceProvider, "addon.jar",
+                developmentModeTokenFile(addonFolder, USABLE_NODE_VERSION));
+
+        // The real lookups: nothing on the test class path is the output
+        // folder of a project, so the working directory decides
+        String userDir = System.getProperty("user.dir");
+        ApplicationConfiguration configuration;
+        try {
+            System.setProperty("user.dir", workingDirectory.getAbsolutePath());
+            configuration = new DefaultApplicationConfigurationFactory()
+                    .create(context);
+        } finally {
+            System.setProperty("user.dir", userDir);
+        }
+
+        assertEquals(workingDirectoryIsProject ? null : USABLE_NODE_VERSION,
+                configuration.getStringProperty(InitParameters.NODE_VERSION,
+                        null),
+                "The file of another project should be ignored only when the working directory is a project");
+    }
+
     @Test
     void create_developmentModeTokenFileInsideJarOfDependencyBuiltOnThisMachine_tokenFileIsIgnored()
             throws IOException {
@@ -488,11 +554,21 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     private static DefaultApplicationConfigurationFactory factoryRunningFrom(
-            File applicationProjectFolder) {
+            File classpathProjectFolder) {
+        return factoryRunningFrom(classpathProjectFolder, null);
+    }
+
+    private static DefaultApplicationConfigurationFactory factoryRunningFrom(
+            File classpathProjectFolder, File workingDirectoryProjectFolder) {
         return new DefaultApplicationConfigurationFactory() {
             @Override
-            File getApplicationProjectFolder() {
-                return applicationProjectFolder;
+            File getClasspathProjectFolder() {
+                return classpathProjectFolder;
+            }
+
+            @Override
+            File getWorkingDirectoryProjectFolder() {
+                return workingDirectoryProjectFolder;
             }
         };
     }

@@ -300,28 +300,57 @@ public class DefaultApplicationConfigurationFactory
                     "it is not from a production build and the project it was written for, '%s', is not on this machine, so it is packaged into a dependency by mistake",
                     projectFolder);
         }
-        File applicationProjectFolder = getApplicationProjectFolder();
-        if (applicationProjectFolder != null
-                && !isSameFolder(new File(projectFolder),
-                        applicationProjectFolder)) {
-            return String.format(
-                    "it is not from a production build and was written for the project in '%s', not for the application being run from '%s', so it is packaged into a dependency by mistake",
-                    projectFolder, applicationProjectFolder);
+        File project = new File(projectFolder);
+        File classpathProjectFolder = getClasspathProjectFolder();
+        if (classpathProjectFolder != null) {
+            // The application runs from the output folder of its project, so
+            // the file has to be for exactly that project
+            if (!isSameFolder(project, classpathProjectFolder)) {
+                return notWrittenForThisApplication(projectFolder,
+                        classpathProjectFolder);
+            }
+        } else {
+            // The working directory is only a hint: a multi-module build may
+            // be started from its root, so a project inside it is accepted
+            File workingDirectory = getWorkingDirectoryProjectFolder();
+            if (workingDirectory != null
+                    && !isInsideFolder(project, workingDirectory)) {
+                return notWrittenForThisApplication(projectFolder,
+                        workingDirectory);
+            }
         }
         return null;
     }
 
+    private static String notWrittenForThisApplication(String projectFolder,
+            File applicationProjectFolder) {
+        return String.format(
+                "it is not from a production build and was written for the project in '%s', not for the application being run from '%s', so it is packaged into a dependency by mistake",
+                projectFolder, applicationProjectFolder);
+    }
+
     /**
-     * Gets the project folder of the application that is being run, as far as
-     * it can be told without a token file.
+     * Gets the project folder of the application that is being run from the
+     * class path, which is known when the application runs from the output
+     * folder of its project.
      *
      * @return the project folder, or {@code null} if it cannot be told
      */
     // Package-private for testing
-    File getApplicationProjectFolder() {
-        File projectFolder = FileIOUtils.getProjectFolderFromClasspath();
-        return projectFolder != null ? projectFolder
-                : FileIOUtils.getProjectFolderFromWorkingDirectory();
+    File getClasspathProjectFolder() {
+        return FileIOUtils.getProjectFolderFromClasspath();
+    }
+
+    /**
+     * Gets the working directory, if it is the folder of a Maven or Gradle
+     * project.
+     *
+     * @return the project folder, or {@code null} if the working directory is
+     *         not a project folder
+     */
+    // Package-private for testing
+    File getWorkingDirectoryProjectFolder() {
+        return FileIOUtils.getProjectFolderFromWorkingDirectory();
     }
 
     private static boolean isSameFolder(File folder, File other) {
@@ -329,6 +358,16 @@ public class DefaultApplicationConfigurationFactory
             return Files.isSameFile(folder.toPath(), other.toPath());
         } catch (IOException e) {
             return folder.getAbsoluteFile().equals(other.getAbsoluteFile());
+        }
+    }
+
+    private static boolean isInsideFolder(File folder, File parent) {
+        try {
+            return folder.toPath().toRealPath()
+                    .startsWith(parent.toPath().toRealPath());
+        } catch (IOException e) {
+            return folder.toPath().toAbsolutePath().normalize()
+                    .startsWith(parent.toPath().toAbsolutePath().normalize());
         }
     }
 

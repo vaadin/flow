@@ -17,8 +17,6 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.Serializable;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
@@ -264,17 +262,14 @@ public interface AbstractConfiguration extends Serializable {
                 .getProjectFolderFromWorkingDirectory();
         if (workingDirectory != null) {
             return workingDirectory;
-        } else {
-            Path path = Paths.get(System.getProperty("user.dir", "."));
-            throw new IllegalStateException(String.format(
-                    "Failed to determine project directory for dev mode. "
-                            + "Directory '%s' does not look like a Maven or "
-                            + "Gradle project. Ensure that you have run the "
-                            + "prepare-frontend Maven goal, which generates "
-                            + "'flow-build-info.json', prior to deploying your "
-                            + "application",
-                    path.toString()));
         }
+        throw new IllegalStateException(String
+                .format("Failed to determine project directory for dev mode. "
+                        + "Directory '%s' does not look like a Maven or "
+                        + "Gradle project. Ensure that you have run the "
+                        + "prepare-frontend Maven goal, which generates "
+                        + "'flow-build-info.json', prior to deploying your "
+                        + "application", System.getProperty("user.dir", ".")));
     }
 
     /**
