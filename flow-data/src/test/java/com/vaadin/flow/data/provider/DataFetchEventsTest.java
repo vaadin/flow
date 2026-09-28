@@ -51,6 +51,7 @@ import com.vaadin.flow.server.data.DataFetchStartedEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -146,7 +147,7 @@ class DataFetchEventsTest {
         service = new MockVaadinServletService();
         VaadinSession session = new AlwaysLockedVaadinSession(service);
         VaadinSession.setCurrent(session);
-        ui = new DataCommunicatorTest.MockUI(session);
+        ui = new MockUI(session);
         component = new TestComponent();
         ui.add(component);
 

@@ -44,9 +44,11 @@ import java.util.stream.Stream;
  * {@code @SpringBootApplication}.</li>
  * <li>A class in that output with a {@code public static void main}.</li>
  * </ol>
- * Class files are read with a minimal constant-pool walk rather than loaded:
- * the daemon has neither the application's classpath nor any business putting
- * it on its own.
+ * The first three are {@link #namedByBuild}: answers the build states, rather
+ * than infers. Only they are strong enough for {@link AppRuntime} to decide
+ * this is an application with an entry point at all. Class files are read with
+ * a minimal constant-pool walk rather than loaded: the daemon has neither the
+ * application's classpath nor any business putting it on its own.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -74,29 +76,45 @@ final class MainClass {
      * @return the binary name of the class to launch
      */
     static Optional<String> discover(Reactor.Module appModule, Launch.Log log) {
+        Optional<String> named = namedByBuild(appModule);
+        if (named.isPresent()) {
+            log.line("main class " + named.get() + " (named by the build)");
+            return named;
+        }
+        Optional<String> withMain = firstMatching(appModule,
+                classFilesOf(appModule.classesDir()), ClassFile::hasMainMethod);
+        withMain.ifPresent(name -> log
+                .line("main class " + name + " (public static void main)"));
+        return withMain;
+    }
+
+    /**
+     * The entry point the <em>build</em> names, as opposed to one merely found
+     * by looking for a main method.
+     * <p>
+     * Separated out because it is the one unambiguous answer, and
+     * {@link AppRuntime} has to distinguish the two. A WAR project may well
+     * carry some unrelated {@code public static void main} - a code generator,
+     * a fixture loader - and taking that for the application would launch the
+     * wrong thing and report the wrong reason when it exited. A manifest
+     * {@code Start-Class} or an {@code @SpringBootApplication} is a statement
+     * of intent; a stray main method is not.
+     *
+     * @param appModule
+     *            the application module
+     * @return the binary name the build names, or empty when it names none
+     */
+    static Optional<String> namedByBuild(Reactor.Module appModule) {
         String configured = System.getProperty("vaadin.dev.mainClass");
         if (configured != null && !configured.isBlank()) {
             return Optional.of(configured.trim());
         }
         Optional<String> fromManifest = fromPackagedJar(appModule.dir());
         if (fromManifest.isPresent()) {
-            log.line("main class " + fromManifest.get()
-                    + " (from the packaged jar's manifest)");
             return fromManifest;
         }
-        List<Path> classFiles = classFilesOf(appModule.classesDir());
-        Optional<String> springBoot = firstMatching(appModule, classFiles,
+        return firstMatching(appModule, classFilesOf(appModule.classesDir()),
                 ClassFile::isSpringBootApplication);
-        if (springBoot.isPresent()) {
-            log.line("main class " + springBoot.get()
-                    + " (@SpringBootApplication)");
-            return springBoot;
-        }
-        Optional<String> withMain = firstMatching(appModule, classFiles,
-                ClassFile::hasMainMethod);
-        withMain.ifPresent(name -> log
-                .line("main class " + name + " (public static void main)"));
-        return withMain;
     }
 
     /**

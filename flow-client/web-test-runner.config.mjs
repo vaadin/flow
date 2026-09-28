@@ -35,6 +35,12 @@ export default {
         <script type="module" src="${testFramework}"></script>
       </body>
     </html>`,
+  // Engine code logs through Console, which is only silent in production mode,
+  // so the cases that drive it print hundreds of lines even when they pass.
+  // Keep what a session logged only when it did not pass, where the log is the
+  // diagnostic, and set VAADIN_TEST_QUIET_OUTPUT=false to see it all again.
+  // This mirrors what QuietTestOutputListener does for the Java tests.
+  filterBrowserLogs: (log, session) => session?.passed !== true || process.env.VAADIN_TEST_QUIET_OUTPUT === 'false',
   plugins: [
     {
       // Flow.ts loads the client through the bare `vaadin-flow-client`

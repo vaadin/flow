@@ -23,7 +23,12 @@ function addCssToIndex(): PluginOption {
 const customConfig: UserConfigFn = (env) => ({
   // Here you can add custom Vite parameters
   // https://vitejs.dev/config/
-  plugins: [addCssToIndex()]
+  plugins: [addCssToIndex()],
+  build: {
+    // Emit separate .map files for the dev bundle so that
+    // DevBundleSourceMapsIT can verify that the build plugins keep them usable
+    sourcemap: true
+  }
 });
 
 export default overrideVaadinConfig(customConfig);

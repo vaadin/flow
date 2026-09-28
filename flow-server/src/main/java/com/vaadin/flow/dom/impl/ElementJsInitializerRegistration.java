@@ -18,7 +18,6 @@ package com.vaadin.flow.dom.impl;
 import java.util.Objects;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
@@ -137,18 +136,14 @@ public final class ElementJsInitializerRegistration implements Registration {
         }
         Object[] params = new Object[] { Element.get(node), initializerId,
                 userFunction };
-        JavaScriptInvocation invocation = new JavaScriptInvocation(
-                INIT_EXPRESSION, params);
-        ui.getInternals().addJavaScriptInvocation(
-                new PendingJavaScriptInvocation(node, invocation));
+        ui.getInternals().addJavaScriptInvocation(node,
+                new JavaScriptInvocation(INIT_EXPRESSION, params));
     }
 
     private void emitDispose(UI ui) {
         Object[] params = new Object[] { Element.get(node), initializerId };
-        JavaScriptInvocation invocation = new JavaScriptInvocation(
-                DISPOSE_EXPRESSION, params);
-        ui.getInternals().addJavaScriptInvocation(
-                new PendingJavaScriptInvocation(node, invocation));
+        ui.getInternals().addJavaScriptInvocation(node,
+                new JavaScriptInvocation(DISPOSE_EXPRESSION, params));
     }
 
     @Override

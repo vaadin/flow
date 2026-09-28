@@ -95,6 +95,15 @@ public final class Daemon {
         this.transactions = new TransactionEngine(launch, app);
     }
 
+    /**
+     * Starts the daemon for a project.
+     *
+     * @param args
+     *            the project root directory as the first argument; the current
+     *            working directory is used when no argument is given
+     * @throws Exception
+     *             if the daemon cannot be started
+     */
     public static void main(String[] args) throws Exception {
         Path root = Path.of(args.length > 0 ? args[0] : ".").toAbsolutePath()
                 .normalize();
@@ -343,7 +352,7 @@ public final class Daemon {
                 out.println("EXIT " + tx.outcome.exitCode);
             }
             case "start" -> {
-                AppProcess.Startup startup = app.start(log);
+                AppProcess.Startup startup = app.start(log, "start");
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -353,7 +362,7 @@ public final class Daemon {
             }
             case "restart" -> {
                 app.stop();
-                AppProcess.Startup startup = app.start(log);
+                AppProcess.Startup startup = app.start(log, "restart");
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -391,6 +400,7 @@ public final class Daemon {
         if (app.state() == AppProcess.State.RUNNING) {
             sb.append("  owner=daemon  registered=").append(app.isRegistered());
         }
+        runtimeName().ifPresent(name -> sb.append("  runtime=").append(name));
         List<String> lines = new java.util.ArrayList<>();
         lines.add(sb.toString());
         modulesLine().ifPresent(lines::add);
@@ -512,6 +522,29 @@ public final class Daemon {
                         .map(TransactionEngine.Transaction::json).orElse("null")
                 + "}}";
         return List.of(json);
+    }
+
+    /**
+     * How this project's application is started, for {@code status}.
+     * <p>
+     * Worth a word because it is a decision the daemon made about the
+     * developer's project rather than something they configured: a WAR run
+     * through its own build plugin and a Spring Boot jar launched directly look
+     * identical from outside, and when the daemon has guessed wrong this line
+     * is the only place that says so. Empty when the project looks like neither
+     * shape - {@code start} is where that is worth a full explanation, not
+     * here.
+     */
+    @SuppressWarnings("java:S106")
+    private Optional<String> runtimeName() {
+        try {
+            return Optional.of(launch.runtime().name());
+        } catch (IOException e) {
+            // Into daemon.log, which is where this daemon logs; start is
+            // where the same question gets a full answer.
+            System.out.println("runtime undecided: " + e.getMessage());
+            return Optional.empty();
+        }
     }
 
     /**

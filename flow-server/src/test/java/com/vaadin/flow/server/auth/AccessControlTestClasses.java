@@ -278,6 +278,39 @@ public class AccessControlTestClasses {
 
     }
 
+    /**
+     * Shaped like the example in the {@link AccessDeniedErrorRouter} javadoc: a
+     * message constructor for application use, plus the no-arg constructor that
+     * the annotation requires.
+     */
+    public static class CustomAccessDeniedException extends RuntimeException {
+
+        public CustomAccessDeniedException() {
+        }
+
+        public CustomAccessDeniedException(String message) {
+            super(message);
+        }
+    }
+
+    @AccessDeniedErrorRouter(rerouteToError = CustomAccessDeniedException.class)
+    @RolesAllowed("admin")
+    @Route("customaccessdeniedwithmessage")
+    public static class CustomAccessDeniedWithMessageView extends Component {
+
+    }
+
+    @Tag(Tag.DIV)
+    public static class CustomAccessDeniedErrorView extends Component
+            implements HasErrorParameter<CustomAccessDeniedException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<CustomAccessDeniedException> parameter) {
+            return 0;
+        }
+    }
+
     @AnonymousAllowed
     @Route("anon")
     @RouteAlias("anon-alias")

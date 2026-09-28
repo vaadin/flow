@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -53,8 +55,7 @@ final class FullscreenSupport implements Serializable {
     }
 
     void exit() {
-        ui.getPage()
-                .executeJs("window.Vaadin.Flow.fullscreen.exitFullscreen()");
+        ui.getPage().executeJs(FullscreenJs.class).exitFullscreen();
     }
 
     void setStateFromClient(String value) {
@@ -67,5 +68,20 @@ final class FullscreenSupport implements Serializable {
             LOGGER.debug("Unknown fullscreen state value from client: {}",
                     value);
         }
+    }
+
+    /**
+     * What leaving fullscreen asks of its client-side bridge, as a JavaScript
+     * definition for
+     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface FullscreenJs extends Serializable {
+
+        /**
+         * Takes the document out of fullscreen.
+         */
+        @JsExpression("window.Vaadin.Flow.fullscreen.exitFullscreen()")
+        void exitFullscreen();
     }
 }

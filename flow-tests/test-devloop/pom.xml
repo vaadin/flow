@@ -9,13 +9,24 @@
   <artifactId>flow-test-devloop</artifactId>
   <packaging>pom</packaging>
   <name>Flow dev loop tests</name>
-  <description>End-to-end tests for the vaadin-dev CLI and the dev-loop daemon.</description>
+  <description>End-to-end tests for the vaadin-dev CLI and the dev-loop daemon, one fixture per shape of application.</description>
 
-  <!-- Order matters for a plain `mvn install` here: the application resolves the
-       library. Maven reorders by the dependency graph anyway; this is for a reader. -->
+  <!-- One fixture per shape of Vaadin application, because the shape is what
+       the dev loop has to tell apart: test-devloop-spring is an application
+       with an entry point, launched as `java -cp ... <MainClass>`, and
+       test-devloop-jetty is a WAR with none, run by the project's own build
+       plugin. Each is its own multi-module reactor, because the interesting
+       case - an edit in a sibling library reaching the running page - only
+       exists if there is a sibling.
+
+       test-devloop-support sits here with them and is deliberately not listed
+       below: flow-tests declares it among the modules it builds regardless of
+       -DskipTests, which is how CI gets it into the local repository before the
+       IT jobs - which build no test module at all - resolve it. Declaring it in
+       both places would put the same project in one reactor twice. -->
   <modules>
-    <module>devloop-shared</module>
-    <module>devloop-app</module>
+    <module>test-devloop-spring</module>
+    <module>test-devloop-jetty</module>
   </modules>
 
   <properties>

@@ -51,8 +51,10 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
             .attributeWithDefault("type", "text");
 
+    /** The value change timeout in milliseconds. */
     private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
 
+    /** The value change mode currently applied to the element. */
     private ValueChangeMode currentMode;
 
     /**

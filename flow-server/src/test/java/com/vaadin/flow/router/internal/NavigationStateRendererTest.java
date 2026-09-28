@@ -418,6 +418,13 @@ class NavigationStateRendererTest {
                     jsInvoked.set(true);
                     return super.executeJs(expression, params);
                 }
+
+                @Override
+                public <T> T executeJs(Class<T> definitionType) {
+                    // The details are asked for through declared JavaScript
+                    jsInvoked.set(true);
+                    return super.executeJs(definitionType);
+                }
             };
 
             @Override

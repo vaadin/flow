@@ -35,6 +35,13 @@ import com.vaadin.flow.server.VaadinSession;
 @Priority(100)
 public class ErrorViewHotswapper implements VaadinHotswapper {
 
+    /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public ErrorViewHotswapper() {
+        // Default constructor
+    }
+
     @Override
     public void onClassesChange(HotswapClassSessionEvent event) {
         // Only process redefined classes (not first-time loads)

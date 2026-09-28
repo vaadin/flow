@@ -48,6 +48,15 @@ public class ExternalDependencyWatcher implements Closeable {
 
     final private static Set<FileWatcher> watchers = new HashSet<>();
 
+    /**
+     * Starts watching the dependency folders configured for the application, or
+     * the folders of the project itself when none are configured.
+     *
+     * @param context
+     *            the context the configuration is read from
+     * @param jarFrontendResourcesFolder
+     *            the folder a changed frontend resource is copied into
+     */
     public ExternalDependencyWatcher(VaadinContext context,
             File jarFrontendResourcesFolder) {
         ApplicationConfiguration config = ApplicationConfiguration.get(context);

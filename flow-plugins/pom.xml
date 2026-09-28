@@ -16,6 +16,7 @@
     <module>flow-dev-bundle-plugin</module>
   </modules>
   <properties>
+    <jandex.skip>true</jandex.skip>
     <bnd.skip>true</bnd.skip>
     <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>

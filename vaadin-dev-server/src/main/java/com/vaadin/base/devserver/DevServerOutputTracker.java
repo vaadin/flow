@@ -177,10 +177,20 @@ public class DevServerOutputTracker {
             this.output = output;
         }
 
+        /**
+         * Checks whether the compilation the output was produced by succeeded.
+         *
+         * @return {@code true} if it succeeded
+         */
         public boolean isSuccess() {
             return success;
         }
 
+        /**
+         * Gets the output the dev server produced.
+         *
+         * @return the output, never {@code null}
+         */
         public String getOutput() {
             return output;
         }

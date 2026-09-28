@@ -72,6 +72,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
      */
     static final int DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS = 1;
 
+    /**
+     * The package name pattern that is exempt from the minimum frontend package
+     * age. The packages Vaadin publishes itself are pinned to the version of
+     * the platform in use, so a project that is built right after a Vaadin
+     * release has no older version to fall back to.
+     */
+    static final String MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE = "@vaadin/*";
+
+    /**
+     * A {@code minimumReleaseAgeExcludes} setting of a {@code bunfig.toml} that
+     * has a package Vaadin publishes among its values.
+     */
+    private static final Pattern BUNFIG_VAADIN_EXCLUDE = Pattern
+            .compile("minimumReleaseAgeExcludes\\s*=\\s*\\[[^]]*[\"']@vaadin/");
+
     private static final String MODULES_YAML = ".modules.yaml";
 
     private static final String NPM_VALIDATION_FAIL_MESSAGE = "%n%n======================================================================================================"
@@ -323,9 +338,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
-        resolveMinimumFrontendPackageAgeArgument(options, tools, npmExecutable,
-                logger).ifPresent(npmInstallCommand::add);
+        MinimumFrontendPackageAge minimumAge = resolveMinimumFrontendPackageAge(
+                options, tools, npmExecutable, logger);
+        minimumAge.argument().ifPresent(npmInstallCommand::add);
+        // Also excluded when the age itself comes from the package manager
+        // configuration, so that a just released Vaadin version installs
+        npmInstallCommand.addAll(
+                resolveMinimumFrontendPackageAgeExcludeArguments(options, tools,
+                        npmExecutable, minimumAge.applies(), logger));
 
+        postinstallCommand.addAll(resolvePostinstallArguments(options));
         postinstallCommand.add("run");
         postinstallCommand.add("postinstall");
 
@@ -333,6 +355,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             logger.debug(
                     commandToString(options.getNpmFolder().getAbsolutePath(),
                             npmInstallCommand));
+            logger.debug(
+                    commandToString(options.getNpmFolder().getAbsolutePath(),
+                            postinstallCommand));
         }
 
         String toolName = getToolName(options);
@@ -426,8 +451,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 postinstallProcess = runNpmCommand(postinstallCommand,
                         packageFolder);
                 logger.debug("Output of postinstall `{}`:", postinstallPackage);
-                consumeProcessOutput(postinstallProcess, logger::debug);
-                postinstallProcess.waitFor();
+                StringBuilder output = new StringBuilder();
+                consumeProcessOutput(postinstallProcess, line -> {
+                    logger.debug(line);
+                    output.append(line).append(System.lineSeparator());
+                });
+                int exitCode = postinstallProcess.waitFor();
+                if (exitCode != 0) {
+                    throw new ExecutionFailedException(
+                            "The postinstall script of '" + postinstallPackage
+                                    + "' exited with status " + exitCode + ":"
+                                    + System.lineSeparator() + output);
+                }
             } catch (IOException | InterruptedException e) {
                 if (e instanceof InterruptedException) {
                     // Restore interrupted state
@@ -460,12 +495,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * installing frontend package versions that are too new, or nothing if the
      * age should not be restricted from here.
      * <p>
-     * A value configured through Vaadin is always used as is, {@code 0}
-     * disabling the check. When nothing is configured, the package manager is
-     * asked what it resolves for its own minimum release age setting; if it
-     * already has one, no argument is passed so that the package manager
-     * applies its own configuration. Only when neither is configured does
+     * A value configured through Vaadin is always used as is, {@code 0} adding
+     * no restriction. When nothing is configured, the package manager is asked
+     * what it resolves for its own minimum release age setting; if it already
+     * has one, no argument is passed so that the package manager applies its
+     * own configuration. Only when neither is configured does
      * {@link #DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} apply.
+     * <p>
+     * An age the package manager resolves for itself is reported as applying
+     * even when Vaadin is configured with {@code 0}, as a command line argument
+     * is the only thing Vaadin leaves out in that case.
      *
      * @param options
      *            current build options
@@ -476,38 +515,273 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            the npm, pnpm or bun command used for the install
      * @param logger
      *            the logger to report the resolved source of the value to
-     * @return the install argument, or an empty optional if none should be
-     *         passed
+     * @return whether an age applies at all, and the install argument if one
+     *         has to be passed
      */
-    static Optional<String> resolveMinimumFrontendPackageAgeArgument(
+    static MinimumFrontendPackageAge resolveMinimumFrontendPackageAge(
             Options options, FrontendTools tools, List<String> toolCommand,
             Logger logger) {
         Integer configuredDays = options.getMinimumFrontendPackageAgeDays();
         if (configuredDays != null && configuredDays == 0) {
-            return Optional.empty();
+            // Vaadin adds no restriction of its own, but an age the package
+            // manager is configured with still applies to the install
+            return new MinimumFrontendPackageAge(
+                    getPackageManagerConfiguredMinimumReleaseAge(options, tools,
+                            toolCommand)
+                            .filter(TaskRunNpmInstall::blocksSomeVersion)
+                            .isPresent(),
+                    Optional.empty());
         }
-        boolean npmSupportsMinReleaseAge = !options.isEnableBun()
-                && !options.isEnablePnpm()
-                && tools.npmSupportsMinReleaseAge(toolCommand);
         int days;
         if (configuredDays != null) {
             days = configuredDays;
         } else {
             Optional<String> packageManagerValue = getPackageManagerConfiguredMinimumReleaseAge(
-                    options, tools, toolCommand, npmSupportsMinReleaseAge);
+                    options, tools, toolCommand);
             if (packageManagerValue.isPresent()) {
                 logger.info(
                         "Keeping the minimum frontend package age configured for {} "
                                 + "({}) instead of applying the Vaadin default. Set the "
                                 + "'{}' parameter to override it.",
-                        getToolName(options), packageManagerValue.get(),
+                        getToolName(options),
+                        describeConfiguredMinimumReleaseAge(options,
+                                packageManagerValue.get()),
                         InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS);
-                return Optional.empty();
+                return new MinimumFrontendPackageAge(
+                        blocksSomeVersion(packageManagerValue.get()),
+                        Optional.empty());
             }
             days = DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS;
         }
-        return Optional.of(getMinimumFrontendPackageAgeArgument(options, days,
-                npmSupportsMinReleaseAge));
+        boolean npmSupportsMinReleaseAge = !options.isEnableBun()
+                && !options.isEnablePnpm()
+                && tools.npmSupportsMinReleaseAge(toolCommand);
+        return new MinimumFrontendPackageAge(true,
+                Optional.of(getMinimumFrontendPackageAgeArgument(options, days,
+                        npmSupportsMinReleaseAge)));
+    }
+
+    /**
+     * Whether a minimum frontend package age applies to the install, and the
+     * install argument that makes the package manager apply the age Vaadin
+     * resolved, when it has to be passed at all.
+     *
+     * @param applies
+     *            {@code true} when some version can be blocked for being too
+     *            new, either because of this argument or because of the
+     *            configuration of the package manager
+     * @param argument
+     *            the install argument to pass, or an empty optional when the
+     *            package manager needs none
+     */
+    record MinimumFrontendPackageAge(boolean applies,
+            Optional<String> argument) {
+    }
+
+    /**
+     * Checks whether a minimum release age the package manager resolved for
+     * itself blocks some version, which every value but zero does. The
+     * {@code before} date npm falls back to is not a number and always blocks
+     * something.
+     */
+    private static boolean blocksSomeVersion(String packageManagerValue) {
+        try {
+            return Double.parseDouble(packageManagerValue.trim()) != 0;
+        } catch (NumberFormatException e) { // NOSONAR
+            return true;
+        }
+    }
+
+    /**
+     * Spells out a minimum release age the package manager resolved for itself,
+     * as the unit of the value depends on the package manager and the setting
+     * it comes from: days for npm, minutes for pnpm, and a date for the
+     * {@code before} setting npm resolves {@code min-release-age} into.
+     */
+    private static String describeConfiguredMinimumReleaseAge(Options options,
+            String packageManagerValue) {
+        String value = packageManagerValue.trim();
+        if (options.isEnablePnpm()) {
+            return value + " minutes";
+        }
+        try {
+            Double.parseDouble(value);
+            return value + " days";
+        } catch (NumberFormatException e) { // NOSONAR
+            return "no versions released after " + value;
+        }
+    }
+
+    /**
+     * Resolves the install arguments that exempt the packages Vaadin publishes
+     * itself from the minimum frontend package age, so that a project can be
+     * built with a Vaadin version that was released a moment ago.
+     * <p>
+     * <ul>
+     * <li>npm 11.17 or newer is passed
+     * {@code --min-release-age-exclude=@vaadin/*}, which exempts the matching
+     * packages from both {@code --min-release-age} and {@code --before}</li>
+     * <li>pnpm 10.17 or newer is passed
+     * {@code --config.minimum-release-age-exclude=@vaadin/*}</li>
+     * <li>bun and older npm and pnpm versions cannot exclude packages on the
+     * command line, so nothing is passed and the build is warned that an
+     * installation may fail during the first day after a Vaadin release, unless
+     * a {@code bunfig.toml} of the project lists the packages already</li>
+     * <li>nothing is passed and nothing is warned about when no age applies, as
+     * then no version is blocked to begin with</li>
+     * </ul>
+     * The patterns the package manager is configured with are passed along, as
+     * a command line value replaces them instead of adding to them. Only the
+     * excluded packages themselves are exempt; their own dependencies still
+     * have to be old enough.
+     *
+     * @param options
+     *            current build options
+     * @param tools
+     *            the frontend tools used to read the package manager version
+     *            and configuration
+     * @param toolCommand
+     *            the npm, pnpm or bun command used for the install
+     * @param ageApplies
+     *            {@code false} when no version is blocked for being too new, in
+     *            which case nothing has to be excluded
+     * @param logger
+     *            the logger to report an unsupported package manager to
+     * @return the install arguments, empty if none should be passed
+     */
+    static List<String> resolveMinimumFrontendPackageAgeExcludeArguments(
+            Options options, FrontendTools tools, List<String> toolCommand,
+            boolean ageApplies, Logger logger) {
+        if (!ageApplies) {
+            return List.of();
+        }
+        if (options.isEnableBun()) {
+            if (!bunfigExcludesVaadinPackages(options.getNpmFolder(), logger)) {
+                warnAboutPackagesThatCannotBeExcluded(logger,
+                        "bun accepts exclusions only as exact package names in the 'minimumReleaseAgeExcludes' setting of a bunfig.toml",
+                        "List the '" + MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE
+                                + "' packages the project depends on in that setting, spelled out one by one, to get the same result as with npm and pnpm.");
+            }
+            return List.of();
+        }
+        if (options.isEnablePnpm()) {
+            if (!tools.pnpmSupportsMinimumReleaseAgeExclude(toolCommand)) {
+                warnAboutPackagesThatCannotBeExcluded(logger, "pnpm older than "
+                        + FrontendTools.MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                                .getFullVersion()
+                        + " ignores the 'minimumReleaseAgeExclude' setting",
+                        "Upgrade pnpm to "
+                                + FrontendTools.MIN_PNPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                                        .getFullVersion()
+                                + " or newer.");
+                return List.of();
+            }
+            List<String> arguments = excludeArguments(
+                    "--config.minimum-release-age-exclude=",
+                    tools.getConfiguredSettingValues(toolCommand,
+                            options.getNpmFolder(), "minimumReleaseAgeExclude",
+                            "minimum-release-age-exclude"));
+            if (arguments.size() == 1) {
+                // pnpm reads the setting as a list only when the argument is
+                // given more than once, and pnpm 11 excludes every package
+                // when it is a single string instead of a list
+                arguments = List.of(arguments.get(0), arguments.get(0));
+            }
+            return arguments;
+        }
+        if (!tools.npmSupportsMinReleaseAgeExclude(toolCommand)) {
+            warnAboutPackagesThatCannotBeExcluded(logger, "npm older than "
+                    + FrontendTools.MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                            .getFullVersion()
+                    + " does not know the '--min-release-age-exclude' argument",
+                    "Upgrade npm to "
+                            + FrontendTools.MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                                    .getFullVersion()
+                            + " or newer, which Node.js "
+                            + FrontendTools.MIN_NODE_VERSION_FOR_RELEASE_AGE_EXCLUDE
+                                    .getFullVersion()
+                            + " and newer ship with.");
+            return List.of();
+        }
+        return excludeArguments("--min-release-age-exclude=",
+                tools.getConfiguredSettingValues(toolCommand,
+                        options.getNpmFolder(), "min-release-age-exclude"));
+    }
+
+    /**
+     * Resolves the arguments that the command running a {@code postinstall}
+     * script needs on top of the ones the package manager is called with
+     * anyway.
+     * <p>
+     * Before pnpm runs a script it checks that {@code node_modules} is up to
+     * date, and that check starts an install of its own. The install right
+     * above has just made that pointless, and the one pnpm starts is not the
+     * same one: it is not passed the arguments that exempt the packages Vaadin
+     * publishes from the minimum release age, and it does not skip the
+     * lifecycle scripts of the dependencies. Whenever it fails, for that or any
+     * other reason, the script itself is never run, so the check is turned off.
+     * <p>
+     * npm and bun run a script without checking anything, and bun rejects an
+     * argument it is not expecting, so nothing is passed for them.
+     *
+     * @param options
+     *            current build options
+     * @return the arguments to pass before {@code run}, empty when the package
+     *         manager needs none
+     */
+    static List<String> resolvePostinstallArguments(Options options) {
+        if (!options.isEnablePnpm()) {
+            return List.of();
+        }
+        return List.of("--config.verify-deps-before-run=false");
+    }
+
+    /**
+     * Builds one install argument per package name pattern that has to be
+     * excluded, which are the ones the package manager is configured with plus
+     * the one Vaadin needs.
+     */
+    private static List<String> excludeArguments(String argumentPrefix,
+            List<String> configuredPatterns) {
+        List<String> patterns = new ArrayList<>(configuredPatterns);
+        if (!patterns.contains(MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE)) {
+            patterns.add(MINIMUM_FRONTEND_PACKAGE_AGE_EXCLUDE);
+        }
+        return patterns.stream().map(pattern -> argumentPrefix + pattern)
+                .toList();
+    }
+
+    /**
+     * Checks whether a {@code bunfig.toml} next to the {@code package.json}
+     * already lists packages Vaadin publishes in its
+     * {@code minimumReleaseAgeExcludes} setting, so that a build that has taken
+     * care of the exclusion is not warned about it on every run.
+     * <p>
+     * The file is read as it is, as bun has no command for printing its
+     * resolved configuration. A {@code bunfig.toml} the project does not
+     * contain itself, such as the one in the home directory, is not seen.
+     */
+    private static boolean bunfigExcludesVaadinPackages(File npmFolder,
+            Logger logger) {
+        File bunfig = new File(npmFolder, "bunfig.toml");
+        if (!bunfig.isFile()) {
+            return false;
+        }
+        try {
+            String content = Files.readString(bunfig.toPath());
+            return BUNFIG_VAADIN_EXCLUDE.matcher(content).find();
+        } catch (IOException | UncheckedIOException e) {
+            logger.debug("Could not read '{}'", bunfig, e);
+            return false;
+        }
+    }
+
+    private static void warnAboutPackagesThatCannotBeExcluded(Logger logger,
+            String reason, String remedy) {
+        logger.warn("The packages Vaadin publishes cannot be excluded from the "
+                + "minimum frontend package age, as {}. Installing a "
+                + "Vaadin version during the first day after its "
+                + "release may therefore fail. {}", reason, remedy);
     }
 
     /**
@@ -520,10 +794,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * "https://github.com/oven-sh/bun/issues/7140">oven-sh/bun#7140</a>). The
      * {@code minimumReleaseAge} setting a {@code bunfig.toml} may define is
      * therefore not taken into account.
+     *
+     * @return the value as the package manager reports it, which is a number of
+     *         days for npm, a number of minutes for pnpm and a date for the
+     *         {@code before} setting npm resolves {@code min-release-age} into.
+     *         It is never converted into days, only checked for whether it
+     *         blocks a version at all ({@link #blocksSomeVersion(String)}) and
+     *         reported to the build
+     *         ({@link #describeConfiguredMinimumReleaseAge(Options, String)}),
+     *         as the package manager is the one applying it.
      */
     private static Optional<String> getPackageManagerConfiguredMinimumReleaseAge(
-            Options options, FrontendTools tools, List<String> toolCommand,
-            boolean npmSupportsMinReleaseAge) {
+            Options options, FrontendTools tools, List<String> toolCommand) {
         File npmFolder = options.getNpmFolder();
         if (options.isEnableBun()) {
             return Optional.empty();
@@ -534,13 +816,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return tools.getConfiguredSetting(toolCommand, npmFolder,
                     "minimumReleaseAge", "minimum-release-age");
         }
-        if (npmSupportsMinReleaseAge) {
-            return tools.getConfiguredSetting(toolCommand, npmFolder,
-                    "min-release-age");
-        }
-        // Older npm has no min-release-age setting, but the --before argument
-        // used as a fallback does have a configuration counterpart
-        return tools.getConfiguredSetting(toolCommand, npmFolder, "before");
+        // npm resolves min-release-age into the before setting it shares the
+        // implementation with, and up to npm 11.13 it drops the key itself
+        // while doing so, reporting an age the project configured as unset.
+        // Reading before as well covers those versions, npm older than 11.10
+        // where the setting does not exist at all and the --before argument is
+        // used as a fallback, and a project configuring before directly; the
+        // two settings are mutually exclusive for npm, so a Vaadin argument
+        // would override whichever of them is configured.
+        return tools.getConfiguredSetting(toolCommand, npmFolder,
+                "min-release-age", "before");
     }
 
     /**

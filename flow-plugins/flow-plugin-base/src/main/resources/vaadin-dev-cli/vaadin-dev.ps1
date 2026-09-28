@@ -184,6 +184,21 @@ function Get-DaemonJarOption {
     return $null
 }
 
+# -Dvaadin.dev.mavenArgs=<args> out of VAADIN_DEV_DAEMON_OPTS. Read here as well
+# as passed through to the daemon JVM, for the reason the bash port gives: the
+# resolve below runs before any daemon exists, against the same poms and so
+# subject to the same profiles. Returned already split, because Invoke-Native
+# takes an argument array.
+function Get-MavenArgsOption {
+    if (-not $env:VAADIN_DEV_DAEMON_OPTS) { return @() }
+    $match = [regex]::Match($env:VAADIN_DEV_DAEMON_OPTS,
+        '-Dvaadin\.dev\.mavenArgs=(.*?)(?= -D|$)')
+    if (-not $match.Success) { return @() }
+    $value = $match.Groups[1].Value.Trim()
+    if (-not $value) { return @() }
+    return @($value -split '\s+')
+}
+
 # The daemon jar named by a resolved-classpath file.
 #
 # Normally the file holds exactly that one path, because the resolve filters by
@@ -228,6 +243,7 @@ function Resolve-DaemonJar {
         return $null
     }
     New-Item -ItemType Directory -Force -Path $workDir | Out-Null
+    $extra = Get-MavenArgsOption
     $log = Join-Path $workDir 'daemon-jar-resolve.log'
     # Both attempts are kept, so a failure report shows the offline one as well as
     # the online one rather than only the last.
@@ -239,12 +255,12 @@ function Resolve-DaemonJar {
         # repository whenever the project has been built once.
         $ok = $false
         foreach ($mode in @('-o', '-nsu')) {
-            $result = Invoke-Native $maven @('-B', '-ntp', '-q', $mode,
+            $result = Invoke-Native $maven (@('-B', '-ntp', '-q', $mode) + $extra + @(
                 'dependency:build-classpath',
                 '-DincludeArtifactIds=flow-devloop-daemon',
                 '-Dmdep.outputFile=target/devloop/daemon-jar.txt',
-                '-Dmdep.regenerateFile=true')
-            $transcript.Add("--- $maven $mode (exit $($result.ExitCode)) ---")
+                '-Dmdep.regenerateFile=true'))
+            $transcript.Add("--- $maven $mode $extra (exit $($result.ExitCode)) ---")
             if ($result.Output) { $transcript.AddRange([string[]]$result.Output) }
             if ($result.ExitCode -eq 0) { $ok = $true; break }
             Step-Spinner

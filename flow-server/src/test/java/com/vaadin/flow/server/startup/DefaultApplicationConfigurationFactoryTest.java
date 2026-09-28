@@ -390,6 +390,32 @@ class DefaultApplicationConfigurationFactoryTest {
         }
     }
 
+    @Test
+    void create_tokenFileWithOutdatedNodeVersion_versionIsIgnored()
+            throws IOException {
+        assertEquals("v26.0.0", nodeVersionFromTokenFile("v26.0.0"),
+                "A usable Node.js version in the token file should be used");
+        assertEquals("lts", nodeVersionFromTokenFile("lts"),
+                "A version that cannot be parsed should be left for the frontend tooling to report");
+        assertNull(nodeVersionFromTokenFile("v18.14.1"),
+                "A Node.js version older than the frontend tooling supports comes from a stale token file and should be ignored");
+    }
+
+    private String nodeVersionFromTokenFile(String nodeVersion)
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+        mockClassPathTokenFile(resourceProvider,
+                JacksonUtils.mapToJson(
+                        Map.of(InitParameters.NODE_VERSION, nodeVersion))
+                        .toString());
+
+        return new DefaultApplicationConfigurationFactory().create(context)
+                .getStringProperty(InitParameters.NODE_VERSION, null);
+    }
+
     private void assertTokenAttributeIsPropagatedToDeploymentConfiguration(
             String attributeName, Object value) throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);

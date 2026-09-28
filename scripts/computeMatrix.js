@@ -8,13 +8,13 @@ const globalExclusions = [
   'flow-tests/test-multi-war/test-war1',
   'flow-tests/test-multi-war/test-war2',
   'flow-tests/test-webpush',
+  // Deploys to a real application server, so it needs one of the container
+  // profiles and has its own job in validation.yml
+  'flow-tests/vaadin-cdi-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/generator',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/library',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/theme',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui'
+  'flow-tests/test-devloop/test-devloop-support'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
@@ -26,7 +26,6 @@ const globalExclusions = [
 // Container 1:
 //  When running `flow-tests/test-mixed/pom-npm.xml` together with the following modules they fail
 //  - flow-tests/test-live-reload
-//  - flow-tests/test-dev-mode
 // Containers 2 & 3:
 //  Tests that need shared modules, check validation.yml to see how they are generated before running ITs
 // Containers 4, 5 & 6:
@@ -130,8 +129,10 @@ const moduleWeights = {
   'flow-tests/test-commercial-banner/commercial-addon': { pos: 7},
   'flow-tests/test-commercial-banner/flow-application': { pos: 7},
   'flow-tests/test-commercial-banner/integration-test': { pos: 7},
-  'flow-tests/test-devloop/devloop-shared': { pos: 7 },
-  'flow-tests/test-devloop/devloop-app': { pos: 7, weight: 5 },
+  'flow-tests/test-devloop/test-devloop-spring/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-spring/devloop-app': { pos: 7, weight: 5 },
+  'flow-tests/test-devloop/test-devloop-jetty/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-jetty/devloop-app': { pos: 7, weight: 8 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
@@ -144,7 +145,7 @@ const moduleWeights = {
   'flow-tests/test-router-custom-context-encoded': { pos: 8 },
   'flow-tests/test-router-custom-context-encoded-prod': { pos: 8 },
   'flow-tests/test-frontend/vite-embedded': { weight: 5 },
-  'flow-tests/test-dev-mode': { weight: 5 },
+  'flow-tests/test-default': { weight: 5 },
   'flow-tests/test-custom-frontend-directory/test-themes-custom-frontend-directory': { weight: 5 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 5 },
   'flow-tests/test-ccdm': { weight: 4 },
@@ -273,7 +274,10 @@ function getTestFiles(folder, pattern) {
  * remove excluded elements from array
  */
 function grep(array, exclude) {
-  return array.filter(item => !exclude.includes(item));
+  // Entries match a module or any module under it, so excluding a directory
+  // with sub-modules takes one line rather than one per sub-module.
+  return array.filter(item => !exclude.some(
+    excluded => item === excluded || item.startsWith(excluded + "/")));
 }
 
 function sumWeights(items, slowMap) {
@@ -435,6 +439,32 @@ function formatSecs(s) {
   const pad = (n, p) => ("" + n).padStart(p || 2, 0);
   const r = {h:~~(s / 3600),m:~~((s % 3600) / 60),s:~~s % 60, f:~~(s%1*10)};
   return `${pad(r.m)}':${pad(r.s)}"`;
+}
+
+/**
+ * The matrix of the quarkus-tests job in validation.yml. The suite is not a
+ * module of flow-tests (see flow-tests/pom.xml), so it is read from its own
+ * POM: every module of the suite that sets the validation.run property is a
+ * leg of the job, and the value says when it runs - `always` for every
+ * change, `when-changed` only when the Quarkus sources change. Modules
+ * without the property are fixtures the legs depend on.
+ */
+function getQuarkusTestsMatrix() {
+  const suite = 'flow-tests/vaadin-quarkus-tests';
+  const regexRun = /<validation\.run>\s*([\w-]+)\s*<\/validation\.run>/;
+  return getModules(suite).flatMap(path => {
+    const content = fs.readFileSync(path + '/pom.xml').toString()
+      .replace(regexComment, '');
+    const run = (regexRun.exec(content) || [])[1];
+    if (!run) {
+      return [];
+    }
+    if (run !== 'always' && run !== 'when-changed') {
+      throw new Error(`${path}/pom.xml: validation.run must be always or when-changed, not ${run}`);
+    }
+    const module = path.substring(suite.length + 1);
+    return [{ name: module, module, ungated: run === 'always' }];
+  });
 }
 
 /**
@@ -632,6 +662,8 @@ async function main() {
     printStrategy(object);
     const json = objectToString(object, keys);
     console.log(json);
+  } else if (action == 'quarkus-tests') {
+    console.log(objectToString(getQuarkusTestsMatrix()));
   } else if (action == 'clean-success') {
     const xmlSucceed = getFiles([], '.', /(surefire|failsafe)-reports\//)
       .filter(f => !fs.readFileSync(f).toString().match(/<stackTrace>/));
@@ -648,6 +680,7 @@ Actions
   set-version        replace versions in all pom files of the project
   unit-tests         outputs the JSON matrix for unit-tests
   it-tests           outputs the JSON matrix for it-tests
+  quarkus-tests      outputs the JSON matrix for the quarkus-tests job
   test-results       process test-results and outputs a matrix with weights
   clean-success      remove success xml test files to reduce uploaded artifact
 

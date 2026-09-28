@@ -77,6 +77,9 @@ import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamResource;
@@ -2561,7 +2564,7 @@ class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.noArgsMethod()", element);
+        assertPendingFunctionCall(ui, element, "noArgsMethod");
     }
 
     @Test
@@ -2572,7 +2575,7 @@ class ElementTest extends AbstractNodeTest {
         element.callJsFunction("noArgsMethod");
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.noArgsMethod()", element);
+        assertPendingFunctionCall(ui, element, "noArgsMethod");
     }
 
     @Test
@@ -2602,19 +2605,7 @@ class ElementTest extends AbstractNodeTest {
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.noArgsMethod()", element);
-    }
-
-    @Test
-    void callFunctionOneParam() {
-        UI ui = new MockUI();
-        Element element = ElementFactory.createDiv();
-        element.callJsFunction("method", "foo");
-        ui.getElement().appendChild(element);
-
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        assertPendingJs(ui, "return $0.method($1)", element, "foo");
-
+        assertPendingFunctionCall(ui, element, "noArgsMethod");
     }
 
     @Test
@@ -2625,7 +2616,7 @@ class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.method($1,$2)", element, "foo", 123);
+        assertPendingFunctionCall(ui, element, "method", "foo", 123);
     }
 
     @Test
@@ -2637,29 +2628,94 @@ class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.method($1)", element, bean);
+        assertPendingFunctionCall(ui, element, "method", bean);
     }
 
     @Test
     void callFunctionOnProperty() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
-        element.callJsFunction("property.method");
-        ui.getElement().appendChild(element);
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-
-        assertPendingJs(ui, "return $0.property.method()", element);
-    }
-
-    @Test
-    void callFunctionOnSubProperty() {
-        UI ui = new MockUI();
-        Element element = ElementFactory.createDiv();
         element.callJsFunction("property.other.method");
         ui.getElement().appendChild(element);
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
-        assertPendingJs(ui, "return $0.property.other.method()", element);
+        // The browser reads the path and calls the function it names, so the
+        // name travels as it was written however many properties it goes
+        // through
+        assertPendingFunctionCall(ui, element, "property.other.method");
+    }
+
+    @Test
+    void executeJsWithDefinition_schedulesTheDeclaredExpressionAndCarriesTheCall() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(TestJs.class).method("foo");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        assertEquals("this.method($0)", invocation.getExpression(),
+                "the declared expression should not be wrapped, since the generated function is what runs");
+        assertEquals(List.of("foo", element), invocation.getParameters(),
+                "the arguments should be followed by the element to apply the function to");
+        assertEquals(new JsCall(TestJs.class, "method", List.of("foo")),
+                invocation.getJsCall());
+    }
+
+    @Test
+    void executeJsWithDefinition_methodReturningAResult_schedulesAndReturnsIt() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        PendingJavaScriptResult result = element.executeJs(ResultJs.class)
+                .readValue();
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        assertSame(pendingJs.get(0), result,
+                "the result of the call should be the invocation the element scheduled");
+    }
+
+    @Test
+    void executeJsWithDefinition_variadicMethod_trailingArgumentsSentOneByOne() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.executeJs(TestJs.class).methodWithMany("foo", "bar", "baz");
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        assertEquals(List.of("foo", "bar", "baz", element),
+                invocation.getParameters(),
+                "a trailing argument should reach the client on its own, so that the generated function collects it into its rest parameter");
+    }
+
+    @JsDefinition
+    interface ResultJs extends Serializable {
+        @JsExpression("return this.value;")
+        PendingJavaScriptResult readValue();
+    }
+
+    @JsDefinition
+    interface TestJs extends Serializable {
+        @JsExpression("this.method($0)")
+        void method(String value);
+
+        @JsExpression("this.method($0, ...$1)")
+        void methodWithMany(String value, Object... rest);
     }
 
     @Test
@@ -3286,6 +3342,33 @@ class ElementTest extends AbstractNodeTest {
         assertEquals(1, pendingJs.size());
         assertInvocationEquals(expected, pendingJs.get(0).getInvocation());
 
+    }
+
+    /**
+     * Asserts that the only scheduled invocation is the call of the named
+     * function on the given element, which runs the JavaScript declared for
+     * calling a function rather than an expression naming the function.
+     */
+    private void assertPendingFunctionCall(UI ui, Element element,
+            String functionName, Object... arguments) {
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        JavaScriptInvocation invocation = pendingJs.get(0).getInvocation();
+
+        JsCall call = invocation.getJsCall();
+        assertEquals(Element.CallFunctionJs.class, call.definitionType(),
+                "the call should run the JavaScript declared for calling a function");
+
+        List<Object> expected = new ArrayList<>();
+        expected.add(functionName);
+        Collections.addAll(expected, arguments);
+        assertEquals(expected, call.flattenArguments(),
+                "the name of the function should be followed by the arguments of the call");
+
+        expected.add(element);
+        assertEquals(expected, invocation.getParameters(),
+                "and the element to call the function on should be last");
     }
 
     private void assertInvocationEquals(JavaScriptInvocation expected,

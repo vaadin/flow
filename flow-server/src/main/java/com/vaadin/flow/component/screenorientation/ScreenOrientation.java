@@ -23,8 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -166,10 +170,8 @@ public final class ScreenOrientation implements Serializable {
                     "Cannot lock to ScreenOrientationType."
                             + orientation.name());
         }
-        UI.getCurrentOrThrow().getElement()
-                .executeJs(
-                        "return window.Vaadin.Flow.screenOrientation.lock($0)",
-                        orientation.getClientValue())
+        UI.getCurrentOrThrow().getElement().executeJs(ScreenOrientationJs.class)
+                .lock(orientation.getClientValue())
                 .then(LockResult.class, result -> {
                     if (result.success()) {
                         onSuccess.run();
@@ -221,13 +223,42 @@ public final class ScreenOrientation implements Serializable {
     public static void unlock(SerializableRunnable onComplete) {
         Objects.requireNonNull(onComplete,
                 "onComplete callback cannot be null");
-        UI.getCurrentOrThrow().getElement()
-                .executeJs("window.Vaadin.Flow.screenOrientation.unlock()")
-                .then(ignored -> onComplete.run());
+        UI.getCurrentOrThrow().getElement().executeJs(ScreenOrientationJs.class)
+                .unlock().then(ignored -> onComplete.run());
     }
 
     private record LockResult(boolean success,
             @Nullable ScreenOrientationLockErrorCode code,
             @Nullable String message) implements Serializable {
+    }
+
+    /**
+     * What locking the screen orientation asks of its client-side bridge, as a
+     * JavaScript definition for {@link Element#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface ScreenOrientationJs extends Serializable {
+
+        /**
+         * Locks the screen to the given orientation.
+         *
+         * @param orientation
+         *            the orientation as the browser names it
+         * @return the pending result, which answers with what the browser made
+         *         of the request
+         */
+        @JsExpression("return window.Vaadin.Flow.screenOrientation.lock($0)")
+        PendingJavaScriptResult lock(String orientation);
+
+        /**
+         * Lets the screen follow the device again.
+         *
+         * @return the pending result, which completes once the browser has
+         *         released the lock
+         */
+        @JsExpression("window.Vaadin.Flow.screenOrientation.unlock()")
+        PendingJavaScriptResult unlock();
     }
 }

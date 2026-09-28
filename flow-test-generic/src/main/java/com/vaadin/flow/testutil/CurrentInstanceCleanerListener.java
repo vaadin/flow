@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.testutil;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestIdentifier;
 
@@ -35,8 +38,14 @@ public class CurrentInstanceCleanerListener implements TestExecutionListener {
             try {
                 Class<?> cls = Class
                         .forName("com.vaadin.flow.internal.CurrentInstance");
-                cls.getMethod("clearAll").invoke(null);
-            } catch (Exception e) { // NOSONAR
+                // A method handle rather than getMethod, which resolves every
+                // method of the class and with them classes that are not on
+                // the test classpath of every module, such as the servlet API
+                MethodHandles.publicLookup()
+                        .findStatic(cls, "clearAll",
+                                MethodType.methodType(void.class))
+                        .invokeExact();
+            } catch (Throwable e) { // NOSONAR
                 // Not a Flow module
             }
         }

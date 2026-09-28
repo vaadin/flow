@@ -1009,6 +1009,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_BUN);
             buildInfo.remove(InitParameters.CI_BUILD);
             buildInfo.remove(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(InitParameters.NODE_FOLDER);
             buildInfo.remove(
                     InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
             buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
@@ -1018,6 +1019,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
             buildInfo.remove(InitParameters.NPM_EXCLUDE_WEB_COMPONENTS);
+            buildInfo.remove(DISABLE_PREPARE_FRONTEND_CACHE);
             // Premium features flag is always true, because Vaadin CI server
             // uses Enterprise sub, thus it's always true.
             // Thus, resets the premium feature flag and DAU flag before asking

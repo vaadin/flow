@@ -5,3 +5,26 @@ h2 {
 p {
   color: darkgreen;
 }
+
+/* A color scheme set on a part of the UI has to win over the operating system
+   preference, the way the Lumo dark theme does it. That only holds as long as
+   light-dark() survives the production CSS build: rewritten into custom
+   properties, the value is resolved once on the document and the subtrees both
+   get whatever the operating system prefers. */
+html {
+  color-scheme: light dark;
+  --test-color-scheme-color: light-dark(rgb(255, 0, 0), rgb(0, 255, 0));
+}
+
+#lightScheme {
+  color-scheme: light;
+}
+
+#darkScheme {
+  color-scheme: dark;
+}
+
+#forcedLight,
+#forcedDark {
+  color: var(--test-color-scheme-color);
+}

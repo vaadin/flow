@@ -279,6 +279,61 @@ class CompileTest {
     }
 
     @Test
+    void classesUnknownToTheApp_answersFromTheLaunchSnapshot()
+            throws IOException {
+        // The signal a new bean or entity is escalated on. The application's
+        // own answer to "have you loaded this?" cannot serve: HotswapAgent's
+        // watcher defines a new class as soon as it notices the file, and a
+        // defined class is still not a bean definition.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path known = source(app, "Main");
+        // What the application was launched with: one class on the classpath,
+        // and the baseline taken from it.
+        compile.compile(List.of(known), project);
+        compile.seedFromDisk();
+
+        // A class of its own in a file the application has always had, which
+        // is the case a per-source answer gets wrong.
+        assertEquals(List.of("app.Main$Inner", "app.Second"),
+                compile.classesUnknownToTheApp(
+                        List.of("app.Main", "app.Main$Inner", "app.Second")));
+
+        // Compiled since - by an earlier apply, an IDE building on save, a
+        // bare mvn run. The application has it on the classpath now and still
+        // started without it, so the answer must not change.
+        Path added = known.resolveSibling("Added.java");
+        Files.writeString(added, """
+                package app;
+                public class Added { }
+                """);
+        compile.compile(List.of(added), project);
+
+        assertEquals(List.of("app.Added"), compile
+                .classesUnknownToTheApp(List.of("app.Main", "app.Added")));
+
+        // And what the application does run stays its own however often it is
+        // recompiled, which is what keeps a second method-body edit a hot
+        // swap rather than a restart for a bean the context has always held.
+        compile.compile(List.of(known), project);
+
+        assertTrue(
+                compile.classesUnknownToTheApp(List.of("app.Main")).isEmpty());
+
+        // Until the restart re-seeds, which is when the application has them
+        // all.
+        compile.seedFromDisk();
+
+        assertTrue(
+                compile.classesUnknownToTheApp(List.of("app.Main", "app.Added"))
+                        .isEmpty());
+    }
+
+    @Test
     void stale_reportsADeletedSourceAgainstTheInventory() throws IOException {
         // A walk only sees what is there, so the fingerprint map is what
         // answers: a deleted route or bean would otherwise be a silent "no
@@ -485,7 +540,7 @@ class CompileTest {
         long appStarted = System.currentTimeMillis();
         touch("app/src/main/frontend/views/main.ts");
 
-        compile.seedFromDisk(appStarted);
+        compile.seedFromDisk(appStarted, appStarted);
 
         Compile.FrontendChanges changes = compile.staleFrontend();
         assertEquals(

@@ -1,0 +1,88 @@
+name: "Quarkus ecosystem CI"
+# Builds the Vaadin Quarkus extension against the latest Quarkus main
+# snapshot, so that a breaking change upstream is reported while it can still
+# be discussed rather than after a Quarkus release.
+#
+# quarkusio/quarkus-ecosystem-ci drives this: quarkusbot stars the repository,
+# which fires the `watch` event below, and the checked out `setup-and-test`
+# script then runs .github/quarkus-ecosystem-test here. Two things outside
+# this repository have to line up for it to work:
+#
+#  * quarkusio/quarkus-ecosystem-ci vaadin/context.yaml has to name this
+#    repository, since it used to name vaadin/quarkus
+#  * ECOSYSTEM_CI_TOKEN has to be a secret of this repository
+on:
+  watch:
+    types: [started]
+  workflow_dispatch:
+
+env:
+  ECOSYSTEM_CI_REPO: quarkusio/quarkus-ecosystem-ci
+  ECOSYSTEM_CI_REPO_FILE: context.yaml
+  JAVA_VERSION: 21
+
+  #########################
+  # Repo specific setting #
+  #########################
+
+  ECOSYSTEM_CI_REPO_PATH: vaadin
+
+  # The setup-and-test script assumes the property within pom.xml that determines the
+  # quarkus version is called "quarkus.version".
+  # Use this env var to override the property to something else
+  # (like "quarkus.platform.version" for example)
+  QUARKUS_VERSION_POM_PROPERTY: quarkus.version
+
+jobs:
+  quarkus-main:
+    name: "Build against latest Quarkus main snapshot"
+    runs-on: ubuntu-latest
+    # The `watch` event fires whenever anyone stars this repository, so the
+    # actor check is what keeps this from running hundreds of times a day.
+    if: github.actor == 'quarkusbot' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          path: current-repo
+
+      - name: Checkout Ecosystem
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          repository: ${{ env.ECOSYSTEM_CI_REPO }}
+          path: ecosystem-ci
+
+      - name: Set up Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      # The repository is checked out under current-repo, not at the root.
+      - name: Read the frontend tool versions
+        id: frontend-tools
+        run: current-repo/scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: ${{ steps.frontend-tools.outputs.node-version }}
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          version: ${{ steps.frontend-tools.outputs.pnpm-version }}
+
+      - name: Set TB License
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+
+      # No Chrome setup step: the runner image ships Chrome, which is what the
+      # browser jobs in validation.yml rely on too.
+      - name: Setup and Run Tests
+        run: ./ecosystem-ci/setup-and-test
+        env:
+          ECOSYSTEM_CI_TOKEN: ${{ secrets.ECOSYSTEM_CI_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

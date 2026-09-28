@@ -67,6 +67,7 @@ public class SizeTrigger extends Trigger {
      *
      * @param host
      *            the element that is observed, not {@code null}
+     * @since 25.3
      */
     public SizeTrigger(Element host) {
         super(host);

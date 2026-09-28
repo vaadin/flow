@@ -79,6 +79,13 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 public class SpringSecurityAutoConfiguration {
 
     /**
+     * Creates the auto configuration. Spring instantiates it.
+     */
+    public SpringSecurityAutoConfiguration() {
+        // Default constructor
+    }
+
+    /**
      * Makes the default request cache available for security configuration.
      *
      * @return the default request cache

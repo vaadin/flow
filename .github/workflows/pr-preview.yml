@@ -1,0 +1,181 @@
+name: Flow PR Preview
+
+# Deploys one test module of a pull request to Fly.io, so that its views can be
+# tried in a browser without building the branch, and destroys the deployment
+# when the pull request is closed. The deployment is opt-in per pull request,
+# like the snapshot build in pr-snapshot.yml: it starts once the
+# "test deploy" label is added, runs again for every commit pushed while the
+# label is there, and is destroyed when the label is removed.
+#
+# The whole test suite does not fit in one deployment, so one module is picked
+# by scripts/previewModule.js: flow-tests/test-default, unless the pull request
+# changes only other test modules. It is built in production mode and served by
+# Jetty, or as a Spring Boot application if it is one, see
+# scripts/previewPackage.sh. The pull request comment names the module and
+# links to the views the pull request touches.
+on:
+  pull_request:
+    types: [labeled, unlabeled, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+
+concurrency:
+  # Only the newest commit is worth deploying, and closing the pull request or
+  # removing the label supersedes any deployment still running. Adding or
+  # removing any other label changes nothing, so those runs get a group of
+  # their own instead of cancelling a deployment.
+  group: >-
+    ${{ github.workflow }}-${{ github.event.number }}${{
+    github.event.label && github.event.label.name != 'test deploy' && format('-{0}', github.run_id) || '' }}
+  cancel-in-progress: true
+
+env:
+  FLY_APP: flow-pr-${{ github.event.number }}
+  FLY_ORG: ${{ vars.FLY_ORG || 'personal' }}
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  _PR_NUMBER: ${{ github.event.number }}
+  JAVA_VERSION: 21
+  # The same flags validation.yml sets, for the same reason: a 403 from Central
+  # is retried rather than failing the build outright. See the note there.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.connectionMaxTtl=25
+
+jobs:
+  deploy:
+    # Secrets are only handed to pull requests from a branch of this
+    # repository. Deploying a fork would mean running its code with the Fly.io
+    # token, so forks are skipped.
+    #
+    # The label has to be present for every event type, and a `labeled` event
+    # for some other label must not start a deployment of its own.
+    if: >-
+      !github.event.pull_request.head.repo.fork
+      && contains(github.event.pull_request.labels.*.name, 'test deploy')
+      && (github.event.action == 'synchronize' || github.event.action == 'reopened'
+        || (github.event.action == 'labeled' && github.event.label.name == 'test deploy'))
+    timeout-minutes: 45
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      # Only for the comment, which the cleanup job does not post
+      pull-requests: write
+    steps:
+      - name: Check configuration
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          [ -z "$FLY_API_TOKEN" ] \
+            && echo "🚫 The **FLY_API_TOKEN** secret is not defined, check the configuration of **${{ github.repository }}**" \
+            | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{ env._HEAD_SHA }}
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '26.10.0'
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Pick the test module
+        id: module
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # The files the pull request changes, as GitHub computes them against
+        # its base branch, which spares a full-history checkout
+        run: |
+          set -o pipefail
+          gh api "repos/${{ github.repository }}/pulls/$_PR_NUMBER/files" --paginate --jq '.[].filename' \
+            | node scripts/previewModule.js "https://$FLY_APP.fly.dev"
+      - name: Set flow version to 999.99-SNAPSHOT
+        # The cache key is hashed from the poms after this rewrite, so it has to
+        # happen here too for the key to match the one validation.yml computes.
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Install Flow and the test module
+        env:
+          MODULE: ${{ steps.module.outputs.module }}
+        # flow-maven-plugin is not a dependency of the module, so -am does not
+        # build it on its own. -Pit-test-modules and -DsharedModules put the
+        # test modules in the reactor, which -DskipTests would leave out. They
+        # match REACTOR_PROFILES in scripts/previewModule.js, which only picks
+        # modules they include.
+        run: |
+          cmd="mvn install -B -ntp -DskipTests -Pit-test-modules -DsharedModules -pl flow-plugins/flow-maven-plugin,$MODULE -am"
+          $cmd -T 2C -q || $cmd
+      - name: Build the test module in production mode
+        env:
+          MODULE: ${{ steps.module.outputs.module }}
+          CONTEXT_PATH: ${{ steps.module.outputs.context-path }}
+        run: |
+          scripts/previewPackage.sh "$MODULE" "$CONTEXT_PATH" preview
+          cat > preview/fly.toml <<EOF
+          app = "$FLY_APP"
+          primary_region = "ams"
+
+          [http_service]
+            internal_port = 8080
+            force_https = true
+            auto_stop_machines = "stop"
+            auto_start_machines = true
+            min_machines_running = 0
+
+          [[vm]]
+            size = "shared-cpu-1x"
+            memory = "512mb"
+          EOF
+      - uses: superfly/flyctl-actions/setup-flyctl@fc53c09e1bc3be6f54706524e3b82c4f462f77be # v1.5
+      - name: Deploy to Fly.io
+        working-directory: preview
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # The image is built on the runner, where the build output already is,
+        # rather than by uploading it to a remote builder
+        run: |
+          flyctl apps create "$FLY_APP" --org "$FLY_ORG" 2>/dev/null || true
+          flyctl deploy --local-only --ha=false
+      - name: Comment the preview on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          marker='<!-- flow-pr-preview -->'
+          existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          existing=${existing%%$'\n'*}
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@preview-comment.md
+          else
+            gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" -F body=@preview-comment.md
+          fi
+
+  cleanup:
+    # Merged or not, a closed pull request needs no preview, and neither does
+    # one the label is removed from. A reopened one that still has the label is
+    # deployed again. A pull request closed without the label has nothing left
+    # to destroy: removing the label already did it.
+    if: >-
+      !github.event.pull_request.head.repo.fork
+      && ((github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'test deploy'))
+        || (github.event.action == 'unlabeled' && github.event.label.name == 'test deploy'))
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: superfly/flyctl-actions/setup-flyctl@fc53c09e1bc3be6f54706524e3b82c4f462f77be # v1.5
+      - name: Destroy the Fly.io app
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if flyctl apps list --json | jq -e --arg name "$FLY_APP" '.[] | select(.Name == $name)' > /dev/null; then
+            flyctl apps destroy "$FLY_APP" --yes
+          else
+            echo "App $FLY_APP does not exist, nothing to destroy"
+          fi

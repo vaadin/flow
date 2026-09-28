@@ -61,7 +61,11 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * The orientation of the range slider.
      */
     public enum Orientation {
-        HORIZONTAL("horizontal"), VERTICAL("vertical");
+        /** The slider runs from left to right. */
+        HORIZONTAL("horizontal"),
+
+        /** The slider runs from bottom to top. */
+        VERTICAL("vertical");
 
         private final String value;
 
@@ -69,13 +73,20 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
             this.value = value;
         }
 
+        /**
+         * Gets the value used for the {@code orient} attribute.
+         *
+         * @return the attribute value
+         */
         public String getValue() {
             return value;
         }
     }
 
+    /** The value change timeout in milliseconds. */
     private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
 
+    /** The value change mode currently applied to the element. */
     private ValueChangeMode currentMode;
 
     /**
@@ -346,6 +357,11 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * property. We'll disable the component instead.
      */
     private boolean readOnly = false;
+
+    /**
+     * The enabled state requested by the application. The element itself is
+     * disabled whenever the component is read-only, so this is kept separately.
+     */
     private boolean enabled = true;
 
     @Override

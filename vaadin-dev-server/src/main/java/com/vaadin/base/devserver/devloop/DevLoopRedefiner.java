@@ -28,6 +28,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,12 +58,14 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ThemeUtils;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.theme.Theme;
 
@@ -106,6 +109,12 @@ final class DevLoopRedefiner {
     private static final String CLASSES_PROPERTY = "vaadin.devloop.classes";
 
     /**
+     * The free-text tail of a reply. Always last, and the only field that may
+     * contain a space, so the daemon reads it as the rest of the line.
+     */
+    private static final String MESSAGE = " message=";
+
+    /**
      * The directory names that make a public resource root, as whole path
      * segments so a match cannot land in the middle of one.
      * {@code META-INF/resources} is listed first only for readability - the
@@ -114,6 +123,33 @@ final class DevLoopRedefiner {
     private static final String[] PUBLIC_RESOURCE_ROOTS = {
             "/META-INF/resources/", "/static/", "/public/", "/resources/",
             "/webapp/" };
+
+    /**
+     * The annotations {@link #isEntity} asks a loaded class for, as they are
+     * spelled in a class file.
+     */
+    private static final List<String> ENTITY_DESCRIPTORS = List.of(
+            "Ljakarta/persistence/Entity;",
+            "Ljakarta/persistence/MappedSuperclass;",
+            "Ljakarta/persistence/Embeddable;");
+
+    /**
+     * The stereotypes that register a bean, as they are spelled in a class
+     * file. {@code @RestController} and the two advice annotations are listed
+     * in their own right because each is a {@code @Component} through a
+     * meta-annotation that the annotated class's own constant pool does not
+     * mention - see {@link #declaresSpringBean} for the ones that cannot be
+     * listed.
+     */
+    private static final List<String> BEAN_DESCRIPTORS = List.of(
+            "Lorg/springframework/stereotype/Component;",
+            "Lorg/springframework/stereotype/Service;",
+            "Lorg/springframework/stereotype/Repository;",
+            "Lorg/springframework/stereotype/Controller;",
+            "Lorg/springframework/web/bind/annotation/RestController;",
+            "Lorg/springframework/web/bind/annotation/ControllerAdvice;",
+            "Lorg/springframework/web/bind/annotation/RestControllerAdvice;",
+            "Lorg/springframework/context/annotation/Configuration;");
 
     /**
      * Where Vite puts the failure in the error page it serves for a module it
@@ -179,7 +215,8 @@ final class DevLoopRedefiner {
     static String redefine(String csv) {
         Instrumentation inst = instrumentation();
         if (inst == null) {
-            return "ERR kind=no-agent message=Instrumentation-unavailable";
+            return "ERR kind=no-agent" + MESSAGE
+                    + "Instrumentation-unavailable";
         }
         Hotswapper hotswapper = DevLoopRegistration.hotswapper().orElse(null);
         if (hotswapper == null) {
@@ -189,7 +226,7 @@ final class DevLoopRedefiner {
         List<String> requested = Arrays.stream(csv.split(",")).map(String::trim)
                 .filter(name -> !name.isEmpty()).toList();
         if (requested.isEmpty()) {
-            return "ERR kind=protocol message=no-classes";
+            return "ERR kind=protocol" + MESSAGE + "no-classes";
         }
 
         List<Path> classesDirs = searchPath();
@@ -198,56 +235,30 @@ final class DevLoopRedefiner {
         // Collected in the same pass, because the one walk over every loaded
         // class is the expensive part and a proxy is never a requested class.
         List<Class<?>> proxies = new ArrayList<>();
+        Map<String, List<Class<?>>> foreign = new HashMap<>();
         for (Class<?> candidate : inst.getAllLoadedClasses()) {
             if (requested.contains(candidate.getName())) {
-                loaded.computeIfAbsent(candidate.getName(),
-                        key -> new ArrayList<>()).add(candidate);
+                (ownedByApplication(candidate) ? loaded : foreign)
+                        .computeIfAbsent(candidate.getName(),
+                                key -> new ArrayList<>())
+                        .add(candidate);
             } else if (isProxy(candidate)) {
                 proxies.add(candidate);
             }
         }
+        // Only where the application has no copy of its own. A layout that
+        // loads the connector and the application apart would otherwise
+        // redefine nothing at all, and merging unconditionally would put
+        // every foreign copy straight back, which is what this filter is for.
+        foreign.forEach(
+                (name, copies) -> loaded.computeIfAbsent(name, key -> copies));
 
-        List<ClassDefinition> definitions = new ArrayList<>();
-        List<String> notLoaded = new ArrayList<>();
-        int duplicates = 0;
-        Set<String> entities = new LinkedHashSet<>();
-        Set<String> beans = new LinkedHashSet<>();
-        Set<String> uiClasses = new LinkedHashSet<>();
-
-        for (String name : requested) {
-            List<Class<?>> targets = loaded.getOrDefault(name, List.of());
-            if (targets.isEmpty()) {
-                notLoaded.add(name);
-                continue;
-            }
-            if (targets.size() > 1) {
-                duplicates += targets.size() - 1;
-            }
-            Class<?> first = targets.get(0);
-            // The class as the application has been running it, which answers
-            // for an annotation the change is taking away: a type that stops
-            // being an entity was still mapped by the metamodel the application
-            // started with.
-            classify(first, entities, beans, uiClasses);
-            byte[] bytes = readClassBytes(classesDirs, name);
-            if (bytes == null) {
-                return "ERR kind=missing-class-file searched="
-                        + classesDirs.size() + " message=" + name;
-            }
-            // And the class the JVM is about to be given. A type that is only
-            // now being made an entity is not one yet in the loop above, and
-            // Hibernate mapped neither version: the metamodel and the schema
-            // were fixed at startup. Asked of the bytes rather than of the
-            // class after the redefine, because the loaded class is not a
-            // reliable witness to what it has just been given - see
-            // declaresEntity.
-            if (declaresEntity(bytes)) {
-                entities.add(simple(name));
-            }
-            for (Class<?> target : targets) {
-                definitions.add(new ClassDefinition(target, bytes));
-            }
+        Inspection inspected = inspect(requested, loaded, classesDirs);
+        if (inspected.error() != null) {
+            return inspected.error();
         }
+        // The one part of it this method works with rather than only reports.
+        List<ClassDefinition> definitions = inspected.definitions();
 
         DevLoopHotswapper observer = DevLoopHotswapper.getActive();
         if (observer != null) {
@@ -258,14 +269,26 @@ final class DevLoopRedefiner {
         // be named afterwards. On a stock JVM such a change is simply
         // rejected, but an enhanced-redefinition JVM accepts it - and that is
         // exactly when a Spring bean's live proxy stops matching the class.
-        Map<String, String> before = new HashMap<>();
-        Map<String, String> frontendBefore = new HashMap<>();
+        // Keyed by the Class itself rather than by its binary name, because a
+        // name is not unique in a running application: the same class can be
+        // loaded by more than one class loader, and then a name-keyed "before"
+        // holds the first copy's answer while the loop below asks the second
+        // copy for its "after". Measured under the build-plugin runtime, where
+        // the Vaadin Maven plugin keeps its own copy of the application's
+        // classes in its scanning class loader inside the very JVM the
+        // application runs in: one copy reported the supertype's frontend
+        // imports and the other reported none, so an ordinary method-body edit
+        // came out as "frontend imports changed" and escalated to a restart.
+        Map<Class<?>, String> before = new HashMap<>();
+        Map<Class<?>, String> frontendBefore = new HashMap<>();
+        Map<Class<?>, String> hierarchyBefore = new HashMap<>();
         for (ClassDefinition definition : definitions) {
-            before.putIfAbsent(definition.getDefinitionClass().getName(),
+            before.putIfAbsent(definition.getDefinitionClass(),
                     members(definition.getDefinitionClass()));
-            frontendBefore.putIfAbsent(
-                    definition.getDefinitionClass().getName(),
+            frontendBefore.putIfAbsent(definition.getDefinitionClass(),
                     frontendDependencies(definition.getDefinitionClass()));
+            hierarchyBefore.putIfAbsent(definition.getDefinitionClass(),
+                    hierarchy(definition.getDefinitionClass()));
         }
 
         long redefineStart = System.nanoTime();
@@ -275,7 +298,7 @@ final class DevLoopRedefiner {
                         definitions.toArray(new ClassDefinition[0]));
             } catch (Throwable t) {
                 return "ERR kind=redefine-rejected class="
-                        + t.getClass().getSimpleName() + " message="
+                        + t.getClass().getSimpleName() + MESSAGE
                         + oneLine(String.valueOf(t.getMessage()));
             }
         }
@@ -284,16 +307,22 @@ final class DevLoopRedefiner {
         Set<String> structural = new LinkedHashSet<>();
         Set<String> proxied = new LinkedHashSet<>();
         Set<String> frontend = new LinkedHashSet<>();
+        Set<String> hierarchy = new LinkedHashSet<>();
         for (ClassDefinition definition : definitions) {
             Class<?> type = definition.getDefinitionClass();
-            String previous = before.get(type.getName());
+            String previous = before.get(type);
             if (previous != null && !previous.equals(members(type))) {
                 structural.add(simple(type.getName()));
             }
-            String previousFrontend = frontendBefore.get(type.getName());
+            String previousFrontend = frontendBefore.get(type);
             if (previousFrontend != null
                     && !previousFrontend.equals(frontendDependencies(type))) {
                 frontend.add(simple(type.getName()));
+            }
+            String previousHierarchy = hierarchyBefore.get(type);
+            if (previousHierarchy != null
+                    && !previousHierarchy.equals(hierarchy(type))) {
+                hierarchy.add(simple(type.getName()));
             }
             for (Class<?> proxy : proxies) {
                 if (type.isAssignableFrom(proxy)) {
@@ -311,14 +340,207 @@ final class DevLoopRedefiner {
         boolean pageReload = observer != null
                 && observer.isPageReloadRequired();
 
-        return "OK redefined=" + definitions.size() + " notLoaded="
-                + notLoaded.size() + " dupes=" + duplicates + " completed="
-                + completed + " pageReload=" + pageReload + " entities="
-                + join(entities) + " beans=" + join(beans) + " proxied="
-                + join(proxied) + " structural=" + join(structural) + " ui="
-                + join(uiClasses) + " frontendImports=" + join(frontend)
-                + " hotswapAgent=" + hotswapAgentLoaded() + " redefineMs="
-                + redefineMs + " hotswapMs=" + hotswapMs;
+        // The single success return: every earlier exit is an ERR, so nothing
+        // is reported for a redefine that did not happen. One REDEFINE command
+        // per apply, so this counts applied changes rather than classes.
+        DevLoopStatistics.changeApplied();
+
+        return reply(inspected, new Applied(structural, proxied, frontend,
+                hierarchy, completed, pageReload, redefineMs, hotswapMs));
+    }
+
+    /**
+     * What the redefine, and the refresh that followed it, turned out to do.
+     *
+     * @param structural
+     *            redefined types whose shape changed
+     * @param proxied
+     *            redefined types a live proxy was generated from
+     * @param frontend
+     *            redefined types whose build-time imports changed
+     * @param hierarchy
+     *            redefined types that now extend or implement something else
+     * @param completed
+     *            whether Flow's refresh ran to the end
+     * @param pageReload
+     *            whether Flow asked for the page to be reloaded
+     * @param redefineMs
+     *            how long {@code redefineClasses} took
+     * @param hotswapMs
+     *            how long {@code onHotswap} took
+     */
+    record Applied(Set<String> structural, Set<String> proxied,
+            Set<String> frontend, Set<String> hierarchy, boolean completed,
+            boolean pageReload, long redefineMs, long hotswapMs) {
+    }
+
+    /**
+     * The one line the daemon reads a verdict out of.
+     * <p>
+     * Every field here is part of the wire contract: the daemon splits the line
+     * on whitespace and reads by name, so a renamed or dropped field is a
+     * silently different answer rather than a parse failure. A field it does
+     * not know is ignored, which is what makes adding one safe in either
+     * direction.
+     *
+     * @param inspected
+     *            what the request amounted to
+     * @param applied
+     *            what happened to it
+     * @return the reply line
+     */
+    static String reply(Inspection inspected, Applied applied) {
+        return "OK redefined=" + inspected.definitions().size() + " notLoaded="
+                + inspected.notLoaded().size() + " dupes="
+                + inspected.duplicates() + " completed=" + applied.completed()
+                + " pageReload=" + applied.pageReload() + " entities="
+                + join(inspected.entities()) + " beans="
+                + join(inspected.beans()) + " proxied="
+                + join(applied.proxied()) + " structural="
+                + join(applied.structural()) + " ui="
+                + join(inspected.uiClasses()) + " frontendImports="
+                + join(applied.frontend()) + " hotswapAgent="
+                + hotswapAgentLoaded() + " redefineMs=" + applied.redefineMs()
+                + " hotswapMs=" + applied.hotswapMs()
+                // Last rather than in among the others, so adding it left every
+                // field a daemon already reads exactly where it was.
+                + " stereotypes=" + join(inspected.stereotypes())
+                + " hierarchy=" + join(applied.hierarchy());
+    }
+
+    /**
+     * What the requested names amount to before anything is redefined.
+     *
+     * @param definitions
+     *            every loaded copy paired with the bytes to give it
+     * @param notLoaded
+     *            requested names this JVM has no class for
+     * @param duplicates
+     *            how many extra loaded copies were found
+     * @param entities
+     *            types mapped as JPA entities before or after the change
+     * @param beans
+     *            types the application is running as Spring beans
+     * @param stereotypes
+     *            types whose new bytes carry a Spring stereotype
+     * @param uiClasses
+     *            types {@code onHotswap} visibly refreshes
+     * @param error
+     *            the reply to send instead of redefining, or {@code null}
+     */
+    record Inspection(List<ClassDefinition> definitions, List<String> notLoaded,
+            int duplicates, Set<String> entities, Set<String> beans,
+            Set<String> stereotypes, Set<String> uiClasses, String error) {
+    }
+
+    /**
+     * Reads what one {@code REDEFINE} request is asking for: which loaded
+     * copies to hand the JVM, and what the classes and their new bytes say
+     * about whether a redefine can be the whole answer.
+     * <p>
+     * Separated from {@link #redefine} because this is the whole of the
+     * decision and none of the effect - it defines nothing, refreshes nothing
+     * and needs no running application - which is also what makes it the part
+     * that can be tested without one.
+     *
+     * @param requested
+     *            the requested binary names
+     * @param loaded
+     *            every loaded copy of them, by binary name
+     * @param classesDirs
+     *            where to read the new bytes from, in classpath order
+     * @return what the request amounts to
+     */
+    static Inspection inspect(List<String> requested,
+            Map<String, List<Class<?>>> loaded, List<Path> classesDirs) {
+        List<ClassDefinition> definitions = new ArrayList<>();
+        List<String> notLoaded = new ArrayList<>();
+        int duplicates = 0;
+        Set<String> entities = new LinkedHashSet<>();
+        Set<String> beans = new LinkedHashSet<>();
+        Set<String> stereotypes = new LinkedHashSet<>();
+        Set<String> uiClasses = new LinkedHashSet<>();
+        Set<String> hierarchyChanged = new LinkedHashSet<>();
+
+        for (String name : requested) {
+            List<Class<?>> targets = loaded.getOrDefault(name, List.of());
+            if (targets.isEmpty()) {
+                notLoaded.add(name);
+            } else {
+                if (targets.size() > 1) {
+                    duplicates += targets.size() - 1;
+                }
+                // The class as the application has been running it, which
+                // answers for an annotation the change is taking away: a type
+                // that stops being an entity was still mapped by the metamodel
+                // the application started with.
+                classify(targets.get(0), entities, beans, uiClasses);
+            }
+            byte[] bytes = readClassBytes(classesDirs, name);
+            if (bytes == null) {
+                if (targets.isEmpty()) {
+                    // Neither loaded here nor on this search path, so there is
+                    // nothing to redefine and nothing to answer for.
+                    continue;
+                }
+                return new Inspection(definitions, notLoaded, duplicates,
+                        entities, beans, stereotypes, uiClasses,
+                        "ERR kind=missing-class-file searched="
+                                + classesDirs.size() + MESSAGE + name);
+            }
+            // And the class the JVM is about to be given. A type that is only
+            // now being made an entity is not one yet in the classify above,
+            // and Hibernate mapped neither version: the metamodel and the
+            // schema were fixed at startup. Asked of the bytes rather than of
+            // the class after the redefine, because the loaded class is not a
+            // reliable witness to what it has just been given - see
+            // declaresEntity.
+            if (declaresEntity(bytes)) {
+                entities.add(simple(name));
+            }
+            // Reported for every requested class rather than only for the ones
+            // this JVM has not loaded, and deliberately: whether the
+            // application ever *had* this class is the daemon's question, not
+            // this one's. HotswapAgent watches the output directory on its own
+            // schedule and defines a new class when it sees one, so "not
+            // loaded here" is a race, and losing it would report a brand-new
+            // bean as live. What the bytes say is not a race, and the daemon
+            // knows which of these classes it has just brought into being.
+            //
+            // Under its binary name, unlike every other field here: this one
+            // is read by machine and matched against the change-set, and two
+            // classes in different packages can share a simple name - which
+            // would make one of them answer for the other.
+            if (declaresSpringBean(bytes)) {
+                stereotypes.add(name);
+            }
+            // What the class will extend and implement, against what it does
+            // now. A redefine cannot make this live - the imports a new
+            // supertype brings are read at startup - and an
+            // enhanced-redefinition JVM has been seen to die on one, so this is
+            // decided here rather than reported afterwards; see hierarchyOf.
+            String declared = targets.isEmpty() ? null : hierarchyOf(bytes);
+            if (declared != null
+                    && !declared.equals(hierarchy(targets.get(0)))) {
+                hierarchyChanged.add(simple(name));
+            }
+            for (Class<?> target : targets) {
+                definitions.add(new ClassDefinition(target, bytes));
+            }
+        }
+        if (!hierarchyChanged.isEmpty()) {
+            // Nothing is redefined: the daemon restarts for this, and the
+            // restart is what regenerates the imports and rebuilds the bundle.
+            return new Inspection(definitions, notLoaded, duplicates, entities,
+                    beans, stereotypes, uiClasses,
+                    "ERR kind=hierarchy-changed class=" + join(hierarchyChanged)
+                            + MESSAGE + "class hierarchy changed ("
+                            + join(hierarchyChanged)
+                            + "): a new supertype or interface brings imports"
+                            + " that are read at startup (dev bundle rebuild)");
+        }
+        return new Inspection(definitions, notLoaded, duplicates, entities,
+                beans, stereotypes, uiClasses, null);
     }
 
     /**
@@ -1007,12 +1229,6 @@ final class DevLoopRedefiner {
                 "jakarta.persistence.Embeddable");
     }
 
-    /** The same annotations, as they are spelled in a class file. */
-    private static final List<String> ENTITY_DESCRIPTORS = List.of(
-            "Ljakarta/persistence/Entity;",
-            "Ljakarta/persistence/MappedSuperclass;",
-            "Ljakarta/persistence/Embeddable;");
-
     /**
      * Whether the compiled bytes carry a JPA annotation, read from the class
      * file rather than from the class once it is loaded.
@@ -1036,12 +1252,46 @@ final class DevLoopRedefiner {
      * needed, and the cost of a false negative is {@code Stable} over a mapping
      * the application never had.
      */
-    private static boolean declaresEntity(byte[] bytes) {
+    static boolean declaresEntity(byte[] bytes) {
+        return declares(bytes, ENTITY_DESCRIPTORS);
+    }
+
+    /**
+     * Whether the compiled bytes carry a Spring stereotype, read from the class
+     * file because there is no loaded class to ask.
+     * <p>
+     * This is the question {@link #isSpringBean} cannot answer: it reports what
+     * the application has been running with, and the class this is asked about
+     * is one the application has never run at all.
+     * <p>
+     * It errs in both directions, unlike {@link #declaresEntity}, and the
+     * asymmetry is worth knowing before trusting the answer. A descriptor in
+     * the constant pool is not proof that the annotation is on the class - it
+     * could sit on a member, or be a type the class merely mentions - which
+     * costs a restart that was not needed. In the other direction, a stereotype
+     * composed through a meta-annotation is invisible: a project's own
+     * {@code @MyService}, itself annotated {@code @Service}, puts only
+     * {@code @MyService} in this class's pool, and the annotation type whose
+     * pool would say the rest is a separate class file.
+     * {@link #BEAN_DESCRIPTORS} names the composed stereotypes Spring itself
+     * ships; a project's own are a restart its author still has to ask for, and
+     * the same limit as {@link #hasAnnotation}, which resolves one level of
+     * meta-annotation and no more.
+     */
+    static boolean declaresSpringBean(byte[] bytes) {
+        return declares(bytes, BEAN_DESCRIPTORS);
+    }
+
+    /**
+     * Whether any of these annotation descriptors appears in the class file's
+     * constant pool.
+     */
+    private static boolean declares(byte[] bytes, List<String> descriptors) {
         // ISO-8859-1 maps every byte to the char of the same value, so a
         // substring search over it is an exact byte search - and a descriptor
         // is ASCII, which the class file's modified UTF-8 encodes unchanged.
         String constants = new String(bytes, StandardCharsets.ISO_8859_1);
-        return ENTITY_DESCRIPTORS.stream().anyMatch(constants::contains);
+        return descriptors.stream().anyMatch(constants::contains);
     }
 
     /**
@@ -1124,7 +1374,7 @@ final class DevLoopRedefiner {
     }
 
     /**
-     * The frontend imports a class declares, as one comparable string.
+     * The frontend imports a class <em>declares</em>, as one comparable string.
      * <p>
      * These annotations are read by the build, not at runtime: {@code JsModule}
      * and friends end up in {@code generated-flow-imports.js}, which
@@ -1135,61 +1385,73 @@ final class DevLoopRedefiner {
      * escalates to a restart on this, and the restart regenerates the imports
      * and rebuilds the bundle.
      * <p>
-     * Read through {@link AnnotationReader} rather than off the class directly,
-     * so an import inherited from a superclass or picked up through
-     * {@code @Uses} counts the same way the build counts it. Reflection is
-     * re-read after a redefine - {@code Class} discards its cached annotation
-     * data when {@code classRedefinedCount} moves - so calling this before and
-     * after is a real comparison.
+     * <b>Declared only, and that is the whole point.</b> This value exists to
+     * be compared against the same class's own previous value across a
+     * redefine, and an inherited {@code @JsModule} belongs to a supertype that
+     * this edit did not recompile. A supertype the project does recompile is in
+     * the same change set and answers for itself, and an edit that changes
+     * <em>which</em> supertype or interface the class has is what
+     * {@link #hierarchy} is for - so nothing is lost by not reading the
+     * inherited closure here.
+     * <p>
+     * Reading the inherited closure instead was measured to escalate an
+     * ordinary method-body edit - changing a label in a view whose supertype
+     * declares imports, which is every real Vaadin view - to a restart. Two
+     * things made it fragile, and both go away here. All of these annotations
+     * are {@code @Inherited}, so a supertype's annotation is already reported
+     * on the subclass and {@code AnnotationReader}'s own superclass walk then
+     * counted it a second time. And the closure is resolved through the class
+     * loader, so two copies of one class in two loaders do not have to agree
+     * about it - which is exactly what the comparison ran into.
      * <p>
      * {@code @StyleSheet} is deliberately absent: those are live already, added
      * and removed by {@code StyleSheetHotswapper} without a rebuild, and
      * restarting for one would be a regression.
      */
-    // Package-private so the non-Component reads can be asserted directly.
+    // Package-private so the reads can be asserted directly.
     static String frontendDependencies(Class<?> type) {
         List<String> imports = new ArrayList<>();
-        if (Component.class.isAssignableFrom(type)) {
-            @SuppressWarnings("unchecked")
-            Class<? extends Component> componentType = (Class<? extends Component>) type;
-            AnnotationReader.getJsModuleAnnotations(componentType).forEach(
-                    annotation -> imports.add("js:" + annotation.value()));
-            AnnotationReader.getJavaScriptAnnotations(componentType).forEach(
-                    annotation -> imports.add("script:" + annotation.value()));
-            AnnotationReader.getCssImportAnnotations(componentType).forEach(
-                    annotation -> imports.add("css:" + annotation.value() + ":"
-                            + annotation.id() + ":" + annotation.themeFor()));
-        } else {
-            // Straight off the class, because AnnotationReader only accepts a
-            // Component - and none of these annotations is Component-only. The
-            // build scans every class it reaches from an entry point, so a
-            // JsModule on a service init listener ends up in
-            // generated-flow-imports.js exactly like one on a view.
-            for (JsModule annotation : type
-                    .getAnnotationsByType(JsModule.class)) {
-                imports.add("js:" + annotation.value());
-            }
-            for (JavaScript annotation : type
-                    .getAnnotationsByType(JavaScript.class)) {
-                imports.add("script:" + annotation.value());
-            }
-            for (CssImport annotation : type
-                    .getAnnotationsByType(CssImport.class)) {
-                imports.add("css:" + annotation.value() + ":" + annotation.id()
-                        + ":" + annotation.themeFor());
+        for (JsModule annotation : type
+                .getDeclaredAnnotationsByType(JsModule.class)) {
+            imports.add("js:" + annotation.value());
+        }
+        for (JavaScript annotation : type
+                .getDeclaredAnnotationsByType(JavaScript.class)) {
+            imports.add("script:" + annotation.value());
+        }
+        for (CssImport annotation : type
+                .getDeclaredAnnotationsByType(CssImport.class)) {
+            imports.add("css:" + annotation.value() + ":" + annotation.id()
+                    + ":" + annotation.themeFor());
+        }
+        // The JavaScript a JavaScript definition declares is generated into
+        // the bundle by the build, exactly like the imports above, so an
+        // edited expression or a method added or removed only reaches the
+        // browser through a restart that regenerates the file and rebuilds the
+        // bundle. What identifies a function is what it runs, so that is what
+        // the fingerprint is made of: renaming a method changes nothing the
+        // browser has, and editing what it declares changes everything.
+        if (type.isAnnotationPresent(JsDefinition.class)) {
+            for (Method method : type.getMethods()) {
+                JsExpression expression = method
+                        .getAnnotation(JsExpression.class);
+                if (expression != null) {
+                    imports.add("jsdefinition:" + JsCall.functionId(
+                            expression.value(), method.getParameterCount(),
+                            method.isVarArgs()));
+                }
             }
         }
-        // These two are read off the class whatever it is. @Theme in particular
-        // has to sit on the AppShellConfigurator, which is never a Component -
-        // so reading it only from Components meant a theme could be added,
-        // changed or removed, redefine cleanly, and be reported Stable over a
-        // bundle that has no imports for it.
         for (NpmPackage npmPackage : type
-                .getAnnotationsByType(NpmPackage.class)) {
+                .getDeclaredAnnotationsByType(NpmPackage.class)) {
             imports.add(
                     "npm:" + npmPackage.value() + "@" + npmPackage.version());
         }
-        Theme theme = type.getAnnotation(Theme.class);
+        // @Theme in particular has to sit on the AppShellConfigurator, which is
+        // never a Component - so reading it only from Components meant a theme
+        // could be added, changed or removed, redefine cleanly, and be reported
+        // Stable over a bundle that has no imports for it.
+        Theme theme = type.getDeclaredAnnotation(Theme.class);
         if (theme != null) {
             // Variant and theme class alongside the name: all three are read
             // while the application starts, so a change to any of them is the
@@ -1199,6 +1461,228 @@ final class DevLoopRedefiner {
         }
         java.util.Collections.sort(imports);
         return String.join(";", imports);
+    }
+
+    /**
+     * The supertypes a class names, as one comparable string.
+     * <p>
+     * {@link #frontendDependencies} reads what a class declares itself, which
+     * leaves one kind of edit invisible: changing the {@code extends} or
+     * {@code implements} clause. {@code @JsModule} and friends are
+     * {@code @Inherited} across classes, and an interface can carry them as
+     * well, so a class that starts implementing an annotated mixin - or swaps a
+     * plain base class for an annotated one - needs imports that
+     * {@code generated-flow-imports.js} does not have, while declaring exactly
+     * what it declared before. An enhanced-redefinition JVM accepts such a
+     * change, so nothing else would catch it either: the apply would report
+     * Stable over a bundle the page cannot load its new import from.
+     * <p>
+     * Read after the redefine, as the net under {@link #hierarchyOf}, which
+     * decides the same question from the bytes before anything is redefined.
+     * This one still answers for a class file that parser could not read.
+     * <p>
+     * Names rather than the annotations those supertypes declare, deliberately.
+     * Reading a supertype's annotations means reading the inherited closure
+     * again, which is what escalated ordinary method-body edits before - see
+     * {@link #frontendDependencies}. A name is a plain string: it is stable
+     * across a redefine, it compares two reads of one class rather than two
+     * class loaders' copies of a library, and it cannot be read twice. The
+     * price is that a hierarchy change with no frontend imports in it restarts
+     * too, which is a rare edit and a safe answer to it.
+     * <p>
+     * Only what the class itself names. A supertype that changed its own
+     * hierarchy was recompiled, so it is in the same change set and reports it
+     * under its own name.
+     *
+     * @param type
+     *            the class to fingerprint
+     * @return the supertype and interfaces it names
+     */
+    // Package-private so the reads can be asserted directly.
+    static String hierarchy(Class<?> type) {
+        List<String> names = new ArrayList<>();
+        Class<?> supertype = type.getSuperclass();
+        names.add("extends:"
+                + (supertype == null ? "none" : supertype.getName()));
+        List<String> interfaces = new ArrayList<>();
+        for (Class<?> implemented : type.getInterfaces()) {
+            interfaces.add("implements:" + implemented.getName());
+        }
+        // Sorted because the order the compiler reports them in is the order
+        // they were written in, and moving one along the clause is not a
+        // change to what the class is.
+        java.util.Collections.sort(interfaces);
+        names.addAll(interfaces);
+        return String.join(";", names);
+    }
+
+    /**
+     * The same fingerprint, read out of the bytes the JVM is about to be given.
+     * <p>
+     * This is the half that matters, and it is deliberately asked before
+     * anything is redefined. A hierarchy change is not a change a redefine can
+     * make live - the imports a new supertype brings are read into
+     * {@code generated-flow-imports.js} at startup - so the redefine is pure
+     * cost, and on an enhanced-redefinition JVM it is not free: handing one a
+     * class whose supertype moved has been observed to take the application JVM
+     * down inside the heap walk that follows it ({@code DcevmSharedGC} on JBR
+     * 25.0.2, {@code EXCEPTION_ACCESS_VIOLATION}). Deciding from the bytes
+     * costs nothing, restarts the application either way, and never asks the
+     * JVM to do it.
+     * <p>
+     * The bytes rather than the class afterwards, for the reason
+     * {@link #declaresEntity} gives as well: after a redefine the reflective
+     * view is rebuilt by HotswapAgent's cache clearing, which is not ordered
+     * against this reply, so reading it makes the answer depend on another
+     * thread's timing. The bytes say the same thing on every JVM and are
+     * already in hand.
+     * <p>
+     * Only the class file's own header is read - the constant pool, then
+     * {@code super_class} and {@code interfaces} - and anything unreadable
+     * answers {@code null} rather than a guess, which leaves
+     * {@link #hierarchy}'s reading after the redefine as the net.
+     *
+     * @param bytes
+     *            a class file
+     * @return its supertype and interfaces in {@link #hierarchy}'s format, or
+     *         {@code null} when the file cannot be read
+     */
+    // Package-private so the reads can be asserted directly.
+    static String hierarchyOf(byte[] bytes) {
+        try {
+            ByteBuffer file = ByteBuffer.wrap(bytes);
+            if (file.getInt() != 0xCAFEBABE) {
+                return null;
+            }
+            file.getInt(); // minor and major version
+            String[] utf8 = new String[Short.toUnsignedInt(file.getShort())];
+            int[] classNameIndex = new int[utf8.length];
+            readConstantPool(file, utf8, classNameIndex);
+            boolean isInterface = (file.getShort() & 0x0200) != 0;
+            file.getShort(); // this_class, which is this class by definition
+            List<String> names = new ArrayList<>();
+            // An interface's super_class is java/lang/Object in the class file
+            // and null through reflection; "none" is what both sides say.
+            String supertype = classNameAt(file.getShort(), utf8,
+                    classNameIndex);
+            names.add("extends:"
+                    + (isInterface || supertype == null ? "none" : supertype));
+            List<String> interfaces = new ArrayList<>();
+            int count = Short.toUnsignedInt(file.getShort());
+            for (int index = 0; index < count; index++) {
+                String implemented = classNameAt(file.getShort(), utf8,
+                        classNameIndex);
+                if (implemented == null) {
+                    return null;
+                }
+                interfaces.add("implements:" + implemented);
+            }
+            java.util.Collections.sort(interfaces);
+            names.addAll(interfaces);
+            return String.join(";", names);
+        } catch (RuntimeException e) {
+            // A class file this cannot read is not a failure: the reading after
+            // the redefine still answers, and every other check is unaffected.
+            return null;
+        }
+    }
+
+    /**
+     * Walks the constant pool, keeping only what naming a supertype needs: the
+     * UTF-8 entries and, for each {@code CONSTANT_Class}, the entry its name is
+     * in.
+     */
+    private static void readConstantPool(ByteBuffer file, String[] utf8,
+            int[] classNameIndex) {
+        for (int index = 1; index < utf8.length; index++) {
+            int tag = Byte.toUnsignedInt(file.get());
+            switch (tag) {
+            case 1 -> { // Utf8
+                byte[] text = new byte[Short.toUnsignedInt(file.getShort())];
+                file.get(text);
+                utf8[index] = new String(text, StandardCharsets.UTF_8);
+            }
+            case 7, 8, 16, 19, 20 -> // Class, String, MethodType, Module,
+                                     // Package: one index each
+                classNameIndex[index] = Short.toUnsignedInt(file.getShort());
+            case 15 -> { // MethodHandle: a kind and an index
+                file.get();
+                file.getShort();
+            }
+            case 5, 6 -> { // Long and Double take two pool slots
+                file.getLong();
+                index++;
+            }
+            case 3, 4, 9, 10, 11, 12, 17, 18 -> file.getInt();
+            default -> throw new IllegalStateException(
+                    "unknown constant pool tag " + tag);
+            }
+        }
+    }
+
+    /** One {@code CONSTANT_Class} entry as a binary name. */
+    private static String classNameAt(short entry, String[] utf8,
+            int[] classNameIndex) {
+        int index = Short.toUnsignedInt(entry);
+        if (index == 0 || index >= classNameIndex.length) {
+            // super_class is 0 for java.lang.Object alone, which has none.
+            return null;
+        }
+        String internal = utf8[classNameIndex[index]];
+        return internal == null ? null : internal.replace('/', '.');
+    }
+
+    /**
+     * Whether a loaded class is the application's own copy.
+     * <p>
+     * A binary name is not unique in a running JVM, and under a build-plugin
+     * runtime it is routinely not: the build runs in the same JVM as the
+     * application, and the Vaadin Maven plugin scans the project through a
+     * class loader of its own, so a second copy of every scanned class is
+     * loaded and never used to serve anything. Redefining it is work for nobody
+     * - and each copy is one more class for HotswapAgent to transform in one
+     * more class loader, which is where the transform failures that escalate an
+     * apply have come from.
+     * <p>
+     * The application's loader is the one that loaded this connector: the
+     * connector travels with the application, in {@code WEB-INF/lib} for a WAR
+     * and on the class path for a main-class launch, so it is the application's
+     * by construction. Descendants count too, because a framework is entitled
+     * to load application code in a child loader; anything else - a build
+     * plugin's scanning loader, a parent that merely happens to see the same
+     * jar - does not.
+     *
+     * @param candidate
+     *            a loaded class
+     * @return {@code true} if it belongs to the application
+     */
+    static boolean ownedByApplication(Class<?> candidate) {
+        return ownedBy(candidate.getClassLoader(),
+                DevLoopRedefiner.class.getClassLoader());
+    }
+
+    /**
+     * Whether {@code loader} is {@code owner} or descends from it.
+     *
+     * @param loader
+     *            the class loader a copy was loaded by
+     * @param owner
+     *            the application's own class loader
+     * @return {@code true} if the copy is the application's
+     */
+    static boolean ownedBy(ClassLoader loader, ClassLoader owner) {
+        if (owner == null) {
+            // The connector itself is on the boot class path, which no real
+            // deployment does; claiming nothing is the application's would
+            // redefine nothing at all.
+            return true;
+        }
+        for (ClassLoader walk = loader; walk != null; walk = walk.getParent()) {
+            if (walk == owner) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String simple(String binaryName) {

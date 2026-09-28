@@ -53,8 +53,6 @@ public class MockVaadinContext extends VaadinServletContext {
             RoutePathProvider provider) {
         super(context);
 
-        Mockito.when(lookup.lookup(RoutePathProvider.class)).thenReturn(null);
-
         Mockito.when(lookup.lookup(RoutePathProvider.class))
                 .thenReturn(provider);
 

@@ -278,6 +278,17 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
                 FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS);
 
+        if (jsDefinitionsChanged(options, statsJson)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-changed-js-definitions", null);
+            return true;
+        }
+        // JavaScript definition file hash has already been checked
+        // removing it from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
+                .remove(FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options)) {
             UsageStatistics.markAsUsed(
                     "flow/rebundle-reason-missing-frontend-import", null);
@@ -989,6 +1000,37 @@ public final class BundleValidationUtil {
                         "Detected changed content for commercial banner file");
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * Checks whether the JavaScript that the {@code @JsDefinition} interfaces
+     * of the application declare differs from what the bundle was built with.
+     * <p>
+     * The functions are generated into the bundle, so a declaration that
+     * changed, a definition that was added and a bundle built before any
+     * definition existed all mean that the bundle no longer contains what a
+     * call would look up, which shows up at runtime as a call that cannot be
+     * run.
+     */
+    private static boolean jsDefinitionsChanged(Options options,
+            JsonNode statsJson) {
+        JsonNode frontendHashes = statsJson.get(FRONTEND_HASHES_STATS_KEY);
+        String jsDefinitionsPath = FrontendUtils.GENERATED
+                + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
+        String content = new TaskGenerateJsDefinitions(options)
+                .getFileContent();
+
+        List<String> faultyContent = new ArrayList<>();
+        compareFrontendHashes(frontendHashes, faultyContent, jsDefinitionsPath,
+                content);
+        if (!faultyContent.isEmpty()) {
+            // Either the declarations changed, or the bundle was built before
+            // they existed and carries none of their JavaScript
+            getLogger().info(
+                    "Detected JavaScript declared by the JavaScript definitions that the bundle does not carry");
+            return true;
         }
         return false;
     }

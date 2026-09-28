@@ -1,1 +1,2 @@
 com.vaadin.flow.testutil.CurrentInstanceCleanerListener
+com.vaadin.flow.testutil.QuietTestOutputListener

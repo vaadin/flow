@@ -44,6 +44,8 @@ import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ResourceContentHash;
@@ -56,6 +58,7 @@ import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
@@ -168,10 +171,6 @@ public class UidlWriter implements Serializable {
             uiInternals.clearPendingStyleSheetRemovals();
         }
 
-        if (uiInternals.getConstantPool().hasNewConstants()) {
-            response.set("constants",
-                    uiInternals.getConstantPool().dumpConstants());
-        }
         if (!stateChanges.isEmpty()) {
             response.set("changes", stateChanges);
         }
@@ -180,7 +179,14 @@ public class UidlWriter implements Serializable {
                 .dumpPendingJavaScriptInvocations();
         if (!executeJavaScriptList.isEmpty()) {
             response.set(JsonConstants.UIDL_KEY_EXECUTE,
-                    encodeExecuteJavaScriptList(executeJavaScriptList));
+                    encodeExecuteJavaScriptList(executeJavaScriptList,
+                            uiInternals.getConstantPool()));
+        }
+        // Dumped after the invocations are encoded, since what each of them
+        // runs is a constant of this response
+        if (uiInternals.getConstantPool().hasNewConstants()) {
+            response.set("constants",
+                    uiInternals.getConstantPool().dumpConstants());
         }
         if (service.getDeploymentConfiguration().isRequestTiming()) {
             response.set("timings", createPerformanceData(ui));
@@ -306,9 +312,10 @@ public class UidlWriter implements Serializable {
 
     // non-private for testing purposes
     static ArrayNode encodeExecuteJavaScriptList(
-            List<PendingJavaScriptInvocation> executeJavaScriptList) {
-        return executeJavaScriptList.stream()
-                .map(UidlWriter::encodeExecuteJavaScript)
+            List<PendingJavaScriptInvocation> executeJavaScriptList,
+            ConstantPool constantPool) {
+        return executeJavaScriptList.stream().map(
+                invocation -> encodeExecuteJavaScript(invocation, constantPool))
                 .collect(JacksonUtils.asArray());
     }
 
@@ -329,7 +336,12 @@ public class UidlWriter implements Serializable {
     }
 
     private static ArrayNode encodeExecuteJavaScript(
-            PendingJavaScriptInvocation invocation) {
+            PendingJavaScriptInvocation invocation, ConstantPool constantPool) {
+        JsCall jsCall = invocation.getInvocation().getJsCall();
+        if (jsCall != null) {
+            return encodeJsCall(invocation, jsCall, constantPool);
+        }
+
         List<Object> parametersList = invocation.getInvocation()
                 .getParameters();
 
@@ -371,10 +383,79 @@ public class UidlWriter implements Serializable {
             //@formatter:on
         }
 
-        // [argument1, argument2, ..., script]
+        // [argument1, argument2, ..., what to run]
         return Stream
                 .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                        Stream.of(JacksonUtils.createNode(expression)))
+                        Stream.of(
+                                constantOf(JacksonUtils.createNode(expression),
+                                        constantPool)))
+                .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Registers what an invocation runs with the constant pool and answers with
+     * what names it in the invocation.
+     * <p>
+     * An expression is then sent once per session rather than with every
+     * invocation that runs it, and the target of an invocation of declared
+     * JavaScript is a constant like any other. The two kinds of invocation look
+     * the same on the wire, and the client reads what to run out of the pool
+     * either way.
+     */
+    private static JsonNode constantOf(JsonNode whatToRun,
+            ConstantPool constantPool) {
+        return JacksonUtils.createNode(
+                constantPool.getConstantId(new ConstantPoolKey(whatToRun)));
+    }
+
+    /**
+     * Encodes a call made through a JavaScript definition as
+     * <code>[argument1, ..., element, successChannel, errorChannel, function]</code>,
+     * where the trailing constant names the function to run rather than
+     * carrying JavaScript. The constant is an object naming the function, which
+     * is what tells it apart from the constant of an invocation that runs an
+     * expression, a string. The function is named by a hash of the JavaScript
+     * it runs, so no expression is sent, nothing is compiled in the browser,
+     * and what declared the JavaScript in Java stays on the server.
+     * <p>
+     * The parameters are the arguments of the call, then the element to apply
+     * the function to, and the two return value channels when the call is
+     * subscribed to. The client reads them the other way around: the function
+     * it looks up takes the arguments, so what follows them is the element and
+     * the channels, if any. A function that collects a variable number of
+     * arguments into a rest parameter does not report them in its length, so
+     * such a call carries how many arguments it has for the client to split the
+     * parameters by.
+     */
+    private static ArrayNode encodeJsCall(
+            PendingJavaScriptInvocation invocation, JsCall call,
+            ConstantPool constantPool) {
+        Stream<Object> parameters = invocation.getInvocation().getParameters()
+                .stream();
+
+        if (invocation.isSubscribed()) {
+            StateNode owner = invocation.getOwner();
+            List<ReturnChannelRegistration> channels = new ArrayList<>();
+
+            ReturnChannelRegistration successChannel = createReturnValueChannel(
+                    owner, channels, invocation::complete);
+            ReturnChannelRegistration errorChannel = createReturnValueChannel(
+                    owner, channels, invocation::completeExceptionally);
+
+            parameters = Stream.concat(parameters,
+                    Stream.of(successChannel, errorChannel));
+        }
+
+        ObjectNode function = JacksonUtils.createObjectNode();
+        function.put(JsonConstants.UIDL_KEY_JS_FUNCTION, call.getFunctionId());
+        if (call.isVariadic()) {
+            function.put(JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT,
+                    call.flattenArguments().size());
+        }
+
+        return Stream
+                .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
+                        Stream.of(constantOf(function, constantPool)))
                 .collect(JacksonUtils.asArray());
     }
 

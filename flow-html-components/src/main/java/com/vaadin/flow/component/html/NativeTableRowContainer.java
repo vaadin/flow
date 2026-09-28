@@ -30,6 +30,9 @@ import com.vaadin.flow.component.HasOrderedComponents;
  *             components implementing it.
  */
 @Deprecated(since = "25.3", forRemoval = true)
+// The deprecated HasOrderedComponents goes away in 26 together with this
+// type
+@SuppressWarnings("removal")
 interface NativeTableRowContainer extends HasOrderedComponents {
 
     /**

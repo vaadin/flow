@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultAccessCheckDecisionResolver
         implements AccessCheckDecisionResolver {
 
-    public static final Logger LOGGER = LoggerFactory
+    private static final Logger LOGGER = LoggerFactory
             .getLogger(DefaultAccessCheckDecisionResolver.class);
 
     @Override

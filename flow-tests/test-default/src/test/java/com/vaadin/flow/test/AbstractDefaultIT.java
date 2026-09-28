@@ -39,6 +39,12 @@ import com.vaadin.testbench.DriverSupplier;
  * ({@link #open()}, {@link #getRootURL()}, {@link #getTestPath()}) that
  * contributors expect. Tests annotate methods with
  * {@link com.vaadin.testbench.BrowserTest @BrowserTest}.
+ * <p>
+ * The tests call the JUnit assertions unqualified, through a static import, as
+ * the conventions ask. {@code assertEquals} is the exception: TestBench's base
+ * class declares {@code assertEquals(WebElement, WebElement)}, and an inherited
+ * method shadows every static import of the same name, so those calls stay
+ * written as {@code Assertions.assertEquals(...)}.
  */
 public abstract class AbstractDefaultIT extends BrowserTestBase
         implements DriverSupplier {

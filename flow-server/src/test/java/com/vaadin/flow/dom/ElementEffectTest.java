@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasOrderedComponents;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -1845,7 +1845,7 @@ class ElementEffectTest {
      */
     @Tag("div")
     private static class TestLayout extends TestComponent
-            implements HasOrderedComponents {
+            implements HasComponents {
 
         /**
          * Construct test layout component without any mocked elements.

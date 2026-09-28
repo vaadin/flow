@@ -33,6 +33,13 @@ import com.vaadin.flow.internal.ReflectionCache;
 @Priority(Integer.MAX_VALUE)
 public class ReflectionCacheHotswapper implements VaadinHotswapper {
 
+    /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public ReflectionCacheHotswapper() {
+        // Default constructor
+    }
+
     @Override
     public void onClassesChange(HotswapClassEvent event) {
         event.getChangedClasses().forEach(ReflectionCache::clearAll);

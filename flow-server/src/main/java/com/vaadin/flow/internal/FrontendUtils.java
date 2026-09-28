@@ -84,6 +84,14 @@ public class FrontendUtils {
     public static final String NODE_MODULES = "node_modules/";
 
     /**
+     * Oldest Node.js version that the frontend tooling runs on.
+     *
+     * @since 25.4
+     */
+    public static final FrontendVersion MINIMUM_SUPPORTED_NODE_VERSION = new FrontendVersion(
+            26, 0, 0);
+
+    /**
      * Default folder used for source and generated folders.
      */
     public static final String FRONTEND = "frontend/";
@@ -213,6 +221,15 @@ public class FrontendUtils {
      * application code.
      */
     public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.js";
+
+    /**
+     * File name of the generated file that registers the JavaScript of the
+     * {@code @JsDefinition} interfaces on the class path, so that the client
+     * can run a server-initiated call without compiling an expression.
+     * 
+     * @since 25.4
+     */
+    public static final String JS_DEFINITIONS_FILE_NAME = "vaadin-js-definitions.js";
 
     /**
      * File name of the index.html in client side.

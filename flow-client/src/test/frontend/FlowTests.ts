@@ -128,6 +128,10 @@ describe('Flow', () => {
   });
 
   afterEach(() => {
+    // Every spy and stub below is created on the default sandbox, so one
+    // restore covers them all and keeps a case that throws mid-way from
+    // leaking a replaced function (e.g. console.error) into later cases.
+    sinon.restore();
     server.remove();
     delete $wnd.Vaadin;
     delete flowRoot.$;
@@ -549,6 +553,7 @@ describe('Flow', () => {
   it('should show stub when navigating to server view offline', async () => {
     stubServerRemoteFunction('foobar-123');
     $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
+    const consoleError = sinon.stub(console, 'error');
     const flow = new Flow();
     const route = flow.serverSideRoutes[0];
     const params: NavigationParameters = {
@@ -558,6 +563,10 @@ describe('Flow', () => {
     const view = await route.action(params);
     expect(view.localName).to.equal('iframe');
     expect(view.getAttribute('src')).to.equal('./offline-stub.html');
+    // Nothing was attempted, so there is nothing to report. Staying silent
+    // here is what makes the log of the initialization failure below a
+    // reliable way to tell the two routes to the stub apart.
+    sinon.assert.notCalled(consoleError);
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});
@@ -582,12 +591,22 @@ describe('Flow', () => {
     await $wnd.Vaadin.connectionIndicator.updateComplete;
     const indicator = $wnd.document.querySelector('.v-loading-indicator');
 
+    const consoleError = sinon.stub(console, 'error');
     const view = await route.action(params);
     expect(view).not.to.be.null;
     expect(view.localName).to.equal('iframe');
     expect(view.getAttribute('src')).to.equal('./offline-stub.html');
 
     expect(indicator.getAttribute('style')).to.equal('display: none');
+
+    // The stub replaces the view without a trace of why, so the failure has
+    // to reach the console: the reported error carries the status and body of
+    // the failed init request, which is the only clue to what went wrong.
+    sinon.assert.calledOnce(consoleError);
+    const reportedError = consoleError.getCall(0).args[1];
+    expect(reportedError).to.be.instanceOf(Error);
+    expect(reportedError.message).to.contain('500');
+    expect(reportedError.message).to.contain('unable to connect');
 
     // @ts-ignore
     let onBeforeEnterReturns = view.onBeforeEnter(params, {});

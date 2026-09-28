@@ -118,14 +118,26 @@ public final class PublicStyleSheetBundler {
         return Optional.empty();
     }
 
-    private static boolean isCopiedJarResourcesRoot(File root) {
+    /**
+     * Whether the given root is the {@code jar-resources} folder the build
+     * fills with copies of classpath resources, rather than a source root.
+     *
+     * @param root
+     *            the root to check
+     * @return {@code true} if the root is the copied jar-resources folder
+     */
+    static boolean isCopiedJarResourcesRoot(File root) {
         String path = FrontendUtils.getUnixPath(root.toPath());
         return path.endsWith("generated/jar-resources");
     }
 
     /**
-     * Normalize an incoming stylesheet URL from @StyleSheet into a relative
-     * path under the servlet context.
+     * Normalize an incoming stylesheet URL from {@code @StyleSheet} into a
+     * relative path under the servlet context.
+     *
+     * @param url
+     *            the URL to normalize
+     * @return the path relative to the servlet context
      */
     public static String normalizeUrl(String url) {
         url = url.trim();

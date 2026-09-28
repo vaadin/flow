@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -40,18 +38,12 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceEventBus;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.MockUI;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -2120,103 +2112,4 @@ public class DataCommunicatorTest {
         }
         return stream;
     }
-
-    public static class MockUI extends UI {
-
-        public MockUI() {
-            this(findOrcreateSession());
-        }
-
-        public MockUI(VaadinSession session) {
-            getInternals().setSession(session);
-            setCurrent(this);
-        }
-
-        @Override
-        protected void init(VaadinRequest request) {
-            // Do nothing
-        }
-
-        private static VaadinSession findOrcreateSession() {
-            VaadinSession session = VaadinSession.getCurrent();
-            if (session == null) {
-                MockService service = Mockito.mock(MockService.class);
-                Mockito.when(service.getRouteRegistry())
-                        .thenReturn(Mockito.mock(RouteRegistry.class));
-                // A real service always has an event bus, so the mock has to
-                // supply one too rather than have production code work around
-                // a null
-                Mockito.when(service.getEventBus())
-                        .thenReturn(new VaadinServiceEventBus(service));
-                session = new AlwaysLockedVaadinSession(service);
-                VaadinSession.setCurrent(session);
-            }
-            return session;
-        }
-    }
-
-    public static class MockService extends VaadinServletService {
-
-        @Override
-        public RouteRegistry getRouteRegistry() {
-            return super.getRouteRegistry();
-        }
-    }
-
-    public static class AlwaysLockedVaadinSession extends MockVaadinSession {
-
-        public AlwaysLockedVaadinSession(VaadinService service) {
-            super(service);
-            lock();
-        }
-
-    }
-
-    public static class MockVaadinSession extends VaadinSession {
-        /*
-         * Used to make sure there's at least one reference to the mock session
-         * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
-         */
-        private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
-
-        public MockVaadinSession(VaadinService service) {
-            super(service);
-        }
-
-        @Override
-        public void close() {
-            super.close();
-            closeCount++;
-        }
-
-        public int getCloseCount() {
-            return closeCount;
-        }
-
-        @Override
-        public Lock getLockInstance() {
-            return lock;
-        }
-
-        @Override
-        public void lock() {
-            super.lock();
-            referenceKeeper.set(this);
-        }
-
-        @Override
-        public void unlock() {
-            super.unlock();
-            referenceKeeper.remove();
-        }
-
-        private int closeCount;
-
-        private ReentrantLock lock = new ReentrantLock();
-    }
-
 }

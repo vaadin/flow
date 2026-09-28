@@ -44,6 +44,12 @@ concurrency:
 
 env:
   JAVA_VERSION: 21
+  # The same flags validation.yml sets, for the same reason: a 403 from Central
+  # is retried rather than failing the build outright. See the note there.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.connectionMaxTtl=25
 
 jobs:
   # Kept apart from the Gradle warm so that one failing cannot discard what the
@@ -58,7 +64,7 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.21.0'
+          node-version: '26.10.0'
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -90,7 +96,13 @@ jobs:
           # jobs saving theirs, and theirs is the richer one: this build leaves
           # flow-tests out, and with it the roughly ninety artifacts only the
           # integration tests pull. Their restore keys still reach this entry by
-          # prefix, so they start warm and keep saving what they add to it.
+          # prefix, so they start warm.
+          #
+          # They do not, however, keep saving what they add to it, as this note
+          # used to claim. The build job of their own run saves that key before
+          # them, so their restore is an exact hit and actions/cache skips their
+          # save. Nothing an integration test job downloads is ever cached,
+          # which is what the step below exists to work around.
           key: ${{ runner.os }}-maven-warm-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-warm-
       - name: Populate the local repository
@@ -104,6 +116,34 @@ jobs:
         run: |
           cmd="mvn install -B -ntp -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
+      - name: Resolve what only the integration test modules pull
+        if: ${{ steps.probe.outputs.cache-hit != 'true' }}
+        # The build above never asks for maven-clean-plugin. Every module that
+        # binds clean:clean to a phase of the default lifecycle - it-tests runs
+        # several modes over one module, so the previous mode's output has to go
+        # first - sits in one of the flow-tests profiles, and that build selects
+        # none of them. So the plugin was missing from the entry, an it-tests
+        # job downloaded it on every run, and a 403 from Central failed a merge
+        # queue run on the first artifact it asked for.
+        #
+        # It has to enter the cache here, because the it-tests jobs cannot put
+        # it there themselves: the build job of their own run saves the primary
+        # key first, from a reactor that does not need the plugin either, and
+        # actions/cache skips a save whose primary key was an exact hit. What
+        # they add to a restored repository is therefore always discarded.
+        #
+        # `initialize` rather than a real build: it is the last phase before the
+        # auto-clean executions, so it forces the plugins bound that early to
+        # resolve without compiling a line or running npm - six seconds on a
+        # warm repository, and around 450 artifacts the install above leaves
+        # out, mostly the poms needed to read these models. Plugins bound later
+        # than initialize are still only cached by the job that runs them.
+        #
+        # Deliberately no -DskipTests: the it-test-modules profile, which holds
+        # most of those modules, activates on the property being absent.
+        run: |
+          cmd="mvn initialize -B -ntp -Pit-shared-modules,it-shared-spring-modules -pl flow-tests -amd"
+          eval $cmd || eval $cmd
       - name: Drop the Flow artifacts before the cache is saved
         if: ${{ steps.probe.outputs.cache-hit != 'true' }}
         # The step that saves the cache runs after every regular step, so
@@ -130,7 +170,7 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '24.21.0'
+          node-version: '26.10.0'
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:

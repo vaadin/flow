@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>vaadin-quarkus-tests</artifactId>
+  <packaging>pom</packaging>
+  <name>Vaadin Quarkus tests</name>
+  <description>Test modules for the Quarkus extension</description>
+
+  <!--
+    The quarkus-tests job in validation.yml runs every module below that sets
+    the validation.run property, one job per module: `always` runs it for
+    every change, `when-changed` only when the Quarkus sources change. A
+    module without the property is a fixture the others depend on and does
+    not get a job. scripts/computeMatrix.js quarkus-tests builds the job
+    matrix from this.
+  -->
+  <modules>
+    <!-- Builds the reusable theme jar -->
+    <module>reusable-theme</module>
+    <!-- Builds testing addons -->
+    <module>test-addons/addon-with-jandex</module>
+    <module>test-addons/addon-without-jandex</module>
+    <module>custom-websocket-dependency</module>
+    <!-- only validates that code compiles -->
+    <module>common-test-code</module>
+
+    <!-- Run common-test-code in dev and prod modes -->
+    <module>production</module>
+    <module>development</module>
+    <module>embedded-plugin</module>
+    <module>push-dispatch-it</module>
+
+    <!-- Codestarts tests -->
+    <module>codestarts</module>
+  </modules>
+
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- Arc looks constructor and observer parameter names up by reflection. -->
+    <maven.compiler.parameters>true</maven.compiler.parameters>
+    <!-- These tests are JUnit 5, so the JUnit 4 provider the flow-tests parent
+         defaults to would report "No runnable methods" for every one of them. -->
+    <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
+    <!-- Tags rather than the JUnit 4 categories the flow-tests parent excludes.
+         Wired into failsafe below the same way vaadin-cdi-tests wires its own,
+         and swapped around by the slow-tests profile. -->
+    <surefire.groups/>
+    <surefire.excludedGroups>slow</surefire.excludedGroups>
+    <!-- Filled in by the Quarkus Maven extension with the JVM options its
+         tests need; see the surefire and failsafe argLine below. The empty
+         default keeps @{argLine} resolvable when the extension adds none. -->
+    <argLine/>
+    <!-- The Flow parent sets no default for this one: as the whole failsafe
+         argLine an unset property resolves to nothing, but inside the
+         combined argLine below it would reach the fork as a literal. -->
+    <failsafe.argLine/>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>vaadin-quarkus</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <!-- Declared ahead of the Quarkus BOM so the Flow artifacts and the
+           versions Flow pins win wherever the two overlap. -->
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-bom</artifactId>
+        <version>${project.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!-- Imported here rather than inherited: the Flow parent manages none of
+           the Quarkus artifacts, and confining the BOM to this subtree keeps it
+           from reaching the rest of flow-tests. -->
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${quarkus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Test dependencies -->
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-test-util</artifactId>
+        <version>${project.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <!--
+        Guava version is pinned to avoid dependency clash between
+        quarkus bom and selenium version required by vaadin testbench
+      -->
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+        <scope>test</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <!-- The Quarkus Maven extension injects its JVM options through
+                 @{argLine}, and warns when an argLine leaves it out. -->
+            <argLine>@{argLine} @{jacoco.agent.argLine} ${surefire.argLine}</argLine>
+            <systemPropertyVariables>
+              <!-- Quarkus installs its own LogManager and fails the boot of a
+                   test application if JUL has already been initialized. -->
+              <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+              <maven.repo>${settings.localRepository}</maven.repo>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <configuration>
+            <argLine>@{argLine} ${failsafe.argLine}</argLine>
+            <!-- The integration tests are JUnit 5, but inherit @RunWith from
+                 the TestBench base class. JUnit 4 is on the test classpath, so
+                 the Vintage engine also discovers them and reports "No runnable
+                 methods". Run them with the Jupiter engine only. -->
+            <excludeJUnit5Engines>
+              <engine>junit-vintage</engine>
+            </excludeJUnit5Engines>
+            <groups>${surefire.groups}</groups>
+            <excludedGroups>${surefire.excludedGroups}</excludedGroups>
+            <systemPropertyVariables>
+              <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+              <maven.repo>${settings.localRepository}</maven.repo>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>slow-tests</id>
+      <properties>
+        <surefire.groups>slow</surefire.groups>
+        <surefire.excludedGroups/>
+      </properties>
+    </profile>
+    <profile>
+      <id>test-native</id>
+      <activation>
+        <property>
+          <name>native</name>
+        </property>
+      </activation>
+      <properties>
+        <quarkus.package.type>native</quarkus.package.type>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <skip>true</skip>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
+</project>

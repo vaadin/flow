@@ -89,6 +89,13 @@ public class RequestUtil {
     private PwaResourcesRequestMatcher pwaResourcesRequestMatcher;
 
     /**
+     * Creates the helper. Spring instantiates it as a bean.
+     */
+    public RequestUtil() {
+        // Default constructor
+    }
+
+    /**
      * Checks whether the request is an internal request.
      * <p>
      * An internal request is one that is needed for all Vaadin applications to
@@ -287,6 +294,7 @@ public class RequestUtil {
      *            the servlet request
      * @return {@code true} if the request is targeting a configured PWA
      *         resource, {@code false} otherwise
+     * @since 25.2.9
      */
     public boolean isPwaResource(HttpServletRequest request) {
         if (pwaResourcesRequestMatcher == null) {

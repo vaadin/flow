@@ -32,7 +32,6 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import com.vaadin.flow.component.littemplate.LitTemplateParser.TemplateData;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -68,8 +67,10 @@ class LitTemplateParserImplTest {
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
 
-        ResourceProvider resourceProvider = service.getContext()
-                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(service.getLookup().lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
         Mockito.when(
                 resourceProvider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(invoc -> LitTemplateParserImpl.class

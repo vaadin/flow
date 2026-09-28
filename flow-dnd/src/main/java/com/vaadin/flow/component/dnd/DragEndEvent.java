@@ -31,6 +31,7 @@ import com.vaadin.flow.component.EventData;
  */
 @DomEvent("dragend")
 public class DragEndEvent<T extends Component> extends AbstractDnDEvent<T> {
+    /** The drop effect the drop target applied to the dragged data. */
     private final DropEffect dropEffect;
 
     /**

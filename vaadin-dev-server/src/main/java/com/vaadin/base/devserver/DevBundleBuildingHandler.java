@@ -47,8 +47,15 @@ import com.vaadin.flow.server.VaadinSession;
 public final class DevBundleBuildingHandler implements DevModeHandler {
 
     private final transient CompletableFuture<Void> buildCompletedFuture;
+    /** The failure message of the bundle build, or {@code null}. */
     private final AtomicReference<String> devServerFailure = new AtomicReference<>();
 
+    /**
+     * Creates a handler that makes requests wait for the given bundle build.
+     *
+     * @param buildCompletedFuture
+     *            completes when the bundle has been built
+     */
     public DevBundleBuildingHandler(
             CompletableFuture<Void> buildCompletedFuture) {
         this.buildCompletedFuture = buildCompletedFuture;

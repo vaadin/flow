@@ -24,6 +24,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
+import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 import static com.vaadin.flow.internal.FrontendUtils.WEB_COMPONENT_BOOTSTRAP_FILE_NAME;
 
 /**
@@ -59,6 +60,7 @@ public class TaskGenerateWebComponentBootstrap
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
+        lines.add(String.format("import './%s';%n", JS_DEFINITIONS_FILE_NAME));
         lines.add("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
         // By path rather than through the `vaadin-flow-client` specifier that

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,6 +40,7 @@ import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
@@ -46,6 +48,8 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -199,16 +203,11 @@ public class PublishedServerEventHandlerRpcHandler
             try {
                 Object returnValue = invokeMethod(instance, method, args);
 
-                instance.getElement()
-                        .executeJs("this.$server['"
-                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
-                                + "']($0, true, $1)",
-                                Integer.valueOf(promiseId), returnValue);
+                instance.getElement().executeJs(PromiseJs.class)
+                        .resolve(promiseId, returnValue);
             } catch (RuntimeException e) {
-                instance.getElement()
-                        .executeJs("this.$server['"
-                                + JsonConstants.RPC_PROMISE_CALLBACK_NAME
-                                + "']($0, false)", Integer.valueOf(promiseId));
+                instance.getElement().executeJs(PromiseJs.class)
+                        .reject(promiseId);
 
                 throw e;
             }
@@ -411,5 +410,41 @@ public class PublishedServerEventHandlerRpcHandler
     private static Logger getLogger() {
         return LoggerFactory.getLogger(
                 PublishedServerEventHandlerRpcHandler.class.getName());
+    }
+
+    /**
+     * How the outcome of a server method reaches the promise the client is
+     * waiting on, as a JavaScript definition for
+     * {@link Element#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface PromiseJs extends Serializable {
+
+        /**
+         * Settles the promise with what the method returned.
+         *
+         * @param promiseId
+         *            the promise the client is waiting on
+         * @param returnValue
+         *            what the method returned
+         */
+        @JsExpression("this.$server['" + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                + "']($0, true, $1)")
+        void resolve(int promiseId, Object returnValue);
+
+        /**
+         * Settles the promise with the failure of the method, which threw
+         * rather than returned.
+         *
+         * @param promiseId
+         *            the promise the client is waiting on
+         */
+        @JsExpression("this.$server['" + JsonConstants.RPC_PROMISE_CALLBACK_NAME
+                + "']($0, false)")
+        void reject(int promiseId);
     }
 }

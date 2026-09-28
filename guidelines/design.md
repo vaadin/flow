@@ -175,6 +175,33 @@ client-side subscriptions — must be tied to a component's lifecycle:
   — inert exists to prevent user actions while something else has
   focus; only bypass it for passive streams.
 
+### Extending an existing entry point
+
+Overloading an existing method, rather than adding a name for a second way to
+do the same thing, is a discoverability decision: the user who knows one form
+finds the other among the overloads of what they already call, while a separate
+name has to be found on its own and reads as a different feature.
+
+The cost lands in the Javadoc. Overloads that do the same thing differently
+have to open with the same sentence about what the method is for and then say
+which is which — "the version that takes a string" against "the version that
+takes an interface". That is cheaper than a name nobody finds.
+
+### Accepting a type the application writes
+
+A type the application declares and the framework interprets — an annotated
+interface, a class following a convention — is validated where it is accepted.
+The judgment call that leaves open is what happens to a member the mechanism
+does not interpret.
+
+Do not let that case through unspoken. When some members of such a type are
+interpreted and others are ordinary Java, the type carries two kinds of member
+with different rules and the user has to know which is which. That can be the
+right design, but then the line between them is a rule stated in one sentence
+in the Javadoc and enforced for everything on the interpreted side. What must
+never happen is a member that quietly does nothing because it fell between the
+two.
+
 ### Naming components that wrap HTML elements
 
 A component class name in `flow-html-components` is public API: changing it

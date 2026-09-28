@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,7 +52,6 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.TestUtil;
 
@@ -422,17 +419,6 @@ class WebComponentBootstrapHandlerViteTest {
         Mockito.when(provider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(answer -> WebComponentBootstrapHandlerViteTest.class
                         .getClassLoader().getResource(answer.getArgument(0)));
-
-        try {
-            Mockito.when(
-                    provider.getClientResourceAsStream("META-INF/resources/"
-                            + ApplicationConstants.CLIENT_ENGINE_PATH
-                            + "/compile.properties"))
-                    .thenAnswer(invocation -> new ByteArrayInputStream(
-                            "jsFile=foo".getBytes(StandardCharsets.UTF_8)));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
     }
 
     private VaadinResponse getMockResponse(ByteArrayOutputStream stream)

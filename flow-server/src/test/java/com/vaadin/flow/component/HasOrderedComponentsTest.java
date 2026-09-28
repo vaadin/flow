@@ -27,6 +27,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+// The class under test is deprecated for removal in 26; delete this test
+// together with it
+@SuppressWarnings("removal")
 class HasOrderedComponentsTest {
 
     static class TestOrderedComponents implements HasOrderedComponents {
