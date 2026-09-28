@@ -46,22 +46,6 @@
     <failsafe.threadCount>1</failsafe.threadCount>
   </properties>
 
-  <!-- Where the EAP channel, the feature pack and everything they resolve come
-       from. The GA repository is public; only the zip installer behind the
-       customer portal is not. -->
-  <repositories>
-    <repository>
-      <id>redhat-ga</id>
-      <url>https://maven.repository.redhat.com/ga/</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
   <dependencyManagement>
     <dependencies>
       <!-- This fixture has no Spring BOM to inherit the JUnit Platform version
@@ -142,6 +126,22 @@
          <dependencyManagement>, where a dependency without a version is an
          invalid model rather than a classpath change. -->
   </dependencies>
+
+  <!-- Where the EAP channel, the feature pack and everything they resolve come
+       from. The GA repository is public; only the zip installer behind the
+       customer portal is not. -->
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>redhat-ga</id>
+      <url>https://maven.repository.redhat.com/ga/</url>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>

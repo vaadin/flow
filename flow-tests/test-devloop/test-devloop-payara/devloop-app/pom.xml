@@ -174,10 +174,10 @@
         <executions>
           <execution>
             <id>unpack-payara</id>
-            <phase>generate-resources</phase>
             <goals>
               <goal>unpack</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <artifactItems>
                 <artifactItem>
