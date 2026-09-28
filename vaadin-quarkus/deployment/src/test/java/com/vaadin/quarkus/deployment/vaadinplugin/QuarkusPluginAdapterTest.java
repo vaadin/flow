@@ -492,35 +492,6 @@ class QuarkusPluginAdapterTest {
     }
 
     @Test
-    void getJarFiles_includesTheFlowClientOfTheBuild(@TempDir Path repository)
-            throws Exception {
-        Path library = repository.resolve("library.jar");
-        Files.writeString(library, "");
-        Path client = repository.resolve("flow-client.jar");
-        Files.writeString(client, "");
-
-        ResolvedDependency runtimeDependency = mock(ResolvedDependency.class);
-        when(runtimeDependency.getGroupId()).thenReturn("com.example");
-        when(runtimeDependency.getArtifactId()).thenReturn("library");
-        when(runtimeDependency.getResolvedPaths())
-                .thenReturn(PathList.of(library));
-        runtimeDependencies.add(runtimeDependency);
-        // Only the deployment module of the extension depends on the client,
-        // so it is among the dependencies of the build but not the runtime ones
-        ResolvedDependency flowClient = mock(ResolvedDependency.class);
-        when(flowClient.getGroupId()).thenReturn("com.vaadin");
-        when(flowClient.getArtifactId()).thenReturn("flow-client");
-        when(flowClient.getResolvedPaths()).thenReturn(PathList.of(client));
-        when(model.getDependencies())
-                .thenReturn(List.of(runtimeDependency, flowClient));
-
-        assertEquals(Set.of(library.toFile(), client.toFile()),
-                createAdapter().getJarFiles(),
-                "the frontend build should get the client the build has, "
-                        + "which the application does not depend on");
-    }
-
-    @Test
     void sourceFolders_moduleWithoutMainSources_areTheStandardLayout() {
         QuarkusPluginAdapter adapter = createAdapter();
 

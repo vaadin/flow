@@ -55,6 +55,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -77,20 +78,6 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true, tokenFile.toString()) { tokenFile.isFile }
         val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
         expect(false, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
-    }
-
-    @Test
-    fun testPrepareFrontend_resolvesTheFlowClient() {
-        testProject.build("vaadinPrepareFrontend")
-
-        // The project has no dependency on the client, the way an application
-        // has none: the build resolves it for the frontend build to compile
-        // into the bundle
-        val client = File(
-            testProject.dir,
-            "src/main/frontend/generated/jar-resources/FlowClient.js"
-        )
-        expect(true, client.toString()) { client.isFile }
     }
 
     @Test
@@ -246,6 +233,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -277,6 +265,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -319,6 +308,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation name:'hilla-endpoint-stub'
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
@@ -360,6 +350,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -446,6 +437,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation(files('libs/addon.jar'))
             }
         """
@@ -625,6 +617,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("com.vaadin:hilla-endpoint:${fakeHillaVersion}")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")

@@ -45,12 +45,11 @@ public class ArchiveProvider {
                 .loadPomFromFile("target/effective-pom.xml");
         WebArchive archive = ShrinkWrap
                 .create(WebArchive.class, warName + ".war")
-                .addAsLibraries(pom
-                        .resolve("com.vaadin:vaadin-cdi",
-                                "com.vaadin:flow-server",
-                                "com.vaadin:flow-html-components",
-                                "com.vaadin:flow-polymer-template")
-                        .withTransitivity().asFile())
+                .addAsLibraries(pom.resolve("com.vaadin:vaadin-cdi",
+                        "com.vaadin:flow-server", "com.vaadin:flow-client",
+                        "com.vaadin:flow-html-components",
+                        "com.vaadin:flow-polymer-template").withTransitivity()
+                        .asFile())
                 .addAsWebInfResource(EmptyAsset.INSTANCE,
                         ArchivePaths.create("beans.xml"))
                 .addClasses(Counter.class, CounterFilter.class);
