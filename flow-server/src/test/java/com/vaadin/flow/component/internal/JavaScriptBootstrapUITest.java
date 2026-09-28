@@ -52,6 +52,7 @@ import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.PageTitle;
@@ -101,9 +102,12 @@ class JavaScriptBootstrapUITest {
     @Tag(Tag.H1)
     public static class DirtyChild extends Component
             implements BeforeLeaveObserver {
+        // What the postponed leave hands out, for a case that decides it
+        static ContinueNavigationAction action;
+
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            event.postpone();
+            action = event.postpone();
         }
     }
 
@@ -376,6 +380,45 @@ class JavaScriptBootstrapUITest {
                 ui.getInternals().getWrapperElement().getChild(0).getTag());
         assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
                 .getChild(0).getTag());
+    }
+
+    @Test
+    void postponedLeave_proceedLetsTheClientGoAndCancelTurnsItBack() {
+        // The client waits to hear what became of the navigation it handed
+        // over, so each way out of a postponed one has to answer - and answer
+        // the right way round
+        for (boolean proceed : new boolean[] { true, false }) {
+            ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/dirty", "",
+                    "", null, ""));
+            ui.leaveNavigation(new BrowserLeaveNavigationEvent(ui, true,
+                    "/client-view", ""));
+            dumpServerConnectedCalls();
+
+            if (proceed) {
+                DirtyChild.action.proceed();
+            } else {
+                DirtyChild.action.cancel();
+            }
+
+            assertEquals(List.of(!proceed), dumpServerConnectedCalls(),
+                    proceed ? "proceeding should not cancel the navigation"
+                            : "cancelling should turn the navigation back");
+        }
+    }
+
+    /**
+     * What the wrapper element has been told since last asked, as the cancel
+     * flag of each call.
+     */
+    private List<Object> dumpServerConnectedCalls() {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation().getJsCall())
+                .filter(call -> call != null
+                        && call.definitionType() == Element.CallFunctionJs.class
+                        && "serverConnected"
+                                .equals(call.flattenArguments().get(0)))
+                .map(call -> call.flattenArguments().get(1)).toList();
     }
 
     @Test

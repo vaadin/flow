@@ -96,6 +96,12 @@ class FullDependenciesScannerTest {
 
     }
 
+    @JavaScript("bundled.js")
+    @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
+    public static class RuntimeJavaScriptComponent extends Component {
+
+    }
+
     @BeforeEach
     void setUp() throws ClassNotFoundException {
         finder = Mockito.mock(ClassFinder.class);
@@ -296,6 +302,24 @@ class FullDependenciesScannerTest {
         assertTrue(
                 visitedClasses.contains(VaadinBowerComponent.class.getName()));
         assertTrue(visitedClasses.contains(JavaScriptOrder.class.getName()));
+    }
+
+    @Test
+    void getScripts_javaScriptWithTypeModule_excludedFromBundleImports()
+            throws ClassNotFoundException {
+        Class fakeAnnotation = Object.class;
+        Mockito.when(finder.loadClass(JavaScript.class.getName()))
+                .thenReturn(fakeAnnotation);
+        Mockito.when(finder.getAnnotatedClasses(fakeAnnotation)).thenReturn(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+
+        FullDependenciesScanner scanner = new FullDependenciesScanner(finder,
+                (type, annotation) -> findAnnotations(type, JavaScript.class),
+                null, true);
+
+        // module-runtime.js is loaded at runtime as a <script type="module">,
+        // so it must not end up in the generated bundle imports
+        DepsTests.assertImports(scanner.getScripts(), "bundled.js");
     }
 
     @Test

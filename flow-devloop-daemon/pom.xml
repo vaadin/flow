@@ -12,6 +12,7 @@
   <description>JDK-only daemon that runs the vaadin-dev dev loop.</description>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!-- Not an OSGi bundle: this jar is run, not imported. -->
     <bnd.skip>true</bnd.skip>
     <!-- No public API contract; everything here is internal to the dev loop. -->

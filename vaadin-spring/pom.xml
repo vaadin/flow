@@ -13,6 +13,10 @@
   <name>vaadin-spring</name>
   <description>Provides Spring integration for Vaadin applications.</description>
 
+  <properties>
+    <jandex.skip>true</jandex.skip>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <!-- A BOM imported here outranks the one inherited from flow-project,
@@ -76,6 +80,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -86,6 +91,7 @@
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-websocket</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
@@ -152,6 +158,7 @@
     <dependency>
       <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
