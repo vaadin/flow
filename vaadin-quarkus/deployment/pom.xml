@@ -36,6 +36,15 @@
       <artifactId>flow-plugin-base</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- The Flow client. Not used from this module's code: its frontend
+         sources are input to the frontend build the extension runs, and a
+         dependency of the deployment module is on the classpath of the build
+         only, never in the application. -->
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- Test scope -->
     <dependency>

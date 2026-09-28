@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.bootstrap.workspace.SourceDir;
 import io.quarkus.bootstrap.workspace.WorkspaceModule;
+import io.quarkus.maven.dependency.ResolvedDependency;
 import io.quarkus.runtime.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,9 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(QuarkusPluginAdapter.class);
+
+    private static final String VAADIN_GROUP_ID = "com.vaadin";
+    private static final String FLOW_CLIENT_ARTIFACT_ID = "flow-client";
 
     private final VaadinBuildTimeConfig config;
     private final ApplicationModel model;
@@ -247,9 +251,22 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
         return classFinder;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Besides the runtime dependencies, this includes the Flow client. An
+     * application does not depend on the client, whose frontend sources are
+     * input to the frontend build rather than something the application serves,
+     * so the client comes in as a dependency of the deployment module of the
+     * extension: on the classpath of the build, and never in the application.
+     */
     @Override
     public Set<File> getJarFiles() {
-        return model.getRuntimeDependencies().stream()
+        Stream<ResolvedDependency> flowClient = model.getDependencies().stream()
+                .filter(dep -> VAADIN_GROUP_ID.equals(dep.getGroupId())
+                        && FLOW_CLIENT_ARTIFACT_ID.equals(dep.getArtifactId()));
+        return Stream
+                .concat(model.getRuntimeDependencies().stream(), flowClient)
                 .flatMap(dep -> dep.getResolvedPaths().stream())
                 .map(Path::toFile).filter(file -> !file.isDirectory())
                 .collect(Collectors.toSet());

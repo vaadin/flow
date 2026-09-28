@@ -26,10 +26,6 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
       <artifactId>flow-html-components</artifactId>
     </dependency>
     <dependency>
