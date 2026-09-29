@@ -15,10 +15,16 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.List;
 import java.util.Set;
 
 import org.atmosphere.cpr.ApplicationConfig;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -29,6 +35,8 @@ import com.vaadin.flow.server.Constants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest(classes = SpringBootAutoConfiguration.class)
 @TestPropertySource(properties = { "vaadin.urlMapping = /zing/*" })
@@ -48,5 +56,27 @@ class SpringBootAutoConfigurationUrlMappedTest {
         assertEquals("/zing/" + Constants.PUSH_MAPPING,
                 servletRegistrationBean.getInitParameters()
                         .get(ApplicationConfig.JSR356_MAPPING_PATH));
+    }
+
+    @Test
+    void excludeUrlsWithNonRootMapping_warningLogged() {
+        VaadinConfigurationProperties properties = new VaadinConfigurationProperties();
+        properties.setUrlMapping("/zing/*");
+        properties.setExcludeUrls(List.of("/zing/sitemap.txt"));
+        Logger logger = Mockito.mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(SpringBootAutoConfiguration.class))
+                    .thenReturn(logger);
+
+            SpringBootAutoConfiguration.configureServletRegistrationBean(
+                    Mockito.mock(ObjectProvider.class), properties,
+                    Mockito.mock(SpringServlet.class));
+        }
+
+        Mockito.verify(logger).warn(anyString(),
+                eq(List.of("/zing/sitemap.txt")), eq("/zing/*"));
     }
 }
