@@ -304,13 +304,14 @@ public class ExtendedClientDetails implements Serializable {
      *         .atZone(details.getZoneId());
      * }</pre>
      *
+     * <p>
+     * Only a zone ID gets daylight saving time right for dates other than
+     * today. The offset fallback is correct for the current moment only.
+     *
      * @return the zone of {@link #getTimeZoneId()}, or a fixed
      *         {@link ZoneOffset} of {@link #getTimezoneOffset()} if the browser
      *         reported no zone ID or one the JVM does not know; never
      *         {@code null}
-     * @apiNote Only a zone ID gets daylight saving time right for dates other
-     *          than today. The offset fallback is correct for the current
-     *          moment only.
      */
     public ZoneId getZoneId() {
         if (timeZoneId != null) {
