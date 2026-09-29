@@ -732,6 +732,15 @@ public class FrontendToolsTest {
     }
 
     @Test
+    public void getSuitablePnpm_noGlobalPnpm_defaultVersionPinnedForNpx() {
+        List<String> pnpmCommand = tools.getSuitablePnpm();
+        Assert.assertEquals(
+                "expected npx to be invoked with the default pnpm version",
+                "pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
+                pnpmCommand.get(pnpmCommand.size() - 1));
+    }
+
+    @Test
     public void getSuitablePnpm_useGlobalPnpm_noPnpmInstalled_throws() {
         Optional<File> pnpm = frontendToolsLocator.tryLocateTool("pnpm");
         Assume.assumeFalse("Skip this test once globally installed pnpm is "
