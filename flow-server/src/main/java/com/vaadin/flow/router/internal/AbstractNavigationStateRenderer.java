@@ -234,6 +234,18 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
+     * Handles the navigation event again once the client data requested during
+     * the initial handling has been retrieved.
+     * <p>
+     * This happens outside the original navigation, so the app shell title
+     * fallback applied when the navigation completes is applied here as well.
+     */
+    private void handleDeferred(NavigationEvent event) {
+        handle(event);
+        event.getUI().getInternals().restoreAppShellTitleIfEmpty();
+    }
+
+    /**
      * Populate element chain from a preserved chain or give clean chain to be
      * populated.
      *
@@ -275,7 +287,7 @@ public abstract class AbstractNavigationStateRenderer
                         // to get the window name so we can determine if the
                         // cache contains a chain for us to use.
                         ui.getPage().retrieveExtendedClientDetails(
-                                details -> handle(event));
+                                details -> handleDeferred(event));
                         return true;
                     }
                 } else {
@@ -997,7 +1009,7 @@ public abstract class AbstractNavigationStateRenderer
                 // need to retrieve the window name before we can determine
                 // this, so execute a client-side request.
                 ui.getPage().retrieveExtendedClientDetails(
-                        details -> handle(event));
+                        details -> handleDeferred(event));
                 return Optional.empty();
             }
         } else {

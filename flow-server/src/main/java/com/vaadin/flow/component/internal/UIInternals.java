@@ -847,6 +847,23 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Restores the app shell title if the current page title is empty, i.e. the
+     * route target does not define a title.
+     * <p>
+     * <b>NOTE</b> Intended for internal use, you should not call this method.
+     *
+     * @since 24.10
+     */
+    public void restoreAppShellTitleIfEmpty() {
+        // app shell title is computed from the title tag in index.html
+        if ((title == null || title.isEmpty()) && appShellTitle != null
+                && !appShellTitle.isEmpty()) {
+            cancelPendingTitleUpdate();
+            setTitle(appShellTitle);
+        }
+    }
+
+    /**
      * Populate the routerTargetChain with RouterLayouts, but only if the target
      * chain is empty. If the chain contains elements the given list is ignored.
      *
