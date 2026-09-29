@@ -985,7 +985,8 @@ public abstract class Component
      * @since 23.2
      */
     public <T> T findAncestor(Class<T> componentType) {
-        return componentType.cast(findAncestor(componentType::isInstance));
+        return findAncestor(componentType::isInstance).map(componentType::cast)
+                .orElse(null);
     }
 
     /**
@@ -993,26 +994,27 @@ public abstract class Component
      * that matches the given predicate.
      * <p>
      * Unlike {@link #findAncestor(Class)}, the ancestor can be identified by
-     * any condition, such as its id, a class name or its enabled state. This
-     * component itself is not tested, only its ancestors.
+     * any condition, such as its id, a class name or its enabled state, and the
+     * result is an {@link Optional} instead of a nullable value. This component
+     * itself is not tested, only its ancestors.
      *
      * @param predicate
      *            the condition the ancestor component must satisfy, not
      *            {@code null}
-     * @return The first ancestor that satisfies the predicate. Null if no
-     *         ancestor satisfies it.
+     * @return the first ancestor that satisfies the predicate, or an empty
+     *         optional if no ancestor satisfies it
      */
-    public Component findAncestor(SerializablePredicate<Component> predicate) {
+    public Optional<Component> findAncestor(
+            SerializablePredicate<Component> predicate) {
         Objects.requireNonNull(predicate, "Predicate must not be null");
         Optional<Component> optionalParent = getParent();
         while (optionalParent.isPresent()) {
-            Component parent = optionalParent.get();
-            if (predicate.test(parent)) {
-                return parent;
+            if (predicate.test(optionalParent.get())) {
+                return optionalParent;
             }
-            optionalParent = parent.getParent();
+            optionalParent = optionalParent.get().getParent();
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

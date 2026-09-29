@@ -52,6 +52,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -1926,10 +1927,12 @@ public class ComponentTest {
         outer.add(inner);
         ui.add(outer);
 
-        assertEquals(outer, component.findAncestor(
+        assertEquals(Optional.of(outer), component.findAncestor(
                 c -> c.getId().filter("card"::equals).isPresent()));
-        assertEquals(inner, component.findAncestor(c -> true));
-        assertNull(component.findAncestor(c -> false));
+        assertEquals(Optional.of(inner), component.findAncestor(c -> true));
+        assertEquals(Optional.empty(), component.findAncestor(c -> false));
+        assertThrows(NullPointerException.class, () -> component
+                .findAncestor((SerializablePredicate<Component>) null));
     }
 
     @Test
