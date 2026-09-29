@@ -39,6 +39,12 @@
 
     <!-- Test scope -->
     <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-data</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-junit-internal</artifactId>
       <scope>test</scope>
