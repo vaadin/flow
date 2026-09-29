@@ -129,7 +129,8 @@ export function setProperty(element: Element, path: string, value: unknown): voi
  */
 export function isPolymerElement(htmlNode: Element): boolean {
   const polymer = (window as unknown as { Polymer?: unknown }).Polymer as
-    (((...args: unknown[]) => unknown) & { Element?: new (...args: unknown[]) => unknown }) | undefined;
+    | (((...args: unknown[]) => unknown) & { Element?: new (...args: unknown[]) => unknown })
+    | undefined;
   const isP2Element = typeof polymer === 'function' && !!polymer.Element && htmlNode instanceof polymer.Element;
   const isP3Element =
     (htmlNode as unknown as { constructor: { polymerElementVersion?: unknown } }).constructor.polymerElementVersion !==
