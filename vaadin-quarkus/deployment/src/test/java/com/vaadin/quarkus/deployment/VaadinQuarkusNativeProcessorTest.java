@@ -301,17 +301,22 @@ class VaadinQuarkusNativeProcessorTest {
                 });
 
         // Flow creates the exception by reflection when a view reroutes to
-        // an error by exception type
-        Set<String> registered = reflective.stream()
-                .filter(ReflectiveClassBuildItem::isConstructors)
-                .flatMap(item -> item.getClassNames().stream())
-                .collect(Collectors.toSet());
-        assertTrue(registered.contains(CustomException.class.getName()),
-                "Should register the type argument of HasErrorParameter");
-        assertTrue(registered.contains(InheritedException.class.getName()),
-                "Should register the type argument given to a generic superclass");
-        assertTrue(registered.contains(IllegalStateException.class.getName()),
-                "Should register a type argument that is not in the index");
+        // an error by exception type. The exception types are registered in
+        // their own build item, so it can be checked for exact content: the
+        // direct type argument, the one given to a generic superclass and
+        // the one that is not in the index, but not the bound of the type
+        // variable of the generic superclass.
+        ReflectiveClassBuildItem exceptionTypes = reflective.stream()
+                .filter(item -> item.getClassNames()
+                        .contains(CustomException.class.getName()))
+                .findFirst().orElseThrow();
+        assertTrue(exceptionTypes.isConstructors(),
+                "Should register the constructors of the exception types");
+        assertEquals(
+                Set.of(CustomException.class.getName(),
+                        InheritedException.class.getName(),
+                        IllegalStateException.class.getName()),
+                Set.copyOf(exceptionTypes.getClassNames()));
     }
 
     @Test
