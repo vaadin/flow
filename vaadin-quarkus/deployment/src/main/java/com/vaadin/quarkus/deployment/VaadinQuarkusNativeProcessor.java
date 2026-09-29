@@ -83,9 +83,11 @@ import org.objectweb.asm.Opcodes;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.LookupInitializer;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.AccessDeniedException;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -371,6 +373,7 @@ public class VaadinQuarkusNativeProcessor {
         Set<ClassInfo> classesWithHierarchy = new HashSet<>();
         classesWithHierarchy.addAll(getJsonClasses(index));
         classesWithHierarchy.addAll(detectClientCallablesTypes(index));
+        classesWithHierarchy.addAll(detectEventDataTypes(index));
         classesWithHierarchy.stream().map(
                 c -> ReflectiveHierarchyBuildItem.builder(c.name()).build())
                 .forEach(reflectiveHierarchy::produce);
@@ -394,6 +397,37 @@ public class VaadinQuarkusNativeProcessor {
                 .stream().map(ann -> ann.target().asMethod())
                 .filter(componentPredicate)
                 .flatMap(m -> TypeInspector.collectTypes(m, index).stream())
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Detects the types of the {@code @EventData} constructor parameters of
+     * {@link ComponentEvent} subclasses, which Jackson decodes the event data
+     * into. Components and elements are left out, as they are looked up from
+     * the state tree instead.
+     */
+    Set<ClassInfo> detectEventDataTypes(IndexView index) {
+        Set<DotName> eventClasses = index
+                .getAllKnownSubclasses(ComponentEvent.class).stream()
+                .map(ClassInfo::name).collect(Collectors.toSet());
+
+        Set<DotName> componentClasses = new HashSet<>();
+        componentClasses.add(DotName.createSimple(Component.class));
+        componentClasses.add(DotName.createSimple(Element.class));
+        index.getAllKnownSubclasses(Component.class).stream()
+                .map(ClassInfo::name).forEach(componentClasses::add);
+
+        return index.getAnnotations(DotName.createSimple(EventData.class))
+                .stream()
+                .filter(ann -> ann.target()
+                        .kind() == AnnotationTarget.Kind.METHOD_PARAMETER)
+                .map(ann -> ann.target().asMethodParameter())
+                .filter(param -> param.method().isConstructor() && eventClasses
+                        .contains(param.method().declaringClass().name()))
+                .flatMap(param -> TypeInspector
+                        .collectTypes(param.type(), index).stream())
+                .filter(type -> !componentClasses.contains(type.name())
+                        && !type.name().toString().startsWith("tools.jackson."))
                 .collect(Collectors.toSet());
     }
 

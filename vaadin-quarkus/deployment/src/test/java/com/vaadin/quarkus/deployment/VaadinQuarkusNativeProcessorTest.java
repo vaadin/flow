@@ -36,6 +36,9 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -178,6 +181,36 @@ class VaadinQuarkusNativeProcessorTest {
         // TestComponent which extends Component
         assertTrue(result.stream().anyMatch(containsClass(NestedDto.class)),
                 "Should detect NestedDto from multi-level Component subclass");
+    }
+
+    @Test
+    void testDetectEventDataTypes_collectsDecodedEventDataTypes()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(ComponentEvent.class);
+        indexer.indexClass(Component.class);
+        indexer.indexClass(Element.class);
+        indexer.indexClass(TestComponent.class);
+        indexer.indexClass(TestBeanDataEvent.class);
+        indexer.indexClass(SimpleDto.class);
+        indexer.indexClass(NestedDto.class);
+        indexer.indexClass(OtherDto.class);
+        indexer.indexClass(List.class);
+        Index testIndex = indexer.complete();
+
+        Set<ClassInfo> result = processor.detectEventDataTypes(testIndex);
+
+        assertTrue(result.stream().anyMatch(containsClass(SimpleDto.class)),
+                "Should detect SimpleDto from @EventData parameter");
+        assertTrue(result.stream().anyMatch(containsClass(NestedDto.class)),
+                "Should detect NestedDto from parameterized @EventData parameter");
+        assertFalse(result.stream().anyMatch(containsClass(OtherDto.class)),
+                "Should NOT detect OtherDto from a non-@EventData parameter");
+        assertFalse(
+                result.stream().anyMatch(containsClass(TestComponent.class)),
+                "Should NOT detect component types resolved from the state tree");
+        assertFalse(result.stream().anyMatch(containsClass(Element.class)),
+                "Should NOT detect Element resolved from the state tree");
     }
 
     @Test
@@ -414,6 +447,22 @@ class VaadinQuarkusNativeProcessorTest {
 
         public void setData(String data) {
             this.data = data;
+        }
+    }
+
+    public static class TestBeanDataEvent
+            extends ComponentEvent<TestComponent> {
+        public TestBeanDataEvent(TestComponent source, boolean fromClient,
+                @EventData("event.detail") SimpleDto detail,
+                @EventData("event.items") List<NestedDto> items,
+                @EventData("event.count") int count,
+                @EventData("element") Element element,
+                @EventData("element.parent") TestComponent parent) {
+            super(source, fromClient);
+        }
+
+        public TestBeanDataEvent(TestComponent source, OtherDto other) {
+            super(source, false);
         }
     }
 
