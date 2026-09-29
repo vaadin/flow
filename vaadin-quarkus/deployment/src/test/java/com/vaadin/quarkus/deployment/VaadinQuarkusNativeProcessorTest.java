@@ -40,6 +40,9 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -275,6 +278,43 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
+    void testVaadinNativeSupport_registersErrorParameterTypesForReflection()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(HasErrorParameter.class);
+        indexer.indexClass(Component.class);
+        indexer.indexClass(CustomErrorView.class);
+        indexer.indexClass(CustomException.class);
+        indexer.indexClass(GenericErrorView.class);
+        indexer.indexClass(InheritedErrorView.class);
+        indexer.indexClass(InheritedException.class);
+        // IllegalStateException itself is not indexed, like JDK classes in an
+        // application
+        indexer.indexClass(JdkExceptionErrorView.class);
+        Index errorIndex = indexer.complete();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.vaadinNativeSupport(
+                new CombinedIndexBuildItem(errorIndex, errorIndex), item -> {
+                }, item -> {
+                }, reflective::add, item -> {
+                });
+
+        // Flow creates the exception by reflection when a view reroutes to
+        // an error by exception type
+        Set<String> registered = reflective.stream()
+                .filter(ReflectiveClassBuildItem::isConstructors)
+                .flatMap(item -> item.getClassNames().stream())
+                .collect(Collectors.toSet());
+        assertTrue(registered.contains(CustomException.class.getName()),
+                "Should register the type argument of HasErrorParameter");
+        assertTrue(registered.contains(InheritedException.class.getName()),
+                "Should register the type argument given to a generic superclass");
+        assertTrue(registered.contains(IllegalStateException.class.getName()),
+                "Should register a type argument that is not in the index");
+    }
+
+    @Test
     void testRegisterJsDefinitionProxies_registersTheAnnotatedInterfaces()
             throws IOException {
         Indexer indexer = new Indexer();
@@ -343,6 +383,43 @@ class VaadinQuarkusNativeProcessorTest {
 
     @JsDefinition
     public static class Greeter {
+    }
+
+    public static class CustomException extends RuntimeException {
+    }
+
+    public static class CustomErrorView extends Component
+            implements HasErrorParameter<CustomException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<CustomException> parameter) {
+            return 500;
+        }
+    }
+
+    public static class InheritedException extends RuntimeException {
+    }
+
+    public abstract static class GenericErrorView<T extends Exception>
+            extends Component implements HasErrorParameter<T> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<T> parameter) {
+            return 500;
+        }
+    }
+
+    public static class InheritedErrorView
+            extends GenericErrorView<InheritedException> {
+    }
+
+    public static class JdkExceptionErrorView extends Component
+            implements HasErrorParameter<IllegalStateException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<IllegalStateException> parameter) {
+            return 500;
+        }
     }
 
     private static Predicate<ClassInfo> containsClass(Class<?> expectedClass) {
