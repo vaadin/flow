@@ -129,8 +129,9 @@ class ExtendedClientDetailsTest {
                 detailsBuilder.buildDetails().getZoneId(),
                 "an ID unknown to the JVM should fall back to the offset");
 
-        detailsBuilder.setTimeZoneId(null).setTimezoneOffset(null);
-        assertEquals(ZoneOffset.UTC, detailsBuilder.buildDetails().getZoneId());
+        detailsBuilder.setTimeZoneId(null).setTimezoneOffset("-1200");
+        assertEquals(ZoneOffset.UTC, detailsBuilder.buildDetails().getZoneId(),
+                "an offset beyond +-18h should fall back to UTC");
     }
 
     @Test
