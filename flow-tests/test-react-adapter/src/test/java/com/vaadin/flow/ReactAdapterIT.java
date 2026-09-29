@@ -117,6 +117,51 @@ public class ReactAdapterIT extends ChromeBrowserTest {
                 container.$("input").all().get(0).getPropertyString("value"));
     }
 
+    @Test
+    public void ownRootReconnectedQuickly_rendersComponentOnceAndUpdates() {
+        open();
+
+        waitForDevServer();
+
+        // Outside the Flow container no portal is used, so the adapter creates
+        // its own React root. Reconnect it before connectedCallback finishes.
+        executeScript("const element = document.createElement('react-input');"
+                + "element.id = 'ownRootInput';"
+                + "document.body.append(element);" + "element.remove();"
+                + "document.body.append(element);"
+                + "return new Promise(resolve => setTimeout(resolve, 100));");
+        TestBenchElement adapter = $(TestBenchElement.class).id("ownRootInput");
+        waitUntil(driver -> !adapter.$("input").all().isEmpty());
+        // React logs an error when a second root is created for the element
+        checkLogsForErrors();
+        assertSingleInputUpdates(adapter, "first");
+
+        // Reconnect the element again after its root has been rendered, and
+        // let the pending unmount of the disconnect run.
+        executeScript("const element = arguments[0];" + "element.remove();"
+                + "document.body.append(element);"
+                + "return new Promise(resolve => setTimeout(resolve, 100));",
+                adapter);
+        assertSingleInputUpdates(adapter, "second");
+    }
+
+    private void assertSingleInputUpdates(TestBenchElement adapter,
+            String value) {
+        Assert.assertEquals(
+                "Adapter element with its own root must render exactly one "
+                        + "React component",
+                1, adapter.$("input").all().size());
+
+        TestBenchElement input = adapter.$("input").first();
+        input.clear();
+        input.focus();
+        input.sendKeys(value);
+
+        Assert.assertEquals(value, adapter.getPropertyString("value"));
+        Assert.assertEquals("State update must re-render the visible output",
+                value, input.getPropertyString("value"));
+    }
+
     private TestBenchElement getAdapterElement() {
         return $("react-input").first();
     }
