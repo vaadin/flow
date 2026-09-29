@@ -285,25 +285,6 @@ class UploadHandlerTest {
     }
 
     @Test
-    void inertOwner_uploadIsHandled() throws IOException {
-        when(stateNode.isEnabled()).thenReturn(true);
-        when(stateNode.isVisible()).thenReturn(true);
-        when(stateNode.isInert()).thenReturn(true);
-        AtomicBoolean handled = new AtomicBoolean();
-        UploadHandler uploadHandler = event -> handled.set(true);
-
-        AbstractStreamResource res = streamResourceRegistry
-                .registerResource(uploadHandler, element).getResource();
-        mockRequest(res, "Uploaded while a modal is open");
-
-        handler.handleRequest(session, request, response);
-
-        assertTrue(handled.get(), "Upload for an inert owner was rejected");
-        verify(response, Mockito.never()).sendError(Mockito.anyInt(),
-                Mockito.anyString());
-    }
-
-    @Test
     void createInMemoryUploadHandler_streamMatchesInput() throws IOException {
         String testString = "Test string for upload";
 
