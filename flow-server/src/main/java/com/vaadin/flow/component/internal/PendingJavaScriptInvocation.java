@@ -221,8 +221,36 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         }
 
         this.successHandler = combineHandlers(this.successHandler,
-                successHandler);
+                identifyOnClassCast(successHandler));
         this.errorHandler = combineHandlers(this.errorHandler, errorHandler);
+    }
+
+    /**
+     * Wraps the handler so that a {@link ClassCastException} thrown when it
+     * receives the return value names the class of the handler.
+     * <p>
+     * Code compiled against Vaadin 14-24 passes a
+     * {@code SerializableConsumer<elemental.json.JsonValue>}, which links to
+     * this method because of erasure. The cast that then fails is in a frame
+     * hidden from the stack trace, so without the handler's class name there is
+     * nothing pointing at the code that registered the handler.
+     */
+    private static SerializableConsumer<JsonNode> identifyOnClassCast(
+            SerializableConsumer<JsonNode> handler) {
+        return value -> {
+            try {
+                handler.accept(value);
+            } catch (ClassCastException e) {
+                ClassCastException identified = new ClassCastException(
+                        "The success handler " + handler.getClass().getName()
+                                + " of a JavaScript invocation could not accept"
+                                + " the return value. This usually means that"
+                                + " the code registering it was compiled against"
+                                + " an incompatible Vaadin version.");
+                identified.initCause(e);
+                throw identified;
+            }
+        };
     }
 
     private static <T> SerializableConsumer<T> combineHandlers(
