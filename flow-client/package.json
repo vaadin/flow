@@ -38,7 +38,6 @@
     "eslint-plugin-tsdoc": "^0.4.0",
     "globals": "^17.6.0",
     "mock-xmlhttprequest": "^8.4.1",
-    "prettier": "3.9.9",
     "sinon": "^22.0.0",
     "typescript": "^6.0.3"
   },

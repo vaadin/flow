@@ -151,8 +151,6 @@
     <spotless.plugin.version>3.10.2</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
-    <!-- Keep in sync with prettier in flow-client/package.json (which lints
-         the same sources through eslint) and vaadin-dev-server/package.json -->
     <spotless.prettier.version>3.9.9</spotless.prettier.version>
 
     <!-- Frontend -->
