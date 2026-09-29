@@ -1915,6 +1915,24 @@ public class ComponentTest {
     }
 
     @Test
+    public void findAncestor_predicate_returnsNearestMatchingAncestor() {
+        UI ui = new UI();
+        TestComponentContainer outer = new TestComponentContainer();
+        TestComponentContainer inner = new TestComponentContainer();
+        TestComponent component = new TestComponent();
+        component.setId("card");
+        outer.setId("card");
+        inner.add(component);
+        outer.add(inner);
+        ui.add(outer);
+
+        assertEquals(outer, component.findAncestor(
+                c -> c.getId().filter("card"::equals).isPresent()));
+        assertEquals(inner, component.findAncestor(c -> true));
+        assertNull(component.findAncestor(c -> false));
+    }
+
+    @Test
     public void removeFromParentTest() {
         UI ui = new UI();
         TestComponentContainer componentContainer = new TestComponentContainer();

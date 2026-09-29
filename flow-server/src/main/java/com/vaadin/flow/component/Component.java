@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -37,6 +38,7 @@ import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -970,6 +972,9 @@ public abstract class Component
     /**
      * Traverses the component tree up and returns the first ancestor component
      * that matches the given type.
+     * <p>
+     * Use {@link #findAncestor(SerializablePredicate)} when the ancestor is
+     * identified by something other than its type.
      *
      * @param componentType
      *            the class of the ancestor component to search for
@@ -980,14 +985,32 @@ public abstract class Component
      * @since 23.2
      */
     public <T> T findAncestor(Class<T> componentType) {
+        return componentType.cast(findAncestor(componentType::isInstance));
+    }
+
+    /**
+     * Traverses the component tree up and returns the first ancestor component
+     * that matches the given predicate.
+     * <p>
+     * Unlike {@link #findAncestor(Class)}, the ancestor can be identified by
+     * any condition, such as its id, a class name or its enabled state. This
+     * component itself is not tested, only its ancestors.
+     *
+     * @param predicate
+     *            the condition the ancestor component must satisfy, not
+     *            {@code null}
+     * @return The first ancestor that satisfies the predicate. Null if no
+     *         ancestor satisfies it.
+     */
+    public Component findAncestor(SerializablePredicate<Component> predicate) {
+        Objects.requireNonNull(predicate, "Predicate must not be null");
         Optional<Component> optionalParent = getParent();
         while (optionalParent.isPresent()) {
             Component parent = optionalParent.get();
-            if (componentType.isAssignableFrom(parent.getClass())) {
-                return componentType.cast(parent);
-            } else {
-                optionalParent = parent.getParent();
+            if (predicate.test(parent)) {
+                return parent;
             }
+            optionalParent = parent.getParent();
         }
         return null;
     }
