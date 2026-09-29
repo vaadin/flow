@@ -41,6 +41,7 @@ driver
 bower_components
 node
 node_modules
+.pnpm-store
 /frontend
 */flow-*/frontend
 package-lock.json
