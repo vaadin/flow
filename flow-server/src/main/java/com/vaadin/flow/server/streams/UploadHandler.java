@@ -94,10 +94,11 @@ import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
  * </pre>
  * <p>
  * An upload is received independently of the owning component's lifecycle. The
- * owner's attached, visible, enabled and inert state is checked when the upload
- * request is received, but not while the upload is being received. Once
- * handling has started, detaching the owner component, navigating to another
- * view or closing the browser tab does not abort the transfer on the server.
+ * owner's attached, visible and enabled state is checked when the upload
+ * request is received, but not while the upload is being received. An inert
+ * owner does not reject the upload, see {@link #isAllowInert()}. Once handling
+ * has started, detaching the owner component, navigating to another view or
+ * closing the browser tab does not abort the transfer on the server.
  * <p>
  * A UI that is closed while an upload for it is ongoing is kept attached to its
  * session until the upload has been handled, so that transfer progress
@@ -215,6 +216,24 @@ public interface UploadHandler extends ElementRequestHandler {
     default void handleRequest(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owner) throws IOException {
         TransferUtil.handleUpload(this, request, response, session, owner);
+    }
+
+    /**
+     * Whether to receive an upload even if the owning element is currently
+     * inert.
+     * <p>
+     * The files of an upload have been chosen before the request arrives, so a
+     * modal component opened in the meantime does not reject them. Otherwise a
+     * modal component opened when an upload starts would reject the files still
+     * queued on the client, and a multipart upload that the servlet container
+     * reads in full before Vaadin gets the request.
+     *
+     * @return {@code true} to receive uploads for inert elements, {@code false}
+     *         otherwise. Defaults to {@code true}.
+     */
+    @Override
+    default boolean isAllowInert() {
+        return true;
     }
 
     /**
