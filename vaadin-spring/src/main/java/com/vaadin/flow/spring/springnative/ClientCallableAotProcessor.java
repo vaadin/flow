@@ -178,7 +178,7 @@ public class ClientCallableAotProcessor
      *            the bean factory
      * @return set of packages to scan
      */
-    private static Collection<String> getPackagesToScan(
+    static Collection<String> getPackagesToScan(
             ConfigurableListableBeanFactory beanFactory) {
         List<String> packages = new ArrayList<>();
         packages.add("com.vaadin");

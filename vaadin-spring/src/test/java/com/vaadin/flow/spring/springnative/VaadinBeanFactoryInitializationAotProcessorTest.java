@@ -34,6 +34,8 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.mock.env.MockEnvironment;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
@@ -387,6 +389,31 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         assertThat(RuntimeHintsPredicates.reflection()
                 .onType(TestEventDataArrayItem.class))
                 .as("Component type of an @EventData array should be registered for reflection")
+                .accepts(hints);
+    }
+
+    @Test
+    void processAheadOfTime_classInAllowedPackage_reflectionHintRegistered() {
+        String allowedPackage = "org.example.addon";
+        VaadinBeanFactoryInitializationAotProcessor processor = new StubProcessor() {
+            @Override
+            Collection<Class<?>> getSubtypesOf(String basePackage,
+                    Class<?> parentType) {
+                if (basePackage.equals(allowedPackage)
+                        && parentType == ComponentEvent.class) {
+                    return List.of(TestComponentEvent.class);
+                }
+                return List.of();
+            }
+        };
+        MockEnvironment environment = new MockEnvironment()
+                .withProperty("vaadin.allowed-packages", allowedPackage);
+
+        RuntimeHints hints = processAotForHints(processor, environment);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestComponentEvent.class))
+                .as("ComponentEvent subtype in an allowed package should be registered for reflection")
                 .accepts(hints);
     }
 
@@ -874,6 +901,12 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
     private RuntimeHints processAotForHints(
             VaadinBeanFactoryInitializationAotProcessor processor) {
+        return processAotForHints(processor, new MockEnvironment());
+    }
+
+    private RuntimeHints processAotForHints(
+            VaadinBeanFactoryInitializationAotProcessor processor,
+            ConfigurableEnvironment environment) {
         ConfigurableListableBeanFactory beanFactory = mock(
                 ConfigurableListableBeanFactory.class,
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
@@ -889,6 +922,8 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
             when(beanFactory.getBeanDefinitionNames())
                     .thenReturn(new String[0]);
             when(registry.containsBeanDefinition(any())).thenReturn(false);
+            when(beanFactory.getBean(ConfigurableEnvironment.class))
+                    .thenReturn(environment);
 
             BeanFactoryInitializationAotContribution contribution = processor
                     .processAheadOfTime(beanFactory);
