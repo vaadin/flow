@@ -20,6 +20,7 @@ import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -274,9 +275,11 @@ public class ExtendedClientDetails implements Serializable {
      * Returns the browser-reported TimeZone offset in milliseconds from GMT.
      * This includes possible daylight saving adjustments, to figure out which
      * TimeZone the user actually might be in, see
-     * {@link #getRawTimezoneOffset()}.
+     * {@link #getRawTimezoneOffset()}. To convert dates and times to the
+     * browser's time zone, use {@link #getZoneId()} instead.
      *
      * @see ExtendedClientDetails#getRawTimezoneOffset()
+     * @see #getZoneId()
      * @return timezone offset in milliseconds, 0 if not available
      */
     public int getTimezoneOffset() {
@@ -285,9 +288,12 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Returns the TimeZone Id (like "Europe/Helsinki") provided by the browser
-     * (if the browser supports this feature).
+     * (if the browser supports this feature). This is the raw value reported by
+     * the browser; for a {@link ZoneId} that is never {@code null}, use
+     * {@link #getZoneId()}.
      *
      * @return the TimeZone Id if provided by the browser, null otherwise.
+     * @see #getZoneId()
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat/resolvedOptions">Intl.DateTimeFormat.prototype.resolvedOptions()</a>
      */
@@ -297,13 +303,8 @@ public class ExtendedClientDetails implements Serializable {
 
     /**
      * Returns the time zone of the browser, for showing dates and times the way
-     * the user sees them:
-     *
-     * <pre>{@code
-     * ZonedDateTime browserDateTime = details.getBrowserTime()
-     *         .atZone(details.getZoneId());
-     * }</pre>
-     *
+     * the user sees them. For the current date and time of the browser, use
+     * {@link #getBrowserDateTime()}.
      * <p>
      * Only a zone ID gets daylight saving time right for dates other than
      * today. The offset fallback is correct for the current moment only.
@@ -377,19 +378,27 @@ public class ExtendedClientDetails implements Serializable {
      * <p>
      * The returned instant is a point on the time line and does not carry a
      * time zone. To get the date and time as shown in the end user's computer,
-     * combine it with the browser's time zone:
-     *
-     * <pre>{@code
-     * ZonedDateTime browserDateTime = details.getBrowserTime()
-     *         .atZone(details.getZoneId());
-     * }</pre>
+     * use {@link #getBrowserDateTime()}.
      *
      * @return the current time of the browser, not {@code null}
-     * @see #getZoneId()
+     * @see #getBrowserDateTime()
      * @since 25.3
      */
     public Instant getBrowserTime() {
         return Instant.now().plusMillis(clientServerTimeDelta);
+    }
+
+    /**
+     * Returns the current date and time of the browser in the browser's time
+     * zone, i.e. {@link #getBrowserTime()} in the zone of {@link #getZoneId()}.
+     * This will not be entirely accurate due to varying network latencies, but
+     * should provide a close-enough value for most cases.
+     *
+     * @return the current date and time of the browser, not {@code null}
+     * @see #getZoneId()
+     */
+    public ZonedDateTime getBrowserDateTime() {
+        return getBrowserTime().atZone(getZoneId());
     }
 
     /**
@@ -414,7 +423,9 @@ public class ExtendedClientDetails implements Serializable {
      * @see #getDSTSavings()
      * @see #getTimezoneOffset()
      * @deprecated use {@link #getBrowserTime()} instead, which returns a
-     *             time-zone independent {@link Instant}
+     *             time-zone independent {@link Instant}, or
+     *             {@link #getBrowserDateTime()} for the date and time in the
+     *             browser's time zone
      */
     @Deprecated(since = "25.3", forRemoval = true)
     public Date getCurrentDate() {
