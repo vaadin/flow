@@ -359,6 +359,20 @@
     </profile>
 
     <profile>
+      <!-- Built into a GraalVM native image, which takes minutes, so it runs
+           in .github/workflows/spring-native.yml rather than in validation -->
+      <id>native</id>
+      <activation>
+        <property>
+          <name>native</name>
+        </property>
+      </activation>
+      <modules>
+        <module>test-spring-native</module>
+      </modules>
+    </profile>
+
+    <profile>
       <!-- Modules for performance benchmark -->
       <id>benchmark</id>
 
