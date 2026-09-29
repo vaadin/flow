@@ -178,7 +178,12 @@ public class PublishedServerEventHandlerRpcHandler
         } else if (methods.size() == 1) {
             return Optional.of(methods.get(0));
         } else if (!Component.class.equals(clazz)) {
-            return findMethod(instance, clazz.getSuperclass(), methodName);
+            // Interfaces are searched too, for default methods
+            return Stream
+                    .concat(Stream.ofNullable(clazz.getSuperclass()),
+                            Stream.of(clazz.getInterfaces()))
+                    .map(type -> findMethod(instance, type, methodName))
+                    .flatMap(Optional::stream).findFirst();
         } else {
             return Optional.empty();
         }
