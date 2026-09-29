@@ -150,8 +150,9 @@ jobs:
           failure that only the native image shows is usually a missing
           reflection, proxy or resource hint in
           \`vaadin-spring/src/main/java/com/vaadin/flow/spring/springnative\`.
-          Running the module without \`-Dnative\` runs the same tests on the
-          JVM, which tells the two apart.
+          Building the module's pom directly runs the same tests on the JVM,
+          which tells the two apart:
+          \`mvn verify -f flow-tests/vaadin-spring-tests/test-spring-native/pom.xml\`.
 
           Reproduce locally with GraalVM on the path:
 
