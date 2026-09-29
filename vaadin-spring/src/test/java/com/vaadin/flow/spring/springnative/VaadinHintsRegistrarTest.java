@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring.springnative;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 
@@ -94,9 +95,12 @@ class VaadinHintsRegistrarTest {
         RuntimeHints hints = new RuntimeHints();
         new VaadinHintsRegistrar().registerHints(hints,
                 getClass().getClassLoader());
-        // SpringServlet reads the property names from these fields
-        assertThat(RuntimeHintsPredicates.reflection().onFieldAccess(
-                InitParameters.class, "SERVLET_PARAMETER_HEARTBEAT_INTERVAL"))
+        // SpringServlet reads the property names with getDeclaredFields(),
+        // which in a native image only sees declared fields that are
+        // registered
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(InitParameters.class)
+                .withMemberCategory(MemberCategory.ACCESS_DECLARED_FIELDS))
                 .accepts(hints);
     }
 

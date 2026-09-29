@@ -61,9 +61,10 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
                 .forEach(cls -> ref.registerType(cls, MemberCategory.values()));
 
         // SpringServlet reads the names of the properties to copy from
-        // application.properties from the fields of InitParameters
+        // application.properties from the fields of InitParameters. It uses
+        // getDeclaredFields(), so the declared fields must be registered
         ref.registerType(InitParameters.class,
-                MemberCategory.ACCESS_PUBLIC_FIELDS);
+                MemberCategory.ACCESS_DECLARED_FIELDS);
 
         // Bundles, build info etc
         hints.resources().registerPattern("META-INF/VAADIN/**");
