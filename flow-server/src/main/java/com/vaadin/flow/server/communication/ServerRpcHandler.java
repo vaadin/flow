@@ -22,6 +22,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -399,6 +400,7 @@ public class ServerRpcHandler implements Serializable {
                         "Received old duplicate message from the client. Expected: "
                                 + expectedId + ", got: " + requestId
                                 + ". Resending previous response.");
+                fireEvent(ui, new ClientMessageResentEvent(ui));
                 throw new ClientResentPayloadException();
             } else if (rpcRequest.isUnloadBeaconRequest()) {
                 getLogger().debug(
@@ -424,6 +426,8 @@ public class ServerRpcHandler implements Serializable {
                 getLogger().debug("Unexpected message id from the client."
                         + " Expected client id: " + expectedId + ", got "
                         + requestId + ". Message start: " + messageDetails);
+                fireEvent(ui,
+                        new MessageIdSyncErrorEvent(ui, expectedId, requestId));
                 throw new MessageIdSyncException(expectedId, requestId);
             }
         } else {
@@ -435,6 +439,7 @@ public class ServerRpcHandler implements Serializable {
         }
 
         if (rpcRequest.isResynchronize()) {
+            fireEvent(ui, new UIResynchronizationEvent(ui));
             getLogger().warn("Resynchronizing UI by client's request. "
                     + "A network message was lost before reaching the client and the client is reloading the full UI state. "
                     + "This typically happens because of a bad network connection with packet loss or because of some part of"
@@ -464,6 +469,10 @@ public class ServerRpcHandler implements Serializable {
             throw new ResynchronizationRequiredException();
         }
         handleUnloadBeaconRequest(ui, rpcRequest);
+    }
+
+    private static void fireEvent(UI ui, EventObject event) {
+        ui.getSession().getService().getEventBus().fireEvent(event);
     }
 
     protected void handleUnloadBeaconRequest(UI ui, RpcRequest rpcRequest) {
