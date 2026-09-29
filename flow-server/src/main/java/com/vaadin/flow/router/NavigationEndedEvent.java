@@ -42,6 +42,12 @@ import com.vaadin.flow.server.VaadinService;
  * navigation that caused them and fire no events of their own. Their effect is
  * in the {@link #getOutcome() outcome}.
  * <p>
+ * Two cases fire no events at all, since they continue a navigation that has
+ * already been reported: resuming a {@link Postponed postponed} navigation with
+ * {@link BeforeLeaveEvent.ContinueNavigationAction#proceed()}, and showing a
+ * {@link PreserveOnRefresh} view once the browser has sent its window name, in
+ * the request after the one reported as {@link NotShown}.
+ * <p>
  * Use a {@code switch} over the outcome to tell the cases apart:
  *
  * <pre>

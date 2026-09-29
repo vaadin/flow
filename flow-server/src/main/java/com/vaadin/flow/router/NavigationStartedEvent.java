@@ -39,6 +39,11 @@ import com.vaadin.flow.server.VaadinService;
  * removes a trailing slash, and the rendering of an error view. The ended event
  * tells which view was shown in the end.
  * <p>
+ * Two cases fire no events at all, since they continue a navigation that has
+ * already been reported: resuming a postponed navigation with
+ * {@link BeforeLeaveEvent.ContinueNavigationAction#proceed()}, and showing a
+ * {@link PreserveOnRefresh} view once the browser has sent its window name.
+ * <p>
  * The location and trigger are the ones requested, as they are before any
  * forward or reroute.
  *
