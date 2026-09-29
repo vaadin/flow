@@ -17,6 +17,7 @@ package com.vaadin.flow.component.page;
 
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import org.junit.jupiter.api.Test;
 
@@ -111,6 +112,21 @@ class ExtendedClientDetailsTest {
         long browserTime = details.getBrowserTime().toEpochMilli();
         assertTrue(Math.abs(clientTime - browserTime) < TIME_TOLERANCE_MS,
                 "getBrowserTime() should follow the clock of the browser, but was off by "
+                        + (browserTime - clientTime) + " ms");
+    }
+
+    @Test
+    void clientClockAheadOfServer_getBrowserDateTimeReturnsClientTimeInClientZone() {
+        long clientTime = System.currentTimeMillis() + 60_000;
+        final ExtendedClientDetails details = new ExtendBuilder()
+                .setClientServerTimeDelta(Long.toString(clientTime))
+                .buildDetails();
+
+        ZonedDateTime browserDateTime = details.getBrowserDateTime();
+        assertEquals(ZoneId.of("Asia/Tehran"), browserDateTime.getZone());
+        long browserTime = browserDateTime.toInstant().toEpochMilli();
+        assertTrue(Math.abs(clientTime - browserTime) < TIME_TOLERANCE_MS,
+                "getBrowserDateTime() should follow the clock of the browser, but was off by "
                         + (browserTime - clientTime) + " ms");
     }
 
