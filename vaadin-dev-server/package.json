@@ -13,7 +13,7 @@
     "@vaadin/overlay": "24.9.5",
     "@web/dev-server": "^0.4.6",
     "@web/dev-server-esbuild": "^1.0.4",
-    "prettier": "^3.9.9",
+    "prettier": "3.9.9",
     "tslib": "^2.8.1",
     "typescript": "^6.0.2",
     "vite": "8.0.16"
