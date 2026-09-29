@@ -39,6 +39,7 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.spring.SpringLookupInitializer;
 
 /**
  * Registers runtime hints for Spring 3 native support.
@@ -65,6 +66,13 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         // getDeclaredFields(), so the declared fields must be registered
         ref.registerType(InitParameters.class,
                 MemberCategory.ACCESS_DECLARED_FIELDS);
+
+        // LookupServletContainerInitializer keeps only lookup initializers
+        // that have a public no-arg constructor in getConstructors(), and
+        // then calls it. Without this hint, Flow silently uses the default
+        // LookupInitializer, which ignores Spring beans
+        ref.registerType(SpringLookupInitializer.class,
+                MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS);
 
         // Bundles, build info etc
         hints.resources().registerPattern("META-INF/VAADIN/**");

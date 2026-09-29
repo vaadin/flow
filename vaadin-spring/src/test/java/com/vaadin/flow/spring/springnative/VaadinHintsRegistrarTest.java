@@ -21,6 +21,7 @@ import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.spring.SpringLookupInitializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -101,6 +102,20 @@ class VaadinHintsRegistrarTest {
         assertThat(RuntimeHintsPredicates.reflection()
                 .onType(InitParameters.class)
                 .withMemberCategory(MemberCategory.ACCESS_DECLARED_FIELDS))
+                .accepts(hints);
+    }
+
+    @Test
+    void shouldRegisterSpringLookupInitializerConstructorForReflection() {
+        RuntimeHints hints = new RuntimeHints();
+        new VaadinHintsRegistrar().registerHints(hints,
+                getClass().getClassLoader());
+        // LookupServletContainerInitializer keeps only lookup initializers
+        // that have a public no-arg constructor in getConstructors(), and
+        // then calls that constructor
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(SpringLookupInitializer.class)
+                .withMemberCategory(MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS))
                 .accepts(hints);
     }
 
