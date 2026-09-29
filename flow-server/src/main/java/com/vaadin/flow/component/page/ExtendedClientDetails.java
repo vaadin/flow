@@ -16,7 +16,10 @@
 package com.vaadin.flow.component.page;
 
 import java.io.Serializable;
+import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -293,6 +296,39 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Returns the time zone of the browser, for showing dates and times the way
+     * the user sees them:
+     *
+     * <pre>{@code
+     * ZonedDateTime browserDateTime = details.getBrowserTime()
+     *         .atZone(details.getZoneId());
+     * }</pre>
+     *
+     * @return the zone of {@link #getTimeZoneId()}, or a fixed
+     *         {@link ZoneOffset} of {@link #getTimezoneOffset()} if the browser
+     *         reported no zone ID or one the JVM does not know; never
+     *         {@code null}
+     * @apiNote Only a zone ID gets daylight saving time right for dates other
+     *          than today. The offset fallback is correct for the current
+     *          moment only.
+     */
+    public ZoneId getZoneId() {
+        if (timeZoneId != null) {
+            try {
+                return ZoneId.of(timeZoneId);
+            } catch (DateTimeException e) {
+                // an ID from a newer tzdb than the JVM's, or a garbage value
+            }
+        }
+        try {
+            return ZoneOffset.ofTotalSeconds(timezoneOffset / 1000);
+        } catch (DateTimeException e) {
+            // beyond +-18 hours, only possible with a tampered payload
+            return ZoneOffset.UTC;
+        }
+    }
+
+    /**
      * Returns the browser-reported TimeZone offset in milliseconds from GMT
      * ignoring possible daylight saving adjustments that may be in effect in
      * the browser.
@@ -340,20 +376,15 @@ public class ExtendedClientDetails implements Serializable {
      * <p>
      * The returned instant is a point on the time line and does not carry a
      * time zone. To get the date and time as shown in the end user's computer,
-     * combine it with the browser's time zone. Note that
-     * {@link #getTimeZoneId()} returns {@code null} if the browser did not
-     * report a time zone, so a fallback is needed:
+     * combine it with the browser's time zone:
      *
-     * <pre>
-     * ExtendedClientDetails details = ...;
-     * String timeZoneId = details.getTimeZoneId();
-     * ZoneId zone = timeZoneId != null ? ZoneId.of(timeZoneId)
-     *         : ZoneId.systemDefault();
-     * ZonedDateTime browserDateTime = details.getBrowserTime().atZone(zone);
-     * </pre>
+     * <pre>{@code
+     * ZonedDateTime browserDateTime = details.getBrowserTime()
+     *         .atZone(details.getZoneId());
+     * }</pre>
      *
      * @return the current time of the browser, not {@code null}
-     * @see #getTimeZoneId()
+     * @see #getZoneId()
      * @since 25.3
      */
     public Instant getBrowserTime() {

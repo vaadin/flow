@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -109,6 +112,29 @@ class ExtendedClientDetailsTest {
         assertTrue(Math.abs(clientTime - browserTime) < TIME_TOLERANCE_MS,
                 "getBrowserTime() should follow the clock of the browser, but was off by "
                         + (browserTime - clientTime) + " ms");
+    }
+
+    @Test
+    void timeZoneIdReported_getZoneIdReturnsRegionZone() {
+        assertEquals(ZoneId.of("Asia/Tehran"),
+                new ExtendBuilder().buildDetails().getZoneId());
+    }
+
+    @Test
+    void timeZoneIdMissingOrUnknown_getZoneIdFallsBackToOffset() {
+        ExtendBuilder detailsBuilder = new ExtendBuilder()
+                .setTimezoneOffset("-330");
+
+        detailsBuilder.setTimeZoneId(null);
+        assertEquals(ZoneOffset.ofHoursMinutes(5, 30),
+                detailsBuilder.buildDetails().getZoneId());
+
+        detailsBuilder.setTimeZoneId("Nowhere/Atlantis");
+        assertEquals(ZoneOffset.ofHoursMinutes(5, 30),
+                detailsBuilder.buildDetails().getZoneId());
+
+        detailsBuilder.setTimezoneOffset("-1500");
+        assertEquals(ZoneOffset.UTC, detailsBuilder.buildDetails().getZoneId());
     }
 
     @Test
