@@ -11,6 +11,8 @@ const globalExclusions = [
   // Deploys to a real application server, so it needs one of the container
   // profiles and has its own job in validation.yml
   'flow-tests/vaadin-cdi-tests',
+  // Only in the reactor with -Dnative; runs in spring-native.yml
+  'flow-tests/vaadin-spring-tests/test-spring-native',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
@@ -97,7 +99,6 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-filter-packages/lib-blocked': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-filter-packages/lib-exclude': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-white-list': { pos: 4, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-spring-native': { pos: 4, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-common': { pos: 4, weight: 2 },
   'flow-tests/vaadin-spring-tests/test-spring-helpers': { pos: 4, weight: 1 },
   'flow-tests/vaadin-spring-tests/test-spring': { pos: 5, weight: 20 },

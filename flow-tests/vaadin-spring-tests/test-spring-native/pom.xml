@@ -25,13 +25,19 @@
   <name>Vaadin Spring Boot native image integration tests</name>
 
   <!-- A Spring Boot application using the Flow features that depend on
-       ahead-of-time processing and runtime hints. Validation runs its ITs on
-       the JVM like any other module. With -Dnative the application is
-       compiled to a GraalVM native image instead, and the ITs run against
-       that binary; .github/workflows/spring-native.yml does this nightly.
-       Locally, with GraalVM on the path:
+       ahead-of-time processing and runtime hints. The module is only in the
+       reactor with -Dnative, which also compiles the application to a GraalVM
+       native image and runs the ITs against that binary;
+       .github/workflows/spring-native.yml does this nightly. Locally, with
+       GraalVM on the path:
 
          mvn verify -pl flow-tests/vaadin-spring-tests/test-spring-native -Dnative
+
+       Without -Dnative, building this pom directly runs the same ITs on the
+       JVM, which is quicker while writing a test and tells a native-only
+       problem apart from a general one:
+
+         mvn verify -f flow-tests/vaadin-spring-tests/test-spring-native/pom.xml
   -->
 
   <properties>

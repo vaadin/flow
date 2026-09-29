@@ -20,9 +20,8 @@ jobs:
     # The Spring Boot test application packaged as a native image. Building it
     # takes minutes, too long to sit in front of every pull request, so it runs
     # once a day and on demand. A pull request that touches the AOT support can
-    # run it on its branch with workflow_dispatch. The JVM leg of the same
-    # module already runs in validation, so a failure here is a regression in
-    # the native image support of vaadin-spring.
+    # run it on its branch with workflow_dispatch. Validation does not run
+    # this module at all: it is only in the reactor with -Dnative.
     #
     # Only in vaadin/flow: a schedule also fires in every fork that has
     # Actions enabled, where there is no TestBench licence to run the tests
@@ -147,11 +146,12 @@ jobs:
           Latest run: $RUN_URL
 
           This builds \`flow-tests/vaadin-spring-tests/test-spring-native\` as a
-          GraalVM native image and runs its integration tests against it. The
-          JVM leg of the same module runs in validation, so a failure here is
-          specific to the native image support — usually a missing reflection,
-          proxy or resource hint in
+          GraalVM native image and runs its integration tests against it. A
+          failure that only the native image shows is usually a missing
+          reflection, proxy or resource hint in
           \`vaadin-spring/src/main/java/com/vaadin/flow/spring/springnative\`.
+          Running the module without \`-Dnative\` runs the same tests on the
+          JVM, which tells the two apart.
 
           Reproduce locally with GraalVM on the path:
 
