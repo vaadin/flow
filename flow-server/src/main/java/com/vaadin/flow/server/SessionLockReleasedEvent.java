@@ -15,25 +15,59 @@
  */
 package com.vaadin.flow.server;
 
+import java.time.Duration;
+
 /**
  * Event fired through the {@link VaadinService#getEventBus() service event bus}
- * when a Vaadin session lock is about to be released, for the outermost release
- * only. It is fired in reverse registration order so that listeners nest: a
- * listener added first is notified of the release last.
+ * when a Vaadin session lock has been released, for the outermost release only.
+ * It is fired in reverse registration order so that listeners nest: a listener
+ * added first is notified of the release last.
  *
  * @see AbstractSessionLockEvent
  * @since 25.3
  */
 public class SessionLockReleasedEvent extends AbstractSessionLockEvent {
 
+    private final Duration holdTime;
+
     /**
-     * Creates a new event.
+     * Creates a new event without a session and with a zero hold time.
      *
      * @param service
-     *            the Vaadin service whose session lock is being acquired or
-     *            released, not {@code null}
+     *            the Vaadin service whose session lock is released, not
+     *            {@code null}
      */
     public SessionLockReleasedEvent(VaadinService service) {
-        super(service);
+        this(service, null, Duration.ZERO);
+    }
+
+    /**
+     * Creates a new event for the given session and hold time.
+     *
+     * @param service
+     *            the Vaadin service whose session lock is released, not
+     *            {@code null}
+     * @param session
+     *            the Vaadin session the lock belongs to, or {@code null} if it
+     *            is not known
+     * @param holdTime
+     *            how long the thread held the lock, not {@code null}
+     */
+    public SessionLockReleasedEvent(VaadinService service,
+            VaadinSession session, Duration holdTime) {
+        super(service, session);
+        this.holdTime = holdTime;
+    }
+
+    /**
+     * Gets how long the thread held the lock, from the moment it acquired the
+     * lock until it released it. The time spent in listeners of
+     * {@link SessionLockAcquiredEvent} is included, since the lock is held
+     * while they run.
+     *
+     * @return the hold time, not {@code null}
+     */
+    public Duration getHoldTime() {
+        return holdTime;
     }
 }

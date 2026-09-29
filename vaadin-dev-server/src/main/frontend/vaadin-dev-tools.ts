@@ -93,10 +93,11 @@ export class VaadinDevTools extends LitElement {
     return [
       css`
         :host {
-          --dev-tools-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
-            'Helvetica Neue', sans-serif;
-          --dev-tools-font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-            monospace;
+          --dev-tools-font-family:
+            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue',
+            sans-serif;
+          --dev-tools-font-family-monospace:
+            SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
           --dev-tools-font-size: 0.8125rem;
           --dev-tools-font-size-small: 0.75rem;
