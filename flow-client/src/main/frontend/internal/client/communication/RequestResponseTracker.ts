@@ -49,6 +49,8 @@ function addListener<T>(listeners: T[], listener: T): EventRemover {
 export class RequestResponseTracker {
   #hasActiveRequestState = false;
 
+  #activeRequestId = -1;
+
   readonly #registry: Registry;
 
   readonly #requestStartingHandlers: RequestStartingEventHandler[] = [];
@@ -68,15 +70,21 @@ export class RequestResponseTracker {
     this.#registry = registry;
   }
 
-  /** Marks that a new request has started and fires the request-starting event. */
-  startRequest(): void {
+  /**
+   * Marks that a new request has started and fires the request-starting event.
+   *
+   * @param requestId - the client-to-server message id of the request, or -1
+   *          for the initial response that was embedded in the page
+   */
+  startRequest(requestId: number): void {
     if (this.#hasActiveRequestState) {
       throw new Error('Trying to start a new request while another is active');
     }
     this.#hasActiveRequestState = true;
+    this.#activeRequestId = requestId;
     // Iterate a copy, as SimpleEventBus does, so a handler added or removed
     // during dispatch does not change who is notified for this event.
-    const event = new RequestStartingEvent();
+    const event = new RequestStartingEvent(requestId);
     [...this.#requestStartingHandlers].forEach((handler) => handler(event));
   }
 
@@ -100,6 +108,7 @@ export class RequestResponseTracker {
     // After sendInvocationsToServer() there may be a new active request, so the
     // flag must be cleared before, not after, the call.
     this.#hasActiveRequestState = false;
+    const requestId = this.#activeRequestId;
 
     const messageSender = this.#registry.getMessageSender();
     if (
@@ -113,13 +122,20 @@ export class RequestResponseTracker {
       messageSender.sendInvocationsToServer();
     }
 
-    const event = new ResponseHandlingEndedEvent();
+    const event = new ResponseHandlingEndedEvent(requestId);
     [...this.#responseHandlingEndedHandlers].forEach((handler) => handler(event));
   }
 
-  /** Fires the response-handling-started event (called by the message handler). */
-  fireResponseHandlingStarted(): void {
-    const event = new ResponseHandlingStartedEvent();
+  /**
+   * Fires the response-handling-started event (called by the message handler).
+   *
+   * @param response - whether the message is the response to a request, as
+   *          opposed to one the server sent on its own
+   */
+  fireResponseHandlingStarted(response: boolean): void {
+    const event = new ResponseHandlingStartedEvent(
+      response && this.#hasActiveRequestState ? this.#activeRequestId : -1
+    );
     [...this.#responseHandlingStartedHandlers].forEach((handler) => handler(event));
   }
 

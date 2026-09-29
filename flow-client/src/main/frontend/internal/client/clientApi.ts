@@ -14,6 +14,7 @@
  * the License.
  */
 
+import type { EventRemover } from '../EventRemover';
 import type { publishClient } from './publishClient';
 import type { ValueMap } from './ValueMap';
 
@@ -32,6 +33,38 @@ export interface ApplicationConfiguration {
   isRequestTiming(): boolean;
   getServletVersion(): string;
   getExportedWebComponents(): string[];
+}
+
+/** Identifies the request a {@link RequestListener} is notified about. */
+export interface RequestEvent {
+  /**
+   * The id of the request, unique within the UI. A request that is sent again,
+   * because no response arrived in time, keeps its id.
+   */
+  readonly requestId: number;
+}
+
+/**
+ * Listener for the requests the client sends to the server, registered through
+ * `window.Vaadin.Flow.clients[appId].addRequestListener`. Every callback is
+ * optional. The client sends one request at a time, but the next request may
+ * start before the previous one is reported as ended; use
+ * {@link RequestEvent.requestId} to pair the calls.
+ */
+export interface RequestListener {
+  /** Called when a request is sent to the server. */
+  requestStarted?(event: RequestEvent): void;
+  /**
+   * Called when the client starts handling the response to a request, before
+   * it applies the changes. Messages the server sends on its own, e.g. through push, are not
+   * reported.
+   */
+  responseReceived?(event: RequestEvent): void;
+  /**
+   * Called when the request is done: its response has been applied, or the
+   * request failed and the client has given up on it.
+   */
+  requestEnded?(event: RequestEvent): void;
 }
 
 /**
@@ -55,5 +88,6 @@ export interface ApplicationConnection {
   isHiddenByServer(nodeId: number): boolean;
   getElementStyleProperties(nodeId: number): Record<string, unknown>;
   getProfilingData(): number[];
+  addRequestListener(listener: RequestListener): EventRemover;
   start(initialUidl: ValueMap | null): void;
 }

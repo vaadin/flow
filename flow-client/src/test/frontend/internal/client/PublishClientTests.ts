@@ -28,6 +28,7 @@ function fakeConnectionStubs() {
     isHiddenByServer: sinon.stub().returns(false),
     getElementStyleProperties: sinon.stub().returns({ color: 'red' }),
     getProfilingData: sinon.stub().returns([1, 2]),
+    addRequestListener: sinon.stub().returns({ remove: () => {} }),
     start: sinon.stub()
   };
 }
@@ -74,6 +75,10 @@ describe('publishClient', () => {
 
     client.sendEventMessage(2, 'click', null);
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
+
+    const listener = {};
+    client.addRequestListener(listener);
+    expect(stubs.addRequestListener.calledWith(listener)).to.be.true;
   });
 
   it('omits dev-only and profiling methods in production without request timing', () => {

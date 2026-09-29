@@ -14,6 +14,7 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
   const log = {
     xhrSends: [] as Array<Record<string, unknown>>,
     startRequests: 0,
+    startedRequestIds: [] as number[],
     loadingStarts: 0
   };
   let activeRequest = false;
@@ -28,9 +29,10 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
       UILifecycle: { isRunning: () => true },
       RequestResponseTracker: {
         hasActiveRequest: () => activeRequest,
-        startRequest: () => {
+        startRequest: (requestId: number) => {
           activeRequest = true;
           log.startRequests++;
+          log.startedRequestIds.push(requestId);
         },
         addReconnectionAttemptHandler: (handler: ReconnectionAttemptEventHandler): EventRemover => {
           reconnectionHandlers.push(handler);
@@ -82,7 +84,7 @@ describe('MessageSender (class)', () => {
     const sent = log.xhrSends[0];
     expect(sent.syncId).to.equal(42);
     expect(sent.clientId).to.equal(0);
-    expect(log.startRequests).to.equal(1);
+    expect(log.startedRequestIds).to.deep.equal([0]);
     expect(sender.hasQueuedMessages()).to.be.true;
   });
 

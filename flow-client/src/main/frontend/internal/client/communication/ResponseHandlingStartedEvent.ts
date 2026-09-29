@@ -22,8 +22,17 @@
 /**
  * Event fired when handling of a response starts.
  */
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- the Java event carries no data either, and the class exists so each fire allocates its own
-export class ResponseHandlingStartedEvent {}
+export class ResponseHandlingStartedEvent {
+  /**
+   * The id of the request the message responds to, or -1 when the server sent
+   * the message on its own, e.g. through push.
+   */
+  readonly requestId: number;
+
+  constructor(requestId: number) {
+    this.requestId = requestId;
+  }
+}
 
 /**
  * Handler for {@link ResponseHandlingStartedEvent}s.

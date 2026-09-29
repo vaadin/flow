@@ -22,8 +22,17 @@
 /**
  * Event fired when a request starts.
  */
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- the Java event carries no data either, and the class exists so each fire allocates its own
-export class RequestStartingEvent {}
+export class RequestStartingEvent {
+  /**
+   * The client-to-server message id of the request, or -1 for the initial
+   * response that was embedded in the page and needs no request.
+   */
+  readonly requestId: number;
+
+  constructor(requestId: number) {
+    this.requestId = requestId;
+  }
+}
 
 /**
  * Handler for {@link RequestStartingEvent}s.

@@ -44,7 +44,9 @@ import { DefaultRegistry } from './DefaultRegistry';
 import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import { publishClient } from './publishClient';
-import type { ApplicationConnection as PublishedClient } from './clientApi';
+import type { ApplicationConnection as PublishedClient, RequestEvent, RequestListener } from './clientApi';
+import { Console } from './Console';
+import type { EventRemover } from '../EventRemover';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { getScheduler } from './TrackingScheduler';
 import type { Registry } from './Registry';
@@ -86,6 +88,26 @@ function setUncaughtErrorHandler(handler: (error: unknown) => void): void {
  */
 function isExecutingDeferredCommands(): boolean {
   return getScheduler().hasWorkQueued();
+}
+
+/**
+ * Runs a call to an application's {@link RequestListener}. An error it
+ * throws is logged instead of breaking the request handling that notifies it.
+ */
+function notifyRequestListener(notify: () => void): void {
+  try {
+    notify();
+  } catch (e) {
+    Console.error(e);
+  }
+}
+
+/**
+ * Copies the id off an internal tracker event, so the listener gets a plain
+ * object and not the event instance the tracker hands to its other handlers.
+ */
+function toRequestEvent(event: { requestId: number }): RequestEvent {
+  return { requestId: event.requestId };
 }
 
 /**
@@ -147,7 +169,7 @@ export class ApplicationConnection implements PublishedClient {
       // Initial UIDL provided in the DOM, continue as if returned by request.
       //
       // Hack to avoid logging an error in endRequest().
-      this.#registry.getRequestResponseTracker().startRequest();
+      this.#registry.getRequestResponseTracker().startRequest(-1);
       this.#registry.getMessageHandler().handleMessage(initialUidl);
     }
 
@@ -227,6 +249,32 @@ export class ApplicationConnection implements PublishedClient {
   /** Profiling data for the last request (processing times + server timing + bootstrap). */
   getProfilingData(): number[] {
     return this.#registry.getMessageHandler().getProfilingData();
+  }
+
+  /**
+   * Adds a listener for the requests this client sends to the server.
+   *
+   * @param listener - the listener to add
+   * @returns a registration object which can be used to remove the listener
+   */
+  addRequestListener(listener: RequestListener): EventRemover {
+    const tracker = this.#registry.getRequestResponseTracker();
+    const registrations = [
+      tracker.addRequestStartingHandler((event) =>
+        notifyRequestListener(() => listener.requestStarted?.(toRequestEvent(event)))
+      ),
+      tracker.addResponseHandlingStartedHandler((event) => {
+        if (event.requestId !== -1) {
+          notifyRequestListener(() => listener.responseReceived?.(toRequestEvent(event)));
+        }
+      }),
+      tracker.addResponseHandlingEndedHandler((event) =>
+        notifyRequestListener(() => listener.requestEnded?.(toRequestEvent(event)))
+      )
+    ];
+    return {
+      remove: () => registrations.forEach((registration) => registration.remove())
+    };
   }
 
   /** Resolves a Vaadin URI (context://, base://) to an absolute URL. */
