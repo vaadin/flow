@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.UnaryOperator;
 
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -30,6 +32,8 @@ import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.AtmosphereResponse;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -53,11 +57,14 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -723,6 +730,125 @@ class PushHandlerTest {
         // suspended if it was held while the service was initializing
         Mockito.verify(deniedResource.get()).close();
 
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TRANSPORT.class, names = { "WEBSOCKET", "AJAX" })
+    void onConnect_invalidPushId_clientIsRefreshedBeforeTheSessionIsLocked(
+            TRANSPORT transport) throws Exception {
+        EstablishOutcome outcome = onConnectWithPushId(transport,
+                pushId -> "not-the-push-id");
+
+        assertEquals(0, outcome.lockCountWhenAnswered(),
+                "A connection with an invalid push id should be answered "
+                        + "without first acquiring the session lock, so that "
+                        + "it is not left waiting behind the legitimate "
+                        + "requests of that session");
+        assertFalse(outcome.uiWasResolved(),
+                "The UI should not be looked up for a connection with an invalid push id");
+        verify(outcome.resource(), never()).suspend(Mockito.anyLong());
+        // The client is told to refresh instead of getting a connection
+        verify(outcome.resource()).resume();
+    }
+
+    @Test
+    void onConnect_validPushId_connectionIsEstablished() throws Exception {
+        EstablishOutcome outcome = onConnectWithPushId(TRANSPORT.AJAX,
+                pushId -> pushId);
+
+        assertTrue(outcome.uiWasResolved());
+        verify(outcome.resource()).suspend(-1L);
+        verify(outcome.resource(), never()).resume();
+    }
+
+    /**
+     * @param lockCountWhenAnswered
+     *            how many times the session had been locked when the client was
+     *            first written to, or -1 if it was not written to at all
+     */
+    private record EstablishOutcome(AtmosphereResource resource,
+            int lockCountWhenAnswered, boolean uiWasResolved) {
+    }
+
+    /**
+     * Connects a resource whose push id parameter is the given function of the
+     * session's actual push id, to a session that has one UI with a push
+     * connection.
+     */
+    private EstablishOutcome onConnectWithPushId(TRANSPORT transport,
+            UnaryOperator<String> pushIdParameter) throws Exception {
+        AtomicReference<VaadinSession> currentSession = new AtomicReference<>();
+        AtomicReference<UI> currentUi = new AtomicReference<>();
+        AtomicBoolean uiWasResolved = new AtomicBoolean();
+        AtomicInteger lockCount = new AtomicInteger();
+        AtomicInteger lockCountWhenAnswered = new AtomicInteger(-1);
+
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                VaadinSession session = currentSession.get();
+                VaadinSession.setCurrent(session);
+                return session;
+            }
+
+            @Override
+            public UI findUI(VaadinRequest request) {
+                uiWasResolved.set(true);
+                UI ui = currentUi.get();
+                UI.setCurrent(ui);
+                return ui;
+            }
+        };
+        setProductionMode(service, false);
+
+        MockVaadinSession session = new MockVaadinSession(service) {
+            @Override
+            public void lock() {
+                lockCount.incrementAndGet();
+                super.lock();
+            }
+        };
+        currentSession.set(session);
+
+        session.runWithLock(() -> {
+            UI ui = new MockUI(session);
+            currentUi.set(ui);
+            ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+            ui.getInternals()
+                    .setPushConnection(new AtmospherePushConnection(ui));
+            return null;
+        });
+
+        AtomicReference<AtmosphereResource> connectedResource = new AtomicReference<>();
+        try {
+            runTest(service, (handler, resource) -> {
+                AtmosphereRequest request = resource.getRequest();
+                when(resource.transport()).thenReturn(transport);
+                // Resuming the resource is the last step of rejecting the
+                // connection: records how far the handling had got by then,
+                // as the session lock is still taken afterwards to end the
+                // request
+                Mockito.doAnswer(invocation -> {
+                    lockCountWhenAnswered.compareAndSet(-1, lockCount.get());
+                    return null;
+                }).when(resource).resume();
+                when(request
+                        .getParameter(ApplicationConstants.PUSH_ID_PARAMETER))
+                        .thenReturn(pushIdParameter.apply(session.getPushId()));
+                connectedResource.set(resource);
+
+                // Only the locking done by the connection itself is of
+                // interest, not the locking done by this setup
+                lockCount.set(0);
+                handler.onConnect(resource);
+            });
+        } finally {
+            VaadinSession.setCurrent(null);
+            UI.setCurrent(null);
+        }
+
+        return new EstablishOutcome(connectedResource.get(),
+                lockCountWhenAnswered.get(), uiWasResolved.get());
     }
 
     private void setProductionMode(VaadinService service,
