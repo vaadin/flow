@@ -126,6 +126,18 @@ interface AppRuntime {
     }
 
     /**
+     * Whether a registered, serving application may still be a deployment the
+     * launch is about to replace, so that only {@link #deployed} can end a
+     * start.
+     *
+     * @return {@code true} if {@link #deployed} reads a line of its own rather
+     *         than the serving one
+     */
+    default boolean redeploysAfterBoot() {
+        return false;
+    }
+
+    /**
      * Configuration in this project that will fight the dev loop, in words, so
      * that a developer is told rather than left to deduce it from behaviour.
      *

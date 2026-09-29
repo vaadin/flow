@@ -18,6 +18,7 @@ package com.vaadin.flow.devloop.daemon;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 
@@ -123,6 +124,44 @@ class AppProcessTest {
         app.onUnregistered(previous);
 
         assertTrue(app.isRegistered(), "the new app must stay registered");
+    }
+
+    @Test
+    void redeployingServer_startWaitsForItsOwnDeploymentPastTheSettleWindow() {
+        AppProcess.StartWait wait = new AppProcess.StartWait(true,
+                Duration.ofSeconds(15), Duration.ofSeconds(1));
+        // The deployment the server booted: registered and serving.
+        wait.markRegistered(0);
+        wait.markServing();
+
+        long pastSettle = Duration.ofSeconds(20).toNanos();
+        assertFalse(wait.isOver(pastSettle),
+                "a deployment about to be replaced must not end the start");
+        assertTrue(wait.awaitsDeployment());
+
+        wait.markDeployed(pastSettle);
+        assertFalse(wait.isOver(pastSettle),
+                "the replaced deployment's close may not have arrived yet");
+        assertTrue(wait.isOver(pastSettle + Duration.ofSeconds(1).toNanos()));
+    }
+
+    @Test
+    void redeployingServer_registrationClosedAfterDeployedLine_waitsForTheNext() {
+        AppProcess.StartWait wait = new AppProcess.StartWait(true,
+                Duration.ofSeconds(15), Duration.ofSeconds(1));
+        wait.markRegistered(0);
+        wait.markServing();
+        wait.markDeployed(10);
+        // The booted deployment's close, noticed after its replacement was
+        // logged.
+        wait.markUnregistered();
+
+        long pastBoth = Duration.ofSeconds(20).toNanos();
+        assertFalse(wait.isOver(pastBoth),
+                "no live registration is behind the start");
+
+        wait.markRegistered(pastBoth);
+        assertTrue(wait.isOver(pastBoth));
     }
 
     @Test

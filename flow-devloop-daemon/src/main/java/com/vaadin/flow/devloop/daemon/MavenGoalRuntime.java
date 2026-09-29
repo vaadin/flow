@@ -641,6 +641,11 @@ final class MavenGoalRuntime implements AppRuntime {
     }
 
     @Override
+    public boolean redeploysAfterBoot() {
+        return plugin.redeploysAfterBoot();
+    }
+
+    @Override
     public OptionalInt port(String line) {
         Matcher matcher = plugin.serving().matcher(line);
         if (!matcher.find() || matcher.groupCount() < 1) {

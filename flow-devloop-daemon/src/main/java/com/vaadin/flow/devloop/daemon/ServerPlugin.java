@@ -1014,6 +1014,18 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
     }
 
     /**
+     * Whether this server boots a persisted deployment before the goal deploys
+     * the build's own over it. Every entry that does not passes its serving
+     * pattern as {@link #deployed} too, so the two differ exactly for the
+     * entries that do.
+     *
+     * @return {@code true} if {@link #deployed} is a pattern of its own
+     */
+    boolean redeploysAfterBoot() {
+        return deployed != serving;
+    }
+
+    /**
      * The configuration the dev loop needs, as {@code element=value} pairs for
      * {@code DevLoopBuildExtension}.
      * <p>

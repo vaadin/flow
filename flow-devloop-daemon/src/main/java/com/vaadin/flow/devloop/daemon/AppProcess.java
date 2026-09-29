@@ -62,6 +62,17 @@ final class AppProcess {
     private static final Duration SETTLE = Duration
             .ofMillis(Long.getLong("vaadin.dev.startSettleMillis", 15_000L));
 
+    /**
+     * How long a start holds on once the launch's own deployment is in place,
+     * under a runtime that replaces the one it booted. The replaced deployment
+     * closes its registration before the server logs the replacement, but the
+     * daemon learns of that close on the connection's own thread and reads the
+     * line off the log on this one; this is the window in which a registration
+     * that is already gone can still read as current. See {@link StartWait}.
+     */
+    private static final Duration DEPLOY_SETTLE = Duration
+            .ofMillis(Long.getLong("vaadin.dev.deploySettleMillis", 1_000L));
+
     private static final long POLL_MILLIS = 100L;
 
     /**
@@ -126,6 +137,86 @@ final class AppProcess {
         Run(Process process, Path logFile) {
             this.process = process;
             this.logFile = logFile;
+        }
+    }
+
+    /**
+     * What a start has seen of the app so far, and whether that is enough to
+     * call it running. Apart from the loop that feeds it, because the order the
+     * signals arrive in is the whole difficulty and is not something a test can
+     * make a real server repeat.
+     * <p>
+     * Under a runtime that {@link AppRuntime#redeploysAfterBoot redeploys after
+     * boot}, neither the serving line nor the settle window ends a start: the
+     * deployment the server booted registers and serves as convincingly as the
+     * one that stays, and replacing it can outlast the window. Only the
+     * launch's own deployment does, and only once {@link #DEPLOY_SETTLE} has
+     * given the replaced one's close time to arrive.
+     */
+    static final class StartWait {
+        private final boolean redeploys;
+        private final long settle;
+        private final long deploySettle;
+        private boolean up;
+        private boolean serving;
+        private boolean deployed;
+        private long settleBy;
+        private long deploySettleBy;
+
+        StartWait(boolean redeploys) {
+            this(redeploys, SETTLE, DEPLOY_SETTLE);
+        }
+
+        StartWait(boolean redeploys, Duration settle, Duration deploySettle) {
+            this.redeploys = redeploys;
+            this.settle = settle.toNanos();
+            this.deploySettle = deploySettle.toNanos();
+        }
+
+        void markRegistered(long now) {
+            up = true;
+            settleBy = now + settle;
+        }
+
+        void markUnregistered() {
+            up = false;
+        }
+
+        void markServing() {
+            serving = true;
+        }
+
+        void markDeployed(long now) {
+            if (!deployed) {
+                deployed = true;
+                deploySettleBy = now + deploySettle;
+            }
+        }
+
+        boolean isUp() {
+            return up;
+        }
+
+        boolean isServing() {
+            return serving;
+        }
+
+        /**
+         * Whether the app is registered but still waiting for the launch's own
+         * deployment, which nothing but the startup timeout bounds.
+         */
+        boolean awaitsDeployment() {
+            return redeploys && up && !deployed;
+        }
+
+        boolean isOver(long now) {
+            if (!up) {
+                return false;
+            }
+            if (redeploys && (!deployed || now < deploySettleBy)) {
+                return false;
+            }
+            return serving || now >= settleBy;
         }
     }
 
@@ -345,48 +436,50 @@ final class AppProcess {
             // not; see AppRuntime#startupTimeout.
             Duration startupTimeout = runtime.startupTimeout();
             long registerBy = System.nanoTime() + startupTimeout.toNanos();
-            long settleBy = 0;
-            boolean up = false;
-            boolean serving = false;
-            boolean deployed = false;
+            StartWait wait = new StartWait(runtime.redeploysAfterBoot());
 
             while (true) {
                 List<String> lines = watching.drain();
-                serving = serving || lines.stream().anyMatch(runtime::serving);
-                deployed = deployed
-                        || lines.stream().anyMatch(runtime::deployed);
-                if (up && !registered) {
+                if (lines.stream().anyMatch(runtime::serving)) {
+                    wait.markServing();
+                }
+                if (lines.stream().anyMatch(runtime::deployed)) {
+                    wait.markDeployed(System.nanoTime());
+                }
+                if (wait.isUp() && !registered) {
                     // The deployment that registered was undeployed before
-                    // it was serving: an application server replacing the
+                    // the start was over: an application server replacing the
                     // deployment its configuration persisted with the one the
                     // build plugin deploys. Returning now would hand every
                     // apply to a copy that is gone, so the start waits for
                     // the replacement to register.
-                    up = false;
-                    log.line("the app's registration closed before it was "
-                            + "serving; waiting for it to register again");
+                    wait.markUnregistered();
+                    log.line("the app's registration closed before the start "
+                            + "was over; waiting for it to register again");
                 }
-                if ((up && serving && deployed)
-                        || (up && System.nanoTime() >= settleBy)) {
+                if (wait.isOver(System.nanoTime())) {
                     state = State.RUNNING;
-                    return Startup.ok(serving ? "running"
+                    return Startup.ok(wait.isServing() ? "running"
                             : "running (registered; the app logged no server port)");
                 }
                 if (!started.isAlive()) {
                     // The authoritative signal, and the only one carrying a
                     // code.
                     return failed("app exited with code " + started.exitValue()
-                            + (up ? " right after registering, before it was serving"
+                            + (wait.isUp()
+                                    ? " right after registering, before it was serving"
                                     : " before registering"),
                             appLog);
                 }
-                if (!up && System.nanoTime() >= registerBy) {
+                if (System.nanoTime() >= registerBy
+                        && (!wait.isUp() || wait.awaitsDeployment())) {
                     // Still alive, so this launch has to be ended rather than
                     // merely reported: see abandon.
-                    return abandon(current,
-                            "app did not register within "
-                                    + startupTimeout.toMinutes() + " minutes",
-                            appLog);
+                    return abandon(current, (wait.isUp()
+                            ? "the app registered, but its deployment was not "
+                                    + "in place within "
+                            : "app did not register within ")
+                            + startupTimeout.toMinutes() + " minutes", appLog);
                 }
                 try {
                     // The latch also fires when the process exits, so
@@ -394,13 +487,13 @@ final class AppProcess {
                     // is
                     // decided by the flag the connector sets, not by the
                     // wake-up.
-                    if (up || (latch.getCount() == 0 && !registered)) {
+                    if (wait.isUp() || (latch.getCount() == 0 && !registered)) {
                         Thread.sleep(POLL_MILLIS);
                     }
-                    if (!up && latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
+                    if (!wait.isUp()
+                            && latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
                             && registered) {
-                        up = true;
-                        settleBy = System.nanoTime() + SETTLE.toNanos();
+                        wait.markRegistered(System.nanoTime());
                         log.line(
                                 "registered; waiting for the web server to bind");
                     }
