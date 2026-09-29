@@ -1,0 +1,47 @@
+{
+  "name": "@vaadin/polymer-legacy-adapter",
+  "version": "24.5.5",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "polymer-legacy-adapter",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vaadin/web-components.git",
+    "directory": "packages/polymer-legacy-adapter"
+  },
+  "author": "Vaadin Ltd",
+  "homepage": "https://vaadin.com/elements",
+  "bugs": {
+    "url": "https://github.com/vaadin/web-components/issues"
+  },
+  "main": "index.js",
+  "module": "index.js",
+  "type": "module",
+  "files": [
+    "*.d.ts",
+    "*.js",
+    "src"
+  ],
+  "keywords": [
+    "Vaadin",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "dependencies": {
+    "@polymer/polymer": "^3.0.0",
+    "@vaadin/vaadin-themable-mixin": "~24.5.5",
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "@vaadin/chai-plugins": "~24.5.5",
+    "@vaadin/checkbox": "~24.5.5",
+    "@vaadin/grid": "~24.5.5",
+    "@vaadin/grid-pro": "~24.5.5",
+    "@vaadin/testing-helpers": "^1.0.0",
+    "sinon": "^18.0.0"
+  },
+  "gitHead": "864c93992c6466634ad47975dc6aceca3bbf8506"
+}

@@ -1,0 +1,48 @@
+{
+	"name": "strip-css-comments",
+	"version": "5.0.0",
+	"description": "Strip comments from CSS",
+	"license": "MIT",
+	"repository": "sindresorhus/strip-css-comments",
+	"funding": "https://github.com/sponsors/sindresorhus",
+	"author": {
+		"name": "Sindre Sorhus",
+		"email": "sindresorhus@gmail.com",
+		"url": "https://sindresorhus.com"
+	},
+	"type": "module",
+	"exports": "./index.js",
+	"engines": {
+		"node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+	},
+	"scripts": {
+		"test": "xo && ava && tsd",
+		"bench": "matcha bench.js"
+	},
+	"files": [
+		"index.js",
+		"index.d.ts"
+	],
+	"keywords": [
+		"css",
+		"style",
+		"stylesheet",
+		"strip",
+		"remove",
+		"delete",
+		"trim",
+		"comments",
+		"preprocess",
+		"transform",
+		"string"
+	],
+	"dependencies": {
+		"is-regexp": "^3.0.0"
+	},
+	"devDependencies": {
+		"ava": "^3.15.0",
+		"matcha": "^0.7.0",
+		"tsd": "^0.17.0",
+		"xo": "^0.44.0"
+	}
+}
