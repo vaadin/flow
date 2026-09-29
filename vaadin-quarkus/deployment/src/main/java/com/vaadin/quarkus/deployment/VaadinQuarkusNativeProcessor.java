@@ -78,6 +78,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.Type;
 import org.objectweb.asm.Opcodes;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -424,8 +425,15 @@ public class VaadinQuarkusNativeProcessor {
                 .map(ann -> ann.target().asMethodParameter())
                 .filter(param -> param.method().isConstructor() && eventClasses
                         .contains(param.method().declaringClass().name()))
-                .flatMap(param -> TypeInspector
-                        .collectTypes(param.type(), index).stream())
+                // The event data is decoded into the raw parameter class, so
+                // generic type arguments need no registration
+                .map(param -> {
+                    Type type = param.type();
+                    if (type.kind() == Type.Kind.ARRAY) {
+                        type = type.asArrayType().elementType();
+                    }
+                    return index.getClassByName(type.name());
+                }).filter(Objects::nonNull)
                 .filter(type -> !componentClasses.contains(type.name())
                         && !type.name().toString().startsWith("tools.jackson."))
                 .collect(Collectors.toSet());

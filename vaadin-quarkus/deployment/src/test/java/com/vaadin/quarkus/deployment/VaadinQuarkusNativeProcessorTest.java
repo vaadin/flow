@@ -193,6 +193,7 @@ class VaadinQuarkusNativeProcessorTest {
         indexer.indexClass(TestComponent.class);
         indexer.indexClass(TestBeanDataEvent.class);
         indexer.indexClass(SimpleDto.class);
+        indexer.indexClass(ComplexDto.class);
         indexer.indexClass(NestedDto.class);
         indexer.indexClass(OtherDto.class);
         indexer.indexClass(List.class);
@@ -202,8 +203,10 @@ class VaadinQuarkusNativeProcessorTest {
 
         assertTrue(result.stream().anyMatch(containsClass(SimpleDto.class)),
                 "Should detect SimpleDto from @EventData parameter");
-        assertTrue(result.stream().anyMatch(containsClass(NestedDto.class)),
-                "Should detect NestedDto from parameterized @EventData parameter");
+        assertTrue(result.stream().anyMatch(containsClass(ComplexDto.class)),
+                "Should detect ComplexDto from @EventData array parameter");
+        assertFalse(result.stream().anyMatch(containsClass(NestedDto.class)),
+                "Should NOT detect NestedDto from a type argument, the event data is decoded into the raw type");
         assertFalse(result.stream().anyMatch(containsClass(OtherDto.class)),
                 "Should NOT detect OtherDto from a non-@EventData parameter");
         assertFalse(
@@ -455,6 +458,7 @@ class VaadinQuarkusNativeProcessorTest {
         public TestBeanDataEvent(TestComponent source, boolean fromClient,
                 @EventData("event.detail") SimpleDto detail,
                 @EventData("event.items") List<NestedDto> items,
+                @EventData("event.array") ComplexDto[] array,
                 @EventData("event.count") int count,
                 @EventData("element") Element element,
                 @EventData("element.parent") TestComponent parent) {
