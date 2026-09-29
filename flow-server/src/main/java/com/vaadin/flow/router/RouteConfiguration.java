@@ -540,6 +540,10 @@ public class RouteConfiguration implements Serializable {
     /**
      * Gets the url which navigates to given navigationTarget using given
      * parameters.
+     * <p>
+     * The returned url contains no query string. Use
+     * {@link #getUrl(Class, RouteParameters, QueryParameters)} to get the url
+     * with query parameters appended.
      *
      * @param navigationTarget
      *            navigation target.
@@ -563,6 +567,38 @@ public class RouteConfiguration implements Serializable {
                     navigationTarget.getName(), parameters.toString()));
         }
         return targetUrl.get();
+    }
+
+    /**
+     * Gets the url which navigates to given navigationTarget using given route
+     * parameters and query parameters.
+     * <p>
+     * The returned url is the same as the one returned by
+     * {@link #getUrl(Class, RouteParameters)}, followed by {@code ?} and
+     * {@link QueryParameters#getQueryString()} when there are any query
+     * parameters. The url is relative, just like the one returned by
+     * {@link #getUrl(Class, RouteParameters)}.
+     *
+     * @param navigationTarget
+     *            navigation target.
+     * @param parameters
+     *            route parameters, not {@code null}
+     * @param queryParameters
+     *            query parameters, not {@code null}
+     * @return the url which navigates to given navigationTarget using given
+     *         route parameters and query parameters.
+     * @throws NotFoundException
+     *             in case the navigationTarget is not registered with a url
+     *             template matching the given parameters.
+     */
+    public String getUrl(Class<? extends Component> navigationTarget,
+            RouteParameters parameters, QueryParameters queryParameters) {
+        String url = getUrl(navigationTarget, parameters);
+        String queryString = queryParameters.getQueryString();
+        if (queryString.isEmpty()) {
+            return url;
+        }
+        return url + "?" + queryString;
     }
 
     /* Private methods */
