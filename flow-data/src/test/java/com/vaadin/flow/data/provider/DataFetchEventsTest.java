@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -68,6 +69,8 @@ import static org.mockito.Mockito.when;
  * service event bus, for both flat and hierarchical data communicators.
  */
 class DataFetchEventsTest {
+
+    private static final Duration PAUSE = Duration.ofMillis(5);
 
     @Tag("test-list")
     private static class TestComponent extends Component {
@@ -217,11 +220,15 @@ class DataFetchEventsTest {
 
     @Test
     void failingFetch_reportsMinusOneRows() {
+        List<Duration> durations = new ArrayList<>();
+        service.getEventBus().addListener(DataFetchEndedEvent.class,
+                event -> durations.add(event.getDuration()));
         DataCommunicator<String> communicator = flatCommunicator();
         communicator.setDataProvider(new AbstractBackEndDataProvider<>() {
             @Override
             protected Stream<String> fetchFromBackEnd(
                     Query<String, Object> query) {
+                pause(PAUSE);
                 throw new IllegalStateException("backend is down");
             }
 
@@ -233,6 +240,9 @@ class DataFetchEventsTest {
         communicator.setViewportRange(0, 10);
 
         assertThrows(IllegalStateException.class, this::flush);
+        // The fetch threw, and the duration still covers the time until then
+        assertTrue(durations.get(0).compareTo(PAUSE) >= 0,
+                "duration " + durations.get(0));
 
         assertEquals(-1, listener.first("fetch-ended").result(),
                 "a fetch that threw reports -1 rows");
@@ -252,6 +262,9 @@ class DataFetchEventsTest {
 
     @Test
     void failingCount_reportsFailedThenEnded() {
+        List<Duration> durations = new ArrayList<>();
+        service.getEventBus().addListener(DataCountEndedEvent.class,
+                event -> durations.add(event.getDuration()));
         DataCommunicator<String> communicator = flatCommunicator();
         communicator.setDataProvider(new AbstractBackEndDataProvider<>() {
             @Override
@@ -262,12 +275,16 @@ class DataFetchEventsTest {
 
             @Override
             protected int sizeInBackEnd(Query<String, Object> query) {
+                pause(PAUSE);
                 throw new IllegalStateException("count is down");
             }
         }, null);
         communicator.setViewportRange(0, 10);
 
         assertThrows(IllegalStateException.class, this::flush);
+        // The count threw, and the duration still covers the time until then
+        assertTrue(durations.get(0).compareTo(PAUSE) >= 0,
+                "duration " + durations.get(0));
 
         assertEquals(1, listener.failures.size());
         assertEquals("count is down", listener.failures.get(0).getMessage(),
@@ -467,6 +484,15 @@ class DataFetchEventsTest {
 
     private static List<String> items(int count) {
         return IntStream.range(0, count).mapToObj(i -> "item-" + i).toList();
+    }
+
+    private static void pause(Duration duration) {
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
+        }
     }
 
     private void flush() {
