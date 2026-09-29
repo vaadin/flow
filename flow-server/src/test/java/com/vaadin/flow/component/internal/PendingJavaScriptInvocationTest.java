@@ -36,6 +36,7 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
@@ -43,8 +44,10 @@ import com.vaadin.tests.util.SingleCaptureConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class PendingJavaScriptInvocationTest {
@@ -366,6 +369,40 @@ class PendingJavaScriptInvocationTest {
         return Arrays.asList(completableFuture::get,
                 () -> completableFuture.get(1, TimeUnit.HOURS),
                 completableFuture::join);
+    }
+
+    /**
+     * Stand-in for {@code elemental.json.JsonValue}, the type that Vaadin 14-24
+     * add-ons used for the argument of {@code then}.
+     */
+    interface LegacyJsonValue {
+    }
+
+    /**
+     * Simulates an add-on compiled against Vaadin 24, where {@code then} took a
+     * {@code SerializableConsumer<JsonValue>}. Due to erasure, the call links
+     * fine against the Vaadin 25 signature.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private SerializableConsumer<LegacyJsonValue> scheduleCallbackFromIncompatibleAddon() {
+        SerializableConsumer<LegacyJsonValue> legacyCallback = value -> {
+        };
+        invocation.then((SerializableConsumer) legacyCallback);
+        return legacyCallback;
+    }
+
+    @Test
+    void incompatibleSuccessHandler_exceptionNamesHandlerClass() {
+        SerializableConsumer<LegacyJsonValue> legacyCallback = scheduleCallbackFromIncompatibleAddon();
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains(legacyCallback.getClass().getName()),
+                exception.getMessage());
+        assertInstanceOf(ClassCastException.class, exception.getCause());
     }
 
     private void assertStringSuccess() {
