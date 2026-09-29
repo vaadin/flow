@@ -15,15 +15,25 @@
  */
 package com.vaadin.flow.spring.test.nativeimage;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.html.testbench.AnchorElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
+import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static org.junit.Assert.assertTrue;
 
 public class MainViewIT extends ChromeBrowserTest {
+
+    @Test
+    public void open_injectedServiceUsed() {
+        open();
+
+        Assert.assertEquals("Hello from a Spring bean",
+                $(SpanElement.class).id(MainView.GREETING_ID).getText());
+    }
 
     @Test
     public void clickRouterLink_targetViewShown() {

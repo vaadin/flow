@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.spring.test.nativeimage;
 
+import org.springframework.stereotype.Service;
+
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
@@ -23,10 +26,25 @@ import com.vaadin.flow.router.RouterLink;
 public class MainView extends Div {
 
     public static final String BINDER_LINK_ID = "binder-link";
+    public static final String GREETING_ID = "greeting";
 
-    public MainView() {
+    /**
+     * Created by Spring and injected into the view, which is itself created as
+     * a bean from the definition the AOT processing registers for it.
+     */
+    @Service
+    public static class GreetingService {
+
+        public String getGreeting() {
+            return "Hello from a Spring bean";
+        }
+    }
+
+    public MainView(GreetingService greetingService) {
+        Span greeting = new Span(greetingService.getGreeting());
+        greeting.setId(GREETING_ID);
         RouterLink binderLink = new RouterLink("Binder", BinderView.class);
         binderLink.setId(BINDER_LINK_ID);
-        add(binderLink);
+        add(greeting, binderLink);
     }
 }
