@@ -1549,14 +1549,14 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void getTextRecursively_innerHtml_includesItsText() {
+    void getText_innerHtml_includesItsText() {
         Element child = ElementFactory.createSpan();
         child.setProperty("innerHTML", "Hi <b>there</b>");
         Element element = ElementFactory.createDiv();
         element.appendChild(child, Element.createText("!"));
 
         assertEquals("Hi there!", element.getTextRecursively());
-        assertEquals("", child.getText());
+        assertEquals("Hi ", child.getText());
     }
 
     @Test

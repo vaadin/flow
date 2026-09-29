@@ -25,7 +25,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
@@ -1454,7 +1453,13 @@ public class Element extends Node<Element> {
      * Use {@link #getTextRecursively()} to get the full text that recursively
      * includes the text content of the entire element tree.
      * <p>
-     * Content set through the "innerHTML" property is not included.
+     * HTML set through the "innerHTML" property counts as children, so only its
+     * top-level text is included:
+     *
+     * <pre>{@code
+     * new Html("<span>Hi <b>there</b></span>").getElement().getText(); // =>
+     *                                                                  // "Hi "
+     * }</pre>
      *
      * @see #getTextRecursively()
      * @see #setText(String)
@@ -1465,8 +1470,12 @@ public class Element extends Node<Element> {
         if (isTextNode()) {
             return getStateProvider().getTextContent(getNode());
         }
-        return getChildren().filter(Element::isTextNode).map(Element::getText)
-                .collect(Collectors.joining());
+        StringBuilder builder = new StringBuilder();
+        parseInnerHtml().ifPresent(html -> html.textNodes()
+                .forEach(text -> builder.append(text.getWholeText())));
+        getChildren().filter(Element::isTextNode)
+                .forEach(child -> builder.append(child.getText()));
+        return builder.toString();
     }
 
     /**
@@ -1495,13 +1504,14 @@ public class Element extends Node<Element> {
             builder.append(getText());
             return;
         }
-        String innerHtml = getProperty("innerHTML");
-        if (innerHtml != null) {
-            // Parsed in the context of this tag, as the browser does
-            builder.append(new org.jsoup.nodes.Element(getTag()).html(innerHtml)
-                    .wholeText());
-        }
+        parseInnerHtml().ifPresent(html -> builder.append(html.wholeText()));
         getChildren().forEach(child -> child.appendTextRecursively(builder));
+    }
+
+    private Optional<org.jsoup.nodes.Element> parseInnerHtml() {
+        // Parsed in the context of this tag, as the browser does
+        return Optional.ofNullable(getProperty("innerHTML"))
+                .map(html -> new org.jsoup.nodes.Element(getTag()).html(html));
     }
 
     /**
