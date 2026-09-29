@@ -588,7 +588,13 @@ public class FrontendTools {
         List<String> pnpmCommand = getSuitablePnpm();
         assert !pnpmCommand.isEmpty();
         pnpmCommand = new ArrayList<>(pnpmCommand);
-        pnpmCommand.add("--shamefully-hoist=true");
+        // Force hoisted (flat npm-style) layout. CLI takes precedence over
+        // .npmrc, so this is unambiguous even if the project lacks the
+        // generated .npmrc. Replaces the previous --shamefully-hoist=true,
+        // which only controls the partial-hoist heuristic on top of the
+        // default isolated layout and did not consistently expose every
+        // transitive at the project root.
+        pnpmCommand.add("--config.node-linker=hoisted");
         return pnpmCommand;
     }
 
@@ -962,11 +968,12 @@ public class FrontendTools {
                             "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
                                     + SUPPORTED_PNPM_VERSION.getFullVersion()));
         } else {
-            // install latest pnpm version as the minimum node requirement is
-            // now at nodejs 16.14.0
-            // see https://pnpm.io/installation#compatibility
+            // use the pinned default pnpm version: newer major versions change
+            // how node_modules is laid out, e.g. pnpm 12 relinks it in the
+            // isolated layout on `pnpm run`, which breaks the hoisted layout
+            // the frontend build relies on
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
-                    "--quiet", "pnpm");
+                    "--quiet", "pnpm@" + DEFAULT_PNPM_VERSION);
             if (!validatePnpmVersion(pnpmCommand)) {
                 throw new IllegalStateException(
                         "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
