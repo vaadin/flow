@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -85,6 +86,14 @@ public class ChromeDeviceTest extends ViewOrUITest {
         devTools = new DevToolsWrapper(driver);
 
         setDriver(TestBench.createDriver(driver));
+    }
+
+    @After
+    public void closeDevTools() {
+        if (devTools != null) {
+            devTools.close();
+            devTools = null;
+        }
     }
 
     /**

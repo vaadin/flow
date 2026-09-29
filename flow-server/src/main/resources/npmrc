@@ -3,5 +3,11 @@
 #
 # This file sets the default parameters for manual `pnpm install`.
 #
+# node-linker=hoisted produces a flat node_modules layout (like npm),
+# so every transitive dependency lives at the project root. Flow's
+# frontend tooling and bundled Vite plugins (e.g. the React function
+# location plugin) import transitive deps that pnpm's symlink-based
+# layout did not consistently hoist, even with shamefully-hoist=true.
+node-linker=hoisted
 shamefully-hoist=true
 strict-peer-dependencies=false
