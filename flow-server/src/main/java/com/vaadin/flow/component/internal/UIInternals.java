@@ -1638,7 +1638,13 @@ public class UIInternals implements Serializable {
      *         handled, such as a forward, a reroute or an error view
      */
     public boolean enterNavigation() {
-        return navigationDepth++ == 0;
+        boolean outermost = navigationDepth++ == 0;
+        if (outermost) {
+            // A failure recorded outside a tracked navigation, such as when a
+            // postponed navigation proceeds, must not leak into this one
+            navigationFailure = null;
+        }
+        return outermost;
     }
 
     /**
@@ -1655,14 +1661,15 @@ public class UIInternals implements Serializable {
     /**
      * Records the exception for which an error view is rendered during the
      * ongoing navigation. Only the first exception of a navigation is kept,
-     * since any later one comes from handling the first. For framework use
-     * only.
+     * since any later one comes from handling the first. Nothing is recorded
+     * outside a navigation started with {@link #enterNavigation()}. For
+     * framework use only.
      *
      * @param exception
      *            the exception the error view is rendered for, not {@code null}
      */
     public void recordNavigationFailure(Exception exception) {
-        if (navigationFailure == null) {
+        if (navigationDepth > 0 && navigationFailure == null) {
             navigationFailure = exception;
         }
     }

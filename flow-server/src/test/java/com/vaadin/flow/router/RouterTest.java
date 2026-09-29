@@ -4906,6 +4906,44 @@ public class RouterTest extends RoutingTestBase {
         assertEquals(404, ended.getStatusCode());
     }
 
+    @Test
+    public void proceedIntoRerouteToError_nextNavigationNotReportedFailed() {
+        setNavigationTargets(PostponingOnceNavigationTarget.class,
+                RedirectToNotFoundInHasParam.class, FooNavigationTarget.class);
+        PostponingOnceNavigationTarget.postpone = null;
+        navigate("postpone-once");
+        // Postponed in beforeLeave
+        navigate("toNotFound/error");
+        List<EventObject> events = recordNavigationEvents();
+
+        // Resuming shows the error view outside a tracked navigation
+        PostponingOnceNavigationTarget.postpone.proceed();
+        assertEquals(RouteNotFoundError.class, getUIComponentClass());
+        assertEquals(0, events.size());
+
+        navigate("foo");
+
+        assertEquals(2, events.size());
+        assertEquals(
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class),
+                ((NavigationEndedEvent) events.get(1)).getOutcome());
+    }
+
+    @Route("postpone-once")
+    @Tag(Tag.DIV)
+    public static class PostponingOnceNavigationTarget extends Component
+            implements BeforeLeaveObserver {
+
+        private static ContinueNavigationAction postpone;
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            if (postpone == null) {
+                postpone = event.postpone();
+            }
+        }
+    }
+
     private static class NavigationError extends Error {
     }
 
