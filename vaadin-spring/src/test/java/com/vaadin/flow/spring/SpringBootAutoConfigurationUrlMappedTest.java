@@ -35,8 +35,10 @@ import com.vaadin.flow.server.Constants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 
 @SpringBootTest(classes = SpringBootAutoConfiguration.class)
 @TestPropertySource(properties = { "vaadin.urlMapping = /zing/*" })
@@ -60,9 +62,26 @@ class SpringBootAutoConfigurationUrlMappedTest {
 
     @Test
     void excludeUrlsWithNonRootMapping_warningLogged() {
+        Logger logger = configureServletWithExcludeUrls(
+                List.of("/zing/sitemap.txt"));
+
+        Mockito.verify(logger).warn(anyString(),
+                eq(List.of("/zing/sitemap.txt")), eq("/zing/*"));
+    }
+
+    @Test
+    void noExcludeUrlsWithNonRootMapping_noWarningLogged() {
+        Mockito.verify(configureServletWithExcludeUrls(null), never())
+                .warn(anyString(), any(), any());
+        Mockito.verify(configureServletWithExcludeUrls(List.of()), never())
+                .warn(anyString(), any(), any());
+    }
+
+    private static Logger configureServletWithExcludeUrls(
+            List<String> excludeUrls) {
         VaadinConfigurationProperties properties = new VaadinConfigurationProperties();
         properties.setUrlMapping("/zing/*");
-        properties.setExcludeUrls(List.of("/zing/sitemap.txt"));
+        properties.setExcludeUrls(excludeUrls);
         Logger logger = Mockito.mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = Mockito
                 .mockStatic(LoggerFactory.class)) {
@@ -75,8 +94,6 @@ class SpringBootAutoConfigurationUrlMappedTest {
                     Mockito.mock(ObjectProvider.class), properties,
                     Mockito.mock(SpringServlet.class));
         }
-
-        Mockito.verify(logger).warn(anyString(),
-                eq(List.of("/zing/sitemap.txt")), eq("/zing/*"));
+        return logger;
     }
 }
