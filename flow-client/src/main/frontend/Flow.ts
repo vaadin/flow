@@ -4,14 +4,10 @@ import {
   type ConnectionStateChangeListener,
   type ConnectionStateStore
 } from '@vaadin/common-frontend';
-import './Clipboard';
+import './BrowserHelpers';
 import { currentFullscreenState } from './Fullscreen';
-import './Download';
-import './ElementResize';
-import './Geolocation';
 import { currentVisibility } from './PageVisibility';
 import { currentScreenOrientationAngle, currentScreenOrientationType } from './ScreenOrientation';
-import './WakeLock';
 import { isShareSupported } from './WebShare';
 
 export interface FlowConfig {
