@@ -21,12 +21,15 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.menu.MenuConfiguration;
+import com.vaadin.flow.server.menu.MenuEntry;
 
-@Route("")
+@Route(value = "", layout = MainLayout.class)
 public class MainView extends Div {
 
     public static final String BINDER_LINK_ID = "binder-link";
     public static final String GREETING_ID = "greeting";
+    public static final String MENU_ID = "menu";
 
     /**
      * Created by Spring and injected into the view, which is itself created as
@@ -45,6 +48,9 @@ public class MainView extends Div {
         greeting.setId(GREETING_ID);
         RouterLink binderLink = new RouterLink("Binder", BinderView.class);
         binderLink.setId(BINDER_LINK_ID);
-        add(greeting, binderLink);
+        Span menu = new Span(String.join(",", MenuConfiguration.getMenuEntries()
+                .stream().map(MenuEntry::title).toList()));
+        menu.setId(MENU_ID);
+        add(greeting, binderLink, menu);
     }
 }

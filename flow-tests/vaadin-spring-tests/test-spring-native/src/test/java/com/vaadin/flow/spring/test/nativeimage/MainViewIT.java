@@ -36,6 +36,22 @@ public class MainViewIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void open_layoutPostConstructCalled() {
+        open();
+
+        Assert.assertEquals("Layout initialized",
+                $(SpanElement.class).id(MainLayout.INITIALIZED_ID).getText());
+    }
+
+    @Test
+    public void open_menuEntriesListed() {
+        open();
+
+        Assert.assertEquals("Binder",
+                $(SpanElement.class).id(MainView.MENU_ID).getText());
+    }
+
+    @Test
     public void clickRouterLink_targetViewShown() {
         open();
 

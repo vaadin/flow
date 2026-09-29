@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.server.PWA;
 
 /**
  * The entry point of the Spring Boot application.
@@ -32,6 +33,7 @@ import com.vaadin.flow.component.page.Push;
  */
 @SpringBootApplication
 @Push
+@PWA(name = "Native image", shortName = "Native")
 @RegisterReflectionForBinding(BinderView.Person.class)
 public class Application implements AppShellConfigurator {
 

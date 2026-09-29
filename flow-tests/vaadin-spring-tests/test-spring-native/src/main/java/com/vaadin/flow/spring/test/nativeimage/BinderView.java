@@ -21,6 +21,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -28,6 +29,7 @@ import com.vaadin.flow.router.Route;
  * reflection.
  */
 @Route("binder")
+@Menu(title = "Binder")
 public class BinderView extends Div {
 
     public static final String NAME_ID = "name";

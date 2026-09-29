@@ -21,25 +21,35 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 
+/**
+ * Calls a server method whose parameter and return value are beans, which are
+ * read and written by Jackson through reflection.
+ */
 @Route("client-callable")
 public class ClientCallableView extends Div {
 
     public static final String CALL_ID = "call";
     public static final String GREETING_ID = "greeting";
 
-    private final Span greeting = new Span();
+    public record Name(String first) {
+    }
+
+    public record Greeting(String text) {
+    }
 
     public ClientCallableView() {
-        NativeButton call = new NativeButton("Call the server",
-                event -> getElement().executeJs("this.$server.greet($0)",
-                        "native image"));
-        call.setId(CALL_ID);
+        Span greeting = new Span();
         greeting.setId(GREETING_ID);
+        NativeButton call = new NativeButton("Call the server",
+                event -> getElement().executeJs(
+                        "this.$server.greet({first: $0}).then(result => $1.textContent = result.text)",
+                        "native image", greeting));
+        call.setId(CALL_ID);
         add(call, greeting);
     }
 
     @ClientCallable
-    private void greet(String name) {
-        greeting.setText("Hello, " + name);
+    private Greeting greet(Name name) {
+        return new Greeting("Hello, " + name.first());
     }
 }
