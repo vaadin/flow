@@ -21,11 +21,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,15 +36,12 @@ import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContrib
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.ClassUtils;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
 /**
  * AOT processor that registers reflection hints for types used in
@@ -85,7 +79,8 @@ public class ClientCallableAotProcessor
             ConfigurableListableBeanFactory beanFactory) {
 
         InspectionResult inspectionResult = new InspectionResult();
-        Collection<String> packagesToScan = getPackagesToScan(beanFactory);
+        Collection<String> packagesToScan = AotScanPackages
+                .getPackagesToScan(beanFactory);
         LOGGER.info("Scanning packages {} for @ClientCallable methods",
                 packagesToScan);
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
@@ -161,49 +156,6 @@ public class ClientCallableAotProcessor
     // Visible for testing
     void configureScanner(ClassPathScanningCandidateComponentProvider scanner) {
         scanner.addIncludeFilter(new AssignableTypeFilter(Component.class));
-    }
-
-    /**
-     * Gets the list of packages to scan for Vaadin components.
-     * <p>
-     * This method returns a list of packages that includes:
-     * <ul>
-     * <li>The com.vaadin package</li>
-     * <li>Auto-configuration packages from Spring Boot</li>
-     * <li>Allowed packages from vaadin.allowed-packages configuration
-     * property</li>
-     * </ul>
-     *
-     * @param beanFactory
-     *            the bean factory
-     * @return set of packages to scan
-     */
-    static Collection<String> getPackagesToScan(
-            ConfigurableListableBeanFactory beanFactory) {
-        List<String> packages = new ArrayList<>();
-        packages.add("com.vaadin");
-        packages.addAll(AutoConfigurationPackages.get(beanFactory));
-
-        // Add allowed packages from the configuration if set
-        ConfigurableEnvironment environment = beanFactory
-                .getBean(ConfigurableEnvironment.class);
-        List<String> allowedPackages = VaadinConfigurationProperties
-                .getAllowedPackages(environment);
-        if (allowedPackages != null && !allowedPackages.isEmpty()) {
-            packages.addAll(allowedPackages);
-        }
-
-        // Remove duplicates and redundant packages (e.g. ignore com.vaadin.xyz
-        // if com.vaadin is already registered)
-        packages.sort(Comparator.comparingInt(String::length));
-        Set<String> result = new LinkedHashSet<>();
-        for (String pkg : packages) {
-            if (result.isEmpty() || result.stream().noneMatch(
-                    registeredPkg -> pkg.startsWith(registeredPkg + "."))) {
-                result.add(pkg);
-            }
-        }
-        return result;
     }
 
     /**

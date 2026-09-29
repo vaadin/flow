@@ -118,8 +118,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
         return (generationContext, beanFactoryInitializationCode) -> {
             var hints = generationContext.getRuntimeHints();
-            for (var pkg : ClientCallableAotProcessor
-                    .getPackagesToScan(beanFactory)) {
+            for (var pkg : AotScanPackages.getPackagesToScan(beanFactory)) {
                 /*
                  * This aims to register most types in the project that are
                  * needed for Flow to function properly. Examples are @Route
