@@ -35,6 +35,7 @@ import org.springframework.core.type.filter.RegexPatternTypeFilter;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -58,6 +59,11 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
         ReflectionHints ref = hints.reflection();
         LookupInitializer.getDefaultImplementations()
                 .forEach(cls -> ref.registerType(cls, MemberCategory.values()));
+
+        // SpringServlet reads the names of the properties to copy from
+        // application.properties from the fields of InitParameters
+        ref.registerType(InitParameters.class,
+                MemberCategory.ACCESS_PUBLIC_FIELDS);
 
         // Bundles, build info etc
         hints.resources().registerPattern("META-INF/VAADIN/**");

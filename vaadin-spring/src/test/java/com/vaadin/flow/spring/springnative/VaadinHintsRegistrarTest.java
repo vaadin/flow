@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 
+import com.vaadin.flow.server.InitParameters;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class VaadinHintsRegistrarTest {
@@ -84,6 +86,17 @@ class VaadinHintsRegistrarTest {
                 .accepts(hints);
         assertThat(RuntimeHintsPredicates.resource()
                 .forResource("META-INF/frontend/FlowWebPush.js"))
+                .accepts(hints);
+    }
+
+    @Test
+    void shouldRegisterInitParametersFieldsForReflection() {
+        RuntimeHints hints = new RuntimeHints();
+        new VaadinHintsRegistrar().registerHints(hints,
+                getClass().getClassLoader());
+        // SpringServlet reads the property names from these fields
+        assertThat(RuntimeHintsPredicates.reflection().onFieldAccess(
+                InitParameters.class, "SERVLET_PARAMETER_HEARTBEAT_INTERVAL"))
                 .accepts(hints);
     }
 
