@@ -30,10 +30,10 @@ public class EventBusView extends Div {
             const client = clients[Object.keys(clients).find((key) => key !== 'TypeScript')];
             const types = ['vaadin-request-start', 'vaadin-response-start', 'vaadin-request-end'];
             for (const type of types) {
-              client.eventBus.addEventListener(type, () => {
+              client.eventBus.addEventListener(type, (event) => {
                 const line = document.createElement('div');
                 line.className = 'log';
-                line.textContent = type;
+                line.textContent = type + ' ' + event.detail.requestId;
                 log.appendChild(line);
               });
             }

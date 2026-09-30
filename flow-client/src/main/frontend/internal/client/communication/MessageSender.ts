@@ -234,7 +234,7 @@ export class MessageSender {
 
     if (!this.#registry.getRequestResponseTracker().hasActiveRequest()) {
       // Direct calls from outside have probably not started a request.
-      this.#registry.getRequestResponseTracker().startRequest();
+      this.#registry.getRequestResponseTracker().startRequest(payload[CLIENT_TO_SERVER_ID] as number);
     }
 
     if (this.#push !== null && this.#push.isBidirectional()) {
@@ -267,7 +267,7 @@ export class MessageSender {
       // Avoid re-sending while a request is still in progress; if the response
       // has not been processed, the reconnection-attempt listener resends.
       if (!this.#registry.getRequestResponseTracker().hasActiveRequest()) {
-        this.#registry.getRequestResponseTracker().startRequest();
+        this.#registry.getRequestResponseTracker().startRequest(payload[CLIENT_TO_SERVER_ID] as number);
         this.#registry.getXhrConnection().send(payload);
       }
     }, timeout);
