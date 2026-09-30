@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.UsageTracker;
@@ -143,6 +144,20 @@ class SharedMapSignalTest extends SignalTestBase {
         assertEquals("value", resultChild.peek());
         assertChildren(signal, "key", "value");
         assertEquals(child.id(), resultChild.id());
+    }
+
+    @Test
+    void putAndPutIfAbsent_valueOfWrongType_throwAndNothingStored() {
+        SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        SharedMapSignal<Object> raw = ((SharedMapSignal) signal);
+        Object wrongType = new Object();
+
+        assertThrows(InvalidSignalValueTypeException.class,
+                () -> raw.put("key", wrongType));
+        assertThrows(InvalidSignalValueTypeException.class,
+                () -> raw.putIfAbsent("key", wrongType));
+        assertEquals(0, signal.peek().size());
     }
 
     @Test

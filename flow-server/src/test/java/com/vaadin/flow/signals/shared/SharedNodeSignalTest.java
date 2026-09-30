@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
@@ -166,6 +167,29 @@ class SharedNodeSignalTest extends SignalTestBase {
         SharedValueSignal<String> keySignal = value.get("key");
         assertNotNull(keySignal);
         assertEquals("value", keySignal.peek());
+    }
+
+    @Test
+    void asMap_putValueOfWrongTypeThroughNode_valueStoredUnchecked() {
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedMapSignal<String> asMap = signal.asMap(String.class);
+
+        // A node signal declares no value type, so there is nothing to check
+        // the value against. Unlike the typed signals it stores whatever it is
+        // given, and the type is only applied when the value is read back.
+        signal.putChildWithValue("key", List.of("not a string"));
+
+        assertEquals(Set.of("key"), asMap.peek().keySet());
+        SharedNodeSignal child = signal.peek().mapChildren().get("key");
+        assertNotNull(child);
+        assertEquals(List.of("not a string"), child.peek().value(List.class));
+
+        // Only the reads that ask for a type the value doesn't match fail
+        SharedValueSignal<String> asString = asMap.peek().get("key");
+        assertNotNull(asString);
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                asString::peek);
+        assertInstanceOf(JacksonException.class, exception.getCause());
     }
 
     /*
