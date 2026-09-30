@@ -78,6 +78,12 @@ public interface ElementRequestHandler extends Serializable {
     /**
      * Whether to invoke this request handler even if the owning element is
      * currently inert.
+     * <p>
+     * This is checked for every request when it is received, so the result can
+     * depend on the current state. For example, an upload component can allow
+     * the remaining files of an upload that started before a modal component
+     * made it inert, while still rejecting an upload that starts while it is
+     * inert.
      *
      * @return {@code true} to invoke for inert elements, {@code false}
      *         otherwise. Defaults to {@code false}.
