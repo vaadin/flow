@@ -159,7 +159,6 @@
                of our test build configs -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.21.0</version>
     </dependency>
 
     <dependency>
