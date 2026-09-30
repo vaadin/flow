@@ -271,7 +271,7 @@ export class MessageHandler {
     this.suspendReponseHandling(lock);
 
     Console.debug('Handling message from server');
-    this.#registry.getRequestResponseTracker().fireResponseHandlingStarted();
+    this.#registry.getRequestResponseTracker().fireResponseHandlingStarted(this.#isResponse(valueMap));
     // Client id must be updated before server id (a server-id update can trigger
     // a resync that must use the updated client id).
     if (CLIENT_TO_SERVER_ID in valueMap) {

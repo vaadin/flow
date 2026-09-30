@@ -27,6 +27,8 @@ import { ResynchronizationState } from './MessageSender';
 export class RequestResponseTracker {
   #hasActiveRequestState = false;
 
+  #activeRequestId = -1;
+
   readonly #registry: Registry;
 
   /**
@@ -38,13 +40,19 @@ export class RequestResponseTracker {
     this.#registry = registry;
   }
 
-  /** Marks that a new request has started and fires the request-start event. */
-  startRequest(): void {
+  /**
+   * Marks that a new request has started and fires the request-start event.
+   *
+   * @param requestId - the client-to-server message id of the request, or -1
+   *          for the initial response that was embedded in the page
+   */
+  startRequest(requestId: number): void {
     if (this.#hasActiveRequestState) {
       throw new Error('Trying to start a new request while another is active');
     }
     this.#hasActiveRequestState = true;
-    this.#registry.getEventBus().fireEvent('vaadin-request-start');
+    this.#activeRequestId = requestId;
+    this.#registry.getEventBus().fireEvent('vaadin-request-start', { requestId });
   }
 
   /**
@@ -67,6 +75,7 @@ export class RequestResponseTracker {
     // After sendInvocationsToServer() there may be a new active request, so the
     // flag must be cleared before, not after, the call.
     this.#hasActiveRequestState = false;
+    const requestId = this.#activeRequestId;
 
     const messageSender = this.#registry.getMessageSender();
     if (
@@ -80,12 +89,18 @@ export class RequestResponseTracker {
       messageSender.sendInvocationsToServer();
     }
 
-    this.#registry.getEventBus().fireEvent('vaadin-request-end');
+    this.#registry.getEventBus().fireEvent('vaadin-request-end', { requestId });
   }
 
-  /** Fires the response-start event (called by the message handler). */
-  fireResponseHandlingStarted(): void {
-    this.#registry.getEventBus().fireEvent('vaadin-response-start');
+  /**
+   * Fires the response-start event (called by the message handler).
+   *
+   * @param response - whether the message is the response to a request, as
+   *          opposed to one the server sent on its own
+   */
+  fireResponseHandlingStarted(response: boolean): void {
+    const requestId = response && this.#hasActiveRequestState ? this.#activeRequestId : -1;
+    this.#registry.getEventBus().fireEvent('vaadin-response-start', { requestId });
   }
 
   /** Fires a reconnection-attempt event with the attempt count. */

@@ -14,6 +14,16 @@
  * the License.
  */
 
+/** The detail of the events about one request to the server. */
+export interface RequestEventDetail {
+  /**
+   * The client-to-server message id of the request, unique within the UI. A
+   * request that is sent again, because no response arrived in time, keeps its
+   * id. It is -1 for a message the server sent on its own, e.g. through push.
+   */
+  readonly requestId: number;
+}
+
 /** The detail of the event fired when the client tries to reconnect. */
 export interface ReconnectionAttemptDetail {
   /** The number of the reconnection attempt, starting from 1. */
@@ -30,11 +40,15 @@ export interface ReconnectionAttemptDetail {
  *   or the request failed and the client has given up on it.
  * - `vaadin-reconnection-attempt`: the client tries to reach the server again
  *   after losing the connection.
+ *
+ * The client sends one request at a time, but the next request may start before
+ * the previous one ends; use {@link RequestEventDetail.requestId} to pair the
+ * events of one request.
  */
 export interface EventMap {
-  'vaadin-request-start': CustomEvent<undefined>;
-  'vaadin-response-start': CustomEvent<undefined>;
-  'vaadin-request-end': CustomEvent<undefined>;
+  'vaadin-request-start': CustomEvent<RequestEventDetail>;
+  'vaadin-response-start': CustomEvent<RequestEventDetail>;
+  'vaadin-request-end': CustomEvent<RequestEventDetail>;
   'vaadin-reconnection-attempt': CustomEvent<ReconnectionAttemptDetail>;
 }
 
@@ -44,7 +58,7 @@ export interface EventMap {
  * page scripts can follow what the engine does:
  *
  * ```js
- * client.eventBus.addEventListener('vaadin-request-end', () => console.log('request done'));
+ * client.eventBus.addEventListener('vaadin-request-end', (event) => console.log(event.detail.requestId));
  * ```
  *
  * It is a plain `EventTarget`, so listeners are added and removed with the
