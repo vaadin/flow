@@ -1165,12 +1165,10 @@ final class Launch {
         AppRuntime appRuntime = runtime();
         List<String> jvmFlags = new ArrayList<>(jvmFlags(tee));
         jvmFlags.addAll(appRuntime.extraJvmFlags());
-        if (!(appRuntime instanceof MainClassRuntime)) {
-            // Only a runtime that hands these to a shell can be defeated by a
-            // space in one of them; see MavenGoalRuntime.unsplittable.
-            MavenGoalRuntime.unsplittable(jvmFlags).forEach(tee::line);
-        }
-        appRuntime.warnings().forEach(tee::line);
+        // Only a runtime that hands these to a string something else splits
+        // can be defeated by a space in one of them, and only it knows which
+        // string that is; see MavenGoalRuntime.unsplittable.
+        appRuntime.warnings(jvmFlags).forEach(tee::line);
         AppRuntime.Invocation invocation = appRuntime.invocation(resolved,
                 jvmFlags,
                 systemProperties(daemonPort, token, launchKind, resolved));
