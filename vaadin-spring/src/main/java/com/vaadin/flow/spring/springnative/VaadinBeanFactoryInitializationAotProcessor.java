@@ -539,15 +539,22 @@ public class VaadinBeanFactoryInitializationAotProcessor
     /**
      * Loads the classes a scan of the given package found, leaving out what the
      * class loader can not load.
+     * <p>
+     * The classes are not initialized, so that a static initializer of an
+     * application or add-on class does not run during the AOT build. A class
+     * that still fails to load, for example because an optional dependency of
+     * an add-on is missing, is skipped instead of failing the build.
      */
     private Set<Class<?>> loadCandidates(
             ClassPathScanningCandidateComponentProvider scanner,
             String basePackage) {
+        ClassLoader classLoader = scanner.getResourceLoader().getClassLoader();
         Set<Class<?>> result = new HashSet<>();
         for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
             try {
-                result.add(Class.forName(bd.getBeanClassName()));
-            } catch (ClassNotFoundException e) {
+                result.add(Class.forName(bd.getBeanClassName(), false,
+                        classLoader));
+            } catch (ClassNotFoundException | LinkageError e) {
                 logger.warn("Could not load class {}", bd.getBeanClassName(),
                         e);
             }

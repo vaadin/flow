@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.spring.springnative;
 
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -22,11 +27,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
+import org.springframework.asm.ClassWriter;
+import org.springframework.asm.MethodVisitor;
+import org.springframework.asm.Opcodes;
+import org.springframework.asm.Type;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationCode;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -790,7 +800,62 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                         RouteWithLayout.class, RouteAliasWithLayout.class);
     }
 
+    @Test
+    void getAnnotatedClasses_classesThatFailToLoadOrInitialize_skippedOrNotInitialized(
+            @TempDir Path classesDir) throws IOException {
+        Path packageDir = Files
+                .createDirectories(classesDir.resolve("org/example/addon"));
+        Files.write(packageDir.resolve("MissingParentView.class"),
+                createRouteClass("org/example/addon/MissingParentView",
+                        "org/example/missing/Parent", false));
+        Files.write(packageDir.resolve("FailingInitializerView.class"),
+                createRouteClass("org/example/addon/FailingInitializerView",
+                        "java/lang/Object", true));
+
+        Thread thread = Thread.currentThread();
+        ClassLoader originalClassLoader = thread.getContextClassLoader();
+        try (URLClassLoader classLoader = new URLClassLoader(
+                new URL[] { classesDir.toUri().toURL() },
+                originalClassLoader)) {
+            thread.setContextClassLoader(classLoader);
+
+            Collection<Class<?>> routes = new VaadinBeanFactoryInitializationAotProcessor()
+                    .getAnnotatedClasses("org.example.addon", Route.class);
+
+            assertThat(routes).extracting(Class::getName).as(
+                    "A class with a missing superclass should be skipped, and a class with a failing static initializer loaded without running it")
+                    .containsExactly(
+                            "org.example.addon.FailingInitializerView");
+        } finally {
+            thread.setContextClassLoader(originalClassLoader);
+        }
+    }
+
     // ================== Helper Methods ==================
+
+    private static byte[] createRouteClass(String internalName,
+            String superName, boolean failingStaticInitializer) {
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, internalName, null,
+                superName, null);
+        writer.visitAnnotation(Type.getDescriptor(Route.class), true)
+                .visitEnd();
+        if (failingStaticInitializer) {
+            MethodVisitor clinit = writer.visitMethod(Opcodes.ACC_STATIC,
+                    "<clinit>", "()V", null, null);
+            clinit.visitCode();
+            clinit.visitTypeInsn(Opcodes.NEW,
+                    "java/lang/IllegalStateException");
+            clinit.visitInsn(Opcodes.DUP);
+            clinit.visitMethodInsn(Opcodes.INVOKESPECIAL,
+                    "java/lang/IllegalStateException", "<init>", "()V", false);
+            clinit.visitInsn(Opcodes.ATHROW);
+            clinit.visitMaxs(0, 0);
+            clinit.visitEnd();
+        }
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
 
     /**
      * Processor that finds nothing, so that a case decides what a scan answers
