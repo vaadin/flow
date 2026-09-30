@@ -148,7 +148,7 @@ export class ApplicationConnection implements PublishedClient {
       // Initial UIDL provided in the DOM, continue as if returned by request.
       //
       // Hack to avoid logging an error in endRequest().
-      this.#registry.getRequestResponseTracker().startRequest(-1);
+      this.#registry.getRequestResponseTracker().startRequest();
       this.#registry.getMessageHandler().handleMessage(initialUidl);
     }
 

@@ -74,7 +74,7 @@ function makeWiredRegistry() {
   class TestMessageSender extends MessageSender {
     override send(): void {
       if (!responseTracker.hasActiveRequest()) {
-        responseTracker.startRequest(0);
+        responseTracker.startRequest();
       }
     }
   }

@@ -21,22 +21,21 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.ClientEventBusView", layout = ViewTestLayout.class)
-public class ClientEventBusView extends Div {
+@Route(value = "com.vaadin.flow.uitest.ui.EventBusView", layout = ViewTestLayout.class)
+public class EventBusView extends Div {
 
     private static final String ADD_REQUEST_LISTENERS = """
             const log = this;
-            const report = (text) => {
-              const line = document.createElement('div');
-              line.className = 'log';
-              line.textContent = text;
-              log.appendChild(line);
-            };
             const clients = window.Vaadin.Flow.clients;
             const client = clients[Object.keys(clients).find((key) => key !== 'TypeScript')];
             const types = ['vaadin-request-start', 'vaadin-response-start', 'vaadin-request-end'];
             for (const type of types) {
-              client.eventBus.addEventListener(type, (event) => report(type + ' ' + event.detail.requestId));
+              client.eventBus.addEventListener(type, () => {
+                const line = document.createElement('div');
+                line.className = 'log';
+                line.textContent = type;
+                log.appendChild(line);
+              });
             }
             """;
 

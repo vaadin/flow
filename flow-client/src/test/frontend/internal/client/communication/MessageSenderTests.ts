@@ -1,12 +1,8 @@
 // Beyond the Java suite: MessageSender has no Java test class in src/test/java or
 // src/test-gwt/java, so every case here is beyond the Java suite.
 import { expect } from '@open-wc/testing';
-import type { EventRemover } from '../../../../../main/frontend/internal/EventRemover';
 import { testRegistry } from '../testRegistry';
-import {
-  ReconnectionAttemptEvent,
-  type ReconnectionAttemptEventHandler
-} from '../../../../../main/frontend/internal/client/communication/ReconnectionAttemptEvent';
+import { EventBus } from '../../../../../main/frontend/internal/client/EventBus';
 import { MessageSender } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 
@@ -14,14 +10,13 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
   const log = {
     xhrSends: [] as Array<Record<string, unknown>>,
     startRequests: 0,
-    startedRequestIds: [] as number[],
     loadingStarts: 0
   };
   let activeRequest = false;
-  const reconnectionHandlers: ReconnectionAttemptEventHandler[] = [];
+  const eventBus = new EventBus();
   return {
     log,
-    reconnectionHandlers,
+    eventBus,
     setActiveRequest: (active: boolean) => {
       activeRequest = active;
     },
@@ -29,16 +24,12 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
       UILifecycle: { isRunning: () => true },
       RequestResponseTracker: {
         hasActiveRequest: () => activeRequest,
-        startRequest: (requestId: number) => {
+        startRequest: () => {
           activeRequest = true;
           log.startRequests++;
-          log.startedRequestIds.push(requestId);
-        },
-        addReconnectionAttemptHandler: (handler: ReconnectionAttemptEventHandler): EventRemover => {
-          reconnectionHandlers.push(handler);
-          return { remove: () => reconnectionHandlers.splice(reconnectionHandlers.indexOf(handler), 1) };
         }
       },
+      EventBus: eventBus,
       ServerRpcQueue: {
         isEmpty: () => true,
         toJson: () => [],
@@ -84,7 +75,7 @@ describe('MessageSender (class)', () => {
     const sent = log.xhrSends[0];
     expect(sent.syncId).to.equal(42);
     expect(sent.clientId).to.equal(0);
-    expect(log.startedRequestIds).to.deep.equal([0]);
+    expect(log.startRequests).to.equal(1);
     expect(sender.hasQueuedMessages()).to.be.true;
   });
 
@@ -147,14 +138,14 @@ describe('MessageSender (class)', () => {
   });
 
   it('resends queued messages on a reconnection attempt', () => {
-    const { registry, log, reconnectionHandlers, setActiveRequest } = makeRegistry();
+    const { registry, log, eventBus, setActiveRequest } = makeRegistry();
     const sender = new MessageSender(registry);
     sender.send({ rpc: [] });
     expect(log.xhrSends).to.have.length(1);
 
     // Simulate the request finishing, then a reconnection attempt.
     setActiveRequest(false);
-    reconnectionHandlers.forEach((handler) => handler(new ReconnectionAttemptEvent(1)));
+    eventBus.fireEvent('vaadin-reconnection-attempt', { attempt: 1 });
     expect(log.xhrSends).to.have.length(2); // queued message resent
   });
 });

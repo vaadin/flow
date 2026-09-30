@@ -24,26 +24,23 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class ClientEventBusIT extends ChromeBrowserTest {
+public class EventBusIT extends ChromeBrowserTest {
 
     @Test
     public void clickButton_busFiresStartResponseAndEndOfRequest() {
         open();
-        // The listener is added while a response is being handled, so it may
-        // already have seen the end of that request.
+        // The listeners are added while a response is being handled, so they
+        // may already have seen the end of that request.
         int linesBeforeClick = getLogLines().size();
 
         findElement(By.id("send")).click();
         waitUntil(driver -> getLogLines().size() >= linesBeforeClick + 3);
 
         List<String> allLines = getLogLines();
-        List<String> lines = allLines.subList(linesBeforeClick,
-                allLines.size());
-        String requestId = lines.get(0)
-                .substring("vaadin-request-start ".length());
-        Assert.assertEquals(List.of("vaadin-request-start " + requestId,
-                "vaadin-response-start " + requestId,
-                "vaadin-request-end " + requestId), lines);
+        Assert.assertEquals(
+                List.of("vaadin-request-start", "vaadin-response-start",
+                        "vaadin-request-end"),
+                allLines.subList(linesBeforeClick, allLines.size()));
         checkLogsForErrors();
     }
 

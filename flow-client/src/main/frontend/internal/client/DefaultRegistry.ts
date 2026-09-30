@@ -70,13 +70,15 @@ export class DefaultRegistry extends Registry {
     this.set(TOKEN.ApplicationConfiguration, applicationConfiguration);
 
     // No constructor dependencies (resolve collaborators lazily via getters).
+    // The event bus comes first, as other services subscribe to it when they
+    // are constructed.
+    this.set(TOKEN.EventBus, new EventBus());
     this.set(TOKEN.ResourceLoader, new ResourceLoader(this, true));
     this.set(TOKEN.URIResolver, new URIResolver(this));
     this.set(TOKEN.DependencyLoader, new DependencyLoader(this));
     this.set(TOKEN.SystemErrorHandler, new SystemErrorHandler(this));
     this.setResettable(TOKEN.UILifecycle, () => new UILifecycle());
     this.set(TOKEN.StateTree, new StateTree(this));
-    this.set(TOKEN.EventBus, new EventBus());
     this.set(TOKEN.RequestResponseTracker, new RequestResponseTracker(this));
     this.set(TOKEN.MessageHandler, new MessageHandler(this));
     this.set(TOKEN.MessageSender, new MessageSender(this, atmospherePushConnectionFactory));

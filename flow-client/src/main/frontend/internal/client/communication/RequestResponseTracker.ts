@@ -15,51 +15,19 @@
  */
 
 // TypeScript port of com.vaadin.client.communication.RequestResponseTracker.
-// It ensures a single active server request at a time and fires
-// request-starting / response-handling-started/ended and reconnection-attempt
-// events. The GWT EventBus is replaced by a per-event-type handler list, which
-// keeps its registration semantics: the same handler added twice is notified
-// twice, and one removal detaches one registration.
+// It ensures a single active server request at a time and fires the
+// request-start, response-start, request-end and reconnection-attempt events.
+// The GWT EventBus is replaced by the client's EventBus, through which page
+// scripts can follow the same events.
 
 import type { Registry } from '../Registry';
-import type { EventRemover } from '../../EventRemover';
-import type { ReconnectionAttemptEventHandler } from './ReconnectionAttemptEvent';
-import type { RequestStartingEventHandler } from './RequestStartingEvent';
-import type { ResponseHandlingEndedEventHandler } from './ResponseHandlingEndedEvent';
-import type { ResponseHandlingStartedEventHandler } from './ResponseHandlingStartedEvent';
-import { ReconnectionAttemptEvent } from './ReconnectionAttemptEvent';
-import { RequestStartingEvent } from './RequestStartingEvent';
-import { ResponseHandlingEndedEvent } from './ResponseHandlingEndedEvent';
-import { ResponseHandlingStartedEvent } from './ResponseHandlingStartedEvent';
 import { ResynchronizationState } from './MessageSender';
-
-function addListener<T>(listeners: T[], listener: T): EventRemover {
-  listeners.push(listener);
-  return {
-    remove: () => {
-      const index = listeners.indexOf(listener);
-      if (index !== -1) {
-        listeners.splice(index, 1);
-      }
-    }
-  };
-}
 
 /** Tracks active server UIDL requests and fires their lifecycle events; mirrors RequestResponseTracker.java. */
 export class RequestResponseTracker {
   #hasActiveRequestState = false;
 
-  #activeRequestId = -1;
-
   readonly #registry: Registry;
-
-  readonly #requestStartingHandlers: RequestStartingEventHandler[] = [];
-
-  readonly #responseHandlingStartedHandlers: ResponseHandlingStartedEventHandler[] = [];
-
-  readonly #responseHandlingEndedHandlers: ResponseHandlingEndedEventHandler[] = [];
-
-  readonly #reconnectionAttemptHandlers: ReconnectionAttemptEventHandler[] = [];
 
   /**
    * Creates a new instance connected to the given registry.
@@ -70,23 +38,13 @@ export class RequestResponseTracker {
     this.#registry = registry;
   }
 
-  /**
-   * Marks that a new request has started and fires the request-starting event.
-   *
-   * @param requestId - the client-to-server message id of the request, or -1
-   *          for the initial response that was embedded in the page
-   */
-  startRequest(requestId: number): void {
+  /** Marks that a new request has started and fires the request-start event. */
+  startRequest(): void {
     if (this.#hasActiveRequestState) {
       throw new Error('Trying to start a new request while another is active');
     }
     this.#hasActiveRequestState = true;
-    this.#activeRequestId = requestId;
-    // Iterate a copy, as SimpleEventBus does, so a handler added or removed
-    // during dispatch does not change who is notified for this event.
-    const event = new RequestStartingEvent(requestId);
-    [...this.#requestStartingHandlers].forEach((handler) => handler(event));
-    this.#registry.getEventBus().fireEvent('vaadin-request-start', { requestId });
+    this.#registry.getEventBus().fireEvent('vaadin-request-start');
   }
 
   /**
@@ -100,7 +58,7 @@ export class RequestResponseTracker {
 
   /**
    * Marks that the current request has ended, sending any pending invocations
-   * and firing the response-handling-ended event.
+   * and firing the request-end event.
    */
   endRequest(): void {
     if (!this.#hasActiveRequestState) {
@@ -109,7 +67,6 @@ export class RequestResponseTracker {
     // After sendInvocationsToServer() there may be a new active request, so the
     // flag must be cleared before, not after, the call.
     this.#hasActiveRequestState = false;
-    const requestId = this.#activeRequestId;
 
     const messageSender = this.#registry.getMessageSender();
     if (
@@ -123,70 +80,16 @@ export class RequestResponseTracker {
       messageSender.sendInvocationsToServer();
     }
 
-    const event = new ResponseHandlingEndedEvent(requestId);
-    [...this.#responseHandlingEndedHandlers].forEach((handler) => handler(event));
-    this.#registry.getEventBus().fireEvent('vaadin-request-end', { requestId });
+    this.#registry.getEventBus().fireEvent('vaadin-request-end');
   }
 
-  /**
-   * Fires the response-handling-started event (called by the message handler).
-   *
-   * @param response - whether the message is the response to a request, as
-   *          opposed to one the server sent on its own
-   */
-  fireResponseHandlingStarted(response: boolean): void {
-    const event = new ResponseHandlingStartedEvent(
-      response && this.#hasActiveRequestState ? this.#activeRequestId : -1
-    );
-    [...this.#responseHandlingStartedHandlers].forEach((handler) => handler(event));
-    if (event.requestId !== -1) {
-      this.#registry.getEventBus().fireEvent('vaadin-response-start', { requestId: event.requestId });
-    }
+  /** Fires the response-start event (called by the message handler). */
+  fireResponseHandlingStarted(): void {
+    this.#registry.getEventBus().fireEvent('vaadin-response-start');
   }
 
   /** Fires a reconnection-attempt event with the attempt count. */
   fireReconnectionAttempt(attempt: number): void {
-    const event = new ReconnectionAttemptEvent(attempt);
-    [...this.#reconnectionAttemptHandlers].forEach((handler) => handler(event));
-  }
-
-  /**
-   * Adds a handler for {@link RequestStartingEvent}s.
-   *
-   * @param handler - the handler to add
-   * @returns a registration object which can be used to remove the handler
-   */
-  addRequestStartingHandler(handler: RequestStartingEventHandler): EventRemover {
-    return addListener(this.#requestStartingHandlers, handler);
-  }
-
-  /**
-   * Adds a handler for {@link ResponseHandlingStartedEvent}s.
-   *
-   * @param handler - the handler to add
-   * @returns a registration object which can be used to remove the handler
-   */
-  addResponseHandlingStartedHandler(handler: ResponseHandlingStartedEventHandler): EventRemover {
-    return addListener(this.#responseHandlingStartedHandlers, handler);
-  }
-
-  /**
-   * Adds a handler for {@link ResponseHandlingEndedEvent}s.
-   *
-   * @param handler - the handler to add
-   * @returns a registration object which can be used to remove the handler
-   */
-  addResponseHandlingEndedHandler(handler: ResponseHandlingEndedEventHandler): EventRemover {
-    return addListener(this.#responseHandlingEndedHandlers, handler);
-  }
-
-  /**
-   * Adds a handler for {@link ReconnectionAttemptEvent}s.
-   *
-   * @param handler - the handler to add
-   * @returns a registration object which can be used to remove the handler
-   */
-  addReconnectionAttemptHandler(handler: ReconnectionAttemptEventHandler): EventRemover {
-    return addListener(this.#reconnectionAttemptHandlers, handler);
+    this.#registry.getEventBus().fireEvent('vaadin-reconnection-attempt', { attempt });
   }
 }

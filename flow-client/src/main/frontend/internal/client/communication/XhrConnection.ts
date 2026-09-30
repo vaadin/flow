@@ -163,7 +163,7 @@ export class XhrConnection {
       },
       false
     );
-    this.#registry.getRequestResponseTracker().addResponseHandlingEndedHandler(() => {
+    this.#registry.getEventBus().addEventListener('vaadin-request-end', () => {
       this.#webkitMaybeIgnoringRequests = false;
     });
   }
