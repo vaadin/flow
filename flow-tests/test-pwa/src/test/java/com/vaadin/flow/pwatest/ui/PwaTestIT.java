@@ -143,7 +143,8 @@ public class PwaTestIT extends ChromeDeviceTest {
         matcher = pattern.matcher(serviceWorkerJS);
         ArrayList<String> precacheUrls = new ArrayList<>();
         while (matcher.find()) {
-            precacheUrls.add(matcher.group(2));
+            // Group 1 is the URL; group 2 is the revision
+            precacheUrls.add(matcher.group(1));
         }
         Assert.assertFalse("Expected at least one precache URL",
                 precacheUrls.isEmpty());
@@ -152,12 +153,54 @@ public class PwaTestIT extends ChromeDeviceTest {
                 precacheUrls.contains("."));
         checkResources(precacheUrls.toArray(new String[] {}));
         checkResources("yes.png", "offline.html");
+
+        assertAppShellStyleSheetHandling(serviceWorkerJS, precacheUrls);
+    }
+
+    /**
+     * The app shell stylesheet is served without a content hash in development,
+     * so the same URL can serve changing contents and has to be handled
+     * network-first. In production the URL carries the hash, which is what
+     * makes cache-first precaching correct.
+     */
+    private void assertAppShellStyleSheetHandling(String serviceWorkerJS,
+            List<String> precacheUrls) throws IOException {
+        if (isProductionMode()) {
+            Assert.assertTrue(
+                    "Expected the stylesheet to be precached with a content "
+                            + "hash, precache URLs were: " + precacheUrls,
+                    precacheUrls.stream().anyMatch(url -> url
+                            .matches("\\./styles\\.css\\?v-c=[0-9a-f]{8}")));
+            Assert.assertFalse(
+                    "Expected no network-first URLs in production, but the "
+                            + "service worker JS was: " + serviceWorkerJS,
+                    serviceWorkerJS.contains("additionalNetworkFirstUrls"));
+        } else {
+            Assert.assertTrue(
+                    "Expected the stylesheet to be served network-first in "
+                            + "development, but the service worker JS was: "
+                            + serviceWorkerJS,
+                    serviceWorkerJS.contains("self.additionalNetworkFirstUrls")
+                            && serviceWorkerJS.contains("'./styles.css'"));
+            Assert.assertTrue("Expected the stylesheet not to be precached in "
+                    + "development, precache URLs were: " + precacheUrls,
+                    precacheUrls.stream()
+                            .noneMatch(url -> url.contains("styles.css")));
+        }
     }
 
     @Test
     public void testPwaResourcesOffline() {
         open();
         waitForServiceWorkerReady();
+
+        // A network-first URL only enters the runtime cache when a fetch
+        // actually passes through the service worker, and the page may have
+        // loaded its stylesheet before the worker took control, so fetch it
+        // once while still online.
+        String styleSheetHref = getAppShellStyleSheetHref();
+        assertExists(styleSheetHref);
+
         getDevTools().setOfflineEnabled(true);
         try {
             // Ensure we are offline
@@ -169,9 +212,31 @@ public class PwaTestIT extends ChromeDeviceTest {
             // check all files checked in testPwaResources, however, currently
             // not all icons are precached.
             checkResources("icons/icon-32x32.png", "yes.png", "offline.html");
+
+            // The app shell stylesheet is what this feature adds: precached in
+            // production, refreshed network-first in development, and served
+            // from the cache offline either way.
+            assertExists(styleSheetHref);
         } finally {
             getDevTools().setOfflineEnabled(false);
         }
+    }
+
+    /**
+     * Gets the app shell stylesheet href as the browser resolved it. Read from
+     * the DOM rather than hardcoded, because in production it carries a
+     * {@code ?v-c=<hash>} parameter that the cached URL has to match exactly.
+     */
+    private String getAppShellStyleSheetHref() {
+        List<String> hrefs = findElements(
+                By.cssSelector("link[rel='stylesheet']")).stream()
+                .map(link -> link.getAttribute("href"))
+                .filter(href -> href != null && href.contains("styles.css"))
+                .collect(Collectors.toList());
+        Assert.assertEquals(
+                "Expected exactly one app shell stylesheet link, was: " + hrefs,
+                1, hrefs.size());
+        return hrefs.get(0);
     }
 
     @Test
@@ -272,6 +337,10 @@ public class PwaTestIT extends ChromeDeviceTest {
         Map data = (Map) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(script, expectedMimeType, url);
 
+        // The fetch rejected, so there is no response to inspect. While
+        // offline that means the URL is not in the service worker cache.
+        Assert.assertNotNull(url + " could not be fetched at all", data);
+
         if (expectedMimeType != null) {
             String mimeType = ((String) data.get("mimeType"))
                     .replaceAll(";[ ]?charset=utf-8", "");
@@ -319,8 +388,7 @@ public class PwaTestIT extends ChromeDeviceTest {
     private boolean isProductionMode() throws IOException {
         ObjectNode stats = readJsonFromUrl(
                 getRootURL() + "?v-r=init&location=");
-        return ((ObjectNode) stats.get("appConfig")).get("productionMode")
-                .asBoolean();
+        return stats.get("appConfig").get("productionMode").asBoolean();
     }
 
     private String getInnerHtml(WebElement element) {

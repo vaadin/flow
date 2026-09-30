@@ -17,9 +17,11 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -197,6 +199,51 @@ public class AppShellRegistry implements Serializable {
         return error;
     }
 
+    /**
+     * Gets the raw {@code @StyleSheet} annotation values declared by the app
+     * shell, in declaration order and without duplicates.
+     * <p>
+     * The values are returned as written in the annotation, without any URL
+     * resolution: callers that need a browser-resolvable URL pass them through
+     * {@link FrontendDependencyUrlResolver#resolveToContextRoot(String)}
+     * themselves, which is also what rejects blank values and path traversals.
+     *
+     * @param service
+     *            the service used to probe for an available Aura stylesheet
+     * @return the declared stylesheet values, never {@code null}
+     */
+    List<String> getStyleSheets(VaadinService service) {
+        var styleSheets = new LinkedHashSet<String>();
+        for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
+            styleSheets.add(sheet.value());
+        }
+
+        // Auto-load Aura if no AppShellConfigurator is defined and Aura is
+        // available. The app shell check comes first so that the resource is
+        // only probed when there is no app shell to take precedence.
+        if (appShellClass == null
+                && service.isResourceAvailable("/" + AURA_STYLESHEET)) {
+            styleSheets.add(AURA_STYLESHEET);
+            if (!auraAutoLoadWarningLogged) {
+                auraAutoLoadWarningLogged = true;
+                log.info(
+                        """
+                                There is no AppShellConfigurator implementation \
+                                available, auto loading the Aura theme. Add an \
+                                AppShellConfigurator to define the theme to use, e.g.
+
+                                import com.vaadin.flow.theme.aura.Aura;
+
+                                @StyleSheet(Aura.STYLESHEET)
+                                public class Application implements AppShellConfigurator {
+                                }
+                                """);
+            }
+        }
+
+        return List.copyOf(styleSheets);
+    }
+
     private AppShellSettings createSettings(VaadinRequest request) {
         AppShellSettings settings = new AppShellSettings();
 
@@ -230,87 +277,24 @@ public class AppShellRegistry implements Serializable {
         }
         getAnnotations(Inline.class).forEach(settings::addInline);
 
-        Map<String, String> stylesheets = new LinkedHashMap<>();
-        for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
-            String href = resolveStyleSheetHref(sheet.value(), request);
-            if (href != null && !href.isBlank()) {
-                stylesheets.put(href, sheet.value());
-            }
-        }
-
-        // Auto-load Aura if no AppShellConfigurator is defined and Aura is
-        // available
-        if (appShellClass == null) {
-            String defaultStylesheet = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                    + AURA_STYLESHEET;
-            VaadinService service = request.getService();
-            if (service.isResourceAvailable("/" + AURA_STYLESHEET)) {
-                String auraHref = resolveStyleSheetHref(defaultStylesheet,
-                        request);
-                if (auraHref != null) {
-                    stylesheets.put(auraHref, defaultStylesheet);
-                    if (!auraAutoLoadWarningLogged) {
-                        auraAutoLoadWarningLogged = true;
-                        log.info(
-                                """
-                                        There is no AppShellConfigurator implementation \
-                                        available, auto loading the Aura theme. Add an \
-                                        AppShellConfigurator to define the theme to use, e.g.
-
-                                        import com.vaadin.flow.theme.aura.Aura;
-
-                                        @StyleSheet(Aura.STYLESHEET)
-                                        public class Application implements AppShellConfigurator {
-                                        }
-                                        """);
-                    }
-                }
-            }
-        }
-
-        if (!request.getService().getDeploymentConfiguration()
-                .isProductionMode()) {
-            ActiveStyleSheetTracker.get(request.getService())
-                    .trackForAppShell(stylesheets.values());
-        }
-
-        addStyleSheets(request, stylesheets, settings);
+        addStyleSheets(request, getStyleSheets(request.getService()), settings);
         return settings;
     }
 
-    private static String resolveStyleSheetHref(String href,
+    /**
+     * Expands an already normalized stylesheet value into the href to emit in
+     * the app shell, appending the content hash in production mode.
+     *
+     * @param normalized
+     *            a value already passed through
+     *            {@link FrontendDependencyUrlResolver#resolveToContextRoot(String)},
+     *            not {@code null}
+     * @param request
+     *            the request being served
+     * @return the href to emit, or {@code null} if it cannot be resolved
+     */
+    private static String resolveStyleSheetHref(String normalized,
             VaadinRequest request) {
-        if (href == null || href.isBlank()) {
-            return null;
-        }
-        if (HandlerHelper
-                .isPathUnsafe(href.startsWith("/") ? href : "/" + href)) {
-            log.warn(
-                    "@StyleSheet href containing traversals ('../') are not allowed, ignored: {}",
-                    href);
-            return null;
-        }
-        href = href.trim();
-        // Accept absolute http(s) URLs unchanged
-        String lower = href.toLowerCase();
-        if (lower.startsWith("http://") || lower.startsWith("https://")) {
-            return href;
-        }
-        // Treat ./ as relative path to static resources location
-        if (href.startsWith("./")) {
-            href = href.substring(2);
-        }
-        // Accept bare paths beginning with '/' as-is
-        if (href.startsWith("/")) {
-            return href;
-        }
-
-        String contextProtocol = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
-        if (!lower.startsWith(contextProtocol)) {
-            // Prepend context protocol so URL is resolved against the
-            // context root by the bootstrap URI resolver below.
-            href = contextProtocol + href;
-        }
         // Use the servlet-relative path (e.g. "./", "../") rather than the
         // absolute context path. The emitted href is then resolved by the
         // browser against <base>, which Vaadin sets from the actual request
@@ -321,7 +305,20 @@ public class AppShellRegistry implements Serializable {
                 .getContextRootRelativePath(request);
         BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
                 servletPathToContextRoot, null);
-        return resolver.resolveVaadinUri(href);
+        String resolved = resolver.resolveVaadinUri(normalized);
+        if (resolved == null) {
+            return null;
+        }
+
+        VaadinService service = request.getService();
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
+        if (config.isProductionMode()) {
+            String hash = ResourceContentHash.getContentHash(service,
+                    normalized);
+            resolved = UrlUtil.appendQueryParameter(resolved,
+                    ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
+        }
+        return resolved;
     }
 
     /**
@@ -421,39 +418,45 @@ public class AppShellRegistry implements Serializable {
     }
 
     private static void addStyleSheets(VaadinRequest request,
-            Map<String, String> stylesheets, AppShellSettings settings) {
-        VaadinService service = request.getService();
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        if (!config.isProductionMode()) {
-            stylesheets.replaceAll((resolved, source) -> {
-                if (source.startsWith("/")) {
-                    source = source.substring(1);
-                }
-                if (source.startsWith("./")) {
-                    source = source.substring(2);
-                }
-                if (source.startsWith(
-                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
-                    source = source.substring(
-                            ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                                    .length());
-                }
-                return source;
-            });
+            List<String> styleSheets, AppShellSettings settings) {
+        final DeploymentConfiguration config = request.getService()
+                .getDeploymentConfiguration();
+        // Different annotation values can denote the same stylesheet, e.g.
+        // "a.css", "./a.css" and "context://a.css" all normalize to
+        // "context://a.css". Normalize first and keep the first spelling of
+        // each so that only one link is emitted per stylesheet, in declaration
+        // order.
+        Map<String, String> sourcePathsByUrl = new LinkedHashMap<>();
+        for (String sourcePath : styleSheets) {
+            String normalized = FrontendDependencyUrlResolver
+                    .resolveToContextRoot(sourcePath);
+            if (normalized != null) {
+                sourcePathsByUrl.putIfAbsent(normalized, sourcePath);
+            }
         }
 
-        stylesheets.forEach((href, sourcePath) -> {
-            String linkHref = href;
-            if (config.isProductionMode()) {
-                String hash = ResourceContentHash.getContentHash(service,
-                        sourcePath);
-                linkHref = UrlUtil.appendQueryParameter(href,
-                        ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
+        // Collected while emitting so that the tracker sees exactly the sheets
+        // that ended up on the page, in the canonical resolveToContextRoot
+        // form that ActiveStyleSheetTracker expects.
+        List<String> trackedUrls = new ArrayList<>();
+        sourcePathsByUrl.forEach((normalized, sourcePath) -> {
+            String href = resolveStyleSheetHref(normalized, request);
+            if (href == null) {
+                return;
             }
-            Map<String, String> attributes = Map.of("rel", "stylesheet",
-                    "data-file-path", sourcePath, "data-id",
-                    "appShell-" + sourcePath);
-            settings.addLink(Position.APPEND, linkHref, attributes);
+            // In development the raw annotation value is exposed so that
+            // StyleSheetHotswapper and the dev tools can match a link by the
+            // same string the annotation declares.
+            Map<String, String> attributes = config.isProductionMode()
+                    ? Map.of("rel", "stylesheet")
+                    : Map.of("rel", "stylesheet", "data-file-path", sourcePath,
+                            "data-id", "appShell-" + sourcePath);
+            settings.addLink(Position.APPEND, href, attributes);
+            trackedUrls.add(normalized);
         });
+        if (!config.isProductionMode()) {
+            ActiveStyleSheetTracker.get(request.getService())
+                    .trackForAppShell(trackedUrls);
+        }
     }
 }

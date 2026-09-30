@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +50,7 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.AppShellRegistry;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -397,9 +399,14 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
     }
 
     private void trackAppShellUrls(VaadinService vaadinService) {
-        ActiveStyleSheetTracker.get(vaadinService)
-                .trackForAppShell(appShellStylesheets.values().stream()
-                        .flatMap(Set::stream).collect(Collectors.toSet()));
+        // appShellStylesheets holds raw annotation values, while
+        // AppShellRegistry tracks the canonical resolveToContextRoot form, so
+        // resolve before handing them over and keep the two producers of the
+        // app shell set in agreement.
+        ActiveStyleSheetTracker.get(vaadinService).trackForAppShell(
+                appShellStylesheets.values().stream().flatMap(Set::stream).map(
+                        FrontendDependencyUrlResolver::resolveToContextRoot)
+                        .filter(Objects::nonNull).collect(Collectors.toSet()));
     }
 
     private boolean isComponentInUse(UI ui, Class<?> componentClass) {

@@ -1,0 +1,9 @@
+/*
+ * App shell stylesheet for PwaTestIT. Served from the servlet context rather
+ * than the frontend build output, so the service worker has to handle it at
+ * runtime: precached in production, where the URL carries the content hash,
+ * and network-first in development, where it does not.
+ */
+body {
+  --pwa-test-stylesheet-loaded: 1;
+}
