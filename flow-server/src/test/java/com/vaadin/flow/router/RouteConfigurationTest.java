@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
@@ -349,6 +350,21 @@ class RouteConfigurationTest {
                 "'url' with parameters should have returned a class");
         assertEquals(Url.class, urlRoute.get(),
                 "'url' registration should be Url");
+    }
+
+    @Test
+    void getUrl_withQueryParameters_appendsQueryStringOnlyWhenPresent() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+        routeConfiguration.update(
+                () -> routeConfiguration.setAnnotatedRoute(OrderView.class));
+        RouteParameters parameters = new RouteParameters("orderId", "1001");
+
+        assertEquals("orders/1001?tab=items&tab=notes", routeConfiguration
+                .getUrl(OrderView.class, parameters, QueryParameters.full(
+                        Map.of("tab", new String[] { "items", "notes" }))));
+        assertEquals("orders/1001", routeConfiguration.getUrl(OrderView.class,
+                parameters, QueryParameters.empty()));
     }
 
     @Test
