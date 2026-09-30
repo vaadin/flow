@@ -172,7 +172,7 @@ What is different is worth knowing:
   `Start-Class`, no `@SpringBootApplication`, no `public static void main`) and no server
   plugin it knows in the pom. Build the module once so there is compiled output to look at,
   or name the answer: `-Dvaadin.dev.mainClass=<class>` or
-  `-Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11>`.
+  `-Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11|wildfly|tomee|payara|payara-micro|liberty|cargo>`.
 - `this project does not depend on the dev-loop daemon` — the application's `pom.xml` is
   missing `com.vaadin:vaadin-dev` (declare it `<optional>true</optional>`, as a generated
   starter does).
@@ -199,7 +199,7 @@ VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g. -Dvaadin.frontend.hotd
                          -Dvaadin.dev.idleSeconds=60, -Dvaadin.dev.reactorRoot=<dir>,
                          -Dvaadin.dev.modules=<dirs>, -Dvaadin.dev.maven=<path>,
                          -Dvaadin.dev.mavenArgs=<args>, -Dvaadin.dev.mainClass=<class>,
-                         -Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11>,
+                         -Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11|wildfly|tomee|payara|payara-micro|liberty|cargo>,
                          -Dvaadin.dev.daemonJar=<path>.
                          Read ONLY when a daemon is spawned: a daemon that is already
                          running ignores it, so `shutdown` first when changing a value.
