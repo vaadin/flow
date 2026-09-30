@@ -4,7 +4,7 @@
 
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { ClientEventBus } from '../../../../main/frontend/internal/client/ClientEventBus';
+import { EventBus } from '../../../../main/frontend/internal/client/EventBus';
 import { publishClient } from '../../../../main/frontend/internal/client/publishClient';
 import type {
   ApplicationConfiguration,
@@ -13,7 +13,7 @@ import type {
 
 const $wnd = window as any;
 
-const eventBus = new ClientEventBus();
+const eventBus = new EventBus();
 
 function fakeConnectionStubs() {
   return {

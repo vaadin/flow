@@ -38,7 +38,7 @@ import { PushConfiguration } from './communication/PushConfiguration';
 import { ReconnectConfiguration } from './communication/ReconnectConfiguration';
 import { Registry, TOKEN } from './Registry';
 import { RequestResponseTracker } from './communication/RequestResponseTracker';
-import { ClientEventBus } from './ClientEventBus';
+import { EventBus } from './EventBus';
 import { ResourceLoader } from './ResourceLoader';
 import { ServerConnector } from './communication/ServerConnector';
 import { ServerRpcQueue } from './communication/ServerRpcQueue';
@@ -76,7 +76,7 @@ export class DefaultRegistry extends Registry {
     this.set(TOKEN.SystemErrorHandler, new SystemErrorHandler(this));
     this.setResettable(TOKEN.UILifecycle, () => new UILifecycle());
     this.set(TOKEN.StateTree, new StateTree(this));
-    this.set(TOKEN.ClientEventBus, new ClientEventBus());
+    this.set(TOKEN.EventBus, new EventBus());
     this.set(TOKEN.RequestResponseTracker, new RequestResponseTracker(this));
     this.set(TOKEN.MessageHandler, new MessageHandler(this));
     this.set(TOKEN.MessageSender, new MessageSender(this, atmospherePushConnectionFactory));

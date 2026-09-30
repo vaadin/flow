@@ -25,7 +25,7 @@ export interface RequestEventDetail {
 }
 
 /**
- * The events fired through a {@link ClientEventBus}, by type.
+ * The events fired through a {@link EventBus}, by type.
  *
  * - `vaadin-request-start`: a request is sent to the server.
  * - `vaadin-response-start`: the client starts handling the response to a
@@ -38,7 +38,7 @@ export interface RequestEventDetail {
  * the previous one ends; use {@link RequestEventDetail.requestId} to pair the
  * events of one request.
  */
-export interface ClientEventMap {
+export interface EventMap {
   'vaadin-request-start': CustomEvent<RequestEventDetail>;
   'vaadin-response-start': CustomEvent<RequestEventDetail>;
   'vaadin-request-end': CustomEvent<RequestEventDetail>;
@@ -56,22 +56,22 @@ export interface ClientEventMap {
  * It is a plain `EventTarget`, so listeners are added and removed with the
  * standard DOM methods and options such as `once` and `signal` work. An error
  * thrown by a listener is reported like any other uncaught error and does not
- * stop the engine or the other listeners. {@link ClientEventMap} lists the
+ * stop the engine or the other listeners. {@link EventMap} lists the
  * event types.
  */
-export class ClientEventBus extends EventTarget {
+export class EventBus extends EventTarget {
   /**
    * Adds a listener for an event type. The type and the event the listener
-   * gets are checked for the types listed in {@link ClientEventMap}.
+   * gets are checked for the types listed in {@link EventMap}.
    *
    * @param type - the event type
    * @param listener - the listener, called with the event
    * @param options - the standard `addEventListener` options
    * @typeParam K - the event type
    */
-  override addEventListener<K extends keyof ClientEventMap>(
+  override addEventListener<K extends keyof EventMap>(
     type: K,
-    listener: (event: ClientEventMap[K]) => void,
+    listener: (event: EventMap[K]) => void,
     options?: boolean | AddEventListenerOptions
   ): void;
   override addEventListener(
@@ -88,16 +88,16 @@ export class ClientEventBus extends EventTarget {
   }
 
   /**
-   * Removes a listener added with {@link ClientEventBus.addEventListener}.
+   * Removes a listener added with {@link EventBus.addEventListener}.
    *
    * @param type - the event type
    * @param listener - the listener to remove
    * @param options - the standard `removeEventListener` options
    * @typeParam K - the event type
    */
-  override removeEventListener<K extends keyof ClientEventMap>(
+  override removeEventListener<K extends keyof EventMap>(
     type: K,
-    listener: (event: ClientEventMap[K]) => void,
+    listener: (event: EventMap[K]) => void,
     options?: boolean | EventListenerOptions
   ): void;
   override removeEventListener(
@@ -120,7 +120,7 @@ export class ClientEventBus extends EventTarget {
    * @param detail - the detail the event carries
    * @typeParam K - the event type
    */
-  fireEvent<K extends keyof ClientEventMap>(type: K, detail: ClientEventMap[K]['detail']): void {
+  fireEvent<K extends keyof EventMap>(type: K, detail: EventMap[K]['detail']): void {
     this.dispatchEvent(new CustomEvent(type, { detail }));
   }
 }

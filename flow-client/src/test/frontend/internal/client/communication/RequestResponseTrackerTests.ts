@@ -4,7 +4,7 @@ import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
 import { RequestResponseTracker } from '../../../../../main/frontend/internal/client/communication/RequestResponseTracker';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
-import { ClientEventBus } from '../../../../../main/frontend/internal/client/ClientEventBus';
+import { EventBus } from '../../../../../main/frontend/internal/client/EventBus';
 
 function makeRegistry(
   opts: {
@@ -17,7 +17,7 @@ function makeRegistry(
 ) {
   let sends = 0;
   const registry = testRegistry({
-    ClientEventBus: new ClientEventBus(),
+    EventBus: new EventBus(),
     UILifecycle: { isRunning: () => opts.running ?? true },
     ServerRpcQueue: { isFlushPending: () => opts.flushPending ?? false },
     MessageSender: {
@@ -99,9 +99,7 @@ describe('RequestResponseTracker', () => {
     tracker.addResponseHandlingEndedHandler((event) => events.push(`ended ${event.requestId}`));
     const published: string[] = [];
     for (const type of ['vaadin-request-start', 'vaadin-response-start', 'vaadin-request-end'] as const) {
-      registry
-        .getClientEventBus()
-        .addEventListener(type, (event) => published.push(`${type} ${event.detail.requestId}`));
+      registry.getEventBus().addEventListener(type, (event) => published.push(`${type} ${event.detail.requestId}`));
     }
 
     tracker.startRequest(1);

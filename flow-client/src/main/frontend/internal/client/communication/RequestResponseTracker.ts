@@ -86,7 +86,7 @@ export class RequestResponseTracker {
     // during dispatch does not change who is notified for this event.
     const event = new RequestStartingEvent(requestId);
     [...this.#requestStartingHandlers].forEach((handler) => handler(event));
-    this.#registry.getClientEventBus().fireEvent('vaadin-request-start', { requestId });
+    this.#registry.getEventBus().fireEvent('vaadin-request-start', { requestId });
   }
 
   /**
@@ -125,7 +125,7 @@ export class RequestResponseTracker {
 
     const event = new ResponseHandlingEndedEvent(requestId);
     [...this.#responseHandlingEndedHandlers].forEach((handler) => handler(event));
-    this.#registry.getClientEventBus().fireEvent('vaadin-request-end', { requestId });
+    this.#registry.getEventBus().fireEvent('vaadin-request-end', { requestId });
   }
 
   /**
@@ -140,7 +140,7 @@ export class RequestResponseTracker {
     );
     [...this.#responseHandlingStartedHandlers].forEach((handler) => handler(event));
     if (event.requestId !== -1) {
-      this.#registry.getClientEventBus().fireEvent('vaadin-response-start', { requestId: event.requestId });
+      this.#registry.getEventBus().fireEvent('vaadin-response-start', { requestId: event.requestId });
     }
   }
 
