@@ -11,6 +11,8 @@ const globalExclusions = [
   // Deploys to a real application server, so it needs one of the container
   // profiles and has its own job in validation.yml
   'flow-tests/vaadin-cdi-tests',
+  // Only in the reactor with -Dnative; runs in spring-native.yml
+  'flow-tests/vaadin-spring-tests/test-spring-native',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
