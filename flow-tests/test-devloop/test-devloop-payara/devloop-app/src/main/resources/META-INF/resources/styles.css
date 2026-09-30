@@ -1,0 +1,5 @@
+/* The application's own stylesheet, next to the one the sibling module ships, so
+   the CSS leg is exercised on both sides of a module boundary. */
+body {
+  margin: 0;
+}

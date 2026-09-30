@@ -18,7 +18,9 @@ package com.vaadin.quarkus.deployment;
 import jakarta.inject.Inject;
 
 import java.io.Serializable;
+import java.lang.reflect.Modifier;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
@@ -42,6 +44,7 @@ import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedPackageBuildItem;
 import io.quarkus.deployment.pkg.NativeConfig;
+import io.quarkus.deployment.util.JandexUtil;
 import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
@@ -80,6 +83,8 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 import org.objectweb.asm.Opcodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -123,6 +128,9 @@ import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
  * </ul>
  */
 public class VaadinQuarkusNativeProcessor {
+
+    private static final Logger LOG = LoggerFactory
+            .getLogger(VaadinQuarkusNativeProcessor.class);
 
     private static final DotName JS_DEFINITION = DotName
             .createSimple(JsDefinition.class);
@@ -371,6 +379,13 @@ public class VaadinQuarkusNativeProcessor {
                                         .toArray(String[]::new))
                                 .constructors().methods().fields().build());
 
+        Set<String> errorParameterTypes = detectErrorParameterTypes(index);
+        if (!errorParameterTypes.isEmpty()) {
+            reflectiveClass.produce(ReflectiveClassBuildItem
+                    .builder(errorParameterTypes.toArray(String[]::new))
+                    .constructors().methods().fields().build());
+        }
+
         Set<ClassInfo> classesWithHierarchy = new HashSet<>();
         classesWithHierarchy.addAll(getJsonClasses(index));
         classesWithHierarchy.addAll(detectClientCallablesTypes(index));
@@ -437,6 +452,51 @@ public class VaadinQuarkusNativeProcessor {
                 .filter(type -> !componentClasses.contains(type.name())
                         && !type.name().toString().startsWith("tools.jackson."))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Collects the exception types that error views handle, which is the type
+     * argument of {@link HasErrorParameter}. Flow creates an instance of such
+     * an exception by reflection when a view reroutes to an error by exception
+     * type.
+     * <p>
+     * The types are returned by name, so that exception types that are not in
+     * the index, such as JDK exceptions, are registered too.
+     */
+    private static Set<String> detectErrorParameterTypes(IndexView index) {
+        DotName hasErrorParameter = DotName
+                .createSimple(HasErrorParameter.class);
+        Set<String> exceptionTypes = new HashSet<>();
+        for (ClassInfo errorView : index
+                .getAllKnownImplementations(hasErrorParameter)) {
+            List<Type> typeArguments;
+            try {
+                typeArguments = JandexUtil.resolveTypeParameters(
+                        errorView.name(), hasErrorParameter, index);
+            } catch (IllegalArgumentException e) {
+                LOG.warn(
+                        "Cannot find the exception type of error view {}, because a class in its hierarchy is not in the Jandex index. "
+                                + "Rerouting to this error by exception type may fail in a native image.",
+                        errorView.name());
+                continue;
+            }
+            Type exceptionType = typeArguments.isEmpty() ? null
+                    : typeArguments.get(0);
+            if (exceptionType != null
+                    && exceptionType.kind() == Type.Kind.CLASS) {
+                exceptionTypes.add(exceptionType.name().toString());
+            } else if (!errorView.isInterface()
+                    && !Modifier.isAbstract(errorView.flags())) {
+                // A generic abstract error view leaves a type variable. Its
+                // subclasses give the concrete type, so only a class that can
+                // be used as an error view is reported.
+                LOG.warn(
+                        "Cannot find the exception type of error view {}: the type argument of HasErrorParameter is {}. "
+                                + "Rerouting to this error by exception type may fail in a native image.",
+                        errorView.name(), exceptionType);
+            }
+        }
+        return exceptionTypes;
     }
 
     private Set<ClassInfo> getJsonClasses(IndexView index) {
