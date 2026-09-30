@@ -61,6 +61,59 @@ export interface ClientEventMap {
  */
 export class ClientEventBus extends EventTarget {
   /**
+   * Adds a listener for an event type. The type and the event the listener
+   * gets are checked for the types listed in {@link ClientEventMap}.
+   *
+   * @param type - the event type
+   * @param listener - the listener, called with the event
+   * @param options - the standard `addEventListener` options
+   * @typeParam K - the event type
+   */
+  override addEventListener<K extends keyof ClientEventMap>(
+    type: K,
+    listener: (event: ClientEventMap[K]) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  override addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  override addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | AddEventListenerOptions
+  ): void {
+    super.addEventListener(type, listener, options);
+  }
+
+  /**
+   * Removes a listener added with {@link ClientEventBus.addEventListener}.
+   *
+   * @param type - the event type
+   * @param listener - the listener to remove
+   * @param options - the standard `removeEventListener` options
+   * @typeParam K - the event type
+   */
+  override removeEventListener<K extends keyof ClientEventMap>(
+    type: K,
+    listener: (event: ClientEventMap[K]) => void,
+    options?: boolean | EventListenerOptions
+  ): void;
+  override removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | EventListenerOptions
+  ): void;
+  override removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject | null,
+    options?: boolean | EventListenerOptions
+  ): void {
+    super.removeEventListener(type, listener, options);
+  }
+
+  /**
    * Fires an event to the listeners of its type.
    *
    * @param type - the event type

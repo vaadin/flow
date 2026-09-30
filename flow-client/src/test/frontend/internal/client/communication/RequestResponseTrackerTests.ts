@@ -98,12 +98,10 @@ describe('RequestResponseTracker', () => {
     tracker.addResponseHandlingStartedHandler((event) => events.push(`response ${event.requestId}`));
     tracker.addResponseHandlingEndedHandler((event) => events.push(`ended ${event.requestId}`));
     const published: string[] = [];
-    for (const type of ['vaadin-request-start', 'vaadin-response-start', 'vaadin-request-end']) {
+    for (const type of ['vaadin-request-start', 'vaadin-response-start', 'vaadin-request-end'] as const) {
       registry
         .getClientEventBus()
-        .addEventListener(type, (event) =>
-          published.push(`${type} ${(event as CustomEvent<{ requestId: number }>).detail.requestId}`)
-        );
+        .addEventListener(type, (event) => published.push(`${type} ${event.detail.requestId}`));
     }
 
     tracker.startRequest(1);
