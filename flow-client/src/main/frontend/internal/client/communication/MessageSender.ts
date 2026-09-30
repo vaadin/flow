@@ -78,8 +78,8 @@ export class MessageSender {
   constructor(registry: Registry, pushConnectionFactory: PushConnectionFactory | null = null) {
     this.#registry = registry;
     this.#pushConnectionFactory = pushConnectionFactory;
-    this.#registry.getRequestResponseTracker().addReconnectionAttemptHandler((event) => {
-      Console.debug(`Re-sending queued messages to the server (attempt ${event.getAttempt()}) ...`);
+    this.#registry.getEventBus().addEventListener('vaadin-reconnection-attempt', (event) => {
+      Console.debug(`Re-sending queued messages to the server (attempt ${event.detail.attempt}) ...`);
       // Try to reconnect by sending queued messages; stop the resend timer since
       // it will not make any request during reconnection anyway.
       this.#resetTimer();

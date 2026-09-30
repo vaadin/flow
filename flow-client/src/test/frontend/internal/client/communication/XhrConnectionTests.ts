@@ -5,20 +5,17 @@ import {
   XhrConnection,
   XhrResponseHandler
 } from '../../../../../main/frontend/internal/client/communication/XhrConnection';
+import { EventBus } from '../../../../../main/frontend/internal/client/EventBus';
 
 function makeRegistry() {
   const calls: string[] = [];
-  const endedHandlers: Array<() => void> = [];
+  const eventBus = new EventBus();
   let handled: unknown = undefined;
   const registry: any = {
     calls,
-    endedHandlers,
+    eventBus,
     getHandled: () => handled,
-    getRequestResponseTracker: () => ({
-      addResponseHandlingEndedHandler: (handler: () => void) => {
-        endedHandlers.push(handler);
-      }
-    }),
+    getEventBus: () => eventBus,
     getConnectionStateHandler: () => ({
       xhrInvalidStatusCode: () => calls.push('invalidStatus'),
       xhrException: () => calls.push('exception'),
@@ -169,7 +166,7 @@ describe('XhrConnection', () => {
       // Ending the response handling clears the flag, which stops the loop.
       // The retry already scheduled still re-sends once — it checks the flag
       // only after resending, as Java does — and no further one is scheduled.
-      registry.endedHandlers.forEach((handler: () => void) => handler());
+      registry.eventBus.fireEvent('vaadin-request-end');
       await new Promise((resolve) => {
         setTimeout(resolve, 400);
       });

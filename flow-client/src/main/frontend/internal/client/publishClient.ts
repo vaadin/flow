@@ -63,7 +63,8 @@ export function publishClient(
     sendEventMessage: (nodeId: number, eventType: string, eventData: object | null) =>
       ac.sendEventMessage(nodeId, eventType, eventData),
     initializing: false,
-    exportedWebComponents: configuration.getExportedWebComponents()
+    exportedWebComponents: configuration.getExportedWebComponents(),
+    eventBus: ac.getEventBus()
   };
 
   if (configuration.isRequestTiming()) {

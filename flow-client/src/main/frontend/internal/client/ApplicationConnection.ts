@@ -45,6 +45,7 @@ import { NodeFeatures } from '../flow/internal/nodefeature/NodeFeatures';
 import { NodeProperties } from '../flow/internal/nodefeature/NodeProperties';
 import { publishClient } from './publishClient';
 import type { ApplicationConnection as PublishedClient } from './clientApi';
+import type { EventBus } from './EventBus';
 import type { ApplicationConfiguration } from './ApplicationConfiguration';
 import { getScheduler } from './TrackingScheduler';
 import type { Registry } from './Registry';
@@ -227,6 +228,11 @@ export class ApplicationConnection implements PublishedClient {
   /** Profiling data for the last request (processing times + server timing + bootstrap). */
   getProfilingData(): number[] {
     return this.#registry.getMessageHandler().getProfilingData();
+  }
+
+  /** The event bus that page scripts can listen to for what this client does. */
+  getEventBus(): EventBus {
+    return this.#registry.getEventBus();
   }
 
   /** Resolves a Vaadin URI (context://, base://) to an absolute URL. */
