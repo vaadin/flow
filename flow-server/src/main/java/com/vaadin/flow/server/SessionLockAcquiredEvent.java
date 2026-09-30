@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import java.time.Duration;
+
 /**
  * Event fired through the {@link VaadinService#getEventBus() service event bus}
  * when a Vaadin session lock has been acquired, for the outermost acquisition
@@ -25,14 +27,46 @@ package com.vaadin.flow.server;
  */
 public class SessionLockAcquiredEvent extends AbstractSessionLockEvent {
 
+    private final Duration waitTime;
+
     /**
-     * Creates a new event.
+     * Creates a new event without a session and with a zero wait time.
      *
      * @param service
-     *            the Vaadin service whose session lock is being acquired or
-     *            released, not {@code null}
+     *            the Vaadin service whose session lock is acquired, not
+     *            {@code null}
      */
     public SessionLockAcquiredEvent(VaadinService service) {
-        super(service);
+        this(service, null, Duration.ZERO);
+    }
+
+    /**
+     * Creates a new event for the given session and wait time.
+     *
+     * @param service
+     *            the Vaadin service whose session lock is acquired, not
+     *            {@code null}
+     * @param session
+     *            the Vaadin session the lock belongs to, or {@code null} if it
+     *            is not known
+     * @param waitTime
+     *            how long the thread waited for the lock, not {@code null}
+     */
+    public SessionLockAcquiredEvent(VaadinService service,
+            VaadinSession session, Duration waitTime) {
+        super(service, session);
+        this.waitTime = waitTime;
+    }
+
+    /**
+     * Gets how long the thread waited for the lock, from the moment it
+     * requested the lock until it acquired it. The time other threads held the
+     * lock meanwhile is included, the time spent in listeners of
+     * {@link SessionLockRequestedEvent} is not.
+     *
+     * @return the wait time, not {@code null}
+     */
+    public Duration getWaitTime() {
+        return waitTime;
     }
 }
