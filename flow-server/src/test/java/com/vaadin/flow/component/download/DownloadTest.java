@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.download;
 
+import java.net.URI;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,6 +34,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -70,12 +72,7 @@ class DownloadTest {
         JsFunction action = actionOf(installFn);
         assertEquals("window.Vaadin.Flow.download.start($0(event))",
                 action.getBody());
-        Object uri = ((JsFunction) action.getCaptures().get(0)).getCaptures()
-                .get(0);
-        assertTrue(
-                uri instanceof String s
-                        && s.startsWith("VAADIN/dynamic/resource/"),
-                "Expected a Vaadin dynamic-resource URI, got: " + uri);
+        resourceUri(action);
     }
 
     @Test
@@ -92,10 +89,12 @@ class DownloadTest {
     }
 
     @Test
-    void removeRegistration_disposesClickListener() {
-        Registration registration = Download.onClick(button)
-                .start("/files/a.bin");
-        singleInstallFn();
+    void removeRegistration_disposesClickListenerAndUnregistersHandler() {
+        Registration registration = Download.onClick(button).start(
+                (DownloadHandler) event -> event.getOutputStream().write(1));
+        URI uri = URI.create(resourceUri(actionOf(singleInstallFn())));
+        StreamResourceRegistry registry = ui.getSession().getResourceRegistry();
+        assertTrue(registry.getResource(uri).isPresent());
         ui.getInternals().getStateTree().collectChanges(c -> {
         });
 
@@ -109,6 +108,18 @@ class DownloadTest {
                 pending.get(0).getInvocation().getExpression()
                         .contains("disposeInitializer"),
                 "Removal should emit the dispose invocation");
+        assertFalse(registry.getResource(uri).isPresent(),
+                "Removal should unregister the handler");
+    }
+
+    private static String resourceUri(JsFunction action) {
+        Object uri = ((JsFunction) action.getCaptures().get(0)).getCaptures()
+                .get(0);
+        assertTrue(
+                uri instanceof String s
+                        && s.startsWith("VAADIN/dynamic/resource/"),
+                "Expected a Vaadin dynamic-resource URI, got: " + uri);
+        return (String) uri;
     }
 
     private JsFunction singleInstallFn() {

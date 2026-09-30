@@ -176,6 +176,19 @@ public class DownloadAction extends Action {
                 .withArguments("event");
     }
 
+    /**
+     * Unregisters the stream resources registered for the
+     * {@link DownloadHandler} flavour, so their URLs stop serving the file.
+     * Call this together with {@link Trigger#remove()} when the download is
+     * removed; the trigger only detaches the client-side listener. Does nothing
+     * for the other flavours.
+     */
+    public void unregisterResources() {
+        if (urlInput instanceof HandlerBinding binding) {
+            binding.unregister();
+        }
+    }
+
     private static LiteralInput<String> literal(String value, String name) {
         return new LiteralInput<>(
                 Objects.requireNonNull(value, name + " must not be null"));
@@ -200,7 +213,11 @@ public class DownloadAction extends Action {
         private static final String ATTR_PREFIX = "data-flow-download-";
 
         private final DownloadHandler handler;
-        private final Map<Element, URI> uriByHost = new IdentityHashMap<>();
+        private final Map<Element, Registered> registeredByHost = new IdentityHashMap<>();
+
+        private record Registered(String attribute,
+                URI uri) implements Serializable {
+        }
 
         HandlerBinding(DownloadHandler handler) {
             this.handler = handler;
@@ -211,16 +228,27 @@ public class DownloadAction extends Action {
             // Register-and-resolve in one step: the URI is stable per
             // (handler, host) pair, so multiple toJs() calls for the same
             // host reuse the same resource.
-            URI uri = uriByHost.computeIfAbsent(trigger.getHost(),
-                    this::registerForHost);
+            URI uri = registeredByHost
+                    .computeIfAbsent(trigger.getHost(), this::registerForHost)
+                    .uri();
             return JsFunction.of("return $0", uri.toASCIIString());
         }
 
-        private URI registerForHost(Element host) {
+        private Registered registerForHost(Element host) {
             StreamResourceRegistry.ElementStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
                     handler, host);
-            host.setAttribute(ATTR_PREFIX + resource.getId(), resource);
-            return StreamResourceRegistry.getURI(resource);
+            String attribute = ATTR_PREFIX + resource.getId();
+            host.setAttribute(attribute, resource);
+            return new Registered(attribute,
+                    StreamResourceRegistry.getURI(resource));
+        }
+
+        private void unregister() {
+            // Removing the attribute also unregisters the resource from the
+            // session's StreamResourceRegistry.
+            registeredByHost.forEach((host, registered) -> host
+                    .removeAttribute(registered.attribute()));
+            registeredByHost.clear();
         }
     }
 }

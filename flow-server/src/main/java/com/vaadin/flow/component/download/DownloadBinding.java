@@ -72,7 +72,8 @@ public final class DownloadBinding implements Serializable {
      * @param handler
      *            produces the file when the browser requests it, not
      *            {@code null}
-     * @return a registration for removing the download from the component
+     * @return a registration for removing the download from the component;
+     *         after removal the handler is no longer served
      */
     public Registration start(DownloadHandler handler) {
         return bind(new DownloadAction(
@@ -111,6 +112,9 @@ public final class DownloadBinding implements Serializable {
 
     private Registration bind(DownloadAction action) {
         trigger.triggers(action);
-        return trigger::remove;
+        return () -> {
+            trigger.remove();
+            action.unregisterResources();
+        };
     }
 }
