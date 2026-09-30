@@ -48,7 +48,7 @@ nothing but the daemon pushes to the browser.
   `-pl :app -am`. `RunMojo` resolves the deployment from the project's own
   packaging and fails outright when there is no such file, so the aggregator pom
   ends the build with `The deployment
-  'target/flow-test-devloop-jbosseap-25.4-SNAPSHOT.pom' could not be found`
+  'target/flow-test-devloop-jbosseap-25.3-SNAPSHOT.pom' could not be found`
   before the server is ever started. The daemon switches the goal off
   reactor-wide with `wildfly.skip` and switches it back on here through a forced
   `<skip>false</skip>` — the same inversion Cargo and both Payaras need. A

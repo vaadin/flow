@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-test-devloop-payara-micro</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.3-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-devloop-payara-micro-app</artifactId>
   <!-- A WAR, deployed rather than served in place: payara-micro:start runs a

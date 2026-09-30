@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-test-devloop-payara</artifactId>
-    <version>25.4-SNAPSHOT</version>
+    <version>25.3-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-devloop-payara-app</artifactId>
   <!-- A WAR, deployed rather than served in place: payara-server:start unzips
