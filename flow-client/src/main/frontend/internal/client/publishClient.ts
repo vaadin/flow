@@ -14,7 +14,7 @@
  * the License.
  */
 
-import type { ApplicationConfiguration, ApplicationConnection, RequestListener } from './clientApi';
+import type { ApplicationConfiguration, ApplicationConnection } from './clientApi';
 
 /**
  * Builds the per-application client API object published on
@@ -64,7 +64,7 @@ export function publishClient(
       ac.sendEventMessage(nodeId, eventType, eventData),
     initializing: false,
     exportedWebComponents: configuration.getExportedWebComponents(),
-    addRequestListener: (listener: RequestListener) => ac.addRequestListener(listener)
+    eventBus: ac.getEventBus()
   };
 
   if (configuration.isRequestTiming()) {

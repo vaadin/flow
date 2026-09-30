@@ -24,10 +24,10 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class RequestListenerIT extends ChromeBrowserTest {
+public class ClientEventBusIT extends ChromeBrowserTest {
 
     @Test
-    public void clickButton_listenerReportsStartResponseAndEndOfRequest() {
+    public void clickButton_busFiresStartResponseAndEndOfRequest() {
         open();
         // The listener is added while a response is being handled, so it may
         // already have seen the end of that request.
@@ -39,9 +39,11 @@ public class RequestListenerIT extends ChromeBrowserTest {
         List<String> allLines = getLogLines();
         List<String> lines = allLines.subList(linesBeforeClick,
                 allLines.size());
-        String requestId = lines.get(0).substring("started ".length());
-        Assert.assertEquals(List.of("started " + requestId,
-                "response " + requestId, "ended " + requestId), lines);
+        String requestId = lines.get(0)
+                .substring("vaadin-request-start ".length());
+        Assert.assertEquals(List.of("vaadin-request-start " + requestId,
+                "vaadin-response-start " + requestId,
+                "vaadin-request-end " + requestId), lines);
         checkLogsForErrors();
     }
 

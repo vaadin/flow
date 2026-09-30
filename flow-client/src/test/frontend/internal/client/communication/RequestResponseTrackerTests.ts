@@ -4,6 +4,7 @@ import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
 import { RequestResponseTracker } from '../../../../../main/frontend/internal/client/communication/RequestResponseTracker';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
+import { ClientEventBus } from '../../../../../main/frontend/internal/client/ClientEventBus';
 
 function makeRegistry(
   opts: {
@@ -16,6 +17,7 @@ function makeRegistry(
 ) {
   let sends = 0;
   const registry = testRegistry({
+    ClientEventBus: new ClientEventBus(),
     UILifecycle: { isRunning: () => opts.running ?? true },
     ServerRpcQueue: { isFlushPending: () => opts.flushPending ?? false },
     MessageSender: {
@@ -85,7 +87,7 @@ describe('RequestResponseTracker', () => {
     expect(queued.sends()).to.equal(1);
   });
 
-  it('reports the id of the request its events are about', () => {
+  it('reports the id of the request its events are about, also on the client event bus', () => {
     // A flush is pending, so ending request 1 sends request 2 before the ended
     // event of request 1 fires.
     let tracker: RequestResponseTracker | null = null;
@@ -95,6 +97,14 @@ describe('RequestResponseTracker', () => {
     tracker.addRequestStartingHandler((event) => events.push(`started ${event.requestId}`));
     tracker.addResponseHandlingStartedHandler((event) => events.push(`response ${event.requestId}`));
     tracker.addResponseHandlingEndedHandler((event) => events.push(`ended ${event.requestId}`));
+    const published: string[] = [];
+    for (const type of ['vaadin-request-start', 'vaadin-response-start', 'vaadin-request-end']) {
+      registry
+        .getClientEventBus()
+        .addEventListener(type, (event) =>
+          published.push(`${type} ${(event as CustomEvent<{ requestId: number }>).detail.requestId}`)
+        );
+    }
 
     tracker.startRequest(1);
     tracker.fireResponseHandlingStarted(false);
@@ -102,6 +112,13 @@ describe('RequestResponseTracker', () => {
     tracker.endRequest();
 
     expect(events).to.deep.equal(['started 1', 'response -1', 'response 1', 'started 2', 'ended 1']);
+    // A message the server sent on its own is not published as a response.
+    expect(published).to.deep.equal([
+      'vaadin-request-start 1',
+      'vaadin-response-start 1',
+      'vaadin-request-start 2',
+      'vaadin-request-end 1'
+    ]);
   });
 
   it('fires response-handling-started and reconnection-attempt with the attempt count', () => {

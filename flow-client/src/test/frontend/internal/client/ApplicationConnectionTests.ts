@@ -4,12 +4,8 @@
 
 import { testRegistry } from './testRegistry';
 import { expect, waitUntil } from '@open-wc/testing';
-import sinon from 'sinon';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
-import { Console } from '../../../../main/frontend/internal/client/Console';
-import { ResynchronizationState } from '../../../../main/frontend/internal/client/communication/MessageSender';
-import { RequestResponseTracker } from '../../../../main/frontend/internal/client/communication/RequestResponseTracker';
 import { getScheduler } from '../../../../main/frontend/internal/client/TrackingScheduler';
 import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
@@ -138,63 +134,6 @@ describe('ApplicationConnection', () => {
     expect(connection.getUIId()).to.equal(7);
     expect(connection.getProfilingData()).to.deep.equal([1, 2]);
     expect(connection.debug()).to.deep.equal({ elementData: { tag: 'body' } });
-  });
-
-  describe('request listener', () => {
-    function makeTracker(): { tracker: RequestResponseTracker; connection: ApplicationConnection } {
-      const registry = testRegistry({
-        UILifecycle: { isRunning: () => true },
-        ServerRpcQueue: { isFlushPending: () => false },
-        MessageSender: {
-          getResynchronizationState: () => ResynchronizationState.NOT_ACTIVE,
-          hasQueuedMessages: () => false
-        }
-      });
-      const tracker = new RequestResponseTracker(registry);
-      registry.register('RequestResponseTracker', tracker);
-      return { tracker, connection: new ApplicationConnection(registry) };
-    }
-
-    afterEach(() => sinon.restore());
-
-    it('reports the start, the response and the end of each request', () => {
-      const { tracker, connection } = makeTracker();
-      const events: string[] = [];
-      connection.addRequestListener({
-        requestStarted: (event) => events.push(`started ${event.requestId}`),
-        responseReceived: (event) => events.push(`response ${event.requestId}`),
-        requestEnded: (event) => events.push(`ended ${event.requestId}`)
-      });
-
-      tracker.startRequest(4);
-      // A message the server pushed on its own is not a response to request 4.
-      tracker.fireResponseHandlingStarted(false);
-      tracker.fireResponseHandlingStarted(true);
-      tracker.endRequest();
-
-      expect(events).to.deep.equal(['started 4', 'response 4', 'ended 4']);
-    });
-
-    it('logs what a listener throws and stops notifying it once removed', () => {
-      const { tracker, connection } = makeTracker();
-      const errorStub = sinon.stub(Console, 'error');
-      const failure = new Error('listener failed');
-      const events: string[] = [];
-      const registration = connection.addRequestListener({
-        requestStarted: () => {
-          throw failure;
-        },
-        requestEnded: (event) => events.push(`ended ${event.requestId}`)
-      });
-
-      tracker.startRequest(1);
-      expect(tracker.hasActiveRequest()).to.be.true;
-      expect(errorStub.calledWith(failure)).to.be.true;
-
-      registration.remove();
-      tracker.endRequest();
-      expect(events).to.be.empty;
-    });
   });
 
   describe('published client API', () => {

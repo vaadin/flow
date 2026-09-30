@@ -21,10 +21,10 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.RequestListenerView", layout = ViewTestLayout.class)
-public class RequestListenerView extends Div {
+@Route(value = "com.vaadin.flow.uitest.ui.ClientEventBusView", layout = ViewTestLayout.class)
+public class ClientEventBusView extends Div {
 
-    private static final String ADD_REQUEST_LISTENER = """
+    private static final String ADD_REQUEST_LISTENERS = """
             const log = this;
             const report = (text) => {
               const line = document.createElement('div');
@@ -34,18 +34,17 @@ public class RequestListenerView extends Div {
             };
             const clients = window.Vaadin.Flow.clients;
             const client = clients[Object.keys(clients).find((key) => key !== 'TypeScript')];
-            client.addRequestListener({
-              requestStarted: (event) => report('started ' + event.requestId),
-              responseReceived: (event) => report('response ' + event.requestId),
-              requestEnded: (event) => report('ended ' + event.requestId)
-            });
+            const types = ['vaadin-request-start', 'vaadin-response-start', 'vaadin-request-end'];
+            for (const type of types) {
+              client.eventBus.addEventListener(type, (event) => report(type + ' ' + event.detail.requestId));
+            }
             """;
 
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         Div log = new Div();
         log.setId("log");
-        log.getElement().executeJs(ADD_REQUEST_LISTENER);
+        log.getElement().executeJs(ADD_REQUEST_LISTENERS);
 
         NativeButton button = new NativeButton("Send request",
                 event -> add(new Div("Request handled")));

@@ -29,6 +29,7 @@ import type { DependencyLoader } from './DependencyLoader';
 import type { SystemErrorHandler } from './SystemErrorHandler';
 import type { UILifecycle } from './UILifecycle';
 import type { RequestResponseTracker } from './communication/RequestResponseTracker';
+import type { ClientEventBus } from './ClientEventBus';
 import type { ReconnectConfiguration } from './communication/ReconnectConfiguration';
 import type { ExecuteJavaScriptProcessor } from './flow/ExecuteJavaScriptProcessor';
 import type { ServerConnector } from './communication/ServerConnector';
@@ -82,6 +83,7 @@ export const TOKEN = {
   SystemErrorHandler: 'SystemErrorHandler',
   UILifecycle: 'UILifecycle',
   RequestResponseTracker: 'RequestResponseTracker',
+  ClientEventBus: 'ClientEventBus',
   ReconnectConfiguration: 'ReconnectConfiguration',
   ExecuteJavaScriptProcessor: 'ExecuteJavaScriptProcessor',
   ServerConnector: 'ServerConnector',
@@ -273,6 +275,15 @@ export class Registry {
    */
   getRequestResponseTracker(): RequestResponseTracker {
     return this.get(TOKEN.RequestResponseTracker);
+  }
+
+  /**
+   * Gets the {@link ClientEventBus} singleton.
+   *
+   * @returns the {@link ClientEventBus} singleton
+   */
+  getClientEventBus(): ClientEventBus {
+    return this.get(TOKEN.ClientEventBus);
   }
 
   /**

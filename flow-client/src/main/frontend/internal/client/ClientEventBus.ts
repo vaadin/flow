@@ -1,0 +1,73 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+/** The detail of the events about one request to the server. */
+export interface RequestEventDetail {
+  /**
+   * The client-to-server message id of the request, unique within the UI. A
+   * request that is sent again, because no response arrived in time, keeps its
+   * id.
+   */
+  readonly requestId: number;
+}
+
+/**
+ * The events fired through a {@link ClientEventBus}, by type.
+ *
+ * - `vaadin-request-start`: a request is sent to the server.
+ * - `vaadin-response-start`: the client starts handling the response to a
+ *   request, before it applies the changes. Messages the server sends on its
+ *   own, e.g. through push, do not fire it.
+ * - `vaadin-request-end`: the request is done: its response has been applied,
+ *   or the request failed and the client has given up on it.
+ *
+ * The client sends one request at a time, but the next request may start before
+ * the previous one ends; use {@link RequestEventDetail.requestId} to pair the
+ * events of one request.
+ */
+export interface ClientEventMap {
+  'vaadin-request-start': CustomEvent<RequestEventDetail>;
+  'vaadin-response-start': CustomEvent<RequestEventDetail>;
+  'vaadin-request-end': CustomEvent<RequestEventDetail>;
+}
+
+/**
+ * An event bus for one client engine, published as
+ * `window.Vaadin.Flow.clients[appId].eventBus` so that page scripts can follow
+ * what the engine does:
+ *
+ * ```js
+ * client.eventBus.addEventListener('vaadin-request-end', (event) => console.log(event.detail.requestId));
+ * ```
+ *
+ * It is a plain `EventTarget`, so listeners are added and removed with the
+ * standard DOM methods and options such as `once` and `signal` work. An error
+ * thrown by a listener is reported like any other uncaught error and does not
+ * stop the engine or the other listeners. {@link ClientEventMap} lists the
+ * event types.
+ */
+export class ClientEventBus extends EventTarget {
+  /**
+   * Fires an event to the listeners of its type.
+   *
+   * @param type - the event type
+   * @param detail - the detail the event carries
+   * @typeParam K - the event type
+   */
+  fireEvent<K extends keyof ClientEventMap>(type: K, detail: ClientEventMap[K]['detail']): void {
+    this.dispatchEvent(new CustomEvent(type, { detail }));
+  }
+}

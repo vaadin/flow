@@ -4,6 +4,7 @@
 
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
+import { ClientEventBus } from '../../../../main/frontend/internal/client/ClientEventBus';
 import { publishClient } from '../../../../main/frontend/internal/client/publishClient';
 import type {
   ApplicationConfiguration,
@@ -11,6 +12,8 @@ import type {
 } from '../../../../main/frontend/internal/client/clientApi';
 
 const $wnd = window as any;
+
+const eventBus = new ClientEventBus();
 
 function fakeConnectionStubs() {
   return {
@@ -28,7 +31,7 @@ function fakeConnectionStubs() {
     isHiddenByServer: sinon.stub().returns(false),
     getElementStyleProperties: sinon.stub().returns({ color: 'red' }),
     getProfilingData: sinon.stub().returns([1, 2]),
-    addRequestListener: sinon.stub().returns({ remove: () => {} }),
+    getEventBus: sinon.stub().returns(eventBus),
     start: sinon.stub()
   };
 }
@@ -75,10 +78,7 @@ describe('publishClient', () => {
 
     client.sendEventMessage(2, 'click', null);
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
-
-    const listener = {};
-    client.addRequestListener(listener);
-    expect(stubs.addRequestListener.calledWith(listener)).to.be.true;
+    expect(client.eventBus).to.equal(eventBus);
   });
 
   it('omits dev-only and profiling methods in production without request timing', () => {

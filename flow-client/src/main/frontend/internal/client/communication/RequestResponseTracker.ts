@@ -86,6 +86,7 @@ export class RequestResponseTracker {
     // during dispatch does not change who is notified for this event.
     const event = new RequestStartingEvent(requestId);
     [...this.#requestStartingHandlers].forEach((handler) => handler(event));
+    this.#registry.getClientEventBus().fireEvent('vaadin-request-start', { requestId });
   }
 
   /**
@@ -124,6 +125,7 @@ export class RequestResponseTracker {
 
     const event = new ResponseHandlingEndedEvent(requestId);
     [...this.#responseHandlingEndedHandlers].forEach((handler) => handler(event));
+    this.#registry.getClientEventBus().fireEvent('vaadin-request-end', { requestId });
   }
 
   /**
@@ -137,6 +139,9 @@ export class RequestResponseTracker {
       response && this.#hasActiveRequestState ? this.#activeRequestId : -1
     );
     [...this.#responseHandlingStartedHandlers].forEach((handler) => handler(event));
+    if (event.requestId !== -1) {
+      this.#registry.getClientEventBus().fireEvent('vaadin-response-start', { requestId: event.requestId });
+    }
   }
 
   /** Fires a reconnection-attempt event with the attempt count. */
