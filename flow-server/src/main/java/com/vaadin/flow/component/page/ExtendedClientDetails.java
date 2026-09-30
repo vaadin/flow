@@ -26,6 +26,8 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.function.UnaryOperator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
@@ -320,12 +322,18 @@ public class ExtendedClientDetails implements Serializable {
                 return ZoneId.of(timeZoneId);
             } catch (DateTimeException e) {
                 // an ID from a newer tzdb than the JVM's, or a garbage value
+                getLogger().debug(
+                        "Browser time zone ID '{}' is not known to the JVM, falling back to offset {} ms",
+                        timeZoneId, timezoneOffset, e);
             }
         }
         try {
             return ZoneOffset.ofTotalSeconds(timezoneOffset / 1000);
         } catch (DateTimeException e) {
             // beyond +-18 hours, only possible with a tampered payload
+            getLogger().debug(
+                    "Browser time zone offset {} ms is out of range, falling back to UTC",
+                    timezoneOffset, e);
             return ZoneOffset.UTC;
         }
     }
@@ -714,6 +722,10 @@ public class ExtendedClientDetails implements Serializable {
         };
         ui.getPage().executeJs(ClientDetailsJs.class).readDetails()
                 .then(resultHandler, errorHandler);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ExtendedClientDetails.class);
     }
 
     /**
