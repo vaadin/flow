@@ -40,6 +40,9 @@ import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.ErrorParameter;
+import com.vaadin.flow.router.HasErrorParameter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -275,6 +278,48 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
+    void testVaadinNativeSupport_registersErrorParameterTypesForReflection()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(HasErrorParameter.class);
+        indexer.indexClass(Component.class);
+        indexer.indexClass(CustomErrorView.class);
+        indexer.indexClass(CustomException.class);
+        indexer.indexClass(GenericErrorView.class);
+        indexer.indexClass(InheritedErrorView.class);
+        indexer.indexClass(InheritedException.class);
+        // IllegalStateException itself is not indexed, like JDK classes in an
+        // application
+        indexer.indexClass(JdkExceptionErrorView.class);
+        Index errorIndex = indexer.complete();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.vaadinNativeSupport(
+                new CombinedIndexBuildItem(errorIndex, errorIndex), item -> {
+                }, item -> {
+                }, reflective::add, item -> {
+                });
+
+        // Flow creates the exception by reflection when a view reroutes to
+        // an error by exception type. The exception types are registered in
+        // their own build item, so it can be checked for exact content: the
+        // direct type argument, the one given to a generic superclass and
+        // the one that is not in the index, but not the bound of the type
+        // variable of the generic superclass.
+        ReflectiveClassBuildItem exceptionTypes = reflective.stream()
+                .filter(item -> item.getClassNames()
+                        .contains(CustomException.class.getName()))
+                .findFirst().orElseThrow();
+        assertTrue(exceptionTypes.isConstructors(),
+                "Should register the constructors of the exception types");
+        assertEquals(
+                Set.of(CustomException.class.getName(),
+                        InheritedException.class.getName(),
+                        IllegalStateException.class.getName()),
+                Set.copyOf(exceptionTypes.getClassNames()));
+    }
+
+    @Test
     void testRegisterJsDefinitionProxies_registersTheAnnotatedInterfaces()
             throws IOException {
         Indexer indexer = new Indexer();
@@ -343,6 +388,43 @@ class VaadinQuarkusNativeProcessorTest {
 
     @JsDefinition
     public static class Greeter {
+    }
+
+    public static class CustomException extends RuntimeException {
+    }
+
+    public static class CustomErrorView extends Component
+            implements HasErrorParameter<CustomException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<CustomException> parameter) {
+            return 500;
+        }
+    }
+
+    public static class InheritedException extends RuntimeException {
+    }
+
+    public abstract static class GenericErrorView<T extends Exception>
+            extends Component implements HasErrorParameter<T> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<T> parameter) {
+            return 500;
+        }
+    }
+
+    public static class InheritedErrorView
+            extends GenericErrorView<InheritedException> {
+    }
+
+    public static class JdkExceptionErrorView extends Component
+            implements HasErrorParameter<IllegalStateException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<IllegalStateException> parameter) {
+            return 500;
+        }
     }
 
     private static Predicate<ClassInfo> containsClass(Class<?> expectedClass) {
