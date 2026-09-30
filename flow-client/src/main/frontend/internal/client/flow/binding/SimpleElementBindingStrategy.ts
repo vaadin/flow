@@ -84,6 +84,7 @@ const ELEMENT_ATTACH_ERROR_PREFIX = 'Element addressed by the ';
 const EVENT_DATA_PHASE = JsonConstants.EVENT_DATA_PHASE;
 const SYNCHRONIZE_PROPERTY_TOKEN = JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN;
 const MAP_STATE_NODE_EVENT_DATA = JsonConstants.MAP_STATE_NODE_EVENT_DATA;
+const SYNCHRONIZE_FOCUSED_ELEMENT_TOKEN = JsonConstants.SYNCHRONIZE_FOCUSED_ELEMENT_TOKEN;
 
 // The callback sending an event to the server for a given debounce phase (null
 // when sent outside any debounce). Compatible with Debouncer's send command.
@@ -1211,9 +1212,12 @@ function handleDomEvent(event: Event, context: BindingContext): void {
 
   const eventData: Record<string, unknown> | null = expressions.length === 0 ? null : {};
   const synchronizeProperties = new Set<string>();
+  let synchronizeFocusedElement = false;
 
   for (const expressionString of expressions) {
-    if (expressionString.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
+    if (expressionString === SYNCHRONIZE_FOCUSED_ELEMENT_TOKEN) {
+      synchronizeFocusedElement = true;
+    } else if (expressionString.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
       synchronizeProperties.add(expressionString.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
     } else if (expressionString === MAP_STATE_NODE_EVENT_DATA) {
       // map event.target to the closest state node
@@ -1252,10 +1256,68 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     }
 
     if (!commandAlreadyExecuted) {
+      if (synchronizeFocusedElement) {
+        synchronizeFocusedElementProperties(node.getTree());
+      }
       commands.forEach((command) => command());
       sendCommand(null);
     }
   }
+}
+
+/**
+ * Sends the current DOM values of the synchronized properties of the innermost
+ * bound element that contains the focus, whichever DOM event they are normally
+ * synchronized on. A text field synchronizing its value on `change` already
+ * holds the typed text in its `value` property; only the `change` event is
+ * missing while the field keeps focus.
+ */
+function synchronizeFocusedElementProperties(tree: StateTree): void {
+  let focused = document.activeElement;
+  while (focused?.shadowRoot?.activeElement) {
+    focused = focused.shadowRoot.activeElement;
+  }
+  // Walk up the composed tree: a slotted <input> leads to its field element,
+  // an element in a shadow root to the host.
+  for (
+    let domNode: Node | null = focused;
+    domNode;
+    domNode = domNode.parentNode ?? (domNode as ShadowRoot).host ?? null
+  ) {
+    const stateNode = tree.getStateNodeForDomNode(domNode);
+    if (stateNode !== null) {
+      const propertyNames = collectSynchronizedPropertyNames(stateNode);
+      if (propertyNames.size > 0) {
+        const properties = stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        propertyNames.forEach((name) => {
+          const property = properties.getProperty(name);
+          const domValue = getJsProperty(domNode as unknown as Record<string, unknown>, name);
+          // The key that fired the shortcut may still type into the field, so
+          // the value sent now must not be written back over it.
+          property.setPreviousDomValue(domValue);
+          property.syncToServer(domValue);
+        });
+        return;
+      }
+    }
+  }
+}
+
+function collectSynchronizedPropertyNames(node: StateNode): Set<string> {
+  const constantPool = node.getTree().getRegistry().getConstantPool();
+  const names = new Set<string>();
+  getDomEventListenerMap(node).forEachProperty((property) => {
+    if (!property.hasValue()) {
+      return;
+    }
+    const expressionSettings = constantPool.get<Record<string, unknown>>(property.getValue() as string);
+    for (const expression of Object.keys(expressionSettings)) {
+      if (expression.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
+        names.add(expression.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
+      }
+    }
+  });
+  return names;
 }
 
 function getSyncPropertyCommand(propertyName: string, context: BindingContext): () => void {
