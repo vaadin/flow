@@ -83,6 +83,7 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandlingCommand;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -2326,22 +2327,30 @@ public class UI extends Component
             // There is a valid route in flow.
             handleNavigation(location, navigationState.get(), trigger);
         } else {
-            // When route does not exist, try to navigate to current route
-            // in order to check if current view can be left before showing
-            // the error page
-            navigateToPlaceholder(location);
-
-            if (!isPostponed()) {
-                // Route does not exist, and current view does not prevent
-                // navigation thus an error page is shown
-                NotFoundException notFoundException = new NotFoundException(
-                        "Couldn't find route for '" + location.getPath() + "'");
-                getInternals().getRouter().handleExceptionNavigation(this,
-                        location, notFoundException,
-                        NavigationTrigger.CLIENT_SIDE, null);
-            }
-
+            // Leaving the current view and showing the error page are one
+            // navigation for the navigation events
+            Router.observeNavigation(this, location,
+                    NavigationTrigger.CLIENT_SIDE,
+                    () -> renderNotFoundView(location));
         }
+    }
+
+    private int renderNotFoundView(Location location) {
+        // When route does not exist, try to navigate to current route
+        // in order to check if current view can be left before showing
+        // the error page
+        navigateToPlaceholder(location);
+
+        if (isPostponed()) {
+            return HttpStatusCode.OK.getCode();
+        }
+        // Route does not exist, and current view does not prevent
+        // navigation thus an error page is shown
+        NotFoundException notFoundException = new NotFoundException(
+                "Couldn't find route for '" + location.getPath() + "'");
+        return getInternals().getRouter().handleExceptionNavigation(this,
+                location, notFoundException, NavigationTrigger.CLIENT_SIDE,
+                null);
     }
 
     private boolean shouldHandleNavigation(Location location) {
@@ -2358,13 +2367,17 @@ public class UI extends Component
 
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
-        NavigationEvent navigationEvent = new NavigationEvent(
-                getInternals().getRouter(), location, this, trigger);
+        // Client-side navigation only reaches this UI when it supports
+        // navigation, which is when it has a router
+        Router router = Objects.requireNonNull(getInternals().getRouter(),
+                "Navigation is not supported by this UI");
+        NavigationEvent navigationEvent = new NavigationEvent(router, location,
+                this, trigger);
 
         JavaScriptNavigationStateRenderer renderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
-        getInternals().getRouter().executeNavigation(this, location,
-                navigationEvent, renderer, (httpStatus) -> {
+        router.executeNavigation(this, location, navigationEvent, renderer,
+                httpStatus -> {
                     forwardToClientUrl = renderer.getClientForwardRoute();
                     getInternals().restoreAppShellTitleIfEmpty();
                 });

@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring.springnative;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.TypeReference;
@@ -44,9 +46,11 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.ComponentEventBusUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.js.JsDefinition;
@@ -146,7 +150,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 registerSubTypes(hints, pkg, RouterLayout.class);
                 registerSubTypes(hints, pkg, HasErrorParameter.class,
                         VaadinBeanFactoryInitializationAotProcessor::getExceptionTypeFromHasErrorParameter);
-                registerSubTypes(hints, pkg, ComponentEvent.class);
+                registerComponentEvents(hints, pkg);
                 registerSubTypes(hints, pkg, HasUrlParameter.class);
                 registerSubTypes(hints, pkg,
                         "com.vaadin.flow.data.converter.Converter");
@@ -190,6 +194,62 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 }
             }
         }
+    }
+
+    /**
+     * Registers the {@link ComponentEvent} subtypes in the given package along
+     * with the types of their {@code @EventData} constructor parameters, so
+     * that Jackson can decode the event data into them.
+     */
+    private void registerComponentEvents(RuntimeHints hints, String pkg) {
+        Set<Class<?>> eventDataTypes = new HashSet<>();
+        for (var c : getSubtypesOf(pkg, ComponentEvent.class)) {
+            registerType(hints, c);
+            eventDataTypes.addAll(getEventDataTypes(c));
+        }
+        if (!eventDataTypes.isEmpty()) {
+            new BindingReflectionHintsRegistrar().registerReflectionHints(
+                    hints.reflection(), eventDataTypes.toArray(new Class[0]));
+        }
+    }
+
+    // Visible for testing
+    static Set<Class<?>> getEventDataTypes(Class<?> eventType) {
+        Set<Class<?>> types = new HashSet<>();
+        for (Constructor<?> constructor : eventType.getConstructors()) {
+            if (!ComponentEventBusUtil.isDomEventConstructor(constructor)) {
+                continue;
+            }
+            Class<?>[] parameterTypes = constructor.getParameterTypes();
+            // The first two parameters are the source and fromClient
+            for (int i = 2; i < parameterTypes.length; i++) {
+                Class<?> type = parameterTypes[i];
+                while (type.isArray()) {
+                    type = type.getComponentType();
+                }
+                if (isDecodedEventDataType(type)) {
+                    types.add(type);
+                }
+            }
+        }
+        return types;
+    }
+
+    /**
+     * Checks whether Jackson decodes event data of the given type through
+     * reflection. Components and elements are looked up from the state tree
+     * instead, and JDK and Jackson types need no hints.
+     */
+    private static boolean isDecodedEventDataType(Class<?> type) {
+        if (type.isPrimitive() || Component.class.isAssignableFrom(type)
+                || type == Element.class) {
+            return false;
+        }
+        String packageName = type.getPackageName();
+        return !packageName.startsWith("java.")
+                && !packageName.startsWith("javax.")
+                && !packageName.startsWith("jakarta.")
+                && !packageName.startsWith("tools.jackson.");
     }
 
     // Visible for testing

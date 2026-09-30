@@ -117,13 +117,13 @@
     <hibernate.validator.version>9.1.4.Final</hibernate.validator.version>
     <slf4j.version>2.0.20</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
-    <jackson.version>3.1.5</jackson.version>
+    <jackson.version>3.1.6</jackson.version>
     <jaxb.version>4.0.9</jaxb.version>
     <guava.version>33.7.1-jre</guava.version>
     <junit.jupiter.version>6.1.3</junit.jupiter.version>
     <weld.version>6.0.4.Final</weld.version>
     <weld.junit.version>5.0.3.Final</weld.junit.version>
-    <quarkus.version>3.33.4</quarkus.version>
+    <quarkus.version>3.33.0</quarkus.version>
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
@@ -148,9 +148,10 @@
     <!-- Modules with no Jandex consumer (tooling, tests, the Spring and CDI
          integrations) set this to true -->
     <jandex.skip>false</jandex.skip>
-    <spotless.plugin.version>3.10.2</spotless.plugin.version>
+    <spotless.plugin.version>3.10.3</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
+    <spotless.prettier.version>3.9.9</spotless.prettier.version>
 
     <!-- Frontend -->
     <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -684,6 +685,7 @@
               <exclude>src/main/frontend/generated/**</exclude>
             </excludes>
             <prettier>
+              <prettierVersion>${spotless.prettier.version}</prettierVersion>
               <configFile>${maven.multiModuleProjectDirectory}/.prettierrc</configFile>
               <npmInstallCache>${maven.multiModuleProjectDirectory}/target/.spotless-npm-install-cache</npmInstallCache>
             </prettier>
@@ -697,6 +699,7 @@
               <exclude>src/main/frontend/generated/**</exclude>
             </excludes>
             <prettier>
+              <prettierVersion>${spotless.prettier.version}</prettierVersion>
               <configFile>${maven.multiModuleProjectDirectory}/.prettierrc</configFile>
               <npmInstallCache>${maven.multiModuleProjectDirectory}/target/.spotless-npm-install-cache</npmInstallCache>
             </prettier>
