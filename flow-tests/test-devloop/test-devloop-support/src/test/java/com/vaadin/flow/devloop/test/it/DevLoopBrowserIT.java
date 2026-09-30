@@ -75,8 +75,7 @@ class DevLoopBrowserIT extends BrowserTestBase implements DriverSupplier {
         patch = new SourcePatch();
         cli.run("start").assertExitCode(0);
         cli.run("apply").assertExitCode(0);
-        getDriver()
-                .get("http://localhost:" + AbstractDevLoopIT.SERVER_PORT + "/");
+        getDriver().get(AbstractDevLoopIT.ROOT_URL + "/");
         // The first snapshot after navigating is usually empty - Vaadin renders
         // client-side - so wait for something the view owns.
         waitFor("#title");
