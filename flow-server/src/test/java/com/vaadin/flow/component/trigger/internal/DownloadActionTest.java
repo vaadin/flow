@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.trigger.internal;
 
 import java.net.URI;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.installFns;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -145,6 +147,38 @@ class DownloadActionTest {
 
         assertFalse(registry.getResource(uri).isPresent(),
                 "Removing the trigger should unregister the handler");
+    }
+
+    @Test
+    void downloadHandler_sharedOnSameHost_removingOneTriggerKeepsOther() {
+        UI ui = new MockUI();
+        VaadinSession session = ui.getSession();
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
+        when(session.getResourceRegistry()).thenReturn(registry);
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        DownloadAction download = new DownloadAction(
+                (DownloadHandler) event -> event.getOutputStream().write(1));
+        DomEventTrigger click = new DomEventTrigger(button, "click");
+        click.triggers(download);
+        DomEventTrigger keydown = new DomEventTrigger(button, "keydown");
+        keydown.triggers(download);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<URI> uris = installFns(ui).stream().map(fn -> URI.create(
+                (String) ((JsFunction) actionOf(fn).getCaptures().get(0))
+                        .getCaptures().get(0)))
+                .toList();
+        assertEquals(2, uris.size());
+
+        click.remove();
+
+        assertFalse(registry.getResource(uris.get(0)).isPresent(),
+                "Removing the trigger should unregister its handler");
+        assertTrue(registry.getResource(uris.get(1)).isPresent(),
+                "The other trigger's URL should keep serving the file");
     }
 
     private static void assertLiteralInputValue(JsFunction action,

@@ -44,7 +44,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * {@link DownloadHandler#forFile}, {@link DownloadHandler#forClassResource},
  * {@link DownloadHandler#fromInputStream}, or any lambda. Use
  * {@link #DownloadAction(DownloadHandler)}. The action lazily registers a
- * stream resource scoped to the trigger host element; the resource is
+ * stream resource per trigger, scoped to its host element; the resource is
  * unregistered when the host detaches and re-registered on re-attach, keeping
  * the URL stable for the lifetime of the action. Removing the trigger
  * unregisters the resource for good, so its URL stops serving the file.
@@ -117,7 +117,7 @@ public class DownloadAction extends Action {
     /**
      * Downloads from a {@link DownloadHandler}. The handler is registered as a
      * stream resource scoped to the trigger host element the first time this
-     * action is wired to a trigger; re-attaching the host re-registers the
+     * action is wired to each trigger; re-attaching the host re-registers the
      * resource with the same URL.
      *
      * @param handler
@@ -184,8 +184,10 @@ public class DownloadAction extends Action {
 
     /**
      * Manages the {@link DownloadHandler}-backed flavour: one
-     * {@link StreamResourceRegistry.ElementStreamResource} per trigger host.
-     * Lifecycle (register on attach, unregister on detach, re-register on
+     * {@link StreamResourceRegistry.ElementStreamResource} per trigger, scoped
+     * to the trigger's host. Each trigger owns its resource, so removing one
+     * trigger leaves the others sharing this action working, even on the same
+     * host. Lifecycle (register on attach, unregister on detach, re-register on
      * re-attach, unregister when the trigger is removed) is delegated to
      * {@link Element#setAttribute(String, AbstractStreamResource)} — the same
      * machinery {@code Image.setSrc(DownloadHandler)} and
@@ -201,7 +203,7 @@ public class DownloadAction extends Action {
         private static final String ATTR_PREFIX = "data-flow-download-";
 
         private final DownloadHandler handler;
-        private final Map<Element, URI> uriByHost = new IdentityHashMap<>();
+        private final Map<Trigger, URI> uriByTrigger = new IdentityHashMap<>();
 
         HandlerBinding(DownloadHandler handler) {
             this.handler = handler;
@@ -210,18 +212,18 @@ public class DownloadAction extends Action {
         @Override
         public JsFunction toJs(Trigger trigger) {
             // Register-and-resolve in one step: the URI is stable per
-            // (handler, host) pair, so multiple toJs() calls for the same
-            // host reuse the same resource.
-            Element host = trigger.getHost();
-            URI uri = uriByHost.get(host);
+            // (handler, trigger) pair, so multiple toJs() calls for the same
+            // trigger reuse the same resource.
+            URI uri = uriByTrigger.get(trigger);
             if (uri == null) {
-                uri = registerForHost(host, trigger);
-                uriByHost.put(host, uri);
+                uri = register(trigger);
+                uriByTrigger.put(trigger, uri);
             }
             return JsFunction.of("return $0", uri.toASCIIString());
         }
 
-        private URI registerForHost(Element host, Trigger trigger) {
+        private URI register(Trigger trigger) {
+            Element host = trigger.getHost();
             StreamResourceRegistry.ElementStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
                     handler, host);
             String attribute = ATTR_PREFIX + resource.getId();
@@ -230,7 +232,7 @@ public class DownloadAction extends Action {
             // URL stops serving the file once the trigger is removed.
             trigger.addCleanup(() -> {
                 host.removeAttribute(attribute);
-                uriByHost.remove(host);
+                uriByTrigger.remove(trigger);
             });
             return StreamResourceRegistry.getURI(resource);
         }

@@ -195,8 +195,15 @@ public abstract class Trigger implements Serializable {
         // Record intent now so the deferred wiring is not flagged as forgotten;
         // the actual triggers(...) call (which also sets armed) runs at attach.
         armed = true;
-        attachTarget.getElement().getNode()
-                .runWhenAttached(ui -> triggers(action.get()));
+        // remove() may run before the target attaches; the pending wiring must
+        // then not build or install the action once the target does attach.
+        boolean[] removed = { false };
+        registrations.add(() -> removed[0] = true);
+        attachTarget.getElement().getNode().runWhenAttached(ui -> {
+            if (!removed[0]) {
+                triggers(action.get());
+            }
+        });
     }
 
     /**
