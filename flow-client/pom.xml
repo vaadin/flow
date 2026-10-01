@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <skipTsTests>${skipTests}</skipTsTests>
     <!-- The module has no Java sources, so there is no API to compare. -->
     <flow.apicmp.skip>true</flow.apicmp.skip>

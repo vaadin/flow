@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
 
@@ -594,6 +595,231 @@ class CompileTest {
         // as something a push can make live.
         assertEquals(List.of(served), changes.live().modified());
         assertEquals(List.of(config), changes.startup().modified());
+    }
+
+    /**
+     * A build that regenerates a resource rewrites it whether or not anything
+     * about it changed, and both of the questions {@code staleResources} asks
+     * are asked of timestamps. Measured in this repository: {@code tsc}
+     * rewrites nine {@code .d.ts} files under
+     * {@code vaadin-dev-server/src/main/resources} on every build with
+     * byte-identical content, and because they are startup-only resources every
+     * apply restarted the application - over an edit that was one method body
+     * in one class.
+     */
+    @Test
+    void staleResources_aRewriteThatChangedNoBytesIsNotAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+
+        // What a regenerating build does: same bytes, new modification time.
+        Files.writeString(served, "body{}");
+        Files.writeString(config, "server.port=8080");
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a rewrite that changed no bytes must not be a change");
+    }
+
+    /**
+     * And answering that once has to settle it. Both cheap questions failed on
+     * a regenerated file - the stamp moved, and the copy is now older than the
+     * source - and neither is mended by finding the bytes unchanged, so before
+     * this the daemon read the file and its copy in full on every apply, for
+     * ever.
+     */
+    @Test
+    void staleResources_aRewriteThatChangedNoBytesIsSettledOnce()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+        Path copy = app.classesDir().resolve("META-INF/resources/site.css");
+
+        // What a regenerating build does: same bytes, later modification time.
+        Files.writeString(served, "body{}");
+        Files.setLastModifiedTime(served, FileTime
+                .fromMillis(Files.getLastModifiedTime(copy).toMillis() + 5000));
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a rewrite that changed no bytes must not be a change");
+
+        assertTrue(
+                Files.getLastModifiedTime(copy)
+                        .compareTo(Files.getLastModifiedTime(served)) >= 0,
+                "the copy must not go on looking older than the source it "
+                        + "already holds");
+        assertTrue(compile.staleResources().isEmpty(),
+                "and it must still not be a change");
+    }
+
+    /** And a rewrite that did change something still is one. */
+    @Test
+    void staleResources_aRewriteThatChangedBytesIsStillAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+
+        Files.writeString(served, "body{margin:0}");
+
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+    }
+
+    /**
+     * The classpath copy cannot answer "has the application been told this?",
+     * because this daemon is not the only thing that writes it. IntelliJ with
+     * auto-build on copies resources on save, so the copy holds the new value
+     * before the apply ever looks - and a check that compared the source with
+     * its copy would call that no change, leaving the application running on
+     * the value it read at startup with no restart in sight.
+     */
+    @Test
+    void staleResources_anEditAlreadyCopiedOutIsStillAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+
+        // The edit, and the copy something other than the apply made of it.
+        Files.writeString(config, "server.port=9090");
+        compile.copyResources(List.of(config));
+
+        assertEquals(List.of(config),
+                compile.staleResources().startup().modified());
+    }
+
+    /** And having acted on those bytes is what makes it quiet again. */
+    @Test
+    void staleResources_actingOnAnEditAlreadyCopiedOutQuietensIt()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(compile.staleResources().copies());
+        compile.seedResources();
+
+        Files.writeString(served, "body{margin:0}");
+        compile.copyResources(List.of(served));
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+
+        compile.markResourcesNotified(List.of(served));
+
+        assertTrue(compile.staleResources().isEmpty(),
+                "a resource the browser has been shown is not a change");
+    }
+
+    /**
+     * The comparison is against the classpath copy, so a resource that has
+     * never been copied is a change however old it is - otherwise a first apply
+     * on a module built by something other than this daemon would leave the
+     * application reading nothing.
+     */
+    @Test
+    void staleResources_aResourceWithNoClasspathCopyIsAChange()
+            throws IOException {
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.seedResources();
+
+        assertEquals(List.of(served),
+                compile.staleResources().live().modified());
+    }
+
+    @Test
+    void staleResources_seedingKeepsAnEditMadeSinceTheAppStarted()
+            throws IOException {
+        // A pom edit re-seeds the baseline while the app runs, and the Maven
+        // re-resolve before it has already copied the edited config onto the
+        // classpath. Taking that edit as acted on would report "no changes"
+        // for a config the running JVM never loaded, and no later apply could
+        // see it again.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Path served = write(
+                "app/src/main/resources/META-INF/resources/site.css", "body{}");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(List.of(served));
+        long appStarted = System.currentTimeMillis();
+        touch("app/src/main/resources/application.properties");
+        // What the re-resolve's process-resources leaves behind: a copy at
+        // least as new as its source.
+        compile.copyResources(List.of(config));
+        touch("app/target/classes/application.properties");
+
+        compile.seedFromDisk(appStarted, appStarted);
+
+        Compile.ResourceChanges changes = compile.staleResources();
+        assertEquals(List.of(config), changes.startup().modified());
+        // What the app did start with is still seeded, or every apply would
+        // report every resource.
+        assertTrue(changes.live().isEmpty());
+    }
+
+    @Test
+    void staleResources_seedingKeepsAnEditMadeSinceTheAppStartedInTheInventory()
+            throws IOException {
+        // Left out of the baseline, a config edited since the app started and
+        // then deleted before the next apply would be reported neither as a
+        // change nor as a deletion, while the running JVM still holds it.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        long appStarted = System.currentTimeMillis();
+        touch("app/src/main/resources/application.properties");
+        compile.copyResources(List.of(config));
+
+        compile.seedFromDisk(appStarted, appStarted);
+        Files.delete(config);
+
+        assertEquals(List.of(config),
+                compile.staleResources().startup().deleted());
     }
 
     @Test

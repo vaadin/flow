@@ -1,0 +1,4 @@
+/* Here so the push has imports to inline; that is what makes it a bundle. */
+.task-list-heading {
+  font-weight: 600;
+}

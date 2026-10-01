@@ -1,0 +1,9 @@
+# Everything `flow:install-dev-cli` writes. In a real project these are committed
+# tooling, like mvnw - the whole point is that every developer and agent on the
+# repository gets the same instructions. Here they are regenerated with
+# overwrite=true on every build, which is how the ITs come to drive the CLI the
+# goal actually installs, so committing them too would only mean a dirty working
+# tree after every edit to the shipped resources.
+/.vaadin/
+/.agents/
+/.claude/

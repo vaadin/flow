@@ -158,6 +158,7 @@ public class UIInternals implements Serializable {
          *            the expression to invoke
          * @param parameters
          *            a list of parameters to use when invoking the script
+         * @since 25.4
          */
         public JavaScriptInvocation(@Nullable JsCall jsCall, String expression,
                 Object... parameters) {
@@ -203,6 +204,7 @@ public class UIInternals implements Serializable {
          *
          * @return the call, or <code>null</code> if the invocation is plain
          *         JavaScript scheduled with an expression
+         * @since 25.4
          */
         public @Nullable JsCall getJsCall() {
             return jsCall;
@@ -284,6 +286,11 @@ public class UIInternals implements Serializable {
     private Location locationForRefresh = null;
 
     private ContinueNavigationAction continueNavigationAction = null;
+
+    // Both only have a value while the router handles a navigation, which
+    // happens within one request, so they are not serialized
+    private transient int navigationDepth;
+    private transient Exception navigationFailure;
 
     /**
      * The Vaadin session to which the related UI belongs.
@@ -828,6 +835,7 @@ public class UIInternals implements Serializable {
      * @param call
      *            the call to run, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(JsCall call) {
         return addJavaScriptInvocation(new JavaScriptInvocation(call,
@@ -842,6 +850,7 @@ public class UIInternals implements Serializable {
      * @param invocation
      *            the invocation to add, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(
             JavaScriptInvocation invocation) {
@@ -859,6 +868,7 @@ public class UIInternals implements Serializable {
      * @param invocation
      *            the invocation to add, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(StateNode owner,
             JavaScriptInvocation invocation) {
@@ -1073,6 +1083,23 @@ public class UIInternals implements Serializable {
         boolean result = pendingTitleUpdateCanceler.cancelExecution();
         pendingTitleUpdateCanceler = null;
         return result;
+    }
+
+    /**
+     * Restores the app shell title if the current page title is empty, i.e. the
+     * route target does not define a title.
+     * <p>
+     * <b>NOTE</b> Intended for internal use, you should not call this method.
+     *
+     * @since 25.4
+     */
+    public void restoreAppShellTitleIfEmpty() {
+        // app shell title is computed from the title tag in index.html
+        if ((title == null || title.isEmpty()) && appShellTitle != null
+                && !appShellTitle.isEmpty()) {
+            cancelPendingTitleUpdate();
+            setTitle(appShellTitle);
+        }
     }
 
     /**
@@ -1616,6 +1643,63 @@ public class UIInternals implements Serializable {
     public void setContinueNavigationAction(
             ContinueNavigationAction continueNavigationAction) {
         this.continueNavigationAction = continueNavigationAction;
+    }
+
+    /**
+     * Marks that the router has started handling a navigation for this UI.
+     * Every call must be matched by a call to {@link #exitNavigation()}, also
+     * when the navigation fails. For framework use only.
+     *
+     * @return {@code true} if this is the outermost navigation, {@code false}
+     *         if it is nested inside a navigation that is already being
+     *         handled, such as a forward, a reroute or an error view
+     */
+    public boolean enterNavigation() {
+        boolean outermost = navigationDepth++ == 0;
+        if (outermost) {
+            // A failure recorded outside a tracked navigation, such as when a
+            // postponed navigation proceeds, must not leak into this one
+            navigationFailure = null;
+        }
+        return outermost;
+    }
+
+    /**
+     * Marks that the router has finished handling a navigation started with
+     * {@link #enterNavigation()}. For framework use only.
+     */
+    public void exitNavigation() {
+        navigationDepth--;
+        if (navigationDepth == 0) {
+            navigationFailure = null;
+        }
+    }
+
+    /**
+     * Records the exception for which an error view is rendered during the
+     * ongoing navigation. Only the first exception of a navigation is kept,
+     * since any later one comes from handling the first. Nothing is recorded
+     * outside a navigation started with {@link #enterNavigation()}. For
+     * framework use only.
+     *
+     * @param exception
+     *            the exception the error view is rendered for, not {@code null}
+     */
+    public void recordNavigationFailure(Exception exception) {
+        if (navigationDepth > 0 && navigationFailure == null) {
+            navigationFailure = exception;
+        }
+    }
+
+    /**
+     * Gets the exception for which an error view was rendered during the
+     * ongoing navigation. For framework use only.
+     *
+     * @return the exception, or {@code null} if no error view has been rendered
+     *         during the ongoing navigation
+     */
+    public @Nullable Exception getNavigationFailure() {
+        return navigationFailure;
     }
 
     /**
@@ -2224,6 +2308,8 @@ public class UIInternals implements Serializable {
      * {@link Page#executeJs(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface TitleJs extends Serializable {

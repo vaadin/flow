@@ -23,6 +23,7 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Test
 import java.io.File
+import kotlin.io.path.createTempDirectory
 import kotlin.test.expect
 import org.junit.Ignore
 
@@ -1106,7 +1107,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         // A shared local build cache used by both the original and the
         // relocated copy. Declared in settings.gradle so it is independent of
         // each project's own location.
-        val buildCacheDir = createTempDir("junit-vaadin-gradle-buildcache")
+        val buildCacheDir = createTempDirectory("junit-vaadin-gradle-buildcache").toFile()
         val buildCachePath = buildCacheDir.absolutePath.replace('\\', '/')
 
         // A fixed rootProject.name keeps the generated application identifier

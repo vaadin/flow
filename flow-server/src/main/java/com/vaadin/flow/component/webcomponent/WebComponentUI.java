@@ -399,6 +399,8 @@ public class WebComponentUI extends UI {
      * How the attributes a theme asks for reach every exported web component on
      * an embedding page, as a JavaScript definition for
      * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ThemeAttributesJs extends Serializable {

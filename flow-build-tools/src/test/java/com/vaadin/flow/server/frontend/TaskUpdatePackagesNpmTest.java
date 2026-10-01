@@ -86,7 +86,7 @@ class TaskUpdatePackagesNpmTest {
 
     private ClassFinder finder;
 
-    private Logger logger = Mockito
+    private final Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
     private File generatedPath;
 
@@ -152,6 +152,132 @@ class TaskUpdatePackagesNpmTest {
         // versions should be the same, except overridden mixin
         verifyVersions(PINNED_DIALOG_VERSION, USER_SPECIFIED_MIXIN_VERSION,
                 PINNED_OVERLAY_VERSION);
+    }
+
+    @Test
+    void npmIsInUse_applicationPinsOwnTypescript_versionPreserved()
+            throws IOException {
+        // An explicit application version is preserved when adding the
+        // classic TypeScript alias to Flow's defaults.
+        createBasicVaadinVersionsJson();
+
+        final ObjectNode packageJsonJson = getOrCreatePackageJson();
+        ObjectNode devDependencies = JacksonUtils.createObjectNode();
+        devDependencies.put("typescript", "6.0.3");
+        packageJsonJson.set(DEV_DEPENDENCIES, devDependencies);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJsonJson.toPrettyString(), StandardCharsets.UTF_8);
+
+        generateDefaultPackageJson();
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        final ObjectNode result = getOrCreatePackageJson();
+        assertEquals("6.0.3",
+                result.get(DEV_DEPENDENCIES).get("typescript").asString(),
+                "Application's own typescript version must not be replaced");
+        assertNull(result.get(OVERRIDES).get("typescript"));
+    }
+
+    @Test
+    void npmIsInUse_newProject_bothTypescriptAliasesManaged()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+        generateDefaultPackageJson();
+        createTask(createApplicationDependencies()).execute();
+
+        ObjectNode result = getOrCreatePackageJson();
+        assertTypescriptAliases(result);
+        assertNull(result.get(OVERRIDES).get("typescript"));
+        assertFalse(generateDefaultPackageJson().modified);
+        TaskUpdatePackages secondRun = createTask(
+                createApplicationDependencies());
+        secondRun.execute();
+        assertFalse(secondRun.modified);
+    }
+
+    @Test
+    void npmIsInUse_previousManagedTypescript7_migratesToClassicAlias()
+            throws IOException {
+        createPreviousTypescriptPackageJson("7.0.2");
+        generateDefaultPackageJson();
+        createTask(createApplicationDependencies()).execute();
+
+        ObjectNode result = getOrCreatePackageJson();
+        assertTypescriptAliases(result);
+        assertEquals("$typescript",
+                result.get(OVERRIDES).get("typescript").asString());
+        assertFalse(generateDefaultPackageJson().modified);
+        TaskUpdatePackages secondRun = createTask(
+                createApplicationDependencies());
+        secondRun.execute();
+        assertFalse(secondRun.modified);
+    }
+
+    @Test
+    void npmIsInUse_previousManagedTypescript7_applicationChangePreserved()
+            throws IOException {
+        createPreviousTypescriptPackageJson("6.0.3");
+        generateDefaultPackageJson();
+        createTask(createApplicationDependencies()).execute();
+
+        ObjectNode result = getOrCreatePackageJson();
+        assertEquals("6.0.3",
+                result.get(DEV_DEPENDENCIES).get("typescript").asString());
+        assertEquals("npm:@typescript/typescript6@6.0.2",
+                result.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES)
+                        .get("typescript").asString());
+        assertEquals("$typescript",
+                result.get(OVERRIDES).get("typescript").asString());
+        assertFalse(generateDefaultPackageJson().modified);
+        TaskUpdatePackages secondRun = createTask(
+                createApplicationDependencies());
+        secondRun.execute();
+        assertFalse(secondRun.modified);
+    }
+
+    private void createPreviousTypescriptPackageJson(String applicationVersion)
+            throws IOException {
+        createBasicVaadinVersionsJson();
+        ObjectNode json = getOrCreatePackageJson();
+        ObjectNode devDependencies = JacksonUtils.createObjectNode();
+        devDependencies.put("typescript", applicationVersion);
+        json.set(DEV_DEPENDENCIES, devDependencies);
+        ObjectNode managedDevDependencies = JacksonUtils.createObjectNode();
+        managedDevDependencies.put("typescript", "7.0.2");
+        ObjectNode vaadin = JacksonUtils.createObjectNode();
+        vaadin.set(DEV_DEPENDENCIES, managedDevDependencies);
+        json.set(VAADIN_DEP_KEY, vaadin);
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put("typescript", "$typescript");
+        json.set(OVERRIDES, overrides);
+        FileUtils.writeStringToFile(packageJson, json.toPrettyString(),
+                StandardCharsets.UTF_8);
+    }
+
+    private void assertTypescriptAliases(ObjectNode json) {
+        for (JsonNode section : List.of(json.get(DEV_DEPENDENCIES),
+                json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES))) {
+            assertEquals("npm:@typescript/typescript6@6.0.2",
+                    section.get("typescript").asString());
+            assertEquals("npm:typescript@7.0.2",
+                    section.get("@typescript/native").asString());
+        }
+        assertNull(json.get(OVERRIDES).get("@typescript/native"));
+    }
+
+    private TaskGeneratePackageJson generateDefaultPackageJson() {
+        // These integration cases need the real defaults; other tests in this
+        // class use an empty mocked resource lookup to isolate version pinning.
+        Mockito.when(finder.getResource(Mockito.anyString()))
+                .thenAnswer(invocation -> getClass().getClassLoader()
+                        .getResource(invocation.getArgument(0)));
+        TaskGeneratePackageJson task = new TaskGeneratePackageJson(
+                new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
+                        .withBundleBuild(true).withReact(false));
+        task.execute();
+        return task;
     }
 
     @Test
@@ -508,7 +634,7 @@ class TaskUpdatePackagesNpmTest {
     @Test
     void npmIsInUse_packageJsonVersionIsUpdated_vaadinSectionIsNotChanged()
             throws IOException {
-        final ObjectNode packageJson = (ObjectNode) getOrCreatePackageJson();
+        final ObjectNode packageJson = getOrCreatePackageJson();
         ObjectNode dependencies = (ObjectNode) packageJson.get(DEPENDENCIES);
         dependencies.put(VAADIN_ELEMENT_MIXIN, "1.2.3");
         ObjectNode vaadinSection = JacksonUtils.createObjectNode();
@@ -720,6 +846,21 @@ class TaskUpdatePackagesNpmTest {
 
         assertFalse(newPackageJson.has("overrides")
                 && newPackageJson.get("overrides").has("localdep"));
+    }
+
+    @Test
+    void npmAlias_isPinnedUsingDependencyReference() throws IOException {
+        createBasicVaadinVersionsJson();
+        Map<String, String> dependencies = createApplicationDependencies();
+        String alias = "npm:@typescript/typescript6@6.0.2";
+        dependencies.put("compiler", alias);
+        createTask(dependencies).execute();
+
+        JsonNode result = getOrCreatePackageJson();
+        assertEquals(alias,
+                result.get(DEPENDENCIES).get("compiler").asString());
+        assertEquals("$compiler",
+                result.get(OVERRIDES).get("compiler").asString());
     }
 
     @Test
@@ -1438,7 +1579,7 @@ class TaskUpdatePackagesNpmTest {
                 "workbox-build should be a nested object");
 
         // Verify nested structure exists
-        assertTrue(((ObjectNode) workboxOverride).size() > 0,
+        assertTrue(workboxOverride.size() > 0,
                 "workbox-build nested object should have at least one child");
 
         // Second run with PWA offline disabled
@@ -1454,7 +1595,7 @@ class TaskUpdatePackagesNpmTest {
             // key
             ObjectNode overridesSection = (ObjectNode) pkgJson.get(OVERRIDES);
             for (String key : JacksonUtils.getKeys(overridesSection)) {
-                assertFalse(key.equals("workbox-build"),
+                assertNotEquals("workbox-build", key,
                         "No workbox-build key should remain in any form");
             }
         }
