@@ -302,12 +302,36 @@ Only when the change genuinely needs them, always after `How to test`:
   but that is not the point of the PR.
 - `> [!WARNING]` — for breaking changes, explaining what breaks and why.
 
+## The labels comment
+
+Right after the first comment, post a second one that lists the labels a
+reviewer or the author can add to the pull request to start something. It is
+a separate comment so the first one can be edited during the review without
+losing it. Post it as is:
+
+````markdown
+## Useful labels
+
+| Label | What it does |
+| --- | --- |
+| `snapshot build` | Builds and publishes a snapshot of this branch to the prerelease Maven repository, and comments the version to use. Rebuilt on every push while the label is there. |
+| `test deploy` | Deploys one test module of this pull request to Fly.io, and comments links to the views it touches. Redeployed on every push, destroyed when the label is removed. |
+| `diagram` | Asks the Diagram Bot for a Mermaid diagram of the change, also when it skipped this pull request. |
+| `target/<version>` | Cherry-picks the change to that maintenance branch once merged, for example `target/25.3`. |
+````
+
+The `snapshot build` and `test deploy` labels only work for a pull request
+from a branch of this repository, not from a fork. When a workflow behind one
+of these labels changes, or a new label-triggered workflow is added under
+`.github/workflows/`, update the table here.
+
 ## Before posting
 
 - Read the description as if it were the commit message, because it will be one:
   plain markdown, no HTML, no headings, wrapped at about 75 characters.
 - Type of change, how to test and every `<details>` block are in the first
   comment, not in the description.
+- The labels comment is posted as a second comment, after the first one.
 - Summary at most 3 sentences, no class or method names in it.
 - Every risk flag walked; non-empty ones at the top, the rest in one ✅ line.
 - Every behaviour change is in **Risks**, not only in the bullets.
