@@ -43,7 +43,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  JAVA_VERSION: 21
   # The same flags validation.yml sets, for the same reason: a 403 from Central
   # is retried rather than failing the build outright. See the note there.
   MAVEN_ARGS: >-
@@ -68,7 +67,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
-          java-version: "${{ env.JAVA_VERSION }}"
+          java-version-file: .tool-versions
           distribution: 'temurin'
       - name: Set flow version to 999.99-SNAPSHOT
         # The cache key is hashed from the poms after this rewrite, so it has to
@@ -174,7 +173,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
-          java-version: "${{ env.JAVA_VERSION }}"
+          java-version-file: .tool-versions
           distribution: 'temurin'
       - name: Set flow version to 999.99-SNAPSHOT
         # The Gradle build takes its version from the root pom, so the poms have
