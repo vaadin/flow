@@ -53,6 +53,15 @@ build tooling, the modules that package only resources (`flow-push`,
 `flow-client`, `flow-server-production-mode`), and the test modules
 (`flow-tests` sets it for every integration test module).
 
+The `jandex.format.version` property sets the index format, apart from the
+plugin version. It has to be the newest format that the Jandex of the Quarkus
+BOM at `quarkus.version` reads, because Quarkus rejects a newer one. The
+[Persistent Index Format Versions](https://smallrye.io/jandex/jandex/main/index.html#persistent_index_format_versions)
+table of the Jandex documentation lists which format each Jandex version
+reads. `FlowJandexIndexTest` in `vaadin-quarkus/deployment` reads the Flow indexes
+with that Jandex and checks their format, so check the format again when
+`quarkus.version` moves to a new LTS.
+
 ## Build plugins
 
 `flow-plugins` holds the build-time tooling. Anything declared as a dependency
