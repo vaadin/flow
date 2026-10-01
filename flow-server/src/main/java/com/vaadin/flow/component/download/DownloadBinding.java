@@ -112,9 +112,6 @@ public final class DownloadBinding implements Serializable {
 
     private Registration bind(DownloadAction action) {
         trigger.triggers(action);
-        return () -> {
-            trigger.remove();
-            action.unregisterResources();
-        };
+        return trigger::remove;
     }
 }

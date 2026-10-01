@@ -23,6 +23,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,6 +87,13 @@ abstract class AbstractDevLoopIT {
     /** The port the application serves on. */
     static final int SERVER_PORT = serverPort();
 
+    /**
+     * Where the application is served, with no trailing slash: the port, and
+     * the context root for a fixture that cannot serve from {@code /}.
+     */
+    static final String ROOT_URL = "http://localhost:" + SERVER_PORT
+            + contextPath();
+
     protected VaadinDevCli cli;
 
     protected SourcePatch patch;
@@ -112,7 +120,7 @@ abstract class AbstractDevLoopIT {
     }
 
     protected String rootUrl() {
-        return "http://localhost:" + SERVER_PORT;
+        return ROOT_URL;
     }
 
     /**
@@ -162,19 +170,38 @@ abstract class AbstractDevLoopIT {
         if (configured != null && !configured.isBlank()) {
             return Integer.parseInt(configured.trim());
         }
+        return readPomProperty("server.port").map(Integer::parseInt)
+                .orElseThrow(() -> new IllegalStateException(
+                        "no -DserverPort and no <server.port> in "
+                                + APP.resolve("pom.xml")
+                                + ": one of the two has to say which port the "
+                                + "application serves on"));
+    }
+
+    /**
+     * The context root this module's pom declares, or empty for {@code /}.
+     * <p>
+     * Every fixture serves from {@code /} except where the container cannot:
+     * Open Liberty answers {@code getContextPath()} with {@code "/"} for a
+     * root-context application, and Flow then builds its {@code VAADIN} paths
+     * with a doubled slash. Read from the pom alone because nothing passes it
+     * on the command line, so an IDE run gets the same answer as a Maven run.
+     */
+    private static String contextPath() {
+        return readPomProperty("devloop.context.path").orElse("");
+    }
+
+    private static Optional<String> readPomProperty(String name) {
         Path pom = APP.resolve("pom.xml");
+        String tag = Pattern.quote(name);
         try {
             Matcher declared = Pattern
-                    .compile("<server\\.port>\\s*(\\d+)\\s*</server\\.port>")
+                    .compile("<" + tag + ">\\s*([^<\\s]+)\\s*</" + tag + ">")
                     .matcher(Files.readString(pom));
-            if (declared.find()) {
-                return Integer.parseInt(declared.group(1));
-            }
+            return declared.find() ? Optional.of(declared.group(1))
+                    : Optional.empty();
         } catch (IOException e) {
             throw new UncheckedIOException("cannot read " + pom, e);
         }
-        throw new IllegalStateException("no -DserverPort and no <server.port> "
-                + "in " + pom + ": one of the two has to say which port the "
-                + "application serves on");
     }
 }

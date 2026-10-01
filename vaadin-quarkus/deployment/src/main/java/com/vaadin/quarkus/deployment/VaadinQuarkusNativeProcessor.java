@@ -360,13 +360,14 @@ public class VaadinQuarkusNativeProcessor {
                 index.getAllKnownSubclasses(AccessDeniedException.class));
         classes.addAll(index.getAllKnownSubclasses(NotFoundException.class));
         classes.addAll(index.getAllKnownSubclasses(Component.class));
-        classes.addAll(index.getAllKnownSubclasses(RouterLayout.class));
-        classes.addAll(index.getAllKnownSubclasses(HasErrorParameter.class));
+        classes.addAll(index.getAllKnownImplementations(RouterLayout.class));
+        classes.addAll(
+                index.getAllKnownImplementations(HasErrorParameter.class));
         classes.addAll(index.getAllKnownSubclasses(ComponentEvent.class));
-        classes.addAll(index.getAllKnownSubclasses(HasUrlParameter.class));
+        classes.addAll(index.getAllKnownImplementations(HasUrlParameter.class));
         classes.add(index.getClassByName(
                 "com.vaadin.flow.component.littemplate.LitTemplateParser$LitTemplateParserFactory"));
-        classes.addAll(index.getAllKnownSubclasses(
+        classes.addAll(index.getAllKnownImplementations(
                 "com.vaadin.flow.data.converter.Converter"));
 
         reflectiveClass

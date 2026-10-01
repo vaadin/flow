@@ -46,9 +46,10 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * {@link #DownloadAction(DownloadHandler)}. The action lazily registers a
  * stream resource scoped to the trigger host element; the resource is
  * unregistered when the host detaches and re-registered on re-attach, keeping
- * the URL stable for the lifetime of the action. Filename comes from the
- * {@link DownloadHandler} itself (its URL postfix and/or
- * {@code Content-Disposition} header).</li>
+ * the URL stable for the lifetime of the action. Removing the trigger
+ * unregisters the resource for good, so its URL stops serving the file.
+ * Filename comes from the {@link DownloadHandler} itself (its URL postfix
+ * and/or {@code Content-Disposition} header).</li>
  * <li><b>A value resolved from client state at fire time</b> — use
  * {@link #DownloadAction(Action.Input)} or
  * {@link #DownloadAction(Action.Input, Action.Input)} when the URL (or
@@ -176,19 +177,6 @@ public class DownloadAction extends Action {
                 .withArguments("event");
     }
 
-    /**
-     * Unregisters the stream resources registered for the
-     * {@link DownloadHandler} flavour, so their URLs stop serving the file.
-     * Call this together with {@link Trigger#remove()} when the download is
-     * removed; the trigger only detaches the client-side listener. Does nothing
-     * for the other flavours.
-     */
-    public void unregisterResources() {
-        if (urlInput instanceof HandlerBinding binding) {
-            binding.unregister();
-        }
-    }
-
     private static LiteralInput<String> literal(String value, String name) {
         return new LiteralInput<>(
                 Objects.requireNonNull(value, name + " must not be null"));
@@ -198,7 +186,7 @@ public class DownloadAction extends Action {
      * Manages the {@link DownloadHandler}-backed flavour: one
      * {@link StreamResourceRegistry.ElementStreamResource} per trigger host.
      * Lifecycle (register on attach, unregister on detach, re-register on
-     * re-attach) is delegated to
+     * re-attach, unregister when the trigger is removed) is delegated to
      * {@link Element#setAttribute(String, AbstractStreamResource)} — the same
      * machinery {@code Image.setSrc(DownloadHandler)} and
      * {@code Anchor.setHref(DownloadHandler)} use. The attribute name is
@@ -213,11 +201,7 @@ public class DownloadAction extends Action {
         private static final String ATTR_PREFIX = "data-flow-download-";
 
         private final DownloadHandler handler;
-        private final Map<Element, Registered> registeredByHost = new IdentityHashMap<>();
-
-        private record Registered(String attribute,
-                URI uri) implements Serializable {
-        }
+        private final Map<Element, URI> uriByHost = new IdentityHashMap<>();
 
         HandlerBinding(DownloadHandler handler) {
             this.handler = handler;
@@ -228,27 +212,27 @@ public class DownloadAction extends Action {
             // Register-and-resolve in one step: the URI is stable per
             // (handler, host) pair, so multiple toJs() calls for the same
             // host reuse the same resource.
-            URI uri = registeredByHost
-                    .computeIfAbsent(trigger.getHost(), this::registerForHost)
-                    .uri();
+            Element host = trigger.getHost();
+            URI uri = uriByHost.get(host);
+            if (uri == null) {
+                uri = registerForHost(host, trigger);
+                uriByHost.put(host, uri);
+            }
             return JsFunction.of("return $0", uri.toASCIIString());
         }
 
-        private Registered registerForHost(Element host) {
+        private URI registerForHost(Element host, Trigger trigger) {
             StreamResourceRegistry.ElementStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
                     handler, host);
             String attribute = ATTR_PREFIX + resource.getId();
             host.setAttribute(attribute, resource);
-            return new Registered(attribute,
-                    StreamResourceRegistry.getURI(resource));
-        }
-
-        private void unregister() {
-            // Removing the attribute also unregisters the resource from the
-            // session's StreamResourceRegistry.
-            registeredByHost.forEach((host, registered) -> host
-                    .removeAttribute(registered.attribute()));
-            registeredByHost.clear();
+            // Removing the attribute also unregisters the resource, so the
+            // URL stops serving the file once the trigger is removed.
+            trigger.addCleanup(() -> {
+                host.removeAttribute(attribute);
+                uriByHost.remove(host);
+            });
+            return StreamResourceRegistry.getURI(resource);
         }
     }
 }
