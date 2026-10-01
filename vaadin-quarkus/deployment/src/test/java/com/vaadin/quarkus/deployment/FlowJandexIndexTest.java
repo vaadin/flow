@@ -15,6 +15,8 @@
  */
 package com.vaadin.quarkus.deployment;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -25,6 +27,8 @@ import java.util.Map;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexReader;
+import org.jboss.jandex.IndexWriter;
+import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.VaadinService;
@@ -38,15 +42,32 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Quarkus BOM manages, which is the Jandex on this test classpath. Jandex
  * rejects an index in a format newer than it knows, and then no Quarkus
  * application with Vaadin builds. So every Flow index has to be readable here,
- * in the format that the jandex.format.version build property sets.
+ * in the format that the jandex.format.version build property sets, and that
+ * format is the newest one this Jandex knows.
  */
 class FlowJandexIndexTest {
 
+    private final int configuredVersion = Integer
+            .parseInt(System.getProperty("jandex.format.version"));
+
+    @Test
+    void write_quarkusJandex_newestFormatIsConfiguredFormat()
+            throws IOException {
+        // Without a format argument, Jandex writes the newest format it knows
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        new IndexWriter(out).write(new Indexer().complete());
+        int newestVersion = new IndexReader(
+                new ByteArrayInputStream(out.toByteArray())).getIndexVersion();
+
+        assertEquals(newestVersion, configuredVersion,
+                "The Jandex of the Quarkus BOM at quarkus.version knows index"
+                        + " formats up to " + newestVersion
+                        + ". Set jandex.format.version to " + newestVersion
+                        + ".");
+    }
+
     @Test
     void read_flowIndexes_readableInConfiguredFormat() throws IOException {
-        int configuredVersion = Integer
-                .parseInt(System.getProperty("jandex.format.version"));
-
         Map<URL, Integer> flowIndexVersions = new LinkedHashMap<>();
         boolean flowServerIndexed = false;
         for (URL url : Collections.list(getClass().getClassLoader()
