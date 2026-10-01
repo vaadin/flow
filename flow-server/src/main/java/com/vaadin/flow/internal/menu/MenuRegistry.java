@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -97,6 +98,9 @@ public class MenuRegistry {
             cachedResource = null;
         }
     }
+
+    private static final Set<Class<?>> unresolvableRouteParents = ConcurrentHashMap
+            .newKeySet();
 
     private static final ObjectMapper mapper = JsonMapper.builder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -330,11 +334,19 @@ public class MenuRegistry {
         } catch (RuntimeException e) {
             // The menu has no route parameters to offer, so a resolver that
             // requires one fails here. Treat that as "no parent" rather than
-            // failing the whole menu.
-            LoggerFactory.getLogger(MenuRegistry.class).debug(
-                    "Failed to resolve the route parent of {} without route "
-                            + "parameters, showing it as a root menu entry",
-                    navigationTarget.getName(), e);
+            // failing the whole menu. The failure can just as well be a bug in
+            // the resolver, so warn about it, but only once per target as the
+            // menu is built over and over again.
+            if (unresolvableRouteParents.add(navigationTarget)) {
+                LoggerFactory.getLogger(MenuRegistry.class).warn(
+                        "Failed to resolve the route parent of {} without "
+                                + "route parameters, showing it as a root "
+                                + "menu entry. Use @Menu(parent) to place it "
+                                + "in the menu explicitly, or return an empty "
+                                + "Optional from the resolver when a "
+                                + "parameter it needs is missing.",
+                        navigationTarget.getName(), e);
+            }
             return Optional.empty();
         }
     }
