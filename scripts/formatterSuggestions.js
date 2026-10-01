@@ -189,6 +189,10 @@ function collectSuggestions(diffFiles, prFiles, maxSuggestions = MAX_SUGGESTIONS
       const inDiff = comment && ranges.some(([from, to]) => from <= first && comment.line <= to);
       if (inDiff && comments.length < maxSuggestions) {
         comments.push(comment);
+        if (block.newlineChanged) {
+          // The suggestion fixes the line, but not the newline after it
+          unsuggested.set(path, (unsuggested.get(path) || 0) + 1);
+        }
       } else {
         unsuggested.set(path, (unsuggested.get(path) || 0) + 1);
       }
