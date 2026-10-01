@@ -6,6 +6,7 @@ const os = require('os');
 const path = require('path');
 const { run, parseDiff, parsePatchRanges, collectSuggestions, summaryComment } = require('./formatterSuggestions');
 
+const SUGGESTION = 'Formatting suggestion:\n';
 const PATH = 'flow-server/src/main/java/com/vaadin/flow/Foo.java';
 
 // What `git diff` prints after spotless:apply reformatted a file
@@ -56,10 +57,10 @@ test('changes within the pull request diff become suggestions', () => {
   const { comments, unsuggested } = suggestions(DIFF, [[PATH, [[1, 10]]]]);
   assert.deepStrictEqual(comments, [
     // An added line is suggested together with the line before it
-    { path: PATH, line: 1, side: 'RIGHT', body: '```suggestion\npackage com.vaadin.flow;\n\n```' },
+    { path: PATH, line: 1, side: 'RIGHT', body: SUGGESTION + '```suggestion\npackage com.vaadin.flow;\n\n```' },
     // Removed lines are suggested as an empty replacement of all of them
-    { path: PATH, line: 4, side: 'RIGHT', start_line: 3, start_side: 'RIGHT', body: '```suggestion\n```' },
-    { path: PATH, line: 5, side: 'RIGHT', body: '```suggestion\n    int x;\n    int y;\n```' }
+    { path: PATH, line: 4, side: 'RIGHT', start_line: 3, start_side: 'RIGHT', body: SUGGESTION + '```suggestion\n```' },
+    { path: PATH, line: 5, side: 'RIGHT', body: SUGGESTION + '```suggestion\n    int x;\n    int y;\n```' }
   ]);
   // A missing newline at the end of the file can't be suggested
   assert.deepStrictEqual([...unsuggested], [[PATH, 1]]);
@@ -85,21 +86,23 @@ test('lines added at the start of a file are suggested with the line after them'
   const diff = `diff --git a/${PATH} b/${PATH}\n--- a/${PATH}\n+++ b/${PATH}\n@@ -1 +1,3 @@\n+/* header */\n+\n package a;\n`;
   const { comments } = suggestions(diff, [[PATH, [[1, 3]]]]);
   assert.deepStrictEqual(comments, [
-    { path: PATH, line: 1, side: 'RIGHT', body: '```suggestion\n/* header */\n\npackage a;\n```' }
+    { path: PATH, line: 1, side: 'RIGHT', body: SUGGESTION + '```suggestion\n/* header */\n\npackage a;\n```' }
   ]);
 });
 
 test('a changed last line is suggested, and its missing newline counted', () => {
   const diff = `diff --git a/${PATH} b/${PATH}\n--- a/${PATH}\n+++ b/${PATH}\n@@ -1,2 +1,2 @@\n class Foo {\n-  }\n\\ No newline at end of file\n+}\n`;
   const { comments, unsuggested } = suggestions(diff, [[PATH, [[1, 2]]]]);
-  assert.deepStrictEqual(comments, [{ path: PATH, line: 2, side: 'RIGHT', body: '```suggestion\n}\n```' }]);
+  assert.deepStrictEqual(comments, [
+    { path: PATH, line: 2, side: 'RIGHT', body: SUGGESTION + '```suggestion\n}\n```' }
+  ]);
   assert.deepStrictEqual([...unsuggested], [[PATH, 1]]);
 });
 
 test('suggestions containing a code fence use a longer one', () => {
   const diff = `diff --git a/${PATH} b/${PATH}\n--- a/${PATH}\n+++ b/${PATH}\n@@ -1 +1 @@\n-  /** \`\`\`x\`\`\` */\n+/** \`\`\`x\`\`\` */\n`;
   const { comments } = suggestions(diff, [[PATH, [[1, 1]]]]);
-  assert.strictEqual(comments[0].body, '````suggestion\n/** ```x``` */\n````');
+  assert.strictEqual(comments[0].body, SUGGESTION + '````suggestion\n/** ```x``` */\n````');
 });
 
 test('summaryComment points at the suggestions and at what could not be suggested', () => {
@@ -147,11 +150,18 @@ async function runWith(diff, state = {}) {
   };
   const github = {
     paginate: async (fn) => lists.get(fn),
+    graphql: async (query, variables) => {
+      if (query.startsWith('mutation')) {
+        calls.push({ name: 'resolveReviewThread', params: variables });
+        return {};
+      }
+      const nodes = state.threads ?? [];
+      return { repository: { pullRequest: { reviewThreads: { pageInfo: { hasNextPage: false }, nodes } } } };
+    },
     rest: {
       pulls: {
         list: list(state.pulls ?? [{ number: 7, head: { sha: HEAD } }]),
         listFiles: list([{ filename: PATH, patch: PATCH }]),
-        listReviews: list(state.reviews ?? []),
         createReview: record('createReview', state.createReviewError)
       },
       issues: {
@@ -199,12 +209,45 @@ test('run posts the suggestions in a review and the summary in a comment', async
   assert.match(calls[1].params.body, /3 formatting changes are suggested/);
 });
 
-test('run does not post the suggestions twice for the same commit', async () => {
-  const reviews = [{ commit_id: HEAD, body: '<!-- formatter-suggestions -->\n' }];
-  const calls = await runWith(DIFF, { reviews, comments: [STICKY] });
+/** A review thread as GraphQL returns it. */
+const thread = (id, { line, startLine = null, body, resolved = false, replies = [] }) => ({
+  id,
+  isResolved: resolved,
+  path: PATH,
+  line,
+  startLine,
+  comments: {
+    nodes: [
+      { author: { login: 'github-actions' }, body },
+      ...replies.map((login) => ({ author: { login }, body: 'ok' }))
+    ]
+  }
+});
+const REPEATED = SUGGESTION + '```suggestion\n    int x;\n    int y;\n```';
+
+test('run neither posts again nor resolves a suggestion it still makes', async () => {
+  const threads = [thread('T1', { line: 5, body: REPEATED })];
+  const calls = await runWith(DIFF, { threads, comments: [STICKY] });
   assert.deepStrictEqual(
     calls.map((call) => call.name),
-    ['updateComment']
+    ['createReview', 'updateComment']
+  );
+  assert.strictEqual(calls[0].params.comments.length, 2);
+  assert.match(calls[1].params.body, /3 formatting changes are suggested/);
+});
+
+test('run resolves the suggestions it no longer makes, unless someone replied', async () => {
+  const threads = [
+    thread('outdated', { line: null, body: REPEATED }),
+    thread('changed', { line: 5, body: SUGGESTION + '```suggestion\nother\n```' }),
+    thread('replied', { line: null, body: REPEATED, replies: ['author'] }),
+    thread('resolved', { line: null, body: REPEATED, resolved: true }),
+    thread('other', { line: null, body: 'Not a formatting suggestion' })
+  ];
+  const calls = await runWith(DIFF, { threads });
+  assert.deepStrictEqual(
+    calls.filter((call) => call.name === 'resolveReviewThread').map((call) => call.params.id),
+    ['outdated', 'changed']
   );
 });
 
@@ -215,9 +258,12 @@ test('run counts the suggestions as not suggested when the review is refused', a
   assert.match(body, /4 formatting changes could not be suggested/);
 });
 
-test('run deletes the comment once the format is fixed', async () => {
-  const calls = await runWith('', { comments: [STICKY] });
-  assert.deepStrictEqual(calls, [{ name: 'deleteComment', params: { owner: 'vaadin', repo: 'flow', comment_id: 42 } }]);
+test('run resolves the suggestions and deletes the comment once the format is fixed', async () => {
+  const calls = await runWith('', { comments: [STICKY], threads: [thread('T1', { line: 5, body: REPEATED })] });
+  assert.deepStrictEqual(calls, [
+    { name: 'resolveReviewThread', params: { id: 'T1' } },
+    { name: 'deleteComment', params: { owner: 'vaadin', repo: 'flow', comment_id: 42 } }
+  ]);
 });
 
 test('run rejects an oversized diff', async () => {

@@ -234,6 +234,14 @@ to, so the author can accept them with **Commit suggestions** instead of
 running the formatter locally. The suggestions are taken verbatim from the
 formatter diff by `scripts/formatterSuggestions.js`; nothing is generated.
 
+Each suggestion starts with `Formatting suggestion:`, which is how a later
+run finds the suggestions of the earlier ones among the review comments of
+`github-actions[bot]`. A suggestion the current run still makes, on the
+same lines, is not posted again. One it no longer makes — accepted,
+formatted otherwise, or on lines that have since changed — is resolved,
+unless someone other than the bot replied to it. Once the format is fixed,
+all of them are resolved and the comment is deleted.
+
 The two are split so that pull requests from forks get the report too. The
 formatter runs code of the pull request — its build files and Maven plugins
 — so it runs without write access and only uploads the diff.

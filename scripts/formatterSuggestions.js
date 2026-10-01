@@ -15,6 +15,11 @@
  * newline at the end of a file, are counted in the comment, which keeps
  * pointing at `mvn spotless:apply`.
  *
+ * The suggestions of earlier runs that the current one no longer makes, as
+ * the author accepted them, formatted the code otherwise or rewrote it, are
+ * resolved, unless someone replied to them. The ones it still makes are not
+ * posted again.
+ *
  * Usage, from actions/github-script:
  *   require('./scripts/formatterSuggestions.js').run({ github, context, core, diffFile })
  */
@@ -25,9 +30,12 @@ const fs = require('fs');
 // added, so that the comments already on open pull requests are reused.
 const COMMENT_MARKER = '<!-- tc-formatter -->';
 
-// Starts the body of the reviews holding the suggestions, so that a re-run for
-// the same commit does not post them again
-const REVIEW_MARKER = '<!-- formatter-suggestions -->';
+// Posts the comments and the suggestions
+const BOT = 'github-actions[bot]';
+
+// Starts each suggestion, so that the suggestions of earlier runs are told
+// apart from the other review comments of the bot
+const SUGGESTION_PREFIX = 'Formatting suggestion:';
 
 // Caps the suggestions in one review. A pull request that is not formatted at
 // all is better served by running the formatter than by accepting hundreds of
@@ -162,7 +170,7 @@ function suggestionOf(path, block) {
     // Only the newline at the end of the file differs
     return null;
   }
-  const comment = { path, line: end, side: 'RIGHT', body: fence('suggestion', replacement) };
+  const comment = { path, line: end, side: 'RIGHT', body: SUGGESTION_PREFIX + '\n' + fence('suggestion', replacement) };
   if (start < end) {
     Object.assign(comment, { start_line: start, start_side: 'RIGHT' });
   }
@@ -256,6 +264,75 @@ async function findPullRequest(github, context, run) {
   return pulls.find((pull) => pull.head.sha === run.head_sha) || null;
 }
 
+/** Whether a login, as REST or GraphQL spells it, is the bot. */
+function isBot(login) {
+  return login === BOT || login === BOT.replace(/\[bot\]$/, '');
+}
+
+/** Identifies a suggestion by where it is and what it suggests. */
+function keyOf(path, startLine, line, body) {
+  return JSON.stringify([path, startLine ?? line, line, body]);
+}
+
+/**
+ * The review threads of the pull request that start with a suggestion of the
+ * bot, with their key on the current commit, which is null once the lines
+ * they are on changed.
+ */
+async function findSuggestionThreads(github, context, pull) {
+  const query = `query($owner: String!, $repo: String!, $number: Int!, $cursor: String) {
+    repository(owner: $owner, name: $repo) {
+      pullRequest(number: $number) {
+        reviewThreads(first: 100, after: $cursor) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            id isResolved path line startLine
+            comments(first: 100) { nodes { author { login } body } }
+          }
+        }
+      }
+    }
+  }`;
+  const threads = [];
+  let cursor = null;
+  do {
+    const { repository } = await github.graphql(query, { ...context.repo, number: pull.number, cursor });
+    const { pageInfo, nodes } = repository.pullRequest.reviewThreads;
+    for (const thread of nodes) {
+      const [first, ...replies] = thread.comments.nodes;
+      if (first && isBot(first.author?.login) && first.body.startsWith(SUGGESTION_PREFIX)) {
+        threads.push({
+          id: thread.id,
+          resolved: thread.isResolved,
+          replied: replies.some((reply) => !isBot(reply.author?.login)),
+          key: thread.line === null ? null : keyOf(thread.path, thread.startLine, thread.line, first.body)
+        });
+      }
+    }
+    cursor = pageInfo.hasNextPage ? pageInfo.endCursor : null;
+  } while (cursor);
+  return threads;
+}
+
+/**
+ * Resolves the open suggestion threads the current suggestions do not
+ * repeat. One someone replied to is left for them.
+ */
+async function resolveStaleThreads(github, core, threads, keys) {
+  for (const thread of threads) {
+    if (thread.resolved || thread.replied || keys.has(thread.key)) {
+      continue;
+    }
+    try {
+      await github.graphql('mutation($id: ID!) { resolveReviewThread(input: { threadId: $id }) { thread { id } } }', {
+        id: thread.id
+      });
+    } catch (error) {
+      core.warning(`Could not resolve the formatting suggestion ${thread.id}: ${error.message}`);
+    }
+  }
+}
+
 async function run({ github, context, core, diffFile }) {
   const workflowRun = context.payload.workflow_run;
   const pull = await findPullRequest(github, context, workflowRun);
@@ -265,7 +342,7 @@ async function run({ github, context, core, diffFile }) {
   }
   const issue = { ...context.repo, issue_number: pull.number };
   const existing = (await github.paginate(github.rest.issues.listComments, { ...issue, per_page: 100 })).find(
-    (comment) => comment.user.login === 'github-actions[bot]' && comment.body.includes(COMMENT_MARKER)
+    (comment) => isBot(comment.user.login) && comment.body.includes(COMMENT_MARKER)
   );
 
   const size = fs.existsSync(diffFile) ? fs.statSync(diffFile).size : 0;
@@ -274,7 +351,9 @@ async function run({ github, context, core, diffFile }) {
     return;
   }
   const diffFiles = size > 0 ? parseDiff(fs.readFileSync(diffFile, 'utf8')) : [];
+  const threads = await findSuggestionThreads(github, context, pull);
   if (diffFiles.length === 0) {
+    await resolveStaleThreads(github, core, threads, new Set());
     if (existing) {
       await github.rest.issues.deleteComment({ ...context.repo, comment_id: existing.id });
     }
@@ -286,37 +365,35 @@ async function run({ github, context, core, diffFile }) {
       await github.paginate(github.rest.pulls.listFiles, { ...context.repo, pull_number: pull.number, per_page: 100 })
     ).map((file) => [file.filename, parsePatchRanges(file.patch)])
   );
-  let { comments, unsuggested } = collectSuggestions(diffFiles, prFiles);
-
-  const reviews = await github.paginate(github.rest.pulls.listReviews, {
-    ...context.repo,
-    pull_number: pull.number,
-    per_page: 100
-  });
-  const reviewed = reviews.some(
-    (review) => review.commit_id === pull.head.sha && (review.body || '').includes(REVIEW_MARKER)
-  );
-  if (comments.length > 0 && !reviewed) {
+  const { comments, unsuggested } = collectSuggestions(diffFiles, prFiles);
+  const keys = new Set(comments.map((c) => keyOf(c.path, c.start_line, c.line, c.body)));
+  // A suggestion already on the pull request is not posted again, also when
+  // someone resolved it
+  const posted = new Set(threads.map((thread) => thread.key));
+  const added = comments.filter((c) => !posted.has(keyOf(c.path, c.start_line, c.line, c.body)));
+  let suggested = comments.length;
+  if (added.length > 0) {
     try {
       await github.rest.pulls.createReview({
         ...context.repo,
         pull_number: pull.number,
         commit_id: pull.head.sha,
         event: 'COMMENT',
-        body: REVIEW_MARKER + '\nFormatting changes from `mvn spotless:apply`.',
-        comments
+        body: 'Formatting suggestions from `mvn spotless:apply`.',
+        comments: added
       });
     } catch (error) {
       core.warning(`Could not post the formatting suggestions: ${error.message}`);
-      for (const { path } of comments) {
+      for (const { path } of added) {
         unsuggested.set(path, (unsuggested.get(path) || 0) + 1);
       }
-      comments = [];
+      suggested -= added.length;
     }
   }
+  await resolveStaleThreads(github, core, threads, keys);
 
   const files = diffFiles.map((file) => file.path);
-  const body = summaryComment({ files, suggested: comments.length, unsuggested, runUrl: workflowRun.html_url });
+  const body = summaryComment({ files, suggested, unsuggested, runUrl: workflowRun.html_url });
   if (existing) {
     await github.rest.issues.updateComment({ ...context.repo, comment_id: existing.id, body });
   } else {
