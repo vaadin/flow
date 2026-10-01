@@ -26,7 +26,7 @@
     <!-- Pinned rather than left to the plugin, whose default of -1 resolves to
          whatever OpenEJB version the plugin itself was built from - so a TomEE
          release would silently change what this runs on. -->
-    <tomee.version>10.1.2</tomee.version>
+    <tomee.version>10.2.0</tomee.version>
     <!-- Run the ITs on the JUnit Platform (JUnit 6), like the other fixtures. -->
     <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
     <!-- The parent's groups/excludedGroups are JUnit 4 @Category class names,
