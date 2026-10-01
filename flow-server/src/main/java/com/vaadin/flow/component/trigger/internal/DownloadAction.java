@@ -46,10 +46,9 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * {@link #DownloadAction(DownloadHandler)}. The action lazily registers a
  * stream resource scoped to the trigger host element; the resource is
  * unregistered when the host detaches and re-registered on re-attach, keeping
- * the URL stable for the lifetime of the action. Removing the trigger
- * unregisters the resource for good, so its URL stops serving the file.
- * Filename comes from the {@link DownloadHandler} itself (its URL postfix
- * and/or {@code Content-Disposition} header).</li>
+ * the URL stable for the lifetime of the action. Filename comes from the
+ * {@link DownloadHandler} itself (its URL postfix and/or
+ * {@code Content-Disposition} header).</li>
  * <li><b>A value resolved from client state at fire time</b> — use
  * {@link #DownloadAction(Action.Input)} or
  * {@link #DownloadAction(Action.Input, Action.Input)} when the URL (or
@@ -186,7 +185,7 @@ public class DownloadAction extends Action {
      * Manages the {@link DownloadHandler}-backed flavour: one
      * {@link StreamResourceRegistry.ElementStreamResource} per trigger host.
      * Lifecycle (register on attach, unregister on detach, re-register on
-     * re-attach, unregister when the trigger is removed) is delegated to
+     * re-attach) is delegated to
      * {@link Element#setAttribute(String, AbstractStreamResource)} — the same
      * machinery {@code Image.setSrc(DownloadHandler)} and
      * {@code Anchor.setHref(DownloadHandler)} use. The attribute name is
@@ -212,26 +211,15 @@ public class DownloadAction extends Action {
             // Register-and-resolve in one step: the URI is stable per
             // (handler, host) pair, so multiple toJs() calls for the same
             // host reuse the same resource.
-            Element host = trigger.getHost();
-            URI uri = uriByHost.get(host);
-            if (uri == null) {
-                uri = registerForHost(host, trigger);
-                uriByHost.put(host, uri);
-            }
+            URI uri = uriByHost.computeIfAbsent(trigger.getHost(),
+                    this::registerForHost);
             return JsFunction.of("return $0", uri.toASCIIString());
         }
 
-        private URI registerForHost(Element host, Trigger trigger) {
+        private URI registerForHost(Element host) {
             StreamResourceRegistry.ElementStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
                     handler, host);
-            String attribute = ATTR_PREFIX + resource.getId();
-            host.setAttribute(attribute, resource);
-            // Removing the attribute also unregisters the resource, so the
-            // URL stops serving the file once the trigger is removed.
-            trigger.addCleanup(() -> {
-                host.removeAttribute(attribute);
-                uriByHost.remove(host);
-            });
+            host.setAttribute(ATTR_PREFIX + resource.getId(), resource);
             return StreamResourceRegistry.getURI(resource);
         }
     }

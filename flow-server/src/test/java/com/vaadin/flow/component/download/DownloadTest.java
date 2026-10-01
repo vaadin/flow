@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.download;
 
-import java.net.URI;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +32,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -87,12 +85,9 @@ class DownloadTest {
     }
 
     @Test
-    void removeRegistration_disposesClickListenerAndUnregistersHandler() {
-        Registration registration = Download.onClick(button,
-                event -> event.getOutputStream().write(1));
-        URI uri = URI.create(resourceUri(actionOf(singleInstallFn())));
-        StreamResourceRegistry registry = ui.getSession().getResourceRegistry();
-        assertTrue(registry.getResource(uri).isPresent());
+    void removeRegistration_disposesClickListener() {
+        Registration registration = Download.onClick(button, "/files/a.bin");
+        singleInstallFn();
         ui.getInternals().getStateTree().collectChanges(c -> {
         });
 
@@ -106,8 +101,6 @@ class DownloadTest {
                 pending.get(0).getInvocation().getExpression()
                         .contains("disposeInitializer"),
                 "Removal should emit the dispose invocation");
-        assertFalse(registry.getResource(uri).isPresent(),
-                "Removal should unregister the handler");
     }
 
     private static String resourceUri(JsFunction action) {
