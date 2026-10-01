@@ -11,9 +11,6 @@ package com.vaadin.signals.impl;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
@@ -55,9 +52,11 @@ public class Effect {
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,
                         e);
             } catch (Error e) {
-                getLogger().error(
-                        "Uncaught error from effect. The effect will no longer be active.",
-                        e);
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        new Error(
+                                "Uncaught error from effect. The effect will no longer be active.",
+                                e));
                 dispose();
             }
         };
@@ -109,10 +108,6 @@ public class Effect {
         clearRegistrations();
         action = null;
         dependencies = null;
-    }
-
-    private static final Logger getLogger() {
-        return LoggerFactory.getLogger(Effect.class.getName());
     }
 
 }
