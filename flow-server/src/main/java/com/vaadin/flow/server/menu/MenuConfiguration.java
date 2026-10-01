@@ -85,7 +85,7 @@ public final class MenuConfiguration {
      *
      * @return ordered list of root {@link MenuEntry} instances with nested
      *         children
-     * @since 25.3
+     * @since 25.4
      */
     public static List<MenuEntry> getMenuEntriesTree() {
         UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
@@ -102,7 +102,7 @@ public final class MenuConfiguration {
      * @return ordered list of root {@link MenuEntry} instances with nested
      *         children
      * @see #getMenuEntriesTree()
-     * @since 25.3
+     * @since 25.4
      */
     public static List<MenuEntry> getMenuEntriesTree(Locale locale) {
         UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);

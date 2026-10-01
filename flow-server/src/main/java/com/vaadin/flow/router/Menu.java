@@ -93,7 +93,7 @@ public @interface Menu {
      *
      * @return the menu parent navigation target, or {@link Component} itself,
      *         the default, when the route hierarchy should be used
-     * @since 25.3
+     * @since 25.4
      */
     Class<? extends Component> parent() default Component.class;
 }
