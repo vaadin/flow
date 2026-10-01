@@ -86,6 +86,8 @@
 
         <!-- Dependencies -->
         <spring.boot.version>3.4.13</spring.boot.version>
+        <!-- Override the Spring Framework version managed by Spring Boot 3.4.13 to get security fixes -->
+        <spring.framework.version>6.2.19</spring.framework.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.5.Final</hibernate.validator.version>
         <slf4j.version>2.0.19</slf4j.version>
