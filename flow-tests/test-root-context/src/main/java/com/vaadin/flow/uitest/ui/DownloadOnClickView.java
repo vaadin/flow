@@ -46,14 +46,13 @@ public class DownloadOnClickView extends AbstractDivView {
         failure.setId("download-failure");
         add(success, failure);
 
-        Download.onClick(success).start(
+        Download.onClick(success,
                 DownloadHandler.fromInputStream(event -> new DownloadResponse(
                         new ByteArrayInputStream(
                                 BODY.getBytes(StandardCharsets.UTF_8)),
                         FILE_NAME, "text/plain", BODY.length())));
-        Download.onClick(failure)
-                .start(DownloadHandler.fromInputStream(event -> {
-                    throw new IllegalStateException("report not available");
-                }));
+        Download.onClick(failure, DownloadHandler.fromInputStream(event -> {
+            throw new IllegalStateException("report not available");
+        }));
     }
 }

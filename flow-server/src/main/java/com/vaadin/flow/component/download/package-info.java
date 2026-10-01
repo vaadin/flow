@@ -18,9 +18,9 @@
  * components.
  * <p>
  * Use
- * {@link com.vaadin.flow.component.download.Download#onClick(com.vaadin.flow.component.Component)
- * Download.onClick(component)} to make a click download the content of a
- * {@link com.vaadin.flow.server.streams.DownloadHandler DownloadHandler} or a
+ * {@link com.vaadin.flow.component.download.Download#onClick(com.vaadin.flow.component.Component, com.vaadin.flow.server.streams.DownloadHandler)
+ * Download.onClick(component, handler)} to make a click download the content of
+ * a {@link com.vaadin.flow.server.streams.DownloadHandler DownloadHandler} or a
  * URL.
  * <p>
  * Downloads go through {@code onClick} rather than an ordinary server-side

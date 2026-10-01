@@ -29,7 +29,6 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
@@ -62,8 +61,7 @@ class DownloadTest {
 
     @Test
     void startHandler_clickStartsDownloadOfRegisteredResource() {
-        Download.onClick(button).start(
-                (DownloadHandler) event -> event.getOutputStream().write(1));
+        Download.onClick(button, event -> event.getOutputStream().write(1));
 
         JsFunction installFn = singleInstallFn();
         assertTrue(installFn.getCaptures().contains("click"),
@@ -77,7 +75,7 @@ class DownloadTest {
 
     @Test
     void startUrlWithFileName_clickStartsDownloadWithSuggestedName() {
-        Download.onClick(button).start("/files/a.bin", "b.bin");
+        Download.onClick(button, "/files/a.bin", "b.bin");
 
         JsFunction action = actionOf(singleInstallFn());
         assertEquals("window.Vaadin.Flow.download.start($0(event), $1(event))",
@@ -90,8 +88,8 @@ class DownloadTest {
 
     @Test
     void removeRegistration_disposesClickListenerAndUnregistersHandler() {
-        Registration registration = Download.onClick(button).start(
-                (DownloadHandler) event -> event.getOutputStream().write(1));
+        Registration registration = Download.onClick(button,
+                event -> event.getOutputStream().write(1));
         URI uri = URI.create(resourceUri(actionOf(singleInstallFn())));
         StreamResourceRegistry registry = ui.getSession().getResourceRegistry();
         assertTrue(registry.getResource(uri).isPresent());
