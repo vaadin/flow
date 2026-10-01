@@ -145,6 +145,13 @@
     <maven.version>3.9.16</maven.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <jandex.plugin.version>3.6.0</jandex.plugin.version>
+    <!-- The Jandex index format that the plugin writes, set apart from the
+         plugin version. Quarkus reads the indexes with the Jandex its BOM
+         manages, and an older Jandex rejects a newer format. So this is the
+         newest format that the Jandex of the Quarkus BOM at quarkus.version
+         reads. A newer Quarkus reads it too, since Jandex reads older
+         formats. -->
+    <jandex.format.version>13</jandex.format.version>
     <!-- Modules with no Jandex consumer (tooling, tests, the Spring and CDI
          integrations) set this to true -->
     <jandex.skip>false</jandex.skip>
@@ -874,6 +881,9 @@
         <groupId>io.smallrye</groupId>
         <artifactId>jandex-maven-plugin</artifactId>
         <version>${jandex.plugin.version}</version>
+        <configuration>
+          <indexVersion>${jandex.format.version}</indexVersion>
+        </configuration>
         <executions>
           <execution>
             <id>make-index</id>
