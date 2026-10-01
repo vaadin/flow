@@ -115,8 +115,8 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Populates the static identity data (versions and source id) of the
-     * current project.
+     * Populates the static identity data (versions, source id and build tool)
+     * of the current project.
      *
      * @param projectData
      *            the project specific data to populate
@@ -126,6 +126,8 @@ public class DevModeUsageStatistics {
                 Version.getFullVersion());
         projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
                 ProjectHelpers.getProjectSource(projectFolder));
+        projectData.setValue(StatisticsConstants.FIELD_BUILD_TOOL,
+                ProjectHelpers.getBuildTool(projectFolder));
     }
 
     /**
