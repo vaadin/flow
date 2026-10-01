@@ -461,14 +461,16 @@ public class JarContentsManagerTest {
         File jsonFile = copyFilesFromJar(outputDirectory, jarDirectory,
                 testJar);
 
-        long timestamp = System.currentTimeMillis();
-        Assert.assertTrue(FileUtils.isFileOlder(jsonFile, timestamp));
+        // Backdate the file so that a rewrite moves the timestamp forward
+        // by more than the resolution of the file system
+        long timestamp = jsonFile.lastModified() - 10000;
+        Assert.assertTrue(jsonFile.setLastModified(timestamp));
 
         jarContentsManager.copyFilesFromJarTrimmingBasePath(testJar,
                 jarDirectory, outputDirectory);
 
-        // The file is still older
-        Assert.assertTrue(FileUtils.isFileOlder(jsonFile, timestamp));
+        // The file is unmodified
+        Assert.assertEquals(timestamp, jsonFile.lastModified());
     }
 
     @Test
