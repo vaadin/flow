@@ -33,16 +33,25 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouterLayout;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -277,6 +286,33 @@ class VaadinQuarkusNativeProcessorTest {
                 "Feature flags properties should be included in the image");
     }
 
+    @ParameterizedTest
+    @ValueSource(classes = { UrlParameterTarget.class,
+            ErrorParameterTarget.class, LayoutTarget.class,
+            ConverterTarget.class })
+    void testVaadinNativeSupport_registersInterfaceImplementationsForReflection(
+            Class<?> implementation) throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(implementation);
+        Index implementationIndex = indexer.complete();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.vaadinNativeSupport(new CombinedIndexBuildItem(
+                implementationIndex, implementationIndex), item -> {
+                }, item -> {
+                }, reflective::add, item -> {
+                });
+
+        // The class implements the interface without extending Component,
+        // so only a lookup of the interface implementations finds it
+        assertTrue(
+                reflective.stream()
+                        .flatMap(item -> item.getClassNames().stream())
+                        .anyMatch(implementation.getName()::equals),
+                implementation.getSimpleName()
+                        + " should be registered for reflection");
+    }
+
     @Test
     void testVaadinNativeSupport_registersErrorParameterTypesForReflection()
             throws IOException {
@@ -424,6 +460,47 @@ class VaadinQuarkusNativeProcessorTest {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<IllegalStateException> parameter) {
             return 500;
+        }
+    }
+
+    // The fixtures below implement a Vaadin interface without extending
+    // Component
+
+    public static class UrlParameterTarget implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            // Intentionally empty: the test only checks that the class is
+            // registered for reflection, this method is never called
+        }
+    }
+
+    public static class ErrorParameterTarget
+            implements HasErrorParameter<NotFoundException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            return 404;
+        }
+    }
+
+    public static class LayoutTarget implements RouterLayout {
+        @Override
+        public Element getElement() {
+            return null;
+        }
+    }
+
+    public static class ConverterTarget implements Converter<String, Integer> {
+        @Override
+        public Result<Integer> convertToModel(String value,
+                ValueContext context) {
+            return Result.ok(Integer.valueOf(value));
+        }
+
+        @Override
+        public String convertToPresentation(Integer value,
+                ValueContext context) {
+            return String.valueOf(value);
         }
     }
 
