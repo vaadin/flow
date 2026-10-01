@@ -25,6 +25,7 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
@@ -57,6 +58,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouteParent;
+import com.vaadin.flow.router.RouteParentContext;
+import com.vaadin.flow.router.RouteParentResolver;
+import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
@@ -532,6 +536,22 @@ class MenuRegistryTest {
     }
 
     @Test
+    void collectMenuItemsTree_routeParentResolverFails_viewIsRoot() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeSettings.class,
+                TreeProject.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // The resolver needs a parameter the menu cannot provide: the view
+        // becomes a root and the rest of the menu is still built.
+        assertEquals(List.of("/", "/projects"), routesOf(tree));
+        assertEquals(List.of("/settings"), routesOf(tree.get(0).children()));
+    }
+
+    @Test
     void collectMenuItemsTree_menuParent_overridesRouteHierarchy() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
@@ -926,6 +946,23 @@ class MenuRegistryTest {
     @Route("cycle_b")
     @Menu(title = "Cycle B", parent = TreeCycleA.class)
     public static class TreeCycleB extends Component {
+    }
+
+    @Tag("div")
+    @Route("projects/:orgId?")
+    @RouteParent(resolver = OrgParentResolver.class)
+    @Menu(title = "Projects", order = 4)
+    public static class TreeProject extends Component {
+    }
+
+    public static class OrgParentResolver implements RouteParentResolver {
+        @Override
+        public Optional<RouteReference> resolveParent(
+                RouteParentContext context) {
+            String orgId = context.routeParameters().get("orgId").orElseThrow();
+            return Optional.of(new RouteReference(TreeDashboard.class,
+                    new RouteParameters("orgId", orgId)));
+        }
     }
 
     // No @Menu: part of the route hierarchy but not of the menu.

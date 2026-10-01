@@ -183,7 +183,10 @@ public class MenuRegistry {
      * <li>otherwise the logical route parent resolved by
      * {@link RouteConfiguration#getRouteParent(Class, RouteParameters)}, i.e.
      * {@link com.vaadin.flow.router.RouteParent @RouteParent} with URL-prefix
-     * walking as fallback.
+     * walking as fallback. The route parent is resolved without route
+     * parameters; if that fails, e.g. because a
+     * {@link com.vaadin.flow.router.RouteParentResolver} requires a parameter,
+     * the view has no route parent in the menu.
      * </ol>
      * <p>
      * A view is attached to its nearest <em>included</em> menu ancestor, so a
@@ -320,9 +323,20 @@ public class MenuRegistry {
         if (declaredParent.isPresent()) {
             return declaredParent;
         }
-        return routeConfiguration
-                .getRouteParent(navigationTarget, RouteParameters.empty())
-                .map(RouteReference::navigationTarget);
+        try {
+            return routeConfiguration
+                    .getRouteParent(navigationTarget, RouteParameters.empty())
+                    .map(RouteReference::navigationTarget);
+        } catch (RuntimeException e) {
+            // The menu has no route parameters to offer, so a resolver that
+            // requires one fails here. Treat that as "no parent" rather than
+            // failing the whole menu.
+            LoggerFactory.getLogger(MenuRegistry.class).debug(
+                    "Failed to resolve the route parent of {} without route "
+                            + "parameters, showing it as a root menu entry",
+                    navigationTarget.getName(), e);
+            return Optional.empty();
+        }
     }
 
     private static AvailableViewInfo attachChildren(AvailableViewInfo view,
