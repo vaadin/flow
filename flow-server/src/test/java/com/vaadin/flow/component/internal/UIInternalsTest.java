@@ -762,10 +762,7 @@ class UIInternalsTest {
 
     @Test
     void containsPendingJsCall_recognizesTheLocationReplaceOfEitherRouter() {
-        // Before scheduling a location replace the router asks whether it has
-        // already scheduled one. It recognizes the call rather than the text
-        // of the script, so rewording the declaration cannot quietly stop the
-        // guard from matching.
+        // The router checks this before scheduling a second location replace
         History history = new History(ui);
         MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
                 .getDeploymentConfiguration();

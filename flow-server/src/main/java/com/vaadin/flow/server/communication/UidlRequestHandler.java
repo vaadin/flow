@@ -20,7 +20,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -34,6 +35,8 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ConstantPoolKey;
@@ -323,35 +326,59 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
 
         if (location != null) {
-            int idx = findRouterPushState(exec);
-            ArrayNode corrected = createCorrectedPushState(ui, uidl, location);
-            if (idx >= 0) {
-                exec.set(idx, corrected);
+            // Encode the correction as a call of MprPushStateJs, the same way
+            // the writer encodes any call of declared JavaScript, so that the
+            // location is an argument rather than part of a script
+            JsCall correction = new JsCall(MprPushStateJs.class,
+                    location.startsWith("http") ? "pushLocation" : "pushHash",
+                    List.of(location));
+            ConstantPool constantPool = ui.getInternals().getConstantPool();
+            JsonNode corrected = UidlWriter.encodeExecuteJavaScriptList(
+                    List.of(new PendingJavaScriptInvocation(
+                            ui.getInternals().getStateTree().getRootNode(),
+                            new JavaScriptInvocation(correction,
+                                    correction.getExpression(),
+                                    correction.parametersFor(null)))),
+                    constantPool).get(0);
+            // The writer has already added the constants of this response, so
+            // add the one the correction needs unless the client already has it
+            if (constantPool.hasNewConstants()) {
+                ObjectNode constants = uidl.has(CONSTANTS)
+                        ? (ObjectNode) uidl.get(CONSTANTS)
+                        : uidl.putObject(CONSTANTS);
+                constants.setAll(constantPool.dumpConstants());
+            }
+
+            int index = indexOfRouterPushState(exec);
+            if (index >= 0) {
+                exec.set(index, corrected);
             } else {
                 exec.add(corrected);
             }
-
         }
     }
 
     /**
-     * Finds the push state that the router scheduled for the location being
-     * navigated to, which is the one the fix-up replaces with a push state of
-     * the corrected location.
+     * Gets the index of the push state that the router scheduled for the
+     * location being navigated to, which the fix-up replaces with the corrected
+     * one.
      * <p>
-     * An invocation names what it runs rather than carrying it, and a constant
-     * is named by a hash of its value, so the name of the router's push state
-     * is the same in every response and is known without reading one. Only the
-     * push state of the non-React router has that name: a replace state, a
-     * React navigation and an application invocation that runs the same browser
-     * function are all named differently.
+     * The router's push state is recognized by the constant that names the
+     * function it runs, <code>HistoryJs.pushState</code>. That name is a hash
+     * of the function reference, so it is the same in every response. A replace
+     * state, a React navigation and an application script that calls
+     * <code>history.pushState</code> itself all have different names and are
+     * left alone.
      *
-     * @return the index of the router's push state among the given invocations,
-     *         or <code>-1</code> if there is none
+     * @return the index, or <code>-1</code> if there is none
      */
-    private static int findRouterPushState(ArrayNode invocations) {
-        String routerPushState = getFunctionConstantId(
-                getFunctionId(HistoryJs.class, "pushState", 2));
+    private static int indexOfRouterPushState(ArrayNode invocations) {
+        // The arguments are placeholders: which function a call runs depends
+        // only on the method it calls
+        String routerPushState = new ConstantPoolKey(
+                UidlWriter.encodeFunctionReference(new JsCall(HistoryJs.class,
+                        "pushState", Arrays.asList(null, null))))
+                .getId();
         int index = -1;
         for (int i = 0; i < invocations.size(); i++) {
             ArrayNode invocation = (ArrayNode) invocations.get(i);
@@ -365,82 +392,6 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             }
         }
         return index;
-    }
-
-    /**
-     * Creates the invocation that pushes the corrected location, as a call of
-     * the JavaScript that {@link MprPushStateJs} declares.
-     * <p>
-     * The location is a parameter of the call, so whatever it holds reaches the
-     * browser rather than becoming part of what the browser runs, and the two
-     * declared functions serve every location a session navigates to rather
-     * than each of them adding a constant the session keeps for good. The
-     * browser runs a function the bundle already has, which is what a content
-     * security policy without <code>unsafe-eval</code> allows.
-     */
-    private static ArrayNode createCorrectedPushState(UI ui, ObjectNode uidl,
-            String location) {
-        String functionId = location.startsWith("http")
-                ? getFunctionId(MprPushStateJs.class, "pushLocation", 1)
-                : getFunctionId(MprPushStateJs.class, "pushHash", 1);
-
-        ArrayNode invocation = JacksonUtils.createArrayNode();
-        invocation.add(location);
-        // The client applies the function to the parameter that follows the
-        // arguments of the call, and this call has nothing to run on: the
-        // declared JavaScript addresses the browser's history rather than an
-        // element, the same way page level JavaScript does.
-        invocation.addNull();
-        invocation.add(registerConstant(ui, uidl,
-                UidlWriter.functionConstant(functionId)));
-        return invocation;
-    }
-
-    /**
-     * Gets the identifier of the function that the named method of the given
-     * JavaScript definition runs, which is what an invocation of it names.
-     * <p>
-     * A call is built to ask it, since the identifier belongs to the
-     * declaration rather than to the arguments: they only say which of the
-     * methods of that name is meant.
-     * <p>
-     * Package private for the tests of the fix-up, which assert on what it
-     * sends and recognizes.
-     */
-    static String getFunctionId(Class<?> definitionType, String methodName,
-            int parameterCount) {
-        return new JsCall(definitionType, methodName,
-                Collections.nCopies(parameterCount, null)).getFunctionId();
-    }
-
-    /**
-     * Gets what names the constant of the given function, which is what an
-     * invocation that runs it carries.
-     */
-    private static String getFunctionConstantId(String functionId) {
-        return new ConstantPoolKey(UidlWriter.functionConstant(functionId))
-                .getId();
-    }
-
-    /**
-     * Registers the given value with the constant pool of the given UI, puts it
-     * among the constants of the given response when the client does not have
-     * it yet, and answers with what names it - which is what an invocation
-     * carries instead of the value.
-     */
-    private static String registerConstant(UI ui, ObjectNode uidl,
-            JsonNode value) {
-        ConstantPool constantPool = ui.getInternals().getConstantPool();
-        String name = constantPool.getConstantId(new ConstantPoolKey(value));
-        if (constantPool.hasNewConstants()) {
-            ObjectNode constants = uidl.has(CONSTANTS)
-                    ? (ObjectNode) uidl.get(CONSTANTS)
-                    : uidl.putObject(CONSTANTS);
-            constantPool.dumpConstants().properties()
-                    .forEach(constant -> constants.set(constant.getKey(),
-                            constant.getValue()));
-        }
-        return name;
     }
 
     /**

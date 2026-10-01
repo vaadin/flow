@@ -2250,14 +2250,13 @@ public class UI extends Component
         boolean locationChanged = !location.getPath().equals(route)
                 && route.startsWith("/")
                 && !location.getPath().equals(route.substring(1));
-        // Whichever of the two routers is in use, the replace it scheduled is
-        // a call of the declaration behind it, so the two are recognized by
-        // what was called rather than by what the script reads like
-        boolean noReplacePending = !getInternals()
+        // Recognized by the call rather than by the text of a script, which
+        // works the same for both routers
+        boolean replacePending = getInternals()
                 .containsPendingJsCall(HistoryJs.class, "replaceState")
-                && !getInternals().containsPendingJsCall(HistoryJs.class,
+                || getInternals().containsPendingJsCall(HistoryJs.class,
                         "navigateReplacing");
-        if (locationChanged && noReplacePending) {
+        if (locationChanged && !replacePending) {
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }
