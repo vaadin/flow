@@ -15,11 +15,13 @@
  */
 package com.vaadin.flow.devloop.test.it;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -181,24 +183,63 @@ final class VaadinDevCli {
                         + " -Dvaadin.dev.mavenArgs=-P!install-git-hooks");
         // No spinner: the output is read by assertions, not by a person.
         builder.environment().put("VAADIN_DEV_PROGRESS", "never");
+        String verb = "vaadin-dev " + String.join(" ", arguments);
         try {
             Process process = builder.start();
-            String output;
-            try (InputStream in = process.getInputStream()) {
-                output = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            // Read on a thread of its own so the timeout below actually holds:
+            // reading to the end first blocks for as long as anything keeps
+            // the pipe open, which a hung command - or a process it started
+            // that inherited the pipe - does forever.
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            InputStream in = process.getInputStream();
+            Thread reader = Thread.ofPlatform().daemon()
+                    .name("vaadin-dev-output").start(() -> {
+                        byte[] buffer = new byte[8192];
+                        try {
+                            int read;
+                            while ((read = in.read(buffer)) != -1) {
+                                synchronized (output) {
+                                    output.write(buffer, 0, read);
+                                }
+                            }
+                        } catch (IOException e) {
+                            // Closed below after a timeout; what was read so
+                            // far is all there is.
+                        }
+                    });
+            try {
+                if (!process.waitFor(COMMAND_TIMEOUT.toMillis(),
+                        TimeUnit.MILLISECONDS)) {
+                    process.descendants()
+                            .forEach(ProcessHandle::destroyForcibly);
+                    process.destroyForcibly();
+                    reader.join(OUTPUT_DRAIN_TIMEOUT.toMillis());
+                    throw new AssertionError(verb + " did not finish in "
+                            + COMMAND_TIMEOUT.toMinutes()
+                            + " minutes; it said:\n" + textOf(output));
+                }
+                reader.join(OUTPUT_DRAIN_TIMEOUT.toMillis());
+                if (reader.isAlive()) {
+                    throw new AssertionError(verb + " exited with "
+                            + process.exitValue()
+                            + " but something it started still holds its"
+                            + " output open; it said:\n" + textOf(output));
+                }
+                return new Outcome(process.exitValue(), textOf(output));
+            } finally {
+                in.close();
             }
-            if (!process.waitFor(10, TimeUnit.MINUTES)) {
-                process.destroyForcibly();
-                throw new AssertionError("vaadin-dev "
-                        + String.join(" ", arguments)
-                        + " did not finish in 10 minutes; it said:\n" + output);
-            }
-            return new Outcome(process.exitValue(), output);
         } catch (IOException e) {
             throw new AssertionError("could not run " + command, e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new AssertionError("interrupted while running " + command, e);
+        }
+    }
+
+    private static String textOf(ByteArrayOutputStream output) {
+        synchronized (output) {
+            return output.toString(StandardCharsets.UTF_8);
         }
     }
 
@@ -253,6 +294,20 @@ final class VaadinDevCli {
             }
         }, "devloop-it-shutdown"));
     }
+
+    /**
+     * How long one command may take. A start or an apply takes well under two
+     * minutes on CI; the limit has to stay far enough below the CI step's
+     * timeout that a hang fails the test, with the CLI's output, instead of the
+     * whole job - including the reruns failsafe gives a failed test.
+     */
+    private static final Duration COMMAND_TIMEOUT = Duration.ofMinutes(5);
+
+    /**
+     * How long the output may keep coming after the command has exited or has
+     * been killed.
+     */
+    private static final Duration OUTPUT_DRAIN_TIMEOUT = Duration.ofSeconds(30);
 
     /** The daemon's handshake, and the only way the CLI can find it. */
     private static final String HANDSHAKE = ".vaadin/daemon.properties";

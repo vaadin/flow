@@ -99,6 +99,25 @@
           <skip>true</skip>
         </configuration>
       </plugin>
+      <!-- Exports the TestBench base classes to the test modules that run
+           an application of their own instead of these ITs. Only that
+           package goes in, so the ITs are not on their classpath. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>com/vaadin/flow/test/**</include>
+              </includes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>
