@@ -22,10 +22,11 @@ env:
   JAVA_VERSION: '21'
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
+# Runs code of the pull request, which may come from a fork, so it gets no
+# write access. The report on the pull request, the comment and the suggested
+# changes, is posted by formatter-suggestions.yml from the diff this uploads.
 permissions:
   contents: read
-  pull-requests: write
-  issues: write
 
 jobs:
   formatter:
@@ -58,72 +59,22 @@ jobs:
           modified=$(echo "$files" | wc -w | xargs)
 
           echo "modified=$modified" >> $GITHUB_OUTPUT
+          # Written even when empty, so that formatter-suggestions.yml can
+          # remove the comment of an earlier run once the format is fixed
+          git diff > formatter-diff.txt
 
           if [ "$modified" -gt 0 ]; then
             echo "Modified files:"
             echo "$files"
-            git diff > formatter-diff.txt
-            echo "files<<EOF" >> $GITHUB_OUTPUT
-            echo "$files" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
           fi
 
       - name: Upload formatter diff
-        if: steps.formatter.outputs.modified != '0'
+        if: github.event_name == 'pull_request' || steps.formatter.outputs.modified != '0'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: formatter-diff
           path: formatter-diff.txt
           retention-days: 30
-
-      - name: Find existing comment
-        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
-        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: '<!-- tc-formatter -->'
-
-      - name: Create or update comment
-        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.formatter.outputs.modified != '0'
-        uses: peter-evans/create-or-update-comment@e8674b075228eee787fea43ef493e45ece1004c9 # v5.0.0
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace
-          body: |
-            <!-- tc-formatter -->
-            ### Format Checker Report
-
-            ![BLOCKER][BLOCKER] There are **${{ steps.formatter.outputs.modified }} files** with format errors
-
-            [BLOCKER]: https://sonarsource.github.io/sonar-github/severity-blocker.png 'Severity: BLOCKER'
-
-            - To see a complete report of formatting issues, download the [differences artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-            - To fix the build, please run `mvn spotless:apply` in your branch and commit the changes.
-
-            - Optionally you might add the following line in your `.git/hooks/pre-commit` file:
-
-                  mvn spotless:apply
-
-            Here is the list of files with format issues in your PR:
-
-            ```
-            ${{ steps.formatter.outputs.files }}
-            ```
-
-      - name: Delete comment if formatting is correct
-        if: steps.formatter.outputs.modified == '0' && steps.find-comment.outputs.comment-id != ''
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-        with:
-          script: |
-            github.rest.issues.deleteComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: ${{ steps.find-comment.outputs.comment-id }}
-            })
 
       - name: Fail if formatting issues exist
         if: steps.formatter.outputs.modified != '0'
