@@ -175,6 +175,15 @@ public class PathUtilTest {
         Assert.assertEquals("Should have one segment", 1, segments.size());
         Assert.assertEquals("Should decode UTF-8 characters", "helloäöü",
                 segments.get(0));
+
+        // A path that the servlet container has already decoded has literal
+        // UTF-8 characters, which must be kept as they are
+        segments = PathUtil.getSegmentsListWithDecoding("helloäöü/日本");
+        Assert.assertEquals("Should have two segments", 2, segments.size());
+        Assert.assertEquals("Should keep literal UTF-8 characters", "helloäöü",
+                segments.get(0));
+        Assert.assertEquals("Should keep literal UTF-8 characters", "日本",
+                segments.get(1));
     }
 
     @Test
