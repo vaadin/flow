@@ -225,20 +225,29 @@ const thread = (id, { line, startLine = null, body, resolved = false, replies = 
 });
 const REPEATED = SUGGESTION + '```suggestion\n    int x;\n    int y;\n```';
 
-test('run neither posts again nor resolves a suggestion it still makes', async () => {
-  const threads = [thread('T1', { line: 5, body: REPEATED })];
-  const calls = await runWith(DIFF, { threads, comments: [STICKY] });
-  assert.deepStrictEqual(
-    calls.map((call) => call.name),
-    ['createReview', 'updateComment']
-  );
-  assert.strictEqual(calls[0].params.comments.length, 2);
-  assert.match(calls[1].params.body, /3 formatting changes are suggested/);
-});
+for (const [name, existing] of Object.entries({
+  open: { line: 5, body: REPEATED },
+  // GitHub returns the line itself as the start line of a single-line comment
+  'open, with start line': { line: 5, startLine: 5, body: REPEATED },
+  // Resolved by someone, which dismisses it
+  resolved: { line: 5, body: REPEATED, resolved: true },
+  'multi-line': { line: 4, startLine: 3, body: SUGGESTION + '```suggestion\n```' }
+})) {
+  test(`run neither posts again nor resolves a suggestion it still makes (${name})`, async () => {
+    const calls = await runWith(DIFF, { threads: [thread('T1', existing)], comments: [STICKY] });
+    assert.deepStrictEqual(
+      calls.map((call) => call.name),
+      ['createReview', 'updateComment']
+    );
+    assert.strictEqual(calls[0].params.comments.length, 2);
+    assert.match(calls[1].params.body, /3 formatting changes are suggested/);
+  });
+}
 
 test('run resolves the suggestions it no longer makes, unless someone replied', async () => {
   const threads = [
-    thread('outdated', { line: null, body: REPEATED }),
+    // A reply of the bot itself does not keep it open
+    thread('outdated', { line: null, body: REPEATED, replies: ['github-actions'] }),
     thread('changed', { line: 5, body: SUGGESTION + '```suggestion\nother\n```' }),
     thread('replied', { line: null, body: REPEATED, replies: ['author'] }),
     thread('resolved', { line: null, body: REPEATED, resolved: true }),
