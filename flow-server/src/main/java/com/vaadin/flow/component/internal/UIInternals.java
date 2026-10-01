@@ -1013,6 +1013,9 @@ public class UIInternals implements Serializable {
      * This lets a caller recognize what it scheduled itself, such as the router
      * checking for a pending location change, without matching text in a
      * script.
+     * <p>
+     * Methods are matched by name only, so a call of any overload with the
+     * given name counts.
      *
      * @param definitionType
      *            the JavaScript definition, not <code>null</code>

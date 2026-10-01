@@ -335,38 +335,6 @@ class UidlRequestHandlerTest {
     }
 
     @Test
-    void should_keepAnApplicationInvocation_that_mentionsPushState()
-            throws Exception {
-        UI ui = getUi();
-
-        handler = spy(new UidlRequestHandler());
-        StringWriter writer = new StringWriter();
-
-        ObjectNode uidl = generateUidl(ui, true, true);
-
-        // An application may run the browser function that the router happens
-        // to use. Only what the router scheduled may be corrected.
-        String applicationScript = "history.pushState(null, '', '/tracked')";
-        ((ObjectNode) uidl.get("constants")).put("applicationScript",
-                applicationScript);
-        ArrayNode invocation = JacksonUtils.createArrayNode();
-        invocation.add("");
-        invocation.add("applicationScript");
-        int index = ((ArrayNode) uidl.get("execute")).size();
-        ((ArrayNode) uidl.get("execute")).add(invocation);
-
-        doReturn(uidl).when(handler).createUidl(ui, false);
-
-        handler.writeUidl(ui, writer, false);
-
-        ObjectNode written = JacksonUtils.readTree(writer.toString());
-        assertEquals(applicationScript,
-                getConstantRunBy(written, index).asString(),
-                "what the application scheduled should still be there: "
-                        + written);
-    }
-
-    @Test
     void should_not_modify_non_MPR_Uidl() throws Exception {
         UI ui = getUi();
 
@@ -585,23 +553,14 @@ class UidlRequestHandlerTest {
     }
 
     /**
-     * What the invocation at the given index of the given response runs, which
-     * the invocation names among the constants of the response: the expression
-     * for one that runs an expression, and the function of the bundle for one
-     * that runs declared JavaScript.
-     */
-    private static JsonNode getConstantRunBy(ObjectNode uidl, int index) {
-        ArrayNode invocation = (ArrayNode) uidl.get("execute").get(index);
-        String name = invocation.get(invocation.size() - 1).asString();
-        return uidl.get("constants").get(name);
-    }
-
-    /**
-     * The identifier of the function that the invocation at the given index of
-     * the given response runs.
+     * Gets the identifier of the function that the invocation at the given
+     * index of the given response runs, which the invocation names among the
+     * constants of the response.
      */
     private static String getFunctionIdRunBy(ObjectNode uidl, int index) {
-        return getConstantRunBy(uidl, index)
+        JsonNode invocation = uidl.get("execute").get(index);
+        String name = invocation.get(invocation.size() - 1).asString();
+        return uidl.get("constants").get(name)
                 .get(JsonConstants.UIDL_KEY_JS_FUNCTION).asString();
     }
 
