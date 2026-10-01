@@ -34,6 +34,7 @@ import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -70,6 +71,16 @@ public class SpringInstantiatorTest {
     @Configuration
     @ComponentScan
     public static class TestConfiguration {
+
+        // Expose at least one bean definition so that the configuration class
+        // get proxied
+        @Bean
+        Dummy dummy() {
+            return new Dummy();
+        }
+
+        static class Dummy {
+        }
 
     }
 
