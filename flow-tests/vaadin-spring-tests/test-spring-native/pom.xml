@@ -45,7 +45,7 @@
     <!-- Neither the Spring Boot bom nor the Flow poms manage the GraalVM
          build tools. Keep this in step with native-build-tools-plugin.version
          in spring-boot-dependencies for spring.boot.version. -->
-    <native-maven-plugin.version>1.1.8</native-maven-plugin.version>
+    <native-maven-plugin.version>1.1.14</native-maven-plugin.version>
   </properties>
 
   <dependencies>

@@ -31,7 +31,7 @@
          version here on purpose - the channel below is what pins it, which is
          how Red Hat documents EAP 8.1 provisioning. -->
     <eap.channel.version>1.8.0.GA-redhat-00006</eap.channel.version>
-    <wildfly.plugin.version>5.1.5.Final</wildfly.plugin.version>
+    <wildfly.plugin.version>6.0.1.Final</wildfly.plugin.version>
     <!-- Run the ITs on the JUnit Platform (JUnit 6), like the other fixtures. -->
     <failsafe.provider.artifactId>surefire-junit-platform</failsafe.provider.artifactId>
     <!-- The parent's groups/excludedGroups are JUnit 4 @Category class names,
