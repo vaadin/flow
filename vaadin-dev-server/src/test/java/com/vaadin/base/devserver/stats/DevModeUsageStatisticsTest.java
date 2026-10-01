@@ -292,6 +292,39 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
     }
 
     @Test
+    public void gradleKotlinProject() {
+        File gradleKotlinProjectFolder = TestUtils
+                .getTestFolder("stats-data/gradle-kotlin-project-folder");
+        Assert.assertEquals(
+                "gradle" + ProjectHelpers.createHash("KotlinProjectName"),
+                ProjectHelpers.generateProjectId(gradleKotlinProjectFolder));
+        Assert.assertEquals("https://start.vaadin.com/test/5",
+                ProjectHelpers.getProjectSource(gradleKotlinProjectFolder));
+    }
+
+    @Test
+    public void buildTool() throws Exception {
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        Assert.assertEquals(StatisticsConstants.BUILD_TOOL_MAVEN,
+                storage.readProject().get(StatisticsConstants.FIELD_BUILD_TOOL)
+                        .asText());
+        Assert.assertEquals(StatisticsConstants.BUILD_TOOL_GRADLE,
+                ProjectHelpers.getBuildTool(TestUtils
+                        .getTestFolder("stats-data/gradle-project-folder1")));
+        Assert.assertEquals(StatisticsConstants.BUILD_TOOL_GRADLE,
+                ProjectHelpers.getBuildTool(TestUtils.getTestFolder(
+                        "stats-data/gradle-kotlin-project-folder")));
+        Assert.assertEquals(StatisticsConstants.BUILD_TOOL_GRADLE,
+                ProjectHelpers.getBuildTool(TestUtils.getTestFolder(
+                        "stats-data/gradle-build-script-only-folder")));
+        Assert.assertEquals(StatisticsConstants.MISSING_DATA, ProjectHelpers
+                .getBuildTool(TestUtils.getTestFolder("stats-data/empty")));
+    }
+
+    @Test
     public void missingProject() {
         File mavenProjectFolder1 = TestUtils.getTestFolder("java");
         File mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/empty");
