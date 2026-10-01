@@ -230,8 +230,21 @@ public abstract class Trigger implements Serializable {
     protected abstract Registration install(JsFunction action);
 
     /**
+     * Adds a cleanup that runs when this trigger is removed. Actions use it for
+     * state they set up besides the client-side listener, such as a registered
+     * stream resource.
+     *
+     * @param cleanup
+     *            the cleanup to run on {@link #remove()}, not {@code null}
+     */
+    void addCleanup(Registration cleanup) {
+        registrations.add(Objects.requireNonNull(cleanup));
+    }
+
+    /**
      * Removes this trigger and all wirings created from it. The corresponding
-     * client-side listeners are detached as part of the next synchronisation.
+     * client-side listeners are detached as part of the next synchronisation,
+     * and the cleanups registered by its actions run.
      */
     public final void remove() {
         registrations.forEach(Registration::remove);
