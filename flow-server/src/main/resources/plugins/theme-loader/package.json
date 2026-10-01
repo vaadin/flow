@@ -18,6 +18,6 @@
     "theme-loader-utils.js"
   ],
   "dependencies": {
-    "glob": "10.3.3"
+    "glob": "10.5.0"
   }
 }
