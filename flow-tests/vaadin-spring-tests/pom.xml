@@ -159,7 +159,6 @@
                of our test build configs -->
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.20.0</version>
     </dependency>
 
     <dependency>
@@ -355,6 +354,20 @@
         <module>test-spring-white-list</module>
         <module>test-spring-filter-packages</module>
 
+      </modules>
+    </profile>
+
+    <profile>
+      <!-- Built into a GraalVM native image, which takes minutes, so it runs
+           in .github/workflows/spring-native.yml rather than in validation -->
+      <id>native</id>
+      <activation>
+        <property>
+          <name>native</name>
+        </property>
+      </activation>
+      <modules>
+        <module>test-spring-native</module>
       </modules>
     </profile>
 

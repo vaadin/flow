@@ -117,13 +117,13 @@
     <hibernate.validator.version>9.1.4.Final</hibernate.validator.version>
     <slf4j.version>2.0.20</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
-    <jackson.version>3.1.5</jackson.version>
+    <jackson.version>3.1.6</jackson.version>
     <jaxb.version>4.0.9</jaxb.version>
     <guava.version>33.7.1-jre</guava.version>
     <junit.jupiter.version>6.1.3</junit.jupiter.version>
     <weld.version>6.0.4.Final</weld.version>
     <weld.junit.version>5.0.3.Final</weld.junit.version>
-    <quarkus.version>3.33.3.3</quarkus.version>
+    <quarkus.version>3.33.0</quarkus.version>
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
@@ -142,15 +142,23 @@
     <jetty.version>12.1.13</jetty.version>
     <properties-maven-plugin.version>1.3.1</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.2</build-helper-maven-plugin.version>
-    <maven.version>3.9.16</maven.version>
+    <maven.version>3.10.0</maven.version>
     <maven-plugin-annotations.version>3.16.0</maven-plugin-annotations.version>
     <jandex.plugin.version>3.6.0</jandex.plugin.version>
+    <!-- The Jandex index format that the plugin writes, set apart from the
+         plugin version. Quarkus reads the indexes with the Jandex its BOM
+         manages, and an older Jandex rejects a newer format. So this is the
+         newest format that the Jandex of the Quarkus BOM at quarkus.version
+         reads. A newer Quarkus reads it too, since Jandex reads older
+         formats. -->
+    <jandex.format.version>13</jandex.format.version>
     <!-- Modules with no Jandex consumer (tooling, tests, the Spring and CDI
          integrations) set this to true -->
     <jandex.skip>false</jandex.skip>
-    <spotless.plugin.version>3.10.2</spotless.plugin.version>
+    <spotless.plugin.version>3.10.3</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
+    <spotless.prettier.version>3.9.9</spotless.prettier.version>
 
     <!-- Frontend -->
     <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -235,7 +243,7 @@
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>3.20.0</version>
+        <version>3.21.0</version>
       </dependency>
 
       <dependency>
@@ -280,7 +288,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>5.23.0</version>
+        <version>5.24.0</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -684,6 +692,7 @@
               <exclude>src/main/frontend/generated/**</exclude>
             </excludes>
             <prettier>
+              <prettierVersion>${spotless.prettier.version}</prettierVersion>
               <configFile>${maven.multiModuleProjectDirectory}/.prettierrc</configFile>
               <npmInstallCache>${maven.multiModuleProjectDirectory}/target/.spotless-npm-install-cache</npmInstallCache>
             </prettier>
@@ -697,6 +706,7 @@
               <exclude>src/main/frontend/generated/**</exclude>
             </excludes>
             <prettier>
+              <prettierVersion>${spotless.prettier.version}</prettierVersion>
               <configFile>${maven.multiModuleProjectDirectory}/.prettierrc</configFile>
               <npmInstallCache>${maven.multiModuleProjectDirectory}/target/.spotless-npm-install-cache</npmInstallCache>
             </prettier>
@@ -871,6 +881,9 @@
         <groupId>io.smallrye</groupId>
         <artifactId>jandex-maven-plugin</artifactId>
         <version>${jandex.plugin.version}</version>
+        <configuration>
+          <indexVersion>${jandex.format.version}</indexVersion>
+        </configuration>
         <executions>
           <execution>
             <id>make-index</id>

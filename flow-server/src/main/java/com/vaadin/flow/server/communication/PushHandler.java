@@ -365,6 +365,7 @@ public class PushHandler {
                     callback.run(resource, ui);
                 }
             } catch (final IOException e) {
+                service.recordRequestFailure(vaadinRequest, e);
                 callErrorHandler(session, e);
             } catch (final Exception e) {
                 SystemMessages msg = service.getSystemMessages(
@@ -387,6 +388,7 @@ public class PushHandler {
                                 msg.getInternalErrorCaption(),
                                 msg.getInternalErrorMessage(), null,
                                 msg.getInternalErrorURL()));
+                service.recordRequestFailure(vaadinRequest, e);
                 callErrorHandler(session, e);
             } finally {
                 try {

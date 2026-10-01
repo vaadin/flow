@@ -161,7 +161,8 @@ debug output.
 Send a payload that repeats through the constant pool the client already
 caches, and keep the message shape the same for a new path and the existing one
 instead of adding a second cache beside it. Put arriving constants in the pool
-before anything resolves a reference to them.
+before anything resolves a reference to them. See
+`guidelines/wire-protocol.md` for what the pool holds today and what it costs.
 
 Keep a wire object down to what the receiver cannot derive: no key it ignores,
 no value it can read off the payload it already has.
@@ -199,6 +200,13 @@ the problem into a `NoClassDefFoundError` at goal execution time.
 Derive the version of a provisioned tool from the project's own dependency tree
 instead of pinning it in the plugin, otherwise the pre-provisioned artifact
 does not match what the running process expects and the network is hit anyway.
+
+Derive the set of modules a script or CI workflow iterates over from the poms
+that declare them, never from a list written into the script — a hard-coded
+list drifts the moment someone adds a module and forgets it. Read the
+`<module>` entries of `flow-tests/pom.xml`, or a per-module marker such as the
+`validation.run` property, so a new module is picked up without being listed
+anywhere else. See `scripts/computeMatrix.js` and `scripts/previewModule.js`.
 
 Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
