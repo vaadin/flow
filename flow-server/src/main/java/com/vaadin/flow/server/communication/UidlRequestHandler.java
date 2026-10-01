@@ -87,20 +87,6 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     public static final Pattern HASH_PATTERN = Pattern
             .compile("window.location.hash ?= ?'(.*?)'");
     public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
-    /**
-     * The JavaScript that pushes a corrected hash onto the location the browser
-     * is at, for a v7 UIDL that named no location to go with it. The hash is
-     * the parameter of the call rather than part of the JavaScript.
-     */
-    private static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, '', location.pathname + location.search + '#' + $0));";
-
-    /**
-     * The JavaScript that pushes a corrected location, which the v7 UIDL gave
-     * in full. The location is the parameter of the call rather than part of
-     * the JavaScript.
-     */
-    private static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, '', $0));";
-
     private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
     private static final String RPC = RPC_INVOCATIONS;
     private static final String LOCATION = RPC_NAVIGATION_LOCATION;
@@ -108,26 +94,6 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     private static final String CONSTANTS = "constants";
     private static final String EXECUTE = UIDL_KEY_EXECUTE;
-
-    /**
-     * What names the push state that the router scheduled among the constants
-     * of a response, which is the invocation the fix-up corrects.
-     * <p>
-     * An invocation names what it runs rather than carrying it, and a constant
-     * is named by a hash of its value, so the name of a given call is the same
-     * in every response and is known here without reading one. Only the push
-     * state of the non-React router is this: a replace state, a React
-     * navigation and an application invocation that runs the same browser
-     * function are all named differently.
-     */
-    private static final String ROUTER_PUSH_STATE = nameOfFunction(
-            functionId(HistoryJs.class, "pushState", 2));
-
-    private static final String CORRECTED_LOCATION_FUNCTION = functionId(
-            MprPushStateJs.class, "pushLocation", 1);
-
-    private static final String CORRECTED_HASH_FUNCTION = functionId(
-            MprPushStateJs.class, "pushHash", 1);
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -331,12 +297,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
         ArrayNode exec = (ArrayNode) uidl.get(EXECUTE);
         String location = null;
-        int idx = -1;
         for (int i = 0; i < exec.size(); i++) {
             ArrayNode arr = (ArrayNode) exec.get(i);
-            if (runsRouterPushState(arr)) {
-                idx = i;
-            }
             // Everything but the last element is a parameter, and the v7 UIDL
             // this reaches into is one of them. The last one names what the
             // invocation runs rather than being it.
@@ -361,7 +323,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
 
         if (location != null) {
-            ArrayNode corrected = correctedPushState(ui, uidl, location);
+            int idx = findRouterPushState(exec);
+            ArrayNode corrected = createCorrectedPushState(ui, uidl, location);
             if (idx >= 0) {
                 exec.set(idx, corrected);
             } else {
@@ -372,24 +335,41 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     /**
-     * Whether the given invocation is the push state that the router scheduled
-     * for the location being navigated to, which is the one the fix-up replaces
-     * with a push state of the corrected location.
+     * Finds the push state that the router scheduled for the location being
+     * navigated to, which is the one the fix-up replaces with a push state of
+     * the corrected location.
+     * <p>
+     * An invocation names what it runs rather than carrying it, and a constant
+     * is named by a hash of its value, so the name of the router's push state
+     * is the same in every response and is known without reading one. Only the
+     * push state of the non-React router has that name: a replace state, a
+     * React navigation and an application invocation that runs the same browser
+     * function are all named differently.
      *
-     * @see #ROUTER_PUSH_STATE
+     * @return the index of the router's push state among the given invocations,
+     *         or <code>-1</code> if there is none
      */
-    private static boolean runsRouterPushState(ArrayNode invocation) {
-        if (invocation.isEmpty()) {
-            return false;
+    private static int findRouterPushState(ArrayNode invocations) {
+        String routerPushState = getFunctionConstantId(
+                getFunctionId(HistoryJs.class, "pushState", 2));
+        int index = -1;
+        for (int i = 0; i < invocations.size(); i++) {
+            ArrayNode invocation = (ArrayNode) invocations.get(i);
+            if (invocation.isEmpty()) {
+                continue;
+            }
+            JsonNode name = invocation.get(invocation.size() - 1);
+            if (name.getNodeType().equals(JsonNodeType.STRING)
+                    && routerPushState.equals(name.asString())) {
+                index = i;
+            }
         }
-        JsonNode name = invocation.get(invocation.size() - 1);
-        return name.getNodeType().equals(JsonNodeType.STRING)
-                && ROUTER_PUSH_STATE.equals(name.asString());
+        return index;
     }
 
     /**
-     * The invocation that pushes the corrected location, as a call of the
-     * JavaScript that {@link MprPushStateJs} declares.
+     * Creates the invocation that pushes the corrected location, as a call of
+     * the JavaScript that {@link MprPushStateJs} declares.
      * <p>
      * The location is a parameter of the call, so whatever it holds reaches the
      * browser rather than becoming part of what the browser runs, and the two
@@ -398,8 +378,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * browser runs a function the bundle already has, which is what a content
      * security policy without <code>unsafe-eval</code> allows.
      */
-    private static ArrayNode correctedPushState(UI ui, ObjectNode uidl,
+    private static ArrayNode createCorrectedPushState(UI ui, ObjectNode uidl,
             String location) {
+        String functionId = location.startsWith("http")
+                ? getFunctionId(MprPushStateJs.class, "pushLocation", 1)
+                : getFunctionId(MprPushStateJs.class, "pushHash", 1);
+
         ArrayNode invocation = JacksonUtils.createArrayNode();
         invocation.add(location);
         // The client applies the function to the parameter that follows the
@@ -407,15 +391,13 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         // declared JavaScript addresses the browser's history rather than an
         // element, the same way page level JavaScript does.
         invocation.addNull();
-        invocation.add(asConstant(ui, uidl,
-                UidlWriter.functionConstant(location.startsWith("http")
-                        ? CORRECTED_LOCATION_FUNCTION
-                        : CORRECTED_HASH_FUNCTION)));
+        invocation.add(registerConstant(ui, uidl,
+                UidlWriter.functionConstant(functionId)));
         return invocation;
     }
 
     /**
-     * The identifier of the function that the named method of the given
+     * Gets the identifier of the function that the named method of the given
      * JavaScript definition runs, which is what an invocation of it names.
      * <p>
      * A call is built to ask it, since the identifier belongs to the
@@ -425,17 +407,17 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * Package private for the tests of the fix-up, which assert on what it
      * sends and recognizes.
      */
-    static String functionId(Class<?> definitionType, String methodName,
+    static String getFunctionId(Class<?> definitionType, String methodName,
             int parameterCount) {
         return new JsCall(definitionType, methodName,
                 Collections.nCopies(parameterCount, null)).getFunctionId();
     }
 
     /**
-     * What names the constant of the given function, which is what an
+     * Gets what names the constant of the given function, which is what an
      * invocation that runs it carries.
      */
-    private static String nameOfFunction(String functionId) {
+    private static String getFunctionConstantId(String functionId) {
         return new ConstantPoolKey(UidlWriter.functionConstant(functionId))
                 .getId();
     }
@@ -446,7 +428,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * it yet, and answers with what names it - which is what an invocation
      * carries instead of the value.
      */
-    private static String asConstant(UI ui, ObjectNode uidl, JsonNode value) {
+    private static String registerConstant(UI ui, ObjectNode uidl,
+            JsonNode value) {
         ConstantPool constantPool = ui.getInternals().getConstantPool();
         String name = constantPool.getConstantId(new ConstantPoolKey(value));
         if (constantPool.hasNewConstants()) {
@@ -476,7 +459,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
          * @param location
          *            the location to push
          */
-        @JsExpression(PUSH_STATE_LOCATION)
+        @JsExpression("setTimeout(() => history.pushState(null, '', $0));")
         void pushLocation(String location);
 
         /**
@@ -486,7 +469,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
          * @param hash
          *            the hash to push, without the leading <code>#</code>
          */
-        @JsExpression(PUSH_STATE_HASH)
+        @JsExpression("setTimeout(() => history.pushState(null, '', location.pathname + location.search + '#' + $0));")
         void pushHash(String hash);
     }
 

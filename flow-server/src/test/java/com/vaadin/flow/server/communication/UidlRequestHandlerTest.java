@@ -293,7 +293,7 @@ class UidlRequestHandlerTest {
         uidl = JacksonUtils.readTree(out);
 
         assertEquals(
-                UidlRequestHandler.functionId(MprPushStateJs.class,
+                UidlRequestHandler.getFunctionId(MprPushStateJs.class,
                         "pushLocation", 1),
                 functionRunBy(uidl, 1),
                 "the push state of the corrected location should replace the one the response carried: "
@@ -329,8 +329,8 @@ class UidlRequestHandlerTest {
         uidl = JacksonUtils.readTree(out);
 
         assertEquals(
-                UidlRequestHandler.functionId(MprPushStateJs.class, "pushHash",
-                        1),
+                UidlRequestHandler.getFunctionId(MprPushStateJs.class,
+                        "pushHash", 1),
                 functionRunBy(uidl, 1),
                 "the push state of the corrected hash should replace the one the response carried: "
                         + uidl);
@@ -455,7 +455,7 @@ class UidlRequestHandlerTest {
                 "the corrected push state should replace the one the router scheduled rather than be added next to it: "
                         + written);
         assertEquals(
-                UidlRequestHandler.functionId(MprPushStateJs.class,
+                UidlRequestHandler.getFunctionId(MprPushStateJs.class,
                         "pushLocation", 1),
                 functionRunBy(written, 1),
                 "and it should be what that invocation now runs: " + written);
@@ -807,8 +807,9 @@ class UidlRequestHandlerTest {
         // invocation names the constant of the function the build generated
         // for History.HistoryJs.pushState, and that is what the fix-up
         // corrects.
-        ObjectNode routerPushState = UidlWriter.functionConstant(
-                UidlRequestHandler.functionId(HistoryJs.class, "pushState", 2));
+        ObjectNode routerPushState = UidlWriter
+                .functionConstant(UidlRequestHandler
+                        .getFunctionId(HistoryJs.class, "pushState", 2));
         String name = new ConstantPoolKey(routerPushState).getId();
         ((ArrayNode) uidl.get("execute").get(1)).set(1, name);
         ((ObjectNode) uidl.get("constants")).remove("pushState");
