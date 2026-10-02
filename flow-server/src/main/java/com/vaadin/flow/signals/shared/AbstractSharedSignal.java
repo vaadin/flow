@@ -475,7 +475,7 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
                  * a listener to the tree, since the listener would in that case
                  * miss that change
                  */
-                tree.lock();
+                tree.getLock().lock();
                 try {
                     // avoid lambda to allow proper deserialization
                     TransientListener transientListener = new TransientListener() {
@@ -509,7 +509,7 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
                     return tree.observeNextChange(id(), transientListener,
                             hasChanges());
                 } finally {
-                    tree.unlock();
+                    tree.getLock().unlock();
                 }
 
             }

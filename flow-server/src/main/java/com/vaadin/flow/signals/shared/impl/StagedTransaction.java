@@ -209,7 +209,7 @@ public class StagedTransaction extends Transaction {
         ResultCollector collector = new ResultCollector(trees, resultHandler);
 
         try {
-            trees.forEach(SignalTree::lock);
+            trees.forEach(tree -> tree.getLock().lock());
 
             List<PendingCommit> pendingCommits = trees.stream().map(
                     tree -> tree.prepareCommit(createChange(tree, collector)))
@@ -237,7 +237,7 @@ public class StagedTransaction extends Transaction {
                 pendingCommits.forEach(PendingCommit::markAsAborted);
             }
         } finally {
-            trees.forEach(SignalTree::unlock);
+            trees.forEach(tree -> tree.getLock().unlock());
         }
     }
 

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -159,7 +160,7 @@ public abstract class SignalTree implements Serializable {
         private void scheduleNotification(boolean immediate) {
             assert hasLock();
             if (pendingNotifications.getAndIncrement() == 0) {
-                deliveryState.get().schedule(() -> deliver(immediate));
+                requireDeliveryState().queue.add(() -> deliver(immediate));
             }
         }
 
@@ -181,11 +182,11 @@ public abstract class SignalTree implements Serializable {
                      * unlock inside this listener has already been handled by
                      * that observer and must not unregister this one.
                      */
-                    if (deliveryState.get().isHandled(e)) {
+                    if (requireDeliveryState().handledFailures.contains(e)) {
                         // Allow the next change to schedule a notification
                         pendingNotifications.set(0);
                     } else {
-                        remove();
+                        removeAfterFailure(e);
                     }
                     throw e;
                 }
@@ -199,31 +200,35 @@ public abstract class SignalTree implements Serializable {
 
         private void remove() {
             removed = true;
-            /*
-             * Bypass lock() since removing schedules no notifications and
-             * should not deliver other pending notifications as a side effect.
-             */
-            assertNoLeafLockHeld();
-            ReentrantLock treeLock = getLock();
-            treeLock.lock();
+            runWithLock(() -> list.remove(this));
+        }
+
+        /*
+         * Releasing the lock after removing delivers other pending
+         * notifications. Keep this observer's own failure as the primary one if
+         * one of those fails as well.
+         */
+        private void removeAfterFailure(Throwable failure) {
             try {
-                list.remove(this);
-            } finally {
-                treeLock.unlock();
+                remove();
+            } catch (RuntimeException | Error e) {
+                failure.addSuppressed(e);
             }
         }
     }
 
     /**
      * Per-thread bookkeeping for deferring observer notifications until the
-     * thread no longer holds any tree lock.
+     * thread no longer holds any tree lock. Created when the thread acquires
+     * its first tree lock and removed again once it has released the last one
+     * and delivered all deferred notifications.
      */
     private static final class DeliveryState {
         /*
-         * The number of tree locks, across all trees, that the thread holds
-         * through lock().
+         * The number of distinct trees that the thread has locked. Reentrant
+         * locking of the same tree is covered by the lock's own hold count.
          */
-        private int heldLocks;
+        private int lockedTrees;
 
         /*
          * The nesting depth of deliverDeferredNotifications, which is
@@ -235,51 +240,105 @@ public abstract class SignalTree implements Serializable {
          * Notifications scheduled while holding a tree lock, delivered once the
          * last one has been released.
          */
-        private @Nullable ArrayDeque<Runnable> queue;
+        private final ArrayDeque<Runnable> queue = new ArrayDeque<>();
 
         /*
          * Failures rethrown from a nested delivery, for which the failing
          * observer has already been removed.
          */
-        private @Nullable Set<Throwable> handledFailures;
-
-        /*
-         * The collections are created lazily since the state is discarded after
-         * every outermost unlock and most lock cycles schedule no
-         * notifications.
-         */
-        private void schedule(Runnable notification) {
-            if (queue == null) {
-                queue = new ArrayDeque<>();
-            }
-            queue.add(notification);
-        }
-
-        private @Nullable Runnable pollScheduled() {
-            return queue == null ? null : queue.poll();
-        }
-
-        private void markHandled(Throwable failure) {
-            if (handledFailures == null) {
-                handledFailures = Collections
-                        .newSetFromMap(new IdentityHashMap<>());
-            }
-            handledFailures.add(failure);
-        }
-
-        private boolean isHandled(Throwable failure) {
-            return handledFailures != null && handledFailures.contains(failure);
-        }
+        private final Set<Throwable> handledFailures = Collections
+                .newSetFromMap(new IdentityHashMap<>());
     }
 
-    private static final ThreadLocal<DeliveryState> deliveryState = ThreadLocal
-            .withInitial(DeliveryState::new);
+    private static final ThreadLocal<DeliveryState> deliveryState = new ThreadLocal<>();
+
+    private static DeliveryState requireDeliveryState() {
+        DeliveryState state = deliveryState.get();
+        if (state == null) {
+            throw new IllegalStateException(
+                    "No signal tree lock is held by the current thread");
+        }
+        return state;
+    }
+
+    /**
+     * The tree lock. Keeps track of how many trees the current thread has
+     * locked and delivers deferred observer notifications when the thread
+     * releases its last tree lock, so that observers never run while any tree
+     * lock is held.
+     */
+    private static final class TreeLock extends ReentrantLock {
+        @Override
+        public void lock() {
+            super.lock();
+            onAcquired();
+        }
+
+        @Override
+        public void lockInterruptibly() throws InterruptedException {
+            super.lockInterruptibly();
+            onAcquired();
+        }
+
+        @Override
+        public boolean tryLock() {
+            boolean acquired = super.tryLock();
+            if (acquired) {
+                onAcquired();
+            }
+            return acquired;
+        }
+
+        @Override
+        public boolean tryLock(long timeout, TimeUnit unit)
+                throws InterruptedException {
+            boolean acquired = super.tryLock(timeout, unit);
+            if (acquired) {
+                onAcquired();
+            }
+            return acquired;
+        }
+
+        @Override
+        public void unlock() {
+            super.unlock();
+            if (getHoldCount() == 0) {
+                onReleased();
+            }
+        }
+
+        private void onAcquired() {
+            if (getHoldCount() > 1) {
+                return;
+            }
+            DeliveryState state = deliveryState.get();
+            if (state == null) {
+                state = new DeliveryState();
+                deliveryState.set(state);
+            }
+            state.lockedTrees++;
+        }
+
+        private static void onReleased() {
+            DeliveryState state = requireDeliveryState();
+            if (--state.lockedTrees > 0) {
+                return;
+            }
+            try {
+                deliverDeferredNotifications(state);
+            } finally {
+                if (state.deliveryDepth == 0) {
+                    deliveryState.remove();
+                }
+            }
+        }
+    }
 
     private final Map<Id, List<Observer>> observers = new HashMap<>();
 
     private final Id id = Id.random();
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new TreeLock();
 
     private final Type type;
 
@@ -317,49 +376,13 @@ public abstract class SignalTree implements Serializable {
      * participating in a transaction are locked before starting to evaluate the
      * transaction.
      * <p>
-     * Use {@link #lock()} and {@link #unlock()} rather than locking the
-     * returned instance directly. Observer notifications are deferred only
-     * while the tree is locked through {@link #lock()}, so a change committed
-     * while holding the raw lock notifies observers while that lock is still
-     * held.
+     * Observer notifications for changes applied while the lock is held are
+     * delivered only after the current thread has released all tree locks.
      *
      * @return the tree lock instance, not <code>null</code>
      */
     public ReentrantLock getLock() {
         return lock;
-    }
-
-    /**
-     * Acquires the tree lock. Unlike locking {@link #getLock()} directly, this
-     * keeps track of the lock so that observer notifications scheduled while
-     * the lock is held are delivered only when the current thread has released
-     * all tree locks through {@link #unlock()}.
-     */
-    public void lock() {
-        assertNoLeafLockHeld();
-        getLock().lock();
-        deliveryState.get().heldLocks++;
-    }
-
-    /**
-     * Releases the tree lock acquired through {@link #lock()}. If this was the
-     * last tree lock held by the current thread, then any observer
-     * notifications scheduled while holding the lock are delivered before this
-     * method returns.
-     */
-    public void unlock() {
-        getLock().unlock();
-        DeliveryState state = deliveryState.get();
-        if (--state.heldLocks == 0) {
-            try {
-                deliverDeferredNotifications(state);
-            } finally {
-                if (state.deliveryDepth == 0) {
-                    // Don't retain the state on pooled threads while idle
-                    deliveryState.remove();
-                }
-            }
-        }
     }
 
     /*
@@ -372,7 +395,7 @@ public abstract class SignalTree implements Serializable {
         try {
             Throwable failure = null;
             Runnable notification;
-            while ((notification = state.pollScheduled()) != null) {
+            while ((notification = state.queue.poll()) != null) {
                 try {
                     notification.run();
                 } catch (RuntimeException | Error e) {
@@ -384,15 +407,15 @@ public abstract class SignalTree implements Serializable {
                 }
             }
             if (failure instanceof RuntimeException e) {
-                state.markHandled(e);
+                state.handledFailures.add(e);
                 throw e;
             } else if (failure instanceof Error e) {
-                state.markHandled(e);
+                state.handledFailures.add(e);
                 throw e;
             }
         } finally {
             if (--state.deliveryDepth == 0) {
-                state.handledFailures = null;
+                state.handledFailures.clear();
             }
         }
     }
@@ -436,11 +459,12 @@ public abstract class SignalTree implements Serializable {
      * @return the value returned by the supplier
      */
     protected <T> @Nullable T getWithLock(ValueSupplier<T> action) {
-        lock();
+        assertNoLeafLockHeld();
+        lock.lock();
         try {
             return action.supply();
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
@@ -451,11 +475,12 @@ public abstract class SignalTree implements Serializable {
      *            the action to run, not <code>null</code>
      */
     protected void runWithLock(SerializableRunnable action) {
-        lock();
+        assertNoLeafLockHeld();
+        lock.lock();
         try {
             action.run();
         } finally {
-            unlock();
+            lock.unlock();
         }
     }
 
