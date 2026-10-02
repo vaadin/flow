@@ -60,18 +60,17 @@ jobs:
           # cherry-pick job is still active.
           dry-run: true
           verify-instructions: |
-            - Build the affected module(s) and the modules they depend on, test
-              sources included: mvn install -DskipTests -pl <module> -am
-              The build must succeed. A resolved pick often uses an API that
-              does not exist on the target branch; adapt the change to what the
-              branch has instead of committing code that does not compile.
-            - Run the unit tests the PR added or changed, and the tests of the
-              classes it touches: mvn test -pl <module> -Dtest=<TestClass>
-              Do not run the integration tests under flow-tests, they need a
-              browser.
             - Run the formatter on the affected module(s). The formatter
               differs per branch: if the root pom.xml configures
               spotless-maven-plugin (25.x and newer) run
               mvn spotless:apply -pl <module>, otherwise (24.x and older,
               formatter-maven-plugin) run mvn formatter:format -pl <module>
+            - Make sure the project compiles: build the affected module(s) and
+              the modules they depend on, test sources included:
+              mvn install -DskipTests -pl <module> -am
+              The build must succeed. A resolved pick often uses an API that
+              does not exist on the target branch; adapt the change to what the
+              branch has instead of committing code that does not compile.
+            - Do not run the tests, the validation workflow of the pull request
+              runs them.
           extra-allowed-tools: Bash(mvn:*)
