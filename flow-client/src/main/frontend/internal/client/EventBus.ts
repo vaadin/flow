@@ -39,9 +39,16 @@ export interface EventMap {
 }
 
 /**
+ * The part of an {@link EventBus} that page scripts get: they can listen to the
+ * engine's events, but not fire them.
+ */
+export type EventBusListeners = Pick<EventBus, 'addEventListener' | 'removeEventListener'>;
+
+/**
  * An event bus for one client engine. The engine fires its events through it,
- * and it is published as `window.Vaadin.Flow.clients[appId].eventBus` so that
- * page scripts can follow what the engine does:
+ * and its {@link EventBus.asListeners | listener methods} are published as
+ * `window.Vaadin.Flow.clients[appId].eventBus` so that page scripts can follow
+ * what the engine does:
  *
  * ```js
  * client.eventBus.addEventListener('vaadin-request-end', () => console.log('request done'));
@@ -116,5 +123,18 @@ export class EventBus extends EventTarget {
    */
   fireEvent<K extends keyof EventMap>(type: K, detail?: EventMap[K]['detail']): void {
     this.dispatchEvent(new CustomEvent(type, { detail }));
+  }
+
+  /**
+   * Gets a view of this bus that only adds and removes listeners, for code
+   * outside the engine that must not fire the engine's events.
+   *
+   * @returns the listener methods of this bus
+   */
+  asListeners(): EventBusListeners {
+    return {
+      addEventListener: this.addEventListener.bind(this),
+      removeEventListener: this.removeEventListener.bind(this)
+    };
   }
 }

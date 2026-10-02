@@ -78,7 +78,20 @@ describe('publishClient', () => {
 
     client.sendEventMessage(2, 'click', null);
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
-    expect(client.eventBus).to.equal(eventBus);
+  });
+
+  it('publishes listener methods of the event bus without its fire methods', () => {
+    publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
+    const client = $wnd.Vaadin.Flow.clients.ROOT;
+    expect(Object.keys(client.eventBus)).to.have.members(['addEventListener', 'removeEventListener']);
+
+    const ends: string[] = [];
+    const listener = () => ends.push('end');
+    client.eventBus.addEventListener('vaadin-request-end', listener);
+    eventBus.fireEvent('vaadin-request-end');
+    client.eventBus.removeEventListener('vaadin-request-end', listener);
+    eventBus.fireEvent('vaadin-request-end');
+    expect(ends).to.deep.equal(['end']);
   });
 
   it('omits dev-only and profiling methods in production without request timing', () => {
