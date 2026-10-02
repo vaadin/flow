@@ -115,6 +115,9 @@ Return `@Nullable T`, not `Optional<T>`, from a getter whose value may be
 unset, such as `getLabel()` or `getPlaceholder()`. Do not use a stand-in value
 such as `""` or `-1` to mean "not set". See `guidelines/design.md`.
 
+Model a "no data yet" state of a signal or a sealed result type as a named
+value (`UNKNOWN`, `Pending`), not as `null`.
+
 Jackson wire records may have `@Nullable` fields, because the wire format
 permits omissions. Keep the wire record private and translate it to the public
 shape at the boundary.
