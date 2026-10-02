@@ -21,10 +21,13 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -156,7 +159,7 @@ public abstract class SignalTree implements Serializable {
         private void scheduleNotification(boolean immediate) {
             assert hasLock();
             if (pendingNotifications.getAndIncrement() == 0) {
-                deferredNotifications.get().add(() -> deliver(immediate));
+                deliveryState.get().queue.add(() -> deliver(immediate));
             }
         }
 
@@ -173,7 +176,17 @@ public abstract class SignalTree implements Serializable {
                 try {
                     listenToNext = listener.invoke(invokeImmediate);
                 } catch (RuntimeException | Error e) {
-                    remove();
+                    /*
+                     * A failure from another observer delivered by a nested
+                     * unlock inside this listener has already been handled by
+                     * that observer and must not unregister this one.
+                     */
+                    if (deliveryState.get().handledFailures.contains(e)) {
+                        // Allow the next change to schedule a notification
+                        pendingNotifications.set(0);
+                    } else {
+                        remove();
+                    }
                     throw e;
                 }
                 if (!listenToNext) {
@@ -186,23 +199,54 @@ public abstract class SignalTree implements Serializable {
 
         private void remove() {
             removed = true;
-            runWithLock(() -> list.remove(this));
+            /*
+             * Bypass lock() since removing schedules no notifications and
+             * should not deliver other pending notifications as a side effect.
+             */
+            assertNoLeafLockHeld();
+            ReentrantLock treeLock = getLock();
+            treeLock.lock();
+            try {
+                list.remove(this);
+            } finally {
+                treeLock.unlock();
+            }
         }
     }
 
-    /*
-     * The number of tree locks, across all trees, that the current thread holds
-     * through lock().
+    /**
+     * Per-thread bookkeeping for deferring observer notifications until the
+     * thread no longer holds any tree lock.
      */
-    private static final ThreadLocal<int[]> heldTreeLocks = ThreadLocal
-            .withInitial(() -> new int[1]);
+    private static final class DeliveryState {
+        /*
+         * The number of tree locks, across all trees, that the thread holds
+         * through lock().
+         */
+        private int heldLocks;
 
-    /*
-     * Observer notifications scheduled while the current thread holds a tree
-     * lock, delivered once it has released the last one.
-     */
-    private static final ThreadLocal<ArrayDeque<Runnable>> deferredNotifications = ThreadLocal
-            .withInitial(ArrayDeque::new);
+        /*
+         * The nesting depth of deliverDeferredNotifications, which is
+         * re-entered when an observer releases a tree lock.
+         */
+        private int deliveryDepth;
+
+        /*
+         * Notifications scheduled while holding a tree lock, delivered once the
+         * last one has been released.
+         */
+        private final ArrayDeque<Runnable> queue = new ArrayDeque<>();
+
+        /*
+         * Failures rethrown from a nested delivery, for which the failing
+         * observer has already been removed.
+         */
+        private final Set<Throwable> handledFailures = Collections
+                .newSetFromMap(new IdentityHashMap<>());
+    }
+
+    private static final ThreadLocal<DeliveryState> deliveryState = ThreadLocal
+            .withInitial(DeliveryState::new);
 
     private final Map<Id, List<Observer>> observers = new HashMap<>();
 
@@ -245,6 +289,12 @@ public abstract class SignalTree implements Serializable {
      * to be handled externally when applying transactions so that all trees
      * participating in a transaction are locked before starting to evaluate the
      * transaction.
+     * <p>
+     * Use {@link #lock()} and {@link #unlock()} rather than locking the
+     * returned instance directly. Observer notifications are deferred only
+     * while the tree is locked through {@link #lock()}, so a change committed
+     * while holding the raw lock notifies observers while that lock is still
+     * held.
      *
      * @return the tree lock instance, not <code>null</code>
      */
@@ -261,7 +311,7 @@ public abstract class SignalTree implements Serializable {
     public void lock() {
         assertNoLeafLockHeld();
         getLock().lock();
-        heldTreeLocks.get()[0]++;
+        deliveryState.get().heldLocks++;
     }
 
     /**
@@ -272,28 +322,44 @@ public abstract class SignalTree implements Serializable {
      */
     public void unlock() {
         getLock().unlock();
-        if (--heldTreeLocks.get()[0] == 0) {
-            deliverDeferredNotifications();
+        DeliveryState state = deliveryState.get();
+        if (--state.heldLocks == 0) {
+            deliverDeferredNotifications(state);
         }
     }
 
-    private static void deliverDeferredNotifications() {
-        ArrayDeque<Runnable> queue = deferredNotifications.get();
-        RuntimeException failure = null;
-        Runnable notification;
-        while ((notification = queue.poll()) != null) {
-            try {
-                notification.run();
-            } catch (RuntimeException e) {
-                if (failure == null) {
-                    failure = e;
-                } else {
-                    failure.addSuppressed(e);
+    /*
+     * Runs all queued notifications even if some of them fail, so that no
+     * observer is left with a notification that is never delivered. The first
+     * failure is rethrown with any further failures as suppressed exceptions.
+     */
+    private static void deliverDeferredNotifications(DeliveryState state) {
+        state.deliveryDepth++;
+        try {
+            Throwable failure = null;
+            Runnable notification;
+            while ((notification = state.queue.poll()) != null) {
+                try {
+                    notification.run();
+                } catch (RuntimeException | Error e) {
+                    if (failure == null) {
+                        failure = e;
+                    } else if (failure != e) {
+                        failure.addSuppressed(e);
+                    }
                 }
             }
-        }
-        if (failure != null) {
-            throw failure;
+            if (failure instanceof RuntimeException e) {
+                state.handledFailures.add(e);
+                throw e;
+            } else if (failure instanceof Error e) {
+                state.handledFailures.add(e);
+                throw e;
+            }
+        } finally {
+            if (--state.deliveryDepth == 0) {
+                state.handledFailures.clear();
+            }
         }
     }
 

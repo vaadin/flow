@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -398,6 +399,130 @@ class SynchronousSignalTreeTest {
                 childId, new DoubleNode(3)));
 
         assertEquals(1, count.get());
+    }
+
+    @Test
+    void observe_changeWhileHoldingTreeLocks_invokedAfterLastUnlock() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        SynchronousSignalTree other = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            assertFalse(tree.hasLock());
+            assertFalse(other.hasLock());
+            count.incrementAndGet();
+            return false;
+        });
+
+        other.lock();
+        tree.lock();
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+        assertEquals(0, count.get());
+
+        tree.unlock();
+        assertEquals(0, count.get());
+
+        other.unlock();
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void observe_notifyImmediately_invokedAfterUnlockAsImmediate() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        SynchronousSignalTree other = new SynchronousSignalTree(false);
+        List<Boolean> invocations = new ArrayList<>();
+
+        other.lock();
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            invocations.add(immediate);
+            return true;
+        }, true);
+        assertEquals(List.of(), invocations);
+
+        other.unlock();
+        assertEquals(List.of(true), invocations);
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+        assertEquals(List.of(true, false), invocations);
+    }
+
+    @Test
+    void observe_changesDuringInvocation_coalescedIntoOneReinvocation() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+        AtomicBoolean invoking = new AtomicBoolean();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            assertFalse(invoking.getAndSet(true), "Invoked re-entrantly");
+            if (count.incrementAndGet() == 1) {
+                tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+                tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+            }
+            invoking.set(false);
+            return true;
+        });
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+
+        assertEquals(2, count.get());
+    }
+
+    @Test
+    void observe_observersThrow_allInvokedFailuresCollectedAndRemoved() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+        IllegalStateException first = new IllegalStateException();
+        AssertionError second = new AssertionError();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            count.incrementAndGet();
+            throw first;
+        });
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            count.incrementAndGet();
+            throw second;
+        });
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            count.incrementAndGet();
+            return true;
+        });
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> tree
+                        .commitSingleCommand(TestUtil.writeRootValueCommand()));
+        assertSame(first, thrown);
+        assertEquals(List.of(second), List.of(thrown.getSuppressed()));
+        assertEquals(3, count.get());
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+        assertEquals(4, count.get());
+    }
+
+    @Test
+    void observe_otherObserverThrowsDuringNestedChange_observerKept() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        Id child = Id.random();
+        tree.commitSingleCommand(new SignalCommand.InsertCommand(child, Id.ZERO,
+                null, null, ListPosition.first()));
+        AtomicInteger count = new AtomicInteger();
+        IllegalStateException failure = new IllegalStateException();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            count.incrementAndGet();
+            tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
+                    child, new StringNode("value" + count.get())));
+            return true;
+        });
+        tree.observeNextChange(child, immediate -> {
+            throw failure;
+        });
+
+        assertSame(failure, assertThrows(IllegalStateException.class, () -> tree
+                .commitSingleCommand(TestUtil.writeRootValueCommand())));
+        assertEquals(1, count.get());
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+        assertEquals(2, count.get());
     }
 
     @Test
