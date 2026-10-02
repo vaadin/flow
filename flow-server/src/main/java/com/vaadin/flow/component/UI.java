@@ -606,8 +606,8 @@ public class UI extends Component
      *         cancel the task
      */
     public Future<Void> access(final Command command) {
-        // null detach handler -> throw UIDetachEvent, so there is always a
-        // future when this returns
+        // handleAccessDetach throws UIDetachedException when there is no
+        // detach handler, so access never returns null here
         return Objects.requireNonNull(access(command, null));
     }
 
@@ -2236,9 +2236,11 @@ public class UI extends Component
             serverPaused();
         } else {
             // acknowledge client, but cancel if session not open
-            VaadinSession session = getSession();
-            serverConnected(session == null
-                    || !session.getState().equals(VaadinSessionState.OPEN));
+            // Routing above already needs the session, so it is present here
+            VaadinSession session = Objects.requireNonNull(getSession(),
+                    "Navigation is not supported by a detached UI");
+            serverConnected(
+                    !session.getState().equals(VaadinSessionState.OPEN));
             replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
     }
