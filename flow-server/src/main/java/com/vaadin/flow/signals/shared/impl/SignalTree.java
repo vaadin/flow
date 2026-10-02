@@ -270,12 +270,14 @@ public abstract class SignalTree implements Serializable {
     private static final class TreeLock extends ReentrantLock {
         @Override
         public void lock() {
+            assertNoLeafLockHeld();
             super.lock();
             onAcquired();
         }
 
         @Override
         public void lockInterruptibly() throws InterruptedException {
+            assertNoLeafLockHeld();
             super.lockInterruptibly();
             onAcquired();
         }
@@ -292,6 +294,7 @@ public abstract class SignalTree implements Serializable {
         @Override
         public boolean tryLock(long timeout, TimeUnit unit)
                 throws InterruptedException {
+            assertNoLeafLockHeld();
             boolean acquired = super.tryLock(timeout, unit);
             if (acquired) {
                 onAcquired();
@@ -305,6 +308,26 @@ public abstract class SignalTree implements Serializable {
             if (getHoldCount() == 0) {
                 onReleased();
             }
+        }
+
+        /**
+         * Asserts that the current thread is not holding any component
+         * {@link LeafLock} while it is about to acquire this tree lock.
+         * Acquiring a tree lock while holding a leaf lock is the ordering that
+         * causes ABBA deadlocks (see #25166); the reverse (tree lock held while
+         * a listener takes a leaf lock) is the reference direction and stays
+         * allowed. Reentrant re-locks of this same tree are permitted.
+         * <p>
+         * Only active under {@code -ea}. This is the enforcement side of the
+         * {@link LeafLock} invariant.
+         */
+        private void assertNoLeafLockHeld() {
+            assert isHeldByCurrentThread()
+                    || !LeafLock.isAnyHeldByCurrentThread()
+                    : "Acquiring a SignalTree lock while holding a component leaf lock ("
+                            + LeafLock.describeHeld()
+                            + "). This leaf-lock -> tree-lock ordering causes ABBA "
+                            + "deadlocks; do the tree call outside the leaf lock. See #25166.";
         }
 
         private void onAcquired() {
@@ -430,26 +453,6 @@ public abstract class SignalTree implements Serializable {
     }
 
     /**
-     * Asserts that the current thread is not holding any component
-     * {@link LeafLock} while it is about to acquire this tree lock. Acquiring a
-     * tree lock while holding a leaf lock is the ordering that causes ABBA
-     * deadlocks (see #25166); the reverse (tree lock held while a listener
-     * takes a leaf lock) is the reference direction and stays allowed.
-     * Reentrant re-locks of this same tree are permitted.
-     * <p>
-     * Only active under {@code -ea}. This is the enforcement side of the
-     * {@link LeafLock} invariant.
-     */
-    private void assertNoLeafLockHeld() {
-        assert lock.isHeldByCurrentThread()
-                || !LeafLock.isAnyHeldByCurrentThread()
-                : "Acquiring a SignalTree lock while holding a component leaf lock ("
-                        + LeafLock.describeHeld()
-                        + "). This leaf-lock -> tree-lock ordering causes ABBA "
-                        + "deadlocks; do the tree call outside the leaf lock. See #25166.";
-    }
-
-    /**
      * Runs a supplier while holding the lock and returns the provided value.
      *
      * @param <T>
@@ -459,7 +462,6 @@ public abstract class SignalTree implements Serializable {
      * @return the value returned by the supplier
      */
     protected <T> @Nullable T getWithLock(ValueSupplier<T> action) {
-        assertNoLeafLockHeld();
         lock.lock();
         try {
             return action.supply();
@@ -475,7 +477,6 @@ public abstract class SignalTree implements Serializable {
      *            the action to run, not <code>null</code>
      */
     protected void runWithLock(SerializableRunnable action) {
-        assertNoLeafLockHeld();
         lock.lock();
         try {
             action.run();
