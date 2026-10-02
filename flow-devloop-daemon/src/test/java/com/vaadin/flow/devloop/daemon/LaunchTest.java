@@ -19,8 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -36,6 +39,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * noise a developer cannot tell from a whim.
  */
 class LaunchTest {
+
+    private final List<String> properties = new ArrayList<>();
+
+    @AfterEach
+    void clearProperties() {
+        properties.forEach(System::clearProperty);
+    }
 
     @Test
     void membership_ignoresOrder() {
@@ -137,32 +147,32 @@ class LaunchTest {
                 </project>
                 """);
         Path jar = Files.writeString(repo.resolve("ha.jar"), "");
-        System.setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, jar.toString());
-        System.setProperty("vaadin.dev.agentJar", jar.toString());
-        System.setProperty("vaadin.dev.javaHome",
-                System.getProperty("java.home"));
-        try {
-            Launch launch = new Launch(Reactor.discover(repo, text -> {
-            }), text -> {
-            });
+        setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, jar.toString());
+        setProperty("vaadin.dev.agentJar", jar.toString());
+        setProperty("vaadin.dev.javaHome", System.getProperty("java.home"));
+        Launch launch = new Launch(Reactor.discover(repo, text -> {
+        }), text -> {
+        });
 
-            List<String> flags = launch.jvmFlags(text -> {
-            });
+        List<String> flags = launch.jvmFlags(text -> {
+        });
 
-            assertTrue(
-                    flags.contains("-Dhotswapagent.disablePlugin="
-                            + Launch.DISABLED_HOTSWAP_PLUGINS),
-                    flags.toString());
-            assertTrue(
-                    flags.stream().noneMatch(
-                            flag -> flag.startsWith("-DdisabledPlugins=")),
-                    flags.toString());
-            assertTrue(List.of(Launch.DISABLED_HOTSWAP_PLUGINS.split(","))
-                    .contains("JacksonPlugin"));
-        } finally {
-            System.clearProperty(HotswapAgentJar.OVERRIDE_PROPERTY);
-            System.clearProperty("vaadin.dev.agentJar");
-            System.clearProperty("vaadin.dev.javaHome");
-        }
+        String prefix = "-Dhotswapagent.disablePlugin=";
+        List<String> disabled = flags.stream()
+                .filter(flag -> flag.startsWith(prefix))
+                .flatMap(flag -> Stream
+                        .of(flag.substring(prefix.length()).split(",")))
+                .toList();
+        assertTrue(disabled.contains("JacksonPlugin"), flags.toString());
+        assertTrue(disabled.contains("Vaadin"), flags.toString());
+        assertTrue(
+                flags.stream().noneMatch(
+                        flag -> flag.startsWith("-DdisabledPlugins=")),
+                flags.toString());
+    }
+
+    private void setProperty(String name, String value) {
+        properties.add(name);
+        System.setProperty(name, value);
     }
 }

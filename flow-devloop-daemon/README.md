@@ -820,11 +820,13 @@ configuration per loader. The JVM flag is `-Dhotswapagent.disablePlugin`, read
 in `premain` into a set every configuration consults. `-DdisabledPlugins`, the
 key `hotswap-agent.properties` uses, only reaches the system class loader:
 every other loader re-reads the file bundled in HotswapAgent's jar, whose empty
-`disabledPlugins=` shadows the system property. `MavenGoalRuntime` also writes
-the list into the app's `target/classes`, and with it an `extraClasspath`
-naming the HotswapAgent jar, without which a webapp loader inside a build
-plugin's realm cannot see the agent itself; honouring that also needs
-`java.base/java.net` and `java.base/jdk.internal.loader` opened.
+`disabledPlugins=` shadows the system property.
+
+For an embedded server `MavenGoalRuntime` writes a `hotswap-agent.properties`
+into the app's `target/classes` carrying an `extraClasspath` that names the
+HotswapAgent jar, without which a webapp loader inside a build plugin's realm
+cannot see the agent itself; honouring that also needs `java.base/java.net`
+and `java.base/jdk.internal.loader` opened.
 
 ## Under a build-plugin runtime
 

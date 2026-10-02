@@ -56,12 +56,6 @@ final class Launch {
      * {@link #jvmFlags} for what each of them would do. Each entry is the
      * {@code name} of the plugin's {@code @Plugin} annotation, which is not
      * always the short one: Jackson's is {@code JacksonPlugin}.
-     * <p>
-     * Named here because the value has to reach HotswapAgent two different
-     * ways: as a system property, which is what works when the application owns
-     * the JVM, and as a {@code hotswap-agent.properties} on the application's
-     * own classpath, which is what works when it does not. See
-     * {@code MavenGoalRuntime#writeHotswapAgentProperties}.
      */
     static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin";
 
