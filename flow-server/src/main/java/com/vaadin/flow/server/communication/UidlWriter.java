@@ -446,17 +446,35 @@ public class UidlWriter implements Serializable {
                     Stream.of(successChannel, errorChannel));
         }
 
-        ObjectNode function = JacksonUtils.createObjectNode();
-        function.put(JsonConstants.UIDL_KEY_JS_FUNCTION, call.getFunctionId());
+        return Stream.concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
+                Stream.of(constantOf(encodeFunctionReference(call),
+                        constantPool)))
+                .collect(JacksonUtils.asArray());
+    }
+
+    /**
+     * Encodes the reference to the function of the bundle that the given call
+     * runs: an object naming the function, and for a variadic call how many
+     * arguments it carries. An invocation of declared JavaScript sends this in
+     * place of an expression, through the constant pool like any other value an
+     * invocation runs, and the client tells the two apart by this being an
+     * object rather than a string.
+     * <p>
+     * Package private for {@link UidlRequestHandler}, which recognizes the
+     * router's push state by the constant this is sent as.
+     *
+     * @param call
+     *            the call to reference the function of, not <code>null</code>
+     * @return the reference, not <code>null</code>
+     */
+    static ObjectNode encodeFunctionReference(JsCall call) {
+        ObjectNode reference = JacksonUtils.createObjectNode();
+        reference.put(JsonConstants.UIDL_KEY_JS_FUNCTION, call.getFunctionId());
         if (call.isVariadic()) {
-            function.put(JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT,
+            reference.put(JsonConstants.UIDL_KEY_JS_ARGUMENT_COUNT,
                     call.flattenArguments().size());
         }
-
-        return Stream
-                .concat(parameters.map(JacksonCodec::encodeWithTypeInfo),
-                        Stream.of(constantOf(function, constantPool)))
-                .collect(JacksonUtils.asArray());
+        return reference;
     }
 
     /**

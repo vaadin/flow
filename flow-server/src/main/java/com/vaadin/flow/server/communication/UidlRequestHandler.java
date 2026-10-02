@@ -17,8 +17,11 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
@@ -32,10 +35,16 @@ import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -81,9 +90,6 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     public static final Pattern HASH_PATTERN = Pattern
             .compile("window.location.hash ?= ?'(.*?)'");
     public static final Pattern URL_PATTERN = Pattern.compile("^(.*)#(.+)$");
-    public static final String PUSH_STATE_HASH = "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#%s'));";
-    public static final String PUSH_STATE_LOCATION = "setTimeout(() => history.pushState(null, null, '%s'));";
-
     private static final String SYNC_ID = '"' + SERVER_SYNC_ID + '"';
     private static final String RPC = RPC_INVOCATIONS;
     private static final String LOCATION = RPC_NAVIGATION_LOCATION;
@@ -294,13 +300,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
         ArrayNode exec = (ArrayNode) uidl.get(EXECUTE);
         String location = null;
-        int idx = -1;
         for (int i = 0; i < exec.size(); i++) {
             ArrayNode arr = (ArrayNode) exec.get(i);
-            String runs = whatRuns(arr, uidl);
-            if (runs != null && runs.contains("history.pushState")) {
-                idx = i;
-            }
             // Everything but the last element is a parameter, and the v7 UIDL
             // this reaches into is one of them. The last one names what the
             // invocation runs rather than being it.
@@ -325,66 +326,102 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
 
         if (location != null) {
-            ArrayNode arr = JacksonUtils.createArrayNode();
-            arr.add("");
-            arr.add(asConstant(ui, uidl,
-                    String.format(
-                            location.startsWith("http") ? PUSH_STATE_LOCATION
-                                    : PUSH_STATE_HASH,
-                            location)));
-            if (idx >= 0) {
-                exec.set(idx, arr);
-            } else {
-                exec.add(arr);
+            // Encode the correction as a call of MprPushStateJs, the same way
+            // the writer encodes any call of declared JavaScript, so that the
+            // location is an argument rather than part of a script
+            JsCall correction = new JsCall(MprPushStateJs.class,
+                    location.startsWith("http") ? "pushLocation" : "pushHash",
+                    List.of(location));
+            ConstantPool constantPool = ui.getInternals().getConstantPool();
+            JsonNode corrected = UidlWriter.encodeExecuteJavaScriptList(
+                    List.of(new PendingJavaScriptInvocation(
+                            ui.getInternals().getStateTree().getRootNode(),
+                            new JavaScriptInvocation(correction,
+                                    correction.getExpression(),
+                                    correction.parametersFor(null)))),
+                    constantPool).get(0);
+            // The writer has already added the constants of this response, so
+            // add the one the correction needs unless the client already has it
+            if (constantPool.hasNewConstants()) {
+                ObjectNode constants = uidl.has(CONSTANTS)
+                        ? (ObjectNode) uidl.get(CONSTANTS)
+                        : uidl.putObject(CONSTANTS);
+                constants.setAll(constantPool.dumpConstants());
             }
 
+            int index = indexOfRouterPushState(exec);
+            if (index >= 0) {
+                exec.set(index, corrected);
+            } else {
+                exec.add(corrected);
+            }
         }
     }
 
     /**
-     * What the given invocation runs, as this response carries it.
+     * Gets the index of the push state that the router scheduled for the
+     * location being navigated to, which the fix-up replaces with the corrected
+     * one.
      * <p>
-     * An invocation names what it runs among the constants of the response that
-     * sends it, so this answers for one that runs something the client has not
-     * been sent before, which is what an invocation of a location that is being
-     * navigated to is. One that runs something the client already has is
-     * answered for with <code>null</code>, and the push state of the corrected
-     * location is then added to the response rather than replacing it.
+     * The router's push state is recognized by the constant that names the
+     * function it runs, <code>HistoryJs.pushState</code>. That name is a hash
+     * of the function reference, so it is the same in every response. A replace
+     * state, a React navigation and an application script that calls
+     * <code>history.pushState</code> itself all have different names and are
+     * left alone.
+     *
+     * @return the index, or <code>-1</code> if there is none
      */
-    private static String whatRuns(ArrayNode invocation, ObjectNode uidl) {
-        if (invocation.isEmpty() || !uidl.has(CONSTANTS)) {
-            return null;
+    private static int indexOfRouterPushState(ArrayNode invocations) {
+        // The arguments are placeholders: which function a call runs depends
+        // only on the method it calls
+        String routerPushState = new ConstantPoolKey(
+                UidlWriter.encodeFunctionReference(new JsCall(HistoryJs.class,
+                        "pushState", Arrays.asList(null, null))))
+                .getId();
+        int index = -1;
+        for (int i = 0; i < invocations.size(); i++) {
+            ArrayNode invocation = (ArrayNode) invocations.get(i);
+            if (invocation.isEmpty()) {
+                continue;
+            }
+            JsonNode name = invocation.get(invocation.size() - 1);
+            if (name.getNodeType().equals(JsonNodeType.STRING)
+                    && routerPushState.equals(name.asString())) {
+                index = i;
+            }
         }
-        JsonNode name = invocation.get(invocation.size() - 1);
-        if (!name.getNodeType().equals(JsonNodeType.STRING)) {
-            return null;
-        }
-        JsonNode constant = uidl.get(CONSTANTS).get(name.asString());
-        return constant != null
-                && constant.getNodeType().equals(JsonNodeType.STRING)
-                        ? constant.asString()
-                        : null;
+        return index;
     }
 
     /**
-     * Registers the given script with the constant pool of the given UI, puts
-     * it among the constants of the given response when the client does not
-     * have it yet, and answers with what names it - which is what an invocation
-     * carries instead of the script.
+     * The push state that the MPR fix-up sends, as a JavaScript definition, so
+     * that the build collects it into the bundle and the corrected location is
+     * a parameter of the call rather than part of the JavaScript.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      */
-    private static String asConstant(UI ui, ObjectNode uidl, String script) {
-        ConstantPool constantPool = ui.getInternals().getConstantPool();
-        String name = constantPool.getConstantId(
-                new ConstantPoolKey(JacksonUtils.createNode(script)));
-        if (constantPool.hasNewConstants()) {
-            ObjectNode constants = uidl.has(CONSTANTS)
-                    ? (ObjectNode) uidl.get(CONSTANTS)
-                    : uidl.putObject(CONSTANTS);
-            constantPool.dumpConstants().properties()
-                    .forEach(constant -> constants.set(constant.getKey(),
-                            constant.getValue()));
-        }
-        return name;
+    @JsDefinition
+    public interface MprPushStateJs extends Serializable {
+
+        /**
+         * Pushes the given location, which the v7 UIDL gave in full.
+         *
+         * @param location
+         *            the location to push
+         */
+        @JsExpression("setTimeout(() => history.pushState(null, '', $0));")
+        void pushLocation(String location);
+
+        /**
+         * Pushes the given hash onto the location the browser is at, for a v7
+         * UIDL that named no location to go with it.
+         *
+         * @param hash
+         *            the hash to push, without the leading <code>#</code>
+         */
+        @JsExpression("setTimeout(() => history.pushState(null, '', location.pathname + location.search + '#' + $0));")
+        void pushHash(String hash);
     }
 
     private String removeHashInV7Uidl(ObjectNode json) {
