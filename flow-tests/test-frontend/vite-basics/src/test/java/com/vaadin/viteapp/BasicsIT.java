@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.testbench.TestBenchElement;
@@ -124,6 +125,16 @@ public class BasicsIT extends ViteDevModeIT {
     public void importFromDirectoryWorks() {
         String importResult = $("div").id("directoryImportResult").getText();
         Assert.assertEquals("Directory import ok", importResult);
+    }
+
+    @Test
+    public void indexHtmlLinkToApplicationResource_notPrefixedWithVaadin() {
+        Assert.assertEquals("images/static-icon.svg", executeScript(
+                "return document.getElementById('staticIcon').getAttribute('href')"));
+        Assert.assertEquals(200L,
+                ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                        "fetch(document.getElementById('staticIcon').href)"
+                                + ".then(response => arguments[0](response.status))"));
     }
 
     @Test

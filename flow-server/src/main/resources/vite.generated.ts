@@ -110,6 +110,50 @@ const indexHtmlRelativePath = path
   .replace(/\\/g, '/');
 const indexHtmlUrlPath = '/' + indexHtmlRelativePath;
 
+// Tags whose URL attributes the Vite dev server rewrites in index.html,
+// see DEFAULT_HTML_ASSET_SOURCES in Vite
+const assetTagRegex =
+  /<(?:audio|embed|img|image|input|link|object|script|source|track|use|video)\b(?:"[^"]*"|'[^']*'|[^'">])*>/gi;
+const assetUrlAttributeRegex = /\s(?:src|href|xlink:href|data|poster)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/gi;
+
+function isInFrontendFolder(url: string): boolean {
+  let filePath: string;
+  try {
+    filePath = decodeURI(url.replace(/[?#].*$/, ''));
+  } catch {
+    return false;
+  }
+  const file = filePath.startsWith('/')
+    ? path.resolve(frontendFolder, filePath.substring(1))
+    : path.resolve(path.dirname(projectIndexHtml), filePath);
+  return existsSync(file);
+}
+
+/**
+ * Adds `vite-ignore` to the tags in index.html that refer to a local URL
+ * that is not a file in the frontend folder.
+ *
+ * The dev server is started with the `/VAADIN/` base and prefixes every
+ * relative and root-relative URL in index.html with it, so links to
+ * resources served by the application itself (e.g. from
+ * `META-INF/resources`) would point into `/VAADIN/`. A production build
+ * keeps such URLs as they are, so they resolve against the `<base href>`
+ * that Flow adds to the page.
+ */
+function ignoreUrlsOutsideFrontendFolder(html: string): string {
+  return html.replace(assetTagRegex, (tag) => {
+    if (/\svite-ignore\b/i.test(tag)) {
+      return tag;
+    }
+    const urls = [...tag.matchAll(assetUrlAttributeRegex)].map((match) => match[1] ?? match[2] ?? match[3]);
+    const localUrls = urls.filter((url) => url && !url.startsWith('//') && !/^[a-z][a-z\d+.-]*:/i.test(url));
+    if (localUrls.length === 0 || localUrls.some(isInFrontendFolder)) {
+      return tag;
+    }
+    return tag.replace(/^<[^\s/>]+/, (name) => `${name} vite-ignore`);
+  });
+}
+
 const projectStaticAssetsFolders = [
   path.resolve(dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
   path.resolve(dirname, 'src', 'main', 'resources', 'static'),
@@ -704,7 +748,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         name: 'vaadin:inject-entrypoints-to-index-html',
         transformIndexHtml: {
           order: 'pre',
-          handler(_html, { path, server }) {
+          handler(html, { path, server }) {
             if (path !== indexHtmlUrlPath) {
               return;
             }
@@ -729,6 +773,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
                 attrs: { type: 'module', src: '/generated/commercial-banner.js' },
                 injectTo: 'head'
               });
+            }
+            if (server) {
+              return { html: ignoreUrlsOutsideFrontendFolder(html), tags: scripts };
             }
             return scripts;
           }
