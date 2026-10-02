@@ -72,6 +72,7 @@ import type { BindingStrategy } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 import { bindServerEventHandlerNames } from './ServerEventHandlerBinder';
 import { Console } from '../../Console';
+import { decodeWithTypeInfo } from '../util/ClientJsonCodec';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
@@ -98,9 +99,32 @@ type Command = () => void;
  *
  * @param event - Event to expand
  * @param element - target Element
+ * @param captures - values captured for this expression, referenced as `$0`,
+ * `$1`, ... in the expression
  * @returns Result of evaluated function
  */
-type EventExpression = (event: Event, element: Element) => unknown;
+type EventExpression = (event: Event, element: Element, ...captures: unknown[]) => unknown;
+
+/**
+ * The settings that the server sends for one expression that the client should
+ * evaluate when an event occurs. Shared between all elements that use the same
+ * expression with the same debounce settings, so the capture values are sent
+ * separately for each element.
+ */
+type ExpressionSettings = {
+  /** The JavaScript expression to evaluate; EVENT_SETTINGS_EXPRESSION. */
+  [JsonConstants.EVENT_SETTINGS_EXPRESSION]: string;
+  /** Debounce settings: `false`, `true` or `[[timeout, phase, ...], ...]`; EVENT_SETTINGS_DEBOUNCE. */
+  [JsonConstants.EVENT_SETTINGS_DEBOUNCE]: unknown;
+  /** The number of captures, when the expression is parameterized; EVENT_SETTINGS_CAPTURE_COUNT. */
+  [JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT]?: number;
+};
+
+/**
+ * Capture values for one parameterized expression, as
+ * `[sharedKey, capture0, capture1, ...]`.
+ */
+type CaptureValues = unknown[];
 
 let expressionCache: Map<string, EventExpression> | null = null;
 
@@ -1202,30 +1226,61 @@ function handleDomEvent(event: Event, context: BindingContext): void {
 
   const listenerMap = getDomEventListenerMap(node);
   const constantPool = node.getTree().getRegistry().getConstantPool();
-  const expressionConstantKey = listenerMap.getProperty(type).getValue() as string;
+
+  // The value is either the constant pool key of the shared settings, or a
+  // pair of that key and the capture values that are specific to this element
+  const settingsValue = listenerMap.getProperty(type).getValue() as [string, Record<string, CaptureValues>] | string;
+  const [expressionConstantKey, capturedExpressions] =
+    typeof settingsValue === 'string' ? [settingsValue, {}] : settingsValue;
   assert(expressionConstantKey !== null, 'There must be an expression constant key for the event type');
   assert(constantPool.has(expressionConstantKey), 'The constant pool must contain the expression constant key');
 
-  const expressionSettings = constantPool.get<Record<string, unknown>>(expressionConstantKey);
-  const expressions = Object.keys(expressionSettings);
+  const sharedSettings = constantPool.get<Record<string, ExpressionSettings>>(expressionConstantKey);
+  const sharedKeys = Object.keys(sharedSettings);
+  const capturedKeys = Object.keys(capturedExpressions);
 
-  const eventData: Record<string, unknown> | null = expressions.length === 0 ? null : {};
+  // Debounce settings by the key that the value is reported under, i.e.
+  // including one entry per set of captures for parameterized expressions
+  const entrySettings: Record<string, unknown> = {};
+
+  const eventData: Record<string, unknown> | null = sharedKeys.length === 0 && capturedKeys.length === 0 ? null : {};
   const synchronizeProperties = new Set<string>();
 
-  for (const expressionString of expressions) {
-    if (expressionString.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
-      synchronizeProperties.add(expressionString.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
-    } else if (expressionString === MAP_STATE_NODE_EVENT_DATA) {
+  for (const key of sharedKeys) {
+    const settings = sharedSettings[key];
+    if (settings[JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT]) {
+      // Only evaluated through the capture values sent for this element
+      continue;
+    }
+    entrySettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
+
+    if (key.startsWith(SYNCHRONIZE_PROPERTY_TOKEN)) {
+      synchronizeProperties.add(key.substring(SYNCHRONIZE_PROPERTY_TOKEN.length));
+    } else if (key === MAP_STATE_NODE_EVENT_DATA) {
       // map event.target to the closest state node
       eventData![MAP_STATE_NODE_EVENT_DATA] = getClosestStateNodeIdToEventTarget(node, event.target);
-    } else if (expressionString.startsWith(MAP_STATE_NODE_EVENT_DATA)) {
+    } else if (key.startsWith(MAP_STATE_NODE_EVENT_DATA)) {
       // map an element returned by JS to the closest state node
-      const jsEvaluation = expressionString.substring(MAP_STATE_NODE_EVENT_DATA.length);
-      const expressionValue = getOrCreateExpression(jsEvaluation)(event, element);
-      eventData![expressionString] = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
+      const jsEvaluation = key.substring(MAP_STATE_NODE_EVENT_DATA.length);
+      const expressionValue = getOrCreateExpression(jsEvaluation, 0)(event, element);
+      eventData![key] = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
     } else {
-      eventData![expressionString] = getOrCreateExpression(expressionString)(event, element);
+      eventData![key] = getOrCreateExpression(settings[JsonConstants.EVENT_SETTINGS_EXPRESSION], 0)(event, element);
     }
+  }
+
+  for (const key of capturedKeys) {
+    const [sharedKey, ...captures] = capturedExpressions[key];
+    const settings = sharedSettings[sharedKey as string];
+    assert(settings !== undefined, 'There must be shared settings for a captured expression');
+    entrySettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
+
+    const decodedCaptures = captures.map((capture) => decodeWithTypeInfo(node.getTree(), capture));
+    eventData![key] = getOrCreateExpression(settings[JsonConstants.EVENT_SETTINGS_EXPRESSION], decodedCaptures.length)(
+      event,
+      element,
+      ...decodedCaptures
+    );
   }
 
   synchronizeProperties.forEach((name) => {
@@ -1239,7 +1294,7 @@ function handleDomEvent(event: Event, context: BindingContext): void {
 
   const sendCommand = (debouncePhase: string | null): void => sendEventToServer(node, type, eventData, debouncePhase);
 
-  const sendNow = resolveFilters(element, type, expressionSettings, eventData, sendCommand, commands);
+  const sendNow = resolveFilters(element, type, entrySettings, eventData, sendCommand, commands);
 
   if (sendNow) {
     // Send if there were no filters or at least one matched.
@@ -1438,19 +1493,22 @@ function updateAttributeValue(
 }
 
 /**
- * Parses an event-data expression into a function `(event, element) => value`,
- * caching the result per expression string; mirrors getOrCreateExpression.
+ * Parses an event-data expression into a function
+ * `(event, element, $0, $1, ...) => value`, caching the result per expression
+ * string and capture count; mirrors getOrCreateExpression.
  */
-function getOrCreateExpression(expressionString: string): EventExpression {
+function getOrCreateExpression(expressionString: string, captureCount: number): EventExpression {
   if (expressionCache === null) {
     expressionCache = new Map();
   }
-  let expression = expressionCache.get(expressionString);
+  const cacheKey = `${captureCount}:${expressionString}`;
+  let expression = expressionCache.get(cacheKey);
 
   if (expression === undefined) {
     // Mirrors NativeFunction.create; the server controls these expressions.
-    expression = new Function('event', 'element', `return (${expressionString})`) as EventExpression;
-    expressionCache.set(expressionString, expression);
+    const captureNames = Array.from({ length: captureCount }, (_ignored, index) => `$${index}`);
+    expression = new Function('event', 'element', ...captureNames, `return (${expressionString})`) as EventExpression;
+    expressionCache.set(cacheKey, expression);
   }
 
   return expression;
