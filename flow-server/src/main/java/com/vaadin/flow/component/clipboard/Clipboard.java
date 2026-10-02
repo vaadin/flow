@@ -86,8 +86,11 @@ public final class Clipboard implements Serializable {
     // without a DataTransfer; `|| null` collapses the empty string (the
     // browser's value for an absent MIME type) and the optional-chain
     // short-circuit into JSON null.
-    private static final String PASTE_TEXT_EXPR = "event.clipboardData?.getData('text/plain') || null";
-    private static final String PASTE_HTML_EXPR = "event.clipboardData?.getData('text/html') || null";
+    // Package-visible (not private) so the browserless ClipboardSimulator,
+    // which shares this package, can build a simulated paste event whose data
+    // uses the exact same keys this listener reads back.
+    static final String PASTE_TEXT_EXPR = "event.clipboardData?.getData('text/plain') || null";
+    static final String PASTE_HTML_EXPR = "event.clipboardData?.getData('text/html') || null";
 
     // Walks event.composedPath() so the check sees through open shadow DOMs
     // (e.g. a Vaadin web component's internal <input>). Matches input,
@@ -96,13 +99,21 @@ public final class Clipboard implements Serializable {
     private static final String PASTE_FILTER_SKIP_EDITABLE = "!event.composedPath().some(function(e){"
             + "return e.tagName&&(e.tagName==='INPUT'||e.tagName==='TEXTAREA'||e.isContentEditable===true);})";
 
+    // Prefix of the element attribute holding a file-paste UploadHandler's
+    // stream URL (see registerFilePaste). Package-visible so the browserless
+    // ClipboardSimulator, which shares this package, can locate the handler to
+    // simulate pasted-file uploads.
+    static final String PASTE_UPLOAD_ATTRIBUTE_PREFIX = "_vaadin-paste-upload-";
+
     // DOM event the client paste-upload helper dispatches once every upload of
     // a paste has settled. A server-side listener for it (registered in
     // registerFilePaste) does nothing but force a Flow round trip, which
     // flushes the UI changes the per-file UploadHandler queued via UI.access —
     // so onFilePaste updates reach the client without @Push. Must stay in sync
-    // with the literal dispatched in flow-client/Clipboard.ts.
-    private static final String FILE_PASTE_FINISHED_EVENT = "vaadin-paste-upload-finished";
+    // with the literal dispatched in flow-client/Clipboard.ts. Package-visible
+    // so the browserless ClipboardSimulator can fire it to complete a simulated
+    // file paste.
+    static final String FILE_PASTE_FINISHED_EVENT = "vaadin-paste-upload-finished";
 
     /**
      * Request header set by the client-side paste-upload helper on every fetch
@@ -342,7 +353,8 @@ public final class Clipboard implements Serializable {
         // UUID scopes the slot per-registration (the same approach as
         // StreamResource) so multiple file-paste listeners on the same element
         // resolve to independent upload URLs.
-        String attributeName = "_vaadin-paste-upload-" + UUID.randomUUID();
+        String attributeName = PASTE_UPLOAD_ATTRIBUTE_PREFIX
+                + UUID.randomUUID();
         element.setAttribute(attributeName, handler);
 
         // Attach a native paste listener in the browser via the TS helper
