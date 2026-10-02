@@ -141,6 +141,9 @@ public abstract class AbstractServerHandlers<T>
 
     /**
      * Collect all Methods annotated with the handler annotation.
+     * <p>
+     * Superclasses and implemented interfaces are searched as well, so that
+     * also default methods inherited from an interface are found.
      *
      * @param clazz
      *            Class to check methods for
@@ -159,6 +162,8 @@ public abstract class AbstractServerHandlers<T>
                 method -> hasAnnotation(method, getHandlerAnnotationFqn()))
                 .forEach(method -> addHandlerMethod(method, methods));
         collectHandlerMethods(clazz.getSuperclass(), methods);
+        Stream.of(clazz.getInterfaces())
+                .forEach(iface -> collectHandlerMethods(iface, methods));
     }
 
     private boolean hasAnnotation(Method method, String fqn) {
