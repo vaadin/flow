@@ -159,7 +159,7 @@ public abstract class SignalTree implements Serializable {
         private void scheduleNotification(boolean immediate) {
             assert hasLock();
             if (pendingNotifications.getAndIncrement() == 0) {
-                deliveryState.get().queue.add(() -> deliver(immediate));
+                deliveryState.get().schedule(() -> deliver(immediate));
             }
         }
 
@@ -181,7 +181,7 @@ public abstract class SignalTree implements Serializable {
                      * unlock inside this listener has already been handled by
                      * that observer and must not unregister this one.
                      */
-                    if (deliveryState.get().handledFailures.contains(e)) {
+                    if (deliveryState.get().isHandled(e)) {
                         // Allow the next change to schedule a notification
                         pendingNotifications.set(0);
                     } else {
@@ -235,14 +235,42 @@ public abstract class SignalTree implements Serializable {
          * Notifications scheduled while holding a tree lock, delivered once the
          * last one has been released.
          */
-        private final ArrayDeque<Runnable> queue = new ArrayDeque<>();
+        private @Nullable ArrayDeque<Runnable> queue;
 
         /*
          * Failures rethrown from a nested delivery, for which the failing
          * observer has already been removed.
          */
-        private final Set<Throwable> handledFailures = Collections
-                .newSetFromMap(new IdentityHashMap<>());
+        private @Nullable Set<Throwable> handledFailures;
+
+        /*
+         * The collections are created lazily since the state is discarded
+         * after every outermost unlock and most lock cycles schedule no
+         * notifications.
+         */
+        private void schedule(Runnable notification) {
+            if (queue == null) {
+                queue = new ArrayDeque<>();
+            }
+            queue.add(notification);
+        }
+
+        private @Nullable Runnable pollScheduled() {
+            return queue == null ? null : queue.poll();
+        }
+
+        private void markHandled(Throwable failure) {
+            if (handledFailures == null) {
+                handledFailures = Collections
+                        .newSetFromMap(new IdentityHashMap<>());
+            }
+            handledFailures.add(failure);
+        }
+
+        private boolean isHandled(Throwable failure) {
+            return handledFailures != null
+                    && handledFailures.contains(failure);
+        }
     }
 
     private static final ThreadLocal<DeliveryState> deliveryState = ThreadLocal
@@ -345,7 +373,7 @@ public abstract class SignalTree implements Serializable {
         try {
             Throwable failure = null;
             Runnable notification;
-            while ((notification = state.queue.poll()) != null) {
+            while ((notification = state.pollScheduled()) != null) {
                 try {
                     notification.run();
                 } catch (RuntimeException | Error e) {
@@ -357,15 +385,15 @@ public abstract class SignalTree implements Serializable {
                 }
             }
             if (failure instanceof RuntimeException e) {
-                state.handledFailures.add(e);
+                state.markHandled(e);
                 throw e;
             } else if (failure instanceof Error e) {
-                state.handledFailures.add(e);
+                state.markHandled(e);
                 throw e;
             }
         } finally {
             if (--state.deliveryDepth == 0) {
-                state.handledFailures.clear();
+                state.handledFailures = null;
             }
         }
     }
