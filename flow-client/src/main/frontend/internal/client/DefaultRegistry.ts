@@ -38,6 +38,7 @@ import { PushConfiguration } from './communication/PushConfiguration';
 import { ReconnectConfiguration } from './communication/ReconnectConfiguration';
 import { Registry, TOKEN } from './Registry';
 import { RequestResponseTracker } from './communication/RequestResponseTracker';
+import { EventBus } from './EventBus';
 import { ResourceLoader } from './ResourceLoader';
 import { ServerConnector } from './communication/ServerConnector';
 import { ServerRpcQueue } from './communication/ServerRpcQueue';
@@ -69,6 +70,9 @@ export class DefaultRegistry extends Registry {
     this.set(TOKEN.ApplicationConfiguration, applicationConfiguration);
 
     // No constructor dependencies (resolve collaborators lazily via getters).
+    // The event bus comes first, as other services subscribe to it when they
+    // are constructed.
+    this.set(TOKEN.EventBus, new EventBus());
     this.set(TOKEN.ResourceLoader, new ResourceLoader(this, true));
     this.set(TOKEN.URIResolver, new URIResolver(this));
     this.set(TOKEN.DependencyLoader, new DependencyLoader(this));
