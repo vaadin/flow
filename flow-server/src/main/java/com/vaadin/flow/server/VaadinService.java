@@ -973,6 +973,22 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Adds a listener that gets notified once for each new browser tab, before
+     * any route target or layout of the first UI in the tab is created.
+     *
+     * @param listener
+     *            the browser tab initialization listener
+     * @return a handle that can be used for removing the listener
+     * @see BrowserTabInitListener
+     * @see BrowserTab
+     */
+    public Registration addBrowserTabInitListener(
+            BrowserTabInitListener listener) {
+        return eventBus.addListener(BrowserTabInitEvent.class,
+                listener::browserTabInit);
+    }
+
+    /**
      * Adds a listener that gets notified around the handling of individual
      * client-to-server RPC invocations, enabling per-invocation observation
      * (for example to emit a tracing span per DOM event or
@@ -1138,6 +1154,7 @@ public abstract class VaadinService implements Serializable {
                     session.getErrorHandler().error(new ErrorEvent(e));
                 }
             }
+            BrowserTab.destroyAllTabs(session);
             SessionDestroyEvent event = new SessionDestroyEvent(
                     VaadinService.this, session);
             // Listeners registered on the session are notified before the ones
@@ -1776,6 +1793,10 @@ public abstract class VaadinService implements Serializable {
     void cleanupSession(VaadinSession session) {
         if (isSessionActive(session)) {
             closeInactiveUIs(session);
+            // Before the closed UIs are removed, so that their last heartbeat
+            // still counts for the browser tab they were loaded in
+            BrowserTab.destroyInactiveTabs(session,
+                    1000L * getHeartbeatTimeout());
             removeClosedUIs(session);
         } else {
             if (session.getState() == VaadinSessionState.OPEN) {
