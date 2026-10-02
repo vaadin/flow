@@ -23,6 +23,11 @@ package com.vaadin.flow.server;
  * The mode is configured with the {@link InitParameters#CSP} configuration
  * parameter and read with
  * {@link com.vaadin.flow.function.DeploymentConfiguration#getCspMode()}.
+ * <p>
+ * <strong>Note:</strong> so far only the setting exists. Vaadin does not yet
+ * log or enforce anything in the {@link #WARN} and {@link #STRICT} modes, and
+ * in particular sends no Content Security Policy header. All modes currently
+ * behave like {@link #OFF}.
  *
  * @since 25.4
  */
@@ -34,12 +39,12 @@ public enum CspMode {
     OFF,
     /**
      * The application runs unchanged, but every call that would not work under
-     * a strict Content Security Policy is logged.
+     * a strict Content Security Policy is logged. Not implemented yet.
      */
     WARN,
     /**
      * Vaadin sends a nonce-based Content Security Policy, and APIs that need
-     * {@code eval} throw.
+     * {@code eval} throw. Not implemented yet.
      */
     STRICT
 }
