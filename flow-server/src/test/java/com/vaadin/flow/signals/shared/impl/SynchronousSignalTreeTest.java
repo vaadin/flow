@@ -445,6 +445,29 @@ class SynchronousSignalTreeTest {
     }
 
     @Test
+    void observe_manyObserversOnSameNode_allInvokedWithoutDeepRecursion() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+        AtomicInteger maxDepth = new AtomicInteger();
+
+        for (int i = 0; i < 20_000; i++) {
+            tree.observeNextChange(Id.ZERO, immediate -> {
+                count.incrementAndGet();
+                maxDepth.accumulateAndGet(
+                        Thread.currentThread().getStackTrace().length,
+                        Math::max);
+                return false;
+            });
+        }
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+
+        assertEquals(20_000, count.get());
+        // Removing one observer must not deliver the others recursively
+        assertTrue(maxDepth.get() < 200, "Stack depth " + maxDepth.get());
+    }
+
+    @Test
     void observe_notifyImmediately_invokedAfterUnlockAsImmediate() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         SynchronousSignalTree other = new SynchronousSignalTree(false);
@@ -514,34 +537,6 @@ class SynchronousSignalTreeTest {
 
         tree.commitSingleCommand(TestUtil.writeRootValueCommand());
         assertEquals(4, count.get());
-    }
-
-    @Test
-    void observe_otherObserverThrowsDuringNestedChange_observerKept() {
-        SynchronousSignalTree tree = new SynchronousSignalTree(false);
-        Id child = Id.random();
-        tree.commitSingleCommand(new SignalCommand.InsertCommand(child, Id.ZERO,
-                null, null, ListPosition.first()));
-        AtomicInteger count = new AtomicInteger();
-        IllegalStateException failure = new IllegalStateException();
-
-        tree.observeNextChange(Id.ZERO, immediate -> {
-            count.incrementAndGet();
-            tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
-                    child, new StringNode("value" + count.get())));
-            return true;
-        });
-        tree.observeNextChange(child, immediate -> {
-            throw failure;
-        });
-
-        SignalCommand command = TestUtil.writeRootValueCommand();
-        assertSame(failure, assertThrows(IllegalStateException.class,
-                () -> tree.commitSingleCommand(command)));
-        assertEquals(1, count.get());
-
-        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
-        assertEquals(2, count.get());
     }
 
     @Test

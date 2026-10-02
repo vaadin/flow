@@ -17,17 +17,15 @@ package com.vaadin.flow.signals.shared.impl;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -177,17 +175,7 @@ public abstract class SignalTree implements Serializable {
                 try {
                     listenToNext = listener.invoke(invokeImmediate);
                 } catch (RuntimeException | Error e) {
-                    /*
-                     * A failure from another observer delivered by a nested
-                     * unlock inside this listener has already been handled by
-                     * that observer and must not unregister this one.
-                     */
-                    if (requireDeliveryState().handledFailures.contains(e)) {
-                        // Allow the next change to schedule a notification
-                        pendingNotifications.set(0);
-                    } else {
-                        removeAfterFailure(e);
-                    }
+                    remove();
                     throw e;
                 }
                 if (!listenToNext) {
@@ -203,17 +191,12 @@ public abstract class SignalTree implements Serializable {
             runWithLock(() -> list.remove(this));
         }
 
-        /*
-         * Releasing the lock after removing delivers other pending
-         * notifications. Keep this observer's own failure as the primary one if
-         * one of those fails as well.
-         */
-        private void removeAfterFailure(Throwable failure) {
-            try {
-                remove();
-            } catch (RuntimeException | Error e) {
-                failure.addSuppressed(e);
-            }
+        @Serial
+        private void readObject(ObjectInputStream in)
+                throws IOException, ClassNotFoundException {
+            in.defaultReadObject();
+            // A delivery queued on some thread is not part of the state
+            pendingNotifications.set(0);
         }
     }
 
@@ -238,16 +221,15 @@ public abstract class SignalTree implements Serializable {
 
         /*
          * Notifications scheduled while holding a tree lock, delivered once the
-         * last one has been released.
+         * last one has been released. Each delivery level takes over the queue
+         * as its own batch, so that a nested delivery (an observer releasing a
+         * tree lock) only delivers notifications for changes made by that
+         * observer. Those are delivered before the change returns, as required
+         * for detecting loops between effects, while observers that only
+         * re-register or remove themselves do not deliver the rest of the outer
+         * batch recursively.
          */
-        private final ArrayDeque<Runnable> queue = new ArrayDeque<>();
-
-        /*
-         * Failures rethrown from a nested delivery, for which the failing
-         * observer has already been removed.
-         */
-        private final Set<Throwable> handledFailures = Collections
-                .newSetFromMap(new IdentityHashMap<>());
+        private ArrayDeque<Runnable> queue = new ArrayDeque<>();
     }
 
     private static final ThreadLocal<DeliveryState> deliveryState = new ThreadLocal<>();
@@ -400,7 +382,9 @@ public abstract class SignalTree implements Serializable {
      * transaction.
      * <p>
      * Observer notifications for changes applied while the lock is held are
-     * delivered only after the current thread has released all tree locks.
+     * delivered only after the current thread has released all tree locks. This
+     * means that an exception thrown by an observer propagates from the
+     * {@link ReentrantLock#unlock()} call that releases the last tree lock.
      *
      * @return the tree lock instance, not <code>null</code>
      */
@@ -414,11 +398,17 @@ public abstract class SignalTree implements Serializable {
      * failure is rethrown with any further failures as suppressed exceptions.
      */
     private static void deliverDeferredNotifications(DeliveryState state) {
+        if (state.queue.isEmpty()) {
+            return;
+        }
+        ArrayDeque<Runnable> batch = state.queue;
+        state.queue = new ArrayDeque<>();
+
         state.deliveryDepth++;
         try {
             Throwable failure = null;
             Runnable notification;
-            while ((notification = state.queue.poll()) != null) {
+            while ((notification = batch.poll()) != null) {
                 try {
                     notification.run();
                 } catch (RuntimeException | Error e) {
@@ -430,16 +420,12 @@ public abstract class SignalTree implements Serializable {
                 }
             }
             if (failure instanceof RuntimeException e) {
-                state.handledFailures.add(e);
                 throw e;
             } else if (failure instanceof Error e) {
-                state.handledFailures.add(e);
                 throw e;
             }
         } finally {
-            if (--state.deliveryDepth == 0) {
-                state.handledFailures.clear();
-            }
+            state.deliveryDepth--;
         }
     }
 
