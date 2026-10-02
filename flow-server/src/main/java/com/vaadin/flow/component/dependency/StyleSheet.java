@@ -120,6 +120,9 @@ public @interface StyleSheet {
      * identifiers separated by dots, such as {@code theme} or
      * {@code theme.base}. An empty value, the default, loads the style sheet
      * without a layer.
+     * <p>
+     * A style sheet is loaded only once per URL, so the same URL declared with
+     * different layers stays in the layer it was first loaded into.
      *
      * @return the cascade layer name, or an empty string to not use a layer
      */

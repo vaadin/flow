@@ -790,4 +790,14 @@ class CssBundlerTest {
         assertEquals("@import url(\"a\\\"b\\\\c.css\") layer(theme);",
                 CssBundler.createLayerImport("a\"b\\c.css", "theme"));
     }
+
+    @Test
+    void wrapInLayer_importRule_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> CssBundler.wrapInLayer(
+                        "@import url('a.css');\n.x { color: red; }", "theme"));
+        // An @import in a comment is not a rule
+        assertEquals("@layer theme {\n/* @import 'a.css'; */\n}",
+                CssBundler.wrapInLayer("/* @import 'a.css'; */", "theme"));
+    }
 }

@@ -215,6 +215,10 @@ public class Page implements Serializable {
      * Relative URLs and the {@code context://} prefix are handled as in
      * {@link #addStyleSheet(String, LoadMode)}.
      * <p>
+     * A style sheet is loaded only once per URL. Adding a URL that is already
+     * on the page keeps it in the layer it was first added to, and logs a
+     * warning if the layers differ.
+     * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet#layer() layer} attribute of the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -241,6 +245,16 @@ public class Page implements Serializable {
         // Check if dependency already exists with this URL
         Dependency existing = dependencyList.getDependencyByUrl(url,
                 Type.STYLESHEET);
+        String layerOrNull = layer.isEmpty() ? null : layer;
+        if (existing != null
+                && !Objects.equals(existing.getLayer(), layerOrNull)) {
+            // The browser has already loaded the URL and keeps it as it is
+            LOGGER.warn(
+                    "Style sheet {} is already added {}, so it is not added"
+                            + " again {}",
+                    url, describeLayer(existing.getLayer()),
+                    describeLayer(layerOrNull));
+        }
         String dependencyId;
 
         if (existing != null && existing.getId() != null) {
@@ -252,11 +266,15 @@ public class Page implements Serializable {
         }
 
         Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
-                dependencyId, layer.isEmpty() ? null : layer);
+                dependencyId, layerOrNull);
         dependencyList.add(dependency);
 
         // Return Registration for removal
         return () -> ui.getInternals().removeStyleSheet(dependencyId);
+    }
+
+    private static String describeLayer(String layer) {
+        return layer == null ? "without a layer" : "to layer '" + layer + "'";
     }
 
     /**

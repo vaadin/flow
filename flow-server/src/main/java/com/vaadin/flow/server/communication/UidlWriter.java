@@ -256,8 +256,13 @@ public class UidlWriter implements Serializable {
             String contents = getDependencyContents(dependency.getUrl(),
                     context);
             if (dependency.getLayer() != null) {
-                contents = CssBundler.wrapInLayer(contents,
-                        dependency.getLayer());
+                try {
+                    contents = CssBundler.wrapInLayer(contents,
+                            dependency.getLayer());
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalStateException("Cannot inline '"
+                            + dependency.getUrl() + "': " + e.getMessage(), e);
+                }
             }
             dependencyJson.put(Dependency.KEY_CONTENTS, contents);
             dependencyJson.remove(Dependency.KEY_URL);

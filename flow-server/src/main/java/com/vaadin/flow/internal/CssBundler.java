@@ -691,7 +691,7 @@ public class CssBundler {
      * it applies in the given cascade layer.
      * <p>
      * The content must not contain {@code @import} rules, as those are not
-     * allowed inside a block.
+     * allowed inside a block and a browser would silently drop them.
      *
      * @param css
      *            the style sheet content, not {@code null}
@@ -699,9 +699,19 @@ public class CssBundler {
      *            a valid cascade layer name, see
      *            {@link #validateLayerName(String)}
      * @return the content wrapped into a {@code @layer} block
+     * @throws IllegalArgumentException
+     *             if the layer name is not valid or the content contains an
+     *             {@code @import} rule
      */
     public static String wrapInLayer(String css, String layer) {
         validateLayerName(layer);
+        if (IMPORT_PATTERN.matcher(StringUtil.removeComments(css, true))
+                .find()) {
+            throw new IllegalArgumentException(
+                    "Style sheet content with @import rules cannot be wrapped"
+                            + " into layer '" + layer + "'. Load the style"
+                            + " sheet by URL instead of inlining it.");
+        }
         return "@layer " + layer + " {\n" + css + "\n}";
     }
 
