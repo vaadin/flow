@@ -45,7 +45,7 @@ class ShareActionTest {
         // stringified into the body.
         JsFunction action = actionOf(singleInstallFn(ui));
         assertEquals(
-                "return navigator.share({title:$0(event),text:$1(event),url:$2(event)})",
+                "return navigator.share({title:$0(event, context),text:$1(event, context),url:$2(event, context)})",
                 action.getBody());
         assertEquals("Hi", ((JsFunction) action.getCaptures().get(0))
                 .getCaptures().get(0));
@@ -68,7 +68,7 @@ class ShareActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("return navigator.share({url:$0(event)})",
+        assertEquals("return navigator.share({url:$0(event, context)})",
                 action.getBody());
         assertEquals("https://vaadin.com",
                 ((JsFunction) action.getCaptures().get(0)).getCaptures()
@@ -92,10 +92,10 @@ class ShareActionTest {
         // with OBSERVE_PROMISE + the return channel; the inner $1 still calls
         // navigator.share.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("$0($1(event), $2)", action.getBody());
+        assertEquals("$0($1(event, context), $2)", action.getBody());
 
         JsFunction inner = (JsFunction) action.getCaptures().get(1);
-        assertEquals("return navigator.share({title:$0(event)})",
+        assertEquals("return navigator.share({title:$0(event, context)})",
                 inner.getBody());
     }
 

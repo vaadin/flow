@@ -57,13 +57,19 @@ public abstract class Action implements Serializable {
 
     /**
      * Builds the {@link JsFunction} that runs this action when the surrounding
-     * trigger fires. The returned function takes one runtime argument named
-     * {@code event} (declared by the framework when it composes the trigger
-     * handler); subclasses do not declare argument names themselves.
+     * trigger fires. The returned function takes two runtime arguments: {@code
+     * event}, the client event that fired the trigger, and {@code context}, the
+     * trigger context — an object describing what the trigger fired for, or
+     * {@code undefined} for triggers that have no such notion. A
+     * {@link SinkTrigger} rendered into a client-side row renderer, for
+     * example, supplies {@code {item, index, key}} for the row the event came
+     * from, which is what lets one action serve a whole column.
      * <p>
      * The body is one statement. To embed a value produced on the client,
      * capture an {@link Input}'s {@link Input#toJs(Trigger) JsFunction} as a
-     * capture and invoke it inside the body as {@code $N(event)}.
+     * capture and invoke it inside the body as {@code $N(event, context)} —
+     * always forwarding both arguments, so inputs that read the context work in
+     * every action.
      *
      * @param trigger
      *            the surrounding trigger this render is for, not {@code null}
@@ -121,10 +127,10 @@ public abstract class Action implements Serializable {
 
         /**
          * Builds the {@link JsFunction} that yields this input's value when
-         * called. The function may take {@code event} as a runtime argument
-         * (declared by the subclass via
-         * {@link JsFunction#withArguments(String...)}); inputs that don't need
-         * {@code event} simply omit the declaration and ignore the argument the
+         * called. The function may take {@code event} and {@code context} as
+         * runtime arguments (declared by the subclass via
+         * {@link JsFunction#withArguments(String...)}); inputs that need
+         * neither simply omit the declaration and ignore the arguments the
          * caller passes.
          *
          * <p>

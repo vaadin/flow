@@ -242,7 +242,7 @@ public class WriteToClipboardAction extends PromiseAction<String> {
         JsFunction image = imageInput != null ? imageInput.toJs(trigger)
                 : NULL_INPUT_FN;
         return JsFunction.of(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))",
-                text, html, image).withArguments("event");
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))",
+                text, html, image).withArguments("event", "context");
     }
 }

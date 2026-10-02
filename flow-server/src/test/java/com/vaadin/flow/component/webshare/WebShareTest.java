@@ -80,7 +80,7 @@ class WebShareTest {
         // event; the literals are captured inside those nested functions.
         JsFunction handler = handlerFn(ui);
         assertEquals(
-                "return navigator.share({title:$0(event),text:$1(event),url:$2(event)})",
+                "return navigator.share({title:$0(event, context),text:$1(event, context),url:$2(event, context)})",
                 handler.getBody());
         assertEquals("Hi", ((JsFunction) handler.getCaptures().get(0))
                 .getCaptures().get(0));
@@ -104,7 +104,7 @@ class WebShareTest {
         // PropertyInput renders as its own JsFunction (return $0[$1]) with the
         // property name captured at $1.
         JsFunction handler = handlerFn(ui);
-        assertEquals("return navigator.share({title:$0(event)})",
+        assertEquals("return navigator.share({title:$0(event, context)})",
                 handler.getBody());
         JsFunction titleInput = (JsFunction) handler.getCaptures().get(0);
         assertEquals("return $0[$1]", titleInput.getBody());
