@@ -20,6 +20,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,6 +46,7 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
+import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.PageTitle;
@@ -250,6 +252,34 @@ public class AppShellRegistry implements Serializable {
         return List.copyOf(styleSheets);
     }
 
+    /**
+     * Gets the cascade layers of the {@code @StyleSheet} annotations declared
+     * by the app shell, keyed by the raw annotation value. Style sheets without
+     * a layer are not included.
+     *
+     * @return the layer names by annotation value, never {@code null}
+     * @throws InvalidApplicationConfigurationException
+     *             if a layer name is not valid
+     */
+    private Map<String, String> getStyleSheetLayers() {
+        Map<String, String> layers = new HashMap<>();
+        for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
+            if (sheet.layer().isEmpty()) {
+                continue;
+            }
+            try {
+                CssBundler.validateLayerName(sheet.layer());
+            } catch (IllegalArgumentException e) {
+                throw new InvalidApplicationConfigurationException(
+                        "Invalid layer in @StyleSheet(\"" + sheet.value()
+                                + "\") on " + appShellClass.getName() + ": "
+                                + e.getMessage());
+            }
+            layers.putIfAbsent(sheet.value(), sheet.layer());
+        }
+        return layers;
+    }
+
     private AppShellSettings createSettings(VaadinRequest request) {
         AppShellSettings settings = new AppShellSettings();
 
@@ -283,7 +313,8 @@ public class AppShellRegistry implements Serializable {
         }
         getAnnotations(Inline.class).forEach(settings::addInline);
 
-        addStyleSheets(request, getStyleSheets(request.getService()), settings);
+        addStyleSheets(request, getStyleSheets(request.getService()),
+                getStyleSheetLayers(), settings);
         return settings;
     }
 
@@ -424,7 +455,8 @@ public class AppShellRegistry implements Serializable {
     }
 
     private static void addStyleSheets(VaadinRequest request,
-            List<String> styleSheets, AppShellSettings settings) {
+            List<String> styleSheets, Map<String, String> layers,
+            AppShellSettings settings) {
         final DeploymentConfiguration config = request.getService()
                 .getDeploymentConfiguration();
         // Different annotation values can denote the same stylesheet, e.g.
@@ -453,11 +485,26 @@ public class AppShellRegistry implements Serializable {
             // In development the raw annotation value is exposed so that
             // StyleSheetHotswapper and the dev tools can match a link by the
             // same string the annotation declares.
-            Map<String, String> attributes = config.isProductionMode()
-                    ? Map.of("rel", "stylesheet")
-                    : Map.of("rel", "stylesheet", "data-file-path", sourcePath,
-                            "data-id", "appShell-" + sourcePath);
-            settings.addLink(Position.APPEND, href, attributes);
+            String layer = layers.getOrDefault(sourcePath, "");
+            if (layer.isEmpty()) {
+                Map<String, String> attributes = config.isProductionMode()
+                        ? Map.of("rel", "stylesheet")
+                        : Map.of("rel", "stylesheet", "data-file-path",
+                                sourcePath, "data-id",
+                                "appShell-" + sourcePath);
+                settings.addLink(Position.APPEND, href, attributes);
+            } else {
+                // A link element cannot put a style sheet into a cascade
+                // layer, so it is loaded with an @import rule instead. The
+                // layer is exposed so that the dev tools keep it when they
+                // replace the element with hotswapped content.
+                Map<String, String> attributes = config.isProductionMode()
+                        ? Map.of()
+                        : Map.of("data-file-path", sourcePath, "data-id",
+                                "appShell-" + sourcePath, "data-layer", layer);
+                settings.addLayeredStyleSheet(Position.APPEND, href, layer,
+                        attributes);
+            }
             trackedUrls.add(normalized);
         });
         if (!config.isProductionMode()) {

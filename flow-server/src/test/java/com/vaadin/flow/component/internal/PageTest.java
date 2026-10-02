@@ -25,6 +25,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,6 +48,22 @@ class PageTest {
         assertThrows(IllegalArgumentException.class, () -> {
             page.addStyleSheet(null);
         });
+    }
+
+    @Test
+    void addStyleSheet_withLayer_dependencyHasLayer() {
+        page.addStyleSheet("styles.css", LoadMode.LAZY, "theme.base");
+
+        Dependency dependency = ui.getInternals().getDependencyList()
+                .getPendingSendToClient().iterator().next();
+        assertEquals("styles.css", dependency.getUrl());
+        assertEquals("theme.base", dependency.getLayer());
+    }
+
+    @Test
+    void addStyleSheet_invalidLayer_throws() {
+        assertThrows(IllegalArgumentException.class, () -> page
+                .addStyleSheet("styles.css", LoadMode.EAGER, "a;} body{"));
     }
 
     @Test

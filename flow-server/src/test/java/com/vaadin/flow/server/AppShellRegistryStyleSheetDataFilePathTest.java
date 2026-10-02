@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AppShellRegistryStyleSheetDataFilePathTest {
@@ -41,6 +42,15 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     @StyleSheet("context://from-context.css")
     @StyleSheet("https://cdn.example.com/remote.css")
     public static class MyShell implements AppShellConfigurator {
+    }
+
+    @StyleSheet(value = "theme.css", layer = "theme.base")
+    @StyleSheet("app.css")
+    public static class LayeredShell implements AppShellConfigurator {
+    }
+
+    @StyleSheet(value = "theme.css", layer = "theme;}")
+    public static class InvalidLayerShell implements AppShellConfigurator {
     }
 
     @StyleSheet("same.css")
@@ -82,6 +92,40 @@ class AppShellRegistryStyleSheetDataFilePathTest {
         assertEquals(1, links.size());
         assertEquals("./same.css", links.get(0).attr("href"));
         assertEquals("same.css", links.get(0).attr("data-file-path"));
+    }
+
+    @Test
+    void modifyIndex_styleSheetWithLayer_importedIntoLayer() {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(LayeredShell.class);
+
+        registry.modifyIndexHtml(document, createRequest("/", "/ctx"));
+
+        List<Element> styles = document.head().select("style[data-layer]");
+        assertEquals(1, styles.size());
+        Element style = styles.get(0);
+        assertEquals("@import url(\"./theme.css\") layer(theme.base);",
+                style.data());
+        assertEquals("theme.base", style.attr("data-layer"));
+        assertEquals("theme.css", style.attr("data-file-path"));
+        assertEquals("appShell-theme.css", style.attr("data-id"));
+
+        // A style sheet without a layer is still a link
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(1, links.size());
+        assertEquals("./app.css", links.get(0).attr("href"));
+    }
+
+    @Test
+    void modifyIndex_invalidLayer_throws() {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(InvalidLayerShell.class);
+        VaadinServletRequest request = createRequest("/", "/ctx");
+
+        InvalidApplicationConfigurationException exception = assertThrows(
+                InvalidApplicationConfigurationException.class,
+                () -> registry.modifyIndexHtml(document, request));
+        assertTrue(exception.getMessage().contains("theme;}"));
     }
 
     @Test

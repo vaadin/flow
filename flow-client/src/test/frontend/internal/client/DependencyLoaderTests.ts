@@ -60,15 +60,16 @@ describe('DependencyLoader (class)', () => {
   });
 
   it('loads an eager stylesheet via the resolved URL and the loadStylesheet method', () => {
-    // Ported from loadStylesheet.
+    // Ported from loadStylesheet, extended with the cascade layer.
     const registry = makeRegistry();
     new DependencyLoader(registry.registry).loadDependencies(
-      new Map([['EAGER', [{ type: 'STYLESHEET', url: 'styles.css', id: 'dep-1' }]]])
+      new Map([['EAGER', [{ type: 'STYLESHEET', url: 'styles.css', id: 'dep-1', layer: 'theme' }]]])
     );
     const call = registry.calls.find((c) => c.method === 'loadStylesheet');
     expect(call).to.not.equal(undefined);
     expect(call?.args[0]).to.equal('resolved:styles.css');
     expect(call?.args[2]).to.equal('dep-1');
+    expect(call?.args[3]).to.equal('theme');
   });
 
   it('routes eager JavaScript to loadScript with defer=true', () => {

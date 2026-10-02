@@ -38,6 +38,7 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -194,8 +195,47 @@ public class Page implements Serializable {
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
      * @return a registration object that can be used to remove the style sheet
+     * @see #addStyleSheet(String, LoadMode, String)
      */
     public Registration addStyleSheet(String url, LoadMode loadMode) {
+        return addStyleSheet(url, loadMode, "");
+    }
+
+    /**
+     * Adds the given style sheet to the page into a CSS cascade layer and
+     * ensures that it is loaded successfully.
+     * <p>
+     * Styles in a layer have lower priority than styles outside of any layer,
+     * regardless of selector specificity. Unlike
+     * {@link #addStyleSheet(String, LoadMode)}, which adds a
+     * {@code <link rel="stylesheet">}, a layered style sheet is loaded through
+     * a CSS {@code @import} rule in a {@code <style>} element, since a link
+     * element cannot put a style sheet into a layer.
+     * <p>
+     * Relative URLs and the {@code context://} prefix are handled as in
+     * {@link #addStyleSheet(String, LoadMode)}.
+     * <p>
+     * For component related style sheet dependencies, you should use the
+     * {@link StyleSheet#layer() layer} attribute of the
+     * {@link StyleSheet @StyleSheet} annotation.
+     *
+     * @param url
+     *            the URL to load the style sheet from, not <code>null</code>
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param layer
+     *            the name of the cascade layer, such as {@code theme} or
+     *            {@code theme.base}, or an empty string to not use a layer
+     * @return a registration object that can be used to remove the style sheet
+     * @throws IllegalArgumentException
+     *             if {@code layer} is not a valid cascade layer name
+     */
+    public Registration addStyleSheet(String url, LoadMode loadMode,
+            String layer) {
+        if (!layer.isEmpty()) {
+            CssBundler.validateLayerName(layer);
+        }
         DependencyList dependencyList = ui.getInternals().getDependencyList();
 
         // Check if dependency already exists with this URL
@@ -212,7 +252,7 @@ public class Page implements Serializable {
         }
 
         Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
-                dependencyId);
+                dependencyId, layer.isEmpty() ? null : layer);
         dependencyList.add(dependency);
 
         // Return Registration for removal

@@ -151,6 +151,12 @@ class UidlWriterTest {
     public static class ComponentWithAllDependencyTypes extends Component {
     }
 
+    @Tag("test")
+    @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY, layer = "theme")
+    @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE, layer = "theme")
+    public static class ComponentWithLayeredStyleSheets extends Component {
+    }
+
     @Tag("base")
     @Route(value = "", layout = ParentClass.class)
     public static class BaseClass extends Component {
@@ -546,6 +552,30 @@ class UidlWriterTest {
         List<ObjectNode> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
         assertInlineDependencies(inlineDependencies);
+    }
+
+    @Test
+    void layeredStyleSheets_layerSentToClient_inlineContentsWrapped()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+
+        ui.add(new ComponentWithLayeredStyleSheets());
+        ObjectNode response = uidlWriter.createUidl(ui, false);
+
+        ObjectNode lazyCss = JacksonUtils
+                .<ObjectNode> stream(
+                        (ArrayNode) response.get(LoadMode.LAZY.name()))
+                .filter(dependency -> "context://lazy.css"
+                        .equals(dependency.get(Dependency.KEY_URL).textValue()))
+                .findFirst().orElseThrow();
+        assertEquals("theme", lazyCss.get(Dependency.KEY_LAYER).textValue());
+
+        ObjectNode inlineCss = (ObjectNode) response.get(LoadMode.INLINE.name())
+                .get(0);
+        assertEquals("@layer theme {\ninline.css\n}",
+                inlineCss.get(Dependency.KEY_CONTENTS).textValue());
     }
 
     @Test

@@ -46,6 +46,7 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ResourceContentHash;
@@ -252,8 +253,13 @@ public class UidlWriter implements Serializable {
         ObjectNode dependencyJson = JacksonUtils.getMapper()
                 .valueToTree(dependency);
         if (dependency.getLoadMode() == LoadMode.INLINE) {
-            dependencyJson.put(Dependency.KEY_CONTENTS,
-                    getDependencyContents(dependency.getUrl(), context));
+            String contents = getDependencyContents(dependency.getUrl(),
+                    context);
+            if (dependency.getLayer() != null) {
+                contents = CssBundler.wrapInLayer(contents,
+                        dependency.getLayer());
+            }
+            dependencyJson.put(Dependency.KEY_CONTENTS, contents);
             dependencyJson.remove(Dependency.KEY_URL);
         } else if (dependency.getType() == Dependency.Type.STYLESHEET && context
                 .getService().getDeploymentConfiguration().isProductionMode()) {

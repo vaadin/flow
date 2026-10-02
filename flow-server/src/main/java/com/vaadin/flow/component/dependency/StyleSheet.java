@@ -108,6 +108,24 @@ public @interface StyleSheet {
     LoadMode loadMode() default LoadMode.EAGER;
 
     /**
+     * Name of the CSS cascade layer to load the style sheet into.
+     * <p>
+     * Styles in a layer have lower priority than styles outside of any layer,
+     * regardless of selector specificity. Loading a theme into a layer, for
+     * example {@code @StyleSheet(value = Aura.STYLESHEET, layer = "aura")},
+     * lets application styles override it without matching its selector
+     * specificity.
+     * <p>
+     * The name follows the CSS {@code <layer-name>} syntax: one or more
+     * identifiers separated by dots, such as {@code theme} or
+     * {@code theme.base}. An empty value, the default, loads the style sheet
+     * without a layer.
+     *
+     * @return the cascade layer name, or an empty string to not use a layer
+     */
+    String layer() default "";
+
+    /**
      * Internal annotation to enable use of multiple {@link StyleSheet}
      * annotations.
      */
