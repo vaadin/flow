@@ -814,7 +814,8 @@ lock, and on Payara Micro that lock-order inversion with Hazelcast's bootstrap
 left the odd start hanging until the start timeout. That one is a stopgap: the
 cause is HotswapAgent resolving a plugin's types through the thread context
 class loader (`ClassPool.appendSystemPath()`), and the entry should go once the
-pinned HotswapAgent no longer does. The names are the `@Plugin` names, which is
+pinned HotswapAgent no longer does
+([HotswapAgent#681](https://github.com/HotswapProjects/HotswapAgent/pull/681)). The names are the `@Plugin` names, which is
 why Jackson's is `JacksonPlugin`; a wrong one is accepted silently.
 
 **Disabling has to reach every class loader**, because HotswapAgent builds a

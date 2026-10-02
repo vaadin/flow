@@ -1239,8 +1239,10 @@ final class Launch {
         // got past "Registered ...HazelcastBackingStoreFactoryProxy", with no
         // error and no exit, until the start timeout. A stopgap: the cause is
         // HotswapAgent's, not the plugin's, and once a HotswapAgent release
-        // no longer resolves through the context loader, HotswapAgentJar
-        // should move to it and this entry should go. Until then, what the
+        // no longer resolves through the context loader - the fix is
+        // https://github.com/HotswapProjects/HotswapAgent/pull/681 -
+        // HotswapAgentJar should move to it and this entry should go. Until
+        // then, what the
         // plugin buys - clearing Jackson's caches after a redefine - is not
         // worth a start that may never end.
         // The key is "hotswapagent.disablePlugin", read in premain into a set
