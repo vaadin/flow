@@ -25,6 +25,8 @@ import java.util.Properties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -325,6 +327,34 @@ class DefaultDeploymentConfigurationTest {
 
         assertEquals(SessionLockCheckStrategy.THROW,
                 config.getSessionLockCheckStrategy());
+    }
+
+    @Test
+    void cspMode_defaultsToOff() {
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                new Properties());
+
+        assertEquals(CspMode.OFF, config.getCspMode());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "off, OFF", "warn, WARN", "strict, STRICT", "Strict, STRICT" })
+    void cspMode_configurableViaPropertyParameter(String value,
+            CspMode expected) {
+        Properties init = new Properties();
+        init.put(InitParameters.CSP, value);
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        assertEquals(expected, config.getCspMode());
+    }
+
+    @Test
+    void cspMode_unrecognizedValue_defaultsToOff() {
+        Properties init = new Properties();
+        init.put(InitParameters.CSP, "relaxed");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        assertEquals(CspMode.OFF, config.getCspMode());
     }
 
     @Test
