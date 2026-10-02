@@ -2101,8 +2101,8 @@ public class UI extends Component
                 @EventData("route") String route,
                 @EventData("query") String query) {
             super(source, true);
-            this.route = Objects.requireNonNull(route, "Route cannot be null");
-            this.query = Objects.requireNonNull(query, "Query cannot be null");
+            this.route = route;
+            this.query = query;
         }
     }
 
@@ -2150,12 +2150,11 @@ public class UI extends Component
                 @EventData("historyState") @Nullable JsonNode historyState,
                 @EventData("trigger") String trigger) {
             super(source, true);
-            this.route = Objects.requireNonNull(route, "Route cannot be null");
-            this.query = Objects.requireNonNull(query, "Query cannot be null");
+            this.route = route;
+            this.query = query;
             this.appShellTitle = appShellTitle;
             this.historyState = historyState;
-            this.trigger = Objects.requireNonNull(trigger,
-                    "Trigger cannot be null");
+            this.trigger = trigger;
         }
 
     }
