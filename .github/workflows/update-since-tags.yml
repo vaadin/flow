@@ -32,19 +32,10 @@ jobs:
       - name: Disable git hooks (husky isn't set up in CI)
         run: git config core.hooksPath /dev/null
 
-      # The dispatched branch may predate .tool-versions; JDK 21 builds every
-      # maintained branch, so it stands in until each one carries the file.
-      - if: ${{ hashFiles('.tool-versions') != '' }}
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
+      - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
         with:
           distribution: temurin
           java-version-file: .tool-versions
-          cache: maven
-      - if: ${{ hashFiles('.tool-versions') == '' }}
-        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
-        with:
-          distribution: temurin
-          java-version: 21
           cache: maven
 
       - id: since
