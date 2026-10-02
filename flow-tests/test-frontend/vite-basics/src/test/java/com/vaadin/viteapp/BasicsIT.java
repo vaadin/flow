@@ -129,12 +129,29 @@ public class BasicsIT extends ViteDevModeIT {
 
     @Test
     public void indexHtmlLinkToApplicationResource_notPrefixedWithVaadin() {
-        Assert.assertEquals("images/static-icon.svg", executeScript(
-                "return document.getElementById('staticIcon').getAttribute('href')"));
-        Assert.assertEquals(200L,
-                ((JavascriptExecutor) getDriver()).executeAsyncScript(
-                        "fetch(document.getElementById('staticIcon').href)"
-                                + ".then(response => arguments[0](response.status))"));
+        Assert.assertEquals("images/static-icon.svg",
+                getLinkHref("staticIcon"));
+        Assert.assertEquals(200L, fetchLinkStatus("staticIcon"));
+    }
+
+    @Test
+    public void indexHtmlLinkToFrontendFile_servedByVite() {
+        Assert.assertEquals("/VAADIN/images/frontend-icon.svg",
+                getLinkHref("frontendIcon"));
+        Assert.assertEquals(200L, fetchLinkStatus("frontendIcon"));
+    }
+
+    private Object getLinkHref(String id) {
+        return executeScript(
+                "return document.getElementById(arguments[0]).getAttribute('href')",
+                id);
+    }
+
+    private Object fetchLinkStatus(String id) {
+        return ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                "fetch(document.getElementById(arguments[0]).href)"
+                        + ".then(response => arguments[1](response.status))",
+                id);
     }
 
     @Test

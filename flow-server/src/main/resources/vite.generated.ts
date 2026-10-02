@@ -110,11 +110,47 @@ const indexHtmlRelativePath = path
   .replace(/\\/g, '/');
 const indexHtmlUrlPath = '/' + indexHtmlRelativePath;
 
-// Tags whose URL attributes the Vite dev server rewrites in index.html,
-// see DEFAULT_HTML_ASSET_SOURCES in Vite
-const assetTagRegex =
-  /<(?:audio|embed|img|image|input|link|object|script|source|track|use|video)\b(?:"[^"]*"|'[^']*'|[^'">])*>/gi;
-const assetUrlAttributeRegex = /\s(?:src|href|xlink:href|data|poster)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/gi;
+// The URL attributes the Vite dev server rewrites in index.html, per tag, as
+// in DEFAULT_HTML_ASSET_SOURCES of Vite
+const htmlAssetSources: Record<string, { src: string[]; srcset?: string[] }> = {
+  audio: { src: ['src'] },
+  embed: { src: ['src'] },
+  img: { src: ['src'], srcset: ['srcset'] },
+  image: { src: ['href', 'xlink:href'] },
+  input: { src: ['src'] },
+  link: { src: ['href'], srcset: ['imagesrcset'] },
+  meta: { src: ['content'] },
+  object: { src: ['data'] },
+  script: { src: ['src'] },
+  source: { src: ['src'], srcset: ['srcset'] },
+  track: { src: ['src'] },
+  use: { src: ['href', 'xlink:href'] },
+  video: { src: ['src', 'poster'] }
+};
+// Vite only rewrites the content of meta tags that refer to an asset
+const assetMetaNames = [
+  'msapplication-tileimage',
+  'msapplication-square70x70logo',
+  'msapplication-square150x150logo',
+  'msapplication-wide310x150logo',
+  'msapplication-square310x310logo',
+  'msapplication-config',
+  'twitter:image'
+];
+const assetMetaProperties = [
+  'og:image',
+  'og:image:url',
+  'og:image:secure_url',
+  'og:audio',
+  'og:audio:secure_url',
+  'og:video',
+  'og:video:secure_url'
+];
+// Comments and script contents are matched as a whole so that markup inside
+// them is not taken for tags
+const htmlTagRegex =
+  /<!--[\s\S]*?-->|<(script)\b((?:"[^"]*"|'[^']*'|[^'">])*)>[\s\S]*?<\/script\s*>|<([a-zA-Z][\w:-]*)((?:"[^"]*"|'[^']*'|[^'">])*)>/gi;
+const htmlAttributeRegex = /([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
 
 function isInFrontendFolder(url: string): boolean {
   let filePath: string;
@@ -129,9 +165,28 @@ function isInFrontendFolder(url: string): boolean {
   return existsSync(file);
 }
 
+function collectAssetUrls(tagName: string, attributes: Map<string, string>): string[] {
+  const sources = htmlAssetSources[tagName];
+  if (!sources) {
+    return [];
+  }
+  if (
+    tagName === 'meta' &&
+    !assetMetaNames.includes(attributes.get('name')?.trim().toLowerCase() ?? '') &&
+    !assetMetaProperties.includes(attributes.get('property')?.trim().toLowerCase() ?? '')
+  ) {
+    return [];
+  }
+  const srcUrls = sources.src.map((name) => attributes.get(name));
+  const srcsetUrls = (sources.srcset ?? []).flatMap((name) =>
+    (attributes.get(name) ?? '').split(',').map((candidate) => candidate.trim().split(/\s+/)[0])
+  );
+  return [...srcUrls, ...srcsetUrls].filter((url): url is string => !!url);
+}
+
 /**
- * Adds `vite-ignore` to the tags in index.html that refer to a local URL
- * that is not a file in the frontend folder.
+ * Adds `vite-ignore` to the tags in index.html that refer to local URLs
+ * none of which is a file in the frontend folder.
  *
  * The dev server is started with the `/VAADIN/` base and prefixes every
  * relative and root-relative URL in index.html with it, so links to
@@ -141,16 +196,26 @@ function isInFrontendFolder(url: string): boolean {
  * that Flow adds to the page.
  */
 function ignoreUrlsOutsideFrontendFolder(html: string): string {
-  return html.replace(assetTagRegex, (tag) => {
-    if (/\svite-ignore\b/i.test(tag)) {
-      return tag;
+  return html.replace(htmlTagRegex, (match, scriptTagName, scriptAttributeSource, otherTagName, otherAttributeSource) => {
+    const tagName: string | undefined = scriptTagName ?? otherTagName;
+    const attributeSource: string | undefined = scriptAttributeSource ?? otherAttributeSource;
+    if (!tagName) {
+      return match;
     }
-    const urls = [...tag.matchAll(assetUrlAttributeRegex)].map((match) => match[1] ?? match[2] ?? match[3]);
-    const localUrls = urls.filter((url) => url && !url.startsWith('//') && !/^[a-z][a-z\d+.-]*:/i.test(url));
+    const attributes = new Map<string, string>();
+    for (const [, name, ...values] of (attributeSource ?? '').matchAll(htmlAttributeRegex)) {
+      attributes.set(name.toLowerCase(), values.find((value) => value !== undefined) ?? '');
+    }
+    if (attributes.has('vite-ignore')) {
+      return match;
+    }
+    const localUrls = collectAssetUrls(tagName.toLowerCase(), attributes).filter(
+      (url) => !url.startsWith('//') && !/^[a-z][a-z\d+.-]*:/i.test(url)
+    );
     if (localUrls.length === 0 || localUrls.some(isInFrontendFolder)) {
-      return tag;
+      return match;
     }
-    return tag.replace(/^<[^\s/>]+/, (name) => `${name} vite-ignore`);
+    return `<${tagName} vite-ignore${match.substring(tagName.length + 1)}`;
   });
 }
 
