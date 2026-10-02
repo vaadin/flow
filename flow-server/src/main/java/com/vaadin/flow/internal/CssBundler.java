@@ -672,11 +672,23 @@ public class CssBundler {
      */
     public static void validateLayerName(String layer) {
         if (!isValidLayerName(layer)) {
-            throw new IllegalArgumentException("'" + layer
-                    + "' is not a valid CSS cascade layer name. Use one or more"
-                    + " identifiers separated by dots, e.g. 'theme' or"
-                    + " 'theme.base'.");
+            throw new IllegalArgumentException(
+                    createInvalidLayerNameMessage(layer));
         }
+    }
+
+    /**
+     * Creates the message that explains why the given value is not a valid CSS
+     * cascade layer name.
+     *
+     * @param layer
+     *            the invalid layer name
+     * @return the error message
+     */
+    public static String createInvalidLayerNameMessage(String layer) {
+        return "'" + layer + "' is not a valid CSS cascade layer name. Use"
+                + " one or more identifiers separated by dots, e.g. 'theme'"
+                + " or 'theme.base'.";
     }
 
     /**

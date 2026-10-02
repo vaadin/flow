@@ -268,12 +268,11 @@ public class AppShellRegistry implements Serializable {
                 continue;
             }
             if (!CssBundler.isValidLayerName(sheet.layer())) {
-                throw new InvalidApplicationConfigurationException("'"
-                        + sheet.layer() + "' in @StyleSheet(\"" + sheet.value()
-                        + "\") on " + appShellClass.getName()
-                        + " is not a valid CSS cascade layer name. Use"
-                        + " one or more identifiers separated by dots,"
-                        + " e.g. 'theme' or 'theme.base'.");
+                throw new InvalidApplicationConfigurationException(
+                        "Invalid layer in @StyleSheet(\"" + sheet.value()
+                                + "\") on " + appShellClass.getName() + ": "
+                                + CssBundler.createInvalidLayerNameMessage(
+                                        sheet.layer()));
             }
             layers.putIfAbsent(sheet.value(), sheet.layer());
         }
