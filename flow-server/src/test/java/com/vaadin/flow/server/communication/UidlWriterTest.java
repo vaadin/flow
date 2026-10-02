@@ -78,6 +78,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -149,6 +150,17 @@ class UidlWriterTest {
     @JavaScript("eager.js")
     @StyleSheet("eager.css")
     public static class ComponentWithAllDependencyTypes extends Component {
+    }
+
+    @Tag("test")
+    @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY, layer = "theme")
+    @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE, layer = "theme")
+    public static class ComponentWithLayeredStyleSheets extends Component {
+    }
+
+    @Tag("test")
+    @StyleSheet(value = "import.css", loadMode = LoadMode.INLINE, layer = "theme")
+    public static class ComponentWithLayeredInlineImport extends Component {
     }
 
     @Tag("base")
@@ -546,6 +558,46 @@ class UidlWriterTest {
         List<ObjectNode> inlineDependencies = dependenciesMap
                 .get(LoadMode.INLINE);
         assertInlineDependencies(inlineDependencies);
+    }
+
+    @Test
+    void layeredStyleSheets_layerSentToClient_inlineContentsWrapped()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+
+        ui.add(new ComponentWithLayeredStyleSheets());
+        ObjectNode response = uidlWriter.createUidl(ui, false);
+
+        ObjectNode lazyCss = JacksonUtils
+                .<ObjectNode> stream(
+                        (ArrayNode) response.get(LoadMode.LAZY.name()))
+                .filter(dependency -> "context://lazy.css"
+                        .equals(dependency.get(Dependency.KEY_URL).textValue()))
+                .findFirst().orElseThrow();
+        assertEquals("theme", lazyCss.get(Dependency.KEY_LAYER).textValue());
+
+        ObjectNode inlineCss = (ObjectNode) response.get(LoadMode.INLINE.name())
+                .get(0);
+        assertEquals("@layer theme {\ninline.css\n}",
+                inlineCss.get(Dependency.KEY_CONTENTS).textValue());
+    }
+
+    @Test
+    void layeredInlineStyleSheetWithImport_throws() throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        mocks.getServlet().addServletContextResource("/import.css",
+                "@import 'a.css';");
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+
+        ui.add(new ComponentWithLayeredInlineImport());
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> uidlWriter.createUidl(ui, false));
+        assertTrue(exception.getMessage().contains("import.css"),
+                exception.getMessage());
     }
 
     @Test

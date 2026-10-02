@@ -1402,7 +1402,8 @@ public class UIInternals implements Serializable {
             String resolved = FrontendDependencyUrlResolver
                     .resolveToContextRoot(styleSheet.value());
             if (resolved != null) {
-                page.addStyleSheet(resolved, styleSheet.loadMode());
+                page.addStyleSheet(resolved, styleSheet.loadMode(),
+                        styleSheet.layer());
             }
         });
 

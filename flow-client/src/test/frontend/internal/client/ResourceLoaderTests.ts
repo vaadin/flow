@@ -140,6 +140,41 @@ describe('ResourceLoader', () => {
     }
   });
 
+  it('loads a stylesheet into a cascade layer with an @import rule', async () => {
+    const comment = document.createComment('Stylesheet end');
+    document.head.appendChild(comment);
+    const unlayered = document.createElement('style');
+    unlayered.textContent = '.rl-layer-probe{color:rgb(0, 0, 255)}';
+    document.head.appendChild(unlayered);
+    const probe = document.createElement('div');
+    probe.className = 'rl-layer-probe';
+    document.body.appendChild(probe);
+    try {
+      const loader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
+      // The more specific layered rule still loses to the unlayered one.
+      const url = `data:text/css,/* ${Math.floor(performance.now())} */ div.rl-layer-probe{color:rgb(255, 0, 0)}`;
+      const listener = recordingListener();
+      loader.loadStylesheet(url, listener.listener, 'dep-layer', 'theme');
+
+      const style = document.head.querySelector('style[data-id="dep-layer"]') as HTMLStyleElement;
+      expect(style.getAttribute('data-layer')).to.equal('theme');
+      const nodes: Node[] = Array.from(document.head.childNodes);
+      expect(nodes.indexOf(style)).to.be.lessThan(nodes.indexOf(comment));
+
+      await settle();
+      expect(listener.calls).to.deep.equal(['load']);
+      const rule = style.sheet!.cssRules[0] as CSSImportRule;
+      expect(rule.layerName).to.equal('theme');
+      expect(rule.href).to.equal(url);
+      expect(getComputedStyle(probe).color).to.equal('rgb(0, 0, 255)');
+      style.remove();
+    } finally {
+      comment.remove();
+      unlayered.remove();
+      probe.remove();
+    }
+  });
+
   it('inserts an inline stylesheet before the marker comment', () => {
     const comment = document.createComment('Stylesheet end');
     document.head.appendChild(comment);

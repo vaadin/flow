@@ -30,6 +30,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
@@ -53,9 +55,12 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -67,6 +72,7 @@ class StyleSheetHotswapperTest {
     private VaadinSession session;
     private MockUI ui;
     private AppShellRegistry appShellRegistry;
+    private ApplicationConfiguration appConfig;
 
     @TempDir
     File tempProjectDir;
@@ -91,8 +97,7 @@ class StyleSheetHotswapperTest {
 
         appShellRegistry = AppShellRegistry.getInstance(service.getContext());
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        appConfig = Mockito.mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.isProductionMode()).thenAnswer(
                 i -> service.getDeploymentConfiguration().isProductionMode());
         Mockito.when(service.getLookup()
@@ -188,6 +193,39 @@ class StyleSheetHotswapperTest {
         assertEquals(UIUpdateStrategy.REFRESH,
                 event.getUIUpdateStrategy(ui).orElse(null),
                 "Should require page refresh");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void onClassesChange_appShellAddAnnotation_pushesContentOnlyWithoutLayer(
+            boolean layered) throws IOException {
+        File css = new File(tempProjectDir, "src/main/webapp/styles/app.css");
+        css.getParentFile().mkdirs();
+        Files.writeString(css.toPath(), ".app { color: red; }\n");
+        Mockito.when(appConfig.getProjectFolder()).thenReturn(tempProjectDir);
+        appShellRegistry.setShell(TestAppShellNoAnnotation.class);
+        hotswapper.onInit(service);
+
+        Class<?> appShell = modifyStyleSheetAnnotation(
+                TestAppShellNoAnnotation.class,
+                layered ? TestAppShellLayered.class : TestAppShell.class);
+        var event = spy(new HotswapClassSessionEvent(service, session,
+                Set.of(appShell), true));
+        hotswapper.onClassesChange(event);
+
+        Dependency dependency = ui.getInternals().getDependencyList()
+                .getPendingSendToClient().stream()
+                .filter(dep -> dep.getUrl().contains("styles/app.css"))
+                .findFirst().orElseThrow();
+        if (layered) {
+            assertEquals("theme", dependency.getLayer());
+            // Pushed content would apply outside of the layer
+            verify(event, never()).updateClientResource(anyString(), any());
+        } else {
+            assertNull(dependency.getLayer());
+            verify(event).updateClientResource(eq("context://styles/app.css"),
+                    contains(".app"));
+        }
     }
 
     @Test
@@ -690,6 +728,10 @@ class StyleSheetHotswapperTest {
     // Test classes for AppShellConfigurator
     @StyleSheet("styles/app.css")
     public static class TestAppShell implements AppShellConfigurator {
+    }
+
+    @StyleSheet(value = "styles/app.css", layer = "theme")
+    public static class TestAppShellLayered implements AppShellConfigurator {
     }
 
     @StyleSheet("styles/app.css")
