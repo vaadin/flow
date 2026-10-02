@@ -244,8 +244,8 @@ public abstract class SignalTree implements Serializable {
         private @Nullable Set<Throwable> handledFailures;
 
         /*
-         * The collections are created lazily since the state is discarded
-         * after every outermost unlock and most lock cycles schedule no
+         * The collections are created lazily since the state is discarded after
+         * every outermost unlock and most lock cycles schedule no
          * notifications.
          */
         private void schedule(Runnable notification) {
@@ -268,8 +268,7 @@ public abstract class SignalTree implements Serializable {
         }
 
         private boolean isHandled(Throwable failure) {
-            return handledFailures != null
-                    && handledFailures.contains(failure);
+            return handledFailures != null && handledFailures.contains(failure);
         }
     }
 
