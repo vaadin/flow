@@ -811,9 +811,11 @@ Data repository bean under repeated redefinitions, Jetty's hooks name
 Jetty 12, and the Jackson one deadlocks a container's boot: it patches the
 container's own copy of Jackson while the JVM holds that container loader's
 lock, and on Payara Micro that lock-order inversion with Hazelcast's bootstrap
-left the odd start hanging until the start timeout. The names are the
-`@Plugin` names, which is why Jackson's is `JacksonPlugin`; a wrong one is
-accepted silently.
+left the odd start hanging until the start timeout. That one is a stopgap: the
+cause is HotswapAgent resolving a plugin's types through the thread context
+class loader (`ClassPool.appendSystemPath()`), and the entry should go once the
+pinned HotswapAgent no longer does. The names are the `@Plugin` names, which is
+why Jackson's is `JacksonPlugin`; a wrong one is accepted silently.
 
 **Disabling has to reach every class loader**, because HotswapAgent builds a
 configuration per loader. The JVM flag is `-Dhotswapagent.disablePlugin`, read

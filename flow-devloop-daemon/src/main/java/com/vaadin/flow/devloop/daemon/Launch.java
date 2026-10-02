@@ -1229,14 +1229,20 @@ final class Launch {
         // JacksonPlugin: deadlocks a container's boot. It patches Jackson's
         // caches as they are defined - including the container's own copy of
         // Jackson, in the container's own loader - and compiles the patch while
-        // the JVM holds that loader's lock, resolving types through whatever
-        // else can see them. Measured on Payara Micro: Jackson defined in its
-        // boot loader while the patch waited on the API class loader, and
-        // Hazelcast's bootstrap holding the API loader while it waited on the
-        // boot loader. The odd start never got past "Registered
-        // ...HazelcastBackingStoreFactoryProxy", with no error and no exit,
-        // until the start timeout. What the plugin buys - clearing Jackson's
-        // caches after a redefine - is not worth a start that may never end.
+        // the JVM holds that loader's lock, resolving types through the thread
+        // context class loader first: HotswapAgent's PluginClassFileTransformer
+        // builds the pool with ClassPool.appendSystemPath(), which on Java 9+
+        // is the context loader. Measured on Payara Micro: Jackson defined in
+        // its boot loader while the patch waited on the API class loader - the
+        // context loader during boot - and Hazelcast's bootstrap holding the
+        // API loader while it waited on the boot loader. The odd start never
+        // got past "Registered ...HazelcastBackingStoreFactoryProxy", with no
+        // error and no exit, until the start timeout. A stopgap: the cause is
+        // HotswapAgent's, not the plugin's, and once a HotswapAgent release
+        // no longer resolves through the context loader, HotswapAgentJar
+        // should move to it and this entry should go. Until then, what the
+        // plugin buys - clearing Jackson's caches after a redefine - is not
+        // worth a start that may never end.
         // The key is "hotswapagent.disablePlugin", read in premain into a set
         // every class loader's configuration consults. "disabledPlugins", the
         // key hotswap-agent.properties uses, reaches the system class loader
