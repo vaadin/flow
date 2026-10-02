@@ -191,6 +191,26 @@ class StyleSheetHotswapperTest {
     }
 
     @Test
+    void onClassesChange_appShellAddLayeredAnnotation_addsStylesheetToLayer() {
+        appShellRegistry.setShell(TestAppShellNoAnnotation.class);
+        hotswapper.onInit(service);
+
+        Class<?> appShell = modifyStyleSheetAnnotation(
+                TestAppShellNoAnnotation.class, TestAppShellLayered.class);
+        var event = spy(new HotswapClassSessionEvent(service, session,
+                Set.of(appShell), true));
+        hotswapper.onClassesChange(event);
+
+        Dependency dependency = ui.getInternals().getDependencyList()
+                .getPendingSendToClient().stream()
+                .filter(dep -> dep.getUrl().contains("styles/app.css"))
+                .findFirst().orElseThrow();
+        assertEquals("theme", dependency.getLayer());
+        // Pushed content would apply outside of the layer
+        verify(event, never()).updateClientResource(anyString(), any());
+    }
+
+    @Test
     void onClassesChange_appShellRemoveAnnotation_removesStylesheet() {
         appShellRegistry.setShell(TestAppShell.class);
         hotswapper.onInit(service);
@@ -690,6 +710,10 @@ class StyleSheetHotswapperTest {
     // Test classes for AppShellConfigurator
     @StyleSheet("styles/app.css")
     public static class TestAppShell implements AppShellConfigurator {
+    }
+
+    @StyleSheet(value = "styles/app.css", layer = "theme")
+    public static class TestAppShellLayered implements AppShellConfigurator {
     }
 
     @StyleSheet("styles/app.css")
