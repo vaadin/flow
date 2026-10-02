@@ -110,112 +110,26 @@ const indexHtmlRelativePath = path
   .replace(/\\/g, '/');
 const indexHtmlUrlPath = '/' + indexHtmlRelativePath;
 
-// The URL attributes the Vite dev server rewrites in index.html, per tag, as
-// in DEFAULT_HTML_ASSET_SOURCES of Vite
-const htmlAssetSources: Record<string, { src: string[]; srcset?: string[] }> = {
-  audio: { src: ['src'] },
-  embed: { src: ['src'] },
-  img: { src: ['src'], srcset: ['srcset'] },
-  image: { src: ['href', 'xlink:href'] },
-  input: { src: ['src'] },
-  link: { src: ['href'], srcset: ['imagesrcset'] },
-  meta: { src: ['content'] },
-  object: { src: ['data'] },
-  script: { src: ['src'] },
-  source: { src: ['src'], srcset: ['srcset'] },
-  track: { src: ['src'] },
-  use: { src: ['href', 'xlink:href'] },
-  video: { src: ['src', 'poster'] }
-};
-// Vite only rewrites the content of meta tags that refer to an asset
-const assetMetaNames = [
-  'msapplication-tileimage',
-  'msapplication-square70x70logo',
-  'msapplication-square150x150logo',
-  'msapplication-wide310x150logo',
-  'msapplication-square310x310logo',
-  'msapplication-config',
-  'twitter:image'
-];
-const assetMetaProperties = [
-  'og:image',
-  'og:image:url',
-  'og:image:secure_url',
-  'og:audio',
-  'og:audio:secure_url',
-  'og:video',
-  'og:video:secure_url'
-];
-// Comments and script contents are matched as a whole so that markup inside
-// them is not taken for tags
-const htmlTagRegex =
-  /<!--[\s\S]*?-->|<(script)\b((?:"[^"]*"|'[^']*'|[^'">])*)>[\s\S]*?<\/script\s*>|<([a-zA-Z][\w:-]*)((?:"[^"]*"|'[^']*'|[^'">])*)>/gi;
-const htmlAttributeRegex = /([^\s"'>\/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g;
-
-function isInFrontendFolder(url: string): boolean {
-  let filePath: string;
-  try {
-    filePath = decodeURI(url.replace(/[?#].*$/, ''));
-  } catch {
-    return false;
-  }
-  const file = filePath.startsWith('/')
-    ? path.resolve(frontendFolder, filePath.substring(1))
-    : path.resolve(path.dirname(projectIndexHtml), filePath);
-  return existsSync(file);
-}
-
-function collectAssetUrls(tagName: string, attributes: Map<string, string>): string[] {
-  const sources = htmlAssetSources[tagName];
-  if (!sources) {
-    return [];
-  }
-  if (
-    tagName === 'meta' &&
-    !assetMetaNames.includes(attributes.get('name')?.trim().toLowerCase() ?? '') &&
-    !assetMetaProperties.includes(attributes.get('property')?.trim().toLowerCase() ?? '')
-  ) {
-    return [];
-  }
-  const srcUrls = sources.src.map((name) => attributes.get(name));
-  const srcsetUrls = (sources.srcset ?? []).flatMap((name) =>
-    (attributes.get(name) ?? '').split(',').map((candidate) => candidate.trim().split(/\s+/)[0])
-  );
-  return [...srcUrls, ...srcsetUrls].filter((url): url is string => !!url);
-}
-
 /**
- * Adds `vite-ignore` to the tags in index.html that refer to local URLs
- * none of which is a file in the frontend folder.
+ * Removes the dev server base from the URLs in index.html that do not refer
+ * to a file in the frontend folder.
  *
- * The dev server is started with the `/VAADIN/` base and prefixes every
- * relative and root-relative URL in index.html with it, so links to
- * resources served by the application itself (e.g. from
- * `META-INF/resources`) would point into `/VAADIN/`. A production build
- * keeps such URLs as they are, so they resolve against the `<base href>`
- * that Flow adds to the page.
+ * The dev server runs with the `/VAADIN/` base and prefixes every relative
+ * and root-relative URL in index.html with it, so links to resources served
+ * by the application itself (e.g. from `META-INF/resources`) would point
+ * into `/VAADIN/`. Without the base they resolve against the `<base href>`
+ * that Flow adds to the page, as they do in a production build. URLs of the
+ * dev server itself, such as `@vite/client`, are kept.
  */
-function ignoreUrlsOutsideFrontendFolder(html: string): string {
-  return html.replace(htmlTagRegex, (match, scriptTagName, scriptAttributeSource, otherTagName, otherAttributeSource) => {
-    const tagName: string | undefined = scriptTagName ?? otherTagName;
-    const attributeSource: string | undefined = scriptAttributeSource ?? otherAttributeSource;
-    if (!tagName) {
-      return match;
+function removeBaseFromApplicationUrls(html: string, base: string): string {
+  const escapedBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const baseUrlRegex = new RegExp(`(["'\\s,])${escapedBase}(?!@)([^"'\\s,?#]*)`, 'g');
+  return html.replace(baseUrlRegex, (url, prefix: string, filePath: string) => {
+    try {
+      return existsSync(path.resolve(frontendFolder, decodeURI(filePath))) ? url : prefix + filePath;
+    } catch {
+      return url;
     }
-    const attributes = new Map<string, string>();
-    for (const [, name, ...values] of (attributeSource ?? '').matchAll(htmlAttributeRegex)) {
-      attributes.set(name.toLowerCase(), values.find((value) => value !== undefined) ?? '');
-    }
-    if (attributes.has('vite-ignore')) {
-      return match;
-    }
-    const localUrls = collectAssetUrls(tagName.toLowerCase(), attributes).filter(
-      (url) => !url.startsWith('//') && !/^[a-z][a-z\d+.-]*:/i.test(url)
-    );
-    if (localUrls.length === 0 || localUrls.some(isInFrontendFolder)) {
-      return match;
-    }
-    return `<${tagName} vite-ignore${match.substring(tagName.length + 1)}`;
   });
 }
 
@@ -809,11 +723,23 @@ export const vaadinConfig: UserConfigFn = (env) => {
           }
         }
       },
+      devMode && {
+        name: 'vaadin:keep-application-urls-in-index-html',
+        transformIndexHtml: {
+          order: 'post',
+          handler(html, { path, server }) {
+            if (path !== indexHtmlUrlPath || !server) {
+              return;
+            }
+            return removeBaseFromApplicationUrls(html, server.config.base);
+          }
+        }
+      },
       {
         name: 'vaadin:inject-entrypoints-to-index-html',
         transformIndexHtml: {
           order: 'pre',
-          handler(html, { path, server }) {
+          handler(_html, { path, server }) {
             if (path !== indexHtmlUrlPath) {
               return;
             }
@@ -838,9 +764,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
                 attrs: { type: 'module', src: '/generated/commercial-banner.js' },
                 injectTo: 'head'
               });
-            }
-            if (server) {
-              return { html: ignoreUrlsOutsideFrontendFolder(html), tags: scripts };
             }
             return scripts;
           }
