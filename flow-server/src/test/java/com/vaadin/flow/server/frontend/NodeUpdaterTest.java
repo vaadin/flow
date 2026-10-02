@@ -166,6 +166,9 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        // the transform injects imports from the signals runtime into the
+        // application sources, so the runtime must be declared too
+        expectedDependencies.add("@preact/signals-react");
         expectedDependencies.add("magic-string");
         expectedDependencies.add("@types/node");
 
@@ -811,9 +814,8 @@ public class NodeUpdaterTest {
         JsonNode workboxBuildOverride = overrides.get("workbox-build");
         Assert.assertTrue("workbox-build override should be an object",
                 workboxBuildOverride.isObject());
-        Assert.assertTrue(
-                "workbox-build override should contain serialize-javascript",
-                workboxBuildOverride.has("serialize-javascript"));
+        Assert.assertTrue("workbox-build override should contain glob",
+                workboxBuildOverride.has("glob"));
     }
 
     @Test
