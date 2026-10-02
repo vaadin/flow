@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -64,6 +65,15 @@ public class DefaultDeploymentConfiguration
                     .collect(Collectors.joining(", "))
             + ".\nThe default of \""
             + SessionLockCheckStrategy.ASSERT.name().toLowerCase()
+            + "\" will be used.";
+
+    public static final String WARNING_CSP_MODE_NOT_RECOGNIZED = "WARNING: "
+            + InitParameters.CSP + " has been set to an unrecognized value.\n"
+            + "The permitted values are "
+            + Arrays.stream(CspMode.values())
+                    .map(it -> "\"" + it.name().toLowerCase() + "\"")
+                    .collect(Collectors.joining(", "))
+            + ".\nThe default of \"" + CspMode.OFF.name().toLowerCase()
             + "\" will be used.";
 
     /**
@@ -119,6 +129,7 @@ public class DefaultDeploymentConfiguration
     private boolean requestTiming;
     private boolean frontendHotdeploy;
     private SessionLockCheckStrategy sessionLockCheckStrategy;
+    private CspMode cspMode;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -158,6 +169,7 @@ public class DefaultDeploymentConfiguration
         checkSendUrlsAsParameters();
         checkFrontendHotdeploy();
         checkSessionLockCheckStrategy();
+        checkCspMode();
 
         if (log) {
             logMessages();
@@ -304,6 +316,11 @@ public class DefaultDeploymentConfiguration
     @Override
     public SessionLockCheckStrategy getSessionLockCheckStrategy() {
         return sessionLockCheckStrategy;
+    }
+
+    @Override
+    public CspMode getCspMode() {
+        return cspMode;
     }
 
     @Override
@@ -456,6 +473,17 @@ public class DefaultDeploymentConfiguration
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
             sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
+        }
+    }
+
+    private void checkCspMode() {
+        try {
+            cspMode = getApplicationOrSystemProperty(InitParameters.CSP,
+                    CspMode.OFF, stringMode -> Enum.valueOf(CspMode.class,
+                            stringMode.toUpperCase(Locale.ENGLISH)));
+        } catch (IllegalArgumentException e) {
+            warnings.add(WARNING_CSP_MODE_NOT_RECOGNIZED);
+            cspMode = CspMode.OFF;
         }
     }
 
