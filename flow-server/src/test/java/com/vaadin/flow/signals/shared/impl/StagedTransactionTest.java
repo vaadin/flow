@@ -683,13 +683,18 @@ class StagedTransactionTest extends SignalTestBase {
                 @Override
                 public void lock() {
                     super.lock();
-                    previouslyLocked.addAll(lockedTrees);
-                    lockedTrees.add(LockOrderTree.this);
+                    // Only the outermost acquire defines the lock order
+                    if (getHoldCount() == 1) {
+                        previouslyLocked.addAll(lockedTrees);
+                        lockedTrees.add(LockOrderTree.this);
+                    }
                 }
 
                 @Override
                 public void unlock() {
-                    lockedTrees.remove(LockOrderTree.this);
+                    if (getHoldCount() == 1) {
+                        lockedTrees.remove(LockOrderTree.this);
+                    }
                     super.unlock();
                 }
             };

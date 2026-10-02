@@ -19,11 +19,13 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.jspecify.annotations.Nullable;
@@ -126,7 +128,83 @@ public abstract class SignalTree implements Serializable {
         SYNCHRONOUS;
     }
 
-    private final Map<Id, List<TransientListener>> observers = new HashMap<>();
+    /**
+     * A registered node observer. Observers are notified only once the
+     * notifying thread no longer holds any tree lock, so that an observer that
+     * reads or writes another tree cannot form a lock-order inversion with a
+     * thread doing the same in the opposite direction (see #26130).
+     * <p>
+     * Since notifications are delivered outside the lock, the same observer
+     * could otherwise be invoked concurrently from two committing threads. The
+     * pending counter serializes delivery: only the thread that bumps it from
+     * zero delivers, and it keeps invoking the observer until no further
+     * notification has arrived in the meantime. Observers do not receive any
+     * event payload but re-read the current state when invoked, so coalescing
+     * several notifications into one invocation does not lose any change.
+     */
+    private final class Observer implements Serializable {
+        private final List<Observer> list;
+        private final TransientListener listener;
+        private final AtomicInteger pendingNotifications = new AtomicInteger();
+        private volatile boolean removed;
+
+        private Observer(List<Observer> list, TransientListener listener) {
+            this.list = list;
+            this.listener = listener;
+        }
+
+        private void scheduleNotification(boolean immediate) {
+            assert hasLock();
+            if (pendingNotifications.getAndIncrement() == 0) {
+                deferredNotifications.get().add(() -> deliver(immediate));
+            }
+        }
+
+        private void deliver(boolean immediate) {
+            boolean invokeImmediate = immediate;
+            int handled;
+            do {
+                handled = pendingNotifications.get();
+                if (removed) {
+                    return;
+                }
+
+                boolean listenToNext;
+                try {
+                    listenToNext = listener.invoke(invokeImmediate);
+                } catch (RuntimeException | Error e) {
+                    remove();
+                    throw e;
+                }
+                if (!listenToNext) {
+                    remove();
+                    return;
+                }
+                invokeImmediate = false;
+            } while (!pendingNotifications.compareAndSet(handled, 0));
+        }
+
+        private void remove() {
+            removed = true;
+            runWithLock(() -> list.remove(this));
+        }
+    }
+
+    /*
+     * The number of tree locks, across all trees, that the current thread holds
+     * through lock().
+     */
+    private static final ThreadLocal<int[]> heldTreeLocks = ThreadLocal
+            .withInitial(() -> new int[1]);
+
+    /*
+     * Observer notifications scheduled while the current thread holds a tree
+     * lock, delivered once it has released the last one.
+     */
+    private static final ThreadLocal<ArrayDeque<Runnable>> deferredNotifications = ThreadLocal
+            .withInitial(ArrayDeque::new);
+
+    private final Map<Id, List<Observer>> observers = new HashMap<>();
 
     private final Id id = Id.random();
 
@@ -175,6 +253,51 @@ public abstract class SignalTree implements Serializable {
     }
 
     /**
+     * Acquires the tree lock. Unlike locking {@link #getLock()} directly, this
+     * keeps track of the lock so that observer notifications scheduled while
+     * the lock is held are delivered only when the current thread has released
+     * all tree locks through {@link #unlock()}.
+     */
+    public void lock() {
+        assertNoLeafLockHeld();
+        getLock().lock();
+        heldTreeLocks.get()[0]++;
+    }
+
+    /**
+     * Releases the tree lock acquired through {@link #lock()}. If this was the
+     * last tree lock held by the current thread, then any observer
+     * notifications scheduled while holding the lock are delivered before this
+     * method returns.
+     */
+    public void unlock() {
+        getLock().unlock();
+        if (--heldTreeLocks.get()[0] == 0) {
+            deliverDeferredNotifications();
+        }
+    }
+
+    private static void deliverDeferredNotifications() {
+        ArrayDeque<Runnable> queue = deferredNotifications.get();
+        RuntimeException failure = null;
+        Runnable notification;
+        while ((notification = queue.poll()) != null) {
+            try {
+                notification.run();
+            } catch (RuntimeException e) {
+                if (failure == null) {
+                    failure = e;
+                } else {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
+        }
+    }
+
+    /**
      * Checks whether the tree lock is currently held.
      *
      * @return <code>true</code> if the lock is held by the current thread
@@ -213,12 +336,11 @@ public abstract class SignalTree implements Serializable {
      * @return the value returned by the supplier
      */
     protected <T> @Nullable T getWithLock(ValueSupplier<T> action) {
-        assertNoLeafLockHeld();
-        lock.lock();
+        lock();
         try {
             return action.supply();
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -229,12 +351,11 @@ public abstract class SignalTree implements Serializable {
      *            the action to run, not <code>null</code>
      */
     protected void runWithLock(SerializableRunnable action) {
-        assertNoLeafLockHeld();
-        lock.lock();
+        lock();
         try {
             action.run();
         } finally {
-            lock.unlock();
+            unlock();
         }
     }
 
@@ -256,6 +377,9 @@ public abstract class SignalTree implements Serializable {
      * snapshot. The observer is removed when invoked and needs to be registered
      * again if it's still relevant unless it returns <code>true</code>. It is
      * safe to register the observer again from within the callback.
+     * <p>
+     * The observer is invoked only after the thread that applied the change has
+     * released all tree locks.
      *
      * @param nodeId
      *            the id of the node to observe, not <code>null</code>
@@ -267,25 +391,58 @@ public abstract class SignalTree implements Serializable {
      */
     public Registration observeNextChange(Id nodeId,
             TransientListener observer) {
+        return observeNextChange(nodeId, observer, false);
+    }
+
+    /**
+     * Registers an observer for a node in this tree and optionally also invokes
+     * it right away. Works like
+     * {@link #observeNextChange(Id, TransientListener)}, but when
+     * <code>notifyImmediately</code> is <code>true</code>, the observer is also
+     * invoked with <code>immediate</code> set to <code>true</code> as soon as
+     * the current thread has released all tree locks. Registering and
+     * scheduling the immediate invocation happen atomically so that no change
+     * can be missed in between.
+     *
+     * @param nodeId
+     *            the id of the node to observe, not <code>null</code>
+     * @param observer
+     *            the callback to run when the node has changed, not
+     *            <code>null</code>
+     * @param notifyImmediately
+     *            <code>true</code> to also invoke the observer right away,
+     *            <code>false</code> to only invoke it on the next change
+     * @return a {@link Registration} that can be used to remove the observer
+     *         before it's triggered, not <code>null</code>
+     */
+    public Registration observeNextChange(Id nodeId, TransientListener observer,
+            boolean notifyImmediately) {
         assert nodeId != null;
         assert observer != null;
 
         return Objects.requireNonNull(getWithLock(() -> {
             assert submitted().nodes().containsKey(nodeId);
 
-            List<TransientListener> list = observers.computeIfAbsent(nodeId,
+            List<Observer> list = observers.computeIfAbsent(nodeId,
                     ignore -> new ArrayList<>());
 
-            list.add(observer);
+            Observer entry = new Observer(list, observer);
+            list.add(entry);
+            if (notifyImmediately) {
+                entry.scheduleNotification(true);
+            }
 
-            return wrapWithLock(() -> list.remove(observer))::run;
+            return entry::remove;
         }));
     }
 
     /**
      * Notify all observers that are affected by changes between two snapshots.
-     * All notified observers are removed. It is safe for an observer to
-     * register itself again when it is invoked.
+     * The observers are invoked only after the current thread has released all
+     * tree locks, so that an observer can't cause a lock-order inversion by
+     * acquiring the lock of another tree. An observer that returns
+     * <code>false</code> is removed. It is safe for an observer to register
+     * itself again when it is invoked.
      *
      * @see #observeNextChange(Id, TransientListener)
      *
@@ -299,29 +456,14 @@ public abstract class SignalTree implements Serializable {
             return;
         }
 
-        runWithLock(() -> {
-            Map.copyOf(observers).forEach((nodeId, list) -> {
-                Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
-                Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
+        runWithLock(() -> observers.forEach((nodeId, list) -> {
+            Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
+            Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
 
-                if (oldNode != newNode) {
-                    List<TransientListener> copy = List.copyOf(list);
-
-                    /*
-                     * Assuming there will immediately be a new observer for the
-                     * same node so not clearing the map entry.
-                     */
-                    list.clear();
-
-                    for (TransientListener observer : copy) {
-                        boolean listenToNext = observer.invoke(false);
-                        if (listenToNext) {
-                            list.add(observer);
-                        }
-                    }
-                }
-            });
-        });
+            if (oldNode != newNode) {
+                list.forEach(observer -> observer.scheduleNotification(false));
+            }
+        }));
     }
 
     /**

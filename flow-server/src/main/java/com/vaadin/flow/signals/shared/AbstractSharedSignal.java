@@ -475,25 +475,8 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
                  * a listener to the tree, since the listener would in that case
                  * miss that change
                  */
-                tree.getLock().lock();
+                tree.lock();
                 try {
-                    /*
-                     * Run the listener right away if there's already a change.
-                     */
-                    if (hasChanges()) {
-                        boolean listenToNext = listener.invoke(true);
-                        /*
-                         * If the listener is no longer interested in changes
-                         * after an initial invocation, then return without
-                         * adding a listener to the tree and thus without
-                         * anything to clean up.
-                         */
-                        if (!listenToNext) {
-                            return () -> {
-                            };
-                        }
-                    }
-
                     // avoid lambda to allow proper deserialization
                     TransientListener transientListener = new TransientListener() {
                         @Override
@@ -517,9 +500,16 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
                             }
                         }
                     };
-                    return tree.observeNextChange(id(), transientListener);
+                    /*
+                     * Run the listener right away if there's already a change.
+                     * The tree defers that invocation until the lock has been
+                     * released so that the listener cannot acquire another tree
+                     * lock while holding this one (see #26130).
+                     */
+                    return tree.observeNextChange(id(), transientListener,
+                            hasChanges());
                 } finally {
-                    tree.getLock().unlock();
+                    tree.unlock();
                 }
 
             }
