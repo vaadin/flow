@@ -108,9 +108,15 @@ difference between the overloads in the Javadoc of both. See
 Apply `@NullMarked` (JSpecify) at the package level and annotate only what
 genuinely may be null with `@Nullable`.
 
-Prefer a sentinel value over a nullable return in the public API. Jackson wire
-records are the legitimate exception, because the wire format permits
-omissions — keep the wire record private and translate to a non-null public
+Return an empty collection, array, map or stream — never `null` — when there
+are no values.
+
+Return `@Nullable T`, not `Optional<T>`, from a getter whose value may be
+unset, such as `getLabel()` or `getPlaceholder()`. Do not use a stand-in value
+such as `""` or `-1` to mean "not set". See `guidelines/design.md`.
+
+Jackson wire records may have `@Nullable` fields, because the wire format
+permits omissions. Keep the wire record private and translate it to the public
 shape at the boundary.
 
 Put `@Nullable` on the declared type (`ValueSignal<@Nullable X>`). NullAway
