@@ -376,12 +376,12 @@ final class MavenGoalRuntime implements AppRuntime {
      * merely divide the value. Maven's converter splits on it with no escaping
      * available, and the plugin then makes a key and a value of each piece at
      * its first {@code =} and <em>discards any piece that has none</em>. So
-     * {@code -DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty} would reach the
-     * server as {@code -DdisabledPlugins=Vaadin}, with three quarters of it
-     * gone and nothing logged. Measured against nothing yet - the mechanism is
-     * read out of Plexus's converter and the mojo, and that is exactly why it
-     * is worth writing down rather than discovering later as HotswapAgent's
-     * Vaadin plugin quietly competing with every apply.
+     * {@code -Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin}
+     * would reach the server as {@code -Dhotswapagent.disablePlugin=Vaadin},
+     * with most of it gone and nothing logged. Measured against nothing yet -
+     * the mechanism is read out of Plexus's converter and the mojo, and that is
+     * exactly why it is worth writing down rather than discovering later as
+     * HotswapAgent's Vaadin plugin quietly competing with every apply.
      * <p>
      * A JVM argument file is the way out, and it costs the channel nothing: the
      * JVM expands {@code @file} itself, so the plugin passes the token through
