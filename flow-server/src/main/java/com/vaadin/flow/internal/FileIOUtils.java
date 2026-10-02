@@ -29,6 +29,7 @@ import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -565,6 +566,25 @@ public class FileIOUtils {
         }
         return null;
 
+    }
+
+    /**
+     * Gets the working directory as the project folder, if it is the folder of
+     * a Maven or Gradle project.
+     * <p>
+     * The check avoids taking the directory of a server for a project folder.
+     *
+     * @return the working directory, or {@code null} if it does not look like a
+     *         Maven or Gradle project
+     */
+    public static File getProjectFolderFromWorkingDirectory() {
+        Path path = Paths.get(System.getProperty("user.dir", "."));
+        if (path.toFile().isDirectory() && (path.resolve("pom.xml").toFile()
+                .exists() || path.resolve("build.gradle").toFile().exists()
+                || path.resolve("build.gradle.kts").toFile().exists())) {
+            return path.toAbsolutePath().toFile();
+        }
+        return null;
     }
 
     static File getProjectFolderFromClasspath(URL rootFolder)
