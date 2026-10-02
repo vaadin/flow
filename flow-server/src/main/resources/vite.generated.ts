@@ -110,27 +110,47 @@ const indexHtmlRelativePath = path
   .replace(/\\/g, '/');
 const indexHtmlUrlPath = '/' + indexHtmlRelativePath;
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
- * Removes the dev server base from the URLs in index.html that do not refer
- * to a file in the frontend folder.
+ * Removes the dev server base from the URLs in the tags of index.html that
+ * do not refer to a file in the frontend folder.
  *
  * The dev server runs with the `/VAADIN/` base and prefixes every relative
  * and root-relative URL in index.html with it, so links to resources served
  * by the application itself (e.g. from `META-INF/resources`) would point
- * into `/VAADIN/`. Without the base they resolve against the `<base href>`
- * that Flow adds to the page, as they do in a production build. URLs of the
+ * into `/VAADIN/`. Such URLs are restored to how they are written in the
+ * source index.html, which is what a production build keeps. URLs of the
  * dev server itself, such as `@vite/client`, are kept.
  */
 function removeBaseFromApplicationUrls(html: string, base: string): string {
-  const escapedBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const baseUrlRegex = new RegExp(`(["'\\s,])${escapedBase}(?!@)([^"'\\s,?#]*)`, 'g');
-  return html.replace(baseUrlRegex, (url, prefix: string, filePath: string) => {
+  const tagRegex = /<!--[\s\S]*?-->|<[a-zA-Z][^>]*>/g;
+  // Whether each URL in the source was root-relative, in document order, as
+  // the dev server rewrites `/x`, `./x` and `x` all to `<base>x`
+  const rootRelativeByPath = new Map<string, boolean[]>();
+  const sourceUrlRegex = /(?:=\s*["']?|,\s*)(\/(?!\/)|\.\/)?([^"'\s,?#>]+)/g;
+  const sourceTags = readFileSync(projectIndexHtml, { encoding: 'utf-8' }).match(tagRegex) ?? [];
+  for (const tag of sourceTags.filter((tag) => !tag.startsWith('<!--'))) {
+    for (const [, prefix, filePath] of tag.matchAll(sourceUrlRegex)) {
+      const rootRelative = rootRelativeByPath.get(filePath) ?? [];
+      rootRelative.push(prefix === '/');
+      rootRelativeByPath.set(filePath, rootRelative);
+    }
+  }
+  const baseUrlRegex = new RegExp(`(["'\\s,])${escapeRegExp(base)}(?!@)([^"'\\s,?#]*)`, 'g');
+  const restoreUrl = (url: string, prefix: string, filePath: string) => {
     try {
-      return existsSync(path.resolve(frontendFolder, decodeURI(filePath))) ? url : prefix + filePath;
+      if (existsSync(path.resolve(frontendFolder, decodeURI(filePath)))) {
+        return url;
+      }
     } catch {
       return url;
     }
-  });
+    return prefix + (rootRelativeByPath.get(filePath)?.shift() ? '/' : '') + filePath;
+  };
+  return html.replace(tagRegex, (tag) => (tag.startsWith('<!--') ? tag : tag.replace(baseUrlRegex, restoreUrl)));
 }
 
 const projectStaticAssetsFolders = [

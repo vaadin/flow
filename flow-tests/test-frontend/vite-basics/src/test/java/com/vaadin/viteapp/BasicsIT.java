@@ -132,6 +132,9 @@ public class BasicsIT extends ViteDevModeIT {
         Assert.assertEquals("images/static-icon.svg",
                 getLinkHref("staticIcon"));
         Assert.assertEquals(200L, fetchLinkStatus("staticIcon"));
+        Assert.assertEquals("/images/static-icon.svg",
+                getLinkHref("staticRootIcon"));
+        Assert.assertEquals(200L, fetchLinkStatus("staticRootIcon"));
     }
 
     @Test
