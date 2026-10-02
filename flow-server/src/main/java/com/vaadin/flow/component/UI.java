@@ -606,9 +606,26 @@ public class UI extends Component
      *         cancel the task
      */
     public Future<Void> access(final Command command) {
-        // handleAccessDetach throws UIDetachedException when there is no
-        // detach handler, so access never returns null here
-        return Objects.requireNonNull(access(command, null));
+        VaadinSession session = getSession();
+
+        if (session == null) {
+            throw new UIDetachedException();
+        }
+
+        // null detach handler -> throw UIDetachedException if the UI is
+        // detached before the command runs
+        return access(session, command, null);
+    }
+
+    private void accessOrHandleDetach(Command command,
+            @Nullable SerializableRunnable detachHandler) {
+        VaadinSession session = getSession();
+
+        if (session == null) {
+            handleAccessDetach(detachHandler);
+        } else {
+            access(session, command, detachHandler);
+        }
     }
 
     /*
@@ -616,15 +633,8 @@ public class UI extends Component
      * is done for this internal method since it helps preserve old APIs as-is
      * while allowing new APIs to use newer conventions.
      */
-    private @Nullable Future<Void> access(Command command,
+    private Future<Void> access(VaadinSession session, Command command,
             @Nullable SerializableRunnable detachHandler) {
-        VaadinSession session = getSession();
-
-        if (session == null) {
-            handleAccessDetach(detachHandler);
-            return null;
-        }
-
         return session.access(new ErrorHandlingCommand() {
             @Override
             public void execute() {
@@ -693,7 +703,7 @@ public class UI extends Component
             @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
-        return () -> access(accessTask::run, detachHandler);
+        return () -> accessOrHandleDetach(accessTask::run, detachHandler);
     }
 
     /**
@@ -724,7 +734,8 @@ public class UI extends Component
             @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
-        return value -> access(() -> accessTask.accept(value), detachHandler);
+        return value -> accessOrHandleDetach(() -> accessTask.accept(value),
+                detachHandler);
     }
 
     /**
@@ -2081,16 +2092,17 @@ public class UI extends Component
          *            {@code true} if the event originated from the client side,
          *            {@code false} otherwise
          * @param route
-         *            the route the user is navigating to.
+         *            the route the user is navigating to, not {@code null}
          * @param query
-         *            the query string the user is navigating to.
+         *            the query string the user is navigating to, not
+         *            {@code null}
          */
         public BrowserLeaveNavigationEvent(UI source, boolean fromClient,
                 @EventData("route") String route,
                 @EventData("query") String query) {
             super(source, true);
-            this.route = route;
-            this.query = query;
+            this.route = Objects.requireNonNull(route, "Route cannot be null");
+            this.query = Objects.requireNonNull(query, "Query cannot be null");
         }
     }
 
@@ -2117,15 +2129,17 @@ public class UI extends Component
          *            {@code false} otherwise
          * @param route
          *            flow route path that should be attached to the client
-         *            element
+         *            element, not {@code null}
          * @param query
-         *            flow route query string
+         *            flow route query string, not {@code null}
          * @param appShellTitle
-         *            client side title of the application shell
+         *            client side title of the application shell, or
+         *            {@code null} if the client has none
          * @param historyState
-         *            client side history state value
+         *            client side history state value, or {@code null} if the
+         *            history entry has no state
          * @param trigger
-         *            navigation trigger
+         *            navigation trigger, not {@code null}
          *
          * @since 24.8
          */
@@ -2136,11 +2150,12 @@ public class UI extends Component
                 @EventData("historyState") @Nullable JsonNode historyState,
                 @EventData("trigger") String trigger) {
             super(source, true);
-            this.route = route;
-            this.query = query;
+            this.route = Objects.requireNonNull(route, "Route cannot be null");
+            this.query = Objects.requireNonNull(query, "Query cannot be null");
             this.appShellTitle = appShellTitle;
             this.historyState = historyState;
-            this.trigger = trigger;
+            this.trigger = Objects.requireNonNull(trigger,
+                    "Trigger cannot be null");
         }
 
     }
