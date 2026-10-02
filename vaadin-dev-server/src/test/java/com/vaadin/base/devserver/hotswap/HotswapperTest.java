@@ -39,7 +39,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -815,6 +817,25 @@ class HotswapperTest {
     }
 
     @Test
+    void onHotswap_pushEnabled_visuallyModalComponentClassChanged_activeChainRefreshed()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session,
+                MyRouteWithVisualModal.class);
+        ui.enablePush();
+
+        // The component is attached to the UI, outside of the route chain
+        hotswapper.onHotswap(new String[] { MyComponent.class.getName() },
+                true);
+
+        ui.assertChainRefreshed();
+        Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+    }
+
+    @Test
     void onHotswap_pushEnabled_routeLayoutClassChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
@@ -1518,6 +1539,22 @@ class HotswapperTest {
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
             event.getLocationChangeEvent().getUI().addModal(new MyComponent());
+        }
+
+    }
+
+    // Simulates a Dialog, that is attached to the UI and visually modal by
+    // default
+    @Tag("my-route-with-visual-modal")
+    public static class MyRouteWithVisualModal extends Component
+            implements HasComponents, AfterNavigationObserver {
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            UI ui = event.getLocationChangeEvent().getUI();
+            MyComponent overlay = new MyComponent();
+            ui.add(overlay);
+            ui.setChildComponentModal(overlay, ModalityMode.VISUAL);
         }
 
     }
