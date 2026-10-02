@@ -250,7 +250,7 @@ the difference.
 ### A container that runs in the build's JVM
 
 ```
-MAVEN_OPTS=<agents, opens, -XX:+AllowEnhancedClassRedefinition, -DdisabledPlugins>
+MAVEN_OPTS=<agents, opens, -XX:+AllowEnhancedClassRedefinition, -Dhotswapagent.disablePlugin>
 JAVA_HOME=<the JDK Jvm chose>
   mvnw -B -ntp -nsu [-f <root>/pom.xml -pl :<app> -am] -Dmaven.test.skip=true
        [compile] <plugin>:<version>:run -Djetty.deployMode=EMBED -Djetty.scan=0
@@ -479,9 +479,10 @@ which the loop's settings always do.
 **And Maven splits that same value on commas**, the parameter being declared
 `List<String>` — a bare comma split in Plexus's converter, with no escaping
 available. Combined with the rule above, a comma does not divide a flag, it
-deletes most of it: `-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty` would
-arrive as `-DdisabledPlugins=Vaadin`. So `ServerPlugin.commaSplitFlags` marks
-that channel, and `MavenGoalRuntime` moves every comma-bearing flag into a JVM
+deletes most of it:
+`-Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin`
+would arrive as `-Dhotswapagent.disablePlugin=Vaadin`. So
+`ServerPlugin.commaSplitFlags` marks that channel, and `MavenGoalRuntime` moves every comma-bearing flag into a JVM
 argument file under `target/devloop/payara-args.txt`, passing `@<file>` in its
 place — the JVM expands that itself, and an argument file quotes a comma without
 trouble. The flags that need no file stay inline, where the launch line shows
@@ -802,22 +803,33 @@ inventory.
 
 ## HotswapAgent plugins
 
-`Vaadin`, `Spring`, `SpringBoot` and `Jetty` are disabled
+`Vaadin`, `Spring`, `SpringBoot`, `Jetty` and `JacksonPlugin` are disabled
 (`Launch.DISABLED_HOTSWAP_PLUGINS`), and nothing else: the Vaadin one fires a
 competing full page reload, the Spring ones were measured to lose the Spring
-Data repository bean under repeated redefinitions, and Jetty's hooks name
+Data repository bean under repeated redefinitions, Jetty's hooks name
 `org.eclipse.jetty.webapp` and `org.mortbay` classes, which match nothing under
-Jetty 12.
+Jetty 12, and the Jackson one deadlocks a container's boot: it patches the
+container's own copy of Jackson while the JVM holds that container loader's
+lock, and on Payara Micro that lock-order inversion with Hazelcast's bootstrap
+left the odd start hanging until the start timeout. That one is a stopgap: the
+cause is HotswapAgent resolving a plugin's types through the thread context
+class loader (`ClassPool.appendSystemPath()`), and the entry should go once the
+pinned HotswapAgent no longer does
+([HotswapAgent#681](https://github.com/HotswapProjects/HotswapAgent/pull/681)). The names are the `@Plugin` names, which is
+why Jackson's is `JacksonPlugin`; a wrong one is accepted silently.
 
-**Disabling has to reach the right class loader**, because HotswapAgent reads
-`hotswap-agent.properties` off the class's *own* loader — so
-`-DdisabledPlugins` never reached a webapp loader inside a build plugin's
-realm. `MavenGoalRuntime` therefore also writes the list into the app's
-`target/classes`, and with it an `extraClasspath` naming the HotswapAgent jar,
-without which that loader cannot see the agent itself; honouring the setting
-also needs `java.base/java.net` and `java.base/jdk.internal.loader` opened. The
-key is `disabledPlugins`, plural and unprefixed; a wrong one is accepted
-silently.
+**Disabling has to reach every class loader**, because HotswapAgent builds a
+configuration per loader. The JVM flag is `-Dhotswapagent.disablePlugin`, read
+in `premain` into a set every configuration consults. `-DdisabledPlugins`, the
+key `hotswap-agent.properties` uses, only reaches the system class loader:
+every other loader re-reads the file bundled in HotswapAgent's jar, whose empty
+`disabledPlugins=` shadows the system property.
+
+For an embedded server `MavenGoalRuntime` writes a `hotswap-agent.properties`
+into the app's `target/classes` carrying an `extraClasspath` that names the
+HotswapAgent jar, without which a webapp loader inside a build plugin's realm
+cannot see the agent itself; honouring that also needs `java.base/java.net`
+and `java.base/jdk.internal.loader` opened.
 
 ## Under a build-plugin runtime
 

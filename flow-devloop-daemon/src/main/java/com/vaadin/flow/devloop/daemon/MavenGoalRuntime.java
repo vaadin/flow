@@ -156,7 +156,14 @@ final class MavenGoalRuntime implements AppRuntime {
             command.addAll(forkedJvmFlags(jvmFlags, systemProperties));
         }
 
-        writeHotswapAgentProperties(project);
+        // Only for an embedded server. extraClasspath is what the two
+        // --add-opens in extraJvmFlags pay for, and those do not go to a
+        // forked server; writing it anyway would ask HotswapAgent for a swap
+        // it has not been given the access to make, and log a failure for it
+        // on every start.
+        if (plugin.embedded()) {
+            writeHotswapAgentProperties(project);
+        }
 
         Map<String, String> environment = new LinkedHashMap<>();
         // The inherited value is kept either way; the loop's own flags are
@@ -376,12 +383,12 @@ final class MavenGoalRuntime implements AppRuntime {
      * merely divide the value. Maven's converter splits on it with no escaping
      * available, and the plugin then makes a key and a value of each piece at
      * its first {@code =} and <em>discards any piece that has none</em>. So
-     * {@code -DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty} would reach the
-     * server as {@code -DdisabledPlugins=Vaadin}, with three quarters of it
-     * gone and nothing logged. Measured against nothing yet - the mechanism is
-     * read out of Plexus's converter and the mojo, and that is exactly why it
-     * is worth writing down rather than discovering later as HotswapAgent's
-     * Vaadin plugin quietly competing with every apply.
+     * {@code -Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin}
+     * would reach the server as {@code -Dhotswapagent.disablePlugin=Vaadin},
+     * with most of it gone and nothing logged. Measured against nothing yet -
+     * the mechanism is read out of Plexus's converter and the mojo, and that is
+     * exactly why it is worth writing down rather than discovering later as
+     * HotswapAgent's Vaadin plugin quietly competing with every apply.
      * <p>
      * A JVM argument file is the way out, and it costs the channel nothing: the
      * JVM expands {@code @file} itself, so the plugin passes the token through
@@ -511,32 +518,26 @@ final class MavenGoalRuntime implements AppRuntime {
     }
 
     /**
-     * Puts the disabled-plugin list where the application's own class loader
-     * will find it.
+     * Puts {@code extraClasspath} where an embedded server's webapp class
+     * loader will find it.
      * <p>
-     * {@code -DdisabledPlugins} does not reach it. HotswapAgent decides whether
-     * a plugin may transform a class by asking the {@code PluginConfiguration}
-     * of <em>that class's own class loader</em>, and it builds one per loader
-     * from a {@code hotswap-agent.properties} found on it. A servlet
-     * container's webapp loader has no such file and, inside a build plugin's
-     * class realm, no sight of the system properties either - so the list was
-     * accepted in silence and disabled nothing for exactly the classes it was
-     * meant to protect. Measured against a WAR starter: HotswapAgent's own
-     * Vaadin plugin went on transforming {@code VaadinService} and
-     * {@code VaadinServlet}, which is the second driver of page reloads the
-     * loop disables it to prevent.
+     * HotswapAgent builds a {@code PluginConfiguration} per class loader, from
+     * a {@code hotswap-agent.properties} found on that loader itself, and
+     * {@code extraClasspath} is only ever read from there. The disabled-plugin
+     * list does not need the file: {@code -Dhotswapagent.disablePlugin} reaches
+     * every loader's configuration; see {@code Launch#jvmFlags}.
      * <p>
-     * The same file carries {@code extraClasspath}, naming the HotswapAgent jar
-     * itself. HotswapAgent copies its <em>plugin</em> classes into the
-     * application's class loader so that instrumented code can reach them, and
-     * leaves the rest of itself to be found through that loader's parent chain
-     * - which inside a build plugin's class realm never reaches the system
-     * class path. Measured: the CGLIB recorder the Proxy plugin copies in
-     * failed to initialise on {@code AgentLogger}, on every redefine, and apply
-     * read the trace as the application having thrown. With the jar on the
-     * loader's own class path the rest of HotswapAgent is one lookup away, and
-     * every plugin - Proxy included - works there. What that loader ends up
-     * loading of it is the logging classes and nothing that carries state.
+     * {@code extraClasspath} names the HotswapAgent jar itself. HotswapAgent
+     * copies its <em>plugin</em> classes into the application's class loader so
+     * that instrumented code can reach them, and leaves the rest of itself to
+     * be found through that loader's parent chain - which inside a build
+     * plugin's class realm never reaches the system class path. Measured: the
+     * CGLIB recorder the Proxy plugin copies in failed to initialise on
+     * {@code AgentLogger}, on every redefine, and apply read the trace as the
+     * application having thrown. With the jar on the loader's own class path
+     * the rest of HotswapAgent is one lookup away, and every plugin - Proxy
+     * included - works there. What that loader ends up loading of it is the
+     * logging classes and nothing that carries state.
      * <p>
      * Written into the module's compiled output, which is the webapp loader's
      * {@code WEB-INF/classes}, so the file is found exactly where it is needed.
@@ -548,30 +549,20 @@ final class MavenGoalRuntime implements AppRuntime {
         Path classes = project.app().classesDir();
         try {
             Files.createDirectories(classes);
-            // extraClasspath only for an embedded server. It is what the two
-            // --add-opens in extraJvmFlags pay for, and those do not go to a
-            // forked server; writing it anyway would ask HotswapAgent for a
-            // swap it has not been given the access to make, and log a failure
-            // for it on every start.
-            String extraClasspath = plugin.embedded()
-                    ? ("extraClasspath=" + launch.ensureHotswapAgent().toUri()
-                            + System.lineSeparator())
-                    : "";
             Files.writeString(classes.resolve("hotswap-agent.properties"),
                     "# Written by the Vaadin dev loop; see MavenGoalRuntime."
                             + System.lineSeparator()
                             + "# Only read when HotswapAgent is on the JVM, so"
                             + " it does nothing in a normal build."
-                            + System.lineSeparator() + extraClasspath
-                            + "disabledPlugins="
-                            + Launch.DISABLED_HOTSWAP_PLUGINS
+                            + System.lineSeparator() + "extraClasspath="
+                            + launch.ensureHotswapAgent().toUri()
                             + System.lineSeparator());
         } catch (IOException e) {
             // Not fatal: the application still starts, and the consequence is
             // noise in its log rather than a loop that cannot work.
             log.line("WARNING: could not write hotswap-agent.properties to "
                     + classes + " (" + e.getMessage()
-                    + "); HotswapAgent's own plugins may compete with apply");
+                    + "); HotswapAgent's plugins may not see the agent");
         }
     }
 
@@ -778,9 +769,10 @@ final class MavenGoalRuntime implements AppRuntime {
      * a plugin transformer, and the apply escalated to a restart over an error
      * that had nothing to do with the change.
      * <p>
-     * A regular expression over the loader's class name, comma-separated, and
-     * merged from the system properties exactly as {@code disabledPlugins} is -
-     * so a wrong name here would be accepted in silence and exclude nothing.
+     * A regular expression over the loader's class name, comma-separated. The
+     * system class loader's configuration merges it from the system properties
+     * and HotswapAgent applies it JVM-wide - and a wrong name here would be
+     * accepted in silence and exclude nothing.
      * <p>
      * And the two {@code --add-opens}: the price of the {@code extraClasspath}
      * that lets HotswapAgent see itself from the webapp class loader; see
