@@ -35,7 +35,6 @@ env:
   FLY_ORG: ${{ vars.FLY_ORG || 'personal' }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
-  JAVA_VERSION: 21
   # The same flags validation.yml sets, for the same reason: a 403 from Central
   # is retried rather than failing the build outright. See the note there.
   MAVEN_ARGS: >-
@@ -83,7 +82,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
-          java-version: "${{ env.JAVA_VERSION }}"
+          java-version-file: .tool-versions
           distribution: 'temurin'
       - name: Set TB License
         # The production build of a module that uses a commercial component,
