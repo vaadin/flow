@@ -78,6 +78,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -155,6 +156,11 @@ class UidlWriterTest {
     @StyleSheet(value = "lazy.css", loadMode = LoadMode.LAZY, layer = "theme")
     @StyleSheet(value = "inline.css", loadMode = LoadMode.INLINE, layer = "theme")
     public static class ComponentWithLayeredStyleSheets extends Component {
+    }
+
+    @Tag("test")
+    @StyleSheet(value = "import.css", loadMode = LoadMode.INLINE, layer = "theme")
+    public static class ComponentWithLayeredInlineImport extends Component {
     }
 
     @Tag("base")
@@ -576,6 +582,22 @@ class UidlWriterTest {
                 .get(0);
         assertEquals("@layer theme {\ninline.css\n}",
                 inlineCss.get(Dependency.KEY_CONTENTS).textValue());
+    }
+
+    @Test
+    void layeredInlineStyleSheetWithImport_throws() throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        mocks.getServlet().addServletContextResource("/import.css",
+                "@import 'a.css';");
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+
+        ui.add(new ComponentWithLayeredInlineImport());
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> uidlWriter.createUidl(ui, false));
+        assertTrue(exception.getMessage().contains("import.css"),
+                exception.getMessage());
     }
 
     @Test

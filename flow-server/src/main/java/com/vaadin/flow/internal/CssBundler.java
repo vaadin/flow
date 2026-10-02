@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,11 +62,11 @@ public class CssBundler {
     private static final String MAYBE_LAYER_OR_MEDIA_QUERY = "(" + LAYER + "|"
             + MEDIA_QUERY + ")";
 
-    // A CSS <layer-name>: dot separated <ident> tokens. Escapes in identifiers
-    // are not accepted, which also keeps the name safe to write into a rule.
-    private static final String IDENT = "-?[_a-zA-Z][_a-zA-Z0-9-]*|--[_a-zA-Z0-9-]*";
-    private static final Pattern LAYER_NAME = Pattern
-            .compile("(" + IDENT + ")(\\.(" + IDENT + "))*");
+    // One <ident> token of a dot separated CSS <layer-name>. Escapes in
+    // identifiers are not accepted, which also keeps the name safe to write
+    // into a rule.
+    private static final Pattern LAYER_NAME_PART = Pattern
+            .compile("-?[_a-zA-Z][_a-zA-Z0-9-]*+|--[_a-zA-Z0-9-]*+");
 
     // Selects how url(...) references are rewritten when inlining @import
     // statements. The right choice depends on how the bundled CSS is later
@@ -646,6 +647,20 @@ public class CssBundler {
     }
 
     /**
+     * Returns whether the given value is a valid CSS cascade layer name: one or
+     * more CSS identifiers separated by dots, such as {@code theme} or
+     * {@code theme.base}.
+     *
+     * @param layer
+     *            the layer name to check, not {@code null}
+     * @return {@code true} if the value is a valid layer name
+     */
+    public static boolean isValidLayerName(String layer) {
+        return Stream.of(layer.split("\\.", -1))
+                .allMatch(part -> LAYER_NAME_PART.matcher(part).matches());
+    }
+
+    /**
      * Checks that the given value is a valid CSS cascade layer name: one or
      * more CSS identifiers separated by dots, such as {@code theme} or
      * {@code theme.base}.
@@ -656,7 +671,7 @@ public class CssBundler {
      *             if the value is not a valid layer name
      */
     public static void validateLayerName(String layer) {
-        if (!LAYER_NAME.matcher(layer).matches()) {
+        if (!isValidLayerName(layer)) {
             throw new IllegalArgumentException("'" + layer
                     + "' is not a valid CSS cascade layer name. Use one or more"
                     + " identifiers separated by dots, e.g. 'theme' or"

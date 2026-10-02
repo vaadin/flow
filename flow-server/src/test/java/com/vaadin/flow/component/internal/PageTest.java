@@ -53,9 +53,13 @@ class PageTest {
     @Test
     void addStyleSheet_withLayer_dependencyHasLayer() {
         page.addStyleSheet("styles.css", LoadMode.LAZY, "theme.base");
+        // The same URL without a layer keeps the layer it was first added to
+        page.addStyleSheet("styles.css", LoadMode.LAZY);
 
-        Dependency dependency = ui.getInternals().getDependencyList()
-                .getPendingSendToClient().iterator().next();
+        Collection<Dependency> dependencies = ui.getInternals()
+                .getDependencyList().getPendingSendToClient();
+        assertEquals(1, dependencies.size());
+        Dependency dependency = dependencies.iterator().next();
         assertEquals("styles.css", dependency.getUrl());
         assertEquals("theme.base", dependency.getLayer());
     }

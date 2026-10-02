@@ -23,6 +23,10 @@ import com.vaadin.flow.internal.JacksonUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Vaadin Ltd
@@ -59,6 +63,22 @@ class DependencyTest {
 
         assertDependency(dependency);
 
+    }
+
+    @Test
+    void layer_partOfEquality_serializedOnlyWhenSet() {
+        Dependency plain = new Dependency(Dependency.Type.STYLESHEET, "a.css",
+                LoadMode.EAGER, "id");
+        Dependency layered = new Dependency(Dependency.Type.STYLESHEET, "a.css",
+                LoadMode.EAGER, "id", "theme");
+
+        assertNotEquals(plain, layered);
+        assertEquals(layered, new Dependency(Dependency.Type.STYLESHEET,
+                "a.css", LoadMode.EAGER, "id", "theme"));
+        assertTrue(layered.toString().contains("layer=theme"));
+        assertFalse(JacksonUtils.createNode(plain).has(Dependency.KEY_LAYER));
+        assertEquals("theme", JacksonUtils.createNode(layered)
+                .get(Dependency.KEY_LAYER).asString());
     }
 
     private void assertDependency(Dependency dependency) {

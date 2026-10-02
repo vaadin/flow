@@ -247,7 +247,8 @@ public class Page implements Serializable {
                 Type.STYLESHEET);
         String layerOrNull = layer.isEmpty() ? null : layer;
         if (existing != null
-                && !Objects.equals(existing.getLayer(), layerOrNull)) {
+                && !Objects.equals(existing.getLayer(), layerOrNull)
+                && LOGGER.isWarnEnabled()) {
             // The browser has already loaded the URL and keeps it as it is
             LOGGER.warn(
                     "Style sheet {} is already added {}, so it is not added"
@@ -274,7 +275,7 @@ public class Page implements Serializable {
     }
 
     private static String describeLayer(String layer) {
-        return layer == null ? "without a layer" : "to layer '" + layer + "'";
+        return layer == null ? "without a layer" : ("to layer '" + layer + "'");
     }
 
     /**
