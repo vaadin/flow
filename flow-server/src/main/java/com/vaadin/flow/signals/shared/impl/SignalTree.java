@@ -324,7 +324,14 @@ public abstract class SignalTree implements Serializable {
         getLock().unlock();
         DeliveryState state = deliveryState.get();
         if (--state.heldLocks == 0) {
-            deliverDeferredNotifications(state);
+            try {
+                deliverDeferredNotifications(state);
+            } finally {
+                if (state.deliveryDepth == 0) {
+                    // Don't retain the state on pooled threads while idle
+                    deliveryState.remove();
+                }
+            }
         }
     }
 

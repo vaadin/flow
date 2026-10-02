@@ -487,9 +487,9 @@ class SynchronousSignalTreeTest {
             return true;
         });
 
+        SignalCommand command = TestUtil.writeRootValueCommand();
         IllegalStateException thrown = assertThrows(IllegalStateException.class,
-                () -> tree
-                        .commitSingleCommand(TestUtil.writeRootValueCommand()));
+                () -> tree.commitSingleCommand(command));
         assertSame(first, thrown);
         assertEquals(List.of(second), List.of(thrown.getSuppressed()));
         assertEquals(3, count.get());
@@ -517,8 +517,9 @@ class SynchronousSignalTreeTest {
             throw failure;
         });
 
-        assertSame(failure, assertThrows(IllegalStateException.class, () -> tree
-                .commitSingleCommand(TestUtil.writeRootValueCommand())));
+        SignalCommand command = TestUtil.writeRootValueCommand();
+        assertSame(failure, assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(command)));
         assertEquals(1, count.get());
 
         tree.commitSingleCommand(TestUtil.writeRootValueCommand());
