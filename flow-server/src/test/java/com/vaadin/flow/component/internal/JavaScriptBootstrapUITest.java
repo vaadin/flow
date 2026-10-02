@@ -30,6 +30,7 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
@@ -78,6 +79,7 @@ import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -487,6 +489,31 @@ class JavaScriptBootstrapUITest {
                         && "serverConnected"
                                 .equals(call.flattenArguments().get(0)))
                 .map(call -> call.flattenArguments().get(1)).toList();
+    }
+
+    @Test
+    void navigationEvents_rejectMissingRouteQueryOrTrigger() {
+        // The client always sends these, so a missing one is a broken event
+        assertNullRejected("Route cannot be null",
+                () -> new BrowserNavigateEvent(ui, true, null, "", "", null,
+                        ""));
+        assertNullRejected("Query cannot be null",
+                () -> new BrowserNavigateEvent(ui, true, "", null, "", null,
+                        ""));
+        assertNullRejected("Trigger cannot be null",
+                () -> new BrowserNavigateEvent(ui, true, "", "", "", null,
+                        null));
+        assertNullRejected("Route cannot be null",
+                () -> new BrowserLeaveNavigationEvent(ui, true, null, ""));
+        assertNullRejected("Query cannot be null",
+                () -> new BrowserLeaveNavigationEvent(ui, true, "", null));
+    }
+
+    private static void assertNullRejected(String message,
+            Executable constructor) {
+        assertEquals(message,
+                assertThrows(NullPointerException.class, constructor)
+                        .getMessage());
     }
 
     @Test
