@@ -449,12 +449,14 @@ class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
         AtomicInteger maxDepth = new AtomicInteger();
+        int baseDepth = Thread.currentThread().getStackTrace().length;
 
         for (int i = 0; i < 20_000; i++) {
             tree.observeNextChange(Id.ZERO, immediate -> {
                 count.incrementAndGet();
                 maxDepth.accumulateAndGet(
-                        Thread.currentThread().getStackTrace().length,
+                        Thread.currentThread().getStackTrace().length
+                                - baseDepth,
                         Math::max);
                 return false;
             });
@@ -464,7 +466,7 @@ class SynchronousSignalTreeTest {
 
         assertEquals(20_000, count.get());
         // Removing one observer must not deliver the others recursively
-        assertTrue(maxDepth.get() < 200, "Stack depth " + maxDepth.get());
+        assertTrue(maxDepth.get() < 100, "Stack depth " + maxDepth.get());
     }
 
     @Test

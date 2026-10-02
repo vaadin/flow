@@ -175,7 +175,18 @@ public abstract class SignalTree implements Serializable {
                 try {
                     listenToNext = listener.invoke(invokeImmediate);
                 } catch (RuntimeException | Error e) {
-                    remove();
+                    /*
+                     * This also covers a failure of another observer that
+                     * propagates from a nested delivery of a change made by
+                     * this listener, which is then removed as well. That is the
+                     * same as when observers ran under the tree lock.
+                     */
+                    try {
+                        remove();
+                    } catch (RuntimeException | Error removeFailure) {
+                        // Keep the observer's own failure as the primary one
+                        e.addSuppressed(removeFailure);
+                    }
                     throw e;
                 }
                 if (!listenToNext) {
