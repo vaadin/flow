@@ -40,7 +40,7 @@ const SUGGESTION_PREFIX = 'Formatting suggestion:';
 // Caps the suggestions in one review. A pull request that is not formatted at
 // all is better served by running the formatter than by accepting hundreds of
 // suggestions one by one.
-const MAX_SUGGESTIONS = 50;
+const MAX_SUGGESTIONS = 12;
 
 // The diff is uploaded by a run of code from the pull request, so its size is
 // not to be trusted either

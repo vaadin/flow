@@ -253,7 +253,7 @@ the pull request changes.
 
 A suggestion can only be placed on lines that are part of the pull request
 diff, and can't add a missing newline at the end of a file. Such changes,
-and those beyond the first 50, are counted in the comment, which still
+and those beyond the first 12, are counted in the comment, which still
 points at `mvn spotless:apply`. Being a `workflow_run` workflow, a change to
 `formatter-suggestions.yml` takes effect only once it is on the default
 branch.
