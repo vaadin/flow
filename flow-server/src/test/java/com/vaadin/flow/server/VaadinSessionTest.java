@@ -587,6 +587,17 @@ class VaadinSessionTest {
     }
 
     @Test
+    void lock_sessionIsNotInitialized_throwsIllegalStateException() {
+        VaadinSession vaadinSession = new VaadinSession(mockService);
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, vaadinSession::lock);
+        assertEquals(
+                "VaadinSession has no lock before refreshTransients() has been called for it",
+                exception.getMessage());
+    }
+
+    @Test
     void valueUnbound_sessionIsNotInitialized_noAnyInteractions() {
         VaadinSession session = Mockito.spy(TestVaadinSession.class);
 
