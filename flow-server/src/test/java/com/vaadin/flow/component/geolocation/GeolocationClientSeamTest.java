@@ -64,7 +64,7 @@ class GeolocationClientSeamTest {
     @Test
     void lookupFactory_resolvedOnFirstUse_clientReceivesGetCalls() {
         FakeClient fake = new FakeClient();
-        VaadinService service = VaadinService.getCurrent();
+        VaadinService service = VaadinService.getCurrentOrThrow();
         Lookup lookup = service.getContext().getAttribute(Lookup.class);
         Mockito.when(lookup.lookup(GeolocationClientFactory.class))
                 .thenReturn(unused -> fake);
