@@ -930,9 +930,10 @@ class VaadinServiceTest {
         service.destroy();
         assertTrue(((ExecutorService) executor).isShutdown(),
                 "Expected executor service to be stopped");
-        assertSame(executor, service.getExecutor());
+        Executor executorAfterDestroy = service.getExecutor();
+        assertSame(executor, executorAfterDestroy);
         assertThrows(RejectedExecutionException.class,
-                () -> service.getExecutor().execute(() -> {
+                () -> executorAfterDestroy.execute(() -> {
                 }));
     }
 

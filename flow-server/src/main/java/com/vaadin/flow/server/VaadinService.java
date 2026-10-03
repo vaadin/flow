@@ -1207,10 +1207,6 @@ public abstract class VaadinService implements Serializable {
      */
     private void setSessionLock(WrappedSession wrappedSession,
             @Nullable Lock lock) {
-        if (wrappedSession == null) {
-            throw new IllegalArgumentException(
-                    "Can't set a lock for a null session");
-        }
         Object currentSessionLock = wrappedSession
                 .getAttribute(getLockAttributeName());
         assert (currentSessionLock == null || currentSessionLock == lock)
