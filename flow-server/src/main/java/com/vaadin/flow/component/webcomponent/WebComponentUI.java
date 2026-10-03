@@ -269,7 +269,7 @@ public class WebComponentUI extends UI {
 
     private SessionEmbeddedComponentRegistry getRegistry() {
         return SessionEmbeddedComponentRegistry
-                .getSessionRegistry(VaadinSession.getCurrent());
+                .getSessionRegistry(VaadinSession.getCurrentOrThrow());
     }
 
     @Override
@@ -327,7 +327,7 @@ public class WebComponentUI extends UI {
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
         return WebComponentConfigurationRegistry
-                .getInstance(getSession().getService().getContext());
+                .getInstance(getSessionOrThrow().getService().getContext());
     }
 
     private static class SessionEmbeddedComponentRegistry

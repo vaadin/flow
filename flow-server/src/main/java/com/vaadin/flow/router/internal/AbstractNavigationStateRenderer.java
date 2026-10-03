@@ -148,7 +148,8 @@ public abstract class AbstractNavigationStateRenderer
 
         if (forceInstantiation
                 && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE
-                && !ui.getSession().getConfiguration().isProductionMode()) {
+                && !ui.getSessionOrThrow().getConfiguration()
+                        .isProductionMode()) {
             findActiveRouteTarget(event, isRouteTargetType)
                     .ifPresent(oldInstance -> SignalFieldTransfer
                             .transferLocalSignalValues(oldInstance,
@@ -307,7 +308,7 @@ public abstract class AbstractNavigationStateRenderer
                 ExtendedClientDetails details = ui.getInternals()
                         .getExtendedClientDetails();
                 if (details.getWindowName() == null) {
-                    PreservedComponentCache cache = ui.getSession()
+                    PreservedComponentCache cache = ui.getSessionOrThrow()
                             .getAttribute(PreservedComponentCache.class);
                     if (cache != null && !cache.isEmpty()) {
                         // As there is a cached chain we get the client details
@@ -319,7 +320,7 @@ public abstract class AbstractNavigationStateRenderer
                     }
                 } else {
                     Optional<List<HasElement>> partialChain = getWindowPreservedChain(
-                            ui.getSession(), details.getWindowName());
+                            ui.getSessionOrThrow(), details.getWindowName());
                     if (partialChain.isPresent()) {
                         List<HasElement> oldChain = partialChain.get();
                         disconnectElements(oldChain, ui);
@@ -1037,7 +1038,7 @@ public abstract class AbstractNavigationStateRenderer
             NavigationEvent event) {
         final Location location = event.getLocation();
         final UI ui = event.getUI();
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
 
         final ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
@@ -1098,7 +1099,7 @@ public abstract class AbstractNavigationStateRenderer
 
         final Location location = event.getLocation();
         final UI ui = event.getUI();
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
 
         final ExtendedClientDetails extendedClientDetails = ui.getInternals()
                 .getExtendedClientDetails();
@@ -1148,7 +1149,7 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget, String route, RouteParameters parameters) {
-        Instantiator instantiator = navigationEvent.getUI().getSession()
+        Instantiator instantiator = navigationEvent.getUI().getSessionOrThrow()
                 .getService().getInstantiator();
         QueryParameters queryParameters = navigationEvent.getLocation()
                 .getQueryParameters();
@@ -1252,7 +1253,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static void clearAllPreservedChains(UI ui) {
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
         // Note that this check is always false if @PreserveOnRefresh has not
         // been used at all, avoiding the round-trip overhead.
         if (hasPreservedChain(session)) {
@@ -1282,7 +1283,7 @@ public abstract class AbstractNavigationStateRenderer
             throw new IllegalStateException(
                     "Cannot purge preserved chain cache for an active UI");
         }
-        final VaadinSession session = inactiveUI.getSession();
+        final VaadinSession session = inactiveUI.getSessionOrThrow();
         final PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
         if (cache != null && !cache.isEmpty()) {
