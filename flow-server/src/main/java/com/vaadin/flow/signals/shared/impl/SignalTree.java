@@ -17,13 +17,17 @@ package com.vaadin.flow.signals.shared.impl;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.jspecify.annotations.Nullable;
@@ -126,11 +130,232 @@ public abstract class SignalTree implements Serializable {
         SYNCHRONOUS;
     }
 
-    private final Map<Id, List<TransientListener>> observers = new HashMap<>();
+    /**
+     * A registered node observer. Observers are notified only once the
+     * notifying thread no longer holds any tree lock, so that an observer that
+     * reads or writes another tree cannot form a lock-order inversion with a
+     * thread doing the same in the opposite direction (see #26130).
+     * <p>
+     * Since notifications are delivered outside the lock, the same observer
+     * could otherwise be invoked concurrently from two committing threads. The
+     * pending counter serializes delivery: only the thread that bumps it from
+     * zero delivers, and it keeps invoking the observer until no further
+     * notification has arrived in the meantime. Observers do not receive any
+     * event payload but re-read the current state when invoked, so coalescing
+     * several notifications into one invocation does not lose any change.
+     */
+    private final class Observer implements Serializable {
+        private final List<Observer> list;
+        private final TransientListener listener;
+        private final AtomicInteger pendingNotifications = new AtomicInteger();
+        private volatile boolean removed;
+
+        private Observer(List<Observer> list, TransientListener listener) {
+            this.list = list;
+            this.listener = listener;
+        }
+
+        private void scheduleNotification(boolean immediate) {
+            assert hasLock();
+            if (pendingNotifications.getAndIncrement() == 0) {
+                requireDeliveryState().queue.add(() -> deliver(immediate));
+            }
+        }
+
+        private void deliver(boolean immediate) {
+            boolean invokeImmediate = immediate;
+            int handled;
+            do {
+                handled = pendingNotifications.get();
+                if (removed) {
+                    return;
+                }
+
+                boolean listenToNext;
+                try {
+                    listenToNext = listener.invoke(invokeImmediate);
+                } catch (RuntimeException | Error e) {
+                    /*
+                     * This also covers a failure of another observer that
+                     * propagates from a nested delivery of a change made by
+                     * this listener, which is then removed as well. That is the
+                     * same as when observers ran under the tree lock.
+                     */
+                    try {
+                        remove();
+                    } catch (RuntimeException | Error removeFailure) {
+                        // Keep the observer's own failure as the primary one
+                        e.addSuppressed(removeFailure);
+                    }
+                    throw e;
+                }
+                if (!listenToNext) {
+                    remove();
+                    return;
+                }
+                invokeImmediate = false;
+            } while (!pendingNotifications.compareAndSet(handled, 0));
+        }
+
+        private void remove() {
+            removed = true;
+            runWithLock(() -> list.remove(this));
+        }
+
+        @Serial
+        private void readObject(ObjectInputStream in)
+                throws IOException, ClassNotFoundException {
+            in.defaultReadObject();
+            // A delivery queued on some thread is not part of the state
+            pendingNotifications.set(0);
+        }
+    }
+
+    /**
+     * Per-thread bookkeeping for deferring observer notifications until the
+     * thread no longer holds any tree lock. Created when the thread acquires
+     * its first tree lock and removed again once it has released the last one
+     * and delivered all deferred notifications.
+     */
+    private static final class DeliveryState {
+        /*
+         * The number of distinct trees that the thread has locked. Reentrant
+         * locking of the same tree is covered by the lock's own hold count.
+         */
+        private int lockedTrees;
+
+        /*
+         * The nesting depth of deliverDeferredNotifications, which is
+         * re-entered when an observer releases a tree lock.
+         */
+        private int deliveryDepth;
+
+        /*
+         * Notifications scheduled while holding a tree lock, delivered once the
+         * last one has been released. Each delivery level takes over the queue
+         * as its own batch, so that a nested delivery (an observer releasing a
+         * tree lock) only delivers notifications for changes made by that
+         * observer. Those are delivered before the change returns, as required
+         * for detecting loops between effects, while observers that only
+         * re-register or remove themselves do not deliver the rest of the outer
+         * batch recursively.
+         */
+        private ArrayDeque<Runnable> queue = new ArrayDeque<>();
+    }
+
+    private static final ThreadLocal<DeliveryState> deliveryState = new ThreadLocal<>();
+
+    private static DeliveryState requireDeliveryState() {
+        DeliveryState state = deliveryState.get();
+        if (state == null) {
+            throw new IllegalStateException(
+                    "No signal tree lock is held by the current thread");
+        }
+        return state;
+    }
+
+    /**
+     * The tree lock. Keeps track of how many trees the current thread has
+     * locked and delivers deferred observer notifications when the thread
+     * releases its last tree lock, so that observers never run while any tree
+     * lock is held.
+     */
+    private static final class TreeLock extends ReentrantLock {
+        @Override
+        public void lock() {
+            assertNoLeafLockHeld();
+            super.lock();
+            onAcquired();
+        }
+
+        @Override
+        public void lockInterruptibly() throws InterruptedException {
+            assertNoLeafLockHeld();
+            super.lockInterruptibly();
+            onAcquired();
+        }
+
+        @Override
+        public boolean tryLock() {
+            assertNoLeafLockHeld();
+            boolean acquired = super.tryLock();
+            if (acquired) {
+                onAcquired();
+            }
+            return acquired;
+        }
+
+        @Override
+        public boolean tryLock(long timeout, TimeUnit unit)
+                throws InterruptedException {
+            assertNoLeafLockHeld();
+            boolean acquired = super.tryLock(timeout, unit);
+            if (acquired) {
+                onAcquired();
+            }
+            return acquired;
+        }
+
+        @Override
+        public void unlock() {
+            super.unlock();
+            if (getHoldCount() == 0) {
+                onReleased();
+            }
+        }
+
+        /**
+         * Asserts that the current thread is not holding any component
+         * {@link LeafLock} while it is about to acquire this tree lock.
+         * Acquiring a tree lock while holding a leaf lock is the ordering that
+         * causes ABBA deadlocks (see #25166); the reverse (tree lock held while
+         * a listener takes a leaf lock) is the reference direction and stays
+         * allowed. Reentrant re-locks of this same tree are permitted.
+         * <p>
+         * Only active under {@code -ea}. This is the enforcement side of the
+         * {@link LeafLock} invariant.
+         */
+        private void assertNoLeafLockHeld() {
+            assert isHeldByCurrentThread()
+                    || !LeafLock.isAnyHeldByCurrentThread()
+                    : "Acquiring a SignalTree lock while holding a component leaf lock ("
+                            + LeafLock.describeHeld()
+                            + "). This leaf-lock -> tree-lock ordering causes ABBA "
+                            + "deadlocks; do the tree call outside the leaf lock. See #25166.";
+        }
+
+        private void onAcquired() {
+            if (getHoldCount() > 1) {
+                return;
+            }
+            DeliveryState state = deliveryState.get();
+            if (state == null) {
+                state = new DeliveryState();
+                deliveryState.set(state);
+            }
+            state.lockedTrees++;
+        }
+
+        private static void onReleased() {
+            DeliveryState state = requireDeliveryState();
+            if (--state.lockedTrees > 0) {
+                return;
+            }
+            try {
+                deliverDeferredNotifications(state);
+            } finally {
+                if (state.deliveryDepth == 0) {
+                    deliveryState.remove();
+                }
+            }
+        }
+    }
+
+    private final Map<Id, List<Observer>> observers = new HashMap<>();
 
     private final Id id = Id.random();
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantLock lock = new TreeLock();
 
     private final Type type;
 
@@ -167,11 +392,53 @@ public abstract class SignalTree implements Serializable {
      * to be handled externally when applying transactions so that all trees
      * participating in a transaction are locked before starting to evaluate the
      * transaction.
+     * <p>
+     * Observer notifications for changes applied while the lock is held are
+     * delivered only after the current thread has released all tree locks. This
+     * means that an exception thrown by an observer propagates from the
+     * {@link ReentrantLock#unlock()} call that releases the last tree lock.
      *
      * @return the tree lock instance, not <code>null</code>
      */
     public ReentrantLock getLock() {
         return lock;
+    }
+
+    /*
+     * Runs all queued notifications even if some of them fail, so that no
+     * observer is left with a notification that is never delivered. The first
+     * failure is rethrown with any further failures as suppressed exceptions.
+     */
+    private static void deliverDeferredNotifications(DeliveryState state) {
+        if (state.queue.isEmpty()) {
+            return;
+        }
+        ArrayDeque<Runnable> batch = state.queue;
+        state.queue = new ArrayDeque<>();
+
+        state.deliveryDepth++;
+        try {
+            Throwable failure = null;
+            Runnable notification;
+            while ((notification = batch.poll()) != null) {
+                try {
+                    notification.run();
+                } catch (RuntimeException | Error e) {
+                    if (failure == null) {
+                        failure = e;
+                    } else if (failure != e) {
+                        failure.addSuppressed(e);
+                    }
+                }
+            }
+            if (failure instanceof RuntimeException e) {
+                throw e;
+            } else if (failure instanceof Error e) {
+                throw e;
+            }
+        } finally {
+            state.deliveryDepth--;
+        }
     }
 
     /**
@@ -184,26 +451,6 @@ public abstract class SignalTree implements Serializable {
     }
 
     /**
-     * Asserts that the current thread is not holding any component
-     * {@link LeafLock} while it is about to acquire this tree lock. Acquiring a
-     * tree lock while holding a leaf lock is the ordering that causes ABBA
-     * deadlocks (see #25166); the reverse (tree lock held while a listener
-     * takes a leaf lock) is the reference direction and stays allowed.
-     * Reentrant re-locks of this same tree are permitted.
-     * <p>
-     * Only active under {@code -ea}. This is the enforcement side of the
-     * {@link LeafLock} invariant.
-     */
-    private void assertNoLeafLockHeld() {
-        assert lock.isHeldByCurrentThread()
-                || !LeafLock.isAnyHeldByCurrentThread()
-                : "Acquiring a SignalTree lock while holding a component leaf lock ("
-                        + LeafLock.describeHeld()
-                        + "). This leaf-lock -> tree-lock ordering causes ABBA "
-                        + "deadlocks; do the tree call outside the leaf lock. See #25166.";
-    }
-
-    /**
      * Runs a supplier while holding the lock and returns the provided value.
      *
      * @param <T>
@@ -213,13 +460,16 @@ public abstract class SignalTree implements Serializable {
      * @return the value returned by the supplier
      */
     protected <T> @Nullable T getWithLock(ValueSupplier<T> action) {
-        assertNoLeafLockHeld();
         lock.lock();
+        T value;
         try {
-            return action.supply();
-        } finally {
-            lock.unlock();
+            value = action.supply();
+        } catch (RuntimeException | Error e) {
+            unlockAfterFailure(lock, e);
+            throw e;
         }
+        lock.unlock();
+        return value;
     }
 
     /**
@@ -229,12 +479,33 @@ public abstract class SignalTree implements Serializable {
      *            the action to run, not <code>null</code>
      */
     protected void runWithLock(SerializableRunnable action) {
-        assertNoLeafLockHeld();
         lock.lock();
         try {
             action.run();
-        } finally {
+        } catch (RuntimeException | Error e) {
+            unlockAfterFailure(lock, e);
+            throw e;
+        }
+        lock.unlock();
+    }
+
+    /**
+     * Releases a tree lock after the action run while holding it has failed.
+     * Releasing the last tree lock delivers deferred observer notifications,
+     * and a failure from an observer is then added as a suppressed exception to
+     * the original failure rather than replacing it.
+     *
+     * @param lock
+     *            the lock to release, not <code>null</code>
+     * @param failure
+     *            the failure of the action that ran while holding the lock, not
+     *            <code>null</code>
+     */
+    static void unlockAfterFailure(ReentrantLock lock, Throwable failure) {
+        try {
             lock.unlock();
+        } catch (RuntimeException | Error e) {
+            failure.addSuppressed(e);
         }
     }
 
@@ -256,6 +527,9 @@ public abstract class SignalTree implements Serializable {
      * snapshot. The observer is removed when invoked and needs to be registered
      * again if it's still relevant unless it returns <code>true</code>. It is
      * safe to register the observer again from within the callback.
+     * <p>
+     * The observer is invoked only after the thread that applied the change has
+     * released all tree locks.
      *
      * @param nodeId
      *            the id of the node to observe, not <code>null</code>
@@ -267,25 +541,58 @@ public abstract class SignalTree implements Serializable {
      */
     public Registration observeNextChange(Id nodeId,
             TransientListener observer) {
+        return observeNextChange(nodeId, observer, false);
+    }
+
+    /**
+     * Registers an observer for a node in this tree and optionally also invokes
+     * it right away. Works like
+     * {@link #observeNextChange(Id, TransientListener)}, but when
+     * <code>notifyImmediately</code> is <code>true</code>, the observer is also
+     * invoked with <code>immediate</code> set to <code>true</code> as soon as
+     * the current thread has released all tree locks. Registering and
+     * scheduling the immediate invocation happen atomically so that no change
+     * can be missed in between.
+     *
+     * @param nodeId
+     *            the id of the node to observe, not <code>null</code>
+     * @param observer
+     *            the callback to run when the node has changed, not
+     *            <code>null</code>
+     * @param notifyImmediately
+     *            <code>true</code> to also invoke the observer right away,
+     *            <code>false</code> to only invoke it on the next change
+     * @return a {@link Registration} that can be used to remove the observer
+     *         before it's triggered, not <code>null</code>
+     */
+    public Registration observeNextChange(Id nodeId, TransientListener observer,
+            boolean notifyImmediately) {
         assert nodeId != null;
         assert observer != null;
 
         return Objects.requireNonNull(getWithLock(() -> {
             assert submitted().nodes().containsKey(nodeId);
 
-            List<TransientListener> list = observers.computeIfAbsent(nodeId,
+            List<Observer> list = observers.computeIfAbsent(nodeId,
                     ignore -> new ArrayList<>());
 
-            list.add(observer);
+            Observer entry = new Observer(list, observer);
+            list.add(entry);
+            if (notifyImmediately) {
+                entry.scheduleNotification(true);
+            }
 
-            return wrapWithLock(() -> list.remove(observer))::run;
+            return entry::remove;
         }));
     }
 
     /**
      * Notify all observers that are affected by changes between two snapshots.
-     * All notified observers are removed. It is safe for an observer to
-     * register itself again when it is invoked.
+     * The observers are invoked only after the current thread has released all
+     * tree locks, so that an observer can't cause a lock-order inversion by
+     * acquiring the lock of another tree. An observer that returns
+     * <code>false</code> is removed. It is safe for an observer to register
+     * itself again when it is invoked.
      *
      * @see #observeNextChange(Id, TransientListener)
      *
@@ -299,29 +606,14 @@ public abstract class SignalTree implements Serializable {
             return;
         }
 
-        runWithLock(() -> {
-            Map.copyOf(observers).forEach((nodeId, list) -> {
-                Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
-                Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
+        runWithLock(() -> observers.forEach((nodeId, list) -> {
+            Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
+            Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
 
-                if (oldNode != newNode) {
-                    List<TransientListener> copy = List.copyOf(list);
-
-                    /*
-                     * Assuming there will immediately be a new observer for the
-                     * same node so not clearing the map entry.
-                     */
-                    list.clear();
-
-                    for (TransientListener observer : copy) {
-                        boolean listenToNext = observer.invoke(false);
-                        if (listenToNext) {
-                            list.add(observer);
-                        }
-                    }
-                }
-            });
-        });
+            if (oldNode != newNode) {
+                list.forEach(observer -> observer.scheduleNotification(false));
+            }
+        }));
     }
 
     /**

@@ -77,6 +77,27 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void manyEffectsOnSharedSignal_signalChanged_allEffectsRerun() {
+        SharedValueSignal<Integer> shared = new SharedValueSignal<>(0);
+        AtomicInteger count = new AtomicInteger();
+        List<Registration> effects = new ArrayList<>();
+        for (int i = 0; i < 5_000; i++) {
+            effects.add(Signal.unboundEffect(() -> {
+                shared.get();
+                count.incrementAndGet();
+            }));
+        }
+        count.set(0);
+
+        // Effects re-registering on the signal must not deliver the remaining
+        // notifications recursively and overflow the stack
+        shared.set(1);
+
+        assertEquals(5_000, count.get());
+        effects.forEach(Registration::remove);
+    }
+
+    @Test
     void newEffect_closeImmediately_actionIsRunOnce() {
         var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
