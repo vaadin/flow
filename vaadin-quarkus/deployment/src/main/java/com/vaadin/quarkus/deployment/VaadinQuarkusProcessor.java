@@ -54,6 +54,7 @@ import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.QuarkusBuildCloseablesBuildItem;
 import io.quarkus.deployment.builditem.RemovedResourceBuildItem;
+import io.quarkus.deployment.pkg.NativeConfig;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.maven.dependency.ArtifactKey;
@@ -242,7 +243,18 @@ class VaadinQuarkusProcessor {
 
     @BuildStep
     void mapVaadinServletPaths(final BeanArchiveIndexBuildItem beanArchiveIndex,
-            final BuildProducer<ServletBuildItem> servletProducer) {
+            final NativeConfig nativeConfig,
+            final BuildProducer<ServletBuildItem> servletProducer,
+            final BuildProducer<VaadinServletBuildItem> vaadinServletProducer) {
+        // In a native image, STATIC_INIT runs while the image is built, so the
+        // Vaadin servlets are not loaded on startup by the servlet container
+        // but initialized at RUNTIME_INIT, see VaadinQuarkusNativeProcessor
+        final BiConsumer<ServletBuildItem.Builder, Integer> loadOnStartupSetter = nativeConfig
+                .enabled()
+                        ? (builder, order) -> vaadinServletProducer.produce(
+                                new VaadinServletBuildItem(builder.getName(),
+                                        order))
+                        : ServletBuildItem.Builder::setLoadOnStartup;
         final IndexView indexView = beanArchiveIndex.getIndex();
 
         // Collect all VaadinServlet instances and remove QuarkusVaadinServlet
@@ -258,15 +270,17 @@ class VaadinQuarkusProcessor {
                 .collect(Collectors.toList());
 
         // Register VaadinServlet instances annotated with @WebServlet
-        vaadinServlets = registerUserServlets(servletProducer, vaadinServlets);
+        vaadinServlets = registerUserServlets(servletProducer,
+                loadOnStartupSetter, !nativeConfig.enabled(), vaadinServlets);
         // If no annotated VaadinServlet instances is registered, register
         // QuarkusVaadinServlet
         if (vaadinServlets.isEmpty()) {
-            servletProducer.produce(ServletBuildItem
+            ServletBuildItem.Builder servletBuildItem = ServletBuildItem
                     .builder(QuarkusVaadinServlet.class.getName(),
                             QuarkusVaadinServlet.class.getName())
-                    .addMapping("/*").setAsyncSupported(true)
-                    .setLoadOnStartup(1).build());
+                    .addMapping("/*").setAsyncSupported(true);
+            loadOnStartupSetter.accept(servletBuildItem, 1);
+            servletProducer.produce(servletBuildItem.build());
         }
     }
 
@@ -406,7 +420,8 @@ class VaadinQuarkusProcessor {
 
     private Collection<ClassInfo> registerUserServlets(
             BuildProducer<ServletBuildItem> servletProducer,
-            Collection<ClassInfo> vaadinServlets) {
+            BiConsumer<ServletBuildItem.Builder, Integer> loadOnStartupSetter,
+            boolean warnOnLazyLoad, Collection<ClassInfo> vaadinServlets) {
         Collection<ClassInfo> registeredServlets = new ArrayList<>(
                 vaadinServlets);
         // TODO: check that we don't register 2 of the same mapping
@@ -440,9 +455,11 @@ class VaadinQuarkusProcessor {
 
             addWebInitParameters(webServletInstance, servletBuildItem);
             setAsyncSupportedIfDefined(webServletInstance, servletBuildItem);
-            servletBuildItem
-                    .setLoadOnStartup(loadOnStartup > 0 ? loadOnStartup : 1);
-            if (loadOnStartup < 1) {
+            loadOnStartupSetter.accept(servletBuildItem,
+                    loadOnStartup > 0 ? loadOnStartup : 1);
+            // In a native image the Vaadin servlets are always initialized at
+            // RUNTIME_INIT, so load-on-startup only decides the order
+            if (warnOnLazyLoad && loadOnStartup < 1) {
                 LOG.warn(
                         "Vaadin Servlet needs to be eagerly loaded by setting load-on-startup to be greater than 0. "
                                 + "Current value for '{}' is '{}', so it will be forced to '1'. "
