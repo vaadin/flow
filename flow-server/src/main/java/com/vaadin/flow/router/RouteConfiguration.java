@@ -605,12 +605,12 @@ public class RouteConfiguration implements Serializable {
 
     private static RouteRegistry getApplicationRegistry() {
         return ApplicationRouteRegistry
-                .getInstance(VaadinService.getCurrent().getContext());
+                .getInstance(VaadinService.getCurrentOrThrow().getContext());
     }
 
     private static RouteRegistry getSessionRegistry() {
         return SessionRouteRegistry
-                .getSessionRegistry(VaadinSession.getCurrent());
+                .getSessionRegistry(VaadinSession.getCurrentOrThrow());
     }
 
     @SafeVarargs

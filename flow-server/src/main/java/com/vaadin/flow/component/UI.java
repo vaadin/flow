@@ -41,6 +41,7 @@ import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.trigger.internal.CallbackAction;
@@ -226,6 +227,30 @@ public class UI extends Component
      */
     public @Nullable VaadinSession getSession() {
         return internals.getSession();
+    }
+
+    /**
+     * Gets the VaadinSession to which this UI is attached, throwing an
+     * exception if the UI is not attached to a session.
+     * <p>
+     * Use this method when the code can only run while the UI is attached to a
+     * session, e.g. in an event listener. If the code has to work also before
+     * the UI is initialized or after it has been removed from its session, use
+     * {@link #getSession()} instead and check for null.
+     *
+     * @return the session this UI is attached to, never <code>null</code>
+     * @throws IllegalStateException
+     *             if this UI is not attached to a session
+     * @see #getSession()
+     */
+    public VaadinSession getSessionOrThrow() {
+        VaadinSession session = getSession();
+        if (session == null) {
+            throw new IllegalStateException(
+                    "UI is not attached to a VaadinSession. The UI has either not been initialized yet "
+                            + "or it has already been removed from its session.");
+        }
+        return session;
     }
 
     /**
@@ -2254,10 +2279,8 @@ public class UI extends Component
             serverPaused();
         } else {
             // acknowledge client, but cancel if session not open
-            // Routing above already needs the session, so it is present here
-            VaadinSession session = Objects.requireNonNull(getSession(),
-                    "Navigation is not supported by a detached UI");
-            serverConnected(session.getState() != VaadinSessionState.OPEN);
+            serverConnected(
+                    getSessionOrThrow().getState() != VaadinSessionState.OPEN);
             replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
     }
@@ -2276,11 +2299,13 @@ public class UI extends Component
         boolean locationChanged = !location.getPath().equals(route)
                 && route.startsWith("/")
                 && !location.getPath().equals(route.substring(1));
-        boolean containsPendingReplace = !getInternals()
-                .containsPendingJavascript("window.history.replaceState")
-                && !getInternals().containsPendingJavascript(
-                        "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
-        if (locationChanged && containsPendingReplace) {
+        // Recognized by the call rather than by the text of a script, which
+        // works the same for both routers
+        boolean replacePending = getInternals()
+                .containsPendingJsCall(HistoryJs.class, "replaceState")
+                || getInternals().containsPendingJsCall(HistoryJs.class,
+                        "navigateReplacing");
+        if (locationChanged && !replacePending) {
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }

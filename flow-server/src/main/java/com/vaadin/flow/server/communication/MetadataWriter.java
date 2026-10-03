@@ -65,7 +65,7 @@ public class MetadataWriter implements Serializable {
             meta.put(JsonConstants.META_ASYNC, true);
         }
 
-        VaadinSessionState state = ui.getSession().getState();
+        VaadinSessionState state = ui.getSessionOrThrow().getState();
         if (state != null && state.compareTo(VaadinSessionState.CLOSING) >= 0) {
             meta.put(JsonConstants.META_SESSION_EXPIRED, true);
         }
@@ -75,8 +75,8 @@ public class MetadataWriter implements Serializable {
         if (messages != null && messages.getSessionExpiredMessage() == null
                 && messages.getSessionExpiredCaption() == null
                 && messages.isSessionExpiredNotificationEnabled()
-                && ui.getSession().getSession() != null) {
-            int newTimeoutInterval = ui.getSession().getSession()
+                && ui.getSessionOrThrow().getSession() != null) {
+            int newTimeoutInterval = ui.getSessionOrThrow().getSession()
                     .getMaxInactiveInterval();
             if (repaintAll || (timeoutInterval != newTimeoutInterval)) {
                 String url = messages.getSessionExpiredURL();
