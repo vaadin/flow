@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -118,11 +120,18 @@ import com.vaadin.flow.signals.local.ValueSignal;
  *
  * @since 1.0
  */
+@NullMarked
 @JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
 
     private static final String NULL_LISTENER = "Listener can not be 'null'";
+
+    public static final String CLIENT_NAVIGATE_TO = """
+            const url = new URL($0, document.baseURI);
+            url["clientNavigation"] = true;
+            window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
+            """;
 
     /**
      * The id of this UI, used to find the server side instance of the UI form
@@ -151,6 +160,26 @@ public class UI extends Component
      * generator.
      */
     private final String csrfToken = UUID.randomUUID().toString();
+
+    /**
+     * Reference to the client outlet element wrapper.
+     * <p>
+     * This field should not be set directly for any reason; assigning a new
+     * value has no effect on the application. It is maintained internally and
+     * will be removed in a future version.
+     *
+     * @deprecated Use {@link UIInternals#getWrapperElement()} through
+     *             {@code getInternals().getWrapperElement()} instead.
+     * @since 24.0
+     */
+    @Deprecated(forRemoval = true)
+    public @Nullable Element wrapperElement;
+    private @Nullable NavigationState clientViewNavigationState;
+    private boolean navigationInProgress = false;
+
+    private @Nullable String forwardToClientUrl = null;
+
+    private boolean firstNavigation = true;
 
     /**
      * Creates a new empty UI.
@@ -196,7 +225,7 @@ public class UI extends Component
      * @return the parent application of the component or <code>null</code>.
      * @see #onAttach(AttachEvent)
      */
-    public VaadinSession getSession() {
+    public @Nullable VaadinSession getSession() {
         return internals.getSession();
     }
 
@@ -332,12 +361,13 @@ public class UI extends Component
      * it is not explicitly cleared.
      *
      * @param ui
-     *            the UI to register as the current UI
+     *            the UI to register as the current UI, or {@code null} to clear
+     *            the current UI
      *
      * @see #getCurrent()
      * @see ThreadLocal
      */
-    public static void setCurrent(UI ui) {
+    public static void setCurrent(@Nullable UI ui) {
         CurrentInstance.set(UI.class, ui);
     }
 
@@ -353,7 +383,7 @@ public class UI extends Component
      *
      * @see #setCurrent(UI)
      */
-    public static UI getCurrent() {
+    public static @Nullable UI getCurrent() {
         return CurrentInstance.get(UI.class);
     }
 
@@ -540,7 +570,8 @@ public class UI extends Component
         accessSynchronously(command, null);
     }
 
-    private static void handleAccessDetach(SerializableRunnable detachHandler) {
+    private static void handleAccessDetach(
+            @Nullable SerializableRunnable detachHandler) {
         if (detachHandler != null) {
             detachHandler.run();
         } else {
@@ -554,7 +585,7 @@ public class UI extends Component
      * while allowing new APIs to use newer conventions.
      */
     private void accessSynchronously(Command command,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
 
         Map<Class<?>, CurrentInstance> old = null;
 
@@ -626,8 +657,26 @@ public class UI extends Component
      *         cancel the task
      */
     public Future<Void> access(final Command command) {
-        // null detach handler -> throw UIDetachEvent
-        return access(command, null);
+        VaadinSession session = getSession();
+
+        if (session == null) {
+            throw new UIDetachedException();
+        }
+
+        // null detach handler -> throw UIDetachedException if the UI is
+        // detached before the command runs
+        return access(session, command, null);
+    }
+
+    private void accessOrHandleDetach(Command command,
+            @Nullable SerializableRunnable detachHandler) {
+        VaadinSession session = getSession();
+
+        if (session == null) {
+            handleAccessDetach(detachHandler);
+        } else {
+            access(session, command, detachHandler);
+        }
     }
 
     /*
@@ -635,15 +684,8 @@ public class UI extends Component
      * is done for this internal method since it helps preserve old APIs as-is
      * while allowing new APIs to use newer conventions.
      */
-    private Future<Void> access(Command command,
-            SerializableRunnable detachHandler) {
-        VaadinSession session = getSession();
-
-        if (session == null) {
-            handleAccessDetach(detachHandler);
-            return null;
-        }
-
+    private Future<Void> access(VaadinSession session, Command command,
+            @Nullable SerializableRunnable detachHandler) {
         return session.access(new ErrorHandlingCommand() {
             @Override
             public void execute() {
@@ -709,10 +751,10 @@ public class UI extends Component
      * @since 1.3
      */
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
-        return () -> access(accessTask::run, detachHandler);
+        return () -> accessOrHandleDetach(accessTask::run, detachHandler);
     }
 
     /**
@@ -740,10 +782,11 @@ public class UI extends Component
      */
     public <T> SerializableConsumer<T> accessLater(
             SerializableConsumer<T> accessTask,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
-        return value -> access(() -> accessTask.accept(value), detachHandler);
+        return value -> accessOrHandleDetach(() -> accessTask.accept(value),
+                detachHandler);
     }
 
     /**
@@ -1173,7 +1216,7 @@ public class UI extends Component
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
-            Class<? extends C> navigationTarget, T parameter) {
+            Class<? extends C> navigationTarget, @Nullable T parameter) {
         navigate(navigationTarget,
                 HasUrlParameterFormat.getParameters(parameter));
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
@@ -1223,7 +1266,7 @@ public class UI extends Component
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getInternals().getRouter().getRegistry());
+                .forRegistry(getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
         return findCurrentNavigationTarget(navigationTarget);
     }
@@ -1322,16 +1365,15 @@ public class UI extends Component
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
-            Class<? extends C> navigationTarget, T parameter,
+            Class<? extends C> navigationTarget, @Nullable T parameter,
             QueryParameters queryParameters) {
 
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getInternals().getRouter().getRegistry());
+                .forRegistry(getRouter().getRegistry());
         RouteParameters parameters = HasUrlParameterFormat
                 .getParameters(parameter);
         String url = configuration.getUrl(navigationTarget, parameters);
-        getInternals().getRouter().navigate(this,
-                new Location(url, queryParameters),
+        getRouter().navigate(this, new Location(url, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
     }
@@ -1385,10 +1427,9 @@ public class UI extends Component
             Class<? extends C> navigationTarget, RouteParameters routeParameter,
             QueryParameters queryParameters) {
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getInternals().getRouter().getRegistry());
+                .forRegistry(getRouter().getRegistry());
         String url = configuration.getUrl(navigationTarget, routeParameter);
-        getInternals().getRouter().navigate(this,
-                new Location(url, queryParameters),
+        getRouter().navigate(this, new Location(url, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
     }
@@ -1432,11 +1473,10 @@ public class UI extends Component
             QueryParameters queryParameters) {
 
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getInternals().getRouter().getRegistry());
+                .forRegistry(getRouter().getRegistry());
         String url = configuration.getUrl(navigationTarget,
                 RouteParameters.empty());
-        getInternals().getRouter().navigate(this,
-                new Location(url, queryParameters),
+        getRouter().navigate(this, new Location(url, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
         return (Optional<T>) findCurrentNavigationTarget(navigationTarget);
     }
@@ -1542,18 +1582,18 @@ public class UI extends Component
         try {
             Optional<NavigationState> navigationState = fragmentOnly
                     ? Optional.empty()
-                    : getInternals().getRouter()
-                            .resolveNavigationTarget(location);
+                    : getRouter().resolveNavigationTarget(location);
 
             if (navigationState.isPresent()) {
                 // Navigation can be done in server side without extra
                 // round-trip
                 handleNavigation(location, navigationState.get(),
                         NavigationTrigger.UI_NAVIGATE);
-                if (getForwardToClientUrl() != null) {
+                String forwardUrl = getForwardToClientUrl();
+                if (forwardUrl != null) {
                     // Server is forwarding to a client route from a
                     // BeforeEnter.
-                    navigateToClient(getForwardToClientUrl());
+                    navigateToClient(forwardUrl);
                 }
             } else {
                 // Server cannot resolve navigation, let client-side to
@@ -1657,6 +1697,8 @@ public class UI extends Component
      * @throws IllegalArgumentException
      *             if the given component doesn't belong to this UI
      */
+    // Callers outside null-marked code can still pass null
+    @SuppressWarnings("java:S2583")
     public ExecutionRegistration beforeClientResponse(Component component,
             SerializableConsumer<ExecutionContext> execution)
             throws IllegalArgumentException {
@@ -1789,6 +1831,8 @@ public class UI extends Component
      * @see Shortcuts for a more generic way to add a shortcut
      * @since 1.3
      */
+    // Callers outside null-marked code can still pass null
+    @SuppressWarnings("java:S2583")
     public ShortcutRegistration addShortcutListener(Command command, Key key,
             KeyModifier... keyModifiers) {
         if (command == null) {
@@ -1824,6 +1868,8 @@ public class UI extends Component
      * @see Shortcuts for a more generic way to add a shortcut
      * @since 1.3
      */
+    // Callers outside null-marked code can still pass null
+    @SuppressWarnings("java:S2583")
     public ShortcutRegistration addShortcutListener(
             ShortcutEventListener listener, Key key,
             KeyModifier... keyModifiers) {
@@ -1870,7 +1916,7 @@ public class UI extends Component
      *         active and originated from this UI, {@literal null} otherwise.
      * @since 2.0
      */
-    public Component getActiveDragSourceComponent() {
+    public @Nullable Component getActiveDragSourceComponent() {
         return getInternals().getActiveDragSourceComponent();
     }
 
@@ -2045,39 +2091,14 @@ public class UI extends Component
         return getInternals().getActiveRouterTargetsChain();
     }
 
-    public static final String CLIENT_NAVIGATE_TO = """
-            const url = new URL($0, document.baseURI);
-            url["clientNavigation"] = true;
-            window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
-            """;
-
-    /**
-     * Reference to the client outlet element wrapper.
-     * <p>
-     * This field should not be set directly for any reason; assigning a new
-     * value has no effect on the application. It is maintained internally and
-     * will be removed in a future version.
-     *
-     * @deprecated Use {@link UIInternals#getWrapperElement()} through
-     *             {@code getInternals().getWrapperElement()} instead.
-     * @since 24.0
-     */
-    @Deprecated(forRemoval = true)
-    public Element wrapperElement;
-    private NavigationState clientViewNavigationState;
-    private boolean navigationInProgress = false;
-
-    private String forwardToClientUrl = null;
-
-    private boolean firstNavigation = true;
-
     /**
      * Gets the new forward url.
      *
-     * @return the new forward url
+     * @return the new forward url, or {@code null} if the last navigation did
+     *         not forward to a client route
      * @since 24.0
      */
-    public String getForwardToClientUrl() {
+    public @Nullable String getForwardToClientUrl() {
         return forwardToClientUrl;
     }
 
@@ -2099,9 +2120,10 @@ public class UI extends Component
          *            {@code true} if the event originated from the client side,
          *            {@code false} otherwise
          * @param route
-         *            the route the user is navigating to.
+         *            the route the user is navigating to, not {@code null}
          * @param query
-         *            the query string the user is navigating to.
+         *            the query string the user is navigating to, not
+         *            {@code null}
          */
         public BrowserLeaveNavigationEvent(UI source, boolean fromClient,
                 @EventData("route") String route,
@@ -2121,8 +2143,8 @@ public class UI extends Component
 
         private final String route;
         private final String query;
-        private final String appShellTitle;
-        private final JsonNode historyState;
+        private final @Nullable String appShellTitle;
+        private final @Nullable JsonNode historyState;
         private final String trigger;
 
         /**
@@ -2135,23 +2157,25 @@ public class UI extends Component
          *            {@code false} otherwise
          * @param route
          *            flow route path that should be attached to the client
-         *            element
+         *            element, not {@code null}
          * @param query
-         *            flow route query string
+         *            flow route query string, not {@code null}
          * @param appShellTitle
-         *            client side title of the application shell
+         *            client side title of the application shell, or
+         *            {@code null} if the client has none
          * @param historyState
-         *            client side history state value
+         *            client side history state value, or {@code null} if the
+         *            history entry has no state
          * @param trigger
-         *            navigation trigger
+         *            navigation trigger, not {@code null}
          *
          * @since 24.8
          */
         public BrowserNavigateEvent(UI source, boolean fromClient,
                 @EventData("route") String route,
                 @EventData("query") String query,
-                @EventData("appShellTitle") String appShellTitle,
-                @EventData("historyState") JsonNode historyState,
+                @EventData("appShellTitle") @Nullable String appShellTitle,
+                @EventData("historyState") @Nullable JsonNode historyState,
                 @EventData("trigger") String trigger) {
             super(source, true);
             this.route = route;
@@ -2247,15 +2271,16 @@ public class UI extends Component
         }
 
         // true if the target is client-view and the push mode is disable
-        if (getForwardToClientUrl() != null) {
-            navigateToClient(getForwardToClientUrl());
+        String forwardUrl = getForwardToClientUrl();
+        if (forwardUrl != null) {
+            navigateToClient(forwardUrl);
             acknowledgeClient();
         } else if (isPostponed()) {
             serverPaused();
         } else {
             // acknowledge client, but cancel if session not open
-            serverConnected(!getSessionOrThrow().getState()
-                    .equals(VaadinSessionState.OPEN));
+            serverConnected(
+                    getSessionOrThrow().getState() != VaadinSessionState.OPEN);
             replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
     }
@@ -2332,8 +2357,7 @@ public class UI extends Component
 
     private void navigateToPlaceholder(Location location) {
         if (clientViewNavigationState == null) {
-            clientViewNavigationState = new NavigationStateBuilder(
-                    getInternals().getRouter())
+            clientViewNavigationState = new NavigationStateBuilder(getRouter())
                     .withTarget(ClientViewPlaceholder.class).build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
@@ -2348,7 +2372,7 @@ public class UI extends Component
             return;
         }
         getInternals().setLastHandledNavigation(location);
-        Optional<NavigationState> navigationState = getInternals().getRouter()
+        Optional<NavigationState> navigationState = getRouter()
                 .resolveNavigationTarget(location);
         if (navigationState.isPresent()) {
             // There is a valid route in flow.
@@ -2375,9 +2399,8 @@ public class UI extends Component
         // navigation thus an error page is shown
         NotFoundException notFoundException = new NotFoundException(
                 "Couldn't find route for '" + location.getPath() + "'");
-        return getInternals().getRouter().handleExceptionNavigation(this,
-                location, notFoundException, NavigationTrigger.CLIENT_SIDE,
-                null);
+        return getRouter().handleExceptionNavigation(this, location,
+                notFoundException, NavigationTrigger.CLIENT_SIDE, null);
     }
 
     private boolean shouldHandleNavigation(Location location) {
@@ -2394,10 +2417,7 @@ public class UI extends Component
 
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
-        // Client-side navigation only reaches this UI when it supports
-        // navigation, which is when it has a router
-        Router router = Objects.requireNonNull(getInternals().getRouter(),
-                "Navigation is not supported by this UI");
+        Router router = getRouter();
         NavigationEvent navigationEvent = new NavigationEvent(router, location,
                 this, trigger);
 
@@ -2410,12 +2430,19 @@ public class UI extends Component
                 });
     }
 
+    private Router getRouter() {
+        // Navigation is only used on a UI that supports it, which is when the
+        // UI has a router
+        return Objects.requireNonNull(getInternals().getRouter(),
+                "Navigation is not supported by this UI");
+    }
+
     private boolean isPostponed() {
         return getInternals().getContinueNavigationAction() != null;
     }
 
     private NavigationState getDefaultNavigationError() {
-        return new NavigationStateBuilder(getInternals().getRouter())
+        return new NavigationStateBuilder(getRouter())
                 .withTarget(RouteNotFoundError.class).build();
     }
 

@@ -37,6 +37,7 @@ import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
+import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -181,7 +182,8 @@ class GeolocationTest {
     void getPosition_callbackException_routesToErrorHandler() {
         List<Throwable> caught = new ArrayList<>();
         ErrorHandler handler = event -> caught.add(event.getThrowable());
-        Mockito.when(ui.getSession().getErrorHandler()).thenReturn(handler);
+        Mockito.when(requireNonNull(ui.getSession()).getErrorHandler())
+                .thenReturn(handler);
 
         Geolocation.getPosition(pos -> {
             throw new RuntimeException("boom");
@@ -429,7 +431,8 @@ class GeolocationTest {
         ui.add(component);
         List<Throwable> caught = new ArrayList<>();
         ErrorHandler handler = event -> caught.add(event.getThrowable());
-        Mockito.when(ui.getSession().getErrorHandler()).thenReturn(handler);
+        Mockito.when(requireNonNull(ui.getSession()).getErrorHandler())
+                .thenReturn(handler);
 
         GeolocationWatcher watcher = Geolocation.watchPosition(component);
         List<GeolocationPosition> later = new ArrayList<>();
