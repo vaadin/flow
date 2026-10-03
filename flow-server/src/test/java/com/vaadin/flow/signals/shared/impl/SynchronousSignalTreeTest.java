@@ -470,6 +470,26 @@ class SynchronousSignalTreeTest {
     }
 
     @Test
+    void observe_commitAndObserverFail_commitFailureKeptAsPrimary() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        IllegalStateException commitFailure = new IllegalStateException();
+        IllegalArgumentException observerFailure = new IllegalArgumentException();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            throw observerFailure;
+        });
+
+        SignalCommand command = TestUtil.writeRootValueCommand();
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(command, result -> {
+                    throw commitFailure;
+                }));
+
+        assertSame(commitFailure, thrown);
+        assertEquals(List.of(observerFailure), List.of(thrown.getSuppressed()));
+    }
+
+    @Test
     void observe_notifyImmediately_invokedAfterUnlockAsImmediate() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         SynchronousSignalTree other = new SynchronousSignalTree(false);

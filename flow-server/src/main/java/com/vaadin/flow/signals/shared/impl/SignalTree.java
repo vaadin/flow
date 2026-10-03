@@ -277,6 +277,7 @@ public abstract class SignalTree implements Serializable {
 
         @Override
         public boolean tryLock() {
+            assertNoLeafLockHeld();
             boolean acquired = super.tryLock();
             if (acquired) {
                 onAcquired();
@@ -460,11 +461,15 @@ public abstract class SignalTree implements Serializable {
      */
     protected <T> @Nullable T getWithLock(ValueSupplier<T> action) {
         lock.lock();
+        T value;
         try {
-            return action.supply();
-        } finally {
-            lock.unlock();
+            value = action.supply();
+        } catch (RuntimeException | Error e) {
+            unlockAfterFailure(lock, e);
+            throw e;
         }
+        lock.unlock();
+        return value;
     }
 
     /**
@@ -477,8 +482,30 @@ public abstract class SignalTree implements Serializable {
         lock.lock();
         try {
             action.run();
-        } finally {
+        } catch (RuntimeException | Error e) {
+            unlockAfterFailure(lock, e);
+            throw e;
+        }
+        lock.unlock();
+    }
+
+    /**
+     * Releases a tree lock after the action run while holding it has failed.
+     * Releasing the last tree lock delivers deferred observer notifications,
+     * and a failure from an observer is then added as a suppressed exception to
+     * the original failure rather than replacing it.
+     *
+     * @param lock
+     *            the lock to release, not <code>null</code>
+     * @param failure
+     *            the failure of the action that ran while holding the lock, not
+     *            <code>null</code>
+     */
+    static void unlockAfterFailure(ReentrantLock lock, Throwable failure) {
+        try {
             lock.unlock();
+        } catch (RuntimeException | Error e) {
+            failure.addSuppressed(e);
         }
     }
 
