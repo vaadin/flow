@@ -58,6 +58,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -584,6 +585,13 @@ class VaadinSessionTest {
         vaadinSession.setState(VaadinSessionState.CLOSED);
 
         assertNull(vaadinSession.getSession());
+    }
+
+    @Test
+    void hasLock_noLockInWrappedSession_returnsFalse() {
+        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+
+        assertFalse(VaadinSession.hasLock(mockService, wrappedSession));
     }
 
     @Test

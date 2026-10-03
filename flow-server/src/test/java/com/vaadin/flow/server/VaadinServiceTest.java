@@ -32,6 +32,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -929,6 +930,10 @@ class VaadinServiceTest {
         service.destroy();
         assertTrue(((ExecutorService) executor).isShutdown(),
                 "Expected executor service to be stopped");
+        assertSame(executor, service.getExecutor());
+        assertThrows(RejectedExecutionException.class,
+                () -> service.getExecutor().execute(() -> {
+                }));
     }
 
     @Test
