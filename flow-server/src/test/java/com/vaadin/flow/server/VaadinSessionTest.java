@@ -295,6 +295,22 @@ class VaadinSessionTest {
     }
 
     @Test
+    void getCurrentOrThrow_withCurrentSession_returnsSession_withoutCurrentSession_throws() {
+        CurrentInstance.clearAll();
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, VaadinSession::getCurrentOrThrow);
+        assertTrue(exception.getMessage()
+                .startsWith("No currently active VaadinSession found"));
+
+        VaadinSession.setCurrent(session);
+        try {
+            assertSame(session, VaadinSession.getCurrentOrThrow());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
     void threadLocalsAfterUnderlyingSessionTimeout()
             throws InterruptedException {
 
