@@ -271,7 +271,7 @@ class VaadinQuarkusProcessor {
 
         // Register VaadinServlet instances annotated with @WebServlet
         vaadinServlets = registerUserServlets(servletProducer,
-                loadOnStartupSetter, vaadinServlets);
+                loadOnStartupSetter, !nativeConfig.enabled(), vaadinServlets);
         // If no annotated VaadinServlet instances is registered, register
         // QuarkusVaadinServlet
         if (vaadinServlets.isEmpty()) {
@@ -421,7 +421,7 @@ class VaadinQuarkusProcessor {
     private Collection<ClassInfo> registerUserServlets(
             BuildProducer<ServletBuildItem> servletProducer,
             BiConsumer<ServletBuildItem.Builder, Integer> loadOnStartupSetter,
-            Collection<ClassInfo> vaadinServlets) {
+            boolean warnOnLazyLoad, Collection<ClassInfo> vaadinServlets) {
         Collection<ClassInfo> registeredServlets = new ArrayList<>(
                 vaadinServlets);
         // TODO: check that we don't register 2 of the same mapping
@@ -457,7 +457,9 @@ class VaadinQuarkusProcessor {
             setAsyncSupportedIfDefined(webServletInstance, servletBuildItem);
             loadOnStartupSetter.accept(servletBuildItem,
                     loadOnStartup > 0 ? loadOnStartup : 1);
-            if (loadOnStartup < 1) {
+            // In a native image the Vaadin servlets are always initialized at
+            // RUNTIME_INIT, so load-on-startup only decides the order
+            if (warnOnLazyLoad && loadOnStartup < 1) {
                 LOG.warn(
                         "Vaadin Servlet needs to be eagerly loaded by setting load-on-startup to be greater than 0. "
                                 + "Current value for '{}' is '{}', so it will be forced to '1'. "
