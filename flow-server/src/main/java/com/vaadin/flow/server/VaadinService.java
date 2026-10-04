@@ -176,7 +176,8 @@ public abstract class VaadinService implements Serializable {
     private SystemMessagesProvider systemMessagesProvider = DefaultSystemMessagesProvider
             .get();
 
-    private @Nullable ClassLoader classLoader;
+    @SuppressWarnings("NullAway.Init")
+    private ClassLoader classLoader;
 
     @SuppressWarnings("NullAway.Init")
     private Iterable<RequestHandler> requestHandlers;
@@ -822,10 +823,10 @@ public abstract class VaadinService implements Serializable {
      * custom UI classes. This is by default the class loader that was used to
      * load the Servlet class to which this service belongs.
      *
-     * @return the class loader to use, or <code>null</code>
+     * @return the class loader to use, set by {@link #init()} at the latest
      * @see #setClassLoader(ClassLoader)
      */
-    public @Nullable ClassLoader getClassLoader() {
+    public ClassLoader getClassLoader() {
         return classLoader;
     }
 
