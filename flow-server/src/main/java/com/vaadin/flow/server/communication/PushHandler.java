@@ -345,6 +345,7 @@ public class PushHandler {
                 assert VaadinSession.getCurrent() == session;
             } catch (SessionExpiredException e) {
                 // Handled below in the same way as a missing session
+                getLogger().debug("Session expired for push request", e);
             }
             if (session == null) {
                 if (!isResourceDisconnected(resource)) {
