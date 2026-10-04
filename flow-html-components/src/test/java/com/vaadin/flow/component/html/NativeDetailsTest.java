@@ -32,8 +32,27 @@ class NativeDetailsTest extends ComponentTest {
         whitelistProperty("content");
         whitelistProperty("summary");
         whitelistProperty("summaryText");
-        addOptionalStringProperty("name");
+        whitelistProperty("name");
         whitelistProperty("open");
+    }
+
+    @Test
+    void setName_getName() {
+        NativeDetails details = new NativeDetails();
+        assertNull(details.getName());
+
+        details.setName("group");
+        assertEquals("group", details.getName());
+        assertEquals("group", details.getElement().getAttribute("name"));
+
+        details.setName(null);
+        assertNull(details.getName());
+        assertFalse(details.getElement().hasAttribute("name"));
+
+        details.setName("group");
+        details.setName("");
+        assertNull(details.getName());
+        assertFalse(details.getElement().hasAttribute("name"));
     }
 
     @Test
