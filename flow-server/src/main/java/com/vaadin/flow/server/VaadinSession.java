@@ -121,7 +121,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private transient VaadinService service;
 
-    private transient @Nullable Lock lock;
+    @SuppressWarnings("NullAway.Init")
+    private transient Lock lock;
 
     private SessionLockCheckStrategy sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
 
@@ -364,7 +365,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert lock == null || lock == service.getSessionLock(wrappedSession)
                 : "Cannot change the lock from one instance to another";
         assert hasLock(service, wrappedSession);
-        lock = service.getSessionLock(wrappedSession);
+        // The caller holds the lock, so it is stored in the wrapped session
+        lock = Objects.requireNonNull(service.getSessionLock(wrappedSession));
         if (lock instanceof InstrumentedReentrantLock instrumentedLock) {
             instrumentedLock.bind(service, this);
         }
@@ -645,7 +647,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @return true if the thread has exclusive access, false otherwise
      */
     public boolean hasLock() {
-        ReentrantLock l = (ReentrantLock) getLockInstanceOrThrow();
+        ReentrantLock l = ((ReentrantLock) getLockInstance());
         return l.isHeldByCurrentThread();
     }
 
@@ -736,17 +738,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #lock()
      * @see Lock
      */
-    public @Nullable Lock getLockInstance() {
+    public Lock getLockInstance() {
         return lock;
-    }
-
-    Lock getLockInstanceOrThrow() {
-        Lock l = getLockInstance();
-        if (l == null) {
-            throw new IllegalStateException(
-                    "VaadinSession has no lock before refreshTransients() has been called for it");
-        }
-        return l;
     }
 
     /**
@@ -818,7 +811,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @see #hasLock()
      */
     public void lock() {
-        getLockInstanceOrThrow().lock();
+        getLockInstance().lock();
         lastLocked = System.currentTimeMillis();
     }
 
@@ -841,8 +834,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
              * Run pending tasks and push if the reentrant lock will actually be
              * released by this unlock() invocation.
              */
-            if (((ReentrantLock) getLockInstanceOrThrow())
-                    .getHoldCount() == 1) {
+            if (((ReentrantLock) getLockInstance()).getHoldCount() == 1) {
                 ultimateRelease = true;
                 getService().runPendingAccessTasks(this);
 
@@ -862,7 +854,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
-            getLockInstanceOrThrow().unlock();
+            getLockInstance().unlock();
         }
 
         /*

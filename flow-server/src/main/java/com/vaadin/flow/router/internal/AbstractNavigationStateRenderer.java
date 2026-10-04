@@ -71,6 +71,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
@@ -1300,10 +1301,13 @@ public abstract class AbstractNavigationStateRenderer
                         return uiNode == chainNode;
                     }).map(Map.Entry::getKey).collect(Collectors.toSet());
             if (!inactiveWindows.isEmpty()) {
+                WrappedSession wrappedSession = session.getSession();
                 LoggerFactory.getLogger(AbstractNavigationStateRenderer.class)
                         .debug("Removing preserved chain cache for inactive UI {} on VaadinSession {} (windows: {})",
                                 inactiveUI.getUIId(),
-                                session.getSession().getId(), inactiveWindows);
+                                wrappedSession != null ? wrappedSession.getId()
+                                        : null,
+                                inactiveWindows);
             }
             inactiveWindows.forEach(cache::remove);
         }

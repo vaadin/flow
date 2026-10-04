@@ -2645,7 +2645,7 @@ public abstract class VaadinService implements Serializable {
          */
         try {
             // tryLock() would be shorter, but it does not guarantee fairness
-            if (session.getLockInstanceOrThrow().tryLock(0, TimeUnit.SECONDS)) {
+            if (session.getLockInstance().tryLock(0, TimeUnit.SECONDS)) {
                 // unlock triggers runPendingAccessTasks
                 session.unlock();
             }
@@ -3123,14 +3123,14 @@ public abstract class VaadinService implements Serializable {
                     .map(request.getService()::loadSession).orElse(null);
 
             if (session != null) {
-                session.getLockInstanceOrThrow().lock();
+                session.getLockInstance().lock();
                 VaadinSession.setCurrent(session);
             }
             try {
                 delegate.requestStart(request, response);
             } finally {
                 if (session != null) {
-                    session.getLockInstanceOrThrow().unlock();
+                    session.getLockInstance().unlock();
                 }
                 VaadinSession.setCurrent(null);
             }

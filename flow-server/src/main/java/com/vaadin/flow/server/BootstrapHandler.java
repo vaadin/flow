@@ -50,6 +50,7 @@ import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -479,11 +480,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the relative path from the UI (servlet) path to the
          *            context root
          * @param session
-         *            the vaadin session
+         *            the vaadin session, or <code>null</code> if the UI is not
+         *            attached to a session
          * @since 2.0
          */
         public BootstrapUriResolver(String contextRootRelatiePath,
-                VaadinSession session) {
+                @Nullable VaadinSession session) {
             servletPathToContextRoot = contextRootRelatiePath;
             assert servletPathToContextRoot.endsWith("/");
         }

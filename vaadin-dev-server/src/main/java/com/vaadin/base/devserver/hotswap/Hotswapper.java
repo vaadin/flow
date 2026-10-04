@@ -61,6 +61,7 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WrappedSession;
 
 /**
  * Entry point for application classes hot reloads.
@@ -305,9 +306,13 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     try {
                         hotSwapper.onClassesChange(sessionEvent);
                     } catch (Exception ex) {
+                        WrappedSession wrappedSession = vaadinSession
+                                .getSession();
                         LOGGER.debug(
                                 "Hotswap failed executing {} for Vaadin session {}",
-                                hotSwapper, vaadinSession.getSession().getId(),
+                                hotSwapper,
+                                wrappedSession != null ? wrappedSession.getId()
+                                        : null,
                                 ex);
                     }
                 }
