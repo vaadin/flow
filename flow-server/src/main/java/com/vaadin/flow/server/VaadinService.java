@@ -577,6 +577,9 @@ public abstract class VaadinService implements Serializable {
 
         Transaction.setTransactionFallback(() -> {
             VaadinSession session = VaadinSession.getCurrent();
+            // A session that is created or deserialized but not yet stored
+            // has no lock, even though getLockInstance() is non-null for a
+            // session in use
             if (session == null || session.getLockInstance() == null
                     || !session.hasLock()) {
                 return null;
