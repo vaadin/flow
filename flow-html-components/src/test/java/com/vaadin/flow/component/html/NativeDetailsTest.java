@@ -32,6 +32,7 @@ class NativeDetailsTest extends ComponentTest {
         whitelistProperty("content");
         whitelistProperty("summary");
         whitelistProperty("summaryText");
+        addOptionalStringProperty("name");
         whitelistProperty("open");
     }
 

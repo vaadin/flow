@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
@@ -25,6 +26,8 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.PropertyDescriptor;
+import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Synchronize;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
@@ -64,6 +67,9 @@ public class NativeDetails extends HtmlComponent
         }
 
     }
+
+    private static final PropertyDescriptor<String, Optional<String>> nameDescriptor = PropertyDescriptors
+            .optionalAttributeWithDefault("name", "");
 
     /** The summary element, which is always present. */
     private final Summary summary;
@@ -312,6 +318,32 @@ public class NativeDetails extends HtmlComponent
         Objects.requireNonNull(signal, "Signal cannot be null");
         getElement().bindProperty("open",
                 signal.map(v -> v == null ? Boolean.FALSE : v), writeCallback);
+    }
+
+    /**
+     * Sets the name of the group this details belongs to. Details elements
+     * sharing the same name form a group in which at most one can be open at a
+     * time: opening one closes the others, like an accordion.
+     *
+     * @param name
+     *            the group name, or {@code null} or an empty string to remove
+     *            the details from any group
+     * @since 25.4
+     */
+    public void setName(String name) {
+        set(nameDescriptor, name);
+    }
+
+    /**
+     * Gets the name of the group this details belongs to.
+     *
+     * @return the group name, or an empty optional if the details does not
+     *         belong to a group
+     * @see #setName(String)
+     * @since 25.4
+     */
+    public Optional<String> getName() {
+        return get(nameDescriptor);
     }
 
     /**
