@@ -107,11 +107,14 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    void handleRpc_resynchronize_throwsExceptionAndDirtiesTreeAndClearsDependenciesSent()
+    void handleRpc_resynchronize_firesEventThrowsExceptionAndDirtiesTreeAndClearsDependenciesSent()
             throws IOException,
             ServerRpcHandler.InvalidUIDLSecurityKeyException,
             ServerRpcHandler.MessageIdSyncException {
         // given
+        List<UIResynchronizationEvent> events = new ArrayList<>();
+        service.getEventBus().addListener(UIResynchronizationEvent.class,
+                events::add);
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[], \"resynchronize\": true, \"clientId\":1}");
         uiTree.collectChanges(c -> { // clean tree
@@ -125,12 +128,18 @@ class ServerRpcHandlerTest {
 
         // the dependencies-sent cache was cleared
         Mockito.verify(dependencyList).clearPendingSendToClient();
+
+        assertEquals(1, events.size());
+        assertSame(ui, events.get(0).getUI());
     }
 
     @Test
-    void handleRpc_duplicateMessage_throwsResendPayload()
+    void handleRpc_duplicateMessage_firesEventAndThrowsResendPayload()
             throws InvalidUIDLSecurityKeyException,
             ServerRpcHandler.MessageIdSyncException {
+        List<ClientMessageResentEvent> events = new ArrayList<>();
+        service.getEventBus().addListener(ClientMessageResentEvent.class,
+                events::add);
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
         ServerRpcHandler handler = new ServerRpcHandler();
 
@@ -141,6 +150,8 @@ class ServerRpcHandlerTest {
 
         assertThrows(ServerRpcHandler.ClientResentPayloadException.class,
                 () -> handler.handleRpc(ui, msg, request));
+        assertEquals(1, events.size());
+        assertSame(ui, events.get(0).getUI());
     }
 
     @Test
@@ -158,8 +169,11 @@ class ServerRpcHandlerTest {
     }
 
     @Test
-    void handleRpc_unexpectedMessage_exceptionContainsCorrectIds()
+    void handleRpc_unexpectedMessage_exceptionAndEventContainCorrectIds()
             throws InvalidUIDLSecurityKeyException, IOException {
+        List<MessageIdSyncErrorEvent> events = new ArrayList<>();
+        service.getEventBus().addListener(MessageIdSyncErrorEvent.class,
+                events::add);
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":5}";
         ServerRpcHandler handler = new ServerRpcHandler();
 
@@ -175,6 +189,12 @@ class ServerRpcHandlerTest {
         assertEquals(5, e.getReceivedId());
         assertTrue(e.getMessage().contains("Expected: 1"));
         assertTrue(e.getMessage().contains("got: 5"));
+
+        assertEquals(1, events.size());
+        MessageIdSyncErrorEvent event = events.get(0);
+        assertSame(ui, event.getUI());
+        assertEquals(1, event.getExpectedId());
+        assertEquals(5, event.getReceivedId());
     }
 
     @Test
