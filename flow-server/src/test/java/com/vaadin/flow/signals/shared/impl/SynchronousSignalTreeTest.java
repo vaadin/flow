@@ -18,6 +18,10 @@ package com.vaadin.flow.signals.shared.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -34,6 +38,7 @@ import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.TestUtil;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Accept;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Reject;
@@ -528,6 +533,65 @@ class SynchronousSignalTreeTest {
         tree.commitSingleCommand(TestUtil.writeRootValueCommand());
 
         assertEquals(2, count.get());
+    }
+
+    @Test
+    void observe_changeFromOtherThreadDuringInvocation_reinvocationReadsLatestValue()
+            throws Exception {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        CountDownLatch invoked = new CountDownLatch(1);
+        CountDownLatch otherChangeApplied = new CountDownLatch(1);
+        List<String> values = new CopyOnWriteArrayList<>();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            values.add(Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString());
+            if (values.size() == 1) {
+                invoked.countDown();
+                try {
+                    otherChangeApplied.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return true;
+        });
+
+        Thread writer = new Thread(() -> Transaction.runInTransaction(() -> {
+            TestUtil.readTransactionRootValue(tree);
+            Transaction.getCurrent().include(tree,
+                    TestUtil.writeRootValueCommand("first"), null);
+        }, Transaction.Type.WRITE_THROUGH));
+        writer.start();
+        assertTrue(invoked.await(10, TimeUnit.SECONDS));
+
+        // Coalesced into the delivery still running on the writer thread,
+        // which must not read it through the writer's repeatable-read view
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"));
+        otherChangeApplied.countDown();
+        writer.join(10_000);
+
+        assertEquals(List.of("first", "second"), values);
+    }
+
+    @Test
+    void observe_commitAndObserverThrowSameInstance_failurePropagated() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        IllegalStateException failure = new IllegalStateException();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            throw failure;
+        });
+
+        SignalCommand command = TestUtil.writeRootValueCommand();
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(command, result -> {
+                    throw failure;
+                }));
+
+        assertSame(failure, thrown);
+        assertEquals(0, thrown.getSuppressed().length);
     }
 
     @Test

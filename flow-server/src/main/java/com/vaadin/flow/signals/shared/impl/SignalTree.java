@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -40,6 +41,7 @@ import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.ValueSupplier;
 import com.vaadin.flow.signals.impl.LeafLock;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
 
@@ -143,11 +145,21 @@ public abstract class SignalTree implements Serializable {
      * notification has arrived in the meantime. Observers do not receive any
      * event payload but re-read the current state when invoked, so coalescing
      * several notifications into one invocation does not lose any change.
+     * <p>
+     * A notification coalesced from another thread is delivered outside the
+     * transaction of the delivering thread, since a repeatable-read view of
+     * that transaction might not include the change from the other thread.
      */
     private final class Observer implements Serializable {
         private final List<Observer> list;
         private final TransientListener listener;
         private final AtomicInteger pendingNotifications = new AtomicInteger();
+        private final AtomicBoolean pendingFromOtherThread = new AtomicBoolean();
+        /*
+         * The thread that delivers the pending notifications. Only accessed
+         * while holding the tree lock.
+         */
+        private transient @Nullable Thread deliveringThread;
         private volatile boolean removed;
 
         private Observer(List<Observer> list, TransientListener listener) {
@@ -157,7 +169,19 @@ public abstract class SignalTree implements Serializable {
 
         private void scheduleNotification(boolean immediate) {
             assert hasLock();
+            Thread currentThread = Thread.currentThread();
+            /*
+             * Flagged before incrementing so that a delivery that observes the
+             * increment also observes the flag. A flag left over when the
+             * delivery completes in between only makes the next delivery read
+             * outside the transaction, which never misses a change.
+             */
+            if (pendingNotifications.get() != 0
+                    && deliveringThread != currentThread) {
+                pendingFromOtherThread.set(true);
+            }
             if (pendingNotifications.getAndIncrement() == 0) {
+                deliveringThread = currentThread;
                 requireDeliveryState().queue.add(() -> deliver(immediate));
             }
         }
@@ -173,7 +197,8 @@ public abstract class SignalTree implements Serializable {
 
                 boolean listenToNext;
                 try {
-                    listenToNext = listener.invoke(invokeImmediate);
+                    listenToNext = invokeListener(invokeImmediate,
+                            pendingFromOtherThread.getAndSet(false));
                 } catch (RuntimeException | Error e) {
                     /*
                      * This also covers a failure of another observer that
@@ -185,7 +210,7 @@ public abstract class SignalTree implements Serializable {
                         remove();
                     } catch (RuntimeException | Error removeFailure) {
                         // Keep the observer's own failure as the primary one
-                        e.addSuppressed(removeFailure);
+                        addSuppressedIfDistinct(e, removeFailure);
                     }
                     throw e;
                 }
@@ -195,6 +220,15 @@ public abstract class SignalTree implements Serializable {
                 }
                 invokeImmediate = false;
             } while (!pendingNotifications.compareAndSet(handled, 0));
+        }
+
+        private boolean invokeListener(boolean immediate,
+                boolean includesOtherThread) {
+            if (includesOtherThread) {
+                return Transaction.runWithoutTransaction(
+                        () -> listener.invoke(immediate));
+            }
+            return listener.invoke(immediate);
         }
 
         private void remove() {
@@ -208,6 +242,7 @@ public abstract class SignalTree implements Serializable {
             in.defaultReadObject();
             // A delivery queued on some thread is not part of the state
             pendingNotifications.set(0);
+            pendingFromOtherThread.set(false);
         }
     }
 
@@ -426,8 +461,8 @@ public abstract class SignalTree implements Serializable {
                 } catch (RuntimeException | Error e) {
                     if (failure == null) {
                         failure = e;
-                    } else if (failure != e) {
-                        failure.addSuppressed(e);
+                    } else {
+                        addSuppressedIfDistinct(failure, e);
                     }
                 }
             }
@@ -505,7 +540,19 @@ public abstract class SignalTree implements Serializable {
         try {
             lock.unlock();
         } catch (RuntimeException | Error e) {
-            failure.addSuppressed(e);
+            addSuppressedIfDistinct(failure, e);
+        }
+    }
+
+    /*
+     * The same exception instance can be thrown by several callbacks, e.g. a
+     * commit result handler and an observer, and an exception can't suppress
+     * itself.
+     */
+    private static void addSuppressedIfDistinct(Throwable failure,
+            Throwable suppressed) {
+        if (failure != suppressed) {
+            failure.addSuppressed(suppressed);
         }
     }
 
