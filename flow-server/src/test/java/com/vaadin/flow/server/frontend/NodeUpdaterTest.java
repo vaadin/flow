@@ -148,6 +148,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@babel/types");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
+        expectedDependencies.add("@preact/signals-react");
         expectedDependencies.add("@preact/signals-react-transform");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
@@ -215,7 +216,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("10.4.5", packageJson
+        Assert.assertEquals("10.5.0", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
