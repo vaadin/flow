@@ -11,7 +11,7 @@
   "devDependencies": {
     "vite": "8.0.16",
     "@vitejs/plugin-react": "6.1.1",
-    "@preact/signals-react-transform": "0.8.2",
+    "@preact/signals-react-transform": "0.8.3",
     "@preact/signals-react": "3.12.0",
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/pluginutils": "5.4.0",
@@ -25,6 +25,6 @@
     "vite-plugin-checker": "0.14.5",
     "transform-ast": "2.4.4",
     "magic-string": "0.30.21",
-    "@types/node": "25.9.8"
+    "@types/node": "25.9.9"
   }
 }
