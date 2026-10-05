@@ -90,6 +90,32 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
         Assert.assertEquals("/from-input/file.bin", recorded.get("url"));
     }
 
+    @Test
+    public void clickDownloadOnClick_urlServesBodyWithLazyFilename() {
+        open();
+        installRecordingShim();
+
+        findElement(By.id("download-on-click")).click();
+
+        String url = (String) waitForFirstDownload().get("url");
+        Assert.assertEquals("200|attachment; filename=\""
+                + TriggerDownloadView.LAZY_FILENAME + "\"|"
+                + TriggerDownloadView.HANDLER_BODY, fetchResponse(url));
+    }
+
+    @Test
+    public void clickDownloadOnClickFailure_urlRespondsWithServerError() {
+        open();
+        installRecordingShim();
+
+        findElement(By.id("download-on-click-failure")).click();
+
+        String url = (String) waitForFirstDownload().get("url");
+        String response = fetchResponse(url);
+        Assert.assertTrue("Expected a 500 response, got: " + response,
+                response.startsWith("500|"));
+    }
+
     // Replace window.Vaadin.Flow.download.start with a recorder so the IT
     // never actually triggers a save dialog or navigation. Each invocation
     // pushes {url, filename} onto window.__downloads.
@@ -118,5 +144,18 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
                         + "const done = arguments[arguments.length - 1];"
                         + "fetch(url).then(r => r.text()).then(done)"
                         + "  .catch(e => done('FETCH_ERROR:' + e));", url);
+    }
+
+    // Fetches the URL and returns "status|content-disposition|body".
+    private String fetchResponse(String url) {
+        return (String) ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                """
+                        const done = arguments[arguments.length - 1];
+                        fetch(arguments[0])
+                          .then(r => r.text().then(t => done(r.status + '|'
+                              + r.headers.get('Content-Disposition') + '|' + t)))
+                          .catch(e => done('FETCH_ERROR:' + e));
+                        """,
+                url);
     }
 }
