@@ -2090,7 +2090,7 @@ public class UI extends Component
         boolean containsPendingReplace = !getInternals()
                 .containsPendingJavascript("window.history.replaceState")
                 && !getInternals().containsPendingJavascript(
-                        "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
+                        "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true");
         if (locationChanged && containsPendingReplace) {
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
