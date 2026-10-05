@@ -348,7 +348,8 @@ public class ServerRpcHandler implements Serializable {
      */
     public void handleRpc(UI ui, String message, VaadinRequest request)
             throws InvalidUIDLSecurityKeyException, MessageIdSyncException {
-        ui.getSession().setLastRequestTimestamp(System.currentTimeMillis());
+        ui.getSessionOrThrow()
+                .setLastRequestTimestamp(System.currentTimeMillis());
 
         if (message == null || message.isEmpty()) {
             // The client sometimes sends empty messages, this is probably a bug
@@ -473,7 +474,7 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private static void fireEvent(UI ui, EventObject event) {
-        ui.getSession().getService().getEventBus().fireEvent(event);
+        ui.getSessionOrThrow().getService().getEventBus().fireEvent(event);
     }
 
     protected void handleUnloadBeaconRequest(UI ui, RpcRequest rpcRequest) {
@@ -709,7 +710,7 @@ public class ServerRpcHandler implements Serializable {
         private InvocationEvents(UI ui, String type, JsonNode invocationJson) {
             this.ui = ui;
             this.type = type;
-            eventBus = ui.getSession().getService().getEventBus();
+            eventBus = ui.getSessionOrThrow().getService().getEventBus();
             observed = eventBus.hasListener(RpcInvocationStartedEvent.class)
                     || eventBus.hasListener(RpcInvocationFailedEvent.class)
                     || eventBus.hasListener(RpcInvocationEndedEvent.class);
@@ -802,7 +803,7 @@ public class ServerRpcHandler implements Serializable {
         } else {
             event = new ErrorEvent(throwable);
         }
-        ui.getSession().getErrorHandler().error(event);
+        ui.getSessionOrThrow().getErrorHandler().error(event);
     }
 
     protected String getMessage(Reader reader) throws IOException {
