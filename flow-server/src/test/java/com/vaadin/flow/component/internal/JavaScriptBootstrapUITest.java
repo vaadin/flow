@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -183,6 +184,21 @@ class JavaScriptBootstrapUITest {
         }
     }
 
+    @Route("forwardWithQueryParameter")
+    @Tag(Tag.DIV)
+    public static class ForwardWithQueryParameter extends Component
+            implements BeforeEnterObserver {
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            if (event.getLocation().getQueryParameters()
+                    .getSingleParameter("param").isEmpty()) {
+                event.forwardTo("forwardWithQueryParameter",
+                        QueryParameters.of("param", "a"));
+            }
+        }
+    }
+
     @BeforeEach
     void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -221,6 +237,9 @@ class JavaScriptBootstrapUITest {
         mocks.getService().getRouter().getRegistry().setRoute(
                 "forwardToServerSideViewOnBeforeEnter",
                 ForwardToServerViewOnBeforeEnter.class,
+                Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "forwardWithQueryParameter", ForwardWithQueryParameter.class,
                 Collections.emptyList());
         ui = new UI();
         ui.getInternals().setSession(mocks.getSession());
@@ -419,6 +438,23 @@ class JavaScriptBootstrapUITest {
                 ui.getInternals().getWrapperElement().getChild(0).getTag());
         assertEquals(Tag.H2, ui.getInternals().getWrapperElement().getChild(0)
                 .getChild(0).getTag());
+    }
+
+    @Test
+    void should_keep_forwarded_query_parameters_when_endingSlash() {
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true,
+                "/forwardWithQueryParameter/", "", "", null, ""));
+
+        List<Object> replacedUrls = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream()
+                .map(PendingJavaScriptInvocation::getInvocation)
+                .filter(invocation -> invocation.getExpression()
+                        .contains("replace: true")
+                        || invocation.getExpression()
+                                .contains("history.replaceState"))
+                .map(invocation -> invocation.getParameters().get(1)).toList();
+        assertEquals(List.of("forwardWithQueryParameter?param=a"),
+                replacedUrls);
     }
 
     @Test
