@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.MessageDigest;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -237,6 +239,45 @@ public class ProjectHelpers {
                         name -> new File(projectFolder, name).isFile());
         return gradle ? StatisticsConstants.BUILD_TOOL_GRADLE
                 : StatisticsConstants.MISSING_DATA;
+    }
+
+    /**
+     * Detects the AI coding agent that started this process, based on the
+     * environment variables that the agents set for the commands they run. Only
+     * the presence of the variables is checked, not their values.
+     * <p>
+     * {@code CLAUDECODE} is checked after the other agent specific variables
+     * because other agents may also set it, for compatibility with tooling
+     * written for Claude Code.
+     *
+     * @param environment
+     *            the environment variables of the process
+     * @return the identifier of the detected agent, <code>AI_AGENT_OTHER</code>
+     *         for an agent that only sets the generic {@code AI_AGENT}
+     *         variable, or <code>AI_AGENT_NONE</code> if no agent was detected
+     */
+    static String getAiAgent(Map<String, String> environment) {
+        Predicate<String> isSet = environment::containsKey;
+        if (Stream.of("CODEX_SANDBOX", "CODEX_CI", "CODEX_THREAD_ID")
+                .anyMatch(isSet)) {
+            return StatisticsConstants.AI_AGENT_CODEX;
+        }
+        if (isSet.test("GEMINI_CLI")) {
+            return StatisticsConstants.AI_AGENT_GEMINI;
+        }
+        if (isSet.test("CURSOR_AGENT")) {
+            return StatisticsConstants.AI_AGENT_CURSOR;
+        }
+        if (isSet.test("OPENCODE")) {
+            return StatisticsConstants.AI_AGENT_OPENCODE;
+        }
+        if (isSet.test("CLAUDECODE")) {
+            return StatisticsConstants.AI_AGENT_CLAUDE;
+        }
+        if (isSet.test("AI_AGENT")) {
+            return StatisticsConstants.AI_AGENT_OTHER;
+        }
+        return StatisticsConstants.AI_AGENT_NONE;
     }
 
     /**

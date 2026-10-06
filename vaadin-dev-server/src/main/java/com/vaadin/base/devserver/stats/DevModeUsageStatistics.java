@@ -161,8 +161,8 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Populates the static identity data (versions, source id and build tool)
-     * of the current project.
+     * Populates the static identity data (versions, source id, build tool and
+     * AI agent) of the current project.
      *
      * @param projectData
      *            the project specific data to populate
@@ -178,6 +178,13 @@ public class DevModeUsageStatistics {
                 ProjectHelpers.getProjectSource(projectFolder));
         projectData.setValue(StatisticsConstants.FIELD_BUILD_TOOL,
                 ProjectHelpers.getBuildTool(projectFolder));
+        // Keep a detected agent until the report is sent, so that a later
+        // start outside of the agent does not hide that one was used
+        String aiAgent = ProjectHelpers.getAiAgent(System.getenv());
+        if (!StatisticsConstants.AI_AGENT_NONE.equals(aiAgent) || !projectData
+                .containsField(StatisticsConstants.FIELD_AI_AGENT)) {
+            projectData.setValue(StatisticsConstants.FIELD_AI_AGENT, aiAgent);
+        }
     }
 
     /**

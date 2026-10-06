@@ -32,6 +32,7 @@ import com.vaadin.pro.licensechecker.MachineId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @Isolated
 class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
@@ -248,6 +249,28 @@ class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 projectData
                         .getValueAsInt(StatisticsConstants.EVENT_LIVE_RELOAD),
                 "The live reload event must be recorded");
+    }
+
+    @Test
+    void aiAgentIsKeptOverStartWithoutAgent() {
+        assumeTrue(
+                StatisticsConstants.AI_AGENT_NONE
+                        .equals(ProjectHelpers.getAiAgent(System.getenv())),
+                "Requires a test run that is not started by an AI agent");
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+        assertEquals(StatisticsConstants.AI_AGENT_NONE, storage.readProject()
+                .get(StatisticsConstants.FIELD_AI_AGENT).asString());
+
+        // An earlier start in the same report interval was made by an agent
+        storage.update((global, project) -> project.setValue(
+                StatisticsConstants.FIELD_AI_AGENT,
+                StatisticsConstants.AI_AGENT_CODEX));
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        assertEquals(StatisticsConstants.AI_AGENT_CODEX, storage.readProject()
+                .get(StatisticsConstants.FIELD_AI_AGENT).asString());
     }
 
     @Test
