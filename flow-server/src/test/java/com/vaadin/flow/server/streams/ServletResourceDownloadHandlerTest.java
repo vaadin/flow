@@ -19,7 +19,6 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -78,10 +77,8 @@ class ServletResourceDownloadHandlerTest {
         when(request.getService()).thenReturn(vaadinService);
         when(vaadinService.getServlet()).thenReturn(vaadinServlet);
         when(vaadinServlet.getServletContext()).thenReturn(servletContext);
-        InputStream stream = getClass().getClassLoader()
-                .getResourceAsStream(PATH_TO_FILE);
-        when(servletContext.getResourceAsStream(anyString()))
-                .thenReturn(stream);
+        when(servletContext.getResource(anyString())).thenReturn(
+                getClass().getClassLoader().getResource(PATH_TO_FILE));
 
         ui = mock(UI.class);
         // run the command immediately
@@ -113,7 +110,7 @@ class ServletResourceDownloadHandlerTest {
                 PATH_TO_FILE, "download", new TransferProgressListener() {
                     @Override
                     public void onStart(TransferContext context) {
-                        assertEquals(-1, context.contentLength());
+                        assertEquals(165000, context.contentLength());
                         assertEquals("download", context.fileName());
                         invocations.add("onStart");
                     }
@@ -122,7 +119,7 @@ class ServletResourceDownloadHandlerTest {
                     public void onProgress(TransferContext context,
                             long transferredBytes, long totalBytes) {
                         transferredBytesRecords.add(transferredBytes);
-                        assertEquals(-1, totalBytes);
+                        assertEquals(165000, totalBytes);
                         assertEquals("download", context.fileName());
                         invocations.add("onProgress");
                     }
@@ -130,7 +127,7 @@ class ServletResourceDownloadHandlerTest {
                     @Override
                     public void onComplete(TransferContext context,
                             long transferredBytes) {
-                        assertEquals(-1, context.contentLength());
+                        assertEquals(165000, context.contentLength());
                         assertEquals(165000, transferredBytes);
                         assertEquals("download", context.fileName());
                         invocations.add("onComplete");
