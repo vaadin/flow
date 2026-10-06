@@ -544,6 +544,11 @@
             </excludes>
             <argLine>@{jacoco.agent.argLine} ${surefire.argLine}</argLine>
             <enableAssertions>true</enableAssertions>
+            <!-- Unit tests of a module with a module descriptor run on the
+                 class path: in the module, test service registrations under
+                 META-INF/services would be ignored. Module behavior is
+                 covered by flow-tests/test-jpms. -->
+            <useModulePath>false</useModulePath>
             <classpathDependencyExcludes>
               <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
             </classpathDependencyExcludes>
@@ -789,6 +794,18 @@
                finding. -->
           <testCompilerArgument>-Xlint:-removal</testCompilerArgument>
         </configuration>
+        <executions>
+          <execution>
+            <!-- Tests are compiled on the class path also in modules with a
+                 module descriptor, the same way they are run. In the module,
+                 classes that a test-jar of another module has in that
+                 module's packages would not be visible. -->
+            <id>default-testCompile</id>
+            <configuration>
+              <useModulePath>false</useModulePath>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
