@@ -77,7 +77,8 @@ public final class MenuConfiguration {
      * {@link com.vaadin.flow.router.Menu#parent() @Menu(parent)} when it is
      * defined, and otherwise according to
      * {@link com.vaadin.flow.router.RouteParent @RouteParent} (with URL-prefix
-     * walking as fallback). Only root entries are returned; the descendants are
+     * walking as fallback, which does not nest views under the root route
+     * {@code ""}). Only root entries are returned; the descendants are
      * reachable via {@link MenuEntry#children()}.
      * <p>
      * Hilla/TypeScript client views have no server-side route hierarchy and are

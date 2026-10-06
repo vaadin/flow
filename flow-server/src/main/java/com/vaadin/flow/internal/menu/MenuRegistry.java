@@ -54,6 +54,8 @@ import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteParent;
+import com.vaadin.flow.router.RouteParentResolver;
 import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.internal.ParameterInfo;
 import com.vaadin.flow.server.AbstractConfiguration;
@@ -187,8 +189,11 @@ public class MenuRegistry {
      * <li>otherwise the logical route parent resolved by
      * {@link RouteConfiguration#getRouteParent(Class, RouteParameters)}, i.e.
      * {@link com.vaadin.flow.router.RouteParent @RouteParent} with URL-prefix
-     * walking as fallback. The route parent is resolved without route
-     * parameters; if that fails, e.g. because a
+     * walking as fallback. The root route ({@code ""}) is not used as a
+     * URL-derived parent, as in a menu it is typically a sibling of the
+     * top-level views rather than their parent; nesting under it requires an
+     * explicit {@code @RouteParent} or {@code @Menu(parent)}. The route parent
+     * is resolved without route parameters; if that fails, e.g. because a
      * {@link com.vaadin.flow.router.RouteParentResolver} requires a parameter,
      * the view has no route parent in the menu.
      * </ol>
@@ -330,7 +335,13 @@ public class MenuRegistry {
         try {
             return routeConfiguration
                     .getRouteParent(navigationTarget, RouteParameters.empty())
-                    .map(RouteReference::navigationTarget);
+                    .map(RouteReference::navigationTarget)
+                    // The root route is usually a sibling of the top-level
+                    // views in a menu (e.g. Home), not the parent of all of
+                    // them, so only an explicit @RouteParent nests under it.
+                    .filter(parent -> hasExplicitRouteParent(navigationTarget)
+                            || !parent.equals(routeConfiguration.getRoute("")
+                                    .orElse(null)));
         } catch (RuntimeException e) {
             // The menu has no route parameters to offer, so a resolver that
             // requires one fails here. Treat that as "no parent" rather than
@@ -349,6 +360,15 @@ public class MenuRegistry {
             }
             return Optional.empty();
         }
+    }
+
+    private static boolean hasExplicitRouteParent(
+            Class<? extends Component> navigationTarget) {
+        RouteParent routeParent = navigationTarget
+                .getAnnotation(RouteParent.class);
+        return routeParent != null && (!Component.class
+                .equals(routeParent.value())
+                || !RouteParentResolver.class.equals(routeParent.resolver()));
     }
 
     private static AvailableViewInfo attachChildren(AvailableViewInfo view,

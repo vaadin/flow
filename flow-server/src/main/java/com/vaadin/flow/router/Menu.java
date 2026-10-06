@@ -81,9 +81,10 @@ public @interface Menu {
      * <p>
      * Use this when the menu hierarchy does not match the route hierarchy: by
      * default an entry is nested under the route it logically belongs to
-     * (defined by {@link RouteParent}, or derived from the route URL), and
-     * defining a parent here overrides that for the menu only. It has no effect
-     * on navigation or on the flat
+     * (defined by {@link RouteParent}, or derived from the route URL, where the
+     * root route {@code ""} is not used as a parent), and defining a parent
+     * here overrides that for the menu only. It has no effect on navigation or
+     * on the flat
      * {@link com.vaadin.flow.server.menu.MenuConfiguration#getMenuEntries()}.
      * <p>
      * The parent does not have to be a direct route ancestor of the annotated

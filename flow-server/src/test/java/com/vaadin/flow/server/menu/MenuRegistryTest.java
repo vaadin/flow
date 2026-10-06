@@ -505,6 +505,25 @@ class MenuRegistryTest {
     }
 
     @Test
+    void collectMenuItemsTree_urlDerivedParent_rootRouteIsNotAParent() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeDashboard.class, TreeSettings.class, TreeAbout.class,
+                TreeAboutTeam.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // About has no @RouteParent: the URL-derived parent would be the root
+        // route, which is a sibling in the menu instead. Settings declares the
+        // root route as its @RouteParent explicitly and stays nested.
+        assertEquals(List.of("/", "/about"), routesOf(tree));
+        assertEquals(List.of("/settings"), routesOf(tree.get(0).children()));
+        // URL-derived parents other than the root route still nest.
+        assertEquals(List.of("/about/team"), routesOf(tree.get(1).children()));
+    }
+
+    @Test
     void collectMenuItemsTree_ancestorNotInMenu_attachesToNearestIncludedAncestor() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
@@ -920,6 +939,19 @@ class MenuRegistryTest {
     @RouteParent(TreeSettings.class)
     @Menu(title = "Billing")
     public static class TreeBilling extends Component {
+    }
+
+    // No @RouteParent: the route parent is derived from the URL.
+    @Tag("div")
+    @Route("about")
+    @Menu(title = "About", order = 5)
+    public static class TreeAbout extends Component {
+    }
+
+    @Tag("div")
+    @Route("about/team")
+    @Menu(title = "Team")
+    public static class TreeAboutTeam extends Component {
     }
 
     // Route child of Dashboard, but nested under Settings in the menu.
