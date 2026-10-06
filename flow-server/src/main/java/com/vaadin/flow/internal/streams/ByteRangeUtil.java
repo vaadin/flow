@@ -166,6 +166,9 @@ public final class ByteRangeUtil {
 
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
+            if (len == 0) {
+                return 0;
+            }
             if (remaining <= 0) {
                 return -1;
             }

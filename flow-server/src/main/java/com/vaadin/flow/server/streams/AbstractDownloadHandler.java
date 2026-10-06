@@ -88,6 +88,10 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * content length is known. A request with several ranges, a malformed range
      * or an {@code If-Range} condition gets the whole content, which RFC 9110
      * allows; the handlers send no validator that {@code If-Range} could match.
+     * <p>
+     * The content is skipped up to the start of the range. This is a seek for a
+     * file, but for a class or servlet resource, or a stream from a callback,
+     * the skipped bytes are read and discarded.
      *
      * @param downloadEvent
      *            the download event

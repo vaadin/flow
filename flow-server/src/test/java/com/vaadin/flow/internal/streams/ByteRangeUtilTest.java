@@ -55,5 +55,6 @@ class ByteRangeUtilTest {
         assertEquals("abcd",
                 new String(limited.readAllBytes(), StandardCharsets.UTF_8));
         assertEquals(-1, limited.read());
+        assertEquals(0, limited.read(new byte[4], 0, 0));
     }
 }
