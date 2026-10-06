@@ -402,7 +402,7 @@ public class Router implements Serializable {
         assert ui != null;
         assert location != null;
         assert trigger != null;
-        ui.getSession().checkHasLock();
+        ui.getSessionOrThrow().checkHasLock();
 
         if (handleNavigationForLocation(ui, location)) {
             return observeNavigation(ui, location, trigger, () -> {
@@ -624,7 +624,7 @@ public class Router implements Serializable {
             if (!outermost) {
                 return navigation.getAsInt();
             }
-            VaadinServiceEventBus eventBus = ui.getSession().getService()
+            VaadinServiceEventBus eventBus = ui.getSessionOrThrow().getService()
                     .getEventBus();
             if (!eventBus.hasListener(NavigationStartedEvent.class)
                     && !eventBus.hasListener(NavigationEndedEvent.class)) {

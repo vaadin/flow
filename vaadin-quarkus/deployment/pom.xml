@@ -60,4 +60,19 @@
       <artifactId>jakarta.servlet-api</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <!-- FlowJandexIndexTest checks that the Flow indexes have this
+                 format -->
+            <jandex.format.version>${jandex.format.version}</jandex.format.version>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

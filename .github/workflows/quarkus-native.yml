@@ -54,9 +54,14 @@ jobs:
       - name: Compile and Install Flow
         # Builds its own reactor rather than reusing validation's saved
         # workspace: that artifact is built on Temurin and is gone by the time
-        # this runs.
+        # this runs. Only what the tested module needs: the quarkus-tests
+        # profile adds the suite to the reactor, and -am the Flow modules and
+        # fixtures it depends on. The extension deployment module is listed
+        # because the module does not declare it: Quarkus resolves it while
+        # it builds the application.
         run: |
-          cmd="mvn install -B -ntp -DskipTests -DskipITs -pl '!flow-plugins/flow-gradle-plugin'"
+          cmd="mvn install -B -ntp -DskipTests -DskipITs -Pquarkus-tests \
+            -pl flow-tests/vaadin-quarkus-tests/embedded-plugin,vaadin-quarkus/deployment -am"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         env:
@@ -67,11 +72,10 @@ jobs:
       - name: Test with native image
         timeout-minutes: 45
         run: |
-          # -am because the install above skips tests, which deactivates the
-          # it-test-modules profile and leaves the fixture modules this one
-          # depends on out of the local repository.
-          cmd="mvn -V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
-            -pl embedded-plugin -am -Dnative \
+          # No -am: the install above has put everything this module depends
+          # on in the local repository.
+          cmd="mvn -V -B -ntp -e -Pquarkus-tests \
+            -pl flow-tests/vaadin-quarkus-tests/embedded-plugin -Dnative \
             -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
           set -x -e
           LOG=mvn-quarkus-native.out
@@ -159,8 +163,8 @@ jobs:
           Reproduce locally with GraalVM on the path:
 
           \`\`\`sh
-          mvn install -DskipTests -DskipITs -pl '!flow-plugins/flow-gradle-plugin'
-          mvn verify -f flow-tests/vaadin-quarkus-tests/pom.xml -pl embedded-plugin -am -Dnative
+          mvn install -DskipTests -DskipITs -Pquarkus-tests -pl flow-tests/vaadin-quarkus-tests/embedded-plugin,vaadin-quarkus/deployment -am
+          mvn verify -Pquarkus-tests -pl flow-tests/vaadin-quarkus-tests/embedded-plugin -Dnative
           \`\`\`
 
           This issue is updated by each nightly run and closed automatically

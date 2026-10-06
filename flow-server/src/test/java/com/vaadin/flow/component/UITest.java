@@ -1206,6 +1206,17 @@ public class UITest {
     }
 
     @Test
+    public void getSessionOrThrow_withSession_returnsSession_withoutSession_throws() {
+        MockUI ui = createAccessableTestUI();
+        assertSame(ui.getSession(), ui.getSessionOrThrow());
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, new UI()::getSessionOrThrow);
+        assertTrue(exception.getMessage()
+                .startsWith("UI is not attached to a VaadinSession"));
+    }
+
+    @Test
     public void csrfToken_differentUIs_shouldBeUnique() {
         String token1 = new UI().getCsrfToken();
         String token2 = new UI().getCsrfToken();

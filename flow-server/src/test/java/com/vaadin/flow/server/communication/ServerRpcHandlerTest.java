@@ -101,6 +101,7 @@ class ServerRpcHandlerTest {
 
         Mockito.when(ui.getInternals()).thenReturn(uiInternals);
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
         Mockito.when(ui.getCsrfToken()).thenReturn(csrfToken);
 
         deploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);

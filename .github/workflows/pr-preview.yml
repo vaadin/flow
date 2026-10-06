@@ -35,7 +35,6 @@ env:
   FLY_ORG: ${{ vars.FLY_ORG || 'personal' }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
-  JAVA_VERSION: 21
   # The same flags validation.yml sets, for the same reason: a 403 from Central
   # is retried rather than failing the build outright. See the note there.
   MAVEN_ARGS: >-
@@ -66,10 +65,14 @@ jobs:
       - name: Check configuration
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
         run: |
-          [ -z "$FLY_API_TOKEN" ] \
-            && echo "🚫 The **FLY_API_TOKEN** secret is not defined, check the configuration of **${{ github.repository }}**" \
-            | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
+          for secret in FLY_API_TOKEN TB_LICENSE; do
+            [ -z "${!secret}" ] \
+              && echo "🚫 The **$secret** secret is not defined, check the configuration of **${{ github.repository }}**" \
+              | tee -a $GITHUB_STEP_SUMMARY && exit 1
+          done
+          exit 0
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{ env._HEAD_SHA }}
@@ -79,8 +82,16 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
-          java-version: "${{ env.JAVA_VERSION }}"
+          java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set TB License
+        # The production build of a module that uses a commercial component,
+        # such as flow-polymer-template, fails without a license.
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Pick the test module
         id: module
         env:

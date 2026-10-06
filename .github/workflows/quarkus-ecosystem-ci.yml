@@ -19,7 +19,6 @@ on:
 env:
   ECOSYSTEM_CI_REPO: quarkusio/quarkus-ecosystem-ci
   ECOSYSTEM_CI_REPO_FILE: context.yaml
-  JAVA_VERSION: 21
 
   #########################
   # Repo specific setting #
@@ -57,7 +56,7 @@ jobs:
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version-file: current-repo/.tool-versions
 
       # The repository is checked out under current-repo, not at the root.
       - name: Read the frontend tool versions
