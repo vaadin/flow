@@ -178,13 +178,12 @@ public class DevModeUsageStatistics {
                 ProjectHelpers.getProjectSource(projectFolder));
         projectData.setValue(StatisticsConstants.FIELD_BUILD_TOOL,
                 ProjectHelpers.getBuildTool(projectFolder));
-        // Keep a detected agent until the report is sent, so that a later
-        // start outside of the agent does not hide that one was used
-        String aiAgent = ProjectHelpers.getAiAgent(System.getenv());
-        if (!StatisticsConstants.AI_AGENT_NONE.equals(aiAgent) || !projectData
-                .containsField(StatisticsConstants.FIELD_AI_AGENT)) {
-            projectData.setValue(StatisticsConstants.FIELD_AI_AGENT, aiAgent);
-        }
+        // Only set when detected, so that a start without an agent leaves out
+        // the field but does not clear an agent detected earlier in the same
+        // report interval
+        ProjectHelpers.getAiAgent(System.getenv())
+                .ifPresent(aiAgent -> projectData
+                        .setValue(StatisticsConstants.FIELD_AI_AGENT, aiAgent));
     }
 
     /**

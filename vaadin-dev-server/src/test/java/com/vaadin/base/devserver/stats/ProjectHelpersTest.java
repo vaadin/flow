@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,23 +73,24 @@ class ProjectHelpersTest {
 
     @Test
     void aiAgent() {
-        assertEquals(StatisticsConstants.AI_AGENT_NONE,
+        assertEquals(Optional.empty(),
                 ProjectHelpers.getAiAgent(Map.of("PATH", "/usr/bin")));
-        assertEquals(StatisticsConstants.AI_AGENT_CLAUDE,
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CLAUDE),
                 ProjectHelpers.getAiAgent(Map.of("CLAUDECODE", "1")));
-        assertEquals(StatisticsConstants.AI_AGENT_CODEX,
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CODEX),
                 ProjectHelpers.getAiAgent(Map.of("CODEX_THREAD_ID", "t-42")));
-        assertEquals(StatisticsConstants.AI_AGENT_GEMINI,
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_GEMINI),
                 ProjectHelpers.getAiAgent(Map.of("GEMINI_CLI", "1")));
-        assertEquals(StatisticsConstants.AI_AGENT_CURSOR,
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CURSOR),
                 ProjectHelpers.getAiAgent(Map.of("CURSOR_AGENT", "1")));
-        assertEquals(StatisticsConstants.AI_AGENT_OPENCODE,
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_OPENCODE),
                 ProjectHelpers.getAiAgent(Map.of("OPENCODE", "1")));
-        assertEquals(StatisticsConstants.AI_AGENT_OTHER,
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_OTHER),
                 ProjectHelpers.getAiAgent(Map.of("AI_AGENT", "some-agent")));
         // Another agent that also sets CLAUDECODE is reported as itself
-        assertEquals(StatisticsConstants.AI_AGENT_CURSOR, ProjectHelpers
-                .getAiAgent(Map.of("CURSOR_AGENT", "1", "CLAUDECODE", "1")));
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CURSOR),
+                ProjectHelpers.getAiAgent(
+                        Map.of("CURSOR_AGENT", "1", "CLAUDECODE", "1")));
     }
 
     private File createTempDir() throws IOException {

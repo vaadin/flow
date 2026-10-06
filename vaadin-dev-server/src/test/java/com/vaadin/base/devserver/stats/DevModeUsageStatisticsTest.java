@@ -30,6 +30,7 @@ import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.pro.licensechecker.MachineId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -253,15 +254,13 @@ class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     void aiAgentIsKeptOverStartWithoutAgent() {
-        assumeTrue(
-                StatisticsConstants.AI_AGENT_NONE
-                        .equals(ProjectHelpers.getAiAgent(System.getenv())),
+        assumeTrue(ProjectHelpers.getAiAgent(System.getenv()).isEmpty(),
                 "Requires a test run that is not started by an AI agent");
         File mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
-        assertEquals(StatisticsConstants.AI_AGENT_NONE, storage.readProject()
-                .get(StatisticsConstants.FIELD_AI_AGENT).asString());
+        assertFalse(new StatisticsContainer(storage.readProject())
+                .containsField(StatisticsConstants.FIELD_AI_AGENT));
 
         // An earlier start in the same report interval was made by an agent
         storage.update((global, project) -> project.setValue(

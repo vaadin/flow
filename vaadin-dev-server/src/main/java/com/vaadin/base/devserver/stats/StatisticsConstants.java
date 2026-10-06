@@ -71,7 +71,6 @@ public class StatisticsConstants {
     static final String AI_AGENT_CURSOR = "cursor";
     static final String AI_AGENT_OPENCODE = "opencode";
     static final String AI_AGENT_OTHER = "other";
-    static final String AI_AGENT_NONE = "none";
 
     /*
      * Default data values and limits.

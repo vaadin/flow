@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -254,30 +255,30 @@ public class ProjectHelpers {
      *            the environment variables of the process
      * @return the identifier of the detected agent, <code>AI_AGENT_OTHER</code>
      *         for an agent that only sets the generic {@code AI_AGENT}
-     *         variable, or <code>AI_AGENT_NONE</code> if no agent was detected
+     *         variable, or an empty optional if no agent was detected
      */
-    static String getAiAgent(Map<String, String> environment) {
+    static Optional<String> getAiAgent(Map<String, String> environment) {
         Predicate<String> isSet = environment::containsKey;
         if (Stream.of("CODEX_SANDBOX", "CODEX_CI", "CODEX_THREAD_ID")
                 .anyMatch(isSet)) {
-            return StatisticsConstants.AI_AGENT_CODEX;
+            return Optional.of(StatisticsConstants.AI_AGENT_CODEX);
         }
         if (isSet.test("GEMINI_CLI")) {
-            return StatisticsConstants.AI_AGENT_GEMINI;
+            return Optional.of(StatisticsConstants.AI_AGENT_GEMINI);
         }
         if (isSet.test("CURSOR_AGENT")) {
-            return StatisticsConstants.AI_AGENT_CURSOR;
+            return Optional.of(StatisticsConstants.AI_AGENT_CURSOR);
         }
         if (isSet.test("OPENCODE")) {
-            return StatisticsConstants.AI_AGENT_OPENCODE;
+            return Optional.of(StatisticsConstants.AI_AGENT_OPENCODE);
         }
         if (isSet.test("CLAUDECODE")) {
-            return StatisticsConstants.AI_AGENT_CLAUDE;
+            return Optional.of(StatisticsConstants.AI_AGENT_CLAUDE);
         }
         if (isSet.test("AI_AGENT")) {
-            return StatisticsConstants.AI_AGENT_OTHER;
+            return Optional.of(StatisticsConstants.AI_AGENT_OTHER);
         }
-        return StatisticsConstants.AI_AGENT_NONE;
+        return Optional.empty();
     }
 
     /**
