@@ -11,7 +11,9 @@
   <name>Flow Lit Templates Support</name>
   <description>${project.name}</description>
 
-  <properties/>
+  <properties>
+    <jpms.module.name>com.vaadin.flow.component.littemplate</jpms.module.name>
+  </properties>
 
   <dependencies>
 

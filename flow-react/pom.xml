@@ -12,6 +12,10 @@
   <name>Flow React Component Support</name>
   <description>${project.name}</description>
 
+  <properties>
+    <jpms.module.name>com.vaadin.flow.component.react</jpms.module.name>
+  </properties>
+
   <dependencies>
     <!-- Project dependencies -->
 

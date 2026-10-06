@@ -170,6 +170,9 @@
     <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
     <atmosphere.client.version>4.0.1</atmosphere.client.version>
 
+    <!-- JPMS: see the maven-jar-plugin configuration -->
+    <jpms.module.name/>
+
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
@@ -487,6 +490,24 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>${maven.jar.plugin.version}</version>
+          <executions>
+            <execution>
+              <!-- Only the main jar gets the module name, a test-jar
+                   with the same name would clash on the module path -->
+              <id>default-jar</id>
+              <configuration>
+                <archive>
+                  <manifestEntries>
+                    <!-- Stable JPMS module name for jars used from the
+                         module path. Modules publishing a runtime jar set
+                         the jpms.module.name property; the entry is
+                         omitted when the property is empty. -->
+                    <Automatic-Module-Name>${jpms.module.name}</Automatic-Module-Name>
+                  </manifestEntries>
+                </archive>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>

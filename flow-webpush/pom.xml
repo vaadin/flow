@@ -12,7 +12,9 @@
   <name>Flow WebPush</name>
   <description>${project.name}</description>
 
-  <properties/>
+  <properties>
+    <jpms.module.name>com.vaadin.flow.server.webpush</jpms.module.name>
+  </properties>
 
   <dependencies>
     <!-- Project dependencies -->
