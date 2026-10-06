@@ -305,11 +305,32 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
             // counts wherever it is declared, exactly as when the daemon reads
             // the pom itself.
             configurationOf(plugin.getConfiguration(), key, values);
-            for (PluginExecution execution : plugin.getExecutions()) {
+            List<PluginExecution> executions = plugin.getExecutions();
+            for (int at = 0; at < executions.size(); at++) {
+                PluginExecution execution = executions.get(at);
                 configurationOf(execution.getConfiguration(), key, values);
+                executionOf(execution, "execution." + index + "." + at, values);
             }
         }
         return values;
+    }
+
+    /**
+     * One execution's id, phase and goals, which is how the daemon names the
+     * execution when it runs a single goal of the plugin - a compile through
+     * Maven has to pick up the configuration of the execution the build binds,
+     * not only the plugin's own.
+     * <p>
+     * Under a prefix of its own rather than below {@code plugin.N.}, where it
+     * would read back as configuration.
+     */
+    private static void executionOf(PluginExecution execution, String key,
+            Properties values) {
+        values.setProperty(key, String.valueOf(execution.getId()));
+        values.setProperty(key + ".phase",
+                execution.getPhase() == null ? "" : execution.getPhase());
+        values.setProperty(key + ".goals",
+                String.join(",", execution.getGoals()));
     }
 
     /** The simple children of one {@code <configuration>}, if there is one. */

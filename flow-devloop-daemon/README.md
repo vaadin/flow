@@ -224,7 +224,8 @@ properties files, where the rest of the team can see it (see
 | `vaadin.dev.reactorRoot` | discovered | when the reactor root is not an ancestor of the application |
 | `vaadin.dev.modules` | auto | the edit loop by hand; `.` for the application alone |
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
-| `vaadin.dev.maven` | wrapper, then `PATH` | which Maven resolves the classpath |
+| `vaadin.dev.compiler` | `javac` | what compiles an apply: `javac` in-process, or `maven` (see [Compiling with Maven](#compiling-with-maven)) |
+| `vaadin.dev.maven` | wrapper, then `PATH` | which Maven resolves the classpath, and compiles with `vaadin.dev.compiler=maven` |
 | `vaadin.dev.mavenArgs` | none | extra arguments for the resolve, e.g. `-P!some-profile` |
 | `vaadin.dev.javaHome` | the best JBR for the project (see `Jvm`) | which JVM runs the app |
 | `vaadin.dev.hotswapAgentJar` | downloaded | an already-present HotswapAgent jar |
@@ -783,6 +784,61 @@ VAADIN_DEV_DAEMON_OPTS="-Dvaadin.frontend.hotdeploy=true" .vaadin/vaadin-dev sta
 #   expect: exit 0, Stable - the report left in the log must not fail this one
 ```
 
+## Compiling with Maven
+
+By default an apply compiles its change-set with javac inside the daemon, which
+is fast and approximate (see [In the in-loop compile](#in-the-in-loop-compile)).
+`-Dvaadin.dev.compiler=maven` makes every apply compile through the project's
+own build instead:
+
+```
+.vaadin/vaadin-dev shutdown
+VAADIN_DEV_DAEMON_OPTS="-Dvaadin.dev.compiler=maven" .vaadin/vaadin-dev start
+```
+
+Each apply then runs `compiler:compile` - offline, quiet, from the reactor root
+with `-pl :<app> -am`, and named with the execution the build binds
+(`default-compile` unless the pom says otherwise), so that execution's
+configuration applies. Only the compile goal runs, not the `compile` phase:
+copying resources stays the daemon's own leg, and `prepare-frontend` and
+whatever else the project binds before `compile` are not run per apply.
+Everything around the compile - change detection, deletions, the redefine and
+when it escalates - is the same as with javac. `status` names the compiler,
+and so does `daemon.log` when the compile leg is built.
+
+What it fixes:
+
+- **Annotation processors run**: Lombok, MapStruct and the rest generate what
+  they would in a normal build.
+- **The compiler plugin's configuration is honoured**: `<compilerArgs>`,
+  `--enable-preview`, `-Werror`, and whatever a parent outside the checkout
+  sets.
+- **Callers nobody edited are recompiled** whenever maven-compiler-plugin
+  decides to, which it does for a whole module when one of its sources or
+  upstream modules changed - so a changed signature or `static final`
+  constant reaches its callers.
+
+What it costs:
+
+- **A Maven start per apply**, seconds rather than the tens of milliseconds
+  javac in-process takes. `-Dvaadin.dev.maven=<path to mvnd>` points the daemon
+  at the Maven Daemon, which keeps a warm JVM between applies.
+- **Maven's verdict is final.** `-Werror` and any other failure the build
+  would report now fails the apply; an error Maven prints with no source
+  location is reported as a single diagnostic carrying Maven's own reason.
+- **Plugins bound to `generate-sources` do not run per apply.** What they
+  generated at the last resolve is compiled as it stands; a change to their
+  input needs `mvn generate-sources`, or a pom touch to make the daemon
+  re-resolve.
+
+Maven recompiling a module rewrites every class file in it, so the redefine
+is not handed the whole module: the daemon compares each class file the run
+touched with the bytes the running application holds, and only classes that
+are new or whose bytes changed are redefined. The comparison moves forward
+only when a redefine has been accepted, so an apply that compiled but never
+reached the application (`--no-restart`, or superseded by a newer apply)
+offers the same classes again next time.
+
 ## Deletions
 
 A walk sees only what is there, so a deletion is found against the fingerprint
@@ -936,6 +992,11 @@ None of them is a bug in this module.
   other new bean or entity would.
 
 ### In the in-loop compile
+
+These describe the default javac backend. None of them applies when compiling
+with Maven (see [Compiling with Maven](#compiling-with-maven)): the build's own
+compiler plugin then writes `target/classes`, with the build's own
+configuration.
 
 - **An edit that changes what a class promises its callers is not supported.**
   Only the change-set goes to javac, so callers nobody edited keep the bytecode

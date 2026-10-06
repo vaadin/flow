@@ -55,6 +55,8 @@ import java.util.stream.Stream;
  * It skips a JVM start per apply, and its {@link Diagnostic} objects already
  * carry file, line, column, code and message — so the agent-facing
  * {@code diagnostics[]} contract needs no parsing of compiler text output.
+ * Compiling through Maven instead is an opt-in, {@code vaadin.dev.compiler};
+ * see {@link Compiler} and {@link MavenCompile}.
  * <p>
  * One instance covers all modules rather than one instance per module: the two
  * fingerprint maps are keyed by absolute source path, which stays unique across
@@ -87,6 +89,86 @@ final class Compile {
 
     record Result(boolean success, List<Message> errors,
             List<String> writtenClasses, long millis) {
+    }
+
+    /**
+     * What turns a change-set into class files: javac in-process, or Maven.
+     * <p>
+     * Everything else in an apply - change detection, deletions, the classpath
+     * forcing a pom edit causes, the redefine - is the same whichever compiles,
+     * which is why only this is swapped.
+     */
+    interface Backend {
+
+        /**
+         * Compiles a change-set.
+         *
+         * @param sources
+         *            the sources that changed, across every module in the loop
+         * @param project
+         *            the resolved build
+         * @return the outcome, naming the classes the running application has
+         *         to be given
+         */
+        Result compile(List<Path> sources, Launch.Project project);
+
+        /**
+         * Records the class files the running application was launched with.
+         *
+         * @param classes
+         *            every class file in the loop, with its stamp
+         */
+        default void seed(Map<Path, Stamp> classes) {
+        }
+
+        /**
+         * Records that the classes the last successful compile reported are now
+         * live in the running application.
+         */
+        default void markApplied() {
+        }
+    }
+
+    /**
+     * Which {@link Backend} compiles, from {@code vaadin.dev.compiler}.
+     * <p>
+     * javac by default: it costs no JVM start per apply. Maven is the opt-in
+     * for a project javac-in-process gets wrong - annotation processors,
+     * compiler-plugin configuration, unedited callers of a changed signature.
+     */
+    enum Compiler {
+        JAVAC, MAVEN;
+
+        static final String PROPERTY = "vaadin.dev.compiler";
+
+        /**
+         * The configured compiler, javac when the property is unset or names
+         * none of them.
+         *
+         * @param log
+         *            where an unrecognised value is reported
+         * @return the compiler
+         */
+        static Compiler configured(Launch.Log log) {
+            String value = System.getProperty(PROPERTY);
+            if (value == null || value.isBlank()) {
+                return JAVAC;
+            }
+            for (Compiler compiler : values()) {
+                if (compiler.label().equals(
+                        value.trim().toLowerCase(java.util.Locale.ROOT))) {
+                    return compiler;
+                }
+            }
+            log.line("WARNING: " + PROPERTY + "=" + value
+                    + " is not one of javac, maven; compiling with javac");
+            return JAVAC;
+        }
+
+        /** How the compiler is named in the property and in output. */
+        String label() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
     }
 
     /**
@@ -304,8 +386,48 @@ final class Compile {
      */
     private final Map<String, String> compiledAgainst = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** What compiles the change-sets this instance finds. */
+    private final Compiler compiler;
+
+    private final Backend backend;
+
     Compile(Launch.Project project) {
         this(project, null);
+    }
+
+    /**
+     * A baseline that compiles with javac in-process.
+     *
+     * @param project
+     *            the resolved build the new baseline describes
+     * @param previous
+     *            the baseline this instance replaces, or {@code null} for a
+     *            project's first one
+     */
+    Compile(Launch.Project project, Compile previous) {
+        this(project, previous, Compiler.JAVAC, compile -> compile::javac);
+    }
+
+    /**
+     * A baseline that compiles with the compiler {@code vaadin.dev.compiler}
+     * selects; see {@link Compiler}.
+     *
+     * @param project
+     *            the resolved build the new baseline describes
+     * @param previous
+     *            the baseline this instance replaces, or {@code null} for a
+     *            project's first one
+     * @param launch
+     *            what runs Maven, for the Maven backend
+     * @return the baseline
+     */
+    static Compile configured(Launch.Project project, Compile previous,
+            Launch launch) {
+        return switch (Compiler.configured(launch.log())) {
+        case JAVAC -> new Compile(project, previous);
+        case MAVEN -> new Compile(project, previous, Compiler.MAVEN,
+                compile -> new MavenCompile(compile, launch));
+        };
     }
 
     /**
@@ -329,8 +451,13 @@ final class Compile {
      * @param previous
      *            the baseline this instance replaces, or {@code null} for a
      *            project's first one
+     * @param compiler
+     *            which compiler the backend is
+     * @param backend
+     *            builds the backend for this instance
      */
-    Compile(Launch.Project project, Compile previous) {
+    private Compile(Launch.Project project, Compile previous, Compiler compiler,
+            java.util.function.Function<Compile, Backend> backend) {
         this.modules = List.copyOf(project.modules());
         this.frontend = Frontend.of(project.app());
         for (Reactor.Module module : modules) {
@@ -339,10 +466,17 @@ final class Compile {
             compiledAgainst.put(module.artifactId(), carried != null ? carried
                     : Launch.membership(project.compileClasspath(module)));
         }
+        this.compiler = compiler;
+        this.backend = backend.apply(this);
     }
 
     List<Reactor.Module> modules() {
         return modules;
+    }
+
+    /** Which compiler this baseline compiles with, for the log and status. */
+    Compiler compiler() {
+        return compiler;
     }
 
     /**
@@ -788,7 +922,7 @@ final class Compile {
         }
     }
 
-    private Optional<Stamp> stampOf(Path file) {
+    static Optional<Stamp> stampOf(Path file) {
         try {
             BasicFileAttributes attrs = Files.readAttributes(file,
                     BasicFileAttributes.class);
@@ -814,7 +948,7 @@ final class Compile {
      * do.
      */
     @SuppressWarnings("java:S1166")
-    private Optional<String> digestOf(Path file) {
+    static Optional<String> digestOf(Path file) {
         try (InputStream in = Files.newInputStream(file)) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] buffer = new byte[8192];
@@ -1122,6 +1256,7 @@ final class Compile {
         for (Path source : sources) {
             stampOf(source).ifPresent(stamp -> applied.put(source, stamp));
         }
+        backend.markApplied();
     }
 
     /**
@@ -1175,12 +1310,16 @@ final class Compile {
      */
     private void seedClasses() {
         launchedWith.clear();
+        Map<Path, Stamp> classes = new java.util.HashMap<>();
         for (Reactor.Module module : modules) {
             walk(module, module.classesDir(),
                     path -> path.toString().endsWith(CLASS_SUFFIX),
-                    (owner, file, stamp) -> launchedWith
-                            .add(binaryNameOf(owner, file)));
+                    (owner, file, stamp) -> {
+                        launchedWith.add(binaryNameOf(owner, file));
+                        classes.put(file, stamp);
+                    });
         }
+        backend.seed(classes);
     }
 
     private void forEachSource(Visitor action) {
@@ -1218,6 +1357,30 @@ final class Compile {
     }
 
     /**
+     * Compiles a change-set with this baseline's {@link Backend}.
+     *
+     * @param sources
+     *            the sources that changed
+     * @param project
+     *            the resolved build
+     * @return the outcome
+     */
+    Result compile(List<Path> sources, Launch.Project project) {
+        return backend.compile(sources, project);
+    }
+
+    /**
+     * Records that a module now compiles against its current classpath, which
+     * is what clears {@link #classpathForced} for it. Only after a successful
+     * compile: a failed one has to stay forced, or the next apply would report
+     * the broken module as having no changes.
+     */
+    void recordCompiledAgainst(Reactor.Module module, Launch.Project project) {
+        compiledAgainst.put(module.artifactId(),
+                Launch.membership(project.compileClasspath(module)));
+    }
+
+    /**
      * Compiles a change-set, one javac invocation per module.
      * <p>
      * Grouped rather than compiled in one pass because javac takes a single
@@ -1233,7 +1396,7 @@ final class Compile {
      * downstream module's errors after an upstream failure are consequences,
      * and reporting them would bury the one line that has to be fixed.
      */
-    Result compile(List<Path> sources, Launch.Project project) {
+    private Result javac(List<Path> sources, Launch.Project project) {
         long started = System.nanoTime();
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
@@ -1436,11 +1599,7 @@ final class Compile {
             List<String> classes = ok ? written.stream().sorted().toList()
                     : List.of();
             if (ok) {
-                // Only on success: a failed compile has to stay forced, or the
-                // next apply would report the broken module as having no
-                // changes.
-                compiledAgainst.put(module.artifactId(),
-                        Launch.membership(project.compileClasspath(module)));
+                recordCompiledAgainst(module, project);
             }
             return new Result(ok, errors, classes, millis);
         } catch (IOException e) {
@@ -1451,26 +1610,28 @@ final class Compile {
         }
     }
 
-    /**
-     * The file a diagnostic points at. Bare file name for the application,
-     * whose output shape is documented, and prefixed with the module directory
-     * for anything else — "Task.java:12" in a project with five modules is not
-     * enough to open the file with.
-     */
     private Message toMessage(Diagnostic<? extends JavaFileObject> d) {
-        String file = "-";
-        if (d.getSource() != null) {
-            Path path = Path.of(d.getSource().getName());
-            Path name = path.getFileName();
-            file = name == null ? path.toString() : name.toString();
-            Optional<Reactor.Module> owner = moduleOf(path);
-            if (owner.isPresent() && !owner.get().equals(app())) {
-                file = owner.get().name() + "/" + file;
-            }
-        }
+        String file = d.getSource() == null ? "-"
+                : diagnosticFileOf(Path.of(d.getSource().getName()));
         String text = tidy(d.getMessage(null));
         return new Message(file, d.getLineNumber(), d.getColumnNumber(),
                 String.valueOf(d.getCode()), text, hintFor(d.getCode(), text));
+    }
+
+    /**
+     * How a diagnostic names the file it points at, whichever backend reported
+     * it. Bare file name for the application, whose output shape is documented,
+     * and prefixed with the module directory for anything else — "Task.java:12"
+     * in a project with five modules is not enough to open the file with.
+     */
+    String diagnosticFileOf(Path path) {
+        Path name = path.getFileName();
+        String file = name == null ? path.toString() : name.toString();
+        Optional<Reactor.Module> owner = moduleOf(path);
+        if (owner.isPresent() && !owner.get().equals(app())) {
+            file = owner.get().name() + "/" + file;
+        }
+        return file;
     }
 
     /**

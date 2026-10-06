@@ -284,7 +284,8 @@ final class TransactionEngine {
         // was compiled against survives the hand-off: a module set changes
         // only because the application gained or lost a reactor dependency,
         // and that is the very move the compile leg has to see.
-        Compile fresh = new Compile(project, current);
+        Compile fresh = Compile.configured(project, current, launch);
+        log.line("compiler: " + fresh.compiler().label());
         // A baseline built while the app is already running must not swallow a
         // frontend edit made since it started - that is exactly the "start,
         // edit, first apply" sequence, and answering "no changes" to it is the

@@ -90,7 +90,7 @@ jobs:
       - name: Generate matrices
         id: set-matrix
         run: |
-          echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=15 current module args)" >> $GITHUB_OUTPUT
+          echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=17 current module args)" >> $GITHUB_OUTPUT
           echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=4 current module args)" >> $GITHUB_OUTPUT
           echo "matrix-quarkus=$(./scripts/computeMatrix.js quarkus-tests)" >> $GITHUB_OUTPUT
       - name: Set TB License
@@ -284,15 +284,23 @@ jobs:
             $cmd -T 1C || $cmd
           fi
           if [ ${{matrix.current}} -eq 7 ]; then
-            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-spring/devloop-shared,test-devloop-jetty/devloop-shared,test-devloop-cargo/devloop-shared -am"
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-spring/devloop-shared,test-devloop-jetty/devloop-shared -am"
             $cmd || $cmd
           fi
           if [ ${{matrix.current}} -eq 9 ]; then
-            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-tomee/devloop-shared,test-devloop-liberty/devloop-shared,test-devloop-payara-micro/devloop-shared -am"
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-tomee/devloop-shared,test-devloop-liberty/devloop-shared -am"
             $cmd || $cmd
           fi
           if [ ${{matrix.current}} -eq 10 ]; then
-            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-payara/devloop-shared,test-devloop-jbosseap/devloop-shared -am"
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-payara/devloop-shared,test-devloop-payara-micro/devloop-shared -am"
+            $cmd || $cmd
+          fi
+          if [ ${{matrix.current}} -eq 11 ]; then
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-cargo/devloop-shared -am"
+            $cmd || $cmd
+          fi
+          if [ ${{matrix.current}} -eq 12 ]; then
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-jbosseap/devloop-shared -am"
             $cmd || $cmd
           fi
       - name: Run ITs

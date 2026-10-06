@@ -89,6 +89,9 @@ class DevLoopBuildExtensionTest {
         Plugin plugin = jetty("ee11", "12.1.13");
         plugin.setConfiguration(configuration("scan", "2"));
         PluginExecution execution = new PluginExecution();
+        execution.setId("start-jetty");
+        execution.setPhase("pre-integration-test");
+        execution.addGoal("start");
         execution.setConfiguration(configuration("deployMode", "FORK"));
         plugin.addExecution(execution);
 
@@ -96,6 +99,12 @@ class DevLoopBuildExtensionTest {
 
         assertEquals("2", model.getProperty("plugin.0.scan"));
         assertEquals("FORK", model.getProperty("plugin.0.deployMode"));
+        // The execution itself too, which is how the daemon names it when it
+        // runs one goal of the plugin.
+        assertEquals("start-jetty", model.getProperty("execution.0.0"));
+        assertEquals("pre-integration-test",
+                model.getProperty("execution.0.0.phase"));
+        assertEquals("start", model.getProperty("execution.0.0.goals"));
     }
 
     /** The profiles Maven ran with, which is the answer poms cannot give. */
