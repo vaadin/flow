@@ -602,6 +602,7 @@ public final class Constants implements Serializable {
      * carries it.
      *
      * @see #UNTHEMED_HTML_CLASS_NAME
+     * @since 25.3.1
      */
     public static final String THEMED_HTML_CLASS_NAME = "vaadin-themed-html";
 
@@ -609,6 +610,8 @@ public final class Constants implements Serializable {
      * The class name that keeps the theme's styles off a plain HTML element
      * under an ancestor with {@link #THEMED_HTML_CLASS_NAME}, leaving the
      * element to the browser or to the application's own styles.
+     * 
+     * @since 25.3.1
      */
     public static final String UNTHEMED_HTML_CLASS_NAME = "vaadin-unthemed-html";
 

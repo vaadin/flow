@@ -53,6 +53,8 @@ import com.vaadin.flow.shared.Registration;
  * {@link TransferProgressAwareHandler#whenComplete(com.vaadin.flow.function.SerializableConsumer)
  * whenComplete}) to react to success or failure on the server. The browser does
  * not report whether the user actually saved the file.
+ * 
+ * @since 25.4
  */
 public final class Download implements Serializable {
 

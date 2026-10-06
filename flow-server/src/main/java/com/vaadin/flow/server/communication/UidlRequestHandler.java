@@ -400,6 +400,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      * a parameter of the call rather than part of the JavaScript.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface MprPushStateJs extends Serializable {
