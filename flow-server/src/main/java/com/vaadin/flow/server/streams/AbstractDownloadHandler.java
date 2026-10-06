@@ -15,9 +15,18 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Abstract class for common methods used in pre-made download handlers.
@@ -29,6 +38,10 @@ import com.vaadin.flow.server.VaadinResponse;
 public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         extends TransferProgressAwareHandler<DownloadEvent, R>
         implements DownloadHandler {
+
+    // At most 18 digits, so that a value always fits in a long
+    private static final Pattern SINGLE_BYTE_RANGE = Pattern
+            .compile("bytes=(\\d{0,18})-(\\d{0,18})");
 
     // Content-Disposition: attachment by default
     private boolean inline = false;
@@ -69,5 +82,136 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      */
     public boolean isInline() {
         return inline;
+    }
+
+    /**
+     * Writes the content to the response, sending only the requested part when
+     * the request asks for a single byte range.
+     * <p>
+     * Media players rely on range requests to seek: without
+     * {@code Accept-Ranges} and {@code 206 Partial Content}, a browser cannot
+     * jump ahead of what it has downloaded. Ranges are only served when the
+     * content length is known. A request with several ranges, a malformed range
+     * or an {@code If-Range} condition gets the whole content, which RFC 9110
+     * allows; the handlers send no validator that {@code If-Range} could match.
+     *
+     * @param downloadEvent
+     *            the download event
+     * @param inputStream
+     *            the content, positioned at its first byte
+     * @param outputStream
+     *            the response output stream
+     * @param contentLength
+     *            the length of the whole content, or {@code -1} if unknown
+     * @throws IOException
+     *             if reading or writing the content fails
+     */
+    void transferContent(DownloadEvent downloadEvent, InputStream inputStream,
+            OutputStream outputStream, long contentLength) throws IOException {
+        ByteRange range = null;
+        if (contentLength >= 0) {
+            VaadinRequest request = downloadEvent.getRequest();
+            downloadEvent.getResponse().setHeader("Accept-Ranges", "bytes");
+            if (request.getHeader("If-Range") == null) {
+                range = parseRange(request.getHeader("Range"), contentLength);
+            }
+        }
+        if (range == null) {
+            downloadEvent.setContentLength(contentLength);
+            TransferUtil.transfer(inputStream, outputStream,
+                    getTransferContext(downloadEvent), getListeners());
+            return;
+        }
+
+        VaadinResponse response = downloadEvent.getResponse();
+        if (range.start() >= contentLength) {
+            response.setStatus(
+                    HttpStatusCode.REQUESTED_RANGE_NOT_SATISFIABLE.getCode());
+            response.setHeader("Content-Range", "bytes */" + contentLength);
+            downloadEvent.setContentLength(0);
+            return;
+        }
+        long length = range.end() - range.start() + 1;
+        response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
+        response.setHeader("Content-Range", "bytes " + range.start() + "-"
+                + range.end() + "/" + contentLength);
+        downloadEvent.setContentLength(length);
+        inputStream.skipNBytes(range.start());
+        TransferUtil.transfer(new RangeInputStream(inputStream, length),
+                outputStream, getTransferContext(downloadEvent),
+                getListeners());
+    }
+
+    /**
+     * Resolves a {@code Range} header against the content length.
+     *
+     * @return the requested range, which starts at or after
+     *         {@code contentLength} when it cannot be satisfied, or
+     *         {@code null} to send the whole content
+     */
+    private static ByteRange parseRange(String header, long contentLength) {
+        Matcher matcher = header == null ? null
+                : SINGLE_BYTE_RANGE.matcher(header.trim());
+        if (matcher == null || !matcher.matches()) {
+            return null;
+        }
+        String first = matcher.group(1);
+        String last = matcher.group(2);
+        if (first.isEmpty()) {
+            if (last.isEmpty()) {
+                return null;
+            }
+            // bytes=-n asks for the last n bytes, none of which exist for n=0
+            long suffix = Long.parseLong(last);
+            long start = suffix == 0 ? contentLength
+                    : Math.max(0, contentLength - suffix);
+            return new ByteRange(start, contentLength - 1);
+        }
+        long start = Long.parseLong(first);
+        if (last.isEmpty()) {
+            return new ByteRange(start, contentLength - 1);
+        }
+        long end = Long.parseLong(last);
+        return end < start ? null
+                : new ByteRange(start, Math.min(end, contentLength - 1));
+    }
+
+    private record ByteRange(long start, long end) {
+    }
+
+    /**
+     * Reads at most the given number of bytes from the wrapped stream.
+     */
+    private static class RangeInputStream extends FilterInputStream {
+        private long remaining;
+
+        private RangeInputStream(InputStream in, long length) {
+            super(in);
+            remaining = length;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (remaining <= 0) {
+                return -1;
+            }
+            int read = super.read();
+            if (read >= 0) {
+                remaining--;
+            }
+            return read;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            if (remaining <= 0) {
+                return -1;
+            }
+            int read = super.read(b, off, (int) Math.min(len, remaining));
+            if (read > 0) {
+                remaining -= read;
+            }
+            return read;
+        }
     }
 }

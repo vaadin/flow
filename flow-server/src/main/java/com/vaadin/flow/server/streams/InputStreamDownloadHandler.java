@@ -22,7 +22,6 @@ import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving an input stream for client download.
@@ -117,7 +116,6 @@ public class InputStreamDownloadHandler
                 ? getContentType(downloadName, response)
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
-        downloadEvent.setContentLength(download.getContentLength());
 
         if (isInline()) {
             downloadEvent.inline(downloadName);
@@ -127,8 +125,8 @@ public class InputStreamDownloadHandler
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
-            TransferUtil.transfer(inputStream, outputStream,
-                    getTransferContext(downloadEvent), getListeners());
+            transferContent(downloadEvent, inputStream, outputStream,
+                    download.getContentLength());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());

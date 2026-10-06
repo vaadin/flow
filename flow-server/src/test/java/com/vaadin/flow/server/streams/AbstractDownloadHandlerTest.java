@@ -30,7 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -49,6 +50,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AbstractDownloadHandlerTest {
     private static final long TOTAL_BYTES = 100L;
@@ -69,23 +82,22 @@ class AbstractDownloadHandlerTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        request = Mockito.mock(VaadinRequest.class);
-        response = Mockito.mock(VaadinResponse.class);
-        session = Mockito.mock(VaadinSession.class);
+        request = mock(VaadinRequest.class);
+        response = mock(VaadinResponse.class);
+        session = mock(VaadinSession.class);
 
-        ui = Mockito.mock(UI.class);
+        ui = mock(UI.class);
         // run the command immediately
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
             command.execute();
             return null;
-        }).when(ui).access(Mockito.any(Command.class));
+        }).when(ui).access(any(Command.class));
 
-        owner = Mockito.mock(Element.class);
-        Component componentOwner = Mockito.mock(Component.class);
-        Mockito.when(owner.getComponent())
-                .thenReturn(Optional.of(componentOwner));
-        Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
+        owner = mock(Element.class);
+        Component componentOwner = mock(Component.class);
+        when(owner.getComponent()).thenReturn(Optional.of(componentOwner));
+        when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
         downloadEvent = new DownloadEvent(request, response, session, owner);
 
@@ -95,15 +107,15 @@ class AbstractDownloadHandlerTest {
             }
         };
 
-        mockContext = Mockito.mock(TransferContext.class);
-        Mockito.when(mockContext.contentLength()).thenReturn(TOTAL_BYTES);
-        listener = Mockito.mock(TransferProgressListener.class);
+        mockContext = mock(TransferContext.class);
+        when(mockContext.contentLength()).thenReturn(TOTAL_BYTES);
+        listener = mock(TransferProgressListener.class);
 
-        Mockito.when(mockContext.owningElement()).thenReturn(owner);
-        Mockito.when(mockContext.getUI()).thenReturn(ui);
+        when(mockContext.owningElement()).thenReturn(owner);
+        when(mockContext.getUI()).thenReturn(ui);
 
         outputStream = new ByteArrayOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getOutputStream()).thenReturn(outputStream);
     }
 
     @Test
@@ -111,33 +123,31 @@ class AbstractDownloadHandlerTest {
         Registration registration = handler
                 .addTransferProgressListener(listener);
         handler.getListeners().forEach(l -> l.onStart(mockContext));
-        Mockito.verify(listener).onStart(mockContext);
+        verify(listener).onStart(mockContext);
 
-        Mockito.reset(listener);
+        reset(listener);
         registration.remove();
         handler.getListeners().forEach(l -> l.onStart(mockContext));
-        Mockito.verify(listener, Mockito.times(0)).onStart(mockContext);
+        verify(listener, times(0)).onStart(mockContext);
     }
 
     @Test
     void whenStart_onStartCalled() {
-        SerializableRunnable startHandler = Mockito
-                .mock(SerializableRunnable.class);
+        SerializableRunnable startHandler = mock(SerializableRunnable.class);
         handler.whenStart(startHandler);
         handler.getListeners()
                 .forEach(listener -> listener.onStart(mockContext));
-        Mockito.verify(startHandler).run();
+        verify(startHandler).run();
     }
 
     @Test
     void whenProgress_onProgressCalled() {
-        SerializableBiConsumer<Long, Long> onProgressHandler = Mockito
-                .mock(SerializableBiConsumer.class);
+        SerializableBiConsumer<Long, Long> onProgressHandler = mock(
+                SerializableBiConsumer.class);
         handler.onProgress(onProgressHandler);
         handler.getListeners().forEach(listener -> listener
                 .onProgress(mockContext, TRANSFERRED_BYTES, TOTAL_BYTES));
-        Mockito.verify(onProgressHandler).accept(TRANSFERRED_BYTES,
-                TOTAL_BYTES);
+        verify(onProgressHandler).accept(TRANSFERRED_BYTES, TOTAL_BYTES);
     }
 
     @Test
@@ -153,15 +163,15 @@ class AbstractDownloadHandlerTest {
 
     @Test
     void whenComplete() {
-        SerializableConsumer<Boolean> completeHandler = Mockito
-                .mock(SerializableConsumer.class);
+        SerializableConsumer<Boolean> completeHandler = mock(
+                SerializableConsumer.class);
         handler.whenComplete(completeHandler);
         handler.getListeners().forEach(listener -> {
             listener.onComplete(mockContext, TRANSFERRED_BYTES);
             listener.onError(mockContext, EXCEPTION);
         });
-        Mockito.verify(completeHandler).accept(true);
-        Mockito.verify(completeHandler).accept(false);
+        verify(completeHandler).accept(true);
+        verify(completeHandler).accept(false);
     }
 
     @Test
@@ -169,13 +179,13 @@ class AbstractDownloadHandlerTest {
             throws IOException {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(
                 "Hello".getBytes(StandardCharsets.UTF_8));
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        TransferContext context = Mockito.mock(TransferContext.class);
-        Mockito.when(context.session()).thenReturn(session);
-        OutputStream outputStream = Mockito.mock(OutputStream.class);
+        VaadinSession session = mock(VaadinSession.class);
+        TransferContext context = mock(TransferContext.class);
+        when(context.session()).thenReturn(session);
+        OutputStream outputStream = mock(OutputStream.class);
         Collection<TransferProgressListener> listeners = new ArrayList<>();
         TransferUtil.transfer(inputStream, outputStream, context, listeners);
-        Mockito.verify(session, Mockito.times(0)).lock();
+        verify(session, times(0)).lock();
     }
 
     @Test
@@ -206,12 +216,10 @@ class AbstractDownloadHandlerTest {
         assertEquals("Hello", outputStream.toString(StandardCharsets.UTF_8));
         assertNull(downloadEvent.getException());
 
-        OutputStream outputStreamError = Mockito.mock(OutputStream.class);
-        Mockito.doThrow(new IOException("Test error")).when(outputStreamError)
-                .write(Mockito.any(byte[].class), Mockito.anyInt(),
-                        Mockito.anyInt());
-        Mockito.when(downloadEvent.getOutputStream())
-                .thenReturn(outputStreamError);
+        OutputStream outputStreamError = mock(OutputStream.class);
+        doThrow(new IOException("Test error")).when(outputStreamError)
+                .write(any(byte[].class), anyInt(), anyInt());
+        when(downloadEvent.getOutputStream()).thenReturn(outputStreamError);
 
         customHandler.handleDownloadRequest(downloadEvent);
         assertFalse(successAtomic.get());
@@ -238,10 +246,10 @@ class AbstractDownloadHandlerTest {
 
     @Test
     void getTransferContext_returnsExpectedContextFromEvent() {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        Element owner = Mockito.mock(Element.class);
+        VaadinRequest request = mock(VaadinRequest.class);
+        VaadinResponse response = mock(VaadinResponse.class);
+        VaadinSession session = mock(VaadinSession.class);
+        Element owner = mock(Element.class);
         DownloadEvent event = new DownloadEvent(request, response, session,
                 owner);
         event.setContentLength(1024);
@@ -300,5 +308,59 @@ class AbstractDownloadHandlerTest {
             listener.onError(mockContext, EXCEPTION);
         });
         assertTrue(invoked.get(), "Progress with context should be invoked");
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', nullValues = "null", value = {
+            "null          | null | 200 | abcdefghij | null",
+            "bytes=2-5     | null | 206 | cdef       | bytes 2-5/10",
+            "bytes=7-      | null | 206 | hij        | bytes 7-9/10",
+            "bytes=-3      | null | 206 | hij        | bytes 7-9/10",
+            "bytes=5-99    | null | 206 | fghij      | bytes 5-9/10",
+            "bytes=10-     | null | 416 | ''         | bytes */10",
+            "bytes=-0      | null | 416 | ''         | bytes */10",
+            "bytes=5-2     | null | 200 | abcdefghij | null",
+            "bytes=0-1,4-5 | null | 200 | abcdefghij | null",
+            "bytes=2-5     | x    | 200 | abcdefghij | null" })
+    void transferContent_rangeRequested_sendsRequestedBytes(String range,
+            String ifRange, int status, String body, String contentRange)
+            throws IOException {
+        when(request.getHeader("Range")).thenReturn(range);
+        when(request.getHeader("If-Range")).thenReturn(ifRange);
+
+        handler.transferContent(downloadEvent,
+                new ByteArrayInputStream(
+                        "abcdefghij".getBytes(StandardCharsets.UTF_8)),
+                outputStream, 10);
+
+        assertEquals(body, outputStream.toString(StandardCharsets.UTF_8));
+        verify(response).setHeader("Accept-Ranges", "bytes");
+        verify(response).setContentLengthLong(body.length());
+        if (status == 200) {
+            verify(response, never()).setStatus(anyInt());
+        } else {
+            verify(response).setStatus(status);
+        }
+        if (contentRange == null) {
+            verify(response, never()).setHeader(eq("Content-Range"),
+                    anyString());
+        } else {
+            verify(response).setHeader("Content-Range", contentRange);
+        }
+    }
+
+    @Test
+    void transferContent_unknownLength_rangeIgnored() throws IOException {
+        when(request.getHeader("Range")).thenReturn("bytes=2-5");
+
+        handler.transferContent(downloadEvent,
+                new ByteArrayInputStream(
+                        "abcdefghij".getBytes(StandardCharsets.UTF_8)),
+                outputStream, -1);
+
+        assertEquals("abcdefghij",
+                outputStream.toString(StandardCharsets.UTF_8));
+        verify(response, never()).setHeader(eq("Accept-Ranges"), anyString());
+        verify(response, never()).setStatus(anyInt());
     }
 }

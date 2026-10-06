@@ -18,11 +18,12 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a class resource.
@@ -89,16 +90,17 @@ public class ClassDownloadHandler
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
         setTransferUI(downloadEvent.getUI());
-        if (clazz.getResource(resourceName) == null) {
+        URL resource = clazz.getResource(resourceName);
+        if (resource == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
             downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.NOT_FOUND.getCode());
             return;
         }
+        URLConnection connection = resource.openConnection();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
-                InputStream inputStream = clazz
-                        .getResourceAsStream(resourceName)) {
+                InputStream inputStream = connection.getInputStream()) {
             String resourceName = getUrlPostfix();
             downloadEvent.setContentType(
                     getContentType(resourceName, downloadEvent.getResponse()));
@@ -107,8 +109,8 @@ public class ClassDownloadHandler
             } else {
                 downloadEvent.setFileName(resourceName);
             }
-            TransferUtil.transfer(inputStream, outputStream,
-                    getTransferContext(downloadEvent), getListeners());
+            transferContent(downloadEvent, inputStream, outputStream,
+                    connection.getContentLengthLong());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             downloadEvent.getResponse()
