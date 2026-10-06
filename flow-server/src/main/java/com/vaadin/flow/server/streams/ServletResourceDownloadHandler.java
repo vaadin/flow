@@ -18,12 +18,13 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a servlet resource for client download.
@@ -80,9 +81,15 @@ public class ServletResourceDownloadHandler
         VaadinService service = downloadEvent.getRequest().getService();
         VaadinResponse response = downloadEvent.getResponse();
         if (service instanceof VaadinServletService servletService) {
+            URL resource = servletService.getServlet().getServletContext()
+                    .getResource(path);
+            if (resource == null) {
+                response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
+                return;
+            }
+            URLConnection connection = resource.openConnection();
             try (OutputStream outputStream = downloadEvent.getOutputStream();
-                    InputStream inputStream = servletService.getServlet()
-                            .getServletContext().getResourceAsStream(path)) {
+                    InputStream inputStream = connection.getInputStream()) {
                 String resourceName = getUrlPostfix();
                 downloadEvent
                         .setContentType(getContentType(resourceName, response));
@@ -91,8 +98,8 @@ public class ServletResourceDownloadHandler
                 } else {
                     downloadEvent.setFileName(resourceName);
                 }
-                TransferUtil.transfer(inputStream, outputStream,
-                        getTransferContext(downloadEvent), getListeners());
+                transferContent(downloadEvent, inputStream, outputStream,
+                        connection.getContentLengthLong());
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
                 response.setStatus(

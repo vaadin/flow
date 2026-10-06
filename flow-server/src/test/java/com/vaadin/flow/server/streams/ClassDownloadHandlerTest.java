@@ -99,7 +99,7 @@ class ClassDownloadHandlerTest {
                 new TransferProgressListener() {
                     @Override
                     public void onStart(TransferContext context) {
-                        assertEquals(-1, context.contentLength());
+                        assertEquals(165000, context.contentLength());
                         assertEquals("download", context.fileName());
                         invocations.add("onStart");
                     }
@@ -108,7 +108,7 @@ class ClassDownloadHandlerTest {
                     public void onProgress(TransferContext context,
                             long transferredBytes, long totalBytes) {
                         transferredBytesRecords.add(transferredBytes);
-                        assertEquals(-1, totalBytes);
+                        assertEquals(165000, totalBytes);
                         assertEquals("download", context.fileName());
                         invocations.add("onProgress");
                     }
@@ -116,7 +116,7 @@ class ClassDownloadHandlerTest {
                     @Override
                     public void onComplete(TransferContext context,
                             long transferredBytes) {
-                        assertEquals(-1, context.contentLength());
+                        assertEquals(165000, context.contentLength());
                         assertEquals(165000, transferredBytes);
                         assertEquals("download", context.fileName());
                         invocations.add("onComplete");
