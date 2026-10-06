@@ -153,34 +153,6 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default-testCompile</id>
-            <configuration>
-              <!-- Tests are compiled into the module and use APIs that the
-                   module itself does not need -->
-              <compilerArgs combine.children="append">
-                <arg>--add-modules=java.management</arg>
-                <arg>--add-reads=com.vaadin.flow.server=java.management</arg>
-                <arg>--add-exports=org.jsoup/org.jsoup.internal=com.vaadin.flow.server</arg>
-              </compilerArgs>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <!-- Unit tests run on the class path: in the module, test
-               service registrations under META-INF/services would be
-               ignored. Module behavior is covered by flow-tests/test-jpms. -->
-          <useModulePath>false</useModulePath>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
