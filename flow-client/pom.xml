@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jpms.module.name>com.vaadin.flow.client</jpms.module.name>
     <jandex.skip>true</jandex.skip>
     <skipTsTests>${skipTests}</skipTsTests>
     <!-- The module has no Java sources, so there is no API to compare. -->

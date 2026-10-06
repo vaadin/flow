@@ -11,6 +11,10 @@
   <name>Flow Data</name>
   <description>${project.name}</description>
 
+  <properties>
+    <jpms.module.name>com.vaadin.flow.data</jpms.module.name>
+  </properties>
+
   <dependencies>
 
     <dependency>

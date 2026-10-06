@@ -12,6 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
+    <jpms.module.name>com.vaadin.flow.push</jpms.module.name>
     <jandex.skip>true</jandex.skip>
     <pushDirectory>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push</pushDirectory>
     <vaadinPush.js>${pushDirectory}/vaadinPush.js</vaadinPush.js>
