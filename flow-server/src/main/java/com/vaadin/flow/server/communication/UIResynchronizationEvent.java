@@ -29,6 +29,8 @@ import com.vaadin.flow.server.VaadinService;
  * message from the server, typically because of a bad network connection or a
  * push connection that was closed by a proxy. The server then sends the full
  * state of the UI to the client.
+ * 
+ * @since 25.4
  */
 public class UIResynchronizationEvent extends EventObject {
 

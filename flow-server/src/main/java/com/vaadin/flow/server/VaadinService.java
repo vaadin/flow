@@ -1569,6 +1569,7 @@ public abstract class VaadinService implements Serializable {
      * @throws IllegalStateException
      *             if no service is bound to the current thread
      * @see #getCurrent()
+     * @since 25.4
      */
     public static VaadinService getCurrentOrThrow() {
         VaadinService service = getCurrent();
@@ -2021,6 +2022,7 @@ public abstract class VaadinService implements Serializable {
      * @param failure
      *            the exception that made handling the request fail, not
      *            {@code null}
+     * @since 25.4
      */
     public void recordRequestFailure(VaadinRequest request, Exception failure) {
         if (eventBus.hasListener(RequestEndedEvent.class)) {
