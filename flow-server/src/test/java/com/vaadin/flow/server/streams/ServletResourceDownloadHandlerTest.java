@@ -28,7 +28,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -45,6 +44,15 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ServletResourceDownloadHandlerTest {
     private static final String PATH_TO_FILE = "downloads/generated_binary_file.bin";
@@ -60,42 +68,39 @@ class ServletResourceDownloadHandlerTest {
 
     @BeforeEach
     void setUp() throws IOException, URISyntaxException {
-        request = Mockito.mock(VaadinRequest.class);
-        response = Mockito.mock(VaadinResponse.class);
-        session = Mockito.mock(VaadinSession.class);
-        service = Mockito.mock(VaadinService.class);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        VaadinServlet vaadinServlet = Mockito.mock(VaadinServlet.class);
-        VaadinServletService vaadinService = Mockito
-                .mock(VaadinServletService.class);
-        Mockito.when(request.getService()).thenReturn(vaadinService);
-        Mockito.when(vaadinService.getServlet()).thenReturn(vaadinServlet);
-        Mockito.when(vaadinServlet.getServletContext())
-                .thenReturn(servletContext);
+        request = mock(VaadinRequest.class);
+        response = mock(VaadinResponse.class);
+        session = mock(VaadinSession.class);
+        service = mock(VaadinService.class);
+        ServletContext servletContext = mock(ServletContext.class);
+        VaadinServlet vaadinServlet = mock(VaadinServlet.class);
+        VaadinServletService vaadinService = mock(VaadinServletService.class);
+        when(request.getService()).thenReturn(vaadinService);
+        when(vaadinService.getServlet()).thenReturn(vaadinServlet);
+        when(vaadinServlet.getServletContext()).thenReturn(servletContext);
         InputStream stream = getClass().getClassLoader()
                 .getResourceAsStream(PATH_TO_FILE);
-        Mockito.when(servletContext.getResourceAsStream(Mockito.anyString()))
+        when(servletContext.getResourceAsStream(anyString()))
                 .thenReturn(stream);
 
-        ui = Mockito.mock(UI.class);
+        ui = mock(UI.class);
         // run the command immediately
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
             command.execute();
             return null;
-        }).when(ui).access(Mockito.any(Command.class));
+        }).when(ui).access(any(Command.class));
 
-        owner = Mockito.mock(Element.class);
-        Component componentOwner = Mockito.mock(Component.class);
-        Mockito.when(owner.getComponent())
-                .thenReturn(Optional.of(componentOwner));
-        Mockito.when(componentOwner.getUI()).thenReturn(Optional.of(ui));
+        owner = mock(Element.class);
+        Component componentOwner = mock(Component.class);
+        when(owner.getComponent()).thenReturn(Optional.of(componentOwner));
+        when(componentOwner.getUI()).thenReturn(Optional.of(ui));
 
         downloadEvent = new DownloadEvent(request, response, session, owner);
         outputStream = new ByteArrayOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(response.getService()).thenReturn(service);
-        Mockito.when(service.getMimeType(Mockito.anyString()))
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getService()).thenReturn(service);
+        when(service.getMimeType(anyString()))
                 .thenReturn("application/octet-stream");
     }
 
@@ -146,25 +151,23 @@ class ServletResourceDownloadHandlerTest {
                 invocations);
         assertArrayEquals(new long[] { 65536, 131072 }, transferredBytesRecords
                 .stream().mapToLong(Long::longValue).toArray());
-        Mockito.verify(response).setContentType("application/octet-stream");
+        verify(response).setContentType("application/octet-stream");
         assertNull(downloadEvent.getException());
     }
 
     @Test
     void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
-        DownloadEvent downloadEvent = Mockito.mock(DownloadEvent.class);
-        Mockito.when(downloadEvent.getRequest()).thenReturn(request);
-        Mockito.when(downloadEvent.getSession()).thenReturn(session);
-        Mockito.when(downloadEvent.getResponse()).thenReturn(response);
-        Mockito.when(downloadEvent.getOwningElement()).thenReturn(owner);
-        Mockito.when(downloadEvent.getUI()).thenReturn(ui);
-        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
-        Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
-                .write(Mockito.any(byte[].class), Mockito.anyInt(),
-                        Mockito.anyInt());
-        Mockito.when(downloadEvent.getOutputStream())
-                .thenReturn(outputStreamMock);
+        DownloadEvent downloadEvent = mock(DownloadEvent.class);
+        when(downloadEvent.getRequest()).thenReturn(request);
+        when(downloadEvent.getSession()).thenReturn(session);
+        when(downloadEvent.getResponse()).thenReturn(response);
+        when(downloadEvent.getOwningElement()).thenReturn(owner);
+        when(downloadEvent.getUI()).thenReturn(ui);
+        OutputStream outputStreamMock = mock(OutputStream.class);
+        doThrow(new IOException("I/O exception")).when(outputStreamMock)
+                .write(any(byte[].class), anyInt(), anyInt());
+        when(downloadEvent.getOutputStream()).thenReturn(outputStreamMock);
         List<String> invocations = new ArrayList<>();
         DownloadHandler handler = DownloadHandler.forServletResource(
                 PATH_TO_FILE, "download", new TransferProgressListener() {
@@ -199,8 +202,7 @@ class ServletResourceDownloadHandlerTest {
         } catch (Exception e) {
         }
         assertEquals(List.of("onStart", "onError"), invocations);
-        Mockito.verify(downloadEvent)
-                .setException(Mockito.any(IOException.class));
+        verify(downloadEvent).setException(any(IOException.class));
     }
 
     @Test
@@ -208,22 +210,22 @@ class ServletResourceDownloadHandlerTest {
         DownloadHandler handler = DownloadHandler
                 .forServletResource(PATH_TO_FILE, "my-download.bin");
 
-        DownloadEvent event = Mockito.mock(DownloadEvent.class);
-        Mockito.when(event.getSession()).thenReturn(session);
-        Mockito.when(event.getRequest()).thenReturn(request);
-        Mockito.when(event.getResponse()).thenReturn(response);
-        Mockito.when(event.getOwningElement()).thenReturn(owner);
-        Mockito.when(event.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(event.getUI()).thenReturn(ui);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(response.getService()).thenReturn(service);
-        Mockito.when(service.getMimeType(Mockito.anyString()))
+        DownloadEvent event = mock(DownloadEvent.class);
+        when(event.getSession()).thenReturn(session);
+        when(event.getRequest()).thenReturn(request);
+        when(event.getResponse()).thenReturn(response);
+        when(event.getOwningElement()).thenReturn(owner);
+        when(event.getOutputStream()).thenReturn(outputStream);
+        when(event.getUI()).thenReturn(ui);
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getService()).thenReturn(service);
+        when(service.getMimeType(anyString()))
                 .thenReturn("application/octet-stream");
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(event).setFileName("my-download.bin");
-        Mockito.verify(event).setContentType("application/octet-stream");
+        verify(event).setFileName("my-download.bin");
+        verify(event).setContentType("application/octet-stream");
     }
 
     @Test
@@ -231,22 +233,22 @@ class ServletResourceDownloadHandlerTest {
         DownloadHandler handler = DownloadHandler
                 .forServletResource(PATH_TO_FILE, "my-download.bin").inline();
 
-        DownloadEvent event = Mockito.mock(DownloadEvent.class);
-        Mockito.when(event.getSession()).thenReturn(session);
-        Mockito.when(event.getRequest()).thenReturn(request);
-        Mockito.when(event.getResponse()).thenReturn(response);
-        Mockito.when(event.getOwningElement()).thenReturn(owner);
-        Mockito.when(event.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(event.getUI()).thenReturn(ui);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(response.getService()).thenReturn(service);
-        Mockito.when(service.getMimeType(Mockito.anyString()))
+        DownloadEvent event = mock(DownloadEvent.class);
+        when(event.getSession()).thenReturn(session);
+        when(event.getRequest()).thenReturn(request);
+        when(event.getResponse()).thenReturn(response);
+        when(event.getOwningElement()).thenReturn(owner);
+        when(event.getOutputStream()).thenReturn(outputStream);
+        when(event.getUI()).thenReturn(ui);
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getService()).thenReturn(service);
+        when(service.getMimeType(anyString()))
                 .thenReturn("application/octet-stream");
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(event, Mockito.times(0)).setFileName("my-download.bin");
-        Mockito.verify(event).setContentType("application/octet-stream");
+        verify(event, times(0)).setFileName("my-download.bin");
+        verify(event).setContentType("application/octet-stream");
     }
 
     @Test
@@ -257,14 +259,14 @@ class ServletResourceDownloadHandlerTest {
 
         DownloadEvent event = new DownloadEvent(request, response, session,
                 new Element("t"));
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(response.getService()).thenReturn(service);
-        Mockito.when(service.getMimeType(Mockito.anyString()))
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(response.getService()).thenReturn(service);
+        when(service.getMimeType(anyString()))
                 .thenReturn("application/octet-stream");
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(response).setHeader("Content-Disposition",
+        verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"my-download.bin\"");
     }
 }
