@@ -23,7 +23,6 @@ import java.util.Optional;
 import com.vaadin.flow.internal.streams.ByteRangeUtil;
 import com.vaadin.flow.internal.streams.ByteRangeUtil.ByteRange;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.communication.TransferUtil;
 
@@ -103,25 +102,26 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      */
     void transferContent(DownloadEvent downloadEvent, InputStream inputStream,
             OutputStream outputStream, long contentLength) throws IOException {
-        Optional<ByteRange> range = Optional.empty();
         if (contentLength >= 0) {
-            VaadinRequest request = downloadEvent.getRequest();
             downloadEvent.getResponse().setHeader("Accept-Ranges", "bytes");
-            if (request.getHeader("If-Range") == null) {
-                range = ByteRangeUtil.parseRange(request.getHeader("Range"),
-                        contentLength);
-            }
         }
-        if (range.isEmpty()) {
+        Optional<ByteRange> range = ByteRangeUtil
+                .parseRange(downloadEvent.getRequest(), contentLength);
+        if (range.isPresent()) {
+            transferRange(downloadEvent, inputStream, outputStream, range.get(),
+                    contentLength);
+        } else {
             downloadEvent.setContentLength(contentLength);
             TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
-            return;
         }
+    }
 
-        ByteRange bytes = range.get();
+    private void transferRange(DownloadEvent downloadEvent,
+            InputStream inputStream, OutputStream outputStream, ByteRange range,
+            long contentLength) throws IOException {
         VaadinResponse response = downloadEvent.getResponse();
-        if (bytes.start() >= contentLength) {
+        if (range.start() >= contentLength) {
             response.setStatus(
                     HttpStatusCode.REQUESTED_RANGE_NOT_SATISFIABLE.getCode());
             response.setHeader("Content-Range", "bytes */" + contentLength);
@@ -129,11 +129,11 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
             return;
         }
         response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
-        response.setHeader("Content-Range", "bytes " + bytes.start() + "-"
-                + bytes.end() + "/" + contentLength);
-        downloadEvent.setContentLength(bytes.length());
-        inputStream.skipNBytes(bytes.start());
-        TransferUtil.transfer(ByteRangeUtil.limit(inputStream, bytes.length()),
+        response.setHeader("Content-Range", "bytes " + range.start() + "-"
+                + range.end() + "/" + contentLength);
+        downloadEvent.setContentLength(range.length());
+        inputStream.skipNBytes(range.start());
+        TransferUtil.transfer(ByteRangeUtil.limit(inputStream, range.length()),
                 outputStream, getTransferContext(downloadEvent),
                 getListeners());
     }

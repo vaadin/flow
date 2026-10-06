@@ -22,6 +22,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.server.VaadinRequest;
+
 /**
  * Helpers for answering HTTP range requests ({@code Range: bytes=...}).
  * <p>
@@ -58,6 +60,28 @@ public final class ByteRangeUtil {
 
     private ByteRangeUtil() {
         // Static utils only
+    }
+
+    /**
+     * Finds the byte range a request asks for.
+     * <p>
+     * A request with an {@code If-Range} condition gets the whole content,
+     * since no validator is sent that the condition could match. Content of
+     * unknown length is always sent whole.
+     *
+     * @param request
+     *            the request
+     * @param contentLength
+     *            the length of the whole content, or {@code -1} if unknown
+     * @return the requested range, see {@link #parseRange(String, long)}, or an
+     *         empty optional when the whole content should be sent
+     */
+    public static Optional<ByteRange> parseRange(VaadinRequest request,
+            long contentLength) {
+        if (contentLength < 0 || request.getHeader("If-Range") != null) {
+            return Optional.empty();
+        }
+        return parseRange(request.getHeader("Range"), contentLength);
     }
 
     /**
