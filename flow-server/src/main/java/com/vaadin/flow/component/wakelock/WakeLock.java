@@ -24,7 +24,11 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinSession;
@@ -172,22 +176,19 @@ public final class WakeLock {
                     "Screen Wake Lock API is not available in this context")));
             return;
         }
-        ui.getElement()
-                .executeJs("return window.Vaadin.Flow.wakeLock.request(this)")
-                .then(RequestResult.class,
-                        result -> handleResultError(ui, onError, result),
-                        err -> {
-                            LOGGER.debug(
-                                    "Client-side wakeLock.request failed: {}",
-                                    err);
-                            if (onError != null) {
-                                deliverSafely(ui,
-                                        () -> onError.accept(new WakeLockError(
-                                                WakeLockErrorCode.UNKNOWN,
-                                                "Client-side wakeLock bridge failure: "
-                                                        + err)));
-                            }
-                        });
+        ui.getElement().executeJs(WakeLockJs.class).request().then(
+                RequestResult.class,
+                result -> handleResultError(ui, onError, result), err -> {
+                    LOGGER.debug("Client-side wakeLock.request failed: {}",
+                            err);
+                    if (onError != null) {
+                        deliverSafely(ui,
+                                () -> onError.accept(new WakeLockError(
+                                        WakeLockErrorCode.UNKNOWN,
+                                        "Client-side wakeLock bridge failure: "
+                                                + err)));
+                    }
+                });
     }
 
     /*
@@ -248,10 +249,8 @@ public final class WakeLock {
     public static void release(UI ui) {
         Objects.requireNonNull(ui, "ui must not be null");
         ensureWired(ui);
-        ui.getElement().executeJs("window.Vaadin.Flow.wakeLock.release(this)")
-                .then(ignored -> {
-                }, err -> LOGGER
-                        .debug("Client-side wakeLock.release failed: {}", err));
+        ui.getElement().executeJs(WakeLockJs.class).release().then(ignored -> {
+        }, err -> LOGGER.debug("Client-side wakeLock.release failed: {}", err));
     }
 
     /**
@@ -365,5 +364,33 @@ public final class WakeLock {
                 throw e;
             }
         }
+    }
+
+    /**
+     * What a wake lock asks of its client-side bridge, as a JavaScript
+     * definition for {@link Element#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface WakeLockJs extends Serializable {
+
+        /**
+         * Asks the browser to hold the wake lock on behalf of the UI.
+         *
+         * @return the pending result, which answers with what the browser made
+         *         of the request
+         */
+        @JsExpression("return window.Vaadin.Flow.wakeLock.request(this)")
+        PendingJavaScriptResult request();
+
+        /**
+         * Releases the wake lock the browser holds on behalf of the UI.
+         *
+         * @return the pending result, which completes once the browser has let
+         *         the lock go
+         */
+        @JsExpression("window.Vaadin.Flow.wakeLock.release(this)")
+        PendingJavaScriptResult release();
     }
 }

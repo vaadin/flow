@@ -34,8 +34,8 @@ Every top-level Maven module of the repository:
 | `vaadin-dev-server`              | Development tooling served to the browser.                                      |
 | `vaadin-spring`                  | Spring Framework integration.                                                   |
 | `vaadin-cdi`                     | CDI integration, for Jakarta EE application servers.                            |
+| `vaadin-quarkus`                 | Quarkus extension: `runtime` is the extension itself, `deployment` its build steps. |
 | `flow-server-production-mode`    | Wrapper artifact whose `web-fragment.xml` turns on production mode.             |
-| `flow-jandex`                    | Jandex index of the Flow packages, for use outside Vaadin Platform.             |
 | `flow`                           | Aggregate POM that pulls in the modules an application needs.                   |
 | `flow-bom`                       | Bill of materials.                                                              |
 | `flow-test-util`                 | Test utilities (TestBench base classes, IT helpers).                            |
@@ -43,6 +43,25 @@ Every top-level Maven module of the repository:
 | `flow-tests/`                    | Integration test suite.                                                         |
 
 Routing lives in `flow-server` — there is no separate router module.
+
+The Flow modules a Quarkus application loads carry a Jandex index of their
+own classes in `META-INF/jandex.idx`, which is where the Quarkus extension
+reads it from. Modules get one by default; those with no Jandex consumer
+set the `jandex.skip` property to `true` in their `pom.xml`. That covers
+`vaadin-spring` and `vaadin-cdi`, since neither runs under Quarkus, the
+build tooling, the modules that package only resources (`flow-push`,
+`flow-client`, `flow-server-production-mode`), and the test modules
+(`flow-tests` sets it for every integration test module).
+
+The `jandex.format.version` property sets the index format, apart from the
+plugin version. It has to be the newest format that the Jandex of the Quarkus
+BOM at `quarkus.version` reads, because Quarkus rejects a newer one. The
+[Persistent Index Format Versions](https://smallrye.io/jandex/jandex/main/index.html#persistent_index_format_versions)
+table of the Jandex documentation lists which format each Jandex version
+reads. `FlowJandexIndexTest` in `vaadin-quarkus/deployment` reads the Flow
+indexes with that Jandex and checks their format. It also fails when the
+property is not the newest format that Jandex knows, for example after
+`quarkus.version` moves to a new LTS, and the failure names the value to set.
 
 ## Build plugins
 

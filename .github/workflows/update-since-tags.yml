@@ -35,7 +35,7 @@ jobs:
       - uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9 # v4.8.0
         with:
           distribution: temurin
-          java-version: 21
+          java-version-file: .tool-versions
           cache: maven
 
       - id: since
@@ -92,6 +92,21 @@ jobs:
           index-dir: .since-index-cdi
           artifacts: |
             vaadin-cdi
+
+      # vaadin-quarkus, the same again: under com.vaadin:vaadin-quarkus it ran
+      # its own 1.0-3.1 scheme, one line per supported Vaadin version, before
+      # the extension was imported into this repository and started releasing
+      # with Flow's version number. Its deployment artifact carries no public
+      # API of its own -- it is Quarkus build steps -- so only the runtime
+      # artifact is indexed. Its module directory is not named after the
+      # artifact, so the source root is spelled out.
+      - uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
+        with:
+          group-id: com.vaadin
+          version: ${{ inputs.dev }}
+          index-dir: .since-index-quarkus
+          artifacts: |
+            vaadin-quarkus=vaadin-quarkus/runtime/src/main/java
 
       - name: Open pull request
         uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6.1.0

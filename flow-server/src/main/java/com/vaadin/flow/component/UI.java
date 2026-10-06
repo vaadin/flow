@@ -39,6 +39,7 @@ import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.trigger.internal.CallbackAction;
@@ -83,6 +84,7 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandlingCommand;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -196,6 +198,31 @@ public class UI extends Component
      */
     public VaadinSession getSession() {
         return internals.getSession();
+    }
+
+    /**
+     * Gets the VaadinSession to which this UI is attached, throwing an
+     * exception if the UI is not attached to a session.
+     * <p>
+     * Use this method when the code can only run while the UI is attached to a
+     * session, e.g. in an event listener. If the code has to work also before
+     * the UI is initialized or after it has been removed from its session, use
+     * {@link #getSession()} instead and check for null.
+     *
+     * @return the session this UI is attached to, never <code>null</code>
+     * @throws IllegalStateException
+     *             if this UI is not attached to a session
+     * @see #getSession()
+     * @since 25.4
+     */
+    public VaadinSession getSessionOrThrow() {
+        VaadinSession session = getSession();
+        if (session == null) {
+            throw new IllegalStateException(
+                    "UI is not attached to a VaadinSession. The UI has either not been initialized yet "
+                            + "or it has already been removed from its session.");
+        }
+        return session;
     }
 
     /**
@@ -2019,7 +2046,6 @@ public class UI extends Component
         return getInternals().getActiveRouterTargetsChain();
     }
 
-    static final String SERVER_CONNECTED = "this.serverConnected($0)";
     public static final String CLIENT_NAVIGATE_TO = """
             const url = new URL($0, document.baseURI);
             url["clientNavigation"] = true;
@@ -2229,8 +2255,8 @@ public class UI extends Component
             serverPaused();
         } else {
             // acknowledge client, but cancel if session not open
-            serverConnected(
-                    !getSession().getState().equals(VaadinSessionState.OPEN));
+            serverConnected(!getSessionOrThrow().getState()
+                    .equals(VaadinSessionState.OPEN));
             replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
     }
@@ -2249,11 +2275,13 @@ public class UI extends Component
         boolean locationChanged = !location.getPath().equals(route)
                 && route.startsWith("/")
                 && !location.getPath().equals(route.substring(1));
-        boolean containsPendingReplace = !getInternals()
-                .containsPendingJavascript("window.history.replaceState")
-                && !getInternals().containsPendingJavascript(
-                        "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
-        if (locationChanged && containsPendingReplace) {
+        // Recognized by the call rather than by the text of a script, which
+        // works the same for both routers
+        boolean replacePending = getInternals()
+                .containsPendingJsCall(HistoryJs.class, "replaceState")
+                || getInternals().containsPendingJsCall(HistoryJs.class,
+                        "navigateReplacing");
+        if (locationChanged && !replacePending) {
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }
@@ -2296,11 +2324,11 @@ public class UI extends Component
     }
 
     private void serverPaused() {
-        internals.getWrapperElement().executeJs("this.serverPaused()");
+        internals.getWrapperElement().callJsFunction("serverPaused");
     }
 
     private void serverConnected(boolean cancel) {
-        internals.getWrapperElement().executeJs(SERVER_CONNECTED, cancel);
+        internals.getWrapperElement().callJsFunction("serverConnected", cancel);
     }
 
     private void navigateToPlaceholder(Location location) {
@@ -2327,22 +2355,30 @@ public class UI extends Component
             // There is a valid route in flow.
             handleNavigation(location, navigationState.get(), trigger);
         } else {
-            // When route does not exist, try to navigate to current route
-            // in order to check if current view can be left before showing
-            // the error page
-            navigateToPlaceholder(location);
-
-            if (!isPostponed()) {
-                // Route does not exist, and current view does not prevent
-                // navigation thus an error page is shown
-                NotFoundException notFoundException = new NotFoundException(
-                        "Couldn't find route for '" + location.getPath() + "'");
-                getInternals().getRouter().handleExceptionNavigation(this,
-                        location, notFoundException,
-                        NavigationTrigger.CLIENT_SIDE, null);
-            }
-
+            // Leaving the current view and showing the error page are one
+            // navigation for the navigation events
+            Router.observeNavigation(this, location,
+                    NavigationTrigger.CLIENT_SIDE,
+                    () -> renderNotFoundView(location));
         }
+    }
+
+    private int renderNotFoundView(Location location) {
+        // When route does not exist, try to navigate to current route
+        // in order to check if current view can be left before showing
+        // the error page
+        navigateToPlaceholder(location);
+
+        if (isPostponed()) {
+            return HttpStatusCode.OK.getCode();
+        }
+        // Route does not exist, and current view does not prevent
+        // navigation thus an error page is shown
+        NotFoundException notFoundException = new NotFoundException(
+                "Couldn't find route for '" + location.getPath() + "'");
+        return getInternals().getRouter().handleExceptionNavigation(this,
+                location, notFoundException, NavigationTrigger.CLIENT_SIDE,
+                null);
     }
 
     private boolean shouldHandleNavigation(Location location) {
@@ -2359,33 +2395,24 @@ public class UI extends Component
 
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
-        NavigationEvent navigationEvent = new NavigationEvent(
-                getInternals().getRouter(), location, this, trigger);
+        // Client-side navigation only reaches this UI when it supports
+        // navigation, which is when it has a router
+        Router router = Objects.requireNonNull(getInternals().getRouter(),
+                "Navigation is not supported by this UI");
+        NavigationEvent navigationEvent = new NavigationEvent(router, location,
+                this, trigger);
 
         JavaScriptNavigationStateRenderer renderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
-        getInternals().getRouter().executeNavigation(this, location,
-                navigationEvent, renderer, (httpStatus) -> {
+        router.executeNavigation(this, location, navigationEvent, renderer,
+                httpStatus -> {
                     forwardToClientUrl = renderer.getClientForwardRoute();
-                    adjustPageTitle();
+                    getInternals().restoreAppShellTitleIfEmpty();
                 });
     }
 
     private boolean isPostponed() {
         return getInternals().getContinueNavigationAction() != null;
-    }
-
-    private void adjustPageTitle() {
-        // new title is empty if the flow route does not have a title
-        String newTitle = getInternals().getTitle();
-        // app shell title is computed from the title tag in index.html
-        String appShellTitle = getInternals().getAppShellTitle();
-        // restore the app shell title when there is no one for the route
-        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null
-                && !appShellTitle.isEmpty()) {
-            getInternals().cancelPendingTitleUpdate();
-            getInternals().setTitle(appShellTitle);
-        }
     }
 
     private NavigationState getDefaultNavigationError() {
@@ -2407,6 +2434,8 @@ public class UI extends Component
     /**
      * What this UI asks of the page it is shown on, as a JavaScript definition
      * for {@link Page#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface UiJs extends Serializable {

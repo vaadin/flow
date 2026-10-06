@@ -122,7 +122,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
-            UI ui = UI.getCurrent();
+            UI ui = UI.getCurrentOrThrow();
             var flowContainerElement = new Element(
                     ui.getInternals().getContainerTag());
             flowContainerElement.attr("id", ui.getInternals().getAppId());
@@ -202,6 +202,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         addDevBundleTheme(indexDocument, context);
         applyColorScheme(indexDocument, context);
+        if (config.isThemedHtml()) {
+            indexDocument.body().addClass(Constants.THEMED_HTML_CLASS_NAME);
+        }
 
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);

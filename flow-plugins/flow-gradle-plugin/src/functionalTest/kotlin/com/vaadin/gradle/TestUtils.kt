@@ -24,6 +24,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.PathMatcher
 import java.util.zip.ZipInputStream
+import kotlin.io.path.createTempDirectory
 import kotlin.test.expect
 import kotlin.test.fail
 
@@ -222,7 +223,7 @@ class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTE
     /**
      * The project root dir.
      */
-    val dir: File = createTempDir("junit-vaadin-gradle-plugin")
+    val dir: File = createTempDirectory("junit-vaadin-gradle-plugin").toFile()
 
     /**
      * The main `build.gradle` file.

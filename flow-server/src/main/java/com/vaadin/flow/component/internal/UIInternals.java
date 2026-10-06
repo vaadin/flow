@@ -78,6 +78,8 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.internal.streams.ActiveTransfer;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -99,6 +101,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -155,6 +158,7 @@ public class UIInternals implements Serializable {
          *            the expression to invoke
          * @param parameters
          *            a list of parameters to use when invoking the script
+         * @since 25.4
          */
         public JavaScriptInvocation(@Nullable JsCall jsCall, String expression,
                 Object... parameters) {
@@ -200,6 +204,7 @@ public class UIInternals implements Serializable {
          *
          * @return the call, or <code>null</code> if the invocation is plain
          *         JavaScript scheduled with an expression
+         * @since 25.4
          */
         public @Nullable JsCall getJsCall() {
             return jsCall;
@@ -281,6 +286,11 @@ public class UIInternals implements Serializable {
     private Location locationForRefresh = null;
 
     private ContinueNavigationAction continueNavigationAction = null;
+
+    // Both only have a value while the router handles a navigation, which
+    // happens within one request, so they are not serialized
+    private transient int navigationDepth;
+    private transient Exception navigationFailure;
 
     /**
      * The Vaadin session to which the related UI belongs.
@@ -825,6 +835,7 @@ public class UIInternals implements Serializable {
      * @param call
      *            the call to run, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(JsCall call) {
         return addJavaScriptInvocation(new JavaScriptInvocation(call,
@@ -839,6 +850,7 @@ public class UIInternals implements Serializable {
      * @param invocation
      *            the invocation to add, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(
             JavaScriptInvocation invocation) {
@@ -856,6 +868,7 @@ public class UIInternals implements Serializable {
      * @param invocation
      *            the invocation to add, not <code>null</code>
      * @return the invocation, which answers with what the client returns
+     * @since 25.4
      */
     public PendingJavaScriptResult addJavaScriptInvocation(StateNode owner,
             JavaScriptInvocation invocation) {
@@ -994,6 +1007,34 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Checks whether a pending invocation is a call of the named method of the
+     * given JavaScript definition.
+     * <p>
+     * This lets a caller recognize what it scheduled itself, such as the router
+     * checking for a pending location change, without matching text in a
+     * script.
+     * <p>
+     * Methods are matched by name only, so a call of any overload with the
+     * given name counts.
+     *
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @param methodName
+     *            the name of the called method, not <code>null</code>
+     * @return <code>true</code> if such a call is pending, <code>false</code>
+     *         otherwise
+     * @since 25.4
+     */
+    public boolean containsPendingJsCall(Class<?> definitionType,
+            String methodName) {
+        return getPendingJavaScriptInvocations()
+                .map(js -> js.getInvocation().getJsCall())
+                .anyMatch(call -> call != null
+                        && call.definitionType() == definitionType
+                        && call.methodName().equals(methodName));
+    }
+
+    /**
      * Records the page title set with {@link Page#setTitle(String)}.
      * <p>
      * You should not set the page title for the browser with this method, use
@@ -1005,27 +1046,16 @@ public class UIInternals implements Serializable {
     public void setTitle(String title) {
         assert title != null;
 
-        pendingTitleUpdateCanceler = ui.getPage()
-                .executeJs(generateTitleScript().stripIndent(), title);
-
-        this.title = title;
-    }
-
-    private String generateTitleScript() {
-        String setTitleScript = """
-                    document.title = $0;
-                    if(window?.Vaadin?.documentTitleSignal) {
-                        window.Vaadin.documentTitleSignal.value = $0;
-                    }
-                """;
+        TitleJs titleJs = ui.getPage().executeJs(TitleJs.class);
         if (getSession().getConfiguration().isReactEnabled()) {
             // For react-router we should wait for navigation to finish
             // before updating the title.
-            setTitleScript = String.format(
-                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s }",
-                    setTitleScript);
+            pendingTitleUpdateCanceler = titleJs.setTitleAfterNavigation(title);
+        } else {
+            pendingTitleUpdateCanceler = titleJs.setTitle(title);
         }
-        return setTitleScript;
+
+        this.title = title;
     }
 
     /**
@@ -1081,6 +1111,23 @@ public class UIInternals implements Serializable {
         boolean result = pendingTitleUpdateCanceler.cancelExecution();
         pendingTitleUpdateCanceler = null;
         return result;
+    }
+
+    /**
+     * Restores the app shell title if the current page title is empty, i.e. the
+     * route target does not define a title.
+     * <p>
+     * <b>NOTE</b> Intended for internal use, you should not call this method.
+     *
+     * @since 25.4
+     */
+    public void restoreAppShellTitleIfEmpty() {
+        // app shell title is computed from the title tag in index.html
+        if ((title == null || title.isEmpty()) && appShellTitle != null
+                && !appShellTitle.isEmpty()) {
+            cancelPendingTitleUpdate();
+            setTitle(appShellTitle);
+        }
     }
 
     /**
@@ -1347,7 +1394,7 @@ public class UIInternals implements Serializable {
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
-        addExternalDependencies(dependencies);
+        addRuntimeDependencies(componentClass, dependencies);
         if (mightHaveChunk(componentClass, dependencies)) {
             triggerChunkLoading(componentClass);
         }
@@ -1417,7 +1464,10 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
+        // type=MODULE values are deliberately kept out of the bundle and are
+        // loaded at runtime instead, so their absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .filter(dep -> dep.type() != JavaScript.Type.MODULE)
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
@@ -1448,14 +1498,56 @@ public class UIInternals implements Serializable {
 
     }
 
-    private void addExternalDependencies(DependencyInfo dependency) {
+    private void addRuntimeDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependency) {
         Page page = ui.getPage();
-        dependency.getJavaScripts().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+                .forEach(js -> {
+                    // Checked before resolving the value so that an
+                    // unsupported combination is reported even when the value
+                    // itself would be rejected
+                    if (js.type() == JavaScript.Type.MODULE
+                            && js.loadMode() == LoadMode.INLINE) {
+                        throw new IllegalArgumentException("The @JavaScript('"
+                                + js.value() + "') annotation on "
+                                + componentClass.getName()
+                                + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
+                    }
+                    String resolved = resolveRuntimeJavaScript(js.value());
+                    if (resolved == null) {
+                        return;
+                    }
+                    page.addJavaScript(resolved, js.loadMode(), js.type());
+                });
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJsModule(js.value()));
+                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
+                        JavaScript.Type.MODULE));
+    }
+
+    private boolean isRuntimeJavaScript(JavaScript js) {
+        return js.type() == JavaScript.Type.MODULE
+                || UrlUtil.isExternal(js.value());
+    }
+
+    /**
+     * Normalizes a runtime {@link JavaScript} annotation value so that the
+     * bootstrap URI resolver can expand it.
+     * <p>
+     * Values with a protocol (external URLs but also {@code context://} and
+     * {@code base://}) are passed through untouched, the same way they were
+     * before {@link JavaScript.Type#MODULE} existed. Only bare relative values,
+     * which are new with {@code Type.MODULE}, need normalizing to the context
+     * root.
+     *
+     * @return the normalized value, or {@code null} if the value was rejected
+     */
+    private String resolveRuntimeJavaScript(String value) {
+        if (UrlUtil.isExternal(value)) {
+            return value;
+        }
+        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
     }
 
     /**
@@ -1579,6 +1671,68 @@ public class UIInternals implements Serializable {
     public void setContinueNavigationAction(
             ContinueNavigationAction continueNavigationAction) {
         this.continueNavigationAction = continueNavigationAction;
+    }
+
+    /**
+     * Marks that the router has started handling a navigation for this UI.
+     * Every call must be matched by a call to {@link #exitNavigation()}, also
+     * when the navigation fails. For framework use only.
+     *
+     * @return {@code true} if this is the outermost navigation, {@code false}
+     *         if it is nested inside a navigation that is already being
+     *         handled, such as a forward, a reroute or an error view
+     * @since 25.4
+     */
+    public boolean enterNavigation() {
+        boolean outermost = navigationDepth++ == 0;
+        if (outermost) {
+            // A failure recorded outside a tracked navigation, such as when a
+            // postponed navigation proceeds, must not leak into this one
+            navigationFailure = null;
+        }
+        return outermost;
+    }
+
+    /**
+     * Marks that the router has finished handling a navigation started with
+     * {@link #enterNavigation()}. For framework use only.
+     * 
+     * @since 25.4
+     */
+    public void exitNavigation() {
+        navigationDepth--;
+        if (navigationDepth == 0) {
+            navigationFailure = null;
+        }
+    }
+
+    /**
+     * Records the exception for which an error view is rendered during the
+     * ongoing navigation. Only the first exception of a navigation is kept,
+     * since any later one comes from handling the first. Nothing is recorded
+     * outside a navigation started with {@link #enterNavigation()}. For
+     * framework use only.
+     *
+     * @param exception
+     *            the exception the error view is rendered for, not {@code null}
+     * @since 25.4
+     */
+    public void recordNavigationFailure(Exception exception) {
+        if (navigationDepth > 0 && navigationFailure == null) {
+            navigationFailure = exception;
+        }
+    }
+
+    /**
+     * Gets the exception for which an error view was rendered during the
+     * ongoing navigation. For framework use only.
+     *
+     * @return the exception, or {@code null} if no error view has been rendered
+     *         during the ongoing navigation
+     * @since 25.4
+     */
+    public @Nullable Exception getNavigationFailure() {
+        return navigationFailure;
     }
 
     /**
@@ -2180,5 +2334,54 @@ public class UIInternals implements Serializable {
         terminated.forEach(transfer -> getLogger().warn(
                 "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
                 ui.getUIId(), transfer.getDescription()));
+    }
+
+    /**
+     * How the title of the page is set, as a JavaScript definition for
+     * {@link Page#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface TitleJs extends Serializable {
+
+        /**
+         * What setting the title does, shared by the plain call and the one
+         * that waits for the navigation. The indentation ends up inside the
+         * body of the function the bundle carries, where JavaScript ignores it.
+         */
+        String SET_TITLE = """
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """;
+
+        /**
+         * Sets the title of the page.
+         *
+         * @param title
+         *            the title to set
+         * @return the pending result, which is what cancels the update when a
+         *         later one replaces it
+         */
+        @JsExpression(SET_TITLE)
+        PendingJavaScriptResult setTitle(String title);
+
+        /**
+         * Sets the title of the page once the client side router has finished
+         * navigating, so that the title of the page it navigated away from is
+         * not the one that sticks.
+         *
+         * @param title
+         *            the title to set
+         * @return the pending result, which is what cancels the update when a
+         *         later one replaces it
+         */
+        @JsExpression("if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {"
+                + SET_TITLE + "}, {once:true}); }  else { " + SET_TITLE + " }")
+        PendingJavaScriptResult setTitleAfterNavigation(String title);
     }
 }

@@ -11,13 +11,15 @@ const globalExclusions = [
   // Deploys to a real application server, so it needs one of the container
   // profiles and has its own job in validation.yml
   'flow-tests/vaadin-cdi-tests',
+  // Only in the reactor with -Dnative; runs in spring-native.yml
+  'flow-tests/vaadin-spring-tests/test-spring-native',
+  // Boots Quarkus applications instead of deploying to a servlet container,
+  // so it has its own job in validation.yml. Only the quarkus-tests profile
+  // lists it, but the module lists here are read regardless of profiles
+  'flow-tests/vaadin-quarkus-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/generator',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/library',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/theme',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui',
   'flow-tests/test-devloop/test-devloop-support'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
@@ -34,6 +36,10 @@ const globalExclusions = [
 //  Tests that need shared modules, check validation.yml to see how they are generated before running ITs
 // Containers 4, 5 & 6:
 //  Spring tests, they need also spring shared modules to be generated in validation.yml
+// Containers 7, 9 & 10:
+//  Dev loop fixtures, they need their devloop-shared modules to be installed in
+//  validation.yml. 9 and 10 hold the forked servers other than Cargo's Tomcat,
+//  which do not fit in 7's time budget beside it.
 // Container 6:
 //  Live Reload Multimodule test needs being executed in the same container.
 //  Also holds a subset of the lighter spring-security tests offloaded from
@@ -137,6 +143,18 @@ const moduleWeights = {
   'flow-tests/test-devloop/test-devloop-spring/devloop-app': { pos: 7, weight: 5 },
   'flow-tests/test-devloop/test-devloop-jetty/devloop-shared': { pos: 7 },
   'flow-tests/test-devloop/test-devloop-jetty/devloop-app': { pos: 7, weight: 8 },
+  'flow-tests/test-devloop/test-devloop-cargo/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-cargo/devloop-app': { pos: 7, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-tomee/devloop-shared': { pos: 9 },
+  'flow-tests/test-devloop/test-devloop-tomee/devloop-app': { pos: 9, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-liberty/devloop-shared': { pos: 9 },
+  'flow-tests/test-devloop/test-devloop-liberty/devloop-app': { pos: 9, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-payara-micro/devloop-shared': { pos: 9 },
+  'flow-tests/test-devloop/test-devloop-payara-micro/devloop-app': { pos: 9, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-payara/devloop-shared': { pos: 10 },
+  'flow-tests/test-devloop/test-devloop-payara/devloop-app': { pos: 10, weight: 12 },
+  'flow-tests/test-devloop/test-devloop-jbosseap/devloop-shared': { pos: 10 },
+  'flow-tests/test-devloop/test-devloop-jbosseap/devloop-app': { pos: 10, weight: 14 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
@@ -278,7 +296,10 @@ function getTestFiles(folder, pattern) {
  * remove excluded elements from array
  */
 function grep(array, exclude) {
-  return array.filter(item => !exclude.includes(item));
+  // Entries match a module or any module under it, so excluding a directory
+  // with sub-modules takes one line rather than one per sub-module.
+  return array.filter(item => !exclude.some(
+    excluded => item === excluded || item.startsWith(excluded + "/")));
 }
 
 function sumWeights(items, slowMap) {
@@ -440,6 +461,32 @@ function formatSecs(s) {
   const pad = (n, p) => ("" + n).padStart(p || 2, 0);
   const r = {h:~~(s / 3600),m:~~((s % 3600) / 60),s:~~s % 60, f:~~(s%1*10)};
   return `${pad(r.m)}':${pad(r.s)}"`;
+}
+
+/**
+ * The matrix of the quarkus-tests job in validation.yml. The suite is not a
+ * module of flow-tests (see flow-tests/pom.xml), so it is read from its own
+ * POM: every module of the suite that sets the validation.run property is a
+ * leg of the job, and the value says when it runs - `always` for every
+ * change, `when-changed` only when the Quarkus sources change. Modules
+ * without the property are fixtures the legs depend on.
+ */
+function getQuarkusTestsMatrix() {
+  const suite = 'flow-tests/vaadin-quarkus-tests';
+  const regexRun = /<validation\.run>\s*([\w-]+)\s*<\/validation\.run>/;
+  return getModules(suite).flatMap(path => {
+    const content = fs.readFileSync(path + '/pom.xml').toString()
+      .replace(regexComment, '');
+    const run = (regexRun.exec(content) || [])[1];
+    if (!run) {
+      return [];
+    }
+    if (run !== 'always' && run !== 'when-changed') {
+      throw new Error(`${path}/pom.xml: validation.run must be always or when-changed, not ${run}`);
+    }
+    const module = path.substring(suite.length + 1);
+    return [{ name: module, module, ungated: run === 'always' }];
+  });
 }
 
 /**
@@ -637,6 +684,8 @@ async function main() {
     printStrategy(object);
     const json = objectToString(object, keys);
     console.log(json);
+  } else if (action == 'quarkus-tests') {
+    console.log(objectToString(getQuarkusTestsMatrix()));
   } else if (action == 'clean-success') {
     const xmlSucceed = getFiles([], '.', /(surefire|failsafe)-reports\//)
       .filter(f => !fs.readFileSync(f).toString().match(/<stackTrace>/));
@@ -653,6 +702,7 @@ Actions
   set-version        replace versions in all pom files of the project
   unit-tests         outputs the JSON matrix for unit-tests
   it-tests           outputs the JSON matrix for it-tests
+  quarkus-tests      outputs the JSON matrix for the quarkus-tests job
   test-results       process test-results and outputs a matrix with weights
   clean-success      remove success xml test files to reduce uploaded artifact
 

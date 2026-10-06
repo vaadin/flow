@@ -43,6 +43,7 @@ class MetadataWriterTest {
         ui = Mockito.mock(UI.class);
         session = Mockito.mock(VaadinSession.class);
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
         messages = Mockito.mock(SystemMessages.class);
     }
 

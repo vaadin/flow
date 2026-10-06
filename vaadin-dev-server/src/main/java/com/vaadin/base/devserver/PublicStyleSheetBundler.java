@@ -118,7 +118,15 @@ public final class PublicStyleSheetBundler {
         return Optional.empty();
     }
 
-    private static boolean isCopiedJarResourcesRoot(File root) {
+    /**
+     * Whether the given root is the {@code jar-resources} folder the build
+     * fills with copies of classpath resources, rather than a source root.
+     *
+     * @param root
+     *            the root to check
+     * @return {@code true} if the root is the copied jar-resources folder
+     */
+    static boolean isCopiedJarResourcesRoot(File root) {
         String path = FrontendUtils.getUnixPath(root.toPath());
         return path.endsWith("generated/jar-resources");
     }

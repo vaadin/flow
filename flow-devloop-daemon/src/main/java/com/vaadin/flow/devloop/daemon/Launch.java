@@ -53,15 +53,11 @@ final class Launch {
 
     /**
      * HotswapAgent plugins the loop will not have running; see
-     * {@link #jvmFlags} for what each of them would do.
-     * <p>
-     * Named here because the value has to reach HotswapAgent two different
-     * ways: as a system property, which is what works when the application owns
-     * the JVM, and as a {@code hotswap-agent.properties} on the application's
-     * own classpath, which is what works when it does not. See
-     * {@code MavenGoalRuntime#writeHotswapAgentProperties}.
+     * {@link #jvmFlags} for what each of them would do. Each entry is the
+     * {@code name} of the plugin's {@code @Plugin} annotation, which is not
+     * always the short one: Jackson's is {@code JacksonPlugin}.
      */
-    static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty";
+    static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin";
 
     /** Maven's epilogue, which says nothing about why a build failed. */
     static final Pattern BOILERPLATE = Pattern
@@ -1123,7 +1119,7 @@ final class Launch {
      * off on the Maven command line, where each one is its own argument and so
      * a value containing a space survives.
      * <p>
-     * {@code disabledPlugins} is the exception that proves the rule:
+     * {@code hotswapagent.disablePlugin} is the exception that proves the rule:
      * HotswapAgent reads it in {@code premain}, before Maven has set a single
      * command-line property, so it has to be a real JVM flag wherever it runs.
      *
@@ -1165,12 +1161,10 @@ final class Launch {
         AppRuntime appRuntime = runtime();
         List<String> jvmFlags = new ArrayList<>(jvmFlags(tee));
         jvmFlags.addAll(appRuntime.extraJvmFlags());
-        if (!(appRuntime instanceof MainClassRuntime)) {
-            // Only a runtime that hands these to a shell can be defeated by a
-            // space in one of them; see MavenGoalRuntime.unsplittable.
-            MavenGoalRuntime.unsplittable(jvmFlags).forEach(tee::line);
-        }
-        appRuntime.warnings().forEach(tee::line);
+        // Only a runtime that hands these to a string something else splits
+        // can be defeated by a space in one of them, and only it knows which
+        // string that is; see MavenGoalRuntime.unsplittable.
+        appRuntime.warnings(jvmFlags).forEach(tee::line);
         AppRuntime.Invocation invocation = appRuntime.invocation(resolved,
                 jvmFlags,
                 systemProperties(daemonPort, token, launchKind, resolved));
@@ -1186,7 +1180,7 @@ final class Launch {
     /**
      * The flags that only a starting JVM can be given.
      */
-    private List<String> jvmFlags(Log tee) throws IOException {
+    List<String> jvmFlags(Log tee) throws IOException {
         Jvm.Jdk java = appJvm();
         Path haJar = ensureHotswapAgent();
         Optional<Path> connectorAgent = agentJar();
@@ -1232,12 +1226,35 @@ final class Launch {
         // of its own, which is a second driver of what the transaction model
         // owns - so if HotswapAgent ever grows ee10 hooks, the loop should not
         // acquire a competitor by surprise.
-        // The key is "disabledPlugins", plural and unprefixed: HotswapAgent
-        // loads hotswap-agent.properties and then merges System.getProperties()
-        // over it with the same key names. A wrong name is accepted silently
-        // and disables nothing, which is how the Vaadin plugin kept firing its
-        // own full page reload on top of Flow's soft refresh.
-        flags.add("-DdisabledPlugins=" + DISABLED_HOTSWAP_PLUGINS);
+        // JacksonPlugin: deadlocks a container's boot. It patches Jackson's
+        // caches as they are defined - including the container's own copy of
+        // Jackson, in the container's own loader - and compiles the patch while
+        // the JVM holds that loader's lock, resolving types through the thread
+        // context class loader first: HotswapAgent's PluginClassFileTransformer
+        // builds the pool with ClassPool.appendSystemPath(), which on Java 9+
+        // is the context loader. Measured on Payara Micro: Jackson defined in
+        // its boot loader while the patch waited on the API class loader - the
+        // context loader during boot - and Hazelcast's bootstrap holding the
+        // API loader while it waited on the boot loader. The odd start never
+        // got past "Registered ...HazelcastBackingStoreFactoryProxy", with no
+        // error and no exit, until the start timeout. A stopgap: the cause is
+        // HotswapAgent's, not the plugin's, and once a HotswapAgent release
+        // no longer resolves through the context loader - the fix is
+        // https://github.com/HotswapProjects/HotswapAgent/pull/681 -
+        // HotswapAgentJar should move to it and this entry should go. Until
+        // then, what the
+        // plugin buys - clearing Jackson's caches after a redefine - is not
+        // worth a start that may never end.
+        // The key is "hotswapagent.disablePlugin", read in premain into a set
+        // every class loader's configuration consults. "disabledPlugins", the
+        // key hotswap-agent.properties uses, reaches the system class loader
+        // only: every other loader re-reads the properties file bundled in
+        // HotswapAgent's own jar, whose empty "disabledPlugins=" shadows the
+        // system property, so a container's own loaders kept every plugin.
+        // A wrong name is accepted silently and disables nothing, which is how
+        // the Vaadin plugin kept firing its own full page reload on top of
+        // Flow's soft refresh.
+        flags.add("-Dhotswapagent.disablePlugin=" + DISABLED_HOTSWAP_PLUGINS);
         ADD_OPENS.forEach(target -> {
             flags.add("--add-opens");
             flags.add(target + "=ALL-UNNAMED");

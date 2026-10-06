@@ -645,7 +645,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
                 context.getUI().getCsrfToken());
         json.put(ApplicationConstants.UIDL_PUSH_ID,
-                context.getUI().getSession().getPushId());
+                context.getUI().getSessionOrThrow().getPushId());
         String responseString = json.toString();
 
         try {
@@ -670,6 +670,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface StylesheetJs extends Serializable {
