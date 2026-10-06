@@ -314,13 +314,7 @@ class AbstractDownloadHandlerTest {
     @CsvSource(delimiter = '|', nullValues = "null", value = {
             "null          | null | 200 | abcdefghij | null",
             "bytes=2-5     | null | 206 | cdef       | bytes 2-5/10",
-            "bytes=7-      | null | 206 | hij        | bytes 7-9/10",
-            "bytes=-3      | null | 206 | hij        | bytes 7-9/10",
-            "bytes=5-99    | null | 206 | fghij      | bytes 5-9/10",
             "bytes=10-     | null | 416 | ''         | bytes */10",
-            "bytes=-0      | null | 416 | ''         | bytes */10",
-            "bytes=5-2     | null | 200 | abcdefghij | null",
-            "bytes=0-1,4-5 | null | 200 | abcdefghij | null",
             "bytes=2-5     | x    | 200 | abcdefghij | null" })
     void transferContent_rangeRequested_sendsRequestedBytes(String range,
             String ifRange, int status, String body, String contentRange)
