@@ -16,6 +16,22 @@
     <properties>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Override vulnerable transitive versions from webpush-jwt-jose4j -->
+            <dependency>
+                <groupId>org.bitbucket.b_c</groupId>
+                <artifactId>jose4j</artifactId>
+                <version>0.9.7</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk18on</artifactId>
+                <version>1.86</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- Project dependencies -->
 
