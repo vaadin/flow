@@ -254,8 +254,8 @@ public class FrontendStubs {
      */
     public static class ToolStubBuilder {
 
-        private static final String DEFAULT_NPM_VERSION = "10.9.0";
-        private static final String DEFAULT_NODE_VERSION = "22.12.0";
+        private static final String DEFAULT_NPM_VERSION = "10.9.8";
+        private static final String DEFAULT_NODE_VERSION = "22.23.2";
 
         private String version;
         private String cacheDir;
