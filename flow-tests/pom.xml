@@ -418,6 +418,7 @@
         <module>test-legacy-frontend</module>
         <module>test-client-queue</module>
         <module>test-push-startup</module>
+        <module>test-jpms</module>
         <module>test-devloop</module>
         <module>test-commercial-banner</module>
       </modules>
