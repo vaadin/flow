@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Optional;
 
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Abstract class for common methods used in pre-made download handlers.
@@ -69,5 +73,27 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      */
     public boolean isInline() {
         return inline;
+    }
+
+    /**
+     * Writes the content to the response and notifies the transfer progress
+     * listeners.
+     *
+     * @param downloadEvent
+     *            the download event
+     * @param inputStream
+     *            the content, positioned at its first byte
+     * @param outputStream
+     *            the response output stream
+     * @param contentLength
+     *            the length of the content, or {@code -1} if unknown
+     * @throws IOException
+     *             if reading or writing the content fails
+     */
+    void transferContent(DownloadEvent downloadEvent, InputStream inputStream,
+            OutputStream outputStream, long contentLength) throws IOException {
+        downloadEvent.setContentLength(contentLength);
+        TransferUtil.transfer(inputStream, outputStream,
+                getTransferContext(downloadEvent), getListeners());
     }
 }
