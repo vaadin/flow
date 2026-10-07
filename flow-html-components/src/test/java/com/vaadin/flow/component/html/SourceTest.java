@@ -26,6 +26,7 @@ import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -33,12 +34,11 @@ import static org.mockito.Mockito.verify;
 
 class SourceTest extends ComponentTest {
 
-    // Property cases in the super class
-
     @Override
     protected void addProperties() {
-        addStringProperty("src", "");
-        addProperty("type", String.class, null, "video/mp4", false, true);
+        // null means not set, which the generic String property cases reject
+        whitelistProperty("src");
+        whitelistProperty("type");
     }
 
     @Test
@@ -47,6 +47,23 @@ class SourceTest extends ComponentTest {
 
         assertEquals("/intro.mp4", source.getSrc());
         assertEquals("video/mp4", source.getType());
+    }
+
+    @Test
+    void srcAndType_nullUntilSet_nullRemovesTheAttributes() {
+        Source source = new Source();
+        assertNull(source.getSrc());
+        assertNull(source.getType());
+
+        source.setSrc("/intro.mp4");
+        source.setType("video/mp4");
+        source.setSrc((String) null);
+        source.setType(null);
+
+        assertNull(source.getSrc());
+        assertNull(source.getType());
+        assertFalse(source.getElement().hasAttribute("src"));
+        assertFalse(source.getElement().hasAttribute("type"));
     }
 
     @Test

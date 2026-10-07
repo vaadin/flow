@@ -98,10 +98,11 @@ public class Source extends HtmlComponent {
      * Sets the URL of the media file.
      *
      * @param src
-     *            the URL of the media file
+     *            the URL of the media file, or <code>null</code> to remove the
+     *            URL
      */
-    public void setSrc(String src) {
-        if ("".equals(src)) {
+    public void setSrc(@Nullable String src) {
+        if (src == null) {
             getElement().removeAttribute(SRC_ATTRIBUTE);
         } else {
             getElement().setAttribute(SRC_ATTRIBUTE, src);
@@ -141,13 +142,12 @@ public class Source extends HtmlComponent {
     /**
      * Gets the URL of the media file.
      *
-     * @return the URL of the media file, or an empty string if none has been
+     * @return the URL of the media file, or <code>null</code> if none has been
      *         set
      * @see #setSrc(String)
      */
-    public String getSrc() {
-        String src = getElement().getAttribute(SRC_ATTRIBUTE);
-        return src == null ? "" : src;
+    public @Nullable String getSrc() {
+        return getElement().getAttribute(SRC_ATTRIBUTE);
     }
 
     /**

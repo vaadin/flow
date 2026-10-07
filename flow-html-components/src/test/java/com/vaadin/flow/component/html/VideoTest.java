@@ -26,6 +26,7 @@ import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -38,13 +39,26 @@ class VideoTest extends MediaTest {
     @Override
     protected void addProperties() {
         super.addProperties();
-        addProperty("poster", String.class, null, "/intro-poster.jpg", false,
-                true);
+        // null means not set, which the generic String property cases reject
+        whitelistProperty("poster");
     }
 
     @Override
     protected Media createMedia(Source... sources) {
         return new Video(sources);
+    }
+
+    @Test
+    void poster_nullUntilSet_nullRemovesTheAttribute() {
+        Video video = new Video();
+        assertNull(video.getPoster());
+
+        video.setPoster("/intro-poster.jpg");
+        assertEquals("/intro-poster.jpg", video.getPoster());
+
+        video.setPoster((String) null);
+        assertNull(video.getPoster());
+        assertFalse(video.getElement().hasAttribute("poster"));
     }
 
     @Test

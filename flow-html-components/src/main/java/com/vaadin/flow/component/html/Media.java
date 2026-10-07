@@ -117,7 +117,8 @@ public abstract class Media extends HtmlComponent
          * arrived with {@code preload="NONE"} has to read back as
          * {@link #NONE}.
          */
-        private static @Nullable Preload fromAttributeValue(String value) {
+        private static @Nullable Preload fromAttributeValue(
+                @Nullable String value) {
             return Stream.of(values())
                     .filter(preload -> preload.value.equalsIgnoreCase(value))
                     .findFirst().orElse(null);
@@ -315,7 +316,7 @@ public abstract class Media extends HtmlComponent
      * @see #setPreload(Preload)
      */
     public @Nullable Preload getPreload() {
-        String value = getElement().getAttribute(PRELOAD_ATTRIBUTE);
-        return value == null ? null : Preload.fromAttributeValue(value);
+        return Preload.fromAttributeValue(
+                getElement().getAttribute(PRELOAD_ATTRIBUTE));
     }
 }
