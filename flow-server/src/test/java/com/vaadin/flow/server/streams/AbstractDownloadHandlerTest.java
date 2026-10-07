@@ -376,14 +376,17 @@ class AbstractDownloadHandlerTest {
         }
     }
 
-    @Test
-    void transferContent_fileShorterThanLength_failsBeforePartialContent()
-            throws IOException {
+    @ParameterizedTest
+    @CsvSource({ "bytes=15-19, false", "bytes=5-14, true" })
+    void transferContent_fileShorterThanLength_fails(String range,
+            boolean partialContentStarted) throws IOException {
         Path file = Files.writeString(tempDir.resolve("content.txt"),
                 "abcdefghij");
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
-        when(request.getHeader("Range")).thenReturn("bytes=15-19");
+        when(servletResponse.getOutputStream())
+                .thenReturn(new CapturingServletOutputStream());
+        when(request.getHeader("Range")).thenReturn(range);
 
         try (InputStream inputStream = Files.newInputStream(file)) {
             assertThrows(EOFException.class,
@@ -392,7 +395,9 @@ class AbstractDownloadHandlerTest {
                                     owner),
                             inputStream, outputStream, 20, file.toFile()));
         }
-        verify(servletResponse, never()).setStatus(anyInt());
+        // a range starting past the real end fails before the 206 is set
+        verify(servletResponse, partialContentStarted ? times(1) : never())
+                .setStatus(206);
     }
 
     @Test
