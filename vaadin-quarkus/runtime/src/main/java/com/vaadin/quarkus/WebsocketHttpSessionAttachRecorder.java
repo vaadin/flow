@@ -16,14 +16,15 @@
 package com.vaadin.quarkus;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.websocket.server.ServerContainer;
 
 import java.security.Principal;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 
-import io.quarkus.runtime.RuntimeValue;
 import io.quarkus.runtime.annotations.Recorder;
 import io.quarkus.vertx.http.runtime.security.QuarkusHttpUser;
+import io.quarkus.websockets.client.runtime.ExecutorSupplier;
 import io.quarkus.websockets.client.runtime.WebSocketPrincipal;
 import io.undertow.httpcore.HttpExchange;
 import io.undertow.server.HttpServerExchange;
@@ -60,17 +61,18 @@ public class WebsocketHttpSessionAttachRecorder {
      * Gets an adapted version of VertxWebSocketHandler that attaches upgrade
      * request HTTP session to the Undertow WebSocket HttpExchange.
      *
-     * @param info
-     *            websocket deployment info
-     * @param container
-     *            websocket container
+     * <p>
+     * The WebSocket container is the one Quarkus registers as the
+     * {@link ServerContainer} servlet context attribute. The handler reads only
+     * the executor and the server extensions from the deployment info, so a new
+     * info with the same executor Quarkus uses is enough: Quarkus adds no
+     * server extensions.
+     *
      * @param deploymentManager
      *            deployment manager
      * @return an adapted version of VertxWebSocketHandler
      */
     public Handler<RoutingContext> createWebSocketHandler(
-            RuntimeValue<WebSocketDeploymentInfo> info,
-            RuntimeValue<ServerWebSocketContainer> container,
             DeploymentManager deploymentManager) {
 
         Deployment deployment = deploymentManager.getDeployment();
@@ -78,8 +80,13 @@ public class WebsocketHttpSessionAttachRecorder {
         UpgradeRequestSessionAttachmentHandler handler = new UpgradeRequestSessionAttachmentHandler(
                 deployment);
 
-        return new VertxWebSocketHandler(container.getValue(),
-                info.getValue()) {
+        ServerWebSocketContainer container = (ServerWebSocketContainer) deployment
+                .getServletContext()
+                .getAttribute(ServerContainer.class.getName());
+        WebSocketDeploymentInfo info = new WebSocketDeploymentInfo()
+                .setExecutor(new ExecutorSupplier());
+
+        return new VertxWebSocketHandler(container, info) {
 
             @Override
             public void handle(RoutingContext event) {
