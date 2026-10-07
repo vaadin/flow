@@ -19,8 +19,6 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.PropertyDescriptor;
-import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
@@ -47,9 +45,6 @@ public class Source extends HtmlComponent {
 
     private static final String SRC_ATTRIBUTE = "src";
     private static final String TYPE_ATTRIBUTE = "type";
-
-    private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
-            .attributeWithDefault(SRC_ATTRIBUTE, "");
 
     /**
      * Creates a new source without a URL.
@@ -106,7 +101,11 @@ public class Source extends HtmlComponent {
      *            the URL of the media file
      */
     public void setSrc(String src) {
-        set(srcDescriptor, src);
+        if ("".equals(src)) {
+            getElement().removeAttribute(SRC_ATTRIBUTE);
+        } else {
+            getElement().setAttribute(SRC_ATTRIBUTE, src);
+        }
     }
 
     /**
@@ -147,7 +146,8 @@ public class Source extends HtmlComponent {
      * @see #setSrc(String)
      */
     public String getSrc() {
-        return get(srcDescriptor);
+        String src = getElement().getAttribute(SRC_ATTRIBUTE);
+        return src == null ? "" : src;
     }
 
     /**
