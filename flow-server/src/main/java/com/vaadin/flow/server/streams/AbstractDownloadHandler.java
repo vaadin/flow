@@ -17,15 +17,18 @@ package com.vaadin.flow.server.streams;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
-
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.communication.TransferUtil;
@@ -113,14 +116,20 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * {@code Accept-Ranges} and {@code 206 Partial Content}, a browser cannot
      * jump ahead of what it has downloaded. Ranges are only served for a file,
      * whose length is known and which can be read from any position without
-     * reading the bytes before it. The range is written the same way as for a
-     * static file. A request with an {@code If-Range} condition gets the whole
-     * content, since no validator is sent that the condition could match.
+     * reading the bytes before it. The ranges are parsed and written the same
+     * way as for a static file.
      * <p>
-     * A partial response is not reported to the transfer progress listeners: a
-     * media player sends many overlapping, often cancelled range requests,
-     * which do not describe a download of the content. Errors while writing it
-     * are logged, as for static files.
+     * The response carries a strong {@code ETag} derived from the modification
+     * time and length of the file. A request whose {@code If-Range} does not
+     * match it gets the whole content, so a client cannot join parts of a file
+     * that was replaced between its requests.
+     * <p>
+     * A range that covers the whole content, such as the {@code bytes=0-} that
+     * media elements send first, is reported to the transfer progress listeners
+     * like a normal transfer. A smaller range is not reported as started,
+     * progressed or completed: a media player sends many overlapping, often
+     * cancelled range requests, which do not describe a download of the
+     * content. A failure is propagated like for any other transfer.
      *
      * @param downloadEvent
      *            the download event
@@ -130,39 +139,70 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *            the response output stream
      * @param contentLength
      *            the length of the content, or {@code -1} if unknown
-     * @param contentUrl
-     *            the URL the content was read from, ranges are served only if
-     *            it is a {@code file:} URL
+     * @param file
+     *            the file the content is read from, or {@code null} if it is
+     *            not a file, in which case ranges are not served
      * @throws IOException
-     *             if reading or writing the whole content fails
+     *             if reading or writing the content fails
      */
     void transferContent(DownloadEvent downloadEvent, InputStream inputStream,
-            OutputStream outputStream, long contentLength, URL contentUrl)
+            OutputStream outputStream, long contentLength, File file)
             throws IOException {
-        if ("file".equals(contentUrl.getProtocol()) && contentLength >= 0
-                && downloadEvent
-                        .getResponse() instanceof HttpServletResponse response) {
-            VaadinRequest request = downloadEvent.getRequest();
-            String range = request.getHeader("Range");
-            if (range != null && request.getHeader("If-Range") == null
-                    && writeRange(range, contentUrl, contentLength, response)) {
-                return;
-            }
-            response.setHeader("Accept-Ranges", "bytes");
+        if (file == null || contentLength < 0 || !(downloadEvent
+                .getResponse() instanceof HttpServletResponse response)) {
+            transferContent(downloadEvent, inputStream, outputStream,
+                    contentLength);
+            return;
         }
-        transferContent(downloadEvent, inputStream, outputStream,
-                contentLength);
+        response.setHeader("Accept-Ranges", "bytes");
+        String etag = createETag(file, contentLength);
+        if (etag != null) {
+            response.setHeader("ETag", etag);
+        }
+        VaadinRequest request = downloadEvent.getRequest();
+        String range = request.getHeader("Range");
+        String ifRange = request.getHeader("If-Range");
+        List<Pair<Long, Long>> ranges = range == null
+                || (ifRange != null && !ifRange.equals(etag)) ? null
+                        : ResponseWriter.parseRanges(range, contentLength,
+                                file);
+        if (ranges == null) {
+            transferContent(downloadEvent, inputStream, outputStream,
+                    contentLength);
+        } else if (ranges.size() == 1 && ranges.get(0).getFirst() == 0
+                && ranges.get(0).getSecond() == contentLength - 1) {
+            response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
+            response.setHeader("Content-Range",
+                    "bytes 0-" + (contentLength - 1) + "/" + contentLength);
+            transferContent(downloadEvent, inputStream, outputStream,
+                    contentLength);
+        } else {
+            ResponseWriter.writeRanges(ranges, contentLength, inputStream,
+                    file.toURI().toURL(), response);
+        }
     }
 
-    private boolean writeRange(String range, URL contentUrl, long contentLength,
-            HttpServletResponse response) {
-        try {
-            return ResponseWriter.writeRangeResponse(range, contentUrl,
-                    contentLength, response);
-        } catch (IOException e) {
-            LoggerFactory.getLogger(AbstractDownloadHandler.class)
-                    .debug("Error writing a range of {}", contentUrl, e);
-            return true;
+    /**
+     * Returns the file a resource URL points to, or {@code null} if it is not a
+     * file on disk, for example an entry in a jar or war.
+     */
+    static File toFile(URL resource) {
+        if (!"file".equals(resource.getProtocol())) {
+            return null;
         }
+        try {
+            return new File(resource.toURI());
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private static String createETag(File file, long contentLength) {
+        long lastModified = file.lastModified();
+        if (lastModified == 0) {
+            return null;
+        }
+        return "\"" + Long.toHexString(lastModified) + "-"
+                + Long.toHexString(contentLength) + "\"";
     }
 }

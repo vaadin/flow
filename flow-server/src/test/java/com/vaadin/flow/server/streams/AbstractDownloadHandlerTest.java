@@ -17,15 +17,16 @@ package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,12 +57,14 @@ import com.vaadin.flow.shared.Registration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -323,40 +326,73 @@ class AbstractDownloadHandlerTest {
 
     @ParameterizedTest
     @CsvSource(delimiter = '|', nullValues = "null", value = {
-            "null      | null | 200 | abcdefghij",
-            "bytes=2-5 | null | 206 | cdef",
-            "bytes=abc | null | 200 | abcdefghij",
-            "bytes=2-5 | x    | 200 | abcdefghij" })
-    void transferContent_file_rangeAnsweredWithoutListeners(String range,
-            String ifRange, int status, String body) throws IOException {
+            "null      | null | 200 | abcdefghij | null         | true",
+            "bytes=2-5 | null | 206 | cdef       | bytes 2-5/10 | false",
+            "bytes=0-  | null | 206 | abcdefghij | bytes 0-9/10 | true",
+            "bytes=abc | null | 200 | abcdefghij | null         | true",
+            "bytes=2-5 | x    | 200 | abcdefghij | null         | true",
+            "bytes=2-5 | etag | 206 | cdef       | bytes 2-5/10 | false" })
+    void transferContent_file_rangeAnswered(String range, String ifRange,
+            int status, String body, String contentRange,
+            boolean listenersNotified) throws IOException {
         Path file = Files.writeString(tempDir.resolve("content.txt"),
                 "abcdefghij");
+        Files.setLastModifiedTime(file, FileTime.fromMillis(0x1234567L));
+        String etag = "\"1234567-a\"";
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
         when(servletResponse.getOutputStream()).thenReturn(servletOutput);
         when(request.getHeader("Range")).thenReturn(range);
-        when(request.getHeader("If-Range")).thenReturn(ifRange);
+        when(request.getHeader("If-Range"))
+                .thenReturn("etag".equals(ifRange) ? etag : ifRange);
         handler.addTransferProgressListener(listener);
 
         try (InputStream inputStream = Files.newInputStream(file)) {
             handler.transferContent(
                     new DownloadEvent(request, servletResponse, session, owner),
-                    inputStream, servletOutput, 10, file.toUri().toURL());
+                    inputStream, servletOutput, 10, file.toFile());
         }
 
         assertEquals(body,
                 new String(servletOutput.getOutput(), StandardCharsets.UTF_8));
-        verify(servletResponse).setHeader("Accept-Ranges", "bytes");
+        verify(servletResponse, atLeastOnce()).setHeader("Accept-Ranges",
+                "bytes");
+        verify(servletResponse).setHeader("ETag", etag);
         if (status == 200) {
             verify(servletResponse, never()).setStatus(anyInt());
-            verify(listener).onComplete(any(), eq(10L));
+            verify(servletResponse, never()).setHeader(eq("Content-Range"),
+                    anyString());
         } else {
             verify(servletResponse).setStatus(status);
-            verify(servletResponse).setHeader("Content-Range", "bytes 2-5/10");
+            verify(servletResponse).setHeader("Content-Range", contentRange);
+        }
+        if (listenersNotified) {
+            verify(listener).onStart(any());
+            verify(listener).onComplete(any(), eq(10L));
+        } else {
             verify(listener, never()).onStart(any());
             verify(listener, never()).onComplete(any(), anyLong());
         }
+    }
+
+    @Test
+    void transferContent_fileShorterThanLength_failsBeforePartialContent()
+            throws IOException {
+        Path file = Files.writeString(tempDir.resolve("content.txt"),
+                "abcdefghij");
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        when(request.getHeader("Range")).thenReturn("bytes=15-19");
+
+        try (InputStream inputStream = Files.newInputStream(file)) {
+            assertThrows(EOFException.class,
+                    () -> handler.transferContent(
+                            new DownloadEvent(request, servletResponse, session,
+                                    owner),
+                            inputStream, outputStream, 20, file.toFile()));
+        }
+        verify(servletResponse, never()).setStatus(anyInt());
     }
 
     @Test
@@ -366,8 +402,7 @@ class AbstractDownloadHandlerTest {
         handler.transferContent(downloadEvent,
                 new ByteArrayInputStream(
                         "abcdefghij".getBytes(StandardCharsets.UTF_8)),
-                outputStream, 10,
-                URI.create("jar:file:/app.jar!/content.txt").toURL());
+                outputStream, 10, null);
 
         assertEquals("abcdefghij",
                 outputStream.toString(StandardCharsets.UTF_8));

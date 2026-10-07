@@ -31,6 +31,13 @@ import com.vaadin.flow.server.HttpStatusCode;
  * For instance for the file {@code resources/com/example/ui/MyData.json} and
  * class {@code com.example.ui.MyData} the definition would be
  * {@code forClassResource(MyData.class, "MyData.json")}
+ * <p>
+ * Byte range requests, which media players use to seek, are answered only when
+ * the resource is a file on disk, such as with exploded classes in a
+ * development environment. A resource inside a packaged jar or war is always
+ * sent whole, so seeking in audio or video served from it does not work. Use
+ * {@link DownloadHandler#forFile(java.io.File)} to serve seekable media in
+ * production.
  *
  * @since 24.8
  */
@@ -110,7 +117,7 @@ public class ClassDownloadHandler
                 downloadEvent.setFileName(resourceName);
             }
             transferContent(downloadEvent, inputStream, outputStream,
-                    connection.getContentLengthLong(), resource);
+                    connection.getContentLengthLong(), toFile(resource));
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             downloadEvent.getResponse()

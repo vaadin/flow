@@ -22,6 +22,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.Closeable;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -182,9 +183,8 @@ public class ResponseWriter implements Serializable {
             List<Pair<Long, Long>> ranges = range == null ? null
                     : parseRanges(range, contentLength, url);
             if (ranges != null) {
-                closeStream(dataStream);
-                dataStream = null;
-                writeRangeContents(ranges, response, url, contentLength);
+                writeRangeContents(ranges, contentLength, dataStream, url,
+                        response);
             } else {
                 if (0 <= contentLength) {
                     setContentLength(response, contentLength);
@@ -195,13 +195,11 @@ public class ResponseWriter implements Serializable {
         } catch (IOException e) {
             getLogger().debug("Error writing static file to user", e);
         } finally {
-            if (dataStream != null) {
-                closeStream(dataStream);
-            }
+            closeStream(dataStream);
         }
     }
 
-    private void closeStream(Closeable stream) {
+    private static void closeStream(Closeable stream) {
         try {
             stream.close();
         } catch (IOException e) {
@@ -210,61 +208,32 @@ public class ResponseWriter implements Serializable {
     }
 
     /**
-     * Answers the {@code Range} header of a request for the given resource the
-     * same way as {@link #writeResponseContents} does for static files.
+     * Parses the value of a {@code Range} request header the same way as
+     * {@link #writeResponseContents} does for static files.
      * <p>
-     * Nothing is written if the header should be ignored, which RFC 9110
-     * allows: when it is not a valid {@code bytes} range, or the length of the
-     * resource is unknown. The caller should then send the whole content.
-     * Otherwise the response is {@code 206 Partial Content} with the requested
-     * ranges, or {@code 416 Range Not Satisfiable} when none of them overlaps
-     * the content.
-     * <p>
-     * The resource is read from the start up to the first requested byte, which
-     * is a seek only when the URL points to a file.
+     * Returns {@code null} if the header should be ignored and the whole
+     * content sent, which RFC 9110 allows: when it is not a valid {@code bytes}
+     * range, or the length of the resource is unknown. Otherwise returns the
+     * requested ranges as inclusive first and last byte positions, clamped to
+     * the length. Ranges that start past the end are dropped, so an empty list
+     * means that none of them is satisfiable. Ranges beyond the limits on count
+     * and overlap are dropped as well.
      *
      * @param range
      *            the value of the {@code Range} request header, not
      *            {@code null}
-     * @param resourceUrl
-     *            the URL of the resource, not {@code null}
      * @param resourceLength
      *            the length of the resource, or {@code -1} if unknown
-     * @param response
-     *            the response to write to, not {@code null}
-     * @return {@code true} if a range response was written, {@code false} if
-     *         the header was ignored and nothing was written
-     * @throws IOException
-     *             if reading the resource or writing the response fails
+     * @param resource
+     *            the resource, used in log messages
+     * @return the ranges to send, or {@code null} if the header is ignored
      */
-    public static boolean writeRangeResponse(String range, URL resourceUrl,
-            long resourceLength, HttpServletResponse response)
-            throws IOException {
-        ResponseWriter writer = new ResponseWriter(DEFAULT_BUFFER_SIZE, false);
-        List<Pair<Long, Long>> ranges = writer.parseRanges(range,
-                resourceLength, resourceUrl);
-        if (ranges == null) {
-            return false;
-        }
-        writer.writeRangeContents(ranges, response, resourceUrl,
-                resourceLength);
-        return true;
-    }
-
-    /**
-     * Parses a "Range:" header into the ranges to send, clamped to the resource
-     * length. Returns {@code null} if the header should be ignored and the
-     * whole content sent: RFC 9110 allows that for an invalid header, and
-     * ranges cannot be resolved without the length. Ranges that start past the
-     * end are dropped, so an empty list means none is satisfiable. Ranges
-     * beyond the count and overlap limits are dropped as well.
-     */
-    private List<Pair<Long, Long>> parseRanges(String range,
-            long resourceLength, URL resourceURL) {
+    public static List<Pair<Long, Long>> parseRanges(String range,
+            long resourceLength, Object resource) {
         Matcher headerMatcher = RANGE_HEADER_PATTERN.matcher(range.trim());
         if (resourceLength < 0 || !headerMatcher.matches()) {
             getLogger().debug("ignoring range '{}' for resource '{}'", range,
-                    resourceURL);
+                    resource);
             return null;
         }
         Matcher rangeMatcher = BYTE_RANGE_PATTERN
@@ -296,7 +265,7 @@ public class ResponseWriter implements Serializable {
             if (end < start && !startGroup.isEmpty()) {
                 getLogger().info(
                         "received an illegal range '{}' for resource '{}'",
-                        rangeMatcher.group(), resourceURL);
+                        rangeMatcher.group(), resource);
                 return null;
             }
             end = Math.min(end, resourceLength - 1);
@@ -310,10 +279,46 @@ public class ResponseWriter implements Serializable {
                 limitReached = true;
                 getLogger().info(
                         "serving only {} ranges for resource '{}' even though more were requested",
-                        ranges.size(), resourceURL);
+                        ranges.size(), resource);
             }
         }
         return ranges;
+    }
+
+    /**
+     * Writes a range response for ranges returned by
+     * {@link #parseRanges(String, long, Object)}, the same way as
+     * {@link #writeResponseContents} does for static files: {@code 206 Partial
+     * Content} with a single range or a {@code multipart/byteranges} body, or
+     * {@code 416 Range Not Satisfiable} if the list is empty.
+     * <p>
+     * The content is read from the given stream, skipping to each range. The
+     * resource is opened again from its URL only if the ranges are not in
+     * ascending order. The status and headers of a single range are set only
+     * after skipping to its start, so content shorter than its length fails
+     * before the response is committed.
+     *
+     * @param ranges
+     *            the ranges to send, not {@code null}
+     * @param resourceLength
+     *            the length of the resource
+     * @param dataStream
+     *            the content of the resource, positioned at its first byte, not
+     *            {@code null}; not closed by this method
+     * @param resourceUrl
+     *            the URL of the resource, to read it again for ranges that are
+     *            not in ascending order, not {@code null}
+     * @param response
+     *            the response to write to, not {@code null}
+     * @throws IOException
+     *             if reading the resource or writing the response fails, or the
+     *             resource ends before a range does
+     */
+    public static void writeRanges(List<Pair<Long, Long>> ranges,
+            long resourceLength, InputStream dataStream, URL resourceUrl,
+            HttpServletResponse response) throws IOException {
+        new ResponseWriter(DEFAULT_BUFFER_SIZE, false).writeRangeContents(
+                ranges, resourceLength, dataStream, resourceUrl, response);
     }
 
     /**
@@ -326,8 +331,8 @@ public class ResponseWriter implements Serializable {
      * protocol details.
      */
     private void writeRangeContents(List<Pair<Long, Long>> ranges,
-            HttpServletResponse response, URL resourceURL, long resourceLength)
-            throws IOException {
+            long resourceLength, InputStream dataStream, URL resourceURL,
+            HttpServletResponse response) throws IOException {
         response.setHeader("Accept-Ranges", "bytes");
 
         if (ranges.isEmpty()) {
@@ -340,31 +345,22 @@ public class ResponseWriter implements Serializable {
             return;
         }
 
-        URLConnection connection = resourceURL.openConnection();
-
-        response.setStatus(206);
-
         if (ranges.size() == 1) {
-            ServletOutputStream outputStream = response.getOutputStream();
-
             // single range: calculate Content-Length
             long start = ranges.get(0).getFirst();
             long end = ranges.get(0).getSecond();
+            dataStream.skipNBytes(start);
+
+            response.setStatus(206);
             setContentLength(response, end - start + 1);
             response.setHeader("Content-Range",
                     createContentRangeHeader(start, end, resourceLength));
-
-            final InputStream dataStream = connection.getInputStream();
-            try {
-                long skipped = dataStream.skip(start);
-                assert (skipped == start);
-                writeStream(outputStream, dataStream, end - start + 1);
-            } finally {
-                closeStream(dataStream);
-            }
+            writeStream(response.getOutputStream(), dataStream,
+                    end - start + 1);
         } else {
-            writeMultipartRangeContents(ranges, connection, response,
-                    resourceURL);
+            response.setStatus(206);
+            writeMultipartRangeContents(ranges, resourceLength, dataStream,
+                    resourceURL, response);
         }
     }
 
@@ -374,8 +370,8 @@ public class ResponseWriter implements Serializable {
      * avoid computing "Content-Length".
      */
     private void writeMultipartRangeContents(List<Pair<Long, Long>> ranges,
-            URLConnection connection, HttpServletResponse response,
-            URL resourceURL) throws IOException {
+            long resourceLength, InputStream dataStream, URL resourceURL,
+            HttpServletResponse response) throws IOException {
         String partBoundary = UUID.randomUUID().toString();
         String mimeType = response.getContentType();
         response.setContentType(String
@@ -383,7 +379,7 @@ public class ResponseWriter implements Serializable {
         response.setHeader("Transfer-Encoding", "chunked");
 
         long position = 0L;
-        InputStream dataStream = connection.getInputStream();
+        InputStream currentStream = dataStream;
         ServletOutputStream outputStream = response.getOutputStream();
         try {
             for (Pair<Long, Long> rangePair : ranges) {
@@ -399,24 +395,26 @@ public class ResponseWriter implements Serializable {
                 outputStream.write(String
                         .format("Content-Range: %s\r\n\r\n",
                                 createContentRangeHeader(start, end,
-                                        connection.getContentLengthLong()))
+                                        resourceLength))
                         .getBytes(StandardCharsets.UTF_8));
 
                 if (position > start) {
                     // out-of-sequence range -> open new stream to the file
                     // alternative: use single stream with mark / reset
-                    closeStream(connection.getInputStream());
-                    connection = resourceURL.openConnection();
-                    dataStream = connection.getInputStream();
+                    if (currentStream != dataStream) {
+                        closeStream(currentStream);
+                    }
+                    currentStream = resourceURL.openStream();
                     position = 0L;
                 }
-                long skipped = dataStream.skip(start - position);
-                assert (skipped == start - position);
-                writeStream(outputStream, dataStream, end - start + 1);
+                currentStream.skipNBytes(start - position);
+                writeStream(outputStream, currentStream, end - start + 1);
                 position = end + 1;
             }
         } finally {
-            closeStream(dataStream);
+            if (currentStream != dataStream) {
+                closeStream(currentStream);
+            }
         }
         outputStream.write(String.format("\r\n--%s", partBoundary)
                 .getBytes(StandardCharsets.UTF_8));
@@ -442,7 +440,7 @@ public class ResponseWriter implements Serializable {
      * common) with the range <code>[start, end]</code> are less than the upper
      * limit.
      */
-    private boolean verifyRangeLimits(List<Pair<Long, Long>> ranges) {
+    private static boolean verifyRangeLimits(List<Pair<Long, Long>> ranges) {
         if (ranges.size() > MAX_RANGE_COUNT) {
             getLogger().info("more than {} ranges requested", MAX_RANGE_COUNT);
             return false;
@@ -563,6 +561,11 @@ public class ResponseWriter implements Serializable {
             outputStream.write(buffer, 0, bytes);
             bytesTotal += bytes;
         }
+        if (count != Long.MAX_VALUE && bytesTotal < count) {
+            // the declared Content-Length can no longer be met
+            throw new EOFException("Resource ended after " + bytesTotal + " of "
+                    + count + " bytes");
+        }
     }
 
     /**
@@ -668,7 +671,7 @@ public class ResponseWriter implements Serializable {
         return Double.valueOf(0.000).equals(Double.valueOf(qValue));
     }
 
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(getClass().getName());
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ResponseWriter.class.getName());
     }
 }
