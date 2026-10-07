@@ -275,6 +275,9 @@ public class ProjectHelpers {
         if (isSet.test("CLAUDECODE")) {
             return Optional.of(StatisticsConstants.AI_AGENT_CLAUDE);
         }
+        // Generic variable set by, among others, GitHub Copilot agent terminals
+        // in VS Code, OpenHands and pi. Claude Code sets it too, but is
+        // detected above from CLAUDECODE
         if (isSet.test("AI_AGENT")) {
             return Optional.of(StatisticsConstants.AI_AGENT_OTHER);
         }
