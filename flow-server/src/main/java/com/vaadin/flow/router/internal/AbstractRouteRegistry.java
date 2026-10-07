@@ -30,8 +30,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -43,7 +41,6 @@ import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.NotFoundException;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
@@ -60,7 +57,6 @@ import com.vaadin.flow.server.auth.AccessCheckDecision;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.Registration;
 
 import static java.util.stream.Collectors.toList;
@@ -392,28 +388,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     public void setRoute(String path,
             Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> parentChain) {
-        if (isDevelopmentOnlyInProduction(navigationTarget)) {
-            LoggerFactory.getLogger(AbstractRouteRegistry.class).debug(
-                    "Not registering route {} because it is development only and the application runs in production mode.",
-                    navigationTarget.getName());
-            return;
-        }
         RouteUtil.checkForClientRouteCollisions(VaadinService.getCurrent(),
                 HasUrlParameterFormat.getTemplate(path, navigationTarget));
         configureWithFullTemplate(path, navigationTarget,
                 (configuration, fullTemplate) -> configuration
                         .setRoute(fullTemplate, navigationTarget, parentChain));
-    }
-
-    private boolean isDevelopmentOnlyInProduction(
-            Class<? extends Component> navigationTarget) {
-        // Only the class's own @Route counts, as @Route is not inherited. The
-        // annotation is checked first so that the configuration is only
-        // looked up for development only routes
-        Route route = navigationTarget.getAnnotation(Route.class);
-        return route != null && route.developmentOnly()
-                && ApplicationConfiguration.get(getContext())
-                        .isProductionMode();
     }
 
     @Override

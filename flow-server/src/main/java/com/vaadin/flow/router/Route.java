@@ -126,17 +126,17 @@ public @interface Route {
      * Defines if the route is available only when running in development mode
      * or if it is always available.
      * <p>
-     * A development only route is never registered when the application runs in
-     * production mode. This applies both to the automatic registration at
-     * startup and to registering the class programmatically, for example
-     * through {@link RouteConfiguration#setAnnotatedRoute(Class)} or
-     * {@link RouteConfiguration#setRoute(String, Class)}, and to any
+     * A development only route is not registered from this annotation when the
+     * application runs in production mode. This applies both to the automatic
+     * registration at startup and to
+     * {@link RouteConfiguration#setAnnotatedRoute(Class)}, and to any
      * {@link RouteAlias} of the class. Use it for views that are meant only for
      * development, such as debugging tools or example views kept in the
      * project, and that must not be reachable in production.
      * <p>
-     * The class itself is still part of the application, only navigating to it
-     * is not possible in production mode.
+     * Registering the class explicitly on a path, for example through
+     * {@link RouteConfiguration#setRoute(String, Class)}, does not read this
+     * annotation and is not affected.
      * <p>
      * By default, routes are always available.
      *

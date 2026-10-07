@@ -646,26 +646,26 @@ class RouteConfigurationTest {
     }
 
     @Test
-    void developmentOnlyRoute_productionMode_isNotRegistered() {
+    void developmentOnlyRoute_productionMode_onlyExplicitPathIsRegistered() {
         setProductionMode(true);
         RouteConfiguration applicationConfiguration = RouteConfiguration
                 .forRegistry(registry);
         RouteConfiguration sessionConfiguration = RouteConfiguration
                 .forRegistry(getRegistry(session));
 
-        applicationConfiguration.update(() -> {
-            applicationConfiguration
-                    .setAnnotatedRoute(DevelopmentOnlyView.class);
-            applicationConfiguration.setRoute("custom",
-                    DevelopmentOnlyView.class);
-        });
+        applicationConfiguration.setAnnotatedRoute(DevelopmentOnlyView.class);
         sessionConfiguration.setAnnotatedRoute(DevelopmentOnlyView.class);
 
         assertFalse(applicationConfiguration
                 .isRouteRegistered(DevelopmentOnlyView.class));
         assertFalse(sessionConfiguration
                 .isRouteRegistered(DevelopmentOnlyView.class));
-        assertTrue(applicationConfiguration.getAvailableRoutes().isEmpty());
+
+        applicationConfiguration.setRoute("custom", DevelopmentOnlyView.class);
+
+        assertEquals(List.of("custom"),
+                applicationConfiguration.getAvailableRoutes().stream()
+                        .map(RouteData::getTemplate).toList());
     }
 
     @Test
