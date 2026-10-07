@@ -674,6 +674,24 @@ final class TransactionEngine {
             drift.ifPresent(detail -> escalate(tx,
                     "classpath changed (" + detail + ")"));
 
+            // A compile that changed no class - an edit to whitespace or a
+            // comment, or a Maven rebuild that wrote the same bytecode - leaves
+            // nothing to redefine, and a restart would load exactly what is
+            // already running. Anything else in the change-set that needs a
+            // restart has escalated by now, and then this does not apply.
+            if (!changes.modified().isEmpty() && tx.classes.isEmpty()
+                    && tx.escalation.isEmpty()
+                    && app.state() == AppProcess.State.RUNNING) {
+                compile.markSourcesApplied(changes.modified());
+                Optional<String> broken = devServerFailure(tx);
+                if (broken.isPresent()) {
+                    return finish(tx, Outcome.FAILED,
+                            "dev server: " + detail(broken.get()), "hmr",
+                            DEV_SERVER_NEXT_ACTION, started);
+                }
+                return finish(tx, Outcome.STABLE, "", "unchanged", "", started);
+            }
+
             // --- runtime leg: attempt the atomic redefine, escalate if it
             // cannot
             // stick. What actually happened is the authoritative answer; static
@@ -1908,6 +1926,12 @@ final class TransactionEngine {
             if ("hmr".equals(tx.classification)) {
                 lines.add("frontend → Stable   (" + seconds + ")");
                 lines.add("hmr: " + hmrDetail(tx));
+            } else if ("unchanged".equals(tx.classification)) {
+                lines.add("compiling → Stable   (" + seconds + ")");
+                if (hasFrontendHalf(tx)) {
+                    lines.add("hmr: " + hmrDetail(tx));
+                }
+                lines.add("compiled: no class changed, nothing to redefine");
             } else if ("hot-reload".equals(tx.classification)) {
                 lines.add("compiling → runtime → Stable   (" + seconds + ")");
                 // A mixed change-set pushed its frontend half first, and
