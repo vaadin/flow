@@ -29,6 +29,8 @@ class ParameterDeserializerTest {
                 OptionalParameter.class));
         assertTrue(ParameterDeserializer.isAnnotatedParameter(
                 SimpleAnnotated.class, OptionalParameter.class));
+        assertFalse(ParameterDeserializer.isAnnotatedParameter(
+                SimpleAnnotated.class, WildcardParameter.class));
     }
 
     @Test
