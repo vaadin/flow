@@ -407,10 +407,11 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
     private boolean isDevelopmentOnlyInProduction(
             Class<? extends Component> navigationTarget) {
-        // The annotation is checked first so that the configuration is only
+        // Only the class's own @Route counts, as @Route is not inherited. The
+        // annotation is checked first so that the configuration is only
         // looked up for development only routes
-        return AnnotationReader.getAnnotationFor(navigationTarget, Route.class)
-                .map(Route::developmentOnly).orElse(false)
+        Route route = navigationTarget.getAnnotation(Route.class);
+        return route != null && route.developmentOnly()
                 && ApplicationConfiguration.get(getContext())
                         .isProductionMode();
     }
