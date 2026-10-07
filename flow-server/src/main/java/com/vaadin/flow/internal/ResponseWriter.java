@@ -29,9 +29,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Stack;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -56,8 +56,9 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern
-            .compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile(
+            "^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$",
+            Pattern.CASE_INSENSITIVE);
     private static final Pattern BYTE_RANGE_PATTERN = Pattern
             .compile("(\\d*)-(\\d*)");
 
@@ -176,13 +177,15 @@ public class ResponseWriter implements Serializable {
         }
 
         try {
+            final long contentLength = connection.getContentLengthLong();
             String range = request.getHeader("Range");
-            if (range != null) {
+            List<Pair<Long, Long>> ranges = range == null ? null
+                    : parseRanges(range, contentLength, url);
+            if (ranges != null) {
                 closeStream(dataStream);
                 dataStream = null;
-                writeRangeContents(range, response, url);
+                writeRangeContents(ranges, response, url, contentLength);
             } else {
-                final long contentLength = connection.getContentLengthLong();
                 if (0 <= contentLength) {
                     setContentLength(response, contentLength);
                 }
@@ -207,6 +210,113 @@ public class ResponseWriter implements Serializable {
     }
 
     /**
+     * Answers the {@code Range} header of a request for the given resource the
+     * same way as {@link #writeResponseContents} does for static files.
+     * <p>
+     * Nothing is written if the header should be ignored, which RFC 9110
+     * allows: when it is not a valid {@code bytes} range, or the length of the
+     * resource is unknown. The caller should then send the whole content.
+     * Otherwise the response is {@code 206 Partial Content} with the requested
+     * ranges, or {@code 416 Range Not Satisfiable} when none of them overlaps
+     * the content.
+     * <p>
+     * The resource is read from the start up to the first requested byte, which
+     * is a seek only when the URL points to a file.
+     *
+     * @param range
+     *            the value of the {@code Range} request header, not
+     *            {@code null}
+     * @param resourceUrl
+     *            the URL of the resource, not {@code null}
+     * @param resourceLength
+     *            the length of the resource, or {@code -1} if unknown
+     * @param response
+     *            the response to write to, not {@code null}
+     * @return {@code true} if a range response was written, {@code false} if
+     *         the header was ignored and nothing was written
+     * @throws IOException
+     *             if reading the resource or writing the response fails
+     */
+    public static boolean writeRangeResponse(String range, URL resourceUrl,
+            long resourceLength, HttpServletResponse response)
+            throws IOException {
+        ResponseWriter writer = new ResponseWriter(DEFAULT_BUFFER_SIZE, false);
+        List<Pair<Long, Long>> ranges = writer.parseRanges(range,
+                resourceLength, resourceUrl);
+        if (ranges == null) {
+            return false;
+        }
+        writer.writeRangeContents(ranges, response, resourceUrl,
+                resourceLength);
+        return true;
+    }
+
+    /**
+     * Parses a "Range:" header into the ranges to send, clamped to the resource
+     * length. Returns {@code null} if the header should be ignored and the
+     * whole content sent: RFC 9110 allows that for an invalid header, and
+     * ranges cannot be resolved without the length. Ranges that start past the
+     * end are dropped, so an empty list means none is satisfiable. Ranges
+     * beyond the count and overlap limits are dropped as well.
+     */
+    private List<Pair<Long, Long>> parseRanges(String range,
+            long resourceLength, URL resourceURL) {
+        Matcher headerMatcher = RANGE_HEADER_PATTERN.matcher(range.trim());
+        if (resourceLength < 0 || !headerMatcher.matches()) {
+            getLogger().debug("ignoring range '{}' for resource '{}'", range,
+                    resourceURL);
+            return null;
+        }
+        Matcher rangeMatcher = BYTE_RANGE_PATTERN
+                .matcher(headerMatcher.group(1));
+
+        List<Pair<Long, Long>> ranges = new ArrayList<>();
+        boolean limitReached = false;
+        while (rangeMatcher.find()) {
+            String startGroup = rangeMatcher.group(1);
+            String endGroup = rangeMatcher.group(2);
+            long start;
+            long end;
+            try {
+                if (startGroup.isEmpty()) {
+                    // suffix range: the last N bytes
+                    long suffixLength = Long.parseLong(endGroup);
+                    start = Math.max(0L, resourceLength - suffixLength);
+                    end = suffixLength == 0 ? -1L : resourceLength - 1;
+                } else {
+                    start = Long.parseLong(startGroup);
+                    end = endGroup.isEmpty() ? Long.MAX_VALUE
+                            : Long.parseLong(endGroup);
+                }
+            } catch (NumberFormatException e) {
+                getLogger().info("received a malformed range '{}'",
+                        rangeMatcher.group());
+                return null;
+            }
+            if (end < start && !startGroup.isEmpty()) {
+                getLogger().info(
+                        "received an illegal range '{}' for resource '{}'",
+                        rangeMatcher.group(), resourceURL);
+                return null;
+            }
+            end = Math.min(end, resourceLength - 1);
+            if (limitReached || start > end) {
+                // past the limits, or not satisfiable
+                continue;
+            }
+            ranges.add(new Pair<>(start, end));
+            if (!verifyRangeLimits(ranges)) {
+                ranges.remove(ranges.size() - 1);
+                limitReached = true;
+                getLogger().info(
+                        "serving only {} ranges for resource '{}' even though more were requested",
+                        ranges.size(), resourceURL);
+            }
+        }
+        return ranges;
+    }
+
+    /**
      * Handle a "Header:" request. The handling logic is splits on single or
      * multiple ranges: for a single range, send a regular response with
      * Content-Length; for multiple ranges, send a "Content-Type:
@@ -215,57 +325,22 @@ public class ResponseWriter implements Serializable {
      * https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests for
      * protocol details.
      */
-    private void writeRangeContents(String range, HttpServletResponse response,
-            URL resourceURL) throws IOException {
+    private void writeRangeContents(List<Pair<Long, Long>> ranges,
+            HttpServletResponse response, URL resourceURL, long resourceLength)
+            throws IOException {
         response.setHeader("Accept-Ranges", "bytes");
 
-        URLConnection connection = resourceURL.openConnection();
-
-        Matcher headerMatcher = RANGE_HEADER_PATTERN.matcher(range);
-        if (!headerMatcher.matches()) {
+        if (ranges.isEmpty()) {
+            getLogger().info(
+                    "received an unsatisfiable range for resource '{}'",
+                    resourceURL);
             response.setContentLengthLong(0L);
+            response.setHeader("Content-Range", "bytes */" + resourceLength);
             response.setStatus(416); // Range Not Satisfiable
             return;
         }
-        String byteRanges = headerMatcher.group(1);
 
-        long resourceLength = connection.getContentLengthLong();
-        Matcher rangeMatcher = BYTE_RANGE_PATTERN.matcher(byteRanges);
-
-        Stack<Pair<Long, Long>> ranges = new Stack<>();
-        while (rangeMatcher.find() && ranges.size() < MAX_RANGE_COUNT) {
-            String startGroup = rangeMatcher.group(1);
-            String endGroup = rangeMatcher.group(2);
-            if (startGroup.isEmpty() && endGroup.isEmpty()) {
-                response.setContentLengthLong(0L);
-                response.setStatus(416); // Range Not Satisfiable
-                getLogger().info("received a malformed range: '{}'",
-                        rangeMatcher.group());
-                return;
-            }
-            long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
-            long end = endGroup.isEmpty() ? Long.MAX_VALUE
-                    : Long.parseLong(endGroup);
-            if (end < start
-                    || (resourceLength >= 0 && start >= resourceLength)) {
-                // illegal range -> 416
-                getLogger().info(
-                        "received an illegal range '{}' for resource '{}'",
-                        rangeMatcher.group(), resourceURL);
-                response.setContentLengthLong(0L);
-                response.setStatus(416);
-                return;
-            }
-            ranges.push(new Pair<>(start, end));
-
-            if (!verifyRangeLimits(ranges)) {
-                ranges.pop();
-                getLogger().info(
-                        "serving only {} ranges for resource '{}' even though more were requested",
-                        ranges.size(), resourceURL);
-                break;
-            }
-        }
+        URLConnection connection = resourceURL.openConnection();
 
         response.setStatus(206);
 
@@ -275,9 +350,6 @@ public class ResponseWriter implements Serializable {
             // single range: calculate Content-Length
             long start = ranges.get(0).getFirst();
             long end = ranges.get(0).getSecond();
-            if (resourceLength >= 0) {
-                end = Math.min(end, resourceLength - 1);
-            }
             setContentLength(response, end - start + 1);
             response.setHeader("Content-Range",
                     createContentRangeHeader(start, end, resourceLength));
@@ -305,12 +377,12 @@ public class ResponseWriter implements Serializable {
             URLConnection connection, HttpServletResponse response,
             URL resourceURL) throws IOException {
         String partBoundary = UUID.randomUUID().toString();
+        String mimeType = response.getContentType();
         response.setContentType(String
                 .format("multipart/byteranges; boundary=%s", partBoundary));
         response.setHeader("Transfer-Encoding", "chunked");
 
         long position = 0L;
-        String mimeType = response.getContentType();
         InputStream dataStream = connection.getInputStream();
         ServletOutputStream outputStream = response.getOutputStream();
         try {

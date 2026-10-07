@@ -99,7 +99,7 @@ public class ServletResourceDownloadHandler
                     downloadEvent.setFileName(resourceName);
                 }
                 transferContent(downloadEvent, inputStream, outputStream,
-                        connection.getContentLengthLong());
+                        connection.getContentLengthLong(), resource);
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
                 response.setStatus(

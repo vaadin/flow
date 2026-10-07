@@ -85,7 +85,7 @@ public class FileDownloadHandler
             downloadEvent
                     .setContentType(getContentType(resourceName, response));
             transferContent(downloadEvent, inputStream, outputStream,
-                    file.length());
+                    file.length(), file.toURI().toURL());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -108,6 +108,6 @@ public class FileDownloadHandler
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
                 getUrlPostfix(), transferEvent.getOwningElement(),
-                transferEvent.getContentLength(), transferEvent.getException());
+                file.length(), transferEvent.getException());
     }
 }

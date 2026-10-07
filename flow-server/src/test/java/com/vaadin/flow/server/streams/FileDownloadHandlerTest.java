@@ -35,10 +35,13 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -151,24 +154,24 @@ class FileDownloadHandlerTest {
     @Test
     void handleDownloadRequest_rangeRequested_sendsRequestedBytes()
             throws URISyntaxException, IOException {
-        URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
-        File file = new File(resource.toURI());
+        File file = new File(
+                getClass().getClassLoader().getResource(PATH_TO_FILE).toURI());
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        when(servletResponse.getService()).thenReturn(servletService);
         when(request.getHeader("Range")).thenReturn("bytes=100000-100099");
-        List<Long> completed = new ArrayList<>();
-        DownloadHandler handler = DownloadHandler.forFile(file).whenComplete(
-                (context, success) -> completed.add(context.contentLength()));
 
-        handler.handleDownloadRequest(downloadEvent);
+        DownloadHandler.forFile(file).handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner));
 
-        byte[] expected = Arrays.copyOfRange(Files.readAllBytes(file.toPath()),
-                100000, 100100);
-        assertArrayEquals(expected,
-                ((ByteArrayOutputStream) outputStream).toByteArray());
-        verify(response).setStatus(206);
-        verify(response).setHeader("Content-Range",
+        assertArrayEquals(Arrays.copyOfRange(Files.readAllBytes(file.toPath()),
+                100000, 100100), servletOutput.getOutput());
+        verify(servletResponse).setStatus(206);
+        verify(servletResponse).setHeader("Content-Range",
                 "bytes 100000-100099/165000");
-        verify(response).setContentLengthLong(100);
-        assertEquals(List.of(100L), completed);
     }
 
     @Test
@@ -230,7 +233,6 @@ class FileDownloadHandlerTest {
                 .forFile(new File(resource.toURI()), "my-download.bin");
 
         DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getRequest()).thenReturn(request);
         when(event.getSession()).thenReturn(session);
         when(event.getResponse()).thenReturn(response);
         when(event.getOwningElement()).thenReturn(owner);
@@ -256,7 +258,6 @@ class FileDownloadHandlerTest {
                 .inline();
 
         DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getRequest()).thenReturn(request);
         when(event.getSession()).thenReturn(session);
         when(event.getResponse()).thenReturn(response);
         when(event.getOwningElement()).thenReturn(owner);

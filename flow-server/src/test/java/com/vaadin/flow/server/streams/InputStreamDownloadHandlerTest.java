@@ -194,7 +194,6 @@ class InputStreamDownloadHandlerTest {
     void transferProgressListener_addListener_errorOccurred_errorListenerInvoked()
             throws IOException {
         DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getRequest()).thenReturn(request);
         when(event.getSession()).thenReturn(session);
         when(event.getResponse()).thenReturn(response);
         when(event.getOwningElement()).thenReturn(owner);

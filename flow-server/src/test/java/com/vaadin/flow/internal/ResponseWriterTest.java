@@ -44,6 +44,8 @@ import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -398,10 +400,10 @@ public class ResponseWriterTest {
     public void writeByteRangeStartOmitted() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=-10"));
-        assertResponse(Arrays.copyOfRange(fileJsContents, 0, 11));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 6, 16));
         assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
-                "Content-Range", "bytes 0-10/" + fileJsContents.length));
-        assertEquals(11L, responseContentLength.get());
+                "Content-Range", "bytes 6-15/" + fileJsContents.length));
+        assertEquals(10L, responseContentLength.get());
         assertStatus(206);
     }
 
@@ -429,28 +431,45 @@ public class ResponseWriterTest {
         assertStatus(206);
     }
 
-    @Test
-    public void writeByteRangeEmpty() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = { "bytes=10-9", "f-d-d___", "-", "bytes=-",
+            "items=0-1" })
+    public void writeByteRangeInvalid_wholeContentWritten(String range)
+            throws IOException {
         makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "bytes=10-9"));
+        mockRequestHeaders(new Pair<>("Range", range));
+        assertResponse(fileJsContents);
+        Mockito.verify(response, Mockito.never())
+                .setStatus(ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    public void writeByteRangeUnitCaseInsensitive() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "Bytes=0-1"));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 0, 2));
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeNotSatisfiable() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=16-, -0"));
         assertResponse(new byte[] {});
+        assertResponseHeaders(new Pair<>("Content-Range",
+                "bytes */" + fileJsContents.length));
         assertStatus(416);
     }
 
     @Test
-    public void writeByteRangeMalformed() throws IOException {
+    public void writeByteRangePartlySatisfiable_satisfiableRangeWritten()
+            throws IOException {
         makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "f-d-d___"));
-        assertResponse(new byte[] {});
-        assertStatus(416);
-    }
-
-    @Test
-    public void writeByteRangeBothEndsOpen() throws IOException {
-        makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "-"));
-        assertResponse(new byte[] {});
-        assertStatus(416);
+        mockRequestHeaders(new Pair<>("Range", "bytes=20-30, 2-3"));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 2, 4));
+        assertResponseHeaders(new Pair<>("Content-Range",
+                "bytes 2-3/" + fileJsContents.length));
+        assertStatus(206);
     }
 
     @Test

@@ -20,8 +20,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -39,9 +44,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
@@ -52,6 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -79,6 +87,9 @@ class AbstractDownloadHandlerTest {
     private ByteArrayOutputStream outputStream;
     private Element owner;
     private UI ui;
+
+    @TempDir
+    private Path tempDir;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -312,53 +323,51 @@ class AbstractDownloadHandlerTest {
 
     @ParameterizedTest
     @CsvSource(delimiter = '|', nullValues = "null", value = {
-            "null          | null | 200 | abcdefghij | null",
-            "bytes=2-5     | null | 206 | cdef       | bytes 2-5/10",
-            "bytes=7-      | null | 206 | hij        | bytes 7-9/10",
-            "bytes=-3      | null | 206 | hij        | bytes 7-9/10",
-            "bytes=5-99    | null | 206 | fghij      | bytes 5-9/10",
-            "bytes=0-3,2-5 | null | 206 | abcdef     | bytes 0-5/10",
-            "bytes=10-     | null | 416 | ''         | bytes */10",
-            "bytes=-0      | null | 416 | ''         | bytes */10",
-            "bytes=5-2     | null | 416 | ''         | bytes */10",
-            "bytes=0-1,4-5 | null | 200 | abcdefghij | null",
-            "items=2-5     | null | 200 | abcdefghij | null",
-            "bytes=2-5     | x    | 200 | abcdefghij | null" })
-    void transferContent_rangeRequested_sendsRequestedBytes(String range,
-            String ifRange, int status, String body, String contentRange)
-            throws IOException {
+            "null      | null | 200 | abcdefghij",
+            "bytes=2-5 | null | 206 | cdef",
+            "bytes=abc | null | 200 | abcdefghij",
+            "bytes=2-5 | x    | 200 | abcdefghij" })
+    void transferContent_file_rangeAnsweredWithoutListeners(String range,
+            String ifRange, int status, String body) throws IOException {
+        Path file = Files.writeString(tempDir.resolve("content.txt"),
+                "abcdefghij");
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
         when(request.getHeader("Range")).thenReturn(range);
         when(request.getHeader("If-Range")).thenReturn(ifRange);
+        handler.addTransferProgressListener(listener);
 
-        handler.transferContent(downloadEvent,
-                new ByteArrayInputStream(
-                        "abcdefghij".getBytes(StandardCharsets.UTF_8)),
-                outputStream, 10);
-
-        assertEquals(body, outputStream.toString(StandardCharsets.UTF_8));
-        verify(response).setHeader("Accept-Ranges", "bytes");
-        verify(response).setContentLengthLong(body.length());
-        if (status == 200) {
-            verify(response, never()).setStatus(anyInt());
-        } else {
-            verify(response).setStatus(status);
+        try (InputStream inputStream = Files.newInputStream(file)) {
+            handler.transferContent(
+                    new DownloadEvent(request, servletResponse, session, owner),
+                    inputStream, servletOutput, 10, file.toUri().toURL());
         }
-        if (contentRange == null) {
-            verify(response, never()).setHeader(eq("Content-Range"),
-                    anyString());
+
+        assertEquals(body,
+                new String(servletOutput.getOutput(), StandardCharsets.UTF_8));
+        verify(servletResponse).setHeader("Accept-Ranges", "bytes");
+        if (status == 200) {
+            verify(servletResponse, never()).setStatus(anyInt());
+            verify(listener).onComplete(any(), eq(10L));
         } else {
-            verify(response).setHeader("Content-Range", contentRange);
+            verify(servletResponse).setStatus(status);
+            verify(servletResponse).setHeader("Content-Range", "bytes 2-5/10");
+            verify(listener, never()).onStart(any());
+            verify(listener, never()).onComplete(any(), anyLong());
         }
     }
 
     @Test
-    void transferContent_unknownLength_rangeIgnored() throws IOException {
+    void transferContent_notAFile_rangeIgnored() throws IOException {
         when(request.getHeader("Range")).thenReturn("bytes=2-5");
 
         handler.transferContent(downloadEvent,
                 new ByteArrayInputStream(
                         "abcdefghij".getBytes(StandardCharsets.UTF_8)),
-                outputStream, -1);
+                outputStream, 10,
+                URI.create("jar:file:/app.jar!/content.txt").toURL());
 
         assertEquals("abcdefghij",
                 outputStream.toString(StandardCharsets.UTF_8));

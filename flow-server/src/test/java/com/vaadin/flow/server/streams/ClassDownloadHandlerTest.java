@@ -145,7 +145,6 @@ class ClassDownloadHandlerTest {
     void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
         DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getRequest()).thenReturn(request);
         when(event.getSession()).thenReturn(session);
         when(event.getResponse()).thenReturn(response);
         when(event.getOwningElement()).thenReturn(owner);
@@ -198,7 +197,6 @@ class ClassDownloadHandlerTest {
                 this.getClass(), PATH_TO_FILE, "my-download.pdf");
 
         DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getRequest()).thenReturn(request);
         when(event.getSession()).thenReturn(session);
         when(event.getResponse()).thenReturn(response);
         when(event.getOwningElement()).thenReturn(owner);
@@ -219,7 +217,6 @@ class ClassDownloadHandlerTest {
                 this.getClass(), PATH_TO_FILE, "my-download.pdf").inline();
 
         DownloadEvent event = mock(DownloadEvent.class);
-        when(event.getRequest()).thenReturn(request);
         when(event.getSession()).thenReturn(session);
         when(event.getResponse()).thenReturn(response);
         when(event.getOwningElement()).thenReturn(owner);
