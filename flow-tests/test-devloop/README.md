@@ -78,8 +78,8 @@ mvn -o -pl flow-tests/test-devloop/test-devloop-jetty/devloop-app -Pdevloop-mave
 # a subset: add "-Ddevloop.maven-compile.its=**/DevLoopApplyIT.java, **/DevLoopCssIT.java"
 ```
 
-`-Dit.test=` narrows only the javac execution; the `maven-compile` one is
-narrowed by `devloop.maven-compile.its`.
+`-Dit.test=` narrows both executions, so the named ITs run once with each
+compiler.
 
 Each fixture's README has the rest: what it pins and why, how to drive the loop
 by hand, and the patch-and-revert rule the ITs follow so that a failed run never
