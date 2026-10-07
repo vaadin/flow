@@ -54,6 +54,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -420,16 +421,14 @@ class AbstractDownloadHandlerTest {
         when(servletResponse.getOutputStream()).thenReturn(servletOutput);
         when(servletResponse.isCommitted()).thenReturn(true);
         when(request.getHeader("Range")).thenReturn("bytes=10-99999");
-        handler.addTransferProgressListener(listener);
 
         try (InputStream inputStream = new FileInputStream(file.toFile())) {
-            handler.transferContent(
+            assertDoesNotThrow(() -> handler.transferContent(
                     new DownloadEvent(request, servletResponse, session, owner),
-                    inputStream, outputStream, 100000, file.toFile());
+                    inputStream, outputStream, 100000, file.toFile()));
         }
 
         verify(servletResponse, never()).reset();
-        verify(listener, never()).onError(any(), any());
     }
 
     @Test

@@ -433,7 +433,7 @@ public class ResponseWriterTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "bytes=10-9", "f-d-d___", "-", "bytes=-",
-            "items=0-1" })
+            "bytes=1-2,x", "bytes=1-2,", "bytes=0-1,,2-3", "items=0-1" })
     public void writeByteRangeInvalid_wholeContentWritten(String range)
             throws IOException {
         makePathsAvailable(PATH_JS);
