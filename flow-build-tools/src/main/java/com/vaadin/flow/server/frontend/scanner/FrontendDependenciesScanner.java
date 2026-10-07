@@ -65,6 +65,39 @@ public interface FrontendDependenciesScanner extends Serializable {
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
                 FeatureFlags featureFlags, boolean reactEnabled) {
+            return createScanner(allDependenciesScan, finder,
+                    generateEmbeddableWebComponents, featureFlags, reactEnabled,
+                    false);
+        }
+
+        /**
+         * Produces scanner implementation based on {@code allDependenciesScan}
+         * value.
+         *
+         * @param allDependenciesScan
+         *            if {@code true} then full classpath scanning strategy is
+         *            used, otherwise byte scanning strategy is produced
+         * @param finder
+         *            a class finder
+         * @param generateEmbeddableWebComponents
+         *            checks {@code WebComponentExporter} classes for
+         *            dependencies if {@code true}, doesn't check otherwise
+         * @param featureFlags
+         *            available feature flags and their status
+         * @param reactEnabled
+         *            {@code true} if react is enabled, {@code true otherwise}
+         * @param productionMode
+         *            {@code true} if scanning for a production build, in which
+         *            case the byte scanning strategy does not collect routes
+         *            marked with
+         *            {@link com.vaadin.flow.router.Route#developmentOnly()}
+         * @return a scanner implementation strategy
+         */
+        public FrontendDependenciesScanner createScanner(
+                boolean allDependenciesScan, ClassFinder finder,
+                boolean generateEmbeddableWebComponents,
+                FeatureFlags featureFlags, boolean reactEnabled,
+                boolean productionMode) {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations
@@ -73,7 +106,7 @@ public interface FrontendDependenciesScanner extends Serializable {
             } else {
                 return new FrontendDependencies(finder,
                         generateEmbeddableWebComponents, featureFlags,
-                        reactEnabled);
+                        reactEnabled, productionMode);
             }
         }
 

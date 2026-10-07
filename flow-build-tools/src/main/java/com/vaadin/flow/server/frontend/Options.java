@@ -1274,7 +1274,8 @@ public class Options implements Serializable {
             frontendDependenciesScanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!isUseByteCodeScanner(), getClassFinder(),
                             isGenerateEmbeddableWebComponents(),
-                            getFeatureFlags(), reactEnabled);
+                            getFeatureFlags(), reactEnabled,
+                            isProductionMode());
         }
         return frontendDependenciesScanner;
     }
