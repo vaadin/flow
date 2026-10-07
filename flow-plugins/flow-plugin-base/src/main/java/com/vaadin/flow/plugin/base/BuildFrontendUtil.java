@@ -324,6 +324,31 @@ public class BuildFrontendUtil {
     public static void runNodeUpdater(PluginAdapterBuild adapter,
             FrontendDependenciesScanner frontendDependencies)
             throws ExecutionFailedException, URISyntaxException {
+        runNodeUpdaterWithScanner(adapter, frontendDependencies);
+    }
+
+    /**
+     * Runs the node updater with a frontend dependencies scanner created from
+     * the build options.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @return the frontend dependencies scanner used by the node updater
+     * @throws ExecutionFailedException
+     *             - a ExecutionFailedException.
+     * @throws URISyntaxException
+     *             - - Could not build an URI from nodeDownloadRoot().
+     */
+    public static FrontendDependenciesScanner runNodeUpdater(
+            PluginAdapterBuild adapter)
+            throws ExecutionFailedException, URISyntaxException {
+        return runNodeUpdaterWithScanner(adapter, null);
+    }
+
+    private static FrontendDependenciesScanner runNodeUpdaterWithScanner(
+            PluginAdapterBuild adapter,
+            FrontendDependenciesScanner frontendDependencies)
+            throws ExecutionFailedException, URISyntaxException {
 
         Set<File> jarFiles = adapter.getJarFiles();
         final URI nodeDownloadRootURI;
@@ -381,6 +406,7 @@ public class BuildFrontendUtil {
                     .withMinimumFrontendPackageAgeDays(
                             adapter.minimumFrontendPackageAgeDays());
             new NodeTasks(options).execute();
+            return options.getFrontendDependenciesScanner();
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable

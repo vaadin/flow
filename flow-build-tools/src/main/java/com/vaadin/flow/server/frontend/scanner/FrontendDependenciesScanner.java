@@ -21,7 +21,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -65,41 +67,6 @@ public interface FrontendDependenciesScanner extends Serializable {
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
                 FeatureFlags featureFlags, boolean reactEnabled) {
-            return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, featureFlags, reactEnabled,
-                    false);
-        }
-
-        /**
-         * Produces scanner implementation based on {@code allDependenciesScan}
-         * value.
-         *
-         * @param allDependenciesScan
-         *            if {@code true} then full classpath scanning strategy is
-         *            used, otherwise byte scanning strategy is produced
-         * @param finder
-         *            a class finder
-         * @param generateEmbeddableWebComponents
-         *            checks {@code WebComponentExporter} classes for
-         *            dependencies if {@code true}, doesn't check otherwise
-         * @param featureFlags
-         *            available feature flags and their status
-         * @param reactEnabled
-         *            {@code true} if react is enabled, {@code false} otherwise
-         * @param productionMode
-         *            {@code true} if scanning for a production build, in which
-         *            case the byte scanning strategy does not collect routes
-         *            marked with
-         *            {@link com.vaadin.flow.router.Route#developmentOnly()}.
-         *            The full classpath scanning strategy ignores this flag and
-         *            includes those routes.
-         * @return a scanner implementation strategy
-         */
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents,
-                FeatureFlags featureFlags, boolean reactEnabled,
-                boolean productionMode) {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations
@@ -108,8 +75,34 @@ public interface FrontendDependenciesScanner extends Serializable {
             } else {
                 return new FrontendDependencies(finder,
                         generateEmbeddableWebComponents, featureFlags,
-                        reactEnabled, productionMode);
+                        reactEnabled);
             }
+        }
+
+        /**
+         * Produces scanner implementation based on the given build options.
+         * <p>
+         * The full classpath scanning strategy is used when
+         * {@link Options#isUseByteCodeScanner()} is {@code false}, otherwise
+         * the byte scanning strategy is produced. In production mode, the byte
+         * scanning strategy does not collect routes marked with
+         * {@link com.vaadin.flow.router.Route#developmentOnly()}. The full
+         * classpath scanning strategy includes those routes.
+         *
+         * @param options
+         *            the build options providing the class finder, feature
+         *            flags and build settings
+         * @return a scanner implementation strategy
+         */
+        public FrontendDependenciesScanner createScanner(Options options) {
+            if (!options.isUseByteCodeScanner()) {
+                return new FullDependenciesScanner(options.getClassFinder(),
+                        options.getFeatureFlags(),
+                        options.isReactEnabled()
+                                && FrontendUtils.isReactRouterRequired(
+                                        options.getFrontendDirectory()));
+            }
+            return new FrontendDependencies(options);
         }
 
     }

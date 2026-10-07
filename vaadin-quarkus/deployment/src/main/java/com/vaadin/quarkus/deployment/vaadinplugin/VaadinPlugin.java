@@ -30,7 +30,6 @@ import io.quarkus.builder.BuildException;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -41,7 +40,6 @@ import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.pro.licensechecker.LicenseChecker;
@@ -178,10 +176,10 @@ public final class VaadinPlugin {
             throws BuildException {
         long start = System.nanoTime();
 
-        FrontendDependenciesScanner frontendDependencies = createFrontendScanner();
+        FrontendDependenciesScanner frontendDependencies;
         try {
-            BuildFrontendUtil.runNodeUpdater(pluginAdapter,
-                    frontendDependencies);
+            frontendDependencies = BuildFrontendUtil
+                    .runNodeUpdater(pluginAdapter);
         } catch (ExecutionFailedException | URISyntaxException exception) {
             throw new BuildException("Could not execute build-frontend goal",
                     exception, List.of());
@@ -463,23 +461,6 @@ public final class VaadinPlugin {
             return new TaskCleanFrontendFiles(options);
         }
         return null;
-    }
-
-    private FrontendDependenciesScanner createFrontendScanner() {
-        boolean reactEnabled = pluginAdapter.isReactEnabled()
-                && FrontendUtils.isReactRouterRequired(
-                        BuildFrontendUtil.getFrontendDirectory(pluginAdapter));
-        ClassFinder classFinder = pluginAdapter.getClassFinder();
-        FeatureFlags featureFlags = new FeatureFlags(
-                pluginAdapter.createLookup(classFinder));
-        if (pluginAdapter.javaResourceFolder() != null) {
-            featureFlags
-                    .setPropertiesLocation(pluginAdapter.javaResourceFolder());
-        }
-        return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(!pluginAdapter.optimizeBundle(), classFinder,
-                        pluginAdapter.generateEmbeddableWebComponents(),
-                        featureFlags, reactEnabled, true);
     }
 
 }

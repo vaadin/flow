@@ -51,6 +51,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -62,6 +63,7 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -119,23 +121,26 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     /**
-     * Scans the application classes for frontend dependencies.
+     * Scans the application classes for frontend dependencies using the given
+     * build options.
+     * <p>
+     * When {@link Options#isProductionMode()} is {@code true}, routes marked
+     * with {@link Route#developmentOnly()} are not collected as entry points.
      *
-     * @param finder
-     *            a class finder
-     * @param generateEmbeddableWebComponents
-     *            checks {@code WebComponentExporter} classes for dependencies
-     *            if {@code true}, doesn't check otherwise
-     * @param featureFlags
-     *            available feature flags and their status
-     * @param reactEnabled
-     *            {@code true} if react is enabled, {@code false} otherwise
-     * @param productionMode
-     *            {@code true} if scanning for a production build, in which case
-     *            routes marked with {@link Route#developmentOnly()} are not
-     *            collected as entry points
+     * @param options
+     *            the build options providing the class finder, feature flags
+     *            and build settings
      */
-    public FrontendDependencies(ClassFinder finder,
+    public FrontendDependencies(Options options) {
+        this(options.getClassFinder(),
+                options.isGenerateEmbeddableWebComponents(),
+                options.getFeatureFlags(),
+                options.isReactEnabled() && FrontendUtils
+                        .isReactRouterRequired(options.getFrontendDirectory()),
+                options.isProductionMode());
+    }
+
+    private FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
             boolean reactEnabled, boolean productionMode) {
         super(finder, featureFlags);

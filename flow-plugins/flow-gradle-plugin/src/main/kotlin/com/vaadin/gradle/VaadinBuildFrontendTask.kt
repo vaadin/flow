@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.gradle
 
-import com.vaadin.experimental.FeatureFlags
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.BundleValidationUtil
@@ -23,7 +22,6 @@ import com.vaadin.flow.server.frontend.FrontendBuildUtils
 import com.vaadin.flow.server.frontend.Options
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory
 import com.vaadin.flow.internal.FrontendUtils
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.pro.licensechecker.LicenseChecker
@@ -237,24 +235,8 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                 .withFrontendGeneratedFolder(config.generatedTsFolder.get())
             val cleanTask = TaskCleanFrontendFiles(options)
 
-            val reactEnabled: Boolean = adapter.get().isReactEnabled()
-                    && FrontendUtils.isReactRouterRequired(
-                BuildFrontendUtil.getFrontendDirectory(adapter.get())
-            )
-            val featureFlags: FeatureFlags = FeatureFlags(
-                adapter.get().createLookup(adapter.get().getClassFinder())
-            )
-            if (adapter.get().javaResourceFolder() != null) {
-                featureFlags.setPropertiesLocation(adapter.get().javaResourceFolder())
-            }
-            val frontendDependencies: FrontendDependenciesScanner = FrontendDependenciesScannerFactory()
-                .createScanner(
-                    !adapter.get().optimizeBundle(),  adapter.get().getClassFinder(),
-                    adapter.get().generateEmbeddableWebComponents(), featureFlags,
-                    reactEnabled, true
-                )
-
-            BuildFrontendUtil.runNodeUpdater(adapter.get(), frontendDependencies)
+            val frontendDependencies: FrontendDependenciesScanner =
+                BuildFrontendUtil.runNodeUpdater(adapter.get())
 
             if (adapter.get().generateBundle() && BundleValidationUtil.needsBundleBuild
                     (adapter.get().servletResourceOutputDirectory())) {
