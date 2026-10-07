@@ -29,6 +29,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -198,9 +199,21 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                 .withFrontendGeneratedFolder(generatedTsFolder());
         TaskCleanFrontendFiles cleanTask = new TaskCleanFrontendFiles(options);
 
-        FrontendDependenciesScanner frontendDependencies;
+        boolean reactEnabled = isReactEnabled()
+                && FrontendUtils.isReactRouterRequired(
+                        BuildFrontendUtil.getFrontendDirectory(this));
+        FeatureFlags featureFlags = new FeatureFlags(
+                createLookup(getClassFinder()));
+        if (javaResourceFolder() != null) {
+            featureFlags.setPropertiesLocation(javaResourceFolder());
+        }
+        FrontendDependenciesScanner frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
+                .createScanner(!optimizeBundle, getClassFinder(),
+                        generateEmbeddableWebComponents, featureFlags,
+                        reactEnabled, true);
+
         try {
-            frontendDependencies = BuildFrontendUtil.runNodeUpdater(this);
+            BuildFrontendUtil.runNodeUpdater(this, frontendDependencies);
         } catch (ExecutionFailedException | URISyntaxException exception) {
             throw new MojoFailureException(
                     "Could not execute build-frontend goal", exception);

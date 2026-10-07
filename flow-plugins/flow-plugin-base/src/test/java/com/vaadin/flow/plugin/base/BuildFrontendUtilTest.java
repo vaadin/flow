@@ -51,14 +51,10 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -87,8 +83,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BuildFrontendUtilTest {
-
-    private static final String DEVELOPMENT_ONLY_MODULE = "development-only-view.js";
 
     @TempDir
     Path tmpDir;
@@ -822,35 +816,6 @@ class BuildFrontendUtilTest {
                 "Example feature should not be set at build time");
     }
 
-    @Test
-    void runNodeUpdater_createsScanner_developmentOnlyRouteOnlyInFullScan()
-            throws Exception {
-        setupPluginAdapterDefaults();
-        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
-                getClass().getClassLoader(), DevelopmentOnlyView.class);
-        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
-        Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
-        Mockito.when(adapter.runNpmInstall()).thenReturn(false);
-
-        Mockito.when(adapter.optimizeBundle()).thenReturn(true);
-        FrontendDependenciesScanner byteCodeScanner = BuildFrontendUtil
-                .runNodeUpdater(adapter);
-        assertFalse(containsModule(byteCodeScanner, DEVELOPMENT_ONLY_MODULE),
-                "Development only route should not be scanned for a production build");
-
-        Mockito.when(adapter.optimizeBundle()).thenReturn(false);
-        FrontendDependenciesScanner fullScanner = BuildFrontendUtil
-                .runNodeUpdater(adapter);
-        assertTrue(containsModule(fullScanner, DEVELOPMENT_ONLY_MODULE),
-                "Full classpath scan should include every annotated class");
-    }
-
-    private static boolean containsModule(FrontendDependenciesScanner scanner,
-            String module) {
-        return scanner.getModules().values().stream().flatMap(List::stream)
-                .anyMatch(path -> path.endsWith(module));
-    }
-
     private void fillAdapter() throws URISyntaxException {
         Mockito.when(adapter.nodeDownloadRoot())
                 .thenReturn(URI.create("http://something/node/"));
@@ -980,11 +945,5 @@ class BuildFrontendUtilTest {
                         }
                     }
                 """;
-    }
-
-    @Route(value = "development-only", developmentOnly = true)
-    @JsModule(DEVELOPMENT_ONLY_MODULE)
-    @Tag("div")
-    public static class DevelopmentOnlyView extends Component {
     }
 }

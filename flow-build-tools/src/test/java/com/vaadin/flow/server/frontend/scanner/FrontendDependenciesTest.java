@@ -35,7 +35,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -45,7 +44,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.JsModuleOrderComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.JsOrderComponent;
@@ -106,22 +104,17 @@ class FrontendDependenciesTest {
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(DevelopmentOnlyRoute.class));
 
-        FrontendDependencies development = new FrontendDependencies(
-                buildOptions().withProductionMode(false));
+        FrontendDependencies development = new FrontendDependencies(classFinder,
+                false, null, true, false);
         DepsTests.assertImportsExcludingUI(development.getModules(),
                 "dev-only.js");
 
-        FrontendDependencies production = new FrontendDependencies(
-                buildOptions().withProductionMode(true));
+        FrontendDependencies production = new FrontendDependencies(classFinder,
+                false, null, true, true);
         DepsTests.assertImportsExcludingUI(production.getModules());
         assertFalse(production.getEntryPoints().stream()
                 .anyMatch(entryPoint -> entryPoint.getName()
                         .equals(DevelopmentOnlyRoute.class.getName())));
-    }
-
-    private Options buildOptions() {
-        return new Options(Mockito.mock(Lookup.class), classFinder, null)
-                .withReact(false);
     }
 
     @Test
