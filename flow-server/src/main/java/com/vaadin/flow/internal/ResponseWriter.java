@@ -57,11 +57,9 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile(
-            "^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$",
-            Pattern.CASE_INSENSITIVE);
+    private static final String RANGE_UNIT_PREFIX = "bytes=";
     private static final Pattern BYTE_RANGE_PATTERN = Pattern
-            .compile("(\\d*)-(\\d*)");
+            .compile("^\\s*(\\d*)-(\\d*)\\s*$");
 
     /**
      * Maximum number of ranges accepted in a single Range header. Remaining
@@ -230,18 +228,23 @@ public class ResponseWriter implements Serializable {
      */
     public static List<Pair<Long, Long>> parseRanges(String range,
             long resourceLength, Object resource) {
-        Matcher headerMatcher = RANGE_HEADER_PATTERN.matcher(range.trim());
-        if (resourceLength < 0 || !headerMatcher.matches()) {
+        String value = range.trim();
+        if (resourceLength < 0 || !value.regionMatches(true, 0,
+                RANGE_UNIT_PREFIX, 0, RANGE_UNIT_PREFIX.length())) {
             getLogger().debug("ignoring range '{}' for resource '{}'", range,
                     resource);
             return null;
         }
-        Matcher rangeMatcher = BYTE_RANGE_PATTERN
-                .matcher(headerMatcher.group(1));
 
         List<Pair<Long, Long>> ranges = new ArrayList<>();
         boolean limitReached = false;
-        while (rangeMatcher.find()) {
+        for (String spec : value.substring(RANGE_UNIT_PREFIX.length())
+                .split(",", -1)) {
+            Matcher rangeMatcher = BYTE_RANGE_PATTERN.matcher(spec);
+            if (!rangeMatcher.matches()) {
+                getLogger().info("received a malformed range '{}'", spec);
+                return null;
+            }
             String startGroup = rangeMatcher.group(1);
             String endGroup = rangeMatcher.group(2);
             long start;
@@ -295,8 +298,8 @@ public class ResponseWriter implements Serializable {
      * The content is read from the given stream, skipping to each range. The
      * resource is opened again from its URL only if the ranges are not in
      * ascending order. The status and headers of a single range are set only
-     * after skipping to its start, so content shorter than its length fails
-     * before the response is committed.
+     * after reading its first bytes, so content that ends before the range
+     * starts fails before anything is committed.
      *
      * @param ranges
      *            the ranges to send, not {@code null}
@@ -349,14 +352,23 @@ public class ResponseWriter implements Serializable {
             // single range: calculate Content-Length
             long start = ranges.get(0).getFirst();
             long end = ranges.get(0).getSecond();
+            long length = end - start + 1;
             dataStream.skipNBytes(start);
+            // Read ahead before committing to a 206: skipping a file can go
+            // past its end without failing
+            int firstChunkLength = (int) Math.min(bufferSize, length);
+            byte[] firstChunk = dataStream.readNBytes(firstChunkLength);
+            if (firstChunk.length < firstChunkLength) {
+                throw new EOFException("Resource ended before byte " + end);
+            }
 
             response.setStatus(206);
-            setContentLength(response, end - start + 1);
+            setContentLength(response, length);
             response.setHeader("Content-Range",
                     createContentRangeHeader(start, end, resourceLength));
-            writeStream(response.getOutputStream(), dataStream,
-                    end - start + 1);
+            ServletOutputStream outputStream = response.getOutputStream();
+            outputStream.write(firstChunk);
+            writeStream(outputStream, dataStream, length - firstChunk.length);
         } else {
             response.setStatus(206);
             writeMultipartRangeContents(ranges, resourceLength, dataStream,
@@ -379,7 +391,7 @@ public class ResponseWriter implements Serializable {
         response.setHeader("Transfer-Encoding", "chunked");
 
         long position = 0L;
-        InputStream currentStream = dataStream;
+        InputStream reopenedStream = null;
         ServletOutputStream outputStream = response.getOutputStream();
         try {
             for (Pair<Long, Long> rangePair : ranges) {
@@ -401,19 +413,22 @@ public class ResponseWriter implements Serializable {
                 if (position > start) {
                     // out-of-sequence range -> open new stream to the file
                     // alternative: use single stream with mark / reset
-                    if (currentStream != dataStream) {
-                        closeStream(currentStream);
+                    if (reopenedStream != null) {
+                        closeStream(reopenedStream);
                     }
-                    currentStream = resourceURL.openStream();
+                    reopenedStream = resourceURL.openStream();
                     position = 0L;
                 }
+                InputStream currentStream = reopenedStream != null
+                        ? reopenedStream
+                        : dataStream;
                 currentStream.skipNBytes(start - position);
                 writeStream(outputStream, currentStream, end - start + 1);
                 position = end + 1;
             }
         } finally {
-            if (currentStream != dataStream) {
-                closeStream(currentStream);
+            if (reopenedStream != null) {
+                closeStream(reopenedStream);
             }
         }
         outputStream.write(String.format("\r\n--%s", partBoundary)

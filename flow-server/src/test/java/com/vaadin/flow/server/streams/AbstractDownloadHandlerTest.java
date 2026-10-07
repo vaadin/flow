@@ -377,27 +377,59 @@ class AbstractDownloadHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "bytes=15-19, false", "bytes=5-14, true" })
-    void transferContent_fileShorterThanLength_fails(String range,
-            boolean partialContentStarted) throws IOException {
-        Path file = Files.writeString(tempDir.resolve("content.txt"),
-                "abcdefghij");
+    @CsvSource({ "bytes=15-19, 10, 20, false", "bytes=5-14, 10, 20, false",
+            "bytes=1-49999, 40000, 50000, true" })
+    void transferContent_fileShorterThanLength_failsWithoutRangeHeaders(
+            String range, int actualLength, long declaredLength,
+            boolean failsMidBody) throws IOException {
+        Path file = Files.write(tempDir.resolve("content.bin"),
+                new byte[actualLength]);
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
         when(servletResponse.getOutputStream())
                 .thenReturn(new CapturingServletOutputStream());
         when(request.getHeader("Range")).thenReturn(range);
 
-        try (InputStream inputStream = Files.newInputStream(file)) {
+        try (InputStream inputStream = new FileInputStream(file.toFile())) {
             assertThrows(EOFException.class,
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
-                            inputStream, outputStream, 20, file.toFile()));
+                            inputStream, outputStream, declaredLength,
+                            file.toFile()));
         }
-        // a range starting past the real end fails before the 206 is set
-        verify(servletResponse, partialContentStarted ? times(1) : never())
+        // only a failure after the first chunk has set the 206 status
+        verify(servletResponse, failsMidBody ? times(1) : never())
                 .setStatus(206);
+        verify(servletResponse).reset();
+    }
+
+    @Test
+    void transferContent_rangeCancelledByClient_notAnError()
+            throws IOException {
+        Path file = Files.write(tempDir.resolve("content.bin"),
+                new byte[100000]);
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream() {
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                throw new IOException("Connection reset by peer");
+            }
+        };
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(servletResponse.isCommitted()).thenReturn(true);
+        when(request.getHeader("Range")).thenReturn("bytes=10-99999");
+        handler.addTransferProgressListener(listener);
+
+        try (InputStream inputStream = new FileInputStream(file.toFile())) {
+            handler.transferContent(
+                    new DownloadEvent(request, servletResponse, session, owner),
+                    inputStream, outputStream, 100000, file.toFile());
+        }
+
+        verify(servletResponse, never()).reset();
+        verify(listener, never()).onError(any(), any());
     }
 
     @Test

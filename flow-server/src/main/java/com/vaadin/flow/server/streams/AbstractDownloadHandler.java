@@ -26,6 +26,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -129,7 +131,9 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * like a normal transfer. A smaller range is not reported as started,
      * progressed or completed: a media player sends many overlapping, often
      * cancelled range requests, which do not describe a download of the
-     * content. A failure is propagated like for any other transfer.
+     * content. A failure before anything is sent, such as a file shorter than
+     * its length, is propagated like for any other transfer; a failure after
+     * that, typically a cancelled request, is only logged, as for static files.
      *
      * @param downloadEvent
      *            the download event
@@ -177,8 +181,28 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
             transferContent(downloadEvent, inputStream, outputStream,
                     contentLength);
         } else {
+            writeRanges(ranges, contentLength, inputStream, file, response);
+        }
+    }
+
+    private void writeRanges(List<Pair<Long, Long>> ranges, long contentLength,
+            InputStream inputStream, File file, HttpServletResponse response)
+            throws IOException {
+        try {
             ResponseWriter.writeRanges(ranges, contentLength, inputStream,
                     file.toURI().toURL(), response);
+        } catch (IOException e) {
+            if (!response.isCommitted()) {
+                // Nothing sent yet: drop the 206 headers so that the error
+                // response does not carry them
+                response.reset();
+                throw e;
+            }
+            // Media players cancel range requests on every seek. Like for
+            // static files, a failure after the response is committed is
+            // not an error of the download.
+            LoggerFactory.getLogger(AbstractDownloadHandler.class)
+                    .debug("Range request for {} ended early", file, e);
         }
     }
 
@@ -193,6 +217,9 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         try {
             return new File(resource.toURI());
         } catch (URISyntaxException | IllegalArgumentException e) {
+            LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
+                    "Resource {} is not a file, ranges are not served",
+                    resource, e);
             return null;
         }
     }
