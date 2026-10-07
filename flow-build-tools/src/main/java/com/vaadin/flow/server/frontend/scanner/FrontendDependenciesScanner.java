@@ -58,33 +58,6 @@ public interface FrontendDependenciesScanner extends Serializable {
          * @param featureFlags
          *            available feature flags and their status
          * @param reactEnabled
-         *            {@code true} if react is enabled, {@code true otherwise}
-         * @return a scanner implementation strategy
-         */
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents,
-                FeatureFlags featureFlags, boolean reactEnabled) {
-            return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, featureFlags, reactEnabled,
-                    false);
-        }
-
-        /**
-         * Produces scanner implementation based on {@code allDependenciesScan}
-         * value.
-         *
-         * @param allDependenciesScan
-         *            if {@code true} then full classpath scanning strategy is
-         *            used, otherwise byte scanning strategy is produced
-         * @param finder
-         *            a class finder
-         * @param generateEmbeddableWebComponents
-         *            checks {@code WebComponentExporter} classes for
-         *            dependencies if {@code true}, doesn't check otherwise
-         * @param featureFlags
-         *            available feature flags and their status
-         * @param reactEnabled
          *            {@code true} if react is enabled, {@code false} otherwise
          * @param productionMode
          *            {@code true} if scanning for a production build, in which

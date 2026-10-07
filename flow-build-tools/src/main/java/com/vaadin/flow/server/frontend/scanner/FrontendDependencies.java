@@ -537,11 +537,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             Method developmentOnlyMethod = routeClass
                     .getMethod("developmentOnly");
             return (boolean) developmentOnlyMethod.invoke(routeAnnotation);
-        } catch (NoSuchMethodException e) {
-            // @Route from a Flow version without developmentOnly
-            return false;
-        } catch (SecurityException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException e) {
+        } catch (ReflectiveOperationException | SecurityException
+                | IllegalArgumentException e) {
             log().error(
                     "Unable to read @Route annotation for " + route.getName(),
                     e);
