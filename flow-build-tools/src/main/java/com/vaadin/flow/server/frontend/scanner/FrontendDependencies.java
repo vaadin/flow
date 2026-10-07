@@ -51,7 +51,6 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -135,8 +134,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         this(options.getClassFinder(),
                 options.isGenerateEmbeddableWebComponents(),
                 options.getFeatureFlags(),
-                options.isReactEnabled() && FrontendUtils
-                        .isReactRouterRequired(options.getFrontendDirectory()),
+                FrontendDependenciesScannerFactory.isReactEnabled(options),
                 options.isProductionMode());
     }
 

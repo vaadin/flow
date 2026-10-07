@@ -97,12 +97,23 @@ public interface FrontendDependenciesScanner extends Serializable {
         public FrontendDependenciesScanner createScanner(Options options) {
             if (!options.isUseByteCodeScanner()) {
                 return new FullDependenciesScanner(options.getClassFinder(),
-                        options.getFeatureFlags(),
-                        options.isReactEnabled()
-                                && FrontendUtils.isReactRouterRequired(
-                                        options.getFrontendDirectory()));
+                        options.getFeatureFlags(), isReactEnabled(options));
             }
             return new FrontendDependencies(options);
+        }
+
+        /**
+         * Checks whether the scanners should collect React classes for the
+         * given build options.
+         *
+         * @param options
+         *            the build options
+         * @return {@code true} if React is enabled and the React router is
+         *         used, {@code false} otherwise
+         */
+        static boolean isReactEnabled(Options options) {
+            return options.isReactEnabled() && FrontendUtils
+                    .isReactRouterRequired(options.getFrontendDirectory());
         }
 
     }
