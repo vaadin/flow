@@ -709,8 +709,16 @@ final class Compile {
      * @return {@code true} when the file counts as written by the cutoff
      */
     private static boolean predates(Stamp stamp, long cutoffMillis) {
-        return stamp.modified() <= cutoffMillis || stamp
-                .modified() > System.currentTimeMillis() + FUTURE_SKEW_MILLIS;
+        return stamp.modified() <= cutoffMillis
+                || isFutureDated(stamp.modified());
+    }
+
+    /**
+     * Whether a modification time is too far ahead of the clock to have been
+     * set by an edit; see {@link #predates}.
+     */
+    private static boolean isFutureDated(long modifiedMillis) {
+        return modifiedMillis > System.currentTimeMillis() + FUTURE_SKEW_MILLIS;
     }
 
     /** A frontend file and its fingerprint; there is no owning module. */
@@ -1244,8 +1252,15 @@ final class Compile {
             if (!Files.isRegularFile(artifact)) {
                 return true;
             }
-            return Files.getLastModifiedTime(source)
-                    .compareTo(Files.getLastModifiedTime(artifact)) > 0;
+            long written = Files.getLastModifiedTime(source).toMillis();
+            if (isFutureDated(written)) {
+                // Dated ahead of the clock, the source stays newer than every
+                // artifact compiled from it, so its time cannot answer this.
+                // An edit gives it the current time, which the baseline in
+                // stale() catches.
+                return false;
+            }
+            return written > Files.getLastModifiedTime(artifact).toMillis();
         } catch (IOException e) {
             return true;
         }

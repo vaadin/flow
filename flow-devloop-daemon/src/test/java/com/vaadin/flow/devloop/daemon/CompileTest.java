@@ -823,6 +823,34 @@ class CompileTest {
     }
 
     @Test
+    void stale_aFutureDatedSourceIsAChangeOnlyWhenEdited() throws IOException {
+        // The same archive dates the sources ahead too. Newer than every class
+        // compiled from them, they would recompile on every apply, and an
+        // entity among them restarts the app each time.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Files.setLastModifiedTime(main, FileTime
+                .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
+        long appStarted = System.currentTimeMillis();
+        compile.seedFromDisk(appStarted, appStarted);
+
+        assertTrue(compile.stale().isEmpty());
+
+        Files.writeString(main, """
+                package app;
+                public class Main { int edited; }
+                """);
+
+        assertEquals(List.of(main), compile.stale().modified());
+    }
+
+    @Test
     void staleResources_seedingKeepsAnEditMadeSinceTheAppStartedInTheInventory()
             throws IOException {
         // Left out of the baseline, a config edited since the app started and
