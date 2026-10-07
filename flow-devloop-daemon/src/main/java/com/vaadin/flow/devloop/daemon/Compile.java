@@ -227,6 +227,12 @@ final class Compile {
             .of("META-INF/resources/", "static/", "public/", "resources/");
 
     /**
+     * How far ahead of this clock a modification time may be and still be taken
+     * at face value; see {@link #predates}.
+     */
+    private static final long FUTURE_SKEW_MILLIS = 60_000;
+
+    /**
      * What makes a file a Java source, and what a type's name is its file name
      * minus.
      */
@@ -609,7 +615,7 @@ final class Compile {
                 (module, source,
                         stamp) -> notified
                                 .put(source,
-                                        stamp.modified() <= startedAtMillis
+                                        predates(stamp, startedAtMillis)
                                                 ? new Content(stamp,
                                                         digestOf(source)
                                                                 .orElse(null))
@@ -673,10 +679,38 @@ final class Compile {
         frontendNotified.clear();
         frontend.root()
                 .ifPresent(root -> forEachFrontendFile(root, (file, stamp) -> {
-                    if (stamp.modified() <= cutoffMillis) {
+                    if (predates(stamp, cutoffMillis)) {
                         frontendNotified.put(file, stamp);
                     }
                 }));
+    }
+
+    /**
+     * Whether a file was written no later than the cutoff, with a modification
+     * time in the future capped at the cutoff.
+     * <p>
+     * A save stamps a file with the current time, so a time well ahead of the
+     * clock was not set by an edit made since the application started: it came
+     * with the file. An archive extracted in a time zone behind the one it was
+     * packed in dates every file hours ahead, and taken at face value such a
+     * file stays newer than every start for those hours - a startup-only
+     * resource would restart the application on every apply, each restart
+     * leaving it as unseen as before.
+     * <p>
+     * Only a time more than {@link #FUTURE_SKEW_MILLIS} ahead is capped. A file
+     * system on another host - a network share, a container or VM mount - can
+     * stamp a real edit with a clock a few seconds ahead of this one, and such
+     * an edit must still count as made after the start.
+     *
+     * @param stamp
+     *            the file's stamp
+     * @param cutoffMillis
+     *            the newest modification time to accept
+     * @return {@code true} when the file counts as written by the cutoff
+     */
+    private static boolean predates(Stamp stamp, long cutoffMillis) {
+        return stamp.modified() <= cutoffMillis || stamp
+                .modified() > System.currentTimeMillis() + FUTURE_SKEW_MILLIS;
     }
 
     /** A frontend file and its fingerprint; there is no owning module. */
@@ -1153,7 +1187,7 @@ final class Compile {
             // windows a developer's next keystroke fits into, and a baseline
             // that walks "whatever is on disk now" claims those edits as the
             // application's own.
-            if (stamp.modified() <= startedAtMillis) {
+            if (predates(stamp, startedAtMillis)) {
                 applied.put(source, stamp);
             }
         });

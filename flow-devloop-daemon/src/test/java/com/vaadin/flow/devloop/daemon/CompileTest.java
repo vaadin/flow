@@ -799,6 +799,30 @@ class CompileTest {
     }
 
     @Test
+    void staleResources_seedingTakesAFutureDatedResourceAsReadAtStart()
+            throws IOException {
+        // An archive extracted in a time zone behind the one it was packed in
+        // dates every file hours ahead. Taken as newer than the start, the
+        // config would restart the app on every apply, each restart leaving
+        // it newer than the next start too.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(List.of(config));
+        Files.setLastModifiedTime(config, FileTime
+                .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
+
+        long appStarted = System.currentTimeMillis();
+        compile.seedFromDisk(appStarted, appStarted);
+
+        assertTrue(compile.staleResources().startup().isEmpty());
+    }
+
+    @Test
     void staleResources_seedingKeepsAnEditMadeSinceTheAppStartedInTheInventory()
             throws IOException {
         // Left out of the baseline, a config edited since the app started and
