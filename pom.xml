@@ -668,6 +668,10 @@
         <configuration>
           <ratchetFrom>${spotless.ratchetFrom}</ratchetFrom>
           <java>
+            <excludes>
+              <!-- Third-party code copied as is, see its license header -->
+              <exclude>src/main/java/com/vaadin/flow/external/**</exclude>
+            </excludes>
             <eclipse>
               <file>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</file>
             </eclipse>

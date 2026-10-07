@@ -18,11 +18,13 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Optional;
 
+import com.vaadin.flow.external.jetty.http.ByteRange;
 import com.vaadin.flow.internal.streams.ByteRangeUtil;
-import com.vaadin.flow.internal.streams.ByteRangeUtil.ByteRange;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.communication.TransferUtil;
 
@@ -85,9 +87,11 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * Media players rely on range requests to seek: without
      * {@code Accept-Ranges} and {@code 206 Partial Content}, a browser cannot
      * jump ahead of what it has downloaded. Ranges are only served when the
-     * content length is known. A request with several ranges, a malformed range
-     * or an {@code If-Range} condition gets the whole content, which RFC 9110
-     * allows; the handlers send no validator that {@code If-Range} could match.
+     * content length is known. A request with several ranges, a unit other than
+     * bytes or an {@code If-Range} condition gets the whole content, which RFC
+     * 9110 allows; the handlers send no validator that {@code If-Range} could
+     * match. A malformed range, or one that starts past the end, gets
+     * {@code 416 Range Not Satisfiable}.
      * <p>
      * The content is skipped up to the start of the range. This is a seek for a
      * file, but for a class or servlet resource, or a stream from a callback,
@@ -109,35 +113,49 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         if (contentLength >= 0) {
             downloadEvent.getResponse().setHeader("Accept-Ranges", "bytes");
         }
-        Optional<ByteRange> range = ByteRangeUtil
-                .parseRange(downloadEvent.getRequest(), contentLength);
-        if (range.isPresent()) {
-            transferRange(downloadEvent, inputStream, outputStream, range.get(),
+        VaadinRequest request = downloadEvent.getRequest();
+        if (!ByteRangeUtil.isRangeRequest(request, contentLength)) {
+            transferWholeContent(downloadEvent, inputStream, outputStream,
                     contentLength);
-        } else {
-            downloadEvent.setContentLength(contentLength);
-            TransferUtil.transfer(inputStream, outputStream,
-                    getTransferContext(downloadEvent), getListeners());
+            return;
         }
+        List<ByteRange> ranges = ByteRange
+                .parse(List.of(request.getHeader("Range")), contentLength);
+        if (ranges.isEmpty()) {
+            VaadinResponse response = downloadEvent.getResponse();
+            response.setStatus(
+                    HttpStatusCode.REQUESTED_RANGE_NOT_SATISFIABLE.getCode());
+            response.setHeader("Content-Range",
+                    ByteRange.toNonSatisfiableHeaderValue(contentLength));
+            downloadEvent.setContentLength(0);
+        } else if (ranges.size() == 1) {
+            transferRange(downloadEvent, inputStream, outputStream,
+                    ranges.get(0), contentLength);
+        } else {
+            // Several ranges would need a multipart response
+            transferWholeContent(downloadEvent, inputStream, outputStream,
+                    contentLength);
+        }
+    }
+
+    private void transferWholeContent(DownloadEvent downloadEvent,
+            InputStream inputStream, OutputStream outputStream,
+            long contentLength) throws IOException {
+        downloadEvent.setContentLength(contentLength);
+        TransferUtil.transfer(inputStream, outputStream,
+                getTransferContext(downloadEvent), getListeners());
     }
 
     private void transferRange(DownloadEvent downloadEvent,
             InputStream inputStream, OutputStream outputStream, ByteRange range,
             long contentLength) throws IOException {
         VaadinResponse response = downloadEvent.getResponse();
-        if (range.start() >= contentLength) {
-            response.setStatus(
-                    HttpStatusCode.REQUESTED_RANGE_NOT_SATISFIABLE.getCode());
-            response.setHeader("Content-Range", "bytes */" + contentLength);
-            downloadEvent.setContentLength(0);
-            return;
-        }
         response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
-        response.setHeader("Content-Range", "bytes " + range.start() + "-"
-                + range.end() + "/" + contentLength);
-        downloadEvent.setContentLength(range.length());
-        inputStream.skipNBytes(range.start());
-        TransferUtil.transfer(ByteRangeUtil.limit(inputStream, range.length()),
+        response.setHeader("Content-Range", range.toHeaderValue(contentLength));
+        downloadEvent.setContentLength(range.getLength());
+        inputStream.skipNBytes(range.first());
+        TransferUtil.transfer(
+                ByteRangeUtil.limit(inputStream, range.getLength()),
                 outputStream, getTransferContext(downloadEvent),
                 getListeners());
     }

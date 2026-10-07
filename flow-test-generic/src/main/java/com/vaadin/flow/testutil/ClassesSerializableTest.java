@@ -62,6 +62,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
         return Stream.of(
                 // Shaded third-party libraries
                 "com\\.vaadin\\.frontendtools\\.internal\\..*",
+                "com\\.vaadin\\.flow\\.external\\..*",
                 "com\\.vaadin\\.frontendtools\\.installer\\.DefaultArchiveExtractor",
                 "com\\.vaadin\\.frontendtools\\.installer\\.ArchiveExtractor",
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",

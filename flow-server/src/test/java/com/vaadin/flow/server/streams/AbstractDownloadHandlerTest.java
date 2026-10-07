@@ -315,6 +315,9 @@ class AbstractDownloadHandlerTest {
             "null          | null | 200 | abcdefghij | null",
             "bytes=2-5     | null | 206 | cdef       | bytes 2-5/10",
             "bytes=10-     | null | 416 | ''         | bytes */10",
+            "bytes=5-2     | null | 416 | ''         | bytes */10",
+            "bytes=0-1,4-5 | null | 200 | abcdefghij | null",
+            "items=2-5     | null | 200 | abcdefghij | null",
             "bytes=2-5     | x    | 200 | abcdefghij | null" })
     void transferContent_rangeRequested_sendsRequestedBytes(String range,
             String ifRange, int status, String body, String contentRange)
