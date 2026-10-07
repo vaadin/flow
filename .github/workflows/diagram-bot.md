@@ -186,7 +186,7 @@ Use one accent, not a palette — everything you mark is marked the same way. Ne
 | `stateDiagram-v2` | Lifecycle and state machines: attach/detach, connection state, navigation phases. |
 | `classDiagram` | Only when the type relationships themselves are the change. |
 
-**Syntax that survives GitHub's renderer.** Every figure this bot has failed to render in this repository broke on one of the first three rules. Step 4 checks them mechanically; know them anyway, so the figure comes out right the first time.
+**Syntax that survives GitHub's renderer.** Every figure this bot has failed to render in this repository broke on one of the first four rules. Step 4 checks them mechanically; know them anyway, so the figure comes out right the first time.
 
 - In `flowchart` and `classDiagram`, **quote every label that is not a bare word — edge labels as much as node labels**. Parentheses are what usually breaks it, and `-->|calls foo() first|` fails exactly as `A[calls foo() first]` does. Write `A["StateTree.collectChanges()"]` and `-->|"calls collectChanges()"|`.
 - **Never open a label with a backtick.** ``A["`Push` moved earlier"]`` starts a Mermaid markdown string, and the rest of the label is a lexical error. Write `A["Push moved earlier"]`.
