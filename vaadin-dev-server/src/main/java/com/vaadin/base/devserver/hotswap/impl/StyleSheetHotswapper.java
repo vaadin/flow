@@ -125,14 +125,14 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
         vaadinService.addUIInitListener(uiInitEvent -> {
             UI ui = uiInitEvent.getUI();
-            VaadinSession session = ui.getSession();
+            VaadinSession session = ui.getSessionOrThrow();
             ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker
                     .get(session.getService());
             ui.addAfterNavigationListener(navigationEvent -> {
                 UI newUi = navigationEvent.getLocationChangeEvent().getUI();
                 Set<String> allUrls = new LinkedHashSet<>();
                 lookupUrlsForComponents(newUi, allUrls,
-                        newUi.getSession().getService());
+                        newUi.getSessionOrThrow().getService());
                 allUrls.forEach(tracker::trackAddForComponent);
             });
         });

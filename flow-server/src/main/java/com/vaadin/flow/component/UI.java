@@ -201,6 +201,31 @@ public class UI extends Component
     }
 
     /**
+     * Gets the VaadinSession to which this UI is attached, throwing an
+     * exception if the UI is not attached to a session.
+     * <p>
+     * Use this method when the code can only run while the UI is attached to a
+     * session, e.g. in an event listener. If the code has to work also before
+     * the UI is initialized or after it has been removed from its session, use
+     * {@link #getSession()} instead and check for null.
+     *
+     * @return the session this UI is attached to, never <code>null</code>
+     * @throws IllegalStateException
+     *             if this UI is not attached to a session
+     * @see #getSession()
+     * @since 25.4
+     */
+    public VaadinSession getSessionOrThrow() {
+        VaadinSession session = getSession();
+        if (session == null) {
+            throw new IllegalStateException(
+                    "UI is not attached to a VaadinSession. The UI has either not been initialized yet "
+                            + "or it has already been removed from its session.");
+        }
+        return session;
+    }
+
+    /**
      * Gets the id of the UI, used to identify this UI within its application
      * when processing requests. The UI id should be present in every request to
      * the server that originates from this UI.
@@ -2230,8 +2255,8 @@ public class UI extends Component
             serverPaused();
         } else {
             // acknowledge client, but cancel if session not open
-            serverConnected(
-                    !getSession().getState().equals(VaadinSessionState.OPEN));
+            serverConnected(!getSessionOrThrow().getState()
+                    .equals(VaadinSessionState.OPEN));
             replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
     }

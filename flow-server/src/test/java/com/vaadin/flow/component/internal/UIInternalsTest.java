@@ -140,6 +140,7 @@ class UIInternalsTest {
         MockitoAnnotations.initMocks(this);
 
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        Mockito.when(ui.getUIOrThrow()).thenCallRealMethod();
         Element body = new Element("body");
         Mockito.when(ui.getElement()).thenReturn(body);
 
@@ -149,6 +150,7 @@ class UIInternalsTest {
                 vaadinService);
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
         Mockito.when(ui.getInternals()).thenReturn(internals);
         Page page = new Page(ui);
         Mockito.when(ui.getPage()).thenReturn(page);

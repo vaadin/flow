@@ -182,6 +182,18 @@ class VaadinServiceTest {
     }
 
     @Test
+    void getCurrentOrThrow_withCurrentService_returnsService_withoutCurrentService_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, VaadinService::getCurrentOrThrow);
+        assertThat(exception.getMessage(),
+                containsString("No currently active VaadinService found"));
+
+        MockVaadinServletService service = createService();
+        VaadinService.setCurrent(service);
+        assertSame(service, VaadinService.getCurrentOrThrow());
+    }
+
+    @Test
     void requestEnd_serviceFailure_threadLocalsCleared() {
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override

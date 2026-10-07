@@ -1023,6 +1023,7 @@ public class UIInternals implements Serializable {
      *            the name of the called method, not <code>null</code>
      * @return <code>true</code> if such a call is pending, <code>false</code>
      *         otherwise
+     * @since 25.4
      */
     public boolean containsPendingJsCall(Class<?> definitionType,
             String methodName) {
@@ -1681,6 +1682,7 @@ public class UIInternals implements Serializable {
      * @return {@code true} if this is the outermost navigation, {@code false}
      *         if it is nested inside a navigation that is already being
      *         handled, such as a forward, a reroute or an error view
+     * @since 25.4
      */
     public boolean enterNavigation() {
         boolean outermost = navigationDepth++ == 0;
@@ -1695,6 +1697,8 @@ public class UIInternals implements Serializable {
     /**
      * Marks that the router has finished handling a navigation started with
      * {@link #enterNavigation()}. For framework use only.
+     * 
+     * @since 25.4
      */
     public void exitNavigation() {
         navigationDepth--;
@@ -1712,6 +1716,7 @@ public class UIInternals implements Serializable {
      *
      * @param exception
      *            the exception the error view is rendered for, not {@code null}
+     * @since 25.4
      */
     public void recordNavigationFailure(Exception exception) {
         if (navigationDepth > 0 && navigationFailure == null) {
@@ -1725,6 +1730,7 @@ public class UIInternals implements Serializable {
      *
      * @return the exception, or {@code null} if no error view has been rendered
      *         during the ongoing navigation
+     * @since 25.4
      */
     public @Nullable Exception getNavigationFailure() {
         return navigationFailure;

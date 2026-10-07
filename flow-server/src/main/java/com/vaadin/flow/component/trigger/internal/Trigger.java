@@ -244,6 +244,7 @@ public abstract class Trigger implements Serializable {
      *
      * @param cleanup
      *            the cleanup to run on {@link #remove()}, not {@code null}
+     * @since 25.4
      */
     public final void addCleanup(Registration cleanup) {
         registrations.add(Objects.requireNonNull(cleanup));

@@ -117,7 +117,7 @@ public class VaadinSessionScopedContext extends AbstractContext {
 
         protected ContextualStorage getContextualStorage(
                 Contextual<?> contextual, boolean createIfNotExist) {
-            VaadinSession session = VaadinSession.getCurrent();
+            VaadinSession session = VaadinSession.getCurrentOrThrow();
             ContextualStorage storage = findContextualStorage(session);
             if (storage == null && createIfNotExist) {
                 storage = new ContextualStorage(beanManager, false, true);

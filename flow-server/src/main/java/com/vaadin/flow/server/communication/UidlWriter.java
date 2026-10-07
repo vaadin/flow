@@ -128,7 +128,7 @@ public class UidlWriter implements Serializable {
 
         UIInternals uiInternals = ui.getInternals();
 
-        VaadinSession session = ui.getSession();
+        VaadinSession session = ui.getSessionOrThrow();
         VaadinService service = session.getService();
 
         // Purge pending access calls as they might produce additional changes
@@ -557,8 +557,8 @@ public class UidlWriter implements Serializable {
      */
     private ArrayNode createPerformanceData(UI ui) {
         ArrayNode timings = JacksonUtils.createArrayNode();
-        timings.add(ui.getSession().getCumulativeRequestDuration());
-        timings.add(ui.getSession().getLastRequestDuration());
+        timings.add(ui.getSessionOrThrow().getCumulativeRequestDuration());
+        timings.add(ui.getSessionOrThrow().getLastRequestDuration());
         return timings;
     }
 

@@ -370,7 +370,7 @@ public class AppShellRegistry implements Serializable {
     public void modifyIndexHtml(Document document, VaadinRequest request) {
         AppShellSettings settings = createSettings(request);
         if (appShellClass != null) {
-            VaadinService.getCurrent().getInstantiator()
+            VaadinService.getCurrentOrThrow().getInstantiator()
                     .getOrCreate(appShellClass).configurePage(settings);
         }
 

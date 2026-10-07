@@ -22,7 +22,6 @@ import java.io.OutputStream;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for use with a given File that will be read and written as
@@ -85,9 +84,8 @@ public class FileDownloadHandler
             }
             downloadEvent
                     .setContentType(getContentType(resourceName, response));
-            downloadEvent.setContentLength(file.length());
-            TransferUtil.transfer(inputStream, outputStream,
-                    getTransferContext(downloadEvent), getListeners());
+            transferContent(downloadEvent, inputStream, outputStream,
+                    file.length());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());

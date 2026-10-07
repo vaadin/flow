@@ -404,7 +404,7 @@ public class NavigationAccessControl implements BeforeEnterListener {
     }
 
     private boolean isProductionMode(BeforeEnterEvent beforeEnterEvent) {
-        return beforeEnterEvent.getUI().getSession().getConfiguration()
+        return beforeEnterEvent.getUI().getSessionOrThrow().getConfiguration()
                 .isProductionMode();
     }
 
