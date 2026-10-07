@@ -16,14 +16,15 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -38,8 +39,9 @@ abstract class MediaTest extends ComponentTest {
     @BeforeEach
     void setCurrentUi() {
         // adding a source from a DownloadHandler registers a resource in the
-        // session of the current UI
-        UI.setCurrent(new UI());
+        // session of the current UI, which the mock UI becomes
+        new MockUI(
+                new AlwaysLockedVaadinSession(new MockVaadinServletService()));
     }
 
     @AfterEach
@@ -54,7 +56,7 @@ abstract class MediaTest extends ComponentTest {
         addProperty("loop", boolean.class, false, true, false, true);
         addProperty("muted", boolean.class, false, true, false, true);
         addProperty("preload", Media.Preload.class, null,
-                Media.Preload.METADATA, true, true);
+                Media.Preload.METADATA, false, true);
     }
 
     @Test
@@ -75,10 +77,12 @@ abstract class MediaTest extends ComponentTest {
 
         Source webm = media.addSource("/intro.webm", "video/webm");
         Source mp4 = media.addSource("/intro.mp4", "video/mp4");
+        // fallback content is a child too, but not a source
+        media.add(new Paragraph("Your browser cannot play this recording."));
 
         assertEquals(List.of(webm, mp4), media.getSources());
         assertEquals("/intro.webm", webm.getSrc());
-        assertEquals("video/webm", webm.getType().orElse(null));
+        assertEquals("video/webm", webm.getType());
         assertSame(media, mp4.getParent().orElse(null));
     }
 
@@ -92,7 +96,7 @@ abstract class MediaTest extends ComponentTest {
         assertTrue(source.getSrc().startsWith("VAADIN/dynamic/resource/-1/"),
                 "The source should be served from a dynamic resource, was "
                         + source.getSrc());
-        assertEquals("audio/mpeg", source.getType().orElse(null));
+        assertEquals("audio/mpeg", source.getType());
     }
 
     @Test
@@ -111,9 +115,9 @@ abstract class MediaTest extends ComponentTest {
         // preload is an HTML enumerated attribute, so its keywords are matched
         // ASCII case-insensitively
         media.getElement().setAttribute("preload", "NONE");
-        assertEquals(Optional.of(Media.Preload.NONE), media.getPreload());
+        assertEquals(Media.Preload.NONE, media.getPreload());
 
         media.getElement().setAttribute("preload", "Metadata");
-        assertEquals(Optional.of(Media.Preload.METADATA), media.getPreload());
+        assertEquals(Media.Preload.METADATA, media.getPreload());
     }
 }

@@ -261,6 +261,7 @@ abstract class ComponentTest {
     void testNullForStringPropertiesWithEmptyStringDefault() {
         properties.stream().filter(p -> !p.isOptional())
                 .filter(p -> p.type == String.class)
+                .filter(p -> "".equals(p.defaultValue))
                 .forEach(p -> testNullForStringPropertyWithEmptyStringDefault(
                         p));
     }

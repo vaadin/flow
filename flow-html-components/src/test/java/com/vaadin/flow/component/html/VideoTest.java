@@ -38,7 +38,8 @@ class VideoTest extends MediaTest {
     @Override
     protected void addProperties() {
         super.addProperties();
-        addOptionalStringProperty("poster");
+        addProperty("poster", String.class, null, "/intro-poster.jpg", false,
+                true);
     }
 
     @Override

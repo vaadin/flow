@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.NullMarked;
@@ -24,10 +23,8 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasAriaLabel;
-import com.vaadin.flow.component.HasComponentsOfType;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HtmlComponent;
-import com.vaadin.flow.component.PropertyDescriptor;
-import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -48,10 +45,10 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * video.setControls(true);
  * </pre>
  *
- * Only {@code <source>} components can be added as children, because that is
- * all the API needs to build a player. An application that wants the fallback
- * content or the subtitle tracks that the elements also accept has to add those
- * through {@link #getElement()}.
+ * Besides the sources, the elements accept <code>&lt;track&gt;</code> elements
+ * for subtitles and captions, and fallback content that a browser without media
+ * support shows instead of the player. Both can be added as children too; HTML
+ * expects them after the sources.
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Audio_and_video_delivery">MDN:
@@ -59,15 +56,13 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  */
 @NullMarked
 public abstract class Media extends HtmlComponent
-        implements HasComponentsOfType<Source>, HasAriaLabel {
+        implements HasComponents, HasAriaLabel {
 
     private static final String AUTOPLAY_ATTRIBUTE = "autoplay";
     private static final String CONTROLS_ATTRIBUTE = "controls";
     private static final String LOOP_ATTRIBUTE = "loop";
     private static final String MUTED_ATTRIBUTE = "muted";
-
-    private static final PropertyDescriptor<String, Optional<String>> preloadDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("preload", "");
+    private static final String PRELOAD_ATTRIBUTE = "preload";
 
     /**
      * How much of the media file the browser should fetch before playback is
@@ -122,10 +117,10 @@ public abstract class Media extends HtmlComponent
          * arrived with {@code preload="NONE"} has to read back as
          * {@link #NONE}.
          */
-        private static Optional<Preload> fromAttributeValue(String value) {
+        private static @Nullable Preload fromAttributeValue(String value) {
             return Stream.of(values())
                     .filter(preload -> preload.value.equalsIgnoreCase(value))
-                    .findFirst();
+                    .findFirst().orElse(null);
         }
     }
 
@@ -155,12 +150,12 @@ public abstract class Media extends HtmlComponent
      *            the URL of the media file
      * @param type
      *            the MIME type of the media file, such as
-     *            <code>video/mp4</code>, or an empty string when it is not
+     *            <code>video/mp4</code>, or <code>null</code> when it is not
      *            known
      * @return the source that was added, so that it can be configured further
      * @see #addSource(DownloadHandler, String)
      */
-    public Source addSource(String src, String type) {
+    public Source addSource(String src, @Nullable String type) {
         Source source = new Source(src, type);
         add(source);
         return source;
@@ -176,12 +171,13 @@ public abstract class Media extends HtmlComponent
      *            <code>null</code>
      * @param type
      *            the MIME type of the media file, such as
-     *            <code>video/mp4</code>, or an empty string when it is not
+     *            <code>video/mp4</code>, or <code>null</code> when it is not
      *            known
      * @return the source that was added, so that it can be configured further
      * @see #addSource(String, String)
      */
-    public Source addSource(DownloadHandler downloadHandler, String type) {
+    public Source addSource(DownloadHandler downloadHandler,
+            @Nullable String type) {
         Source source = new Source(downloadHandler, type);
         add(source);
         return source;
@@ -189,7 +185,8 @@ public abstract class Media extends HtmlComponent
 
     /**
      * Returns the sources of this media component, in the order the browser
-     * considers them. This is the typed counterpart of {@link #getChildren()}.
+     * considers them. Other children, such as tracks or fallback content, are
+     * left out.
      *
      * @return the sources of this media component
      */
@@ -304,16 +301,21 @@ public abstract class Media extends HtmlComponent
      *            browser decide
      */
     public void setPreload(@Nullable Preload preload) {
-        set(preloadDescriptor, preload == null ? "" : preload.getValue());
+        if (preload == null) {
+            getElement().removeAttribute(PRELOAD_ATTRIBUTE);
+        } else {
+            getElement().setAttribute(PRELOAD_ATTRIBUTE, preload.getValue());
+        }
     }
 
     /**
      * Gets how much of the media file the browser is asked to fetch in advance.
      *
-     * @return the preload hint, or an empty optional if none has been set
+     * @return the preload hint, or <code>null</code> if none has been set
      * @see #setPreload(Preload)
      */
-    public Optional<Preload> getPreload() {
-        return get(preloadDescriptor).flatMap(Preload::fromAttributeValue);
+    public @Nullable Preload getPreload() {
+        String value = getElement().getAttribute(PRELOAD_ATTRIBUTE);
+        return value == null ? null : Preload.fromAttributeValue(value);
     }
 }

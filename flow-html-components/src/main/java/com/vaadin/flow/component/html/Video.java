@@ -15,12 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Optional;
-
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.component.PropertyDescriptor;
-import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
@@ -58,9 +55,6 @@ public class Video extends Media {
 
     private static final String POSTER_ATTRIBUTE = "poster";
 
-    private static final PropertyDescriptor<String, Optional<String>> posterDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault(POSTER_ATTRIBUTE, "");
-
     /**
      * Creates a video player without any source.
      */
@@ -86,11 +80,15 @@ public class Video extends Media {
      * of the file before there is anything to look at.
      *
      * @param poster
-     *            the URL of the poster image, or an empty string to remove the
-     *            poster
+     *            the URL of the poster image, or <code>null</code> to remove
+     *            the poster
      */
-    public void setPoster(String poster) {
-        set(posterDescriptor, poster);
+    public void setPoster(@Nullable String poster) {
+        if (poster == null) {
+            getElement().removeAttribute(POSTER_ATTRIBUTE);
+        } else {
+            getElement().setAttribute(POSTER_ATTRIBUTE, poster);
+        }
     }
 
     /**
@@ -127,11 +125,11 @@ public class Video extends Media {
     /**
      * Gets the URL of the poster image.
      *
-     * @return the URL of the poster image, or an empty optional if none has
+     * @return the URL of the poster image, or <code>null</code> if none has
      *         been set
      * @see #setPoster(String)
      */
-    public Optional<String> getPoster() {
-        return get(posterDescriptor);
+    public @Nullable String getPoster() {
+        return getElement().getAttribute(POSTER_ATTRIBUTE);
     }
 }

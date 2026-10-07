@@ -15,9 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Optional;
-
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
@@ -47,12 +46,10 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 public class Source extends HtmlComponent {
 
     private static final String SRC_ATTRIBUTE = "src";
+    private static final String TYPE_ATTRIBUTE = "type";
 
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
             .attributeWithDefault(SRC_ATTRIBUTE, "");
-
-    private static final PropertyDescriptor<String, Optional<String>> typeDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("type", "");
 
     /**
      * Creates a new source without a URL.
@@ -68,12 +65,12 @@ public class Source extends HtmlComponent {
      *            the URL of the media file
      * @param type
      *            the MIME type of the media file, such as
-     *            <code>video/mp4</code>, or an empty string when it is not
+     *            <code>video/mp4</code>, or <code>null</code> when it is not
      *            known
      * @see #setSrc(String)
      * @see #setType(String)
      */
-    public Source(String src, String type) {
+    public Source(String src, @Nullable String type) {
         setSrc(src);
         setType(type);
     }
@@ -92,12 +89,12 @@ public class Source extends HtmlComponent {
      *            <code>null</code>
      * @param type
      *            the MIME type of the media file, such as
-     *            <code>video/mp4</code>, or an empty string when it is not
+     *            <code>video/mp4</code>, or <code>null</code> when it is not
      *            known
      * @see #setSrc(DownloadHandler)
      * @see #setType(String)
      */
-    public Source(DownloadHandler downloadHandler, String type) {
+    public Source(DownloadHandler downloadHandler, @Nullable String type) {
         setSrc(downloadHandler);
         setType(type);
     }
@@ -163,20 +160,24 @@ public class Source extends HtmlComponent {
      * plays one of the other sources.
      *
      * @param type
-     *            the MIME type of the media file, or an empty string to remove
-     *            the type
+     *            the MIME type of the media file, or <code>null</code> to
+     *            remove the type
      */
-    public void setType(String type) {
-        set(typeDescriptor, type);
+    public void setType(@Nullable String type) {
+        if (type == null) {
+            getElement().removeAttribute(TYPE_ATTRIBUTE);
+        } else {
+            getElement().setAttribute(TYPE_ATTRIBUTE, type);
+        }
     }
 
     /**
      * Gets the MIME type of the media file.
      *
-     * @return the MIME type, or an empty optional if none has been set
+     * @return the MIME type, or <code>null</code> if none has been set
      * @see #setType(String)
      */
-    public Optional<String> getType() {
-        return get(typeDescriptor);
+    public @Nullable String getType() {
+        return getElement().getAttribute(TYPE_ATTRIBUTE);
     }
 }

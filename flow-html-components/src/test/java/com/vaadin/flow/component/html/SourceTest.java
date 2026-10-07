@@ -38,7 +38,7 @@ class SourceTest extends ComponentTest {
     @Override
     protected void addProperties() {
         addStringProperty("src", "");
-        addOptionalStringProperty("type");
+        addProperty("type", String.class, null, "video/mp4", false, true);
     }
 
     @Test
@@ -46,7 +46,7 @@ class SourceTest extends ComponentTest {
         Source source = new Source("/intro.mp4", "video/mp4");
 
         assertEquals("/intro.mp4", source.getSrc());
-        assertEquals("video/mp4", source.getType().orElse(null));
+        assertEquals("video/mp4", source.getType());
     }
 
     @Test
