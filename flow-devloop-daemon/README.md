@@ -797,9 +797,10 @@ VAADIN_DEV_DAEMON_OPTS="-Dvaadin.dev.compiler=maven" .vaadin/vaadin-dev start
 ```
 
 Each apply then runs `compiler:compile` - offline, quiet, from the reactor root
-with `-pl :<app> -am`, and named with the execution the build binds
-(`default-compile` unless the pom says otherwise), so that execution's
-configuration applies. Only the compile goal runs, not the `compile` phase:
+with `-pl :<app> -am`. Each module compiles with the configuration of its own
+compile execution, whatever its id: the daemon loads its build extension, which
+gives every module's execution one shared id for the run. Only the compile goal
+runs, not the `compile` phase:
 copying resources stays the daemon's own leg, and `prepare-frontend` and
 whatever else the project binds before `compile` are not run per apply.
 Everything around the compile - change detection, deletions, the redefine and

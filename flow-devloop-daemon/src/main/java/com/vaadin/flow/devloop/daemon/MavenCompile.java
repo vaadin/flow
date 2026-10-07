@@ -32,6 +32,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension;
+
 /**
  * The compile leg's Maven backend: every apply runs the project's own
  * {@code maven-compiler-plugin} instead of javac in-process.
@@ -117,6 +119,9 @@ final class MavenCompile implements Compile.Backend {
     /** Class files already reported as gone, so each is logged once. */
     private final Set<Path> reportedGone = ConcurrentHashMap.newKeySet();
 
+    /** Whether the fallback to one execution id has been logged. */
+    private volatile boolean warnedAboutExecution;
+
     /**
      * @param owner
      *            the baseline this compiles for, which names diagnostic files
@@ -200,9 +205,15 @@ final class MavenCompile implements Compile.Backend {
      * The compile goal on its own rather than the {@code compile} phase, which
      * would also run the resource copy - the daemon's own leg - and whatever
      * the project binds before it, Vaadin's {@code prepare-frontend} among
-     * them. Named with the execution the build binds, so its configuration
-     * applies. The build extension is not loaded: nothing it does concerns a
-     * compile.
+     * them.
+     * <p>
+     * A goal on the command line takes its configuration from the execution its
+     * id names, in every module of the reactor, and modules need not agree on
+     * that id. So the build extension is loaded to give each module's own
+     * compile execution one shared id; see
+     * {@code DevLoopBuildExtension#COMPILE_EXECUTION}. A daemon with no jar to
+     * load as the extension falls back to the application module's id, which is
+     * right whenever the modules agree.
      */
     private List<String> command() throws IOException {
         Reactor reactor = launch.reactor();
@@ -214,9 +225,24 @@ final class MavenCompile implements Compile.Backend {
                             "-pl", ":" + reactor.app().artifactId(), "-am"));
         }
         command.addAll(Launch.extraMavenArguments());
-        String execution = reactor
-                .findExecution(COMPILER_GROUP, COMPILER_ARTIFACT, "compile")
-                .orElse(DEFAULT_EXECUTION);
+        List<String> extension = launch.buildExtension();
+        String execution;
+        if (extension.isEmpty()) {
+            execution = reactor
+                    .findExecution(COMPILER_GROUP, COMPILER_ARTIFACT, "compile")
+                    .orElse(DEFAULT_EXECUTION);
+            if (!warnedAboutExecution) {
+                warnedAboutExecution = true;
+                launch.log().line("maven compile: no build extension to load, "
+                        + "so every module compiles with the configuration of "
+                        + "execution '" + execution + "'");
+            }
+        } else {
+            command.addAll(extension);
+            command.add(
+                    "-D" + DevLoopBuildExtension.COMPILE_PROPERTY + "=true");
+            execution = DevLoopBuildExtension.COMPILE_EXECUTION;
+        }
         command.addAll(List.of("compiler:compile@" + execution,
                 "-Dmaven.test.skip=true"));
         return command;

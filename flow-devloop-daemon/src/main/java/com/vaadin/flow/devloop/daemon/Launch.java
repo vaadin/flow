@@ -794,7 +794,7 @@ final class Launch {
      *
      * @return the argument, or nothing when there is no jar
      */
-    private List<String> buildExtension() {
+    List<String> buildExtension() {
         return agentJar().filter(Files::isRegularFile)
                 .map(jar -> List.of("-Dmaven.ext.class.path=" + jar))
                 .orElseGet(List::of);

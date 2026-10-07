@@ -107,6 +107,42 @@ class DevLoopBuildExtensionTest {
         assertEquals("start", model.getProperty("execution.0.0.goals"));
     }
 
+    /**
+     * A module that switches the default compile execution off and binds one of
+     * its own keeps that one's configuration under the shared id - which is
+     * what lets one command line compile modules that disagree on the id. Asked
+     * twice, it still adds only one.
+     */
+    @Test
+    void theCompileExecutionInUseIsAlsoKnownByTheSharedId() {
+        Plugin compiler = plugin("org.apache.maven.plugins",
+                "maven-compiler-plugin", "3.13.0");
+        PluginExecution switchedOff = new PluginExecution();
+        switchedOff.setId("default-compile");
+        switchedOff.setPhase("none");
+        switchedOff.addGoal("compile");
+        switchedOff.setConfiguration(configuration("release", "21"));
+        compiler.addExecution(switchedOff);
+        PluginExecution own = new PluginExecution();
+        own.setId("java-compile");
+        own.setPhase("compile");
+        own.addGoal("compile");
+        own.setConfiguration(configuration("release", "17"));
+        compiler.addExecution(own);
+        MavenProject project = project(compiler);
+
+        DevLoopBuildExtension.aliasCompileExecution(project);
+        DevLoopBuildExtension.aliasCompileExecution(project);
+
+        PluginExecution alias = compiler.getExecutionsAsMap()
+                .get(DevLoopBuildExtension.COMPILE_EXECUTION);
+        assertEquals(List.of("compile"), alias.getGoals());
+        assertEquals("none", alias.getPhase());
+        assertEquals("17", ((Xpp3Dom) alias.getConfiguration())
+                .getChild("release").getValue());
+        assertEquals(3, compiler.getExecutions().size());
+    }
+
     /** The profiles Maven ran with, which is the answer poms cannot give. */
     @Test
     void theActiveProfilesAreNamed() {
