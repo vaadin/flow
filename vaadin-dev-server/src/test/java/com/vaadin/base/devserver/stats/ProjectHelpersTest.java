@@ -91,6 +91,10 @@ class ProjectHelpersTest {
         assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CURSOR),
                 ProjectHelpers.getAiAgent(
                         Map.of("CURSOR_AGENT", "1", "CLAUDECODE", "1")));
+        // Claude Code also sets the generic AI_AGENT variable
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CLAUDE),
+                ProjectHelpers.getAiAgent(
+                        Map.of("CLAUDECODE", "1", "AI_AGENT", "claude-code")));
     }
 
     private File createTempDir() throws IOException {
