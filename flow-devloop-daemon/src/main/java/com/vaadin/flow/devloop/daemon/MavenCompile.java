@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -307,7 +308,7 @@ final class MavenCompile implements Compile.Backend {
      * @return what the run changed
      */
     Diff changedClasses(List<Reactor.Module> modules) {
-        Set<String> written = new java.util.TreeSet<>();
+        Set<String> written = new TreeSet<>();
         Map<Path, Compile.Stamp> classFiles = new HashMap<>();
         Set<Path> seen = new HashSet<>();
         for (Reactor.Module module : modules) {

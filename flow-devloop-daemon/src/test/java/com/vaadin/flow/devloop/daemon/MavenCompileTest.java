@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -163,7 +164,7 @@ class MavenCompileTest {
     /** A backend seeded as if the application had just loaded these files. */
     private static MavenCompile launched(Path... classFiles) {
         MavenCompile maven = new MavenCompile(null, null);
-        Map<Path, Compile.Stamp> classes = new java.util.HashMap<>();
+        Map<Path, Compile.Stamp> classes = new HashMap<>();
         for (Path file : classFiles) {
             classes.put(file, Compile.stampOf(file).orElseThrow());
         }
