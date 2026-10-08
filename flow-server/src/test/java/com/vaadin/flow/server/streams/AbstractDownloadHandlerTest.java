@@ -54,7 +54,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -449,13 +448,12 @@ class AbstractDownloadHandlerTest {
 
     @ParameterizedTest
     @CsvSource({ "bytes=10-99999", "bytes=10-19", "bytes=0-" })
-    void transferContent_rangeCancelledByClient_notAnError(String range)
-            throws IOException {
+    void transferContent_rangeCancelledByClient_notAnErrorOfTheContent(
+            String range) throws IOException {
         Path file = Files.write(tempDir.resolve("content.bin"),
                 new byte[100000]);
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
-        AtomicBoolean closed = new AtomicBoolean();
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream() {
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
@@ -467,39 +465,33 @@ class AbstractDownloadHandlerTest {
 
             @Override
             public void flush() throws IOException {
+                // a small range only fails when the buffered body is sent
                 throw new IOException("Connection reset by peer");
-            }
-
-            @Override
-            public void close() {
-                closed.set(true);
             }
         };
         when(servletResponse.getOutputStream()).thenReturn(servletOutput);
-        // a small range only fails when the buffered body is sent
-        doThrow(new IOException("Connection reset by peer"))
-                .when(servletResponse).flushBuffer();
         when(servletResponse.isCommitted()).thenReturn(true);
         when(request.getHeader("Range")).thenReturn(range);
         handler.addTransferProgressListener(listener);
 
         try (InputStream inputStream = new FileInputStream(file.toFile())) {
-            assertDoesNotThrow(() -> handler.transferContent(
-                    new DownloadEvent(request, servletResponse, session, owner),
-                    inputStream, servletOutput, 100000, file.toFile()));
+            assertThrows(AbstractDownloadHandler.CancelledRangeException.class,
+                    () -> handler.transferContent(
+                            new DownloadEvent(request, servletResponse, session,
+                                    owner),
+                            inputStream, servletOutput, 100000, file.toFile()));
         }
 
-        verify(listener, never()).onError(any(), any());
+        verify(listener, never()).onComplete(any(), anyLong());
         if ("bytes=0-".equals(range)) {
-            // reported as started, so it has to be ended, short of the length
+            // reported as started, so it ends like a cancelled download
             verify(listener).onStart(any());
-            verify(listener).onComplete(any(), eq(0L));
+            verify(listener).onError(any(), any());
         } else {
             verify(listener, never()).onStart(any());
-            verify(listener, never()).onComplete(any(), anyLong());
+            verify(listener, never()).onError(any(), any());
         }
         verify(servletResponse, never()).setStatus(500);
-        assertTrue(closed.get(), "Cancelled response should be closed");
     }
 
     @Test

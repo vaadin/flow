@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -53,6 +55,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -172,6 +175,40 @@ class FileDownloadHandlerTest {
         verify(servletResponse).setStatus(206);
         verify(servletResponse).setHeader("Content-Range",
                 "bytes 100000-100099/165000");
+    }
+
+    @Test
+    void handleDownloadRequest_rangeCancelledByClient_closeFailsToo_notAnError()
+            throws URISyntaxException, IOException {
+        File file = new File(
+                getClass().getClassLoader().getResource(PATH_TO_FILE).toURI());
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream() {
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                throw new IOException("Connection reset by peer");
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException("Connection reset by peer");
+            }
+        };
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(servletResponse.isCommitted()).thenReturn(true);
+        when(servletResponse.getService())
+                .thenReturn(mock(VaadinServletService.class));
+        when(request.getHeader("Range")).thenReturn("bytes=100000-100099");
+        FileDownloadHandler handler = DownloadHandler.forFile(file);
+        AtomicBoolean errorReported = new AtomicBoolean();
+        handler.whenComplete(success -> errorReported.set(!success));
+
+        handler.handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner));
+
+        assertFalse(errorReported.get());
+        verify(servletResponse, never()).setStatus(500);
     }
 
     @Test

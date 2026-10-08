@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.server.streams;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpServletResponseWrapper;
 
 import java.io.File;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -136,14 +134,15 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * cancelled range requests, which do not describe a download of the
      * content.
      * <p>
-     * A range request that the client cancels, as media players do on every
-     * seek, is only logged, as for static files, and not reported as an error.
-     * A cancelled whole-content range, which was reported as started, is
-     * reported as completed with the number of bytes sent, which is less than
-     * the content length. A failure to read the content, such as a file shorter
-     * than its length, is propagated like for any other transfer. If nothing
-     * has been sent yet, the response becomes an empty server error without the
-     * range headers.
+     * A smaller range that the client cancels, as media players do on every
+     * seek, is only logged, as for static files. A cancelled whole-content
+     * range, which was reported as started, is reported as an error, like a
+     * cancelled download without a {@code Range} header. In both cases a
+     * {@link CancelledRangeException} is thrown, which the handler ends the
+     * request on without reporting it again. A failure to read the content,
+     * such as a file shorter than its length, is propagated like for any other
+     * transfer. If nothing has been sent yet, the response becomes an empty
+     * server error without the range headers.
      *
      * @param downloadEvent
      *            the download event
@@ -156,6 +155,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * @param file
      *            the file the content is read from, or {@code null} if it is
      *            not a file, in which case ranges are not served
+     * @throws CancelledRangeException
+     *             if the client cancelled a range request
      * @throws IOException
      *             if reading or writing the content fails
      */
@@ -186,7 +187,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
             return;
         }
         String contentType = response.getContentType();
-        ClientResponse clientResponse = new ClientResponse(response);
+        ClientOutputStream clientOutput = new ClientOutputStream(outputStream);
         boolean wholeContent = ranges.size() == 1
                 && ranges.get(0).getFirst() == 0
                 && ranges.get(0).getSecond() == contentLength - 1;
@@ -195,30 +196,28 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
                 response.setHeader("Content-Range",
                         "bytes 0-" + (contentLength - 1) + "/" + contentLength);
-                transferContent(downloadEvent, inputStream,
-                        clientResponse.track(outputStream), contentLength);
+                transferContent(downloadEvent, inputStream, clientOutput,
+                        contentLength);
             } else {
                 ResponseWriter.writeRanges(ranges, contentLength, inputStream,
-                        file.toURI().toURL(), clientResponse);
+                        file.toURI().toURL(), clientOutput, response);
                 // Send the body now so that a client that is gone fails here
                 // and not when the handler closes the stream
-                clientResponse.flushBuffer();
+                clientOutput.flush();
             }
         } catch (IOException e) {
-            if (clientResponse.clientGone) {
+            if (clientOutput.failed) {
                 // Media players cancel range requests on every seek. Like for
-                // static files, that is not an error of the download.
+                // static files, that is not an error of the content.
                 LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
                         "Range request for {} cancelled by the client", file,
                         e);
-                clientResponse.closeQuietly();
                 if (wholeContent) {
-                    // Reported as started, so end it with the bytes sent
-                    TransferContext context = getTransferContext(downloadEvent);
-                    getListeners().forEach(listener -> listener
-                            .onComplete(context, clientResponse.written));
+                    // Reported as started, so it ends like any cancelled
+                    // download
+                    notifyError(downloadEvent, e);
                 }
-                return;
+                throw new CancelledRangeException(e);
             }
             if (!response.isCommitted()) {
                 // Nothing sent yet: make the response a server error instead
@@ -265,103 +264,55 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     }
 
     /**
-     * Response wrapper that records whether writing to the client failed, which
-     * means that the client went away, unlike a failure to read the content.
+     * Thrown when the client cancels a range request. The cancel has already
+     * been logged and, if needed, reported, so a handler ends the request
+     * without treating it as an error. Closing the response stream afterwards
+     * may fail too, which is then suppressed by this exception.
      */
-    private static final class ClientResponse
-            extends HttpServletResponseWrapper {
-        private boolean clientGone;
-        private long written;
-        private OutputStream delegate;
-        private ServletOutputStream outputStream;
+    static final class CancelledRangeException extends IOException {
+        private CancelledRangeException(IOException cause) {
+            super("Range request cancelled by the client", cause);
+        }
+    }
 
-        private ClientResponse(HttpServletResponse response) {
-            super(response);
+    /**
+     * Records whether writing to the client failed, which means that the client
+     * went away, unlike a failure to read the content.
+     */
+    private static final class ClientOutputStream extends FilterOutputStream {
+        private boolean failed;
+
+        private ClientOutputStream(OutputStream out) {
+            super(out);
         }
 
         @Override
-        public ServletOutputStream getOutputStream() throws IOException {
-            if (outputStream == null) {
-                track(super.getOutputStream());
-            }
-            return outputStream;
-        }
-
-        @Override
-        public void flushBuffer() throws IOException {
+        public void write(int b) throws IOException {
             try {
-                super.flushBuffer();
+                out.write(b);
             } catch (IOException e) {
-                clientGone = true;
+                failed = true;
                 throw e;
             }
         }
 
-        private OutputStream track(OutputStream output) {
-            delegate = output;
-            outputStream = new ServletOutputStream() {
-                @Override
-                public void write(int b) throws IOException {
-                    try {
-                        delegate.write(b);
-                        written++;
-                    } catch (IOException e) {
-                        clientGone = true;
-                        throw e;
-                    }
-                }
-
-                @Override
-                public void write(byte[] b, int off, int len)
-                        throws IOException {
-                    try {
-                        delegate.write(b, off, len);
-                        written += len;
-                    } catch (IOException e) {
-                        clientGone = true;
-                        throw e;
-                    }
-                }
-
-                @Override
-                public void flush() throws IOException {
-                    try {
-                        delegate.flush();
-                    } catch (IOException e) {
-                        clientGone = true;
-                        throw e;
-                    }
-                }
-
-                @Override
-                public boolean isReady() {
-                    return !(delegate instanceof ServletOutputStream servlet)
-                            || servlet.isReady();
-                }
-
-                @Override
-                public void setWriteListener(WriteListener writeListener) {
-                    if (delegate instanceof ServletOutputStream servlet) {
-                        servlet.setWriteListener(writeListener);
-                    } else {
-                        throw new UnsupportedOperationException();
-                    }
-                }
-            };
-            return outputStream;
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            try {
+                out.write(b, off, len);
+            } catch (IOException e) {
+                failed = true;
+                throw e;
+            }
         }
 
-        private void closeQuietly() {
-            if (delegate == null) {
-                return;
-            }
-            // Close the stream here, where a failure on the lost connection
-            // is expected, rather than first in the handler
+        @Override
+        public void flush() throws IOException {
             try {
-                delegate.close();
+                out.flush();
             } catch (IOException e) {
-                LoggerFactory.getLogger(AbstractDownloadHandler.class)
-                        .debug("Error closing a cancelled range response", e);
+                failed = true;
+                throw e;
             }
         }
     }

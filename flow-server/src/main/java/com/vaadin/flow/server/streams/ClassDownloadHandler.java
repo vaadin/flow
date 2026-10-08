@@ -118,6 +118,8 @@ public class ClassDownloadHandler
             }
             transferContent(downloadEvent, inputStream, outputStream,
                     connection.getContentLengthLong(), toFile(resource));
+        } catch (CancelledRangeException cancelled) {
+            // The client went away, which is already logged and reported
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             downloadEvent.getResponse()

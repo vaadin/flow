@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +24,7 @@ import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -182,7 +182,7 @@ public class ResponseWriter implements Serializable {
                     : parseRanges(range, contentLength, url);
             if (ranges != null) {
                 writeRangeContents(ranges, contentLength, dataStream, url,
-                        response);
+                        response.getOutputStream(), response);
             } else {
                 if (0 <= contentLength) {
                     setContentLength(response, contentLength);
@@ -311,17 +311,24 @@ public class ResponseWriter implements Serializable {
      * @param resourceUrl
      *            the URL of the resource, to read it again for ranges that are
      *            not in ascending order, not {@code null}
+     * @param outputStream
+     *            the stream to write the body to, usually the output stream of
+     *            the response, not {@code null}; not flushed or closed by this
+     *            method
      * @param response
-     *            the response to write to, not {@code null}
+     *            the response to set the status and headers of, not
+     *            {@code null}
      * @throws IOException
      *             if reading the resource or writing the response fails, or the
      *             resource ends before a range does
      */
     public static void writeRanges(List<Pair<Long, Long>> ranges,
             long resourceLength, InputStream dataStream, URL resourceUrl,
-            HttpServletResponse response) throws IOException {
+            OutputStream outputStream, HttpServletResponse response)
+            throws IOException {
         new ResponseWriter(DEFAULT_BUFFER_SIZE, false).writeRangeContents(
-                ranges, resourceLength, dataStream, resourceUrl, response);
+                ranges, resourceLength, dataStream, resourceUrl, outputStream,
+                response);
     }
 
     /**
@@ -335,7 +342,8 @@ public class ResponseWriter implements Serializable {
      */
     private void writeRangeContents(List<Pair<Long, Long>> ranges,
             long resourceLength, InputStream dataStream, URL resourceURL,
-            HttpServletResponse response) throws IOException {
+            OutputStream outputStream, HttpServletResponse response)
+            throws IOException {
         response.setHeader("Accept-Ranges", "bytes");
 
         if (ranges.isEmpty()) {
@@ -366,13 +374,12 @@ public class ResponseWriter implements Serializable {
             setContentLength(response, length);
             response.setHeader("Content-Range",
                     createContentRangeHeader(start, end, resourceLength));
-            ServletOutputStream outputStream = response.getOutputStream();
             outputStream.write(firstChunk);
             writeStream(outputStream, dataStream, length - firstChunk.length);
         } else {
             response.setStatus(206);
             writeMultipartRangeContents(ranges, resourceLength, dataStream,
-                    resourceURL, response);
+                    resourceURL, outputStream, response);
         }
     }
 
@@ -383,7 +390,8 @@ public class ResponseWriter implements Serializable {
      */
     private void writeMultipartRangeContents(List<Pair<Long, Long>> ranges,
             long resourceLength, InputStream dataStream, URL resourceURL,
-            HttpServletResponse response) throws IOException {
+            OutputStream outputStream, HttpServletResponse response)
+            throws IOException {
         String partBoundary = UUID.randomUUID().toString();
         String mimeType = response.getContentType();
         response.setContentType(String
@@ -392,7 +400,6 @@ public class ResponseWriter implements Serializable {
 
         long position = 0L;
         InputStream reopenedStream = null;
-        ServletOutputStream outputStream = response.getOutputStream();
         try {
             for (Pair<Long, Long> rangePair : ranges) {
                 outputStream.write(String.format("\r\n--%s\r\n", partBoundary)
@@ -565,8 +572,8 @@ public class ResponseWriter implements Serializable {
         return true;
     }
 
-    private void writeStream(ServletOutputStream outputStream,
-            InputStream dataStream, long count) throws IOException {
+    private void writeStream(OutputStream outputStream, InputStream dataStream,
+            long count) throws IOException {
         final byte[] buffer = new byte[bufferSize];
 
         long bytesTotal = 0L;
