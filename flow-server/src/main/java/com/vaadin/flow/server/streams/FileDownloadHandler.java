@@ -88,7 +88,7 @@ public class FileDownloadHandler
             downloadEvent
                     .setContentType(getContentType(resourceName, response));
             transferContent(downloadEvent, inputStream, outputStream,
-                    file.length(), file);
+                    file.length(), SeekableContent.ofFile(file));
         } catch (RangeRequestException e) {
             // Not reported again: a cancel is not an error, and a smaller
             // range was never reported as started

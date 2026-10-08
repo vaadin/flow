@@ -22,12 +22,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.zip.CRC32;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +56,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -311,5 +317,42 @@ class ServletResourceDownloadHandlerTest {
         assertFalse(listenerNotified.get(),
                 "A range the listeners never saw start must not end for them");
         verify(servletResponse).setStatus(500);
+    }
+
+    @Test
+    void handleDownloadRequest_resourceInJar_rangesServedWithChecksumETag(
+            @TempDir Path tempDir) throws IOException {
+        Path jar = tempDir.resolve("resources.jar");
+        try (JarOutputStream jarOutput = new JarOutputStream(
+                Files.newOutputStream(jar))) {
+            jarOutput.putNextEntry(new JarEntry("content.txt"));
+            jarOutput.write("abcdefghij".getBytes(StandardCharsets.UTF_8));
+        }
+        CRC32 crc = new CRC32();
+        crc.update("abcdefghij".getBytes(StandardCharsets.UTF_8));
+        ServletContext servletContext = ((VaadinServletService) request
+                .getService()).getServlet().getServletContext();
+        when(servletContext.getResource(anyString()))
+                .thenReturn(new URL("jar:" + jar.toUri() + "!/content.txt"));
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(servletResponse.getService())
+                .thenReturn(mock(VaadinServletService.class));
+        // out of order, so the second part is read from the jar again
+        when(request.getHeader("Range")).thenReturn("bytes=6-7,1-2");
+
+        DownloadHandler.forServletResource("/content.txt")
+                .handleDownloadRequest(new DownloadEvent(request,
+                        servletResponse, session, owner));
+
+        String body = new String(servletOutput.getOutput(),
+                StandardCharsets.UTF_8);
+        assertTrue(body.contains("bytes 6-7/10\r\n\r\ngh"), body);
+        assertTrue(body.contains("bytes 1-2/10\r\n\r\nbc"), body);
+        verify(servletResponse).setStatus(206);
+        verify(servletResponse).setHeader("ETag",
+                "\"" + Long.toHexString(crc.getValue()) + "-a\"");
     }
 }

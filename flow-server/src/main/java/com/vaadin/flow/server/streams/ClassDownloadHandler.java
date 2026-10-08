@@ -32,12 +32,10 @@ import com.vaadin.flow.server.HttpStatusCode;
  * class {@code com.example.ui.MyData} the definition would be
  * {@code forClassResource(MyData.class, "MyData.json")}
  * <p>
- * Byte range requests, which media players use to seek, are answered only when
- * the resource is a file on disk, such as with exploded classes in a
- * development environment. A resource inside a packaged jar or war is always
- * sent whole, so seeking in audio or video served from it does not work. Use
- * {@link DownloadHandler#forFile(java.io.File)} to serve seekable media in
- * production.
+ * Byte range requests, which media players use to seek and browsers use to
+ * resume a download, are answered with the requested part of the resource. For
+ * a resource inside a packaged jar, the bytes before a range are read and
+ * skipped, unless the entry is stored uncompressed.
  *
  * @since 24.8
  */
@@ -117,7 +115,8 @@ public class ClassDownloadHandler
                 downloadEvent.setFileName(resourceName);
             }
             transferContent(downloadEvent, inputStream, outputStream,
-                    connection.getContentLengthLong(), toFile(resource));
+                    connection.getContentLengthLong(),
+                    SeekableContent.ofResource(resource, connection));
         } catch (RangeRequestException e) {
             // Not reported again: a cancel is not an error, and a smaller
             // range was never reported as started

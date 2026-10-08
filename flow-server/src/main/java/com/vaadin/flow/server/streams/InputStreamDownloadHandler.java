@@ -25,6 +25,12 @@ import com.vaadin.flow.server.VaadinResponse;
 
 /**
  * Download handler for serving an input stream for client download.
+ * <p>
+ * Byte range requests, which media players use to seek and browsers use to
+ * resume a download, are answered only if the {@link DownloadResponse} has a
+ * content length and an entity tag, see
+ * {@link DownloadResponse#setETag(String)}. Otherwise the content is always
+ * sent whole, because it may differ between requests.
  *
  * @since 24.8
  */
@@ -126,7 +132,16 @@ public class InputStreamDownloadHandler
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
             transferContent(downloadEvent, inputStream, outputStream,
-                    download.getContentLength());
+                    download.getContentLength(),
+                    download.getETag() == null ? null
+                            : new SeekableContent(downloadName,
+                                    download.getETag(), null));
+        } catch (RangeRequestException e) {
+            // Not reported again: a cancel is not an error, and a smaller
+            // range was never reported as started
+            if (!e.isCancelled()) {
+                throw e;
+            }
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());

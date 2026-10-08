@@ -17,6 +17,7 @@ package com.vaadin.flow.server.streams;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 import com.vaadin.flow.server.HttpStatusCode;
 
@@ -31,6 +32,10 @@ import com.vaadin.flow.server.HttpStatusCode;
  */
 public class DownloadResponse implements Serializable {
 
+    // A strong entity tag as defined by RFC 9110: an opaque quoted string
+    private static final Pattern STRONG_ETAG_PATTERN = Pattern
+            .compile("\"[\\x21\\x23-\\x7E\\x80-\\xFF]*\"");
+
     private final InputStream inputStream;
 
     private final String fileName;
@@ -40,6 +45,7 @@ public class DownloadResponse implements Serializable {
     private Integer error;
     private String errorMessage;
     private Exception exception;
+    private String eTag;
 
     /**
      * Create a download response with content stream and content data.
@@ -389,5 +395,61 @@ public class DownloadResponse implements Serializable {
      */
     public Exception getException() {
         return exception;
+    }
+
+    /**
+     * Sets the strong entity tag of the content, which declares that the same
+     * tag always stands for the same bytes.
+     * <p>
+     * With an entity tag and a known content length, a download from
+     * {@link DownloadHandler#fromInputStream(InputStreamDownloadCallback)}
+     * answers byte range requests, which media players use to seek and browsers
+     * use to resume a download. Safari does not play audio or video without
+     * them. The callback is then called for every range request, and the bytes
+     * before the range are skipped from the returned stream, which is fast for
+     * a stream that supports seeking, such as a
+     * {@link java.io.FileInputStream}. A client that asks for a range with an
+     * outdated entity tag gets the whole content.
+     * <p>
+     * Change the entity tag whenever the content changes, for example by
+     * deriving it from a version number or a hash of the content. Content that
+     * differs between requests with the same entity tag ends up as corrupt data
+     * in the browser.
+     * <p>
+     * For example:
+     *
+     * <pre>
+     * DownloadHandler.fromInputStream(event -&gt; {
+     *     DownloadResponse response = new DownloadResponse(video.openStream(),
+     *             video.getName(), "video/mp4", video.getSize());
+     *     response.setETag("\"" + video.getVersion() + "\"");
+     *     return response;
+     * });
+     * </pre>
+     *
+     * @param eTag
+     *            the strong entity tag, an opaque value in double quotes such
+     *            as {@code "v42"} with the quotes, or {@code null} to not serve
+     *            byte ranges
+     * @throws IllegalArgumentException
+     *             if the value is not a strong entity tag
+     */
+    public void setETag(String eTag) {
+        if (eTag != null && !STRONG_ETAG_PATTERN.matcher(eTag).matches()) {
+            throw new IllegalArgumentException("'" + eTag
+                    + "' is not a strong entity tag, which is an opaque value"
+                    + " in double quotes without a W/ prefix, such as \"v42\"");
+        }
+        this.eTag = eTag;
+    }
+
+    /**
+     * Gets the strong entity tag of the content.
+     *
+     * @return the entity tag, or {@code null} if not set
+     * @see #setETag(String)
+     */
+    public String getETag() {
+        return eTag;
     }
 }
