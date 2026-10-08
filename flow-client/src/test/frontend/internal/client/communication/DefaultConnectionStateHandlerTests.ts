@@ -18,14 +18,19 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
     heartbeatSends: 0,
     sessionExpired: 0,
     unrecoverable: [] as string[],
-    states: [] as string[]
+    states: [] as string[],
+    endRequests: 0
   };
+  // Whether a request is active, and whether it is an XHR left without a
+  // response that going back online aborts.
+  const request = { active: false, abortable: false };
   const lifecycleHandlers: StateChangeHandler[] = [];
   let state: UIState = UIState.RUNNING;
   let heartbeatInterval = 300;
   return {
     log,
     lifecycleHandlers,
+    request,
     registry: testRegistry({
       UILifecycle: {
         isRunning: () => state === UIState.RUNNING,
@@ -46,8 +51,11 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
         getDialogTextGaveUp: () => null
       },
       RequestResponseTracker: {
-        hasActiveRequest: () => false,
-        endRequest: () => {},
+        hasActiveRequest: () => request.active,
+        endRequest: () => {
+          request.active = false;
+          log.endRequests++;
+        },
         fireReconnectionAttempt: (attempt: number) => log.reconnectionAttempts.push(attempt)
       },
       LoadingIndicatorStateHandler: { stopLoading: () => {} },
@@ -60,6 +68,13 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
       },
       ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
       MessageSender: { sendInvocationsToServer: () => {} },
+      XhrConnection: {
+        abortActiveRequest: () => {
+          const aborted = request.abortable;
+          request.abortable = false;
+          return aborted;
+        }
+      },
       SystemErrorHandler: {
         handleSessionExpiredError: () => log.sessionExpired++,
         handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
@@ -222,6 +237,24 @@ describe('DefaultConnectionStateHandler', () => {
 
     handler.heartbeatOk();
     expect(getState()).to.equal(CONNECTED);
+  });
+
+  it('ends a request left without a response when back online', () => {
+    // Beyond the Java suite: a request sent while the network is gone may wait
+    // for a response forever, and no other message is sent before it ends.
+    // Ending it re-sends the pending messages.
+    const registry = makeRegistry(3);
+    new DefaultConnectionStateHandler(registry.registry);
+
+    dispatch('offline');
+    registry.request.active = true;
+    registry.request.abortable = true;
+    dispatch('online');
+
+    expect(registry.log.endRequests).to.equal(1);
+    // The heartbeat still verifies the connection.
+    expect(registry.log.heartbeatSends).to.equal(1);
+    expect(getState()).to.equal(RECONNECTING);
   });
 
   it('keeps reconnecting while heartbeats fail, then gives up', () => {

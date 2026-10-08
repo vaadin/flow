@@ -378,8 +378,15 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       this.#machine.giveUp();
     });
     window.addEventListener('online', () => {
-      // Back online: verify the server connection via a heartbeat.
       this.#resumeHeartbeats();
+      // A request sent during the outage may never get a response, and no
+      // other message is sent before it does. Abort it and end the request,
+      // which re-sends the pending messages over the restored network.
+      const requestResponseTracker = this.#registry.getRequestResponseTracker();
+      if (this.#registry.getXhrConnection().abortActiveRequest() && requestResponseTracker.hasActiveRequest()) {
+        requestResponseTracker.endRequest();
+      }
+      // Back online: verify the server connection via a heartbeat.
       this.#machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
     });
   }

@@ -94,6 +94,12 @@ describe('XhrConnection', () => {
           state.opened = url;
         },
         setRequestHeader: () => {},
+        abort: () => {
+          // A request in progress completes synchronously with status 0.
+          xhr.readyState = 4;
+          xhr.status = 0;
+          xhr.onreadystatechange?.();
+        },
         send: () => {
           state.sent += 1;
           if (behaviour.throwOnSend === true) {
@@ -178,6 +184,28 @@ describe('XhrConnection', () => {
         setTimeout(resolve, 400);
       });
       expect(fake.state.sent).to.equal(sentWhenStopped);
+    });
+
+    it('aborts a request left without a response without reporting it', () => {
+      const registry = makeRegistry();
+      const fake = fakeXhr({ stayOpened: true });
+      const connection = new XhrConnection(registry);
+      withFakeXhr(fake, () => connection.send({ rpc: [] }));
+
+      expect(connection.abortActiveRequest()).to.be.true;
+      expect(fake.xhr.readyState).to.equal(4);
+      // The request is aborted only once.
+      expect(connection.abortActiveRequest()).to.be.false;
+      expect(registry.calls).to.deep.equal([]);
+    });
+
+    it('does not abort a request that already got its response', () => {
+      const registry = makeRegistry();
+      const connection = new XhrConnection(registry);
+      withFakeXhr(fakeXhr({ status: 0 }), () => connection.send({ rpc: [] }));
+
+      expect(connection.abortActiveRequest()).to.be.false;
+      expect(registry.calls).to.deep.equal(['invalidStatus']);
     });
 
     it('refuses to send a payload holding a dom node reference', () => {

@@ -154,6 +154,9 @@ export class XhrConnection {
 
   readonly #registry: Registry;
 
+  // The request waiting for its response.
+  #activeXhr: XMLHttpRequest | null = null;
+
   constructor(registry: Registry) {
     this.#registry = registry;
     window.addEventListener(
@@ -189,6 +192,7 @@ export class XhrConnection {
 
     const payloadJson = stringify(payload);
     const xhr = new XMLHttpRequest();
+    this.#activeXhr = xhr;
     // Mirrors Xhr.request and its Handler: the ready-state handler is the only
     // asynchronous failure path and reports a null exception, and it is cleared
     // once it has fired (clearOnReadyStateChange). A non-null exception comes
@@ -197,6 +201,7 @@ export class XhrConnection {
     // twice, because that event follows the DONE ready-state change.
     xhr.onreadystatechange = () => {
       if (xhr.readyState === XMLHttpRequest.DONE) {
+        this.#clearActiveXhr(xhr);
         if (xhr.status === 200) {
           responseHandler.onSuccess(xhr);
           xhr.onreadystatechange = null;
@@ -215,6 +220,7 @@ export class XhrConnection {
       xhr.send(payloadJson);
     } catch (error) {
       Console.error(error);
+      this.#clearActiveXhr(xhr);
       responseHandler.onFail(xhr, error as Error);
       xhr.onreadystatechange = null;
     }
@@ -229,6 +235,38 @@ export class XhrConnection {
         }
       };
       setTimeout(retry, retryTimeout);
+    }
+  }
+
+  /**
+   * Aborts the request that is waiting for its response, if any, without
+   * reporting it to the connection state handler.
+   *
+   * A request sent while the network is gone does not always fail: when the
+   * connection is not reset, its packets are just lost, and the request waits
+   * for a response that never comes while every later message waits for it.
+   *
+   * @returns true if a request was aborted, false if no request was waiting
+   *          for its response
+   */
+  abortActiveRequest(): boolean {
+    const xhr = this.#activeXhr;
+    if (xhr === null) {
+      return false;
+    }
+    this.#activeXhr = null;
+    // abort() completes the request synchronously, which the ready-state
+    // handler would report as a response with status 0.
+    xhr.onreadystatechange = null;
+    xhr.abort();
+    return true;
+  }
+
+  #clearActiveXhr(xhr: XMLHttpRequest): void {
+    // A request that is re-sent replaces the active one, so the earlier one
+    // completing must not clear it.
+    if (this.#activeXhr === xhr) {
+      this.#activeXhr = null;
     }
   }
 
