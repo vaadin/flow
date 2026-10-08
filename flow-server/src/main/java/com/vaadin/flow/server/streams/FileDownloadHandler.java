@@ -89,8 +89,12 @@ public class FileDownloadHandler
                     .setContentType(getContentType(resourceName, response));
             transferContent(downloadEvent, inputStream, outputStream,
                     file.length(), file);
-        } catch (CancelledRangeException cancelled) {
-            // The client went away, which is already logged and reported
+        } catch (RangeRequestException e) {
+            // Not reported again: a cancel is not an error, and a smaller
+            // range was never reported as started
+            if (!e.isCancelled()) {
+                throw e;
+            }
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());

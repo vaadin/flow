@@ -391,12 +391,13 @@ class AbstractDownloadHandlerTest {
         when(request.getHeader("Range")).thenReturn(range);
 
         try (InputStream inputStream = new FileInputStream(file.toFile())) {
-            assertThrows(EOFException.class,
+            IOException failure = assertThrows(IOException.class,
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
                             inputStream, outputStream, declaredLength,
                             file.toFile()));
+            assertTrue(failure.getCause() instanceof EOFException);
         }
         // only a failure after the first chunk has set the 206 status
         verify(servletResponse, failsMidBody ? times(1) : never())
@@ -435,13 +436,15 @@ class AbstractDownloadHandlerTest {
                 return count;
             }
         }) {
-            assertThrows(IOException.class,
+            AbstractDownloadHandler.RangeRequestException failure = assertThrows(
+                    AbstractDownloadHandler.RangeRequestException.class,
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
                             inputStream, outputStream, 100000, file.toFile()));
+            // propagated as a failure, not mistaken for a cancel
+            assertFalse(failure.isCancelled());
         }
-        // thrown, so the handler reports it to the error listeners
         verify(servletResponse, never()).setStatus(500);
         verify(listener, never()).onComplete(any(), anyLong());
     }
@@ -475,7 +478,7 @@ class AbstractDownloadHandlerTest {
         handler.addTransferProgressListener(listener);
 
         try (InputStream inputStream = new FileInputStream(file.toFile())) {
-            assertThrows(AbstractDownloadHandler.CancelledRangeException.class,
+            assertThrows(AbstractDownloadHandler.RangeRequestException.class,
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),

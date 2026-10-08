@@ -107,8 +107,12 @@ public class ServletResourceDownloadHandler
                 }
                 transferContent(downloadEvent, inputStream, outputStream,
                         connection.getContentLengthLong(), toFile(resource));
-            } catch (CancelledRangeException cancelled) {
-                // The client went away, which is already logged and reported
+            } catch (RangeRequestException e) {
+                // Not reported again: a cancel is not an error, and a smaller
+                // range was never reported as started
+                if (!e.isCancelled()) {
+                    throw e;
+                }
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
                 response.setStatus(

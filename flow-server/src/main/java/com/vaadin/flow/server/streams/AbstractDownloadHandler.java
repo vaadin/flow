@@ -138,11 +138,17 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * seek, is only logged, as for static files. A cancelled whole-content
      * range, which was reported as started, is reported as an error, like a
      * cancelled download without a {@code Range} header. In both cases a
-     * {@link CancelledRangeException} is thrown, which the handler ends the
-     * request on without reporting it again. A failure to read the content,
-     * such as a file shorter than its length, is propagated like for any other
-     * transfer. If nothing has been sent yet, the response becomes an empty
-     * server error without the range headers.
+     * {@link RangeRequestException} is thrown, which the handler ends the
+     * request on without reporting it again.
+     * <p>
+     * A failure to read the content, such as a file shorter than its length or
+     * a file that cannot be opened again for multipart ranges, is propagated.
+     * For a whole-content range it is reported to the listeners like for any
+     * other transfer. A smaller range, which the listeners never saw start, is
+     * not reported to them: a {@link RangeRequestException} is thrown, which
+     * the handler propagates without notifying the listeners. If nothing has
+     * been sent yet, the response becomes an empty server error without the
+     * range headers.
      *
      * @param downloadEvent
      *            the download event
@@ -155,8 +161,9 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * @param file
      *            the file the content is read from, or {@code null} if it is
      *            not a file, in which case ranges are not served
-     * @throws CancelledRangeException
-     *             if the client cancelled a range request
+     * @throws RangeRequestException
+     *             if the client cancelled a range request, or reading a range
+     *             smaller than the content failed
      * @throws IOException
      *             if reading or writing the content fails
      */
@@ -218,7 +225,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                     downloadEvent.setException(e);
                     notifyError(downloadEvent, e);
                 }
-                throw new CancelledRangeException(e);
+                throw new RangeRequestException(e, true);
             }
             if (!response.isCommitted()) {
                 // Nothing sent yet: make the response a server error instead
@@ -233,7 +240,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 response.setContentType(contentType);
                 response.setContentLengthLong(0);
             }
-            throw e;
+            // Listeners only see a range that covers the whole content
+            throw wholeContent ? e : new RangeRequestException(e, false);
         }
     }
 
@@ -265,14 +273,30 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     }
 
     /**
-     * Thrown when the client cancels a range request. The cancel has already
-     * been logged and, if needed, reported, so a handler ends the request
-     * without treating it as an error. Closing the response stream afterwards
-     * may fail too, which is then suppressed by this exception.
+     * Thrown when a range request fails in a way that the handler must not
+     * report to the transfer progress listeners, because it has already been
+     * reported or the listeners never saw the range start. A handler ends the
+     * request quietly if the client cancelled it, and otherwise propagates this
+     * exception. Closing the response stream afterwards may fail too, which is
+     * then suppressed by this exception.
      */
-    static final class CancelledRangeException extends IOException {
-        private CancelledRangeException(IOException cause) {
-            super("Range request cancelled by the client", cause);
+    static final class RangeRequestException extends IOException {
+        private final boolean cancelled;
+
+        private RangeRequestException(IOException cause, boolean cancelled) {
+            super(cancelled ? "Range request cancelled by the client"
+                    : "Range request failed", cause);
+            this.cancelled = cancelled;
+        }
+
+        /**
+         * Returns whether the client cancelled the request, which is not an
+         * error.
+         *
+         * @return {@code true} if the client cancelled the request
+         */
+        boolean isCancelled() {
+            return cancelled;
         }
     }
 
