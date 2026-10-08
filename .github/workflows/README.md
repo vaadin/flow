@@ -233,15 +233,16 @@ action; the workflow only decides when it runs.
 
 A review starts when a pull request against `main` is opened or marked ready
 for review, so a draft can be iterated on without one. Pull requests from
-bots and ones titled `chore:` are skipped. A review can also be asked for at
-any time by commenting `/code-review` on the pull request or by requesting a
-review from `vaadin-review-bot`. Only members of the `vaadin` organization
-can trigger it.
+bots and ones titled `chore:` are skipped, and so are pull requests from forks,
+because GitHub gives those no secrets. A review can also be asked for at any
+time by commenting `/code-review` on the pull request, which works for forks
+too, or by requesting a review from `vaadin-review-bot`. Only members of the
+`vaadin` organization can trigger it.
 
 Configuration:
 
 | Name | Kind | Purpose |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | secret | Key the review runs with. |
-| `VAADIN_REVIEW_BOT` | secret | Token the review is posted with. Without it the review is posted as `github-actions`. |
+| `VAADIN_REVIEW_BOT` | secret | Token of the `vaadin-review-bot` account, used to check that whoever triggered the review is an organization member and to post the review. It needs to read organization membership: without it the check falls back to the workflow token, which cannot see private members, so the workflow effectively never reviews anything. |
 | `CLAUDE_DEBUG` | variable (optional) | Set to `true` to upload the full execution log as a run artifact. It contains every tool call and its result, so it is world-readable on this public repository. |

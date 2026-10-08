@@ -23,19 +23,25 @@ jobs:
     # Eligibility is a cheap `if` pre-filter plus an authoritative org-membership
     # check in the job. Requested reviews (comment, review request) only check
     # who asked. Auto triggers (opened, ready for review) additionally skip
-    # drafts, chore PRs, and known bots. The pre-filter allows CONTRIBUTOR
+    # drafts, chore PRs, and known bots. Pull request events from forks are
+    # skipped, since they get no secrets and a read-only token; a fork pull
+    # request can still be reviewed with a "/code-review" comment, which runs
+    # in the context of this repository. The pre-filter allows CONTRIBUTOR
     # because on pull_request events the author_association of a private org
     # member is reported as CONTRIBUTOR; the org-membership API call in the job
-    # is what actually confirms access.
+    # is what actually confirms access, which needs the VAADIN_REVIEW_BOT token
+    # since the workflow token cannot see private org membership.
     if: |
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
        github.event.comment.body == '/code-review' &&
        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)) ||
       (github.event_name == 'pull_request' &&
+       !github.event.pull_request.head.repo.fork &&
        github.event.action == 'review_requested' &&
        github.event.requested_reviewer.login == 'vaadin-review-bot') ||
       (github.event_name == 'pull_request' &&
+       !github.event.pull_request.head.repo.fork &&
        contains(fromJSON('["opened", "ready_for_review"]'), github.event.action) &&
        github.event.pull_request.draft == false &&
        !contains(fromJSON('["dependabot[bot]", "vaadin-bot"]'), github.event.pull_request.user.login) &&
@@ -97,6 +103,9 @@ jobs:
         with:
           ref: refs/pull/${{ env.PR_NUMBER }}/head
           fetch-depth: 1
+          # The review runs tools over pull request content, so no
+          # credentials are kept in .git/config
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
