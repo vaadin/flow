@@ -20,17 +20,18 @@ env:
 
 jobs:
   check:
-    # Eligibility is a cheap `if` pre-filter plus an authoritative org-membership
-    # check in the job. Requested reviews (comment, review request) only check
-    # who asked. Auto triggers (opened, ready for review) additionally skip
-    # drafts, chore PRs, and known bots. Pull request events from forks are
-    # skipped, since they get no secrets and a read-only token; a fork pull
-    # request can still be reviewed with a "/code-review" comment, which runs
-    # in the context of this repository. The pre-filter allows CONTRIBUTOR
-    # because on pull_request events the author_association of a private org
-    # member is reported as CONTRIBUTOR; the org-membership API call in the job
-    # is what actually confirms access, which needs the VAADIN_REVIEW_BOT token
-    # since the workflow token cannot see private org membership.
+    # Eligibility is a cheap `if` pre-filter plus an authoritative repository
+    # permission check in the job, the same admin/maintain/write rule the other
+    # comment-triggered bots in this repository (doc-bot, diagram-bot) use.
+    # Requested reviews (comment, review request) only check who asked. Auto
+    # triggers (opened, ready for review) additionally skip drafts, chore PRs,
+    # and known bots. Pull request events from forks are skipped, since they
+    # get no secrets and a read-only token; a fork pull request can still be
+    # reviewed with a "/code-review" comment, which runs in the context of this
+    # repository. The pre-filter allows CONTRIBUTOR because on pull_request
+    # events the author_association of a private org member is reported as
+    # CONTRIBUTOR; the permission API call in the job is what actually
+    # confirms access.
     if: |
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
@@ -54,17 +55,18 @@ jobs:
     outputs:
       eligible: ${{ steps.access.outputs.eligible }}
     steps:
-      - name: Check org membership
+      - name: Check repository permission
         id: access
         env:
-          GH_TOKEN: ${{ secrets.VAADIN_REVIEW_BOT || github.token }}
+          GH_TOKEN: ${{ github.token }}
           REQUESTER: ${{ github.event.sender.login }}
         run: |
-          if gh api "orgs/${{ github.repository_owner }}/members/$REQUESTER" --silent; then
-            echo "eligible=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "eligible=false" >> "$GITHUB_OUTPUT"
-          fi
+          role=$(gh api "repos/${{ github.repository }}/collaborators/$REQUESTER/permission" \
+            --jq .role_name || echo none)
+          case "$role" in
+            admin|maintain|write) echo "eligible=true" >> "$GITHUB_OUTPUT" ;;
+            *) echo "eligible=false" >> "$GITHUB_OUTPUT" ;;
+          esac
 
   review:
     needs: check
