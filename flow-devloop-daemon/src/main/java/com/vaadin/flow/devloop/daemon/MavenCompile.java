@@ -107,18 +107,15 @@ final class MavenCompile implements Compile.Backend {
     }
 
     /**
-     * Which classes a run wrote, and which ones it left gone.
+     * Which classes a run wrote.
      *
      * @param written
      *            the written classes by binary name, sorted
-     * @param vanished
-     *            the loaded class files that are gone
      * @param classFiles
      *            the class files behind {@code written}, with the stamps of
      *            Maven's output files they come from
      */
-    record Diff(List<String> written, List<Path> vanished,
-            Map<Path, Compile.Stamp> classFiles) {
+    record Diff(List<String> written, Map<Path, Compile.Stamp> classFiles) {
     }
 
     private final Compile owner;
@@ -157,9 +154,6 @@ final class MavenCompile implements Compile.Backend {
      */
     private final Map<Path, Compile.Stamp> installed = new ConcurrentHashMap<>();
 
-    /** Class files already reported as gone, so each is logged once. */
-    private final Set<Path> reportedGone = ConcurrentHashMap.newKeySet();
-
     /** Whether the fallback to one execution id has been logged. */
     private volatile boolean warnedAboutExecution;
 
@@ -193,8 +187,11 @@ final class MavenCompile implements Compile.Backend {
         long started = System.nanoTime();
         takeMissingDigests();
         Launch.Attempt run;
+        Set<Path> builtBefore;
         try {
-            run = Launch.runMavenCommand(command(), launch.reactor().root());
+            List<String> command = command();
+            builtBefore = builtClassFiles(project.modules());
+            run = Launch.runMavenCommand(command, launch.reactor().root());
         } catch (IOException e) {
             return ioError(e, started);
         }
@@ -210,22 +207,17 @@ final class MavenCompile implements Compile.Backend {
         }
         Diff diff = changedClasses(project.modules());
         try {
-            install(project.modules());
+            install(project.modules(), builtBefore);
         } catch (IOException e) {
             return ioError(e, started);
-        }
-        if (!diff.vanished().isEmpty()) {
-            // Deleted sources are acted on by the deletion leg; this only says
-            // that the build took class files away too.
-            launch.log().line("maven compile: " + diff.vanished().size()
-                    + " class file(s) the application has loaded are gone");
         }
         // Maven compiled the whole -am closure, so every module in the loop
         // now compiles against what its pom says.
         project.modules().forEach(
                 module -> owner.recordCompiledAgainst(module, project));
         return new Compile.Result(true, List.of(), diff.written(),
-                millisSince(started), diff.classFiles());
+                millisSince(started), diff.classFiles(),
+                removedClasses(project.modules()));
     }
 
     private static Compile.Result ioError(IOException e, long started) {
@@ -239,7 +231,6 @@ final class MavenCompile implements Compile.Backend {
     public void seed(Map<Path, Compile.Stamp> classes) {
         live.clear();
         pending.clear();
-        reportedGone.clear();
         // A restart may follow a build that rewrote the classes directory.
         installed.clear();
         launched.clear();
@@ -411,10 +402,7 @@ final class MavenCompile implements Compile.Backend {
             }
         }
         pending.keySet().retainAll(seen);
-        List<Path> vanished = live.keySet().stream()
-                .filter(file -> !seen.contains(file)).filter(reportedGone::add)
-                .sorted().toList();
-        return new Diff(List.copyOf(written), vanished, Map.copyOf(classFiles));
+        return new Diff(List.copyOf(written), Map.copyOf(classFiles));
     }
 
     /**
@@ -458,18 +446,40 @@ final class MavenCompile implements Compile.Backend {
      * later class load or a restart would run. Files that already match are
      * left alone, so a server watching the classes directory sees only what
      * changed.
+     * <p>
+     * A class Maven no longer builds is removed from the classes directory too
+     * - a nested class taken out of a source that is still there is not the
+     * deletion leg's to remove, and left on disk it stays discoverable, a
+     * removed route or bean included, even after a restart. Only a class file
+     * Maven's output had before the run, or one compiled from a Java source
+     * that is still there, is removed: a class another compiler writes into the
+     * classes directory, Kotlin's for one, is not Maven's compile's to take
+     * away.
      *
      * @param modules
      *            the modules in the loop
+     * @param builtBefore
+     *            Maven's class files before the run; see
+     *            {@link #builtClassFiles}
      * @throws IOException
-     *             if a file could not be copied
+     *             if a file could not be copied or removed
      */
-    void install(List<Reactor.Module> modules) throws IOException {
+    void install(List<Reactor.Module> modules, Set<Path> builtBefore)
+            throws IOException {
         if (!staged) {
             return;
         }
+        installed.keySet().removeIf(built -> !Files.exists(built));
         for (Reactor.Module module : modules) {
             Path output = stagingDir(module);
+            for (Path file : classFiles(module.classesDir())) {
+                Path built = output.resolve(
+                        module.classesDir().relativize(file).toString());
+                if (!Files.exists(built) && (builtBefore.contains(built)
+                        || hasJavaSource(module, file))) {
+                    Files.deleteIfExists(file);
+                }
+            }
             for (Path built : files(output)) {
                 Optional<Compile.Stamp> stamp = Compile.stampOf(built);
                 if (stamp.isEmpty()
@@ -485,6 +495,60 @@ final class MavenCompile implements Compile.Backend {
                 installed.put(built, stamp.get());
             }
         }
+    }
+
+    /**
+     * The class files in Maven's output for the modules, taken before a run so
+     * that the run's removals can be told apart afterwards.
+     *
+     * @param modules
+     *            the modules in the loop
+     * @return the class files, empty when Maven writes into the classes
+     *         directories itself
+     */
+    Set<Path> builtClassFiles(List<Reactor.Module> modules) {
+        Set<Path> built = new HashSet<>();
+        if (staged) {
+            modules.forEach(
+                    module -> built.addAll(classFiles(stagingDir(module))));
+        }
+        return built;
+    }
+
+    /**
+     * Whether a class file comes from a Java source that is still there: its
+     * top-level class's {@code .java} file in the module's sources.
+     */
+    private static boolean hasJavaSource(Reactor.Module module, Path file) {
+        String name = module.binaryNameOf(file);
+        int nested = name.indexOf('$');
+        String topLevel = nested < 0 ? name : name.substring(0, nested);
+        return Files.isRegularFile(module.sourceDir()
+                .resolve(topLevel.replace('.', '/') + ".java"));
+    }
+
+    /**
+     * The classes the running application holds whose class files are gone, by
+     * binary name. Reported on every compile until a restart re-seeds what it
+     * holds, the way a deleted source is: a JVM cannot un-define a class, so a
+     * removed route or bean goes on answering until then.
+     *
+     * @param modules
+     *            the modules in the loop
+     * @return the classes, sorted
+     */
+    List<String> removedClasses(List<Reactor.Module> modules) {
+        Set<String> removed = new TreeSet<>();
+        for (Path file : live.keySet()) {
+            if (Files.exists(file)) {
+                continue;
+            }
+            modules.stream()
+                    .filter(module -> file.startsWith(module.classesDir()))
+                    .findFirst().ifPresent(
+                            module -> removed.add(module.binaryNameOf(file)));
+        }
+        return List.copyOf(removed);
     }
 
     private static void copyOver(Path from, Path to) throws IOException {

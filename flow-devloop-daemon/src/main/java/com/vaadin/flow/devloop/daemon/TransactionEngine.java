@@ -667,6 +667,15 @@ final class TransactionEngine {
                 }
                 tx.classes = result.writtenClasses();
                 compiled = result;
+                if (!result.removedClasses().isEmpty()) {
+                    // The deletion leg's reasoning, for a class the compile
+                    // took away from a source that is still there - a nested
+                    // class taken out, say.
+                    String reason = classEscalation(result.removedClasses());
+                    escalate(tx, reason);
+                    log.line("compile: " + reason
+                            + "; only a restart can apply that");
+                }
                 if (bailIfSuperseded(tx, started)) {
                     return tx;
                 }
@@ -863,6 +872,12 @@ final class TransactionEngine {
      * The file is named when it is the only one, for the same reason a resource
      * is: "OrderView.java deleted" is the whole explanation and a count is not.
      */
+    private static String classEscalation(List<String> removed) {
+        String what = removed.size() == 1 ? removed.get(0) + " removed"
+                : removed.size() + " class(es) removed";
+        return what + " (a loaded class cannot be un-defined)";
+    }
+
     private String sourceEscalation(List<Path> deleted) {
         String what = deleted.size() == 1
                 ? compile.relative(deleted.get(0)) + " deleted"

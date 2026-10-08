@@ -104,14 +104,18 @@ final class Compile {
      *            each had when it was reported - what a redefine of them hands
      *            the application, for a backend that keeps its own baseline of
      *            it; empty from javac, which keeps none
+     * @param removedClasses
+     *            classes the running application holds whose class files the
+     *            compile took away, by binary name - only a restart applies
+     *            that; empty from javac, which removes none
      */
     record Result(boolean success, List<Message> errors,
             List<String> writtenClasses, long millis,
-            Map<Path, Stamp> classFiles) {
+            Map<Path, Stamp> classFiles, List<String> removedClasses) {
 
         Result(boolean success, List<Message> errors,
                 List<String> writtenClasses, long millis) {
-            this(success, errors, writtenClasses, millis, Map.of());
+            this(success, errors, writtenClasses, millis, Map.of(), List.of());
         }
     }
 

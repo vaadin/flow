@@ -25,11 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -132,7 +134,7 @@ class MavenCompileTest {
         build(app, "a/Edited.class", "new bytes");
         build(app, "a/Added.class", "added");
         build(app, "META-INF/services/a.Service", "a.Impl");
-        maven.install(List.of(app));
+        maven.install(List.of(app), Set.of());
 
         assertEquals(Optional.of(sameStamp), Compile.stampOf(same));
         assertEquals("new bytes", Files.readString(edited));
@@ -176,13 +178,44 @@ class MavenCompileTest {
 
         build(app, "a/View.class", "edited bytes");
         maven.changedClasses(List.of(app));
-        maven.install(List.of(app));
+        maven.install(List.of(app), Set.of());
         build(app, "a/View.class", "old bytes");
         MavenCompile.Diff reverted = maven.changedClasses(List.of(app));
-        maven.install(List.of(app));
+        maven.install(List.of(app), Set.of());
 
         assertEquals(List.of(), reverted.written());
         assertEquals("old bytes", Files.readString(view));
+    }
+
+    /**
+     * A nested class taken out of a source that stays: Maven no longer builds
+     * it, so it leaves the classes directory, and as the application holds it,
+     * it is reported for a restart. A class Maven has never built and that no
+     * Java source compiles to - another compiler's - stays.
+     */
+    @Test
+    void aClassMavenNoLongerBuildsIsRemoved() throws IOException {
+        Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
+        Files.createDirectories(app.sourceDir().resolve("a"));
+        Files.writeString(app.sourceDir().resolve("a/View.java"), "source");
+        Path view = writeClass(app, "a/View.class", "view");
+        Path removed = writeClass(app, "a/View$Removed.class", "removed");
+        Path kotlin = writeClass(app, "k/Script.class", "kotlin");
+        MavenCompile maven = launched(view, removed, kotlin);
+        build(app, "a/View.class", "view");
+        build(app, "a/View$Removed.class", "removed");
+
+        Set<Path> before = maven.builtClassFiles(List.of(app));
+        Files.delete(
+                MavenCompile.stagingDir(app).resolve("a/View$Removed.class"));
+        build(app, "a/View.class", "view without it");
+        maven.changedClasses(List.of(app));
+        maven.install(List.of(app), before);
+
+        assertFalse(Files.exists(removed));
+        assertTrue(Files.exists(kotlin));
+        assertEquals(List.of("a.View$Removed"),
+                maven.removedClasses(List.of(app)));
     }
 
     /**
@@ -233,7 +266,7 @@ class MavenCompileTest {
     /** A successful compile that reported what a run changed. */
     private static Compile.Result applied(MavenCompile.Diff diff) {
         return new Compile.Result(true, List.of(), diff.written(), 0,
-                diff.classFiles());
+                diff.classFiles(), List.of());
     }
 
     /** A backend seeded as if the application had just loaded these files. */

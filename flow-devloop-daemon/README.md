@@ -852,6 +852,14 @@ back when the compile fails, which in `target/classes` would pull every class
 the application has not loaded yet from under it. Without the extension jar
 Maven compiles into `target/classes` itself, and the log says what that risks.
 
+A class Maven stops building - a nested class taken out of a source that
+stays - is removed from `target/classes` as well, so a removed route or bean
+is not found again after a restart. Only class files Maven built before, or
+ones a Java source that is still there compiles to, are removed; what another
+compiler writes there is left alone. When the application holds the removed
+class, the apply escalates to a restart, the same as a deleted source: a JVM
+cannot un-define a class it has loaded.
+
 ## Deletions
 
 A walk sees only what is there, so a deletion is found against the fingerprint
