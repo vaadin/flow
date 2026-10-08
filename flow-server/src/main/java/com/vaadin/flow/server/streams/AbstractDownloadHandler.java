@@ -137,12 +137,13 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * content.
      * <p>
      * A range request that the client cancels, as media players do on every
-     * seek, is only logged, as for static files: it is not reported as an
-     * error, and a cancelled whole-content range is not reported as completed
-     * either. A failure to read the content, such as a file shorter than its
-     * length, is propagated like for any other transfer. If nothing has been
-     * sent yet, the response becomes an empty server error without the range
-     * headers.
+     * seek, is only logged, as for static files, and not reported as an error.
+     * A cancelled whole-content range, which was reported as started, is
+     * reported as completed with the number of bytes sent, which is less than
+     * the content length. A failure to read the content, such as a file shorter
+     * than its length, is propagated like for any other transfer. If nothing
+     * has been sent yet, the response becomes an empty server error without the
+     * range headers.
      *
      * @param downloadEvent
      *            the download event
@@ -186,9 +187,11 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         }
         String contentType = response.getContentType();
         ClientResponse clientResponse = new ClientResponse(response);
+        boolean wholeContent = ranges.size() == 1
+                && ranges.get(0).getFirst() == 0
+                && ranges.get(0).getSecond() == contentLength - 1;
         try {
-            if (ranges.size() == 1 && ranges.get(0).getFirst() == 0
-                    && ranges.get(0).getSecond() == contentLength - 1) {
+            if (wholeContent) {
                 response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
                 response.setHeader("Content-Range",
                         "bytes 0-" + (contentLength - 1) + "/" + contentLength);
@@ -209,6 +212,12 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                         "Range request for {} cancelled by the client", file,
                         e);
                 clientResponse.closeQuietly();
+                if (wholeContent) {
+                    // Reported as started, so end it with the bytes sent
+                    TransferContext context = getTransferContext(downloadEvent);
+                    getListeners().forEach(listener -> listener
+                            .onComplete(context, clientResponse.written));
+                }
                 return;
             }
             if (!response.isCommitted()) {
@@ -262,6 +271,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     private static final class ClientResponse
             extends HttpServletResponseWrapper {
         private boolean clientGone;
+        private long written;
         private OutputStream delegate;
         private ServletOutputStream outputStream;
 
@@ -294,6 +304,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 public void write(int b) throws IOException {
                     try {
                         delegate.write(b);
+                        written++;
                     } catch (IOException e) {
                         clientGone = true;
                         throw e;
@@ -305,6 +316,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                         throws IOException {
                     try {
                         delegate.write(b, off, len);
+                        written += len;
                     } catch (IOException e) {
                         clientGone = true;
                         throw e;

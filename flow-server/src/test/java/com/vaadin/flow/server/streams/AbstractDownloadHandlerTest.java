@@ -409,8 +409,10 @@ class AbstractDownloadHandlerTest {
         verify(servletResponse, never()).reset();
     }
 
-    @Test
-    void transferContent_readFailsAfterCommit_propagated() throws IOException {
+    @ParameterizedTest
+    @CsvSource({ "bytes=10-99999, 50000", "bytes=10-19, 0" })
+    void transferContent_readFailsAfterCommit_propagated(String range,
+            long failAfter) throws IOException {
         Path file = Files.write(tempDir.resolve("content.bin"),
                 new byte[100000]);
         VaadinServletResponse servletResponse = mock(
@@ -418,14 +420,15 @@ class AbstractDownloadHandlerTest {
         when(servletResponse.getOutputStream())
                 .thenReturn(new CapturingServletOutputStream());
         when(servletResponse.isCommitted()).thenReturn(true);
-        when(request.getHeader("Range")).thenReturn("bytes=10-99999");
+        when(request.getHeader("Range")).thenReturn(range);
+        handler.addTransferProgressListener(listener);
 
         try (InputStream inputStream = new FileInputStream(file.toFile()) {
             private long read;
 
             @Override
             public int read(byte[] b, int off, int len) throws IOException {
-                if (read > 50000) {
+                if (read >= failAfter) {
                     throw new IOException("Disk read failed");
                 }
                 int count = super.read(b, off, len);
@@ -439,7 +442,9 @@ class AbstractDownloadHandlerTest {
                                     owner),
                             inputStream, outputStream, 100000, file.toFile()));
         }
+        // thrown, so the handler reports it to the error listeners
         verify(servletResponse, never()).setStatus(500);
+        verify(listener, never()).onComplete(any(), anyLong());
     }
 
     @ParameterizedTest
@@ -485,7 +490,14 @@ class AbstractDownloadHandlerTest {
         }
 
         verify(listener, never()).onError(any(), any());
-        verify(listener, never()).onComplete(any(), anyLong());
+        if ("bytes=0-".equals(range)) {
+            // reported as started, so it has to be ended, short of the length
+            verify(listener).onStart(any());
+            verify(listener).onComplete(any(), eq(0L));
+        } else {
+            verify(listener, never()).onStart(any());
+            verify(listener, never()).onComplete(any(), anyLong());
+        }
         verify(servletResponse, never()).setStatus(500);
         assertTrue(closed.get(), "Cancelled response should be closed");
     }
