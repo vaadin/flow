@@ -56,9 +56,6 @@ jobs:
         with:
           github-token: ${{ secrets.CHERRY_PICK_TOKEN }}
           anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Rollout: only log what would be picked while the existing
-          # cherry-pick job is still active.
-          dry-run: true
           verify-instructions: |
             - Run the formatter on the affected module(s). The formatter
               differs per branch: if the root pom.xml configures
