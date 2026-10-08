@@ -42,7 +42,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Video video = new Video();
  * video.addSource("/intro.webm", "video/webm");
  * video.addSource("/intro.mp4", "video/mp4");
- * video.setControls(true);
+ * video.setControlsVisible(true);
  * </pre>
  *
  * Besides the sources, the elements accept <code>&lt;track&gt;</code> elements
@@ -117,8 +117,7 @@ public abstract class Media extends HtmlComponent
          * arrived with {@code preload="NONE"} has to read back as
          * {@link #NONE}.
          */
-        private static @Nullable Preload fromAttributeValue(
-                @Nullable String value) {
+        private static @Nullable Preload fromValue(@Nullable String value) {
             return Stream.of(values())
                     .filter(preload -> preload.value.equalsIgnoreCase(value))
                     .findFirst().orElse(null);
@@ -204,21 +203,21 @@ public abstract class Media extends HtmlComponent
      * The controls are the browser's, so they do not look the same everywhere
      * and cannot be styled through the application theme.
      *
-     * @param controls
+     * @param controlsVisible
      *            <code>true</code> to show the playback controls,
      *            <code>false</code> to hide them
      */
-    public void setControls(boolean controls) {
-        getElement().setAttribute(CONTROLS_ATTRIBUTE, controls);
+    public void setControlsVisible(boolean controlsVisible) {
+        getElement().setAttribute(CONTROLS_ATTRIBUTE, controlsVisible);
     }
 
     /**
      * Gets whether the browser shows its own playback controls.
      *
      * @return <code>true</code> if the playback controls are shown
-     * @see #setControls(boolean)
+     * @see #setControlsVisible(boolean)
      */
-    public boolean isControls() {
+    public boolean isControlsVisible() {
         return getElement().hasAttribute(CONTROLS_ATTRIBUTE);
     }
 
@@ -316,7 +315,6 @@ public abstract class Media extends HtmlComponent
      * @see #setPreload(Preload)
      */
     public @Nullable Preload getPreload() {
-        return Preload.fromAttributeValue(
-                getElement().getAttribute(PRELOAD_ATTRIBUTE));
+        return Preload.fromValue(getElement().getAttribute(PRELOAD_ATTRIBUTE));
     }
 }

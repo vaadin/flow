@@ -30,11 +30,11 @@ import com.vaadin.flow.component.Tag;
  * Audio audio = new Audio();
  * audio.addSource("/chime.ogg", "audio/ogg");
  * audio.addSource("/chime.mp3", "audio/mpeg");
- * audio.setControls(true);
+ * audio.setControlsVisible(true);
  * </pre>
  *
- * Nothing of the element is rendered until {@link #setControls(boolean)} is
- * called, so a player that the visitor is meant to start needs that call. A
+ * Nothing of the element is rendered until {@link #setControlsVisible(boolean)}
+ * is called, so a player that the visitor is meant to start needs that call. A
  * sound that is only played by the application, and that the visitor should not
  * see a player for, is the one case where leaving the controls off is right.
  *

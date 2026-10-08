@@ -51,7 +51,8 @@ abstract class MediaTest extends ComponentTest {
 
     @Override
     protected void addProperties() {
-        addProperty("controls", boolean.class, false, true, false, true);
+        addProperty("controlsVisible", boolean.class, false, true, false, true,
+                "controls");
         addProperty("autoplay", boolean.class, false, true, false, true);
         addProperty("loop", boolean.class, false, true, false, true);
         addProperty("muted", boolean.class, false, true, false, true);

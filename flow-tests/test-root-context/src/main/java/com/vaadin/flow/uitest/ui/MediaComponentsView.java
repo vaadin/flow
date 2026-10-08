@@ -42,7 +42,7 @@ public class MediaComponentsView extends Div {
     public MediaComponentsView() {
         Audio audio = new Audio();
         audio.setId("audio-player");
-        audio.setControls(true);
+        audio.setControlsVisible(true);
         audio.setPreload(Preload.AUTO);
         audio.addSource(DownloadHandler.fromInputStream(event -> {
             byte[] wav = createSilentWav();
@@ -54,7 +54,7 @@ public class MediaComponentsView extends Div {
         // reporting that it found nothing to play
         Video video = new Video();
         video.setId("video-player");
-        video.setControls(true);
+        video.setControlsVisible(true);
         video.setMuted(true);
         video.setPreload(Preload.METADATA);
         video.setPoster(DownloadHandler.fromInputStream(event -> {

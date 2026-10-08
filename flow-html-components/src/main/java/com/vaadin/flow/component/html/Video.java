@@ -33,16 +33,16 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Video video = new Video();
  * video.addSource("/intro.webm", "video/webm");
  * video.addSource("/intro.mp4", "video/mp4");
- * video.setControls(true);
+ * video.setControlsVisible(true);
  * video.setPoster("/intro-poster.jpg");
  * </pre>
  *
- * The element has no controls of its own until {@link #setControls(boolean)} is
- * called, so a player that the visitor is meant to start needs that call. Give
- * the player a size through {@link #setWidth(String)} and
- * {@link #setHeight(String)}; without one, the page reflows once the video
- * dimensions are known, unless a {@link #setPoster(String) poster} fixes the
- * size earlier.
+ * The element has no controls of its own until
+ * {@link #setControlsVisible(boolean)} is called, so a player that the visitor
+ * is meant to start needs that call. Give the player a size through
+ * {@link #setWidth(String)} and {@link #setHeight(String)}; without one, the
+ * page reflows once the video dimensions are known, unless a
+ * {@link #setPoster(String) poster} fixes the size earlier.
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/video">MDN:
