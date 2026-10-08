@@ -112,8 +112,8 @@ class DevLoopBuildExtensionTest {
      * its own keeps that one's configuration under the shared id - which is
      * what lets one command line compile modules that disagree on the id. Asked
      * twice, it still adds only one. The module's classes go to a directory of
-     * their own. The model is the resolve's to record, so a compile run leaves
-     * it alone.
+     * their own, whether or not the pom names the output directory. The model
+     * is the resolve's to record, so a compile run leaves it alone.
      */
     @Test
     void theCompileExecutionInUseIsAlsoKnownByTheSharedId() {
@@ -129,7 +129,12 @@ class DevLoopBuildExtensionTest {
         own.setId("java-compile");
         own.setPhase("compile");
         own.addGoal("compile");
-        own.setConfiguration(configuration("release", "17"));
+        Xpp3Dom ownConfiguration = configuration("release", "17");
+        Xpp3Dom explicitOutput = new Xpp3Dom("outputDirectory");
+        // As Maven leaves ${project.build.outputDirectory} once interpolated.
+        explicitOutput.setValue(module.resolve("target/classes").toString());
+        ownConfiguration.addChild(explicitOutput);
+        own.setConfiguration(ownConfiguration);
         compiler.addExecution(own);
         MavenProject project = project(compiler);
 
@@ -145,10 +150,13 @@ class DevLoopBuildExtensionTest {
         assertEquals("17", ((Xpp3Dom) alias.getConfiguration())
                 .getChild("release").getValue());
         assertEquals(3, compiler.getExecutions().size());
-        // Compiled beside, not into, what the running application loads.
-        assertEquals(
-                module.resolve(DevLoopBuildExtension.COMPILE_OUTPUT).toString(),
-                project.getBuild().getOutputDirectory());
+        // Compiled beside, not into, what the running application loads -
+        // also where the pom names the output directory itself.
+        String output = module.resolve(DevLoopBuildExtension.COMPILE_OUTPUT)
+                .toString();
+        assertEquals(output, project.getBuild().getOutputDirectory());
+        assertEquals(output, ((Xpp3Dom) alias.getConfiguration())
+                .getChild("outputDirectory").getValue());
         assertFalse(
                 Files.exists(module.resolve(DevLoopBuildExtension.MODEL_FILE)));
     }

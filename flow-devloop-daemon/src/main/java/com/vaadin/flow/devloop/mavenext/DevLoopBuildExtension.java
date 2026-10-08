@@ -313,17 +313,28 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
             alias.setId(COMPILE_EXECUTION);
             alias.setPhase("none");
             alias.addGoal("compile");
+            File basedir = project.getBasedir();
+            String output = basedir == null ? null
+                    : new File(basedir, COMPILE_OUTPUT).getPath();
             if (own.getConfiguration() instanceof Xpp3Dom configuration) {
-                alias.setConfiguration(new Xpp3Dom(configuration));
+                Xpp3Dom copy = new Xpp3Dom(configuration);
+                // A pom that spells the parameter out - even as
+                // ${project.build.outputDirectory} - has it interpolated to
+                // the classes directory by now, so the project's output
+                // directory below would not reach it.
+                Xpp3Dom explicit = copy.getChild("outputDirectory");
+                if (explicit != null && output != null) {
+                    explicit.setValue(output);
+                }
+                alias.setConfiguration(copy);
             }
             plugin.addExecution(alias);
             // Plugin caches its executions by id once asked; see bind.
             plugin.flushExecutionMap();
-            // Also what a module downstream compiles against in this run.
-            File basedir = project.getBasedir();
-            if (basedir != null) {
-                project.getBuild().setOutputDirectory(
-                        new File(basedir, COMPILE_OUTPUT).getPath());
+            // The compile's own default, and also what a module downstream
+            // compiles against in this run.
+            if (output != null) {
+                project.getBuild().setOutputDirectory(output);
             }
         }
     }
