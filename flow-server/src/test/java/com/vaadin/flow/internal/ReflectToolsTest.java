@@ -23,6 +23,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -321,6 +324,42 @@ class ReflectToolsTest {
         assertArrayEquals(
                 new Class<?>[] { Boolean.class, Short.class, Long.class },
                 genericInterfaceTypes.toArray());
+    }
+
+    public static class GenericHasInterface<X> implements TestInterface<X> {
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static class RawHasInterface implements TestInterface {
+    }
+
+    public static class Holder {
+        GenericHasInterface<List<String>> parameterized;
+        @SuppressWarnings("rawtypes")
+        GenericHasInterface raw;
+    }
+
+    @Test
+    void getTypeParameter_unresolvedOrRaw() throws Exception {
+        TypeVariable<Class<TestInterface>> variable = TestInterface.class
+                .getTypeParameters()[0];
+
+        ParameterizedType parameterized = (ParameterizedType) Holder.class
+                .getDeclaredField("parameterized").getGenericType();
+        assertEquals(parameterized.getActualTypeArguments()[0],
+                ReflectTools.getTypeParameter(parameterized, variable));
+        assertSame(GenericHasInterface.class.getTypeParameters()[0],
+                ReflectTools.getTypeParameter(
+                        GenericHasInterface.class.getGenericInterfaces()[0],
+                        variable));
+        assertNull(ReflectTools.getTypeParameter(GenericHasInterface.class,
+                variable));
+        assertNull(ReflectTools.getTypeParameter(
+                Holder.class.getDeclaredField("raw").getGenericType(),
+                variable));
+        assertNull(
+                ReflectTools.getTypeParameter(RawHasInterface.class, variable));
+        assertNull(ReflectTools.getTypeParameter(String.class, variable));
     }
 
     @Test
