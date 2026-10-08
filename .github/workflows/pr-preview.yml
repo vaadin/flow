@@ -56,7 +56,7 @@ jobs:
       && (github.event.action == 'synchronize' || github.event.action == 'reopened'
         || (github.event.action == 'labeled' && github.event.label.name == 'test deploy'))
     timeout-minutes: 45
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       # Only for the comment, which the cleanup job does not post
@@ -178,7 +178,7 @@ jobs:
       && ((github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'test deploy'))
         || (github.event.action == 'unlabeled' && github.event.label.name == 'test deploy'))
     timeout-minutes: 10
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: superfly/flyctl-actions/setup-flyctl@fc53c09e1bc3be6f54706524e3b82c4f462f77be # v1.5
       - name: Destroy the Fly.io app
