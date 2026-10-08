@@ -29,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * The compile leg is one instance across every module in the loop, but one
@@ -846,6 +847,60 @@ class CompileTest {
                 package app;
                 public class Main { int edited; }
                 """);
+
+        assertEquals(List.of(main), compile.stale().modified());
+    }
+
+    @Test
+    void stale_aFutureDatedSourceStaysUnchangedAsTheClockCatchesUp()
+            throws IOException, InterruptedException {
+        // Seeded while far enough ahead to be capped, the source then drifts
+        // within the skew as the clock moves on. Still newer than its class,
+        // and still the stamp the app started with, it is no change.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Files.setLastModifiedTime(main,
+                FileTime.fromMillis(System.currentTimeMillis() + 60_500));
+        long appStarted = System.currentTimeMillis();
+        compile.seedFromDisk(appStarted, appStarted);
+
+        Thread.sleep(1_000);
+
+        assertTrue(compile.stale().isEmpty());
+    }
+
+    @Test
+    void stale_aSameSizeEditWithinTheBaselineMillisecondIsAChange()
+            throws IOException {
+        // A fingerprint keeps milliseconds, so an edit of the same length in
+        // the same millisecond matches it. The artifact time is compared at
+        // full precision and still sees the source as newer than its class.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Path classFile = app.classesDir().resolve("app").resolve("Main.class");
+        long second = System.currentTimeMillis() / 1000 * 1000 - 10_000;
+        Files.setLastModifiedTime(main, FileTime.fromMillis(second));
+        FileTime compiled = FileTime.from(
+                java.time.Instant.ofEpochMilli(second).plusNanos(100_000));
+        Files.setLastModifiedTime(classFile, compiled);
+        assumeTrue(compiled.equals(Files.getLastModifiedTime(classFile)),
+                "the file system keeps sub-millisecond times");
+        compile.seedFromDisk();
+
+        Files.setLastModifiedTime(main, FileTime.from(
+                java.time.Instant.ofEpochMilli(second).plusNanos(500_000)));
 
         assertEquals(List.of(main), compile.stale().modified());
     }

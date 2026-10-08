@@ -252,6 +252,13 @@ final class Compile {
     private final Map<Path, Stamp> applied = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
+     * The sources in {@link #applied} whose recorded stamp was dated ahead of
+     * the clock when it was recorded; see {@link #isStale}.
+     */
+    private final java.util.Set<Path> appliedFutureDated = java.util.concurrent.ConcurrentHashMap
+            .newKeySet();
+
+    /**
      * The binary names of the class files the running application was launched
      * with, as of the last seed.
      * <p>
@@ -1004,7 +1011,9 @@ final class Compile {
             // save
             // makes the .class newer than the .java, and a pure artifact check
             // then reports "no changes" for an edit the JVM has never loaded.
-            if (isStale(module, source) || !stamp.equals(applied.get(source))) {
+            boolean unchanged = stamp.equals(applied.get(source));
+            if (!unchanged || isStale(module, source,
+                    appliedFutureDated.contains(source))) {
                 modified.add(source);
             }
         });
@@ -1162,7 +1171,16 @@ final class Compile {
     /** Records that these sources are now live in the running JVM. */
     void markSourcesApplied(List<Path> sources) {
         for (Path source : sources) {
-            stampOf(source).ifPresent(stamp -> applied.put(source, stamp));
+            stampOf(source).ifPresent(stamp -> markApplied(source, stamp));
+        }
+    }
+
+    private void markApplied(Path source, Stamp stamp) {
+        applied.put(source, stamp);
+        if (isFutureDated(stamp.modified())) {
+            appliedFutureDated.add(source);
+        } else {
+            appliedFutureDated.remove(source);
         }
     }
 
@@ -1186,6 +1204,7 @@ final class Compile {
     void seedFromDisk(long startedAtMillis, long frontendCutoffMillis) {
         seedClasses();
         applied.clear();
+        appliedFutureDated.clear();
         forEachSource((module, source, stamp) -> {
             // Only what the application could have read. A source written
             // after it was launched is not one it started with, whenever this
@@ -1196,7 +1215,7 @@ final class Compile {
             // that walks "whatever is on disk now" claims those edits as the
             // application's own.
             if (predates(stamp, startedAtMillis)) {
-                applied.put(source, stamp);
+                markApplied(source, stamp);
             }
         });
         seedResources(startedAtMillis);
@@ -1246,21 +1265,23 @@ final class Compile {
         }
     }
 
-    private boolean isStale(Reactor.Module module, Path source) {
+    private boolean isStale(Reactor.Module module, Path source,
+            boolean futureDated) {
         try {
             Path artifact = module.artifactFor(source);
             if (!Files.isRegularFile(artifact)) {
                 return true;
             }
-            long written = Files.getLastModifiedTime(source).toMillis();
-            if (isFutureDated(written)) {
+            if (futureDated) {
                 // Dated ahead of the clock, the source stays newer than every
-                // artifact compiled from it, so its time cannot answer this.
-                // An edit gives it the current time, which the baseline in
+                // artifact compiled from it until the clock catches up, so its
+                // time cannot answer this - not even once it is less than the
+                // skew ahead. An edit changes its stamp, which the baseline in
                 // stale() catches.
                 return false;
             }
-            return written > Files.getLastModifiedTime(artifact).toMillis();
+            return Files.getLastModifiedTime(source)
+                    .compareTo(Files.getLastModifiedTime(artifact)) > 0;
         } catch (IOException e) {
             return true;
         }
