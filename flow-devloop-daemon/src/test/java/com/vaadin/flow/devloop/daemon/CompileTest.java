@@ -865,12 +865,15 @@ class CompileTest {
         Compile compile = new Compile(project);
         Path main = source(app, "Main");
         compile.compile(List.of(main), project);
-        Files.setLastModifiedTime(main,
-                FileTime.fromMillis(System.currentTimeMillis() + 60_500));
+        long dated = System.currentTimeMillis() + 60_500;
+        Files.setLastModifiedTime(main, FileTime.fromMillis(dated));
         long appStarted = System.currentTimeMillis();
         compile.seedFromDisk(appStarted, appStarted);
+        long withinSkew = dated - 60_000;
+        assumeTrue(System.currentTimeMillis() < withinSkew,
+                "seeded while the source was still capped");
 
-        Thread.sleep(1_000);
+        Thread.sleep(withinSkew - System.currentTimeMillis() + 50);
 
         assertTrue(compile.stale().isEmpty());
     }

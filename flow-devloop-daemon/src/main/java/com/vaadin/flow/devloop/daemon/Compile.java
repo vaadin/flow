@@ -97,6 +97,13 @@ final class Compile {
     }
 
     /**
+     * A source's stamp as of the last time it went live, and whether that stamp
+     * was dated ahead of the clock when it was recorded; see {@link #isStale}.
+     */
+    private record Applied(Stamp stamp, boolean futureDated) {
+    }
+
+    /**
      * What a resource said the last time the daemon acted on it.
      * <p>
      * The stamp is the cheap filter that decides whether the file is worth
@@ -249,14 +256,7 @@ final class Compile {
     }
 
     /** Fingerprints of Java sources as of the last time they went live. */
-    private final Map<Path, Stamp> applied = new java.util.concurrent.ConcurrentHashMap<>();
-
-    /**
-     * The sources in {@link #applied} whose recorded stamp was dated ahead of
-     * the clock when it was recorded; see {@link #isStale}.
-     */
-    private final java.util.Set<Path> appliedFutureDated = java.util.concurrent.ConcurrentHashMap
-            .newKeySet();
+    private final Map<Path, Applied> applied = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * The binary names of the class files the running application was launched
@@ -1011,9 +1011,9 @@ final class Compile {
             // save
             // makes the .class newer than the .java, and a pure artifact check
             // then reports "no changes" for an edit the JVM has never loaded.
-            boolean unchanged = stamp.equals(applied.get(source));
-            if (!unchanged || isStale(module, source,
-                    appliedFutureDated.contains(source))) {
+            Applied live = applied.get(source);
+            if (live == null || !stamp.equals(live.stamp())
+                    || isStale(module, source, live.futureDated())) {
                 modified.add(source);
             }
         });
@@ -1176,12 +1176,8 @@ final class Compile {
     }
 
     private void markApplied(Path source, Stamp stamp) {
-        applied.put(source, stamp);
-        if (isFutureDated(stamp.modified())) {
-            appliedFutureDated.add(source);
-        } else {
-            appliedFutureDated.remove(source);
-        }
+        applied.put(source,
+                new Applied(stamp, isFutureDated(stamp.modified())));
     }
 
     /**
@@ -1204,7 +1200,6 @@ final class Compile {
     void seedFromDisk(long startedAtMillis, long frontendCutoffMillis) {
         seedClasses();
         applied.clear();
-        appliedFutureDated.clear();
         forEachSource((module, source, stamp) -> {
             // Only what the application could have read. A source written
             // after it was launched is not one it started with, whenever this
