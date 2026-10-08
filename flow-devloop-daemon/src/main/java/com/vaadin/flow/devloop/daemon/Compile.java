@@ -87,8 +87,32 @@ final class Compile {
         }
     }
 
+    /**
+     * How a compile ended.
+     *
+     * @param success
+     *            whether it compiled
+     * @param errors
+     *            what it reported when it did not
+     * @param writtenClasses
+     *            the classes the running application has to be given, by binary
+     *            name
+     * @param millis
+     *            how long it took
+     * @param classFiles
+     *            the class files behind {@code writtenClasses}, with the stamp
+     *            each had when it was reported - what a redefine of them hands
+     *            the application, for a backend that keeps its own baseline of
+     *            it; empty from javac, which keeps none
+     */
     record Result(boolean success, List<Message> errors,
-            List<String> writtenClasses, long millis) {
+            List<String> writtenClasses, long millis,
+            Map<Path, Stamp> classFiles) {
+
+        Result(boolean success, List<Message> errors,
+                List<String> writtenClasses, long millis) {
+            this(success, errors, writtenClasses, millis, Map.of());
+        }
     }
 
     /**
@@ -122,10 +146,13 @@ final class Compile {
         }
 
         /**
-         * Records that the classes the last successful compile reported are now
-         * live in the running application.
+         * Records that the classes a compile reported are now live in the
+         * running application.
+         *
+         * @param applied
+         *            the compile whose classes a redefine took
          */
-        default void markApplied() {
+        default void markApplied(Result applied) {
         }
     }
 
@@ -1251,12 +1278,19 @@ final class Compile {
                 .replace(File.separatorChar, '.');
     }
 
-    /** Records that these sources are now live in the running JVM. */
-    void markSourcesApplied(List<Path> sources) {
+    /**
+     * Records that these sources are now live in the running JVM.
+     *
+     * @param sources
+     *            the sources the apply compiled
+     * @param compiled
+     *            the compile that turned them into the classes now live
+     */
+    void markSourcesApplied(List<Path> sources, Result compiled) {
         for (Path source : sources) {
             stampOf(source).ifPresent(stamp -> applied.put(source, stamp));
         }
-        backend.markApplied();
+        backend.markApplied(compiled);
     }
 
     /**

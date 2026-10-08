@@ -125,12 +125,39 @@ class MavenCompileTest {
         assertEquals(List.of("a.View"),
                 maven.changedClasses(List.of(app)).written());
         rewrite(view, "new bytes");
-        assertEquals(List.of("a.View"),
-                maven.changedClasses(List.of(app)).written());
+        MavenCompile.Diff second = maven.changedClasses(List.of(app));
+        assertEquals(List.of("a.View"), second.written());
 
-        maven.markApplied();
+        maven.markApplied(applied(second));
         rewrite(view, "new bytes");
         assertEquals(List.of(), maven.changedClasses(List.of(app)).written());
+    }
+
+    /**
+     * Applies overlap: a newer compile can report other bytes while an older
+     * one's redefine is still in flight. The older redefine going live must not
+     * make the newer bytes count as live too.
+     */
+    @Test
+    void aRedefineTakesOnlyTheBytesItsCompileReported() throws IOException {
+        Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
+        Path view = writeClass(app, "a/View.class", "old bytes");
+        MavenCompile maven = launched(view);
+
+        rewrite(view, "first edit");
+        MavenCompile.Diff older = maven.changedClasses(List.of(app));
+        rewrite(view, "second edit");
+        maven.changedClasses(List.of(app));
+        maven.markApplied(applied(older));
+
+        assertEquals(List.of("a.View"),
+                maven.changedClasses(List.of(app)).written());
+    }
+
+    /** A successful compile that reported what a run changed. */
+    private static Compile.Result applied(MavenCompile.Diff diff) {
+        return new Compile.Result(true, List.of(), diff.written(), 0,
+                diff.classFiles());
     }
 
     /** A backend seeded as if the application had just loaded these files. */

@@ -635,6 +635,10 @@ final class TransactionEngine {
                 return tx;
             }
 
+            // What the redefine below hands the application, for the backend
+            // to record once it has been taken.
+            Compile.Result compiled = new Compile.Result(true, List.of(),
+                    List.of(), 0);
             if (!changes.modified().isEmpty()) {
                 tx.state = "compiling";
 
@@ -662,6 +666,7 @@ final class TransactionEngine {
                             started);
                 }
                 tx.classes = result.writtenClasses();
+                compiled = result;
                 if (bailIfSuperseded(tx, started)) {
                     return tx;
                 }
@@ -682,7 +687,7 @@ final class TransactionEngine {
             if (!changes.modified().isEmpty() && tx.classes.isEmpty()
                     && tx.escalation.isEmpty()
                     && app.state() == AppProcess.State.RUNNING) {
-                compile.markSourcesApplied(changes.modified());
+                compile.markSourcesApplied(changes.modified(), compiled);
                 Optional<String> broken = devServerFailure(tx);
                 if (broken.isPresent()) {
                     return finish(tx, Outcome.FAILED,
@@ -734,7 +739,8 @@ final class TransactionEngine {
                             // These sources are now live in the JVM, so the
                             // next
                             // apply should not offer them again.
-                            compile.markSourcesApplied(changes.modified());
+                            compile.markSourcesApplied(changes.modified(),
+                                    compiled);
                             // The Java half held; the dev server says the
                             // frontend half of the same change did not. Not an
                             // escalation - a restart cannot compile a broken

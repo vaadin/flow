@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -92,8 +93,18 @@ final class MavenCompile implements Compile.Backend {
     private record Known(Compile.Stamp stamp, String digest) {
     }
 
-    /** Which classes a run wrote, and which ones it left gone. */
-    record Diff(List<String> written, List<Path> vanished) {
+    /**
+     * Which classes a run wrote, and which ones it left gone.
+     *
+     * @param written
+     *            the written classes by binary name, sorted
+     * @param vanished
+     *            the loaded class files that are gone
+     * @param classFiles
+     *            the class files behind {@code written}, with their stamps
+     */
+    record Diff(List<String> written, List<Path> vanished,
+            Map<Path, Compile.Stamp> classFiles) {
     }
 
     private final Compile owner;
@@ -113,7 +124,7 @@ final class MavenCompile implements Compile.Backend {
      */
     private final Map<Path, Known> live = new ConcurrentHashMap<>();
 
-    /** What the last successful compile reported, until it goes live. */
+    /** What the latest compiles reported, until it goes live. */
     private final Map<Path, Known> pending = new ConcurrentHashMap<>();
 
     /** Class files already reported as gone, so each is logged once. */
@@ -176,7 +187,7 @@ final class MavenCompile implements Compile.Backend {
         project.modules().forEach(
                 module -> owner.recordCompiledAgainst(module, project));
         return new Compile.Result(true, List.of(), diff.written(),
-                millisSince(started));
+                millisSince(started), diff.classFiles());
     }
 
     @Override
@@ -188,10 +199,26 @@ final class MavenCompile implements Compile.Backend {
                 (file, stamp) -> live.put(file, new Known(stamp, null)));
     }
 
+    /**
+     * Moves what the application holds forward to the class files the given
+     * compile reported - only those, and only as that compile found them. A
+     * newer compile that ran while this one's redefine was in flight may have
+     * reported other bytes for the same file since; those stay pending, so the
+     * next apply still offers them.
+     */
     @Override
-    public void markApplied() {
-        live.putAll(pending);
-        pending.clear();
+    public void markApplied(Compile.Result applied) {
+        applied.classFiles().forEach((file, stamp) -> {
+            Known reported = pending.get(file);
+            if (reported != null && reported.stamp().equals(stamp)) {
+                live.put(file, reported);
+                pending.remove(file, reported);
+            } else {
+                // The newer compile's entry has replaced this one's digest, so
+                // the bytes taken are known by their stamp alone.
+                live.put(file, new Known(stamp, null));
+            }
+        });
     }
 
     /**
@@ -274,11 +301,11 @@ final class MavenCompile implements Compile.Backend {
      *
      * @param modules
      *            the modules in the loop
-     * @return the written classes by binary name, sorted, and the loaded class
-     *         files that are gone
+     * @return what the run changed
      */
     Diff changedClasses(List<Reactor.Module> modules) {
         Set<String> written = new java.util.TreeSet<>();
+        Map<Path, Compile.Stamp> classFiles = new HashMap<>();
         Set<Path> seen = new HashSet<>();
         for (Reactor.Module module : modules) {
             for (Path file : classFiles(module.classesDir())) {
@@ -289,6 +316,7 @@ final class MavenCompile implements Compile.Backend {
                 seen.add(file);
                 if (changed(file, stamp.get())) {
                     written.add(module.binaryNameOf(file));
+                    classFiles.put(file, stamp.get());
                 }
             }
         }
@@ -296,7 +324,7 @@ final class MavenCompile implements Compile.Backend {
         List<Path> vanished = live.keySet().stream()
                 .filter(file -> !seen.contains(file)).filter(reportedGone::add)
                 .sorted().toList();
-        return new Diff(List.copyOf(written), vanished);
+        return new Diff(List.copyOf(written), vanished, Map.copyOf(classFiles));
     }
 
     private boolean changed(Path file, Compile.Stamp stamp) {
