@@ -116,12 +116,9 @@ final class MavenCompile implements Compile.Backend {
      * @param classFiles
      *            the class files behind {@code written}, with the stamps of
      *            Maven's output files they come from
-     * @param copies
-     *            Maven's output file for each class file in {@code classFiles},
-     *            which {@link #install} copies over it
      */
     record Diff(List<String> written, List<Path> vanished,
-            Map<Path, Compile.Stamp> classFiles, Map<Path, Path> copies) {
+            Map<Path, Compile.Stamp> classFiles) {
     }
 
     private final Compile owner;
@@ -150,6 +147,15 @@ final class MavenCompile implements Compile.Backend {
 
     /** What the latest compiles reported, until it goes live. */
     private final Map<Path, Known> pending = new ConcurrentHashMap<>();
+
+    /**
+     * Each file of Maven's output, with the stamp it had when the classes
+     * directory was last made to hold the same bytes, so a file a run did not
+     * rewrite is not compared again. Kept apart from {@link #live}: what is on
+     * disk and what the application holds differ whenever a compiled change
+     * never reached it.
+     */
+    private final Map<Path, Compile.Stamp> installed = new ConcurrentHashMap<>();
 
     /** Class files already reported as gone, so each is logged once. */
     private final Set<Path> reportedGone = ConcurrentHashMap.newKeySet();
@@ -204,7 +210,7 @@ final class MavenCompile implements Compile.Backend {
         }
         Diff diff = changedClasses(project.modules());
         try {
-            install(diff, project.modules());
+            install(project.modules());
         } catch (IOException e) {
             return ioError(e, started);
         }
@@ -234,6 +240,8 @@ final class MavenCompile implements Compile.Backend {
         live.clear();
         pending.clear();
         reportedGone.clear();
+        // A restart may follow a build that rewrote the classes directory.
+        installed.clear();
         launched.clear();
         launched.putAll(classes);
     }
@@ -385,7 +393,6 @@ final class MavenCompile implements Compile.Backend {
     Diff changedClasses(List<Reactor.Module> modules) {
         Set<String> written = new TreeSet<>();
         Map<Path, Compile.Stamp> classFiles = new HashMap<>();
-        Map<Path, Path> copies = new HashMap<>();
         Set<Path> seen = new HashSet<>();
         for (Reactor.Module module : modules) {
             Path output = outputOf(module);
@@ -400,7 +407,6 @@ final class MavenCompile implements Compile.Backend {
                 if (changed(file, built, stamp.get())) {
                     written.add(module.binaryNameOf(file));
                     classFiles.put(file, stamp.get());
-                    copies.put(file, built);
                 }
             }
         }
@@ -408,8 +414,7 @@ final class MavenCompile implements Compile.Backend {
         List<Path> vanished = live.keySet().stream()
                 .filter(file -> !seen.contains(file)).filter(reportedGone::add)
                 .sorted().toList();
-        return new Diff(List.copyOf(written), vanished, Map.copyOf(classFiles),
-                Map.copyOf(copies));
+        return new Diff(List.copyOf(written), vanished, Map.copyOf(classFiles));
     }
 
     /**
@@ -442,35 +447,42 @@ final class MavenCompile implements Compile.Backend {
     }
 
     /**
-     * Copies what a run changed into the classes directories: each reported
-     * class, and any other file Maven wrote that differs - what an annotation
-     * processor generates beside the classes, such as a service file. The rest
-     * of the classes directory is left alone, so a server watching it sees only
-     * what changed.
+     * Makes the classes directories hold what Maven built: every file of its
+     * output whose bytes differ there, classes and what an annotation processor
+     * generates beside them, such as a service file.
+     * <p>
+     * Decided against the disk rather than against what the application holds:
+     * an edit that compiled but never reached the application, then was
+     * reverted, compiles back to the bytes the application has - nothing to
+     * redefine - while the classes directory still holds the edit, which a
+     * later class load or a restart would run. Files that already match are
+     * left alone, so a server watching the classes directory sees only what
+     * changed.
      *
-     * @param diff
-     *            what the run changed
      * @param modules
      *            the modules in the loop
      * @throws IOException
      *             if a file could not be copied
      */
-    void install(Diff diff, List<Reactor.Module> modules) throws IOException {
+    void install(List<Reactor.Module> modules) throws IOException {
         if (!staged) {
             return;
         }
-        for (Map.Entry<Path, Path> copy : diff.copies().entrySet()) {
-            copyOver(copy.getValue(), copy.getKey());
-        }
         for (Reactor.Module module : modules) {
             Path output = stagingDir(module);
-            for (Path built : otherFiles(output)) {
+            for (Path built : files(output)) {
+                Optional<Compile.Stamp> stamp = Compile.stampOf(built);
+                if (stamp.isEmpty()
+                        || stamp.get().equals(installed.get(built))) {
+                    continue;
+                }
                 Path file = module.classesDir()
                         .resolve(output.relativize(built).toString());
                 if (!Files.isRegularFile(file)
                         || Files.mismatch(built, file) != -1) {
                     copyOver(built, file);
                 }
+                installed.put(built, stamp.get());
             }
         }
     }
@@ -480,13 +492,12 @@ final class MavenCompile implements Compile.Backend {
         Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    private static List<Path> otherFiles(Path dir) {
+    private static List<Path> files(Path dir) {
         if (!Files.isDirectory(dir)) {
             return List.of();
         }
         try (Stream<Path> walk = Files.walk(dir)) {
-            return walk.filter(path -> !path.toString().endsWith(CLASS_SUFFIX))
-                    .filter(Files::isRegularFile).toList();
+            return walk.filter(Files::isRegularFile).toList();
         } catch (IOException e) {
             // Unreadable, the same as for the class files: nothing to copy.
             return List.of();

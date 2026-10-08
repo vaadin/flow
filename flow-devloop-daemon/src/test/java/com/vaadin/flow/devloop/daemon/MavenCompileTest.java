@@ -132,7 +132,7 @@ class MavenCompileTest {
         build(app, "a/Edited.class", "new bytes");
         build(app, "a/Added.class", "added");
         build(app, "META-INF/services/a.Service", "a.Impl");
-        maven.install(maven.changedClasses(List.of(app)), List.of(app));
+        maven.install(List.of(app));
 
         assertEquals(Optional.of(sameStamp), Compile.stampOf(same));
         assertEquals("new bytes", Files.readString(edited));
@@ -159,6 +159,30 @@ class MavenCompileTest {
         build(app, "a/View.class", "bytes");
         assertEquals(MavenCompile.stagingDir(app).resolve("a/View.class"),
                 maven.artifactFor(app, source));
+    }
+
+    /**
+     * An edit that compiled but never reached the application - its redefine
+     * failed, under {@code --no-restart} - and was then reverted compiles back
+     * to the bytes the application holds. There is nothing to redefine, but the
+     * classes directory must not keep the edit for a later class load or a
+     * restart to run.
+     */
+    @Test
+    void aRevertedEditLeavesTheClassesDirectory() throws IOException {
+        Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
+        Path view = writeClass(app, "a/View.class", "old bytes");
+        MavenCompile maven = launched(view);
+
+        build(app, "a/View.class", "edited bytes");
+        maven.changedClasses(List.of(app));
+        maven.install(List.of(app));
+        build(app, "a/View.class", "old bytes");
+        MavenCompile.Diff reverted = maven.changedClasses(List.of(app));
+        maven.install(List.of(app));
+
+        assertEquals(List.of(), reverted.written());
+        assertEquals("old bytes", Files.readString(view));
     }
 
     /**

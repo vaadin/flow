@@ -835,11 +835,13 @@ What it costs:
 Maven recompiling a module rewrites every class file in it, so the redefine
 is not handed the whole module: the daemon compares each class file the run
 touched with the bytes the running application holds, and only classes that
-are new or whose bytes changed are copied into `target/classes` and
-redefined. The comparison moves forward only when a redefine has been
-accepted, so an apply that compiled but never reached the application
-(`--no-restart`, or superseded by a newer apply) offers the same classes again
-next time.
+are new or whose bytes changed are redefined. The comparison moves forward
+only when a redefine has been accepted, so an apply that compiled but never
+reached the application (`--no-restart`, or superseded by a newer apply)
+offers the same classes again next time. What is copied into `target/classes`
+is decided apart from that, against what `target/classes` holds: a file the
+run built with different bytes there, so that an edit reverted before it ever
+went live does not stay on disk for a restart to load.
 
 Maven compiles into a directory of each module's own,
 `target/devloop/maven-classes`, which the build extension points the module's
