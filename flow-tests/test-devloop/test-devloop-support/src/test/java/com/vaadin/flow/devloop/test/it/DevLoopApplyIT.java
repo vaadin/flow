@@ -52,8 +52,10 @@ class DevLoopApplyIT extends AbstractDevLoopIT {
     @Test
     void anEditThatChangesNoBytecode_goesLiveWithoutARestart() {
         // Trailing whitespace compiles to the very bytes already running.
-        // Compiled by Maven, no class file comes out changed, so there is
-        // nothing to redefine - and a restart would load the same classes.
+        // Only the maven-compile execution takes the path this is about: Maven
+        // reports no class file as changed, so there is nothing to redefine -
+        // and a restart would load the same classes. javac reports the class
+        // it wrote, which is redefined with the same bytes.
         patch.append(VIEW, "\n");
 
         cli.run("apply").assertExitCode(0).assertOutputContains("Stable")
