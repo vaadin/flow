@@ -270,6 +270,9 @@ final class MavenCompile implements Compile.Backend {
                     "-D" + DevLoopBuildExtension.COMPILE_PROPERTY + "=true");
             execution = DevLoopBuildExtension.COMPILE_EXECUTION;
         }
+        // Nothing here compiles tests; the property is passed because the
+        // resolve passes it, so a profile activated by it is active in both
+        // runs and the compile sees the configuration the resolve recorded.
         command.addAll(List.of("compiler:compile@" + execution,
                 "-Dmaven.test.skip=true"));
         return command;
