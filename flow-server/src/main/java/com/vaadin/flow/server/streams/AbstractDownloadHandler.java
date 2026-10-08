@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.server.streams;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -131,9 +134,15 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * like a normal transfer. A smaller range is not reported as started,
      * progressed or completed: a media player sends many overlapping, often
      * cancelled range requests, which do not describe a download of the
-     * content. A failure before anything is sent, such as a file shorter than
-     * its length, is propagated like for any other transfer; a failure after
-     * that, typically a cancelled request, is only logged, as for static files.
+     * content.
+     * <p>
+     * A range request that the client cancels, as media players do on every
+     * seek, is only logged, as for static files: it is not reported as an
+     * error, and a cancelled whole-content range is not reported as completed
+     * either. A failure to read the content, such as a file shorter than its
+     * length, is propagated like for any other transfer. If nothing has been
+     * sent yet, the response becomes an empty server error without the range
+     * headers.
      *
      * @param downloadEvent
      *            the download event
@@ -173,36 +182,49 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         if (ranges == null) {
             transferContent(downloadEvent, inputStream, outputStream,
                     contentLength);
-        } else if (ranges.size() == 1 && ranges.get(0).getFirst() == 0
-                && ranges.get(0).getSecond() == contentLength - 1) {
-            response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
-            response.setHeader("Content-Range",
-                    "bytes 0-" + (contentLength - 1) + "/" + contentLength);
-            transferContent(downloadEvent, inputStream, outputStream,
-                    contentLength);
-        } else {
-            writeRanges(ranges, contentLength, inputStream, file, response);
+            return;
         }
-    }
-
-    private void writeRanges(List<Pair<Long, Long>> ranges, long contentLength,
-            InputStream inputStream, File file, HttpServletResponse response)
-            throws IOException {
+        String contentType = response.getContentType();
+        ClientResponse clientResponse = new ClientResponse(response);
         try {
-            ResponseWriter.writeRanges(ranges, contentLength, inputStream,
-                    file.toURI().toURL(), response);
-        } catch (IOException e) {
-            if (!response.isCommitted()) {
-                // Nothing sent yet: drop the 206 headers so that the error
-                // response does not carry them
-                response.reset();
-                throw e;
+            if (ranges.size() == 1 && ranges.get(0).getFirst() == 0
+                    && ranges.get(0).getSecond() == contentLength - 1) {
+                response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
+                response.setHeader("Content-Range",
+                        "bytes 0-" + (contentLength - 1) + "/" + contentLength);
+                transferContent(downloadEvent, inputStream,
+                        clientResponse.track(outputStream), contentLength);
+            } else {
+                ResponseWriter.writeRanges(ranges, contentLength, inputStream,
+                        file.toURI().toURL(), clientResponse);
+                // Send the body now so that a client that is gone fails here
+                // and not when the handler closes the stream
+                clientResponse.flushBuffer();
             }
-            // Media players cancel range requests on every seek. Like for
-            // static files, a failure after the response is committed is
-            // not an error of the download.
-            LoggerFactory.getLogger(AbstractDownloadHandler.class)
-                    .debug("Range request for {} ended early", file, e);
+        } catch (IOException e) {
+            if (clientResponse.clientGone) {
+                // Media players cancel range requests on every seek. Like for
+                // static files, that is not an error of the download.
+                LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
+                        "Range request for {} cancelled by the client", file,
+                        e);
+                clientResponse.closeQuietly();
+                return;
+            }
+            if (!response.isCommitted()) {
+                // Nothing sent yet: make the response a server error instead
+                // of an empty 206 or 200 when the handler closes the stream,
+                // keeping the headers that were not set for the range
+                response.resetBuffer();
+                response.setStatus(
+                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                response.setHeader("Content-Range", null);
+                response.setHeader("Transfer-Encoding", null);
+                response.setHeader("ETag", null);
+                response.setContentType(contentType);
+                response.setContentLengthLong(0);
+            }
+            throw e;
         }
     }
 
@@ -231,5 +253,104 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         }
         return "\"" + Long.toHexString(lastModified) + "-"
                 + Long.toHexString(contentLength) + "\"";
+    }
+
+    /**
+     * Response wrapper that records whether writing to the client failed, which
+     * means that the client went away, unlike a failure to read the content.
+     */
+    private static final class ClientResponse
+            extends HttpServletResponseWrapper {
+        private boolean clientGone;
+        private OutputStream delegate;
+        private ServletOutputStream outputStream;
+
+        private ClientResponse(HttpServletResponse response) {
+            super(response);
+        }
+
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+            if (outputStream == null) {
+                track(super.getOutputStream());
+            }
+            return outputStream;
+        }
+
+        @Override
+        public void flushBuffer() throws IOException {
+            try {
+                super.flushBuffer();
+            } catch (IOException e) {
+                clientGone = true;
+                throw e;
+            }
+        }
+
+        private OutputStream track(OutputStream output) {
+            delegate = output;
+            outputStream = new ServletOutputStream() {
+                @Override
+                public void write(int b) throws IOException {
+                    try {
+                        delegate.write(b);
+                    } catch (IOException e) {
+                        clientGone = true;
+                        throw e;
+                    }
+                }
+
+                @Override
+                public void write(byte[] b, int off, int len)
+                        throws IOException {
+                    try {
+                        delegate.write(b, off, len);
+                    } catch (IOException e) {
+                        clientGone = true;
+                        throw e;
+                    }
+                }
+
+                @Override
+                public void flush() throws IOException {
+                    try {
+                        delegate.flush();
+                    } catch (IOException e) {
+                        clientGone = true;
+                        throw e;
+                    }
+                }
+
+                @Override
+                public boolean isReady() {
+                    return !(delegate instanceof ServletOutputStream servlet)
+                            || servlet.isReady();
+                }
+
+                @Override
+                public void setWriteListener(WriteListener writeListener) {
+                    if (delegate instanceof ServletOutputStream servlet) {
+                        servlet.setWriteListener(writeListener);
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+                }
+            };
+            return outputStream;
+        }
+
+        private void closeQuietly() {
+            if (delegate == null) {
+                return;
+            }
+            // Close the stream here, where a failure on the lost connection
+            // is expected, rather than first in the handler
+            try {
+                delegate.close();
+            } catch (IOException e) {
+                LoggerFactory.getLogger(AbstractDownloadHandler.class)
+                        .debug("Error closing a cancelled range response", e);
+            }
+        }
     }
 }

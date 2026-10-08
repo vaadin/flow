@@ -402,33 +402,92 @@ class AbstractDownloadHandlerTest {
         // only a failure after the first chunk has set the 206 status
         verify(servletResponse, failsMidBody ? times(1) : never())
                 .setStatus(206);
-        verify(servletResponse).reset();
+        // set before the handler closes the stream, keeping other headers
+        verify(servletResponse).setStatus(500);
+        verify(servletResponse).setHeader("Content-Range", null);
+        verify(servletResponse).setContentLengthLong(0);
+        verify(servletResponse, never()).reset();
     }
 
     @Test
-    void transferContent_rangeCancelledByClient_notAnError()
+    void transferContent_readFailsAfterCommit_propagated() throws IOException {
+        Path file = Files.write(tempDir.resolve("content.bin"),
+                new byte[100000]);
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        when(servletResponse.getOutputStream())
+                .thenReturn(new CapturingServletOutputStream());
+        when(servletResponse.isCommitted()).thenReturn(true);
+        when(request.getHeader("Range")).thenReturn("bytes=10-99999");
+
+        try (InputStream inputStream = new FileInputStream(file.toFile()) {
+            private long read;
+
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                if (read > 50000) {
+                    throw new IOException("Disk read failed");
+                }
+                int count = super.read(b, off, len);
+                read += count;
+                return count;
+            }
+        }) {
+            assertThrows(IOException.class,
+                    () -> handler.transferContent(
+                            new DownloadEvent(request, servletResponse, session,
+                                    owner),
+                            inputStream, outputStream, 100000, file.toFile()));
+        }
+        verify(servletResponse, never()).setStatus(500);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "bytes=10-99999", "bytes=10-19", "bytes=0-" })
+    void transferContent_rangeCancelledByClient_notAnError(String range)
             throws IOException {
         Path file = Files.write(tempDir.resolve("content.bin"),
                 new byte[100000]);
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
+        AtomicBoolean closed = new AtomicBoolean();
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream() {
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
+                if (len > 10) {
+                    throw new IOException("Connection reset by peer");
+                }
+                super.write(b, off, len);
+            }
+
+            @Override
+            public void flush() throws IOException {
                 throw new IOException("Connection reset by peer");
+            }
+
+            @Override
+            public void close() {
+                closed.set(true);
             }
         };
         when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        // a small range only fails when the buffered body is sent
+        doThrow(new IOException("Connection reset by peer"))
+                .when(servletResponse).flushBuffer();
         when(servletResponse.isCommitted()).thenReturn(true);
-        when(request.getHeader("Range")).thenReturn("bytes=10-99999");
+        when(request.getHeader("Range")).thenReturn(range);
+        handler.addTransferProgressListener(listener);
 
         try (InputStream inputStream = new FileInputStream(file.toFile())) {
             assertDoesNotThrow(() -> handler.transferContent(
                     new DownloadEvent(request, servletResponse, session, owner),
-                    inputStream, outputStream, 100000, file.toFile()));
+                    inputStream, servletOutput, 100000, file.toFile()));
         }
 
-        verify(servletResponse, never()).reset();
+        verify(listener, never()).onError(any(), any());
+        verify(listener, never()).onComplete(any(), anyLong());
+        verify(servletResponse, never()).setStatus(500);
+        assertTrue(closed.get(), "Cancelled response should be closed");
     }
 
     @Test
