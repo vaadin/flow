@@ -111,7 +111,8 @@ class DevLoopBuildExtensionTest {
      * A module that switches the default compile execution off and binds one of
      * its own keeps that one's configuration under the shared id - which is
      * what lets one command line compile modules that disagree on the id. Asked
-     * twice, it still adds only one.
+     * twice, it still adds only one. The model is the resolve's to record, so a
+     * compile run leaves it alone.
      */
     @Test
     void theCompileExecutionInUseIsAlsoKnownByTheSharedId() {
@@ -131,8 +132,10 @@ class DevLoopBuildExtensionTest {
         compiler.addExecution(own);
         MavenProject project = project(compiler);
 
-        DevLoopBuildExtension.aliasCompileExecution(project);
-        DevLoopBuildExtension.aliasCompileExecution(project);
+        Properties compileRun = new Properties();
+        compileRun.setProperty(DevLoopBuildExtension.COMPILE_PROPERTY, "true");
+        afterProjectsRead(compileRun, new Properties(), project);
+        afterProjectsRead(compileRun, new Properties(), project);
 
         PluginExecution alias = compiler.getExecutionsAsMap()
                 .get(DevLoopBuildExtension.COMPILE_EXECUTION);
@@ -141,6 +144,8 @@ class DevLoopBuildExtensionTest {
         assertEquals("17", ((Xpp3Dom) alias.getConfiguration())
                 .getChild("release").getValue());
         assertEquals(3, compiler.getExecutions().size());
+        assertFalse(
+                Files.exists(module.resolve(DevLoopBuildExtension.MODEL_FILE)));
     }
 
     /** The profiles Maven ran with, which is the answer poms cannot give. */

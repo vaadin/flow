@@ -239,6 +239,19 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         // Never fatal. An extension that throws fails the whole build, and the
         // application not starting at all would be a far worse outcome than a
         // rescanner competing with apply - which the daemon warns about anyway.
+        if (Boolean.parseBoolean(property(session, COMPILE_PROPERTY))) {
+            // A compile for an apply needs only the executions aliased: the
+            // resolve has recorded the model already, and no server plugin
+            // runs.
+            try {
+                session.getProjects()
+                        .forEach(DevLoopBuildExtension::aliasCompileExecution);
+            } catch (RuntimeException | LinkageError e) {
+                System.out.println("[vaadin-dev] could not prepare the "
+                        + "compile executions: " + e);
+            }
+            return;
+        }
         // Recorded before anything is overridden, so the file describes the
         // project as Maven resolved it rather than as the dev loop bent it.
         try {
@@ -252,15 +265,6 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         } catch (RuntimeException | LinkageError e) {
             System.out.println("[vaadin-dev] could not override the server "
                     + "plugin's configuration: " + e);
-        }
-        if (Boolean.parseBoolean(property(session, COMPILE_PROPERTY))) {
-            try {
-                session.getProjects()
-                        .forEach(DevLoopBuildExtension::aliasCompileExecution);
-            } catch (RuntimeException | LinkageError e) {
-                System.out.println("[vaadin-dev] could not prepare the "
-                        + "compile executions: " + e);
-            }
         }
     }
 
@@ -276,7 +280,7 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      * @param project
      *            the module, as Maven resolved it
      */
-    static void aliasCompileExecution(MavenProject project) {
+    private static void aliasCompileExecution(MavenProject project) {
         for (Plugin plugin : project.getBuildPlugins()) {
             if (!COMPILER_GROUP.equals(plugin.getGroupId())
                     || !COMPILER_ARTIFACT.equals(plugin.getArtifactId())) {
