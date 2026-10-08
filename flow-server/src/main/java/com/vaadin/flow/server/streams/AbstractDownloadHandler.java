@@ -215,6 +215,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 if (wholeContent) {
                     // Reported as started, so it ends like any cancelled
                     // download
+                    downloadEvent.setException(e);
                     notifyError(downloadEvent, e);
                 }
                 throw new CancelledRangeException(e);

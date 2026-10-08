@@ -31,6 +31,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -47,7 +49,6 @@ import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -177,8 +178,10 @@ class FileDownloadHandlerTest {
                 "bytes 100000-100099/165000");
     }
 
-    @Test
-    void handleDownloadRequest_rangeCancelledByClient_closeFailsToo_notAnError()
+    @ParameterizedTest
+    @CsvSource({ "bytes=100000-100099, false", "bytes=0-, true" })
+    void handleDownloadRequest_rangeCancelledByClient_closeFailsToo_noServerError(
+            String range, boolean reportedAsError)
             throws URISyntaxException, IOException {
         File file = new File(
                 getClass().getClassLoader().getResource(PATH_TO_FILE).toURI());
@@ -199,15 +202,19 @@ class FileDownloadHandlerTest {
         when(servletResponse.isCommitted()).thenReturn(true);
         when(servletResponse.getService())
                 .thenReturn(mock(VaadinServletService.class));
-        when(request.getHeader("Range")).thenReturn("bytes=100000-100099");
+        when(request.getHeader("Range")).thenReturn(range);
         FileDownloadHandler handler = DownloadHandler.forFile(file);
         AtomicBoolean errorReported = new AtomicBoolean();
         handler.whenComplete(success -> errorReported.set(!success));
+        DownloadEvent event = new DownloadEvent(request, servletResponse,
+                session, owner);
 
-        handler.handleDownloadRequest(
-                new DownloadEvent(request, servletResponse, session, owner));
+        handler.handleDownloadRequest(event);
 
-        assertFalse(errorReported.get());
+        // a whole-content range was reported as started, so it ends like a
+        // cancelled download without a Range header
+        assertEquals(reportedAsError, errorReported.get());
+        assertEquals(reportedAsError, event.getException() != null);
         verify(servletResponse, never()).setStatus(500);
     }
 
