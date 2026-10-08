@@ -13,9 +13,9 @@
 #
 # The resolver already retries a single download (see MAVEN_ARGS in
 # validation.yml), but when Central keeps refusing a runner for longer than
-# those retries last, the build stops before any test has run. Only such a
-# transfer failure is retried here: a build that failed for any other reason,
-# such as a failing test, is reported as it is.
+# those retries last, the build stops before any test has run. Only a build
+# that such a transfer error stopped is retried here: a build that failed for
+# any other reason, such as a failing test, is reported as it is.
 
 set -u
 
@@ -37,10 +37,18 @@ while true; do
   if [ $status -eq 0 ] || [ $attempt -ge "$MAX_ATTEMPTS" ]; then
     exit $status
   fi
+  # Only an error counts: the same message is also logged as a warning when
+  # snapshot metadata cannot be read from one of the declared repositories,
+  # or when a download succeeded on one of the resolver's own retries.
   if ! tail -c +$((offset + 1)) "$LOG" \
-      | grep -qE 'Could not transfer (artifact|metadata)'; then
+      | grep -qE '^\[ERROR\].*Could not transfer (artifact|metadata)'; then
     exit $status
   fi
+  # A failed attempt can leave behind the application JVMs it started,
+  # holding on to the ports the next attempt needs.
+  pkill -TERM java || true
+  sleep 2
+  pkill -KILL java || true
   delay=$((attempt * 30))
   echo "::warning::Maven could not download from a repository" \
     "(attempt $attempt of $MAX_ATTEMPTS), retrying in ${delay}s"
