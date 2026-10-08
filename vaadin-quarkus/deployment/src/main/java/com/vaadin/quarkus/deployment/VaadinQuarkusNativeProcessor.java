@@ -19,6 +19,7 @@ import jakarta.inject.Inject;
 
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -110,6 +111,7 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.quarkus.VaadinServletStartupRecorder;
 import com.vaadin.quarkus.deployment.nativebuild.AtmospherePatches;
 import com.vaadin.quarkus.graal.AtmosphereDeferredInitializerRecorder;
 import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
@@ -120,6 +122,7 @@ import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
  * <p>
  * <ul>
  * <li>Patches Atmosphere
+ * <li>Initializes the Vaadin servlets at RUNTIME_INIT
  * <li>Defers Atmosphere initialization at RUNTIME_INIT
  * <li>Generates stub classes for DAU integration if license checker is not
  * present at runtime
@@ -143,12 +146,29 @@ public class VaadinQuarkusNativeProcessor {
         patcher.apply(producer);
     }
 
+    /*
+     * STATIC_INIT runs while the native image is built, so the Vaadin servlets
+     * are initialized here instead, to create their configuration from the
+     * runtime configuration. They register their Atmosphere instances while
+     * they are initialized, so the deferred Atmosphere initialization runs
+     * after them. Producing DefaultRouteBuildItem makes this run before the
+     * HTTP router serves requests.
+     */
     @BuildStep(onlyIf = IsNativeBuild.class)
     @Record(ExecutionTime.RUNTIME_INIT)
     @Produce(DefaultRouteBuildItem.class)
-    void deferAtmosphereInit(AtmosphereDeferredInitializerRecorder recorder,
-            ServletDeploymentManagerBuildItem deploymentManager) {
-        recorder.initAtmosphere(deploymentManager.getDeploymentManager());
+    void initVaadinServletsAndAtmosphere(
+            VaadinServletStartupRecorder servletRecorder,
+            AtmosphereDeferredInitializerRecorder atmosphereRecorder,
+            ServletDeploymentManagerBuildItem deploymentManager,
+            List<VaadinServletBuildItem> vaadinServlets) {
+        servletRecorder.initServlets(deploymentManager.getDeploymentManager(),
+                vaadinServlets.stream()
+                        .sorted(Comparator.comparingInt(
+                                VaadinServletBuildItem::getLoadOnStartup))
+                        .map(VaadinServletBuildItem::getServletName).toList());
+        atmosphereRecorder
+                .initAtmosphere(deploymentManager.getDeploymentManager());
     }
 
     /*
