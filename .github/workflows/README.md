@@ -223,3 +223,25 @@ Configuration:
 
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
+
+## Code review
+
+`code-review.yml` has Claude review a pull request and post the findings as
+one review under the `vaadin-review-bot` identity. The review itself is the
+shared [`vaadin/github-actions/code-review`](https://github.com/vaadin/github-actions/tree/main/code-review)
+action; the workflow only decides when it runs.
+
+A review starts when a pull request against `main` is opened or marked ready
+for review, so a draft can be iterated on without one. Pull requests from
+bots and ones titled `chore:` are skipped. A review can also be asked for at
+any time by commenting `/code-review` on the pull request or by requesting a
+review from `vaadin-review-bot`. Only members of the `vaadin` organization
+can trigger it.
+
+Configuration:
+
+| Name | Kind | Purpose |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | secret | Key the review runs with. |
+| `VAADIN_REVIEW_BOT` | secret | Token the review is posted with. Without it the review is posted as `github-actions`. |
+| `CLAUDE_DEBUG` | variable (optional) | Set to `true` to upload the full execution log as a run artifact. It contains every tool call and its result, so it is world-readable on this public repository. |
