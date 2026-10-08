@@ -1,8 +1,4 @@
 # Tool versions the CI workflows of this branch provision (asdf format, read by
-# actions/setup-java through java-version-file and by actions/setup-node through
-# node-version-file). Each maintenance branch carries its own values, so no
-# workflow has to map branch names to versions. The Node.js version must match
-# FrontendTools.DEFAULT_NODE_VERSION; scripts/frontendToolVersions.sh fails the
-# build when the two differ.
+# actions/setup-java through java-version-file). Each maintenance branch carries
+# its own values, so no workflow has to map branch names to versions.
 java temurin-21
-nodejs 26.11.1
