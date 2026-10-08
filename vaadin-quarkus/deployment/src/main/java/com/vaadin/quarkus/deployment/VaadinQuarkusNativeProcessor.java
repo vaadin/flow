@@ -16,6 +16,7 @@
 package com.vaadin.quarkus.deployment;
 
 import jakarta.inject.Inject;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
@@ -23,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
@@ -44,6 +46,7 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBu
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedPackageBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.pkg.NativeConfig;
 import io.quarkus.deployment.util.JandexUtil;
 import io.quarkus.gizmo.ClassCreator;
@@ -87,12 +90,14 @@ import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlagProvider;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
@@ -106,9 +111,12 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.auth.AccessDeniedErrorRouter;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
+import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
+import com.vaadin.flow.server.startup.NavigationTargetFilter;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.quarkus.VaadinServletStartupRecorder;
@@ -128,6 +136,7 @@ import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
  * present at runtime
  * <li>Registers classes for reflection
  * <li>Registers the JDK proxies of the JavaScript definitions
+ * <li>Registers the service providers Flow loads with {@link ServiceLoader}
  * </ul>
  */
 public class VaadinQuarkusNativeProcessor {
@@ -169,6 +178,33 @@ public class VaadinQuarkusNativeProcessor {
                         .map(VaadinServletBuildItem::getServletName).toList());
         atmosphereRecorder
                 .initAtmosphere(deploymentManager.getDeploymentManager());
+    }
+
+    /**
+     * Registers the providers of the service interfaces that Flow loads with
+     * {@link ServiceLoader} at runtime.
+     * <p>
+     * Quarkus builds native images without the GraalVM feature that registers
+     * every provider listed in {@code META-INF/services}, so a provider that is
+     * not registered here is not found in the native binary. The Vaadin
+     * servlets start when the binary starts, so the lookups cannot happen on
+     * the build JVM instead.
+     */
+    @BuildStep(onlyIf = IsNativeBuild.class)
+    void registerServiceProviders(
+            BuildProducer<ServiceProviderBuildItem> serviceProviders) {
+        Stream.concat(Stream.of(FeatureFlagProvider.class,
+                VaadinServiceInitListener.class, NavigationTargetFilter.class,
+                // Loaded for a @WebServlet that extends VaadinServlet instead
+                // of QuarkusVaadinServlet
+                Instantiator.class),
+                // Lookup falls back to ServiceLoader for the types it handles
+                // when class scanning found no implementation
+                Stream.of(LookupServletContainerInitializer.class
+                        .getAnnotation(HandlesTypes.class).value()))
+                .map(Class::getName)
+                .map(ServiceProviderBuildItem::allProvidersFromClassPath)
+                .forEach(serviceProviders::produce);
     }
 
     /*

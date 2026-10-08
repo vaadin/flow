@@ -21,27 +21,34 @@ import org.junit.Test;
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class ResourcesIT extends ChromeBrowserTest {
+public class TranslationIT extends ChromeBrowserTest {
 
     @Test
-    public void open_featureFlagOfApplicationProviderRead() {
+    public void open_localesListedFromTranslationFolder() {
         open();
 
-        Assert.assertEquals(
-                "Feature flag springNativeTestFeature enabled: true",
-                $(DivElement.class).id(ResourcesView.FEATURE_ID).getText());
+        Assert.assertEquals("Available translation locales: de, fi_FI",
+                getLine(TranslationView.LOCALES_ID));
     }
 
     @Test
-    public void open_jsModuleLoaded() {
+    public void open_translationReadForEachLocale() {
         open();
 
-        waitUntil(driver -> Boolean.TRUE
-                .equals(executeScript("return window.nativeModuleLoaded")));
+        Assert.assertEquals("en: Hello from a translation",
+                getLine(TranslationView.DEFAULT_ID));
+        Assert.assertEquals("de: Hallo aus einer Übersetzung",
+                getLine(TranslationView.GERMAN_ID));
+        Assert.assertEquals("fi_FI: Terveisiä käännöksestä",
+                getLine(TranslationView.FINNISH_ID));
+    }
+
+    private String getLine(String id) {
+        return $(DivElement.class).id(id).getText();
     }
 
     @Override
     protected String getTestPath() {
-        return "/resources";
+        return "/translations";
     }
 }
