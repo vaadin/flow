@@ -200,6 +200,15 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      */
     public static final String COMPILE_EXECUTION = "vaadin-devloop-compile";
 
+    /**
+     * Where a module's classes go in a run {@link #COMPILE_PROPERTY} is set
+     * for, relative to the module: not its classes directory, which the running
+     * application loads from. The daemon copies on only what changed; see
+     * {@code MavenCompile}. Resolved against the module directory rather than
+     * the build directory for the same reason as {@link #MODEL_FILE}.
+     */
+    public static final String COMPILE_OUTPUT = "target/devloop/maven-classes";
+
     private static final String COMPILER_GROUP = "org.apache.maven.plugins";
 
     private static final String COMPILER_ARTIFACT = "maven-compiler-plugin";
@@ -270,7 +279,7 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
 
     /**
      * Gives a module's compile execution the id {@link #COMPILE_EXECUTION} as
-     * well.
+     * well, and points the module's output at {@link #COMPILE_OUTPUT}.
      * <p>
      * The execution copied is the one that runs the {@code compile} goal and is
      * not switched off with phase {@code none}, the same choice the daemon
@@ -310,6 +319,12 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
             plugin.addExecution(alias);
             // Plugin caches its executions by id once asked; see bind.
             plugin.flushExecutionMap();
+            // Also what a module downstream compiles against in this run.
+            File basedir = project.getBasedir();
+            if (basedir != null) {
+                project.getBuild().setOutputDirectory(
+                        new File(basedir, COMPILE_OUTPUT).getPath());
+            }
         }
     }
 

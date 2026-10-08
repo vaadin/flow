@@ -835,10 +835,20 @@ What it costs:
 Maven recompiling a module rewrites every class file in it, so the redefine
 is not handed the whole module: the daemon compares each class file the run
 touched with the bytes the running application holds, and only classes that
-are new or whose bytes changed are redefined. The comparison moves forward
-only when a redefine has been accepted, so an apply that compiled but never
-reached the application (`--no-restart`, or superseded by a newer apply)
-offers the same classes again next time.
+are new or whose bytes changed are copied into `target/classes` and
+redefined. The comparison moves forward only when a redefine has been
+accepted, so an apply that compiled but never reached the application
+(`--no-restart`, or superseded by a newer apply) offers the same classes again
+next time.
+
+Maven compiles into a directory of each module's own,
+`target/devloop/maven-classes`, which the build extension points the module's
+output at for the run; `target/classes`, which the application loads from, is
+written only by the daemon, and only with what changed. maven-compiler-plugin
+deletes a module's class files before it rebuilds the module and writes none
+back when the compile fails, which in `target/classes` would pull every class
+the application has not loaded yet from under it. Without the extension jar
+Maven compiles into `target/classes` itself, and the log says what that risks.
 
 ## Deletions
 

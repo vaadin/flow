@@ -111,8 +111,9 @@ class DevLoopBuildExtensionTest {
      * A module that switches the default compile execution off and binds one of
      * its own keeps that one's configuration under the shared id - which is
      * what lets one command line compile modules that disagree on the id. Asked
-     * twice, it still adds only one. The model is the resolve's to record, so a
-     * compile run leaves it alone.
+     * twice, it still adds only one. The module's classes go to a directory of
+     * their own. The model is the resolve's to record, so a compile run leaves
+     * it alone.
      */
     @Test
     void theCompileExecutionInUseIsAlsoKnownByTheSharedId() {
@@ -144,6 +145,10 @@ class DevLoopBuildExtensionTest {
         assertEquals("17", ((Xpp3Dom) alias.getConfiguration())
                 .getChild("release").getValue());
         assertEquals(3, compiler.getExecutions().size());
+        // Compiled beside, not into, what the running application loads.
+        assertEquals(
+                module.resolve(DevLoopBuildExtension.COMPILE_OUTPUT).toString(),
+                project.getBuild().getOutputDirectory());
         assertFalse(
                 Files.exists(module.resolve(DevLoopBuildExtension.MODEL_FILE)));
     }

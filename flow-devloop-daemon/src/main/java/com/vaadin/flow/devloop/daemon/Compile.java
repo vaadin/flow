@@ -137,6 +137,20 @@ final class Compile {
         Result compile(List<Path> sources, Launch.Project project);
 
         /**
+         * The class file a source was last compiled to, which says whether the
+         * source has to be compiled again.
+         *
+         * @param module
+         *            the module that owns the source
+         * @param source
+         *            the source
+         * @return its class file
+         */
+        default Path artifactFor(Reactor.Module module, Path source) {
+            return module.artifactFor(source);
+        }
+
+        /**
          * Records the class files the running application was launched with.
          *
          * @param classes
@@ -1379,7 +1393,7 @@ final class Compile {
 
     private boolean isStale(Reactor.Module module, Path source) {
         try {
-            Path artifact = module.artifactFor(source);
+            Path artifact = backend.artifactFor(module, source);
             if (!Files.isRegularFile(artifact)) {
                 return true;
             }

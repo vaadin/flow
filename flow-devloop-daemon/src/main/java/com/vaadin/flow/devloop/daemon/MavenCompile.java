@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +53,16 @@ import com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension;
  * module would slow the swap, and Flow's hot-swap handling would treat every
  * route in it as changed.
  * <p>
+ * Maven writes to a directory of its own in each module,
+ * {@code DevLoopBuildExtension#COMPILE_OUTPUT}, and only the class files whose
+ * bytes changed are copied on into the classes directory the application runs
+ * from. maven-compiler-plugin deletes a module's previous class files before it
+ * rebuilds the module and writes none back when the compile fails; in the
+ * classes directory that would take every class the application has not loaded
+ * yet from under it, and a class that once failed to resolve a reference keeps
+ * failing on it after the file is back. It also keeps a server that watches the
+ * classes directory from seeing a whole module rewritten on every apply.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 final class MavenCompile implements Compile.Backend {
@@ -83,10 +94,11 @@ final class MavenCompile implements Compile.Backend {
             .compile("^/[A-Za-z]:[/\\\\].*");
 
     /**
-     * A class file as of a moment the daemon knows its bytes for.
+     * The bytes of a class as of a moment the daemon knows them.
      *
      * @param stamp
-     *            the file's stamp then
+     *            the stamp Maven's output file had then, or {@code null} for
+     *            the bytes the application was launched with
      * @param digest
      *            the bytes' fingerprint, or {@code null} when not taken yet or
      *            unreadable
@@ -102,10 +114,14 @@ final class MavenCompile implements Compile.Backend {
      * @param vanished
      *            the loaded class files that are gone
      * @param classFiles
-     *            the class files behind {@code written}, with their stamps
+     *            the class files behind {@code written}, with the stamps of
+     *            Maven's output files they come from
+     * @param copies
+     *            Maven's output file for each class file in {@code classFiles},
+     *            which {@link #install} copies over it
      */
     record Diff(List<String> written, List<Path> vanished,
-            Map<Path, Compile.Stamp> classFiles) {
+            Map<Path, Compile.Stamp> classFiles, Map<Path, Path> copies) {
     }
 
     private final Compile owner;
@@ -113,15 +129,22 @@ final class MavenCompile implements Compile.Backend {
     private final Launch launch;
 
     /**
-     * The class files the running application holds, keyed by path.
+     * The class files the application was launched with, and their stamps then,
+     * until the first compile takes their digests into {@link #live}.
+     */
+    private final Map<Path, Compile.Stamp> launched = new ConcurrentHashMap<>();
+
+    /**
+     * The class files the running application holds, keyed by their path in the
+     * classes directory.
      * <p>
-     * Seeded when it is launched, with stamps only: digests are taken at the
-     * first compile, for the files whose stamp has not moved since - those
-     * bytes are still the ones it loaded. It moves forward only when a redefine
-     * has been accepted ({@link #markApplied}), never on a compile alone: a
-     * compile whose redefine never happens - superseded, or run with
-     * {@code --no-restart} - would otherwise hide its classes from the next
-     * apply, whose Maven run writes the same bytes again.
+     * Digests are taken at the first compile, for the files whose stamp has not
+     * moved since the launch - those bytes are still the ones it loaded. It
+     * moves forward only when a redefine has been accepted
+     * ({@link #markApplied}), never on a compile alone: a compile whose
+     * redefine never happens - superseded, or run with {@code --no-restart} -
+     * would otherwise hide its classes from the next apply, whose Maven run
+     * writes the same bytes again.
      */
     private final Map<Path, Known> live = new ConcurrentHashMap<>();
 
@@ -133,6 +156,12 @@ final class MavenCompile implements Compile.Backend {
 
     /** Whether the fallback to one execution id has been logged. */
     private volatile boolean warnedAboutExecution;
+
+    /**
+     * Whether Maven writes to {@code DevLoopBuildExtension#COMPILE_OUTPUT}
+     * rather than to the classes directory, which takes the build extension.
+     */
+    private volatile boolean staged = true;
 
     /**
      * @param owner
@@ -161,10 +190,7 @@ final class MavenCompile implements Compile.Backend {
         try {
             run = Launch.runMavenCommand(command(), launch.reactor().root());
         } catch (IOException e) {
-            return new Compile.Result(false,
-                    List.of(new Compile.Message("-", 0, 0, "io-error",
-                            String.valueOf(e.getMessage()), Optional.empty())),
-                    List.of(), millisSince(started));
+            return ioError(e, started);
         }
         if (!run.ok()) {
             List<Compile.Message> errors = parseErrors(run.output(),
@@ -177,6 +203,11 @@ final class MavenCompile implements Compile.Backend {
                     millisSince(started));
         }
         Diff diff = changedClasses(project.modules());
+        try {
+            install(diff, project.modules());
+        } catch (IOException e) {
+            return ioError(e, started);
+        }
         if (!diff.vanished().isEmpty()) {
             // Deleted sources are acted on by the deletion leg; this only says
             // that the build took class files away too.
@@ -191,13 +222,20 @@ final class MavenCompile implements Compile.Backend {
                 millisSince(started), diff.classFiles());
     }
 
+    private static Compile.Result ioError(IOException e, long started) {
+        return new Compile.Result(false,
+                List.of(new Compile.Message("-", 0, 0, "io-error",
+                        String.valueOf(e.getMessage()), Optional.empty())),
+                List.of(), millisSince(started));
+    }
+
     @Override
     public void seed(Map<Path, Compile.Stamp> classes) {
         live.clear();
         pending.clear();
         reportedGone.clear();
-        classes.forEach(
-                (file, stamp) -> live.put(file, new Known(stamp, null)));
+        launched.clear();
+        launched.putAll(classes);
     }
 
     /**
@@ -259,13 +297,17 @@ final class MavenCompile implements Compile.Backend {
             execution = reactor
                     .findExecution(COMPILER_GROUP, COMPILER_ARTIFACT, "compile")
                     .orElse(DEFAULT_EXECUTION);
+            staged = false;
             if (!warnedAboutExecution) {
                 warnedAboutExecution = true;
                 launch.log().line("maven compile: no build extension to load, "
                         + "so every module compiles with the configuration of "
-                        + "execution '" + execution + "'");
+                        + "execution '" + execution + "', straight into its "
+                        + "classes directory - a failed compile leaves the "
+                        + "classes Maven removed missing until the next one");
             }
         } else {
+            staged = true;
             command.addAll(extension);
             command.add(
                     "-D" + DevLoopBuildExtension.COMPILE_PROPERTY + "=true");
@@ -280,23 +322,56 @@ final class MavenCompile implements Compile.Backend {
     }
 
     /**
-     * Fingerprints the class files the application loaded whose bytes are still
-     * the ones it loaded, which is the comparison a run's output is made
-     * against. Each is read once in an application's life.
+     * Fingerprints the class files the application was launched with, which is
+     * the comparison a run's output is made against. Each is read once in an
+     * application's life, and only while its stamp is the one it was launched
+     * with - those bytes are still the ones it loaded.
      */
     void takeMissingDigests() {
-        live.forEach((file, known) -> {
-            if (known.digest() == null && Compile.stampOf(file)
-                    .map(known.stamp()::equals).orElse(false)) {
-                Compile.digestOf(file).ifPresent(digest -> live.put(file,
-                        new Known(known.stamp(), digest)));
-            }
-        });
+        launched.forEach((file, stamp) -> live.put(file,
+                new Known(null,
+                        Compile.stampOf(file).filter(stamp::equals)
+                                .flatMap(same -> Compile.digestOf(file))
+                                .orElse(null))));
+        launched.clear();
     }
 
     /**
-     * The classes a run changed, by comparing the output directories with what
-     * the running application holds.
+     * Where Maven writes a module's classes in a compile run.
+     *
+     * @param module
+     *            the module
+     * @return its own directory under {@code target/devloop}
+     */
+    static Path stagingDir(Reactor.Module module) {
+        return module.dir().resolve(DevLoopBuildExtension.COMPILE_OUTPUT);
+    }
+
+    private Path outputOf(Reactor.Module module) {
+        return staged ? stagingDir(module) : module.classesDir();
+    }
+
+    /**
+     * Maven's own output for a source, once a run has written it. A class whose
+     * bytes did not change is not copied into the classes directory, so the
+     * copy there can stay older than an edit that has been compiled. Until a
+     * run has written it - before the first one, or after one that failed - the
+     * classes directory's copy is the answer.
+     */
+    @Override
+    public Path artifactFor(Reactor.Module module, Path source) {
+        Path artifact = module.artifactFor(source);
+        if (!staged) {
+            return artifact;
+        }
+        Path built = stagingDir(module)
+                .resolve(module.classesDir().relativize(artifact).toString());
+        return Files.isRegularFile(built) ? built : artifact;
+    }
+
+    /**
+     * The classes a run changed, by comparing Maven's output with what the
+     * running application holds.
      * <p>
      * Stamps first, so only a class file the run touched is read. A touched
      * file whose bytes are the ones already live is not reported, and its new
@@ -310,17 +385,22 @@ final class MavenCompile implements Compile.Backend {
     Diff changedClasses(List<Reactor.Module> modules) {
         Set<String> written = new TreeSet<>();
         Map<Path, Compile.Stamp> classFiles = new HashMap<>();
+        Map<Path, Path> copies = new HashMap<>();
         Set<Path> seen = new HashSet<>();
         for (Reactor.Module module : modules) {
-            for (Path file : classFiles(module.classesDir())) {
-                Optional<Compile.Stamp> stamp = Compile.stampOf(file);
+            Path output = outputOf(module);
+            for (Path built : classFiles(output)) {
+                Optional<Compile.Stamp> stamp = Compile.stampOf(built);
                 if (stamp.isEmpty()) {
                     continue;
                 }
+                Path file = module.classesDir()
+                        .resolve(output.relativize(built).toString());
                 seen.add(file);
-                if (changed(file, stamp.get())) {
+                if (changed(file, built, stamp.get())) {
                     written.add(module.binaryNameOf(file));
                     classFiles.put(file, stamp.get());
+                    copies.put(file, built);
                 }
             }
         }
@@ -328,10 +408,21 @@ final class MavenCompile implements Compile.Backend {
         List<Path> vanished = live.keySet().stream()
                 .filter(file -> !seen.contains(file)).filter(reportedGone::add)
                 .sorted().toList();
-        return new Diff(List.copyOf(written), vanished, Map.copyOf(classFiles));
+        return new Diff(List.copyOf(written), vanished, Map.copyOf(classFiles),
+                Map.copyOf(copies));
     }
 
-    private boolean changed(Path file, Compile.Stamp stamp) {
+    /**
+     * Whether Maven's output for a class holds bytes the application does not.
+     *
+     * @param file
+     *            the class file in the classes directory
+     * @param built
+     *            Maven's output for it
+     * @param stamp
+     *            the stamp of Maven's output
+     */
+    private boolean changed(Path file, Path built, Compile.Stamp stamp) {
         Known loaded = live.get(file);
         if (loaded != null && stamp.equals(loaded.stamp())) {
             return false;
@@ -339,7 +430,7 @@ final class MavenCompile implements Compile.Backend {
         Known reported = pending.get(file);
         String digest = reported != null && stamp.equals(reported.stamp())
                 ? reported.digest()
-                : Compile.digestOf(file).orElse(null);
+                : Compile.digestOf(built).orElse(null);
         if (loaded != null && loaded.digest() != null
                 && loaded.digest().equals(digest)) {
             live.put(file, new Known(stamp, digest));
@@ -348,6 +439,58 @@ final class MavenCompile implements Compile.Backend {
         }
         pending.put(file, new Known(stamp, digest));
         return true;
+    }
+
+    /**
+     * Copies what a run changed into the classes directories: each reported
+     * class, and any other file Maven wrote that differs - what an annotation
+     * processor generates beside the classes, such as a service file. The rest
+     * of the classes directory is left alone, so a server watching it sees only
+     * what changed.
+     *
+     * @param diff
+     *            what the run changed
+     * @param modules
+     *            the modules in the loop
+     * @throws IOException
+     *             if a file could not be copied
+     */
+    void install(Diff diff, List<Reactor.Module> modules) throws IOException {
+        if (!staged) {
+            return;
+        }
+        for (Map.Entry<Path, Path> copy : diff.copies().entrySet()) {
+            copyOver(copy.getValue(), copy.getKey());
+        }
+        for (Reactor.Module module : modules) {
+            Path output = stagingDir(module);
+            for (Path built : otherFiles(output)) {
+                Path file = module.classesDir()
+                        .resolve(output.relativize(built).toString());
+                if (!Files.isRegularFile(file)
+                        || Files.mismatch(built, file) != -1) {
+                    copyOver(built, file);
+                }
+            }
+        }
+    }
+
+    private static void copyOver(Path from, Path to) throws IOException {
+        Files.createDirectories(to.getParent());
+        Files.copy(from, to, StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private static List<Path> otherFiles(Path dir) {
+        if (!Files.isDirectory(dir)) {
+            return List.of();
+        }
+        try (Stream<Path> walk = Files.walk(dir)) {
+            return walk.filter(path -> !path.toString().endsWith(CLASS_SUFFIX))
+                    .filter(Files::isRegularFile).toList();
+        } catch (IOException e) {
+            // Unreadable, the same as for the class files: nothing to copy.
+            return List.of();
+        }
     }
 
     private static List<Path> classFiles(Path classesDir) {

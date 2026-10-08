@@ -42,6 +42,9 @@ class MavenCompileTest {
     @TempDir
     private Path repo;
 
+    /** How many files {@link #build} has written. */
+    private int runs;
+
     /**
      * maven-compiler-plugin reports each error as it happens and again in the
      * failure summary, with the continuation lines prefixed the second time.
@@ -98,16 +101,64 @@ class MavenCompileTest {
     @Test
     void onlyNewClassesAndChangedBytesAreReported() throws IOException {
         Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
-        Path same = writeClass(app, "a/Same.class", "same bytes");
-        Path edited = writeClass(app, "a/Edited.class", "old bytes");
-        MavenCompile maven = launched(same, edited);
+        MavenCompile maven = launched(
+                writeClass(app, "a/Same.class", "same bytes"),
+                writeClass(app, "a/Edited.class", "old bytes"));
 
-        rewrite(same, "same bytes");
-        rewrite(edited, "new bytes");
-        writeClass(app, "a/Added.class", "added");
+        build(app, "a/Same.class", "same bytes");
+        build(app, "a/Edited.class", "new bytes");
+        build(app, "a/Added.class", "added");
 
         assertEquals(List.of("a.Added", "a.Edited"),
                 maven.changedClasses(List.of(app)).written());
+    }
+
+    /**
+     * Maven writes to a directory of its own, so a run that fails - after
+     * deleting the module's previous classes - leaves the classes directory the
+     * application loads from as it was. A run that succeeds changes there only
+     * what it changed, and what an annotation processor generated beside the
+     * classes.
+     */
+    @Test
+    void onlyWhatChangedReachesTheClassesDirectory() throws IOException {
+        Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
+        Path same = writeClass(app, "a/Same.class", "same bytes");
+        Path edited = writeClass(app, "a/Edited.class", "old bytes");
+        Compile.Stamp sameStamp = Compile.stampOf(same).orElseThrow();
+        MavenCompile maven = launched(same, edited);
+
+        build(app, "a/Same.class", "same bytes");
+        build(app, "a/Edited.class", "new bytes");
+        build(app, "a/Added.class", "added");
+        build(app, "META-INF/services/a.Service", "a.Impl");
+        maven.install(maven.changedClasses(List.of(app)), List.of(app));
+
+        assertEquals(Optional.of(sameStamp), Compile.stampOf(same));
+        assertEquals("new bytes", Files.readString(edited));
+        assertEquals("added",
+                Files.readString(app.classesDir().resolve("a/Added.class")));
+        assertEquals("a.Impl", Files.readString(
+                app.classesDir().resolve("META-INF/services/a.Service")));
+    }
+
+    /**
+     * Whether a source needs compiling is answered by Maven's own output: an
+     * edit that compiled to the same bytes is not copied on, so the classes
+     * directory's copy stays older than the source. Before Maven has written
+     * the class, the classes directory's copy answers.
+     */
+    @Test
+    void aSourceIsComparedWithWhatMavenLastBuiltForIt() throws IOException {
+        Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
+        Path source = app.sourceDir().resolve("a/View.java");
+        Path loaded = writeClass(app, "a/View.class", "bytes");
+        MavenCompile maven = launched(loaded);
+
+        assertEquals(loaded, maven.artifactFor(app, source));
+        build(app, "a/View.class", "bytes");
+        assertEquals(MavenCompile.stagingDir(app).resolve("a/View.class"),
+                maven.artifactFor(app, source));
     }
 
     /**
@@ -119,18 +170,18 @@ class MavenCompileTest {
     @Test
     void classesAreReportedUntilTheApplicationHasThem() throws IOException {
         Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
-        Path view = writeClass(app, "a/View.class", "old bytes");
-        MavenCompile maven = launched(view);
+        MavenCompile maven = launched(
+                writeClass(app, "a/View.class", "old bytes"));
 
-        rewrite(view, "new bytes");
+        build(app, "a/View.class", "new bytes");
         assertEquals(List.of("a.View"),
                 maven.changedClasses(List.of(app)).written());
-        rewrite(view, "new bytes");
+        build(app, "a/View.class", "new bytes");
         MavenCompile.Diff second = maven.changedClasses(List.of(app));
         assertEquals(List.of("a.View"), second.written());
 
         maven.markApplied(applied(second));
-        rewrite(view, "new bytes");
+        build(app, "a/View.class", "new bytes");
         assertEquals(List.of(), maven.changedClasses(List.of(app)).written());
     }
 
@@ -142,12 +193,12 @@ class MavenCompileTest {
     @Test
     void aRedefineTakesOnlyTheBytesItsCompileReported() throws IOException {
         Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
-        Path view = writeClass(app, "a/View.class", "old bytes");
-        MavenCompile maven = launched(view);
+        MavenCompile maven = launched(
+                writeClass(app, "a/View.class", "old bytes"));
 
-        rewrite(view, "first edit");
+        build(app, "a/View.class", "first edit");
         MavenCompile.Diff older = maven.changedClasses(List.of(app));
-        rewrite(view, "second edit");
+        build(app, "a/View.class", "second edit");
         maven.changedClasses(List.of(app));
         maven.markApplied(applied(older));
 
@@ -173,6 +224,7 @@ class MavenCompileTest {
         return maven;
     }
 
+    /** A class file in the classes directory the application loads from. */
     private static Path writeClass(Reactor.Module module, String relative,
             String bytes) throws IOException {
         Path file = module.classesDir().resolve(relative);
@@ -181,11 +233,17 @@ class MavenCompileTest {
         return file;
     }
 
-    /** Rewrites a file with a modification time no earlier write can share. */
-    private static void rewrite(Path file, String bytes) throws IOException {
-        long before = Files.getLastModifiedTime(file).toMillis();
+    /**
+     * A file as a Maven run writes it, with a modification time no earlier run
+     * can share.
+     */
+    private void build(Reactor.Module module, String relative, String bytes)
+            throws IOException {
+        Path file = MavenCompile.stagingDir(module).resolve(relative);
+        Files.createDirectories(file.getParent());
         Files.writeString(file, bytes);
-        Files.setLastModifiedTime(file, FileTime.fromMillis(before + 2000));
+        Files.setLastModifiedTime(file, FileTime
+                .fromMillis(System.currentTimeMillis() + 2000L * ++runs));
     }
 
     /**
