@@ -61,10 +61,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REQUESTER: ${{ github.event.sender.login }}
         run: |
+          # .permission rather than .role_name: maintain and custom roles
+          # based on write or maintain are reported as "write" there
           role=$(gh api "repos/${{ github.repository }}/collaborators/$REQUESTER/permission" \
-            --jq .role_name || echo none)
+            --jq .permission || echo none)
           case "$role" in
-            admin|maintain|write) echo "eligible=true" >> "$GITHUB_OUTPUT" ;;
+            admin|write) echo "eligible=true" >> "$GITHUB_OUTPUT" ;;
             *) echo "eligible=false" >> "$GITHUB_OUTPUT" ;;
           esac
 
