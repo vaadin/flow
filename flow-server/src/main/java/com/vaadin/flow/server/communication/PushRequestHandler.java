@@ -200,8 +200,9 @@ public class PushRequestHandler
                 "true");
         atmosphere.addInitParameter(ApplicationConfig.MESSAGE_DELIMITER,
                 String.valueOf(PushConstants.MESSAGE_DELIMITER));
-        // The client connects from the same origin. Disable Atmosphere's
-        // CorsInterceptor, which would reflect any Origin with credentials.
+        // Disable Atmosphere's CorsInterceptor, which reflects any Origin with
+        // credentials. Apps that embed Flow cross-origin handle CORS
+        // themselves.
         atmosphere.addInitParameter(
                 ApplicationConfig.DROP_ACCESS_CONTROL_ALLOW_ORIGIN_HEADER,
                 "true");
