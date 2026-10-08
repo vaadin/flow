@@ -391,12 +391,14 @@ class AbstractDownloadHandlerTest {
         when(request.getHeader("Range")).thenReturn(range);
 
         try (InputStream inputStream = new FileInputStream(file.toFile())) {
-            IOException failure = assertThrows(IOException.class,
+            AbstractDownloadHandler.RangeRequestException failure = assertThrows(
+                    AbstractDownloadHandler.RangeRequestException.class,
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
                             inputStream, outputStream, declaredLength,
                             file.toFile()));
+            assertFalse(failure.isCancelled());
             assertTrue(failure.getCause() instanceof EOFException);
         }
         // only a failure after the first chunk has set the 206 status
