@@ -51,6 +51,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -317,6 +318,51 @@ class PushHandlerTest {
         } finally {
             VaadinSession.setCurrent(null);
         }
+    }
+
+    @Test
+    void onConnect_noSessionForRequest_sessionExpiredNotificationSent()
+            throws Exception {
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                // As for a request that closes the application
+                return null;
+            }
+        };
+        setProductionMode(service, false);
+        AtomicReference<AtmosphereResource> res = new AtomicReference<>();
+
+        runTest(service, (handler, resource) -> {
+            Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+            handler.onConnect(resource);
+            res.set(resource);
+        });
+
+        Mockito.verify(res.get().getResponse().getWriter())
+                .write(VaadinService.createSessionExpiredJSON(true));
+    }
+
+    @Test
+    void connectionLost_noSessionForRequest_noFailure() {
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                // As for a request that closes the application
+                return null;
+            }
+        };
+        setProductionMode(service, false);
+        PushHandler handler = new PushHandler(service);
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        Mockito.when(resource.getRequest())
+                .thenReturn(Mockito.mock(AtmosphereRequest.class));
+        Mockito.when(resource.uuid()).thenReturn("1");
+        AtmosphereResourceEvent event = Mockito
+                .mock(AtmosphereResourceEvent.class);
+        Mockito.when(event.getResource()).thenReturn(resource);
+
+        assertDoesNotThrow(() -> handler.connectionLost(event));
     }
 
     @Test
