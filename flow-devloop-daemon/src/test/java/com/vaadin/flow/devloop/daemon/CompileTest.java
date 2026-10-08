@@ -853,7 +853,7 @@ class CompileTest {
 
     @Test
     void stale_aFutureDatedSourceStaysUnchangedAsTheClockCatchesUp()
-            throws IOException, InterruptedException {
+            throws IOException {
         // Seeded while far enough ahead to be capped, the source then drifts
         // within the skew as the clock moves on. Still newer than its class,
         // and still the stamp the app started with, it is no change.
@@ -873,7 +873,9 @@ class CompileTest {
         assumeTrue(System.currentTimeMillis() < withinSkew,
                 "seeded while the source was still capped");
 
-        Thread.sleep(withinSkew - System.currentTimeMillis() + 50);
+        while (System.currentTimeMillis() <= withinSkew) {
+            java.util.concurrent.locks.LockSupport.parkNanos(10_000_000);
+        }
 
         assertTrue(compile.stale().isEmpty());
     }
