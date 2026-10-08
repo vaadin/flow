@@ -50,11 +50,18 @@ public class StatisticsConstants {
     static final String FIELD_PROKEY = "proKey";
     static final String FIELD_USER_KEY = "userKey";
     static final String FIELD_MACHINE_ID = "machineId";
+    static final String FIELD_AI_AGENT = "aiAgent";
     static final String FIELD_PROJECTS = "projects";
     static final String VAADIN_PROJECT_SOURCE_TEXT = "Vaadin project from";
     static final String PROJECT_SOURCE_TEXT = "Project from";
     static final String BUILD_TOOL_MAVEN = "maven";
     static final String BUILD_TOOL_GRADLE = "gradle";
+    static final String AI_AGENT_CLAUDE = "claude";
+    static final String AI_AGENT_CODEX = "codex";
+    static final String AI_AGENT_GEMINI = "gemini";
+    static final String AI_AGENT_CURSOR = "cursor";
+    static final String AI_AGENT_OPENCODE = "opencode";
+    static final String AI_AGENT_OTHER = "other";
 
     /*
      * Default data values and limits.
