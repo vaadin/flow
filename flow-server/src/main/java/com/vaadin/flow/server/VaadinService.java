@@ -92,6 +92,7 @@ import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.dau.DAUCustomizer;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DAUVaadinRequestInterceptor;
+import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
@@ -140,6 +141,8 @@ public abstract class VaadinService implements Serializable {
             .getName() + ".reinitializing";
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
+
+    private static final String STATISTIC_THEME_ANNOTATION = "flow/theme-annotation";
 
     /**
      * Should never be used directly, always use
@@ -345,6 +348,7 @@ public abstract class VaadinService implements Serializable {
             }
             routeDataList.stream().map(Object::toString).forEach(logger::debug);
             addAutoLayoutUsageStatistics();
+            addThemeAnnotationUsageStatistics();
             DevToolsToken.init(this);
         }
         if (getDeploymentConfiguration().isPnpmEnabled()) {
@@ -436,6 +440,18 @@ public abstract class VaadinService implements Serializable {
                     Version.getFullVersion());
         }
         UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_FLOW_ROUTE, null);
+    }
+
+    /**
+     * Reports usage of the deprecated {@code @Theme} annotation on the
+     * application shell.
+     * <p>
+     * The theme name is not reported, as it is chosen by the application.
+     */
+    private void addThemeAnnotationUsageStatistics() {
+        if (ThemeUtils.getThemeAnnotation(getContext()).isPresent()) {
+            UsageStatistics.markAsUsed(STATISTIC_THEME_ANNOTATION, null);
+        }
     }
 
     private void addAutoLayoutUsageStatistics() {
