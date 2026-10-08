@@ -29,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * The compile leg is one instance across every module in the loop, but one
@@ -825,6 +826,117 @@ class CompileTest {
         // What the app did start with is still seeded, or every apply would
         // report every resource.
         assertTrue(changes.live().isEmpty());
+    }
+
+    @Test
+    void staleResources_seedingTakesAFutureDatedResourceAsReadAtStart()
+            throws IOException {
+        // An archive extracted in a time zone behind the one it was packed in
+        // dates every file hours ahead. Taken as newer than the start, the
+        // config would restart the app on every apply, each restart leaving
+        // it newer than the next start too.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Compile compile = new Compile(project(app));
+        compile.copyResources(List.of(config));
+        Files.setLastModifiedTime(config, FileTime
+                .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
+
+        long appStarted = System.currentTimeMillis();
+        compile.seedFromDisk(appStarted, appStarted);
+
+        assertTrue(compile.staleResources().startup().isEmpty());
+    }
+
+    @Test
+    void stale_aFutureDatedSourceIsAChangeOnlyWhenEdited() throws IOException {
+        // The same archive dates the sources ahead too. Newer than every class
+        // compiled from them, they would recompile on every apply, and an
+        // entity among them restarts the app each time.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Files.setLastModifiedTime(main, FileTime
+                .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
+        long appStarted = System.currentTimeMillis();
+        compile.seedFromDisk(appStarted, appStarted);
+
+        assertTrue(compile.stale().isEmpty());
+
+        Files.writeString(main, """
+                package app;
+                public class Main { int edited; }
+                """);
+
+        assertEquals(List.of(main), compile.stale().modified());
+    }
+
+    @Test
+    void stale_aFutureDatedSourceStaysUnchangedAsTheClockCatchesUp()
+            throws IOException {
+        // Seeded while far enough ahead to be capped, the source then drifts
+        // within the skew as the clock moves on. Still newer than its class,
+        // and still the stamp the app started with, it is no change.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        long dated = System.currentTimeMillis() + 60_500;
+        Files.setLastModifiedTime(main, FileTime.fromMillis(dated));
+        long appStarted = System.currentTimeMillis();
+        compile.seedFromDisk(appStarted, appStarted);
+        long withinSkew = dated - 60_000;
+        assumeTrue(System.currentTimeMillis() < withinSkew,
+                "seeded while the source was still capped");
+
+        while (System.currentTimeMillis() <= withinSkew) {
+            java.util.concurrent.locks.LockSupport.parkNanos(10_000_000);
+        }
+
+        assertTrue(compile.stale().isEmpty());
+    }
+
+    @Test
+    void stale_aSameSizeEditWithinTheBaselineMillisecondIsAChange()
+            throws IOException {
+        // A fingerprint keeps milliseconds, so an edit of the same length in
+        // the same millisecond matches it. The artifact time is compared at
+        // full precision and still sees the source as newer than its class.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Path classFile = app.classesDir().resolve("app").resolve("Main.class");
+        long second = System.currentTimeMillis() / 1000 * 1000 - 10_000;
+        Files.setLastModifiedTime(main, FileTime.fromMillis(second));
+        FileTime compiled = FileTime.from(
+                java.time.Instant.ofEpochMilli(second).plusNanos(100_000));
+        Files.setLastModifiedTime(classFile, compiled);
+        assumeTrue(compiled.equals(Files.getLastModifiedTime(classFile)),
+                "the file system keeps sub-millisecond times");
+        compile.seedFromDisk();
+
+        Files.setLastModifiedTime(main, FileTime.from(
+                java.time.Instant.ofEpochMilli(second).plusNanos(500_000)));
+
+        assertEquals(List.of(main), compile.stale().modified());
     }
 
     @Test

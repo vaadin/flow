@@ -224,6 +224,13 @@ final class Compile {
     }
 
     /**
+     * A source's stamp as of the last time it went live, and whether that stamp
+     * was dated ahead of the clock when it was recorded; see {@link #isStale}.
+     */
+    private record Applied(Stamp stamp, boolean futureDated) {
+    }
+
+    /**
      * What a resource said the last time the daemon acted on it.
      * <p>
      * The stamp is the cheap filter that decides whether the file is worth
@@ -354,6 +361,12 @@ final class Compile {
             .of("META-INF/resources/", "static/", "public/", "resources/");
 
     /**
+     * How far ahead of this clock a modification time may be and still be taken
+     * at face value; see {@link #predates}.
+     */
+    private static final long FUTURE_SKEW_MILLIS = 60_000;
+
+    /**
      * What makes a file a Java source, and what a type's name is its file name
      * minus.
      */
@@ -370,7 +383,7 @@ final class Compile {
     }
 
     /** Fingerprints of Java sources as of the last time they went live. */
-    private final Map<Path, Stamp> applied = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Map<Path, Applied> applied = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * The binary names of the class files the running application was launched
@@ -788,7 +801,7 @@ final class Compile {
                 (module, source,
                         stamp) -> notified
                                 .put(source,
-                                        stamp.modified() <= startedAtMillis
+                                        predates(stamp, startedAtMillis)
                                                 ? new Content(stamp,
                                                         digestOf(source)
                                                                 .orElse(null))
@@ -852,10 +865,46 @@ final class Compile {
         frontendNotified.clear();
         frontend.root()
                 .ifPresent(root -> forEachFrontendFile(root, (file, stamp) -> {
-                    if (stamp.modified() <= cutoffMillis) {
+                    if (predates(stamp, cutoffMillis)) {
                         frontendNotified.put(file, stamp);
                     }
                 }));
+    }
+
+    /**
+     * Whether a file was written no later than the cutoff, with a modification
+     * time in the future capped at the cutoff.
+     * <p>
+     * A save stamps a file with the current time, so a time well ahead of the
+     * clock was not set by an edit made since the application started: it came
+     * with the file. An archive extracted in a time zone behind the one it was
+     * packed in dates every file hours ahead, and taken at face value such a
+     * file stays newer than every start for those hours - a startup-only
+     * resource would restart the application on every apply, each restart
+     * leaving it as unseen as before.
+     * <p>
+     * Only a time more than {@link #FUTURE_SKEW_MILLIS} ahead is capped. A file
+     * system on another host - a network share, a container or VM mount - can
+     * stamp a real edit with a clock a few seconds ahead of this one, and such
+     * an edit must still count as made after the start.
+     *
+     * @param stamp
+     *            the file's stamp
+     * @param cutoffMillis
+     *            the newest modification time to accept
+     * @return {@code true} when the file counts as written by the cutoff
+     */
+    private static boolean predates(Stamp stamp, long cutoffMillis) {
+        return stamp.modified() <= cutoffMillis
+                || isFutureDated(stamp.modified());
+    }
+
+    /**
+     * Whether a modification time is too far ahead of the clock to have been
+     * set by an edit; see {@link #predates}.
+     */
+    private static boolean isFutureDated(long modifiedMillis) {
+        return modifiedMillis > System.currentTimeMillis() + FUTURE_SKEW_MILLIS;
     }
 
     /** A frontend file and its fingerprint; there is no owning module. */
@@ -1141,7 +1190,9 @@ final class Compile {
             // save
             // makes the .class newer than the .java, and a pure artifact check
             // then reports "no changes" for an edit the JVM has never loaded.
-            if (isStale(module, source) || !stamp.equals(applied.get(source))) {
+            Applied live = applied.get(source);
+            if (live == null || !stamp.equals(live.stamp())
+                    || isStale(module, source, live.futureDated())) {
                 modified.add(source);
             }
         });
@@ -1306,9 +1357,14 @@ final class Compile {
      */
     void markSourcesApplied(List<Path> sources, Result compiled) {
         for (Path source : sources) {
-            stampOf(source).ifPresent(stamp -> applied.put(source, stamp));
+            stampOf(source).ifPresent(stamp -> markApplied(source, stamp));
         }
         backend.markApplied(compiled);
+    }
+
+    private void markApplied(Path source, Stamp stamp) {
+        applied.put(source,
+                new Applied(stamp, isFutureDated(stamp.modified())));
     }
 
     /**
@@ -1340,8 +1396,8 @@ final class Compile {
             // windows a developer's next keystroke fits into, and a baseline
             // that walks "whatever is on disk now" claims those edits as the
             // application's own.
-            if (stamp.modified() <= startedAtMillis) {
-                applied.put(source, stamp);
+            if (predates(stamp, startedAtMillis)) {
+                markApplied(source, stamp);
             }
         });
         seedResources(startedAtMillis);
@@ -1395,11 +1451,20 @@ final class Compile {
         }
     }
 
-    private boolean isStale(Reactor.Module module, Path source) {
+    private boolean isStale(Reactor.Module module, Path source,
+            boolean futureDated) {
         try {
             Path artifact = backend.artifactFor(module, source);
             if (!Files.isRegularFile(artifact)) {
                 return true;
+            }
+            if (futureDated) {
+                // Dated ahead of the clock, the source stays newer than every
+                // artifact compiled from it until the clock catches up, so its
+                // time cannot answer this - not even once it is less than the
+                // skew ahead. An edit changes its stamp, which the baseline in
+                // stale() catches.
+                return false;
             }
             return Files.getLastModifiedTime(source)
                     .compareTo(Files.getLastModifiedTime(artifact)) > 0;
