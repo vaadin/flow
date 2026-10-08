@@ -246,8 +246,14 @@ describe('DefaultConnectionStateHandler', () => {
     const registry = makeRegistry(3);
     new DefaultConnectionStateHandler(registry.registry);
 
+    // A request that is not a hanging XHR, e.g. one sent over push, is left
+    // alone.
     dispatch('offline');
     registry.request.active = true;
+    dispatch('online');
+    expect(registry.log.endRequests).to.equal(0);
+
+    dispatch('offline');
     registry.request.abortable = true;
     dispatch('online');
 

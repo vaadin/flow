@@ -149,8 +149,11 @@ describe('XhrConnection', () => {
     it('reports a synchronous send failure as an exception', () => {
       const registry = makeRegistry();
       const fake = fakeXhr({ throwOnSend: true });
-      withFakeXhr(fake, () => new XhrConnection(registry).send({ rpc: [] }));
+      const connection = new XhrConnection(registry);
+      withFakeXhr(fake, () => connection.send({ rpc: [] }));
       expect(registry.calls).to.deep.equal(['exception']);
+      // The failed request is no longer waiting for its response.
+      expect(connection.abortActiveRequest()).to.be.false;
     });
 
     it('re-sends a request WebKit may have ignored during navigation', async () => {
