@@ -22,13 +22,15 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StringUtil;
 
 /**
@@ -60,6 +62,16 @@ import com.vaadin.flow.internal.StringUtil;
  */
 public record JsCall(Class<?> definitionType, String methodName,
         List<Object> arguments) implements Serializable {
+
+    /**
+     * The methods of each JavaScript definition, mapped to the identifier of
+     * the function each one declares, or to <code>null</code> for a method that
+     * declares no JavaScript. Cached since a call is resolved several times
+     * when it is sent, and resolving it otherwise copies the methods of the
+     * interface and hashes the declared JavaScript every time.
+     */
+    private static final ReflectionCache<Object, Map<Method, @Nullable String>> functionIds = new ReflectionCache<>(
+            JsCall::collectFunctionIds);
 
     /**
      * Creates a call of the given method of the given JavaScript definition.
@@ -115,9 +127,12 @@ public record JsCall(Class<?> definitionType, String methodName,
      * @return the function identifier, not <code>null</code>
      */
     public String getFunctionId() {
-        Method method = resolveMethod();
-        return functionId(expressionOf(method), method.getParameterCount(),
-                method.isVarArgs());
+        String functionId = functionIds.get(definitionType)
+                .get(resolveMethod());
+        if (functionId == null) {
+            throw notDeclaredException();
+        }
+        return functionId;
     }
 
     /**
@@ -206,11 +221,15 @@ public record JsCall(Class<?> definitionType, String methodName,
     private String expressionOf(Method method) {
         JsExpression annotation = method.getAnnotation(JsExpression.class);
         if (annotation == null) {
-            throw new IllegalStateException(
-                    "Method " + methodName + " of " + definitionType.getName()
-                            + " is not annotated with @JsExpression");
+            throw notDeclaredException();
         }
         return annotation.value();
+    }
+
+    private IllegalStateException notDeclaredException() {
+        return new IllegalStateException(
+                "Method " + methodName + " of " + definitionType.getName()
+                        + " is not annotated with @JsExpression");
     }
 
     /**
@@ -255,8 +274,11 @@ public record JsCall(Class<?> definitionType, String methodName,
      * limitation of the prototype rather than of the idea.
      */
     private Method resolveMethod() {
-        List<Method> candidates = ReflectTools.getMethodsWithParameterCount(
-                definitionType, methodName, arguments.size());
+        List<Method> candidates = functionIds.get(definitionType).keySet()
+                .stream()
+                .filter(method -> method.getName().equals(methodName)
+                        && method.getParameterCount() == arguments.size())
+                .toList();
         if (candidates.size() != 1) {
             throw new IllegalStateException("Expected exactly one method named "
                     + methodName + " with " + arguments.size()
@@ -264,5 +286,19 @@ public record JsCall(Class<?> definitionType, String methodName,
                     + candidates.size());
         }
         return candidates.get(0);
+    }
+
+    private static Map<Method, @Nullable String> collectFunctionIds(
+            Class<?> definitionType) {
+        Map<Method, @Nullable String> functionIds = new LinkedHashMap<>();
+        for (Method method : definitionType.getMethods()) {
+            JsExpression annotation = method.getAnnotation(JsExpression.class);
+            functionIds.put(method,
+                    annotation == null ? null
+                            : functionId(annotation.value(),
+                                    method.getParameterCount(),
+                                    method.isVarArgs()));
+        }
+        return Collections.unmodifiableMap(functionIds);
     }
 }

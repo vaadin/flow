@@ -111,6 +111,19 @@ class JsCallTest {
         assertTrue(exception.getMessage().contains("@JsExpression"),
                 "the message should name what the method is missing: "
                         + exception.getMessage());
+        assertThrows(IllegalStateException.class,
+                () -> call("undeclared").getFunctionId());
+    }
+
+    @Test
+    void getFunctionId_identifiesTheDeclaredFunction() {
+        JsCall call = call("showGreeting", "Hello");
+        assertEquals(JsCall.functionId(call.getExpression(), 1, false),
+                call.getFunctionId());
+
+        JsCall variadic = call("shout", "Hello", new Object[] { "a" });
+        assertEquals(JsCall.functionId(variadic.getExpression(), 2, true),
+                variadic.getFunctionId());
     }
 
     @Test
