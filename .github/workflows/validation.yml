@@ -37,11 +37,13 @@ env:
   # asked to. Central answers a client it has blocked with 403, and the retry
   # handler treats a status outside its retryable list as the final answer:
   # that list defaults to 429,503, so a 403 failed the build on the first
-  # artifact a job asked for. connectionMaxTtl keeps the 25 seconds the wagon
-  # property was meant to set, against a resolver default of 300.
+  # artifact a job asked for. The other 5xx statuses Central returns while it
+  # is overloaded or behind a failing proxy (500, 502, 504) are just as
+  # transient. connectionMaxTtl keeps the 25 seconds the wagon property was
+  # meant to set, against a resolver default of 300.
   MAVEN_ARGS: >-
     -Daether.connector.http.retryHandler.count=3
-    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
 jobs:
   build:
@@ -1073,7 +1075,8 @@ jobs:
         run: |
           echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from merge base ${{ steps.merge-base.outputs.merge_base_sha }} with ${{ env._BASE_REF }}"
           echo "Running in $(pwd)"
-          mvn clean install -B -ntp -DskipTests
+          "$GITHUB_WORKSPACE/scripts/runMavenWithRetry.sh" mvn-api-diff-base.out \
+            clean install -B -ntp -DskipTests
       - name: Use temporary flow version for PR
         # working-directory is not set, so it defaults back to the PR branch checkout
         run: |
@@ -1093,7 +1096,8 @@ jobs:
             fi
           done | paste -sd, -)
           echo "Comparing $MODULES"
-          mvn clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+          scripts/runMavenWithRetry.sh mvn-api-diff.out \
+            clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
           #!/bin/bash
