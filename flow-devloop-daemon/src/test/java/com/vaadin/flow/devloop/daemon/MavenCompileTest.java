@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import javax.tools.ToolProvider;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -216,6 +218,36 @@ class MavenCompileTest {
         assertTrue(Files.exists(kotlin));
         assertEquals(List.of("a.View$Removed"),
                 maven.removedClasses(List.of(app)));
+    }
+
+    /**
+     * A secondary top-level class - declared in another class's source - taken
+     * out before Maven has built anything, so its output has no record of it.
+     * Its class file names the source it came from, which is still there, so it
+     * goes too, and the application holding it is reported for a restart.
+     */
+    @Test
+    void aSecondaryTopLevelClassTakenOutIsRemoved() throws IOException {
+        Reactor.Module app = Reactor.Module.of(repo.resolve("app"), "app");
+        Path source = app.sourceDir().resolve("a/View.java");
+        Files.createDirectories(source.getParent());
+        Files.writeString(source,
+                "package a; public class View {} class Removed {}");
+        assertEquals(0, ToolProvider.getSystemJavaCompiler().run(null, null,
+                null, "-d", app.classesDir().toString(), source.toString()));
+        Path view = app.classesDir().resolve("a/View.class");
+        Path removed = app.classesDir().resolve("a/Removed.class");
+        MavenCompile maven = launched(view, removed);
+
+        Files.writeString(source, "package a; public class View {}");
+        Path built = MavenCompile.stagingDir(app).resolve("a/View.class");
+        Files.createDirectories(built.getParent());
+        Files.copy(view, built);
+        maven.changedClasses(List.of(app));
+        maven.install(List.of(app), Set.of());
+
+        assertFalse(Files.exists(removed));
+        assertEquals(List.of("a.Removed"), maven.removedClasses(List.of(app)));
     }
 
     /**

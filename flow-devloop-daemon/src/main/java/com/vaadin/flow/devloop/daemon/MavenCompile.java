@@ -452,9 +452,9 @@ final class MavenCompile implements Compile.Backend {
      * deletion leg's to remove, and left on disk it stays discoverable, a
      * removed route or bean included, even after a restart. Only a class file
      * Maven's output had before the run, or one compiled from a Java source
-     * that is still there, is removed: a class another compiler writes into the
-     * classes directory, Kotlin's for one, is not Maven's compile's to take
-     * away.
+     * that is still there (see {@link #hasJavaSource}), is removed: a class
+     * another compiler writes into the classes directory, Kotlin's for one, is
+     * not Maven's compile's to take away.
      *
      * @param modules
      *            the modules in the loop
@@ -516,15 +516,30 @@ final class MavenCompile implements Compile.Backend {
     }
 
     /**
-     * Whether a class file comes from a Java source that is still there: its
-     * top-level class's {@code .java} file in the module's sources.
+     * Whether a class file comes from a Java source that is still there. The
+     * source is the one its {@code SourceFile} attribute names, which is what
+     * ties a secondary top-level class - {@code class Removed} declared in
+     * {@code View.java} - to its file; only a class compiled without the
+     * attribute ({@code -g:none}) falls back to its top-level class's name. A
+     * source that is not Java - Kotlin's {@code .kt} - is not Maven's
+     * compile's.
      */
     private static boolean hasJavaSource(Reactor.Module module, Path file) {
-        String name = module.binaryNameOf(file);
+        Path relative = module.classesDir().relativize(file);
+        String name = relative.getFileName().toString();
         int nested = name.indexOf('$');
-        String topLevel = nested < 0 ? name : name.substring(0, nested);
-        return Files.isRegularFile(module.sourceDir()
-                .resolve(topLevel.replace('.', '/') + ".java"));
+        String topLevel = nested < 0
+                ? name.substring(0, name.length() - CLASS_SUFFIX.length())
+                : name.substring(0, nested);
+        String sourceFile = ClassFile.read(file).map(ClassFile::sourceFile)
+                .orElse(topLevel + ".java");
+        if (!sourceFile.endsWith(".java")) {
+            return false;
+        }
+        Path packageDir = relative.getParent();
+        Path sources = packageDir == null ? module.sourceDir()
+                : module.sourceDir().resolve(packageDir.toString());
+        return Files.isRegularFile(sources.resolve(sourceFile));
     }
 
     /**
