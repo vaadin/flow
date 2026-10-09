@@ -35,10 +35,10 @@ import com.vaadin.flow.server.VaadinServletService;
  * Byte range requests, which media players use to seek and browsers use to
  * resume a download, are answered with the requested part of the resource. For
  * a resource inside a packaged war, the bytes before a range may have to be
- * read and skipped, depending on the servlet container. A compressed entry of a
- * jar or war larger than 16 MB is always sent whole, as each range would
- * inflate it from its start. Use {@link DownloadHandler#forFile(java.io.File)}
- * for large media.
+ * read and skipped, depending on the servlet container. A resource larger than
+ * 16 MB is therefore always sent whole, unless it is a file or an uncompressed
+ * jar entry, as each range could inflate it from its start. Use
+ * {@link DownloadHandler#forFile(java.io.File)} for large media.
  *
  * @since 24.8
  */

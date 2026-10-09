@@ -20,9 +20,12 @@ import jakarta.servlet.ServletContext;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -361,17 +364,16 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "true, 206", "false, 200" })
-    void handleDownloadRequest_largeJarEntry_rangesServedOnlyWhenStored(
-            boolean stored, int status, @TempDir Path tempDir)
-            throws IOException {
-        byte[] content = new byte[(int) AbstractDownloadHandler.SeekableContent.MAX_COMPRESSED_RANGE_LENGTH
+    @CsvSource({ "STORED, 206", "DEFLATED, 200", "CONTAINER, 200" })
+    void handleDownloadRequest_largeResource_rangesServedOnlyWhenSeekable(
+            String kind, int status, @TempDir Path tempDir) throws IOException {
+        byte[] content = new byte[(int) AbstractDownloadHandler.SeekableContent.MAX_UNSEEKABLE_RANGE_LENGTH
                 + 1];
         Path jar = tempDir.resolve("resources.jar");
         try (JarOutputStream jarOutput = new JarOutputStream(
                 Files.newOutputStream(jar))) {
             JarEntry entry = new JarEntry("video.mp4");
-            if (stored) {
+            if ("STORED".equals(kind)) {
                 CRC32 crc = new CRC32();
                 crc.update(content);
                 entry.setMethod(ZipEntry.STORED);
@@ -381,10 +383,38 @@ class ServletResourceDownloadHandlerTest {
             jarOutput.putNextEntry(entry);
             jarOutput.write(content);
         }
+        URL jarUrl = new URL("jar:" + jar.toUri() + "!/video.mp4");
+        // an archive opened by the servlet container, such as a packed war,
+        // whose connection is not a JarURLConnection
+        URL containerUrl = new URL(null, "war:" + jar.toUri() + "*/video.mp4",
+                new URLStreamHandler() {
+                    @Override
+                    protected URLConnection openConnection(URL url)
+                            throws IOException {
+                        URLConnection jarConnection = jarUrl.openConnection();
+                        return new URLConnection(url) {
+                            @Override
+                            public void connect() {
+                                connected = true;
+                            }
+
+                            @Override
+                            public long getContentLengthLong() {
+                                return jarConnection.getContentLengthLong();
+                            }
+
+                            @Override
+                            public InputStream getInputStream()
+                                    throws IOException {
+                                return jarConnection.getInputStream();
+                            }
+                        };
+                    }
+                });
         ServletContext servletContext = ((VaadinServletService) request
                 .getService()).getServlet().getServletContext();
         when(servletContext.getResource(anyString()))
-                .thenReturn(new URL("jar:" + jar.toUri() + "!/video.mp4"));
+                .thenReturn("CONTAINER".equals(kind) ? containerUrl : jarUrl);
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
