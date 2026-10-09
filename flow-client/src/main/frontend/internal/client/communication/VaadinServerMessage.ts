@@ -24,8 +24,10 @@ import type { VaadinRequest } from './VaadinRequest';
  * - `discarded`: the client dropped the message without handling it: it could
  *   not be parsed, it repeated a message already handled, it was dropped while
  *   waiting for an earlier message, or the application had stopped.
+ * - `failed`: handling the message threw an error, so it may be applied only
+ *   in part.
  */
-export type VaadinServerMessageOutcome = 'applied' | 'discarded';
+export type VaadinServerMessageOutcome = 'applied' | 'discarded' | 'failed';
 
 /**
  * The events a {@link VaadinServerMessage} dispatches, by type.
@@ -36,7 +38,9 @@ export type VaadinServerMessageOutcome = 'applied' | 'discarded';
  *   other work holds handling back, before it loads the dependencies the
  *   message brings.
  * - `end`: {@link VaadinServerMessage.outcome} says how the message was
- *   handled. Dispatched exactly once, as the last event.
+ *   handled. Dispatched exactly once, as the last event, except for a message
+ *   that waits for an eager dependency that never loads, as the client never
+ *   gets to handle it.
  */
 export interface VaadinServerMessageEventMap {
   parsed: Event;

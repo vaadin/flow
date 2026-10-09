@@ -252,6 +252,17 @@ export class MessageHandler {
   }
 
   protected handleJSON(valueMap: ValueMap): void {
+    try {
+      this.#handleJSON(valueMap);
+    } catch (e) {
+      // Ends the message unless it already ended, for example as failed by
+      // #processMessage.
+      this.#endMessage(valueMap, 'failed');
+      throw e;
+    }
+  }
+
+  #handleJSON(valueMap: ValueMap): void {
     const serverId = getServerId(valueMap);
     const hasResynchronize = isResynchronize(valueMap);
 
@@ -425,6 +436,7 @@ export class MessageHandler {
     if ('timings' in valueMap) {
       this.#serverTimingInfo = valueMap.timings as number[];
     }
+    let applied = false;
     try {
       const processUidlStart = performance.now();
       if ('changes' in valueMap) {
@@ -472,6 +484,7 @@ export class MessageHandler {
         }
       }
       this.#nextResponseSessionExpiredHandler = null;
+      applied = true;
     } finally {
       // Mark the initial UIDL handled and end the request in finally so the UI
       // settles (ApplicationConnection.isActive returns false) even if applying
@@ -497,7 +510,7 @@ export class MessageHandler {
 
       Console.debug(` Processing time was ${this.lastProcessingTime}ms`);
 
-      this.#endMessage(valueMap, 'applied');
+      this.#endMessage(valueMap, applied ? 'applied' : 'failed');
       this.#endRequestIfResponse(valueMap);
       this.resumeResponseHandling(lock);
 

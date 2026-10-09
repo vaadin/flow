@@ -386,9 +386,16 @@ describe('MessageHandler', () => {
         handler.handleMessage({ syncId: 0, meta: { async: true } }, stale.message);
         expect(stale.events).to.deep.equal(['message parsed false', 'message end discarded']);
 
+        // A message waiting for an earlier one when a resynchronization
+        // overtakes it.
+        const overtaken = announce(registry, handler);
+        handler.handleMessage({ syncId: 4, meta: { async: true } }, overtaken.message);
+        handler.handleMessage({ syncId: 6, resynchronize: true });
+        expect(overtaken.events).to.deep.equal(['message parsed false', 'message end discarded']);
+
         // A message waiting for an earlier one when the application stops.
         const waiting = announce(registry, handler);
-        handler.handleMessage({ syncId: 5, meta: { async: true } }, waiting.message);
+        handler.handleMessage({ syncId: 9, meta: { async: true } }, waiting.message);
         registry.registry.getUILifecycle().setState(UIState.TERMINATED);
         expect(waiting.events).to.deep.equal(['message parsed false', 'message end discarded']);
 
@@ -396,6 +403,46 @@ describe('MessageHandler', () => {
         const late = announce(registry, handler);
         handler.handleMessage({ syncId: 2, meta: { async: true } }, late.message);
         expect(late.events).to.deep.equal(['message parsed false', 'message end discarded']);
+      });
+
+      it('ends a message waiting for one that never arrives as discarded', async () => {
+        // The configuration allows 200 ms of message suspension.
+        const registry = makeRegistry(200);
+        const handler = new MessageHandler(registry.registry);
+        handler.handleMessage({ syncId: 1 });
+        const waiting = announce(registry, handler);
+        handler.handleMessage({ syncId: 3, meta: { async: true } }, waiting.message);
+        expect(waiting.events).to.deep.equal(['message parsed false']);
+
+        await new Promise((resolve) => {
+          setTimeout(resolve, 300);
+        });
+        expect(waiting.events).to.deep.equal(['message parsed false', 'message end discarded']);
+      });
+
+      it('ends a message whose handling throws as failed', () => {
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+        // The tree has no node for the change to apply to.
+        const applying = announce(registry, handler);
+        expect(() =>
+          handler.handleMessage(
+            { syncId: 0, meta: { async: true }, changes: [{ node: 1, type: 'attach' }] },
+            applying.message
+          )
+        ).to.throw();
+        expect(applying.events).to.deep.equal(['message parsed false', 'message start', 'message end failed']);
+
+        // Throwing before handling starts ends the message too.
+        const error = new Error('cannot import');
+        registry.registry.getConstantPool().importFromJson = () => {
+          throw error;
+        };
+        const importing = announce(registry, handler);
+        expect(() =>
+          handler.handleMessage({ syncId: 1, meta: { async: true }, constants: {} }, importing.message)
+        ).to.throw(error);
+        expect(importing.events).to.deep.equal(['message parsed false', 'message end failed']);
       });
     });
 

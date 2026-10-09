@@ -24,6 +24,7 @@ import { getScheduler } from './TrackingScheduler';
 import { UIState } from './UILifecycle';
 import { redirect } from './WidgetUtil';
 import { Console } from './Console';
+import { dispatchMessageEnd } from './communication/VaadinServerMessage';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';
@@ -191,8 +192,14 @@ export class SystemErrorHandler {
         // heartbeat requests for different UIs.
         this.#registry.getHeartbeat().setInterval(-1);
 
+        const message = this.#registry.getMessageHandler().announceMessage();
         const uiId = configuration.getUIId();
-        const json = parseJson(responseText)!;
+        const json = parseJson(responseText);
+        if (json === null) {
+          Console.error('Ignored unparseable session resynchronization message');
+          dispatchMessageEnd(message, 'discarded');
+          return;
+        }
         const newUiId = json[UI_ID] as number;
         if (newUiId !== uiId) {
           Console.debug(`UI ID switched from ${uiId} to ${newUiId} after resynchronization`);
@@ -201,7 +208,7 @@ export class SystemErrorHandler {
         this.#registry.reset();
 
         this.#registry.getUILifecycle().setState(UIState.RUNNING);
-        this.#registry.getMessageHandler().handleMessage(json);
+        this.#registry.getMessageHandler().handleMessage(json, message);
 
         if (this.#registry.getPushConfiguration().isPushEnabled()) {
           // The push connection may have been closed in response to server

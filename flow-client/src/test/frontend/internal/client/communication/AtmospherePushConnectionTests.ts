@@ -73,7 +73,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
         log.announced.push(message);
         return message;
       },
-      handleMessage: (json: unknown) => log.handled.push(json)
+      handleMessage: (json: unknown, message: VaadinServerMessage) => log.handled.push({ json, message })
     },
     ResourceLoader: { loadScript: () => {} }
   });
@@ -205,7 +205,8 @@ describe('AtmospherePushConnection', () => {
       capture.config!.onOpen(response('websocket'));
 
       capture.config!.onMessage(response('websocket', '{"syncId":0}'));
-      expect(log.handled).to.deep.equal([{ syncId: 0 }]);
+      // Handed on with the message announced for it.
+      expect(log.handled).to.deep.equal([{ json: { syncId: 0 }, message: log.announced[0] }]);
 
       capture.config!.onMessage(response('websocket', 'not json'));
       expect(log.pushInvalidContent).to.deep.equal(['not json']);
