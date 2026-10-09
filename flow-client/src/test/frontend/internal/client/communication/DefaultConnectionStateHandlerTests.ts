@@ -161,7 +161,7 @@ describe('DefaultConnectionStateHandler', () => {
     handler.pushError({ isBidirectional: () => true } as never, { transport: 'websocket' });
     expect(registry.log.unrecoverable[0]).to.contain('websocket');
   });
-  it('reconnects a pending push reconnect only for a bidirectional transport', () => {
+  it('reconnects a pending push reconnect only for a websocket transport', () => {
     // Beyond the Java suite: No Java case covers pushReconnectPending.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry.registry);
@@ -169,23 +169,13 @@ describe('DefaultConnectionStateHandler', () => {
 
     // Long polling does not necessarily know when the connection is available
     // again, so the reconnect is left to the next failing xhr.
-    handler.pushReconnectPending({ isBidirectional: () => false } as never);
+    handler.pushReconnectPending({ getTransportType: () => 'long-polling' } as never);
     expect(getState()).to.equal(initialState);
     expect(registry.log.heartbeatSends).to.equal(0);
 
-    // A bidirectional transport tells us when it is back, so reconnect now.
-    handler.pushReconnectPending({ isBidirectional: () => true } as never);
-    expect(getState()).to.equal(RECONNECTING);
-    expect(registry.log.heartbeatSends).to.equal(1);
-  });
-
-  it('reconnects a pending websocket push reconnect when messages are sent over xhr', () => {
-    const registry = makeRegistry(3);
-    const handler = new DefaultConnectionStateHandler(registry.registry);
-
-    // The default websocket-xhr transport closes the websocket when the server
-    // is lost, the same as a bidirectional websocket does.
-    handler.pushReconnectPending({ isBidirectional: () => false, getTransportType: () => 'websocket' } as never);
+    // A websocket tells us when it is back, so reconnect now, also when
+    // messages to the server are sent over xhr.
+    handler.pushReconnectPending({ getTransportType: () => 'websocket', isBidirectional: () => false } as never);
     expect(getState()).to.equal(RECONNECTING);
     expect(registry.log.heartbeatSends).to.equal(1);
   });

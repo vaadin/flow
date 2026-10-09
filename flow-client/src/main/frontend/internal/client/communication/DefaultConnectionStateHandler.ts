@@ -326,9 +326,10 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   pushReconnectPending(pushConnection: PushConnection): void {
     Console.debug('Reopening push connection');
-    if (pushConnection.isBidirectional()) {
-      // Lost connection for a connection which will tell us when the connection
-      // is available again
+    if (pushConnection.getTransportType() === 'websocket') {
+      // Lost connection for a websocket, which tells us when the connection is
+      // available again. This includes a websocket that only receives, with
+      // messages to the server sent over XHR.
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
     } else {
       // Lost connection for a connection we do not necessarily know when it is
