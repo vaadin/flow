@@ -19,23 +19,37 @@ import io.quarkus.test.junit.QuarkusIntegrationTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.quarkus.it.featureflags.FeatureFlagView;
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.quarkus.it.serviceloader.ServiceLoaderView;
 import com.vaadin.flow.test.AbstractChromeIT;
 
 @QuarkusIntegrationTest
-class FeatureFlagIT extends AbstractChromeIT {
+class ServiceLoaderIT extends AbstractChromeIT {
 
     @Override
     protected String getTestPath() {
-        return "/feature-flag";
+        return "/service-loader";
     }
 
     @Test
-    void open_flagOfApplicationProviderEnabledInPropertiesFile() {
+    void open_initListenerFromServiceFileRan() {
         open();
 
-        Assertions.assertEquals("Feature flag quarkusTestFeature enabled: true",
-                $(SpanElement.class).id(FeatureFlagView.FEATURE_ID).getText());
+        Assertions
+                .assertEquals("Init listener from META-INF/services ran: true",
+                        $(DivElement.class)
+                                .id(ServiceLoaderView.INIT_LISTENER_RAN_ID)
+                                .getText());
+    }
+
+    @Test
+    void open_routeFilterFromServiceFileApplied() {
+        open();
+
+        Assertions.assertEquals(
+                "Route rejected by the filter from META-INF/services registered: false",
+                $(DivElement.class)
+                        .id(ServiceLoaderView.FILTERED_ROUTE_REGISTERED_ID)
+                        .getText());
     }
 }

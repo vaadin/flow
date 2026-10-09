@@ -21,27 +21,30 @@ import org.junit.Test;
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class ResourcesIT extends ChromeBrowserTest {
+public class ServiceLoaderIT extends ChromeBrowserTest {
 
     @Test
-    public void open_featureFlagOfApplicationProviderRead() {
+    public void open_initListenerFromServiceFileRan() {
         open();
 
-        Assert.assertEquals(
-                "Feature flag springNativeTestFeature enabled: true",
-                $(DivElement.class).id(ResourcesView.FEATURE_ID).getText());
+        Assert.assertEquals("Init listener from META-INF/services ran: true",
+                $(DivElement.class).id(ServiceLoaderView.INIT_LISTENER_RAN_ID)
+                        .getText());
     }
 
     @Test
-    public void open_jsModuleLoaded() {
+    public void open_routeFilterFromServiceFileApplied() {
         open();
 
-        waitUntil(driver -> Boolean.TRUE
-                .equals(executeScript("return window.nativeModuleLoaded")));
+        Assert.assertEquals(
+                "Route rejected by the filter from META-INF/services registered: false",
+                $(DivElement.class)
+                        .id(ServiceLoaderView.FILTERED_ROUTE_REGISTERED_ID)
+                        .getText());
     }
 
     @Override
     protected String getTestPath() {
-        return "/resources";
+        return "/service-loader";
     }
 }

@@ -200,9 +200,12 @@ public class PushRequestHandler
                 "true");
         atmosphere.addInitParameter(ApplicationConfig.MESSAGE_DELIMITER,
                 String.valueOf(PushConstants.MESSAGE_DELIMITER));
+        // Disable Atmosphere's CorsInterceptor, which reflects any Origin with
+        // credentials. Apps that embed Flow cross-origin handle CORS
+        // themselves.
         atmosphere.addInitParameter(
                 ApplicationConfig.DROP_ACCESS_CONTROL_ALLOW_ORIGIN_HEADER,
-                "false");
+                "true");
 
         // Set default max WS idle time to 5 minutes (300 000 ms)
         atmosphere.addInitParameter(ApplicationConfig.WEBSOCKET_IDLETIME,
