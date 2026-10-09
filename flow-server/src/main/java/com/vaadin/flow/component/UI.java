@@ -242,6 +242,7 @@ public class UI extends Component
      * @throws IllegalStateException
      *             if this UI is not attached to a session
      * @see #getSession()
+     * @since 25.4
      */
     public VaadinSession getSessionOrThrow() {
         VaadinSession session = getSession();

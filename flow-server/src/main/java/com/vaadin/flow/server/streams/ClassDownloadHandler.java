@@ -18,11 +18,12 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a class resource.
@@ -30,6 +31,13 @@ import com.vaadin.flow.server.communication.TransferUtil;
  * For instance for the file {@code resources/com/example/ui/MyData.json} and
  * class {@code com.example.ui.MyData} the definition would be
  * {@code forClassResource(MyData.class, "MyData.json")}
+ * <p>
+ * Byte range requests, which media players use to seek, are answered only when
+ * the resource is a file on disk, such as with exploded classes in a
+ * development environment. A resource inside a packaged jar or war is always
+ * sent whole, so seeking in audio or video served from it does not work. Use
+ * {@link DownloadHandler#forFile(java.io.File)} to serve seekable media in
+ * production.
  *
  * @since 24.8
  */
@@ -89,16 +97,17 @@ public class ClassDownloadHandler
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
         setTransferUI(downloadEvent.getUI());
-        if (clazz.getResource(resourceName) == null) {
+        URL resource = clazz.getResource(resourceName);
+        if (resource == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
             downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.NOT_FOUND.getCode());
             return;
         }
+        URLConnection connection = resource.openConnection();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
-                InputStream inputStream = clazz
-                        .getResourceAsStream(resourceName)) {
+                InputStream inputStream = connection.getInputStream()) {
             String resourceName = getUrlPostfix();
             downloadEvent.setContentType(
                     getContentType(resourceName, downloadEvent.getResponse()));
@@ -107,8 +116,14 @@ public class ClassDownloadHandler
             } else {
                 downloadEvent.setFileName(resourceName);
             }
-            TransferUtil.transfer(inputStream, outputStream,
-                    getTransferContext(downloadEvent), getListeners());
+            transferContent(downloadEvent, inputStream, outputStream,
+                    connection.getContentLengthLong(), toFile(resource));
+        } catch (RangeRequestException e) {
+            // Not reported again: a cancel is not an error, and a smaller
+            // range was never reported as started
+            if (!e.isCancelled()) {
+                throw e;
+            }
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             downloadEvent.getResponse()

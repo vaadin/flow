@@ -145,13 +145,30 @@ public sealed interface Foo permits FooA, FooB, FooC {}
 
 - Apply `@NullMarked` at the package level (JSpecify). Only `@Nullable`
   what genuinely may be null.
-- Prefer sentinel values over nullable returns in the public API
-  (`UNKNOWN` enum constant, `Pending` record).
+- **Collections: return empty, never `null`.** A method returning a
+  `List`, `Set`, `Map`, `Stream` or array returns an empty one when
+  there are no values (`List.of()`, `Stream.empty()`). Callers can
+  iterate without a null check, and "no values" has a single spelling.
+- **Optional properties: return `@Nullable T`, not `Optional<T>`.** A
+  getter for a value that may simply be unset — `getLabel()`,
+  `getPlaceholder()`, `getTitle()` — returns a `@Nullable String` (or
+  other type), matching the setter that accepts `null` to clear it.
+  NullAway already makes callers handle the `null` case, so `Optional`
+  adds an allocation and a second style without adding safety. Existing
+  `Optional`-returning methods such as `Component.getUI()` stay as they
+  are for compatibility; don't add new ones.
+- **Don't encode "not set" as a fake value.** Return `null`, not `""`,
+  `-1` or `0`, when nothing is set — a stand-in value can not be told
+  apart from a value the application actually set.
+- **Signals and result types use a named state, not `null`.** When a
+  signal or "one of N things" value has a real "no data yet" state,
+  model it as an enum constant (`UNKNOWN`) or a record in the sealed
+  hierarchy (`Pending`) — see *Signals for reactive state* above — so
+  callers handle it in an exhaustive `switch`.
 - Jackson wire records (the record used to decode `executeJs` return
-  values or DOM event payloads) are the legitimate exception — their
-  fields may be `@Nullable` because the wire format permits omissions.
-  Keep the wire record private and translate to a non-null public shape
-  at the boundary.
+  values or DOM event payloads) may have `@Nullable` fields because the
+  wire format permits omissions. Keep the wire record private and
+  translate it to the public shape at the boundary.
 - `@Nullable` belongs on the declared type — `ValueSignal<@Nullable X>` —
   and NullAway infers it for the constructor, so `new ValueSignal<>(null)`
   and `Signal.cached(...)` need no repeated type argument or type witness.

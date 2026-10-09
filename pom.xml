@@ -119,7 +119,7 @@
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.7</jackson.version>
     <jaxb.version>4.0.9</jaxb.version>
-    <guava.version>33.7.1-jre</guava.version>
+    <guava.version>33.7.2-jre</guava.version>
     <junit.jupiter.version>6.1.3</junit.jupiter.version>
     <weld.version>6.0.4.Final</weld.version>
     <weld.junit.version>5.0.3.Final</weld.junit.version>
@@ -139,7 +139,7 @@
          repository metadata when modules install in parallel (-T). -->
     <maven.install.plugin.version>3.2.0</maven.install.plugin.version>
     <testbench.version>25.3.0</testbench.version>
-    <jetty.version>12.1.13</jetty.version>
+    <jetty.version>12.1.14</jetty.version>
     <properties-maven-plugin.version>1.3.1</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.2</build-helper-maven-plugin.version>
     <maven.version>3.10.0</maven.version>
@@ -266,7 +266,7 @@
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.10.1</version>
+        <version>9.11</version>
       </dependency>
       <dependency>
         <groupId>com.vaadin</groupId>

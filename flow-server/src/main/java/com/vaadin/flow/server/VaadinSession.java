@@ -575,6 +575,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *             if no session is bound to the current thread
      * @see #getCurrent()
      * @see #access(Command)
+     * @since 25.4
      */
     public static VaadinSession getCurrentOrThrow() {
         VaadinSession session = getCurrent();

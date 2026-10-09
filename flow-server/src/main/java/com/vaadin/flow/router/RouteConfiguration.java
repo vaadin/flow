@@ -593,6 +593,7 @@ public class RouteConfiguration implements Serializable {
      * @throws NotFoundException
      *             in case the navigationTarget is not registered with a url
      *             template matching the given parameters.
+     * @since 25.4
      */
     public String getUrl(Class<? extends Component> navigationTarget,
             RouteParameters parameters, QueryParameters queryParameters) {

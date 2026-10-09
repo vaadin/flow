@@ -32,10 +32,10 @@ class FeatureFlagIT extends AbstractChromeIT {
     }
 
     @Test
-    void open_flagFromPropertiesFileEnabled() {
+    void open_flagOfApplicationProviderEnabledInPropertiesFile() {
         open();
 
-        Assertions.assertEquals("true",
+        Assertions.assertEquals("Feature flag quarkusTestFeature enabled: true",
                 $(SpanElement.class).id(FeatureFlagView.FEATURE_ID).getText());
     }
 }

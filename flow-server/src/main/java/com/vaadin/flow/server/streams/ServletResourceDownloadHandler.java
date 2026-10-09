@@ -18,18 +18,26 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a servlet resource for client download.
  * <p>
  * For instance for the file {@code webapp/WEB-INF/servlet.json} the path would
  * be {@code /WEB-INF/servlet.json}
+ * <p>
+ * Byte range requests, which media players use to seek, are answered only when
+ * the resource is a file on disk, such as in an exploded web application in a
+ * development environment. A resource inside a packaged jar or war is always
+ * sent whole, so seeking in audio or video served from it does not work. Use
+ * {@link DownloadHandler#forFile(java.io.File)} to serve seekable media in
+ * production.
  *
  * @since 24.8
  */
@@ -80,9 +88,15 @@ public class ServletResourceDownloadHandler
         VaadinService service = downloadEvent.getRequest().getService();
         VaadinResponse response = downloadEvent.getResponse();
         if (service instanceof VaadinServletService servletService) {
+            URL resource = servletService.getServlet().getServletContext()
+                    .getResource(path);
+            if (resource == null) {
+                response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
+                return;
+            }
+            URLConnection connection = resource.openConnection();
             try (OutputStream outputStream = downloadEvent.getOutputStream();
-                    InputStream inputStream = servletService.getServlet()
-                            .getServletContext().getResourceAsStream(path)) {
+                    InputStream inputStream = connection.getInputStream()) {
                 String resourceName = getUrlPostfix();
                 downloadEvent
                         .setContentType(getContentType(resourceName, response));
@@ -91,8 +105,14 @@ public class ServletResourceDownloadHandler
                 } else {
                     downloadEvent.setFileName(resourceName);
                 }
-                TransferUtil.transfer(inputStream, outputStream,
-                        getTransferContext(downloadEvent), getListeners());
+                transferContent(downloadEvent, inputStream, outputStream,
+                        connection.getContentLengthLong(), toFile(resource));
+            } catch (RangeRequestException e) {
+                // Not reported again: a cancel is not an error, and a smaller
+                // range was never reported as started
+                if (!e.isCancelled()) {
+                    throw e;
+                }
             } catch (IOException ioe) {
                 // Set status before output is closed (see #8740)
                 response.setStatus(
