@@ -9,7 +9,7 @@ import { ConnectionMessageType } from '../../../../../main/frontend/internal/cli
 import { ReconnectStateMachine } from '../../../../../main/frontend/internal/client/communication/ReconnectStateMachine';
 
 function makeRegistry(reconnectAttempts = 3) {
-  const log = { endRequests: 0, stopLoadings: 0, heartbeatIntervals: [] as number[] };
+  const log = { endRequests: 0, restoreLoadings: 0, heartbeatIntervals: [] as number[] };
   let activeRequest = true;
   return {
     log,
@@ -20,7 +20,7 @@ function makeRegistry(reconnectAttempts = 3) {
       UILifecycle: { isRunning: () => true },
       ReconnectConfiguration: { getReconnectAttempts: () => reconnectAttempts },
       RequestResponseTracker: { hasActiveRequest: () => activeRequest, endRequest: () => log.endRequests++ },
-      LoadingIndicatorStateHandler: { stopLoading: () => log.stopLoadings++ },
+      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
       Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
     })
   };
@@ -83,23 +83,23 @@ describe('ReconnectStateMachine', () => {
     machine.resolveTemporaryError(ConnectionMessageType.PUSH);
     expect(machine.isReconnecting()).to.be.true;
 
-    // The matching resolution clears the state and stops loading (XHR path).
+    // The matching resolution clears the state and restores loading (XHR path).
     machine.resolveTemporaryError(ConnectionMessageType.XHR);
     expect(machine.isReconnecting()).to.be.false;
     expect(machine.getReconnectAttempt()).to.equal(0);
-    expect(registry.log.stopLoadings).to.equal(1);
+    expect(registry.log.restoreLoadings).to.equal(1);
     expect(cancels).to.deep.equal([1]);
   });
 
   it('does nothing when the UI is not running', () => {
     // The lifecycle is the one service this case needs to differ, so it builds
     // its own registry rather than replacing a getter on one.
-    const log = { endRequests: 0, stopLoadings: 0, heartbeatIntervals: [] as number[] };
+    const log = { endRequests: 0, restoreLoadings: 0, heartbeatIntervals: [] as number[] };
     const registry = testRegistry({
       UILifecycle: { isRunning: () => false },
       ReconnectConfiguration: { getReconnectAttempts: () => 3 },
       RequestResponseTracker: { hasActiveRequest: () => true, endRequest: () => log.endRequests++ },
-      LoadingIndicatorStateHandler: { stopLoading: () => log.stopLoadings++ },
+      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
       Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
     });
     const machine = new ReconnectStateMachine(registry, () => {});
@@ -132,7 +132,7 @@ describe('ReconnectStateMachine', () => {
       };
     }
 
-    // stopLoading defers its update through the scheduler.
+    // The loading handler defers its update through the scheduler.
     const afterDeferred = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
     it('shows connected after a push connection is re-established', async () => {
@@ -155,6 +155,8 @@ describe('ReconnectStateMachine', () => {
 
       // The re-sent request succeeds, then its response has been handled.
       machine.resolveTemporaryError(ConnectionMessageType.XHR);
+      await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.LOADING);
       setActiveRequest(false);
       loadingIndicatorStateHandler.stopLoading();
       await afterDeferred();

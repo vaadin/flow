@@ -50,7 +50,7 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
         endRequest: () => {},
         fireReconnectionAttempt: (attempt: number) => log.reconnectionAttempts.push(attempt)
       },
-      LoadingIndicatorStateHandler: { stopLoading: () => {} },
+      LoadingIndicatorStateHandler: { restoreLoading: () => {} },
       Heartbeat: {
         setInterval: (interval: number) => {
           heartbeatInterval = interval;
