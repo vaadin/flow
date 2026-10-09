@@ -4,7 +4,7 @@
 
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
-import { EventBus } from '../../../../main/frontend/internal/client/EventBus';
+import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
 import { VaadinRequest } from '../../../../main/frontend/internal/client/communication/VaadinRequest';
 import { publishClient } from '../../../../main/frontend/internal/client/publishClient';
 import type {
@@ -14,7 +14,7 @@ import type {
 
 const $wnd = window as any;
 
-const eventBus = new EventBus();
+const events = new ClientEvents();
 
 function fakeConnectionStubs() {
   return {
@@ -32,7 +32,7 @@ function fakeConnectionStubs() {
     isHiddenByServer: sinon.stub().returns(false),
     getElementStyleProperties: sinon.stub().returns({ color: 'red' }),
     getProfilingData: sinon.stub().returns([1, 2]),
-    getEventBus: sinon.stub().returns(eventBus),
+    getClientEvents: sinon.stub().returns(events),
     start: sinon.stub()
   };
 }
@@ -81,18 +81,19 @@ describe('publishClient', () => {
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
   });
 
-  it('publishes listener methods of the event bus without its fire methods', () => {
+  it('publishes the client events, on which the engine and page scripts can dispatch', () => {
     publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
     const client = $wnd.Vaadin.Flow.clients.ROOT;
-    expect(Object.keys(client.eventBus)).to.have.members(['addEventListener', 'removeEventListener']);
+    expect(client.events).to.equal(events);
 
     const announced: VaadinRequest[] = [];
     const listener = (event: CustomEvent<VaadinRequest>) => announced.push(event.detail);
     const request = new VaadinRequest();
-    client.eventBus.addEventListener('vaadin-request', listener);
-    eventBus.fireEvent('vaadin-request', request);
-    client.eventBus.removeEventListener('vaadin-request', listener);
-    eventBus.fireEvent('vaadin-request', new VaadinRequest());
+    client.events.addEventListener('vaadin-request', listener);
+    // A page script can dispatch a synthetic event, for example to test its listener.
+    client.events.dispatchEvent(new CustomEvent('vaadin-request', { detail: request }));
+    client.events.removeEventListener('vaadin-request', listener);
+    client.events.dispatchEvent(new CustomEvent('vaadin-request', { detail: new VaadinRequest() }));
     expect(announced).to.deep.equal([request]);
   });
 

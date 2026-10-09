@@ -17,15 +17,9 @@ import { ResourceLoader } from '../../../../../main/frontend/internal/client/Res
 import { runWhenEagerDependenciesLoaded } from '../../../../../main/frontend/internal/client/EagerDependencyTracker';
 import { StateNode } from '../../../../../main/frontend/internal/client/flow/StateNode';
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
-import {
-  type StateChangeHandler,
-  UILifecycle,
-  UIState
-} from '../../../../../main/frontend/internal/client/UILifecycle';
+import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
-import { EventBus } from '../../../../../main/frontend/internal/client/EventBus';
 import { VaadinRequest } from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
-import type { VaadinServerMessage } from '../../../../../main/frontend/internal/client/communication/VaadinServerMessage';
 
 function makeRegistry(maxMessageSuspendTimeout = 10000) {
   const log = {
@@ -44,14 +38,11 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
   // active, so the tracker starts out with one; ending it clears the flag, as
   // the real tracker does.
   let activeRequest = true;
-  const lifecycleHandlers: StateChangeHandler[] = [];
   // The request the sender knows a reply to answer.
   const request = new VaadinRequest();
-  const eventBus = new EventBus();
   return {
     log,
     request,
-    eventBus,
     getState: () => state,
     startRequest: () => {
       activeRequest = true;
@@ -62,16 +53,6 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
         setState: (s: UIState) => {
           state = s;
           log.states.push(s);
-          if (s === UIState.TERMINATED) {
-            const terminated = new UILifecycle();
-            terminated.setState(UIState.RUNNING);
-            terminated.setState(UIState.TERMINATED);
-            lifecycleHandlers.forEach((handler) => handler({ getUiLifecycle: () => terminated }));
-          }
-        },
-        addHandler: (handler: StateChangeHandler) => {
-          lifecycleHandlers.push(handler);
-          return { remove: () => {} };
         }
       },
       MessageSender: {
@@ -85,7 +66,6 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
         getRequest: () => request,
         findRequest: (nextClientId: number | undefined) => (nextClientId === 1 ? request : undefined)
       },
-      EventBus: eventBus,
       StateTree: { prepareForResync: () => {} },
       RequestResponseTracker: {
         endRequest: () => {
@@ -311,91 +291,42 @@ describe('MessageHandler', () => {
       expect(registry.log.stopLoadings).to.equal(2);
     });
 
-    describe('server messages', () => {
-      // Announces a message through the handler, and records the events it and
-      // the request dispatch with the state each event comes with.
-      function announce(registry: ReturnType<typeof makeRegistry>, handler: MessageHandler) {
+    describe('replies', () => {
+      // Records the events the request dispatches, with its outcome.
+      function recordRequest(request: VaadinRequest): string[] {
         const events: string[] = [];
-        let announced: VaadinServerMessage | undefined;
-        registry.eventBus.addEventListener('vaadin-server-message', ({ detail }) => {
-          announced = detail;
-        });
-        const message = handler.announceMessage();
-        expect(announced).to.equal(message);
-        message.addEventListener('parsed', () => events.push(`message parsed ${message.request === registry.request}`));
-        message.addEventListener('start', () => events.push('message start'));
-        message.addEventListener('end', () => events.push(`message end ${message.outcome}`));
-        registry.request.addEventListener('response', () => events.push('request response'));
-        registry.request.addEventListener('end', () => events.push(`request end ${registry.request.outcome}`));
-        return { message, events };
+        request.addEventListener('response', () => events.push('response'));
+        request.addEventListener('end', () => events.push(`end ${request.outcome}`));
+        return events;
       }
 
-      it('identifies a reply, then starts and applies it', () => {
+      it('settles the request an XHR reply answers', () => {
         const registry = makeRegistry();
-        const handler = new MessageHandler(registry.registry);
-        const { message, events } = announce(registry, handler);
-
-        handler.handleMessage({ syncId: 0, clientId: 1 }, message, { rpc: [] });
-        expect(events).to.deep.equal([
-          'message parsed true',
-          'request response',
-          'request end acknowledged',
-          'message start',
-          'message end applied'
-        ]);
+        const events = recordRequest(registry.request);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1 }, { rpc: [] });
+        expect(events).to.deep.equal(['response', 'end acknowledged']);
       });
 
-      it('identifies a reply over push by the client id it carries', () => {
+      it('settles the request a reply over push answers, found by the client id it carries', () => {
         const registry = makeRegistry();
-        const handler = new MessageHandler(registry.registry);
-        const { message, events } = announce(registry, handler);
-
-        handler.handleMessage({ syncId: 0, clientId: 1 }, message);
-        expect(message.request).to.equal(registry.request);
-        expect(events).to.include('request response');
+        const events = recordRequest(registry.request);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1 });
+        expect(events).to.deep.equal(['response', 'end acknowledged']);
       });
 
-      it('leaves a message the server pushed on its own without a request', () => {
+      it('settles no request for a message the server pushed on its own', () => {
         const registry = makeRegistry();
-        const handler = new MessageHandler(registry.registry);
-        const { message, events } = announce(registry, handler);
-
+        const events = recordRequest(registry.request);
         // The client id would match the request, but the message is no reply.
-        handler.handleMessage({ syncId: 0, clientId: 1, meta: { async: true } }, message);
-        expect(message.request).to.be.undefined;
-        expect(events).to.deep.equal(['message parsed false', 'message start', 'message end applied']);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1, meta: { async: true } });
+        expect(events).to.deep.equal([]);
       });
 
-      it('settles a request as rejected by a reply saying the session expired', () => {
+      it('rejects the request a reply saying the session expired answers', () => {
         const registry = makeRegistry();
-        const handler = new MessageHandler(registry.registry);
-        const { message } = announce(registry, handler);
-
-        handler.handleMessage({ syncId: 0, meta: { sessionExpired: true } }, message, { rpc: [] });
-        expect(registry.request.outcome).to.equal('rejected');
-      });
-
-      it('ends the messages it drops as discarded, once', () => {
-        const registry = makeRegistry();
-        const handler = new MessageHandler(registry.registry);
-        handler.handleMessage({ syncId: 0 });
-        handler.handleMessage({ syncId: 1 });
-
-        // A message repeating one already handled.
-        const stale = announce(registry, handler);
-        handler.handleMessage({ syncId: 0, meta: { async: true } }, stale.message);
-        expect(stale.events).to.deep.equal(['message parsed false', 'message end discarded']);
-
-        // A message waiting for an earlier one when the application stops.
-        const waiting = announce(registry, handler);
-        handler.handleMessage({ syncId: 5, meta: { async: true } }, waiting.message);
-        registry.registry.getUILifecycle().setState(UIState.TERMINATED);
-        expect(waiting.events).to.deep.equal(['message parsed false', 'message end discarded']);
-
-        // A message arriving after the application stopped.
-        const late = announce(registry, handler);
-        handler.handleMessage({ syncId: 2, meta: { async: true } }, late.message);
-        expect(late.events).to.deep.equal(['message parsed false', 'message end discarded']);
+        const events = recordRequest(registry.request);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, meta: { sessionExpired: true } }, { rpc: [] });
+        expect(events).to.deep.equal(['response', 'end rejected']);
       });
     });
 
@@ -585,11 +516,12 @@ describe('MessageHandler', () => {
         document.head.append(oldLink, stylesheetEnd);
 
         const registry = testRegistry({
-          UILifecycle: { getState: () => UIState.RUNNING, addHandler: () => ({ remove: () => {} }) },
+          UILifecycle: { getState: () => UIState.RUNNING },
           MessageSender: {
             getResynchronizationState: () => 'NOT_ACTIVE',
             clearResynchronizationState: () => {},
-            setClientToServerMessageId: () => {}
+            setClientToServerMessageId: () => {},
+            findRequest: () => undefined
           },
           RequestResponseTracker: {
             endRequest: () => {},
@@ -669,7 +601,6 @@ describe('MessageHandler', () => {
         // constants have to be in the pool by then.
         const pool = new ConstantPool();
         const registry = testRegistry({
-          UILifecycle: { addHandler: () => ({ remove: () => {} }) },
           MessageSender: {
             getResynchronizationState: () => ResynchronizationState.WAITING_FOR_RESPONSE,
             clearResynchronizationState: () => {},

@@ -7,7 +7,7 @@ import { ApplicationConfiguration } from '../../../../main/frontend/internal/cli
 import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
 import { DefaultConnectionStateHandler } from '../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
 import { DefaultRegistry } from '../../../../main/frontend/internal/client/DefaultRegistry';
-import { EventBus } from '../../../../main/frontend/internal/client/EventBus';
+import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
 import { MessageSender } from '../../../../main/frontend/internal/client/communication/MessageSender';
 import { UILifecycle } from '../../../../main/frontend/internal/client/UILifecycle';
 
@@ -26,7 +26,7 @@ describe('DefaultRegistry', () => {
     expect(registry.getMessageSender()).to.be.instanceOf(MessageSender);
     expect(registry.getConnectionStateHandler()).to.be.instanceOf(DefaultConnectionStateHandler);
     expect(registry.getUILifecycle()).to.be.instanceOf(UILifecycle);
-    expect(registry.getEventBus()).to.be.instanceOf(EventBus);
+    expect(registry.getClientEvents()).to.be.instanceOf(ClientEvents);
     // The state tree, server connector, message handler, etc. are all present.
     expect(registry.getStateTree().getRootNode()).to.not.equal(null);
     expect(registry.getMessageHandler().getCsrfToken()).to.equal('init');

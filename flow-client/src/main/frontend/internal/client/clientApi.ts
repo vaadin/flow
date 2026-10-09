@@ -14,7 +14,7 @@
  * the License.
  */
 
-import type { EventBus } from './EventBus';
+import type { ClientEvents } from './ClientEvents';
 import type { publishClient } from './publishClient';
 import type { ValueMap } from './ValueMap';
 
@@ -56,6 +56,6 @@ export interface ApplicationConnection {
   isHiddenByServer(nodeId: number): boolean;
   getElementStyleProperties(nodeId: number): Record<string, unknown>;
   getProfilingData(): number[];
-  getEventBus(): EventBus;
+  getClientEvents(): ClientEvents;
   start(initialUidl: ValueMap | null): void;
 }

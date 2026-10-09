@@ -23,9 +23,8 @@
 // session-expired/error handling). It composes the ported MessageOrdering
 // (PendingMessageQueue), TreeChangeProcessor, Reactive,
 // EagerDependencyTracker, and the helpers above; everything else is a
-// Registry contract. Beyond the Java version, it tracks the handling of each
-// message as a VaadinServerMessage that page scripts can follow through the
-// event bus.
+// Registry contract. Beyond the Java version, it tells the VaadinRequest a reply
+// answers that the reply has arrived.
 
 import type { ConstantPool } from '../flow/ConstantPool';
 import type { StateNode } from '../flow/StateNode';
@@ -50,14 +49,7 @@ import { Reactive } from '../flow/reactive/Reactive';
 import { processChanges as applyTreeChanges } from '../flow/TreeChangeProcessor';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
-import { dispatchResponse, type VaadinRequest } from './VaadinRequest';
-import {
-  dispatchMessageEnd,
-  dispatchParsed,
-  dispatchStart,
-  VaadinServerMessage,
-  type VaadinServerMessageOutcome
-} from './VaadinServerMessage';
+import { dispatchResponse } from './VaadinRequest';
 
 /** Removes the link and style elements with the given dependency id. */
 function removeStylesheetByIdFromDom(dependencyId: string): void {
@@ -141,10 +133,6 @@ export class MessageHandler {
 
   #nextResponseSessionExpiredHandler: Command | null = null;
 
-  // The tracking of each message announced through announceMessage, by the
-  // parsed message.
-  readonly #messages = new WeakMap<ValueMap, VaadinServerMessage>();
-
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -152,25 +140,6 @@ export class MessageHandler {
    */
   constructor(registry: Registry) {
     this.#registry = registry;
-    registry.getUILifecycle().addHandler((event) => {
-      if (event.getUiLifecycle().isTerminated()) {
-        // Nothing waiting for its turn is handled after the application stops.
-        this.#ordering.clear().forEach((json) => this.#endMessage(json, 'discarded'));
-      }
-    });
-  }
-
-  /**
-   * Announces a message whose raw data has just arrived from the server, before
-   * it is parsed. The caller passes it on to {@link MessageHandler.handleMessage}
-   * once parsed, or ends it as discarded if parsing fails.
-   *
-   * @returns the message, announced on the event bus
-   */
-  announceMessage(): VaadinServerMessage {
-    const message = new VaadinServerMessage();
-    this.#registry.getEventBus().fireEvent('vaadin-server-message', message);
-    return message;
   }
 
   #resetForceHandleTimer(): void {
@@ -185,21 +154,11 @@ export class MessageHandler {
    * appropriate handlers, while logging timing information.
    *
    * @param json - The JSON to handle
-   * @param message - the message announced for the JSON through
-   *          {@link MessageHandler.announceMessage}, or `null` for JSON that was
-   *          not announced, such as the initial UIDL embedded in the page
    * @param payload - the payload whose XHR the JSON replies to, or `null` if the
    *          JSON arrived over push or was not received at all
    */
-  handleMessage(
-    json: ValueMap,
-    message: VaadinServerMessage | null = null,
-    payload: Record<string, unknown> | null = null
-  ): void {
-    if (message !== null) {
-      this.#messages.set(json, message);
-      this.#identifyMessage(json, message, payload);
-    }
+  handleMessage(json: ValueMap, payload: Record<string, unknown> | null = null): void {
+    this.#settleRepliedRequest(json, payload);
 
     if (getServerId(json) === -1) {
       const meta = json.meta as ValueMap | undefined;
@@ -222,32 +181,23 @@ export class MessageHandler {
       this.handleJSON(json);
     } else {
       Console.warn('Ignored received message because application has already been stopped');
-      this.#endMessage(json, 'discarded');
     }
   }
 
-  // Tells the message which request it replies to, and the request that it
-  // has been replied to.
-  #identifyMessage(json: ValueMap, message: VaadinServerMessage, payload: Record<string, unknown> | null): void {
-    let request: VaadinRequest | undefined;
-    if (this.#isResponse(json)) {
-      const messageSender = this.#registry.getMessageSender();
-      request =
-        payload !== null
-          ? messageSender.getRequest(payload)
-          : messageSender.findRequest(json[CLIENT_TO_SERVER_ID] as number | undefined);
+  // Tells the request a reply answers that the reply has arrived. A message the
+  // server pushes on its own answers no request.
+  #settleRepliedRequest(json: ValueMap, payload: Record<string, unknown> | null): void {
+    if (!this.#isResponse(json)) {
+      return;
     }
-    dispatchParsed(message, request);
+    const messageSender = this.#registry.getMessageSender();
+    const request =
+      payload !== null
+        ? messageSender.getRequest(payload)
+        : messageSender.findRequest(json[CLIENT_TO_SERVER_ID] as number | undefined);
     if (request) {
       const meta = json.meta as ValueMap | undefined;
       dispatchResponse(request, meta && META_SESSION_EXPIRED in meta ? 'rejected' : 'acknowledged');
-    }
-  }
-
-  #endMessage(json: ValueMap, outcome: VaadinServerMessageOutcome): void {
-    const message = this.#messages.get(json);
-    if (message) {
-      dispatchMessageEnd(message, outcome);
     }
   }
 
@@ -274,7 +224,6 @@ export class MessageHandler {
           if (resolveWhatRuns(command, this.#registry.getConstantPool()) === 'window.location.reload();') {
             Console.warn('Executing forced page reload while a resync request is ongoing.');
             window.location.reload();
-            this.#endMessage(valueMap, 'applied');
             return;
           }
         }
@@ -302,7 +251,7 @@ export class MessageHandler {
         `Received resync message with id ${serverId} while waiting for ${this.#ordering.getExpectedServerId()}`
       );
       this.#ordering.setLastSeenServerSyncId(serverId - 1);
-      this.#ordering.removeOld().forEach((json) => this.#endMessage(json, 'discarded'));
+      this.#ordering.removeOld();
     }
 
     const locked = this.#responseHandlingLocks.size > 0;
@@ -318,7 +267,6 @@ export class MessageHandler {
         if (this.#ordering.isAlreadySeen(serverId)) {
           // Why is the server re-sending an old package? Ignore it
           Console.warn(`Received message with server id ${serverId} but have already seen a newer one. Ignoring it`);
-          this.#endMessage(valueMap, 'discarded');
           this.#endRequestIfResponse(valueMap);
           return;
         }
@@ -346,10 +294,6 @@ export class MessageHandler {
     this.suspendReponseHandling(lock);
 
     Console.debug('Handling message from server');
-    const message = this.#messages.get(valueMap);
-    if (message) {
-      dispatchStart(message);
-    }
     // Client id must be updated before server id (a server-id update can trigger
     // a resync that must use the updated client id).
     if (CLIENT_TO_SERVER_ID in valueMap) {
@@ -365,7 +309,6 @@ export class MessageHandler {
       const url = (valueMap.redirect as ValueMap).url as string;
       Console.debug(`redirecting to ${url}`);
       redirect(url);
-      this.#endMessage(valueMap, 'applied');
       return;
     }
     if (UIDL_SECURITY_TOKEN_ID in valueMap) {
@@ -497,7 +440,6 @@ export class MessageHandler {
 
       Console.debug(` Processing time was ${this.lastProcessingTime}ms`);
 
-      this.#endMessage(valueMap, 'applied');
       this.#endRequestIfResponse(valueMap);
       this.resumeResponseHandling(lock);
 
@@ -601,7 +543,7 @@ export class MessageHandler {
     if (!this.#handlePendingMessages() && !this.#ordering.isEmpty()) {
       // There are messages but the next id was not found, likely it has been
       // lost. Drop pending messages and resynchronize.
-      this.#ordering.clear().forEach((json) => this.#endMessage(json, 'discarded'));
+      this.#ordering.clear();
       // Inform the message sender that resynchronize is desired already, since
       // endRequest may already send out a next request.
       this.#registry.getMessageSender().requestResynchronize();

@@ -16,9 +16,8 @@
 
 // TypeScript port of com.vaadin.client.communication.RequestResponseTracker.
 // It ensures a single active server request at a time. The Java version fires
-// its lifecycle events through the GWT EventBus; their only listeners were in the
-// engine, which the port calls directly instead. Page scripts follow requests
-// through the VaadinRequest events, which MessageSender fires.
+// its lifecycle events through the GWT EventBus; their only listeners are in the
+// engine, which the port calls directly instead.
 
 import type { Registry } from '../Registry';
 import { ResynchronizationState } from './MessageSender';

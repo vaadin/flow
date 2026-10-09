@@ -6,7 +6,7 @@ import { testRegistry } from './testRegistry';
 import { expect, waitUntil } from '@open-wc/testing';
 import { ApplicationConfiguration } from '../../../../main/frontend/internal/client/ApplicationConfiguration';
 import { ApplicationConnection } from '../../../../main/frontend/internal/client/ApplicationConnection';
-import { EventBus } from '../../../../main/frontend/internal/client/EventBus';
+import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
 import { getScheduler } from '../../../../main/frontend/internal/client/TrackingScheduler';
 import { onModuleLoad } from '../../../../main/frontend/internal/client/bootstrap/Bootstrapper';
 import { StateNode } from '../../../../main/frontend/internal/client/flow/StateNode';
@@ -28,7 +28,7 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
   // Something on the root node, so debug() has to reach that node rather than
   // any empty one. 'tag' in feature 0 is what the server writes for an element.
   tree.getRootNode().getMap(0).getProperty('tag').setValue('body');
-  const eventBus = new EventBus();
+  const events = new ClientEvents();
   const registry = testRegistry({
     MessageSender: {
       resynchronize: () => log.resynchronized++,
@@ -50,10 +50,10 @@ function makeRegistry(opts: { initialUidlHandled?: boolean; activeRequest?: bool
         log.events.push({ nodeId, eventType, data })
     },
     ApplicationConfiguration: { getUIId: () => 7 },
-    EventBus: eventBus,
+    ClientEvents: events,
     StateTree: tree
   });
-  return { registry, log, tree, eventBus };
+  return { registry, log, tree, events };
 }
 
 // Records the event types registered on a target, the way the Java suite's
@@ -121,7 +121,7 @@ describe('ApplicationConnection', () => {
     expect(connection.isActive()).to.be.false;
   });
 
-  it('delegates poll, resolveUri, sendEventMessage, connectWebComponent, getUIId, getEventBus, debug', () => {
+  it('delegates poll, resolveUri, sendEventMessage, connectWebComponent, getUIId, getClientEvents, debug', () => {
     const registry = makeRegistry();
     const connection = new ApplicationConnection(registry.registry);
 
@@ -136,7 +136,7 @@ describe('ApplicationConnection', () => {
     ]);
     expect(connection.getUIId()).to.equal(7);
     expect(connection.getProfilingData()).to.deep.equal([1, 2]);
-    expect(connection.getEventBus()).to.equal(registry.eventBus);
+    expect(connection.getClientEvents()).to.equal(registry.events);
     expect(connection.debug()).to.deep.equal({ elementData: { tag: 'body' } });
   });
 

@@ -15,7 +15,6 @@
  */
 
 import { TypedEventTarget } from '../TypedEventTarget';
-import type { VaadinServerMessage } from './VaadinServerMessage';
 
 /** Why an attempt to deliver a {@link VaadinRequest} failed. */
 export interface VaadinRequestFailure {
@@ -74,18 +73,19 @@ const states = new WeakMap<VaadinRequest, RequestState>();
 
 /**
  * One request from the client to the server, tracked from the moment the first
- * invocation for it is queued until its delivery is settled. Delivery only: how
- * the client then processes the reply is tracked by {@link VaadinServerMessage}.
+ * invocation for it is queued until its delivery is settled. It covers delivery
+ * only, not how the client then processes the reply.
  *
  * The client announces each request as the detail of a `vaadin-request` event
- * on `window.Vaadin.Flow.clients[appId].eventBus`, and then dispatches the
+ * on `window.Vaadin.Flow.clients[appId].events`, and then dispatches the
  * events of {@link VaadinRequestEventMap} on it. The request is the same object
  * across every attempt to deliver it, whether it is sent again after a
  * reconnection or because no reply arrived in time.
  *
- * The properties are read-only. To keep data of your own for a request, store
- * it in a `WeakMap` keyed by the request, so that it is released with the
- * request.
+ * The properties are read-only. Events dispatched on a request from outside
+ * the client reach its listeners but change nothing in the request or the
+ * client. To keep data of your own for a request, store it in a `WeakMap` keyed
+ * by the request, so that it is released with the request.
  *
  * Listeners run synchronously inside the client's own work, including while it
  * queues invocations: keep them cheap and do not call back into the client from

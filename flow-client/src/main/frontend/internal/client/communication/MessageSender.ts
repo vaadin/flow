@@ -20,7 +20,7 @@
 // state machine, an outgoing message queue, and a resend timer. Push connections
 // are created through an injected factory (GWT.create in the Java version).
 // Beyond the Java version, it tracks the delivery of each payload as a
-// VaadinRequest that page scripts can follow through the event bus.
+// VaadinRequest that page scripts can follow through the client events.
 
 import type { Registry } from '../Registry';
 import type { XhrConnection } from './XhrConnection';
@@ -480,7 +480,7 @@ export class MessageSender {
   openRequest(): void {
     if (this.#openRequest === null) {
       this.#openRequest = new VaadinRequest();
-      this.#registry.getEventBus().fireEvent('vaadin-request', this.#openRequest);
+      this.#registry.getClientEvents().dispatchEvent(new CustomEvent('vaadin-request', { detail: this.#openRequest }));
     }
   }
 

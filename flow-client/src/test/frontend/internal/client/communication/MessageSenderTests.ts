@@ -3,7 +3,7 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { testRegistry } from '../testRegistry';
-import { EventBus } from '../../../../../main/frontend/internal/client/EventBus';
+import { ClientEvents } from '../../../../../main/frontend/internal/client/ClientEvents';
 import { MessageSender } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 import type { VaadinRequest } from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
@@ -19,10 +19,10 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
   let invocations: unknown[] = [];
   const lifecycle = new UILifecycle();
   lifecycle.setState(UIState.RUNNING);
-  const eventBus = new EventBus();
+  const clientEvents = new ClientEvents();
   return {
     log,
-    eventBus,
+    clientEvents,
     setActiveRequest: (active: boolean) => {
       activeRequest = active;
     },
@@ -37,7 +37,7 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
           log.startRequests++;
         }
       },
-      EventBus: eventBus,
+      ClientEvents: clientEvents,
       ServerRpcQueue: {
         isEmpty: () => invocations.length === 0,
         toJson: () => invocations,
@@ -160,12 +160,12 @@ describe('MessageSender (class)', () => {
   });
 
   describe('requests', () => {
-    // Records the requests announced on the bus, and the events they dispatch
-    // with the state each event comes with.
-    function recordRequests(eventBus: EventBus) {
+    // Records the requests announced on the client events, and the events they
+    // dispatch with the state each event comes with.
+    function recordRequests(clientEvents: ClientEvents) {
       const requests: VaadinRequest[] = [];
       const events: string[] = [];
-      eventBus.addEventListener('vaadin-request', ({ detail: request }) => {
+      clientEvents.addEventListener('vaadin-request', ({ detail: request }) => {
         const index = requests.push(request) - 1;
         request.addEventListener('sent', () => events.push(`${index} sent ${request.attempt}`));
         request.addEventListener('error', () => events.push(`${index} error ${request.failure!.reason}`));
@@ -177,7 +177,7 @@ describe('MessageSender (class)', () => {
     it('announces a request for queued invocations and tracks it through the send', () => {
       const context = makeRegistry();
       const sender = new MessageSender(context.registry);
-      const { requests, events } = recordRequests(context.eventBus);
+      const { requests, events } = recordRequests(context.clientEvents);
 
       context.queueInvocation({ type: 'event' });
       sender.openRequest();
@@ -193,7 +193,7 @@ describe('MessageSender (class)', () => {
     it('announces a request without invocations right before sending it', () => {
       const context = makeRegistry();
       const sender = new MessageSender(context.registry);
-      const { requests, events } = recordRequests(context.eventBus);
+      const { requests, events } = recordRequests(context.clientEvents);
 
       sender.resynchronize();
       expect(context.log.xhrSends).to.have.length(1);
@@ -204,7 +204,7 @@ describe('MessageSender (class)', () => {
     it('counts an XHR reconnection resend as the next attempt of the same request', () => {
       const context = makeRegistry();
       const sender = new MessageSender(context.registry);
-      const { requests, events } = recordRequests(context.eventBus);
+      const { requests, events } = recordRequests(context.clientEvents);
       sender.send({ rpc: [] });
 
       context.setActiveRequest(false);
@@ -219,7 +219,7 @@ describe('MessageSender (class)', () => {
       try {
         const context = makeRegistry();
         const sender = new MessageSender(context.registry);
-        const { requests, events } = recordRequests(context.eventBus);
+        const { requests, events } = recordRequests(context.clientEvents);
         sender.send({ rpc: [] });
 
         context.setActiveRequest(false);
@@ -245,7 +245,7 @@ describe('MessageSender (class)', () => {
       };
       const sender = new MessageSender(context.registry, () => push);
       sender.setPushEnabled(true);
-      const { requests, events } = recordRequests(context.eventBus);
+      const { requests, events } = recordRequests(context.clientEvents);
       sender.send({ rpc: [] });
 
       // The connection is lost, and once it is back the request it ended has
@@ -262,7 +262,7 @@ describe('MessageSender (class)', () => {
     it('finds the request a reply over push answers by the client id it carries', () => {
       const context = makeRegistry();
       const sender = new MessageSender(context.registry);
-      const { requests } = recordRequests(context.eventBus);
+      const { requests } = recordRequests(context.clientEvents);
       sender.send({ rpc: [] }); // client id 0
 
       expect(sender.findRequest(1)).to.equal(requests[0]);
@@ -273,7 +273,7 @@ describe('MessageSender (class)', () => {
     it('ends a request once, when the server confirms it', () => {
       const context = makeRegistry();
       const sender = new MessageSender(context.registry);
-      const { events } = recordRequests(context.eventBus);
+      const { events } = recordRequests(context.clientEvents);
       sender.send({ rpc: [] });
 
       sender.setClientToServerMessageId(1, false);
@@ -284,7 +284,7 @@ describe('MessageSender (class)', () => {
     it('ends the requests it drops as discarded, and reports nothing for them afterwards', () => {
       const context = makeRegistry();
       const sender = new MessageSender(context.registry);
-      const { events } = recordRequests(context.eventBus);
+      const { events } = recordRequests(context.clientEvents);
 
       // A forced client id update drops the sent and the queued request.
       sender.send({ rpc: [] });
@@ -326,7 +326,7 @@ describe('MessageSender (class)', () => {
       };
       try {
         const sent: number[] = [];
-        context.eventBus.addEventListener('vaadin-request', ({ detail: request }) => {
+        context.clientEvents.addEventListener('vaadin-request', ({ detail: request }) => {
           request.addEventListener('sent', () => {
             throw new Error('listener failed');
           });

@@ -6,7 +6,7 @@ import { JsonConstants } from '../../../../../main/frontend/internal/flow/shared
 import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 import { MessageHandler } from '../../../../../main/frontend/internal/client/communication/MessageHandler';
 import { MessageSender } from '../../../../../main/frontend/internal/client/communication/MessageSender';
-import { EventBus } from '../../../../../main/frontend/internal/client/EventBus';
+import { ClientEvents } from '../../../../../main/frontend/internal/client/ClientEvents';
 import { RequestResponseTracker } from '../../../../../main/frontend/internal/client/communication/RequestResponseTracker';
 import { ServerConnector } from '../../../../../main/frontend/internal/client/communication/ServerConnector';
 import { ServerRpcQueue } from '../../../../../main/frontend/internal/client/communication/ServerRpcQueue';
@@ -64,7 +64,7 @@ function makeWiredRegistry() {
 
   const tree = new StateTree(registry);
   registry.register('StateTree', tree);
-  registry.register('EventBus', new EventBus());
+  registry.register('ClientEvents', new ClientEvents());
   registry.register('XhrConnection', { clearWebkitMaybeIgnoringRequests: () => {} });
   registry.register('RequestResponseTracker', new RequestResponseTracker(registry));
   registry.register('LoadingIndicatorStateHandler', new LoadingIndicatorStateHandler(registry));
