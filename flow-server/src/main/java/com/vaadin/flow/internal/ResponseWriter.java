@@ -310,7 +310,8 @@ public class ResponseWriter implements Serializable {
      *            {@code null}; not closed by this method
      * @param resourceUrl
      *            the URL of the resource, to read it again for ranges that are
-     *            not in ascending order, not {@code null}
+     *            not in ascending order, or {@code null} if the ranges are in
+     *            ascending order
      * @param outputStream
      *            the stream to write the body to, usually the output stream of
      *            the response, not {@code null}; not flushed or closed by this

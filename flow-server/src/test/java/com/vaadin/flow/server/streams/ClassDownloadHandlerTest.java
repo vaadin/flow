@@ -25,14 +25,19 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -42,9 +47,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -248,5 +255,37 @@ class ClassDownloadHandlerTest {
 
         verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"my-download.pdf\"");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void handleDownloadRequest_rangeRequested_servedOnlyWhenEnabled(
+            boolean enabled) throws IOException {
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        when(servletResponse.getService()).thenReturn(servletService);
+        when(request.getHeader("Range")).thenReturn("bytes=100000-100099");
+        ClassDownloadHandler handler = DownloadHandler
+                .forClassResource(this.getClass(), PATH_TO_FILE);
+        if (enabled) {
+            handler.enableRangeRequests();
+        }
+
+        handler.handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner));
+
+        if (enabled) {
+            assertEquals(100, servletOutput.getOutput().length);
+            verify(servletResponse).setStatus(206);
+            verify(servletResponse).setHeader("Content-Range",
+                    "bytes 100000-100099/165000");
+        } else {
+            assertEquals(165000, servletOutput.getOutput().length);
+            verify(servletResponse, never()).setHeader(eq("Accept-Ranges"),
+                    anyString());
+        }
     }
 }
