@@ -223,6 +223,25 @@ class WebComponentProviderTest {
     }
 
     @Test
+    void handleSessionExpired_webComponentScriptRequest_writesScriptWithoutSession()
+            throws IOException {
+        registry = setupConfigurations(MyComponentExporter.class);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.js");
+        assertTrue(provider.handleSessionExpired(request, response));
+        assertTrue(out.toString().contains("web-component-bootstrap.js"),
+                "Response should contain the web component script");
+
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/web-component/web-component-bootstrap.js");
+        assertFalse(provider.handleSessionExpired(request, response),
+                "Bootstrap request needs a session and should not be handled");
+    }
+
+    @Test
     void providesDifferentGeneratedHTMLForEachExportedComponent()
             throws IOException {
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
