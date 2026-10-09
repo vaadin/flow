@@ -46,7 +46,7 @@ env:
 jobs:
   build:
     timeout-minutes: 30
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
@@ -120,7 +120,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -223,7 +223,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -341,7 +341,7 @@ jobs:
       fail-fast: false
       matrix:
         profile: [tomee, wildfly, payara, liberty, tomcat-weld]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -524,7 +524,7 @@ jobs:
       # One job per module of the suite that declares validation.run in its
       # POM; see flow-tests/vaadin-quarkus-tests/pom.xml.
       matrix: ${{ fromJson(needs.build.outputs.matrix-quarkus) }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -675,7 +675,7 @@ jobs:
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -863,7 +863,7 @@ jobs:
     needs: unit-tests
     if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 60
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
@@ -946,7 +946,7 @@ jobs:
     # protection — letting auto-merge proceed past a cancelled IT.
     if: ${{ always() && !github.event.pull_request.head.repo.fork }}
     needs: [unit-tests, it-tests, cdi-tests, quarkus-tests]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -980,7 +980,7 @@ jobs:
     # Sonar analysis, which starts as soon as the unit tests finish.
     if: ${{ always() && !github.event.pull_request.head.repo.fork }}
     needs: [test-results, sonar-analysis, gradle-tests]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
         with:
@@ -990,7 +990,7 @@ jobs:
     needs: api-diff-labeling
     if: github.event_name == 'pull_request'
     timeout-minutes: 5
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
       pull-requests: write
@@ -1015,7 +1015,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         with:
-          node-version: '26.10.0'
+          node-version: '26.11.1'
       - name: Auto-merge PR
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         env:
@@ -1026,7 +1026,7 @@ jobs:
   api-diff-labeling:
     if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
     timeout-minutes: 15
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       issues: write
