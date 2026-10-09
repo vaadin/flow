@@ -94,6 +94,8 @@ describe('publishClient', () => {
     client.events.dispatchEvent(new CustomEvent('vaadin-request', { detail: request }));
     client.events.removeEventListener('vaadin-request', listener);
     client.events.dispatchEvent(new CustomEvent('vaadin-request', { detail: new VaadinRequest() }));
+    // @ts-expect-error -- only the events listed for the client can be dispatched on it
+    events.dispatchEvent(new Event('vaadin-request'));
     expect(announced).to.deep.equal([request]);
   });
 

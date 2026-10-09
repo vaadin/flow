@@ -15,17 +15,18 @@
  */
 
 /**
- * An `EventTarget` whose `addEventListener` and `removeEventListener` check the
- * event types listed in an event map, and the event their listeners get.
+ * An `EventTarget` whose `addEventListener`, `removeEventListener` and
+ * `dispatchEvent` check the event types listed in an event map, and the event
+ * their listeners get.
  *
- * It is a plain `EventTarget` otherwise, so options such as `once` and
+ * It is only a type over a plain `EventTarget`, so options such as `once` and
  * `signal` work, and an error thrown by a listener is reported like any other
  * uncaught error without stopping the code that dispatched the event or the
  * other listeners.
  *
  * @typeParam M - the event types, mapped to the event their listeners get
  */
-export class TypedEventTarget<M extends { [K in keyof M]: Event }> extends EventTarget {
+export interface TypedEventTarget<M extends { [K in keyof M]: Event }> extends EventTarget {
   /**
    * Adds a listener for an event type.
    *
@@ -34,25 +35,16 @@ export class TypedEventTarget<M extends { [K in keyof M]: Event }> extends Event
    * @param options - the standard `addEventListener` options
    * @typeParam K - the event type
    */
-  override addEventListener<K extends keyof M & string>(
+  addEventListener<K extends keyof M & string>(
     type: K,
     listener: (event: M[K]) => void,
     options?: boolean | AddEventListenerOptions
   ): void;
-  override addEventListener(
+  addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject | null,
     options?: boolean | AddEventListenerOptions
   ): void;
-  override addEventListener(
-    type: string,
-    listener: ((event: never) => void) | EventListenerObject | null,
-    options?: boolean | AddEventListenerOptions
-  ): void {
-    // The typed overload narrows the event its listener gets, which a plain
-    // EventListener does not; the target passes the event of the type anyway.
-    super.addEventListener(type, listener as EventListenerOrEventListenerObject | null, options);
-  }
 
   /**
    * Removes a listener added with {@link TypedEventTarget.addEventListener}.
@@ -62,23 +54,32 @@ export class TypedEventTarget<M extends { [K in keyof M]: Event }> extends Event
    * @param options - the standard `removeEventListener` options
    * @typeParam K - the event type
    */
-  override removeEventListener<K extends keyof M & string>(
+  removeEventListener<K extends keyof M & string>(
     type: K,
     listener: (event: M[K]) => void,
     options?: boolean | EventListenerOptions
   ): void;
-  override removeEventListener(
+  removeEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject | null,
     options?: boolean | EventListenerOptions
   ): void;
-  override removeEventListener(
-    type: string,
-    listener: ((event: never) => void) | EventListenerObject | null,
-    options?: boolean | EventListenerOptions
-  ): void {
-    // The typed overload narrows the event its listener gets, which a plain
-    // EventListener does not; the target passes the event of the type anyway.
-    super.removeEventListener(type, listener as EventListenerOrEventListenerObject | null, options);
-  }
+
+  /**
+   * Dispatches an event of one of the types in the event map to the listeners
+   * of its type.
+   *
+   * @param event - the event to dispatch
+   * @returns `false` if the event is cancelable and a listener canceled it,
+   *          `true` otherwise
+   */
+  dispatchEvent(event: M[keyof M]): boolean;
 }
+
+/**
+ * The constructor of a {@link TypedEventTarget}: the plain `EventTarget`
+ * constructor, typed, so the typing adds nothing at runtime.
+ */
+export const TypedEventTarget = EventTarget as unknown as new <
+  M extends { [K in keyof M]: Event }
+>() => TypedEventTarget<M>;
