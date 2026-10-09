@@ -52,6 +52,9 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   #scheduledReconnect: ReturnType<typeof setTimeout> | null = null;
 
+  // Whether a receive-only websocket was closed and has not been reopened yet.
+  #websocketReopenPending = false;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -301,6 +304,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: push ---
 
   pushOk(pushConnection: PushConnection): void {
+    this.#websocketReopenPending = false;
     if (this.#machine.isReconnecting()) {
       this.#machine.resolveTemporaryError(ConnectionMessageType.PUSH);
       if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
@@ -326,11 +330,19 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   pushReconnectPending(pushConnection: PushConnection): void {
     Console.debug('Reopening push connection');
-    if (pushConnection.getTransportType() === 'websocket') {
-      // Lost connection for a websocket, which tells us when the connection is
-      // available again. This includes a websocket that only receives, with
-      // messages to the server sent over XHR.
+    if (pushConnection.isBidirectional()) {
+      // Lost connection for a connection which will tell us when the connection
+      // is available again
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+    } else if (pushConnection.getTransportType() === 'websocket') {
+      // A websocket that only receives, with messages to the server sent over
+      // XHR. The server also closes it on purpose, e.g. when logging out
+      // invalidates the session and the page is about to navigate away, so
+      // the connection is lost only if reopening the websocket fails as well.
+      if (this.#websocketReopenPending) {
+        this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+      }
+      this.#websocketReopenPending = true;
     } else {
       // Lost connection for a connection we do not necessarily know when it is
       // available again (long polling behind proxy). Do nothing and show the
