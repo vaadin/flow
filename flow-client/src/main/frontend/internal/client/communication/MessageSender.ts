@@ -78,13 +78,19 @@ export class MessageSender {
   constructor(registry: Registry, pushConnectionFactory: PushConnectionFactory | null = null) {
     this.#registry = registry;
     this.#pushConnectionFactory = pushConnectionFactory;
-    this.#registry.getRequestResponseTracker().addReconnectionAttemptHandler((event) => {
-      Console.debug(`Re-sending queued messages to the server (attempt ${event.getAttempt()}) ...`);
-      // Try to reconnect by sending queued messages; stop the resend timer since
-      // it will not make any request during reconnection anyway.
-      this.#resetTimer();
-      this.#doSendInvocationsToServer();
-    });
+  }
+
+  /**
+   * Re-sends the queued messages to the server as a reconnection attempt.
+   *
+   * @param attempt - the number of the reconnection attempt, starting from 1
+   */
+  resendQueuedMessages(attempt: number): void {
+    Console.debug(`Re-sending queued messages to the server (attempt ${attempt}) ...`);
+    // Try to reconnect by sending queued messages; stop the resend timer since
+    // it will not make any request during reconnection anyway.
+    this.#resetTimer();
+    this.#doSendInvocationsToServer();
   }
 
   sendUnloadBeacon(): void {
