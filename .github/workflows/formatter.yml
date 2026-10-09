@@ -29,7 +29,7 @@ permissions:
 jobs:
   formatter:
     name: Verify Java code format
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
 
     steps:
