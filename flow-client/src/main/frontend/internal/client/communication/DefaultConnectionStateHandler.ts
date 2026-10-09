@@ -82,6 +82,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: xhr ---
 
   xhrException(xhrConnectionError: XhrConnectionError): void {
+    this.#registry.getMessageSender().failAttempt(xhrConnectionError.getPayload(), { reason: 'network' });
     this.#machine.handleRecoverableError(ConnectionMessageType.XHR, xhrConnectionError.getPayload());
   }
 
@@ -214,6 +215,14 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   }
 
   xhrInvalidContent(xhrConnectionError: XhrConnectionError): void {
+    // The request is not retried.
+    const messageSender = this.#registry.getMessageSender();
+    const payload = xhrConnectionError.getPayload();
+    messageSender.failAttempt(payload, {
+      reason: 'invalid-response',
+      status: xhrConnectionError.getXhr().status
+    });
+    messageSender.settleRequest(payload, 'discarded');
     this.#registry.getRequestResponseTracker().endRequest();
     const responseText = xhrConnectionError.getXhr().responseText;
     if (!this.#redirectIfRefreshToken(responseText)) {
@@ -229,6 +238,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // We can't be sure that what was pushed was actually a response but at
       // this point it should not really matter, as something is seriously
       // broken.
+      this.#registry.getMessageSender().failPushAttempt({ reason: 'invalid-response' });
       this.#registry.getRequestResponseTracker().endRequest();
     }
     if (!this.#redirectIfRefreshToken(message)) {
@@ -239,8 +249,16 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   xhrInvalidStatusCode(xhrConnectionError: XhrConnectionError): void {
     const statusCode = xhrConnectionError.getXhr().status;
     Console.warn(`Server returned ${statusCode} for xhr`);
+    const messageSender = this.#registry.getMessageSender();
+    const payload = xhrConnectionError.getPayload();
+    // A request that got no response at all completes with status 0.
+    messageSender.failAttempt(
+      payload,
+      statusCode === 0 ? { reason: 'network' } : { reason: 'http', status: statusCode }
+    );
     if (statusCode === SC_UNAUTHORIZED) {
       // Authentication/authorization failed, no need to re-try
+      messageSender.settleRequest(payload, 'rejected');
       this.#registry.getRequestResponseTracker().endRequest();
       this.handleUnauthorized(xhrConnectionError);
     } else {
@@ -320,6 +338,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   }
 
   pushNotConnected(payload: Record<string, unknown>): void {
+    this.#registry.getMessageSender().failAttempt(payload, { reason: 'network' });
     this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, payload);
   }
 
@@ -327,7 +346,8 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
     Console.debug('Reopening push connection');
     if (pushConnection.isBidirectional()) {
       // Lost connection for a connection which will tell us when the connection
-      // is available again
+      // is available again. A message pushed before has to be sent again.
+      this.#registry.getMessageSender().failPushAttempt({ reason: 'network' });
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
     } else {
       // Lost connection for a connection we do not necessarily know when it is

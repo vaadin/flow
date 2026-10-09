@@ -23,7 +23,8 @@
 // session-expired/error handling). It composes the ported MessageOrdering
 // (PendingMessageQueue), TreeChangeProcessor, Reactive,
 // EagerDependencyTracker, and the helpers above; everything else is a
-// Registry contract.
+// Registry contract. Beyond the Java version, it tells the VaadinRequest a reply
+// answers that the reply has arrived.
 
 import type { ConstantPool } from '../flow/ConstantPool';
 import type { StateNode } from '../flow/StateNode';
@@ -48,6 +49,7 @@ import { Reactive } from '../flow/reactive/Reactive';
 import { processChanges as applyTreeChanges } from '../flow/TreeChangeProcessor';
 import { UIState } from '../UILifecycle';
 import { Console } from '../Console';
+import { dispatchResponse } from './VaadinRequest';
 
 /** Removes the link and style elements with the given dependency id. */
 function removeStylesheetByIdFromDom(dependencyId: string): void {
@@ -152,8 +154,12 @@ export class MessageHandler {
    * appropriate handlers, while logging timing information.
    *
    * @param json - The JSON to handle
+   * @param payload - the payload whose XHR the JSON replies to, or `null` if the
+   *          JSON arrived over push or was not received at all
    */
-  handleMessage(json: ValueMap): void {
+  handleMessage(json: ValueMap, payload: Record<string, unknown> | null = null): void {
+    this.#settleRepliedRequest(json, payload);
+
     if (getServerId(json) === -1) {
       const meta = json.meta as ValueMap | undefined;
       // Log the error only if session didn't expire.
@@ -175,6 +181,23 @@ export class MessageHandler {
       this.handleJSON(json);
     } else {
       Console.warn('Ignored received message because application has already been stopped');
+    }
+  }
+
+  // Tells the request a reply answers that the reply has arrived. A message the
+  // server pushes on its own answers no request.
+  #settleRepliedRequest(json: ValueMap, payload: Record<string, unknown> | null): void {
+    if (!this.#isResponse(json)) {
+      return;
+    }
+    const messageSender = this.#registry.getMessageSender();
+    const request =
+      payload !== null
+        ? messageSender.getRequest(payload)
+        : messageSender.findRequest(json[CLIENT_TO_SERVER_ID] as number | undefined);
+    if (request) {
+      const meta = json.meta as ValueMap | undefined;
+      dispatchResponse(request, meta && META_SESSION_EXPIRED in meta ? 'rejected' : 'acknowledged');
     }
   }
 
