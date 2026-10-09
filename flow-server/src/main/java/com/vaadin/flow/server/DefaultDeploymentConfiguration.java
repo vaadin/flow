@@ -67,15 +67,6 @@ public class DefaultDeploymentConfiguration
             + SessionLockCheckStrategy.ASSERT.name().toLowerCase()
             + "\" will be used.";
 
-    public static final String WARNING_CSP_MODE_NOT_RECOGNIZED = "WARNING: "
-            + InitParameters.CSP + " has been set to an unrecognized value.\n"
-            + "The permitted values are "
-            + Arrays.stream(CspMode.values())
-                    .map(it -> "\"" + it.name().toLowerCase() + "\"")
-                    .collect(Collectors.joining(", "))
-            + ".\nThe default of \"" + CspMode.OFF.name().toLowerCase()
-            + "\" will be used.";
-
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
      */
@@ -477,14 +468,20 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkCspMode() {
-        try {
-            cspMode = getApplicationOrSystemProperty(InitParameters.CSP,
-                    CspMode.OFF, stringMode -> Enum.valueOf(CspMode.class,
-                            stringMode.toUpperCase(Locale.ENGLISH)));
-        } catch (IllegalArgumentException e) {
-            warnings.add(WARNING_CSP_MODE_NOT_RECOGNIZED);
-            cspMode = CspMode.OFF;
-        }
+        cspMode = getApplicationOrSystemProperty(InitParameters.CSP,
+                CspMode.OFF, DefaultDeploymentConfiguration::parseCspMode);
+    }
+
+    private static CspMode parseCspMode(String value) {
+        return Arrays.stream(CspMode.values())
+                .filter(mode -> mode.name().equalsIgnoreCase(value)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "Property named '%s' contains unrecognized value '%s'. The permitted values are %s (case-insensitive).",
+                        InitParameters.CSP, value,
+                        Arrays.stream(CspMode.values())
+                                .map(mode -> "'" + mode.name()
+                                        .toLowerCase(Locale.ENGLISH) + "'")
+                                .collect(Collectors.joining(", ")))));
     }
 
     private void checkPushServletMapping() {

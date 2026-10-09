@@ -349,12 +349,17 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    void cspMode_unrecognizedValue_defaultsToOff() {
+    void cspMode_unrecognizedValue_throws() {
         Properties init = new Properties();
-        init.put(InitParameters.CSP, "relaxed");
-        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+        init.put(InitParameters.CSP, "stirct");
 
-        assertEquals(CspMode.OFF, config.getCspMode());
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> createDeploymentConfig(init));
+        assertTrue(exception.getMessage().contains("'stirct'"),
+                exception.getMessage());
+        assertTrue(exception.getMessage().contains("'off', 'warn', 'strict'"),
+                exception.getMessage());
     }
 
     @Test

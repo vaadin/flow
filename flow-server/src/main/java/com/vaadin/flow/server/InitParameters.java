@@ -57,7 +57,9 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for the Content Security Policy mode of the
      * application. The permitted values are {@code off} (the default),
-     * {@code warn} and {@code strict}, see {@link CspMode}.
+     * {@code warn} and {@code strict}, see {@link CspMode}. Values are
+     * case-insensitive; any other value fails the deployment configuration with
+     * an {@link IllegalArgumentException}.
      *
      * @since 25.4
      */
