@@ -234,7 +234,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.streams\\.DownloadEvent",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$ClientOutputStream",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$SeekableContent",
-                "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$ExtractedResources",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.StreamRequestHandler\\$PathData",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadEvent",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadMetadata",

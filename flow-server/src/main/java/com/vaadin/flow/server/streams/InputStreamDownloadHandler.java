@@ -27,10 +27,9 @@ import com.vaadin.flow.server.VaadinResponse;
  * Download handler for serving an input stream for client download.
  * <p>
  * Byte range requests, which media players use to seek and browsers use to
- * resume a download, are answered only if the {@link DownloadResponse} has a
- * content length and an entity tag, see
- * {@link DownloadResponse#setETag(String)}. Otherwise the content is always
- * sent whole, because it may differ between requests.
+ * resume a download, are only answered after {@link #enableRangeRequests()}.
+ * Use {@link DownloadHandler#forFile(java.io.File)} to serve seekable media
+ * efficiently.
  *
  * @since 24.8
  */
@@ -39,6 +38,7 @@ public class InputStreamDownloadHandler
 
     private final InputStreamDownloadCallback callback;
     private String fileNameOverride;
+    private boolean rangeRequestsEnabled;
 
     /**
      * Create an input stream download handler for given event -> response
@@ -133,9 +133,9 @@ public class InputStreamDownloadHandler
                 InputStream inputStream = download.getInputStream()) {
             transferContent(downloadEvent, inputStream, outputStream,
                     download.getContentLength(),
-                    download.getETag() == null ? null
-                            : new SeekableContent(downloadName,
-                                    download.getETag(), null, false));
+                    rangeRequestsEnabled
+                            ? new SeekableContent(downloadName, null, null)
+                            : null);
         } catch (RangeRequestException e) {
             // Not reported again: a cancel is not an error, and a smaller
             // range was never reported as started
@@ -149,6 +149,35 @@ public class InputStreamDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
+    }
+
+    /**
+     * Enables answering byte range requests, which media players use to seek
+     * and browsers use to resume a download. Safari does not play audio or
+     * video without them.
+     * <p>
+     * Only enable them if the callback returns the same content on every call,
+     * with a known content length: the callback is called for every range
+     * request, and a range that a client joins with a range of other content
+     * ends up as corrupt data. The bytes before a range are skipped from the
+     * returned stream, which is a seek for a stream that supports it, such as a
+     * {@link java.io.FileInputStream}, but reads them for other streams.
+     *
+     * @return this instance for method chaining
+     */
+    public InputStreamDownloadHandler enableRangeRequests() {
+        rangeRequestsEnabled = true;
+        return this;
+    }
+
+    /**
+     * Returns whether byte range requests are answered.
+     *
+     * @return {@code true} if byte range requests are answered
+     * @see #enableRangeRequests()
+     */
+    public boolean isRangeRequestsEnabled() {
+        return rangeRequestsEnabled;
     }
 
     @Override

@@ -20,12 +20,9 @@ import jakarta.servlet.ServletContext;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,13 +33,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.CRC32;
-import java.util.zip.ZipEntry;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -67,9 +63,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -312,7 +310,7 @@ class ServletResourceDownloadHandlerTest {
                 .thenReturn(mock(VaadinServletService.class));
         when(request.getHeader("Range")).thenReturn("bytes=500-509,0-9");
         ServletResourceDownloadHandler handler = DownloadHandler
-                .forServletResource("/content.bin");
+                .forServletResource("/content.bin").enableRangeRequests();
         AtomicBoolean listenerNotified = new AtomicBoolean();
         handler.whenStart(() -> listenerNotified.set(true));
         handler.whenComplete(success -> listenerNotified.set(true));
@@ -325,9 +323,10 @@ class ServletResourceDownloadHandlerTest {
         verify(servletResponse).setStatus(500);
     }
 
-    @Test
-    void handleDownloadRequest_resourceInJar_rangesServedWithChecksumETag(
-            @TempDir Path tempDir) throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void handleDownloadRequest_resourceInJar_rangesServedOnlyWhenEnabled(
+            boolean enabled, @TempDir Path tempDir) throws IOException {
         Path jar = tempDir.resolve("resources.jar");
         try (JarOutputStream jarOutput = new JarOutputStream(
                 Files.newOutputStream(jar))) {
@@ -349,95 +348,27 @@ class ServletResourceDownloadHandlerTest {
         // out of order, so the second part is read from the jar again
         when(request.getHeader("Range")).thenReturn("bytes=6-7,1-2");
 
-        DownloadHandler.forServletResource("/content.txt")
-                .handleDownloadRequest(new DownloadEvent(request,
-                        servletResponse, session, owner));
+        ServletResourceDownloadHandler handler = DownloadHandler
+                .forServletResource("/content.txt");
+        if (enabled) {
+            handler.enableRangeRequests();
+        }
+
+        handler.handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner));
 
         String body = new String(servletOutput.getOutput(),
                 StandardCharsets.UTF_8);
-        assertTrue(body.contains("bytes 6-7/10\r\n\r\ngh"), body);
-        assertTrue(body.contains("bytes 1-2/10\r\n\r\nbc"), body);
-        verify(servletResponse).setStatus(206);
-        verify(servletResponse).setHeader("ETag",
-                "\"" + Long.toHexString(crc.getValue()) + "-a\"");
-    }
-
-    @ParameterizedTest
-    @CsvSource({ "FILE, false", "STORED, false", "DEFLATED, true",
-            "CONTAINER, true" })
-    void handleDownloadRequest_largeResource_rangeServed(String kind,
-            boolean extracted, @TempDir Path tempDir) throws IOException {
-        byte[] content = new byte[(int) AbstractDownloadHandler.SeekableContent.MIN_EXTRACTED_LENGTH
-                + 1];
-        Path jar = tempDir.resolve("resources.jar");
-        try (JarOutputStream jarOutput = new JarOutputStream(
-                Files.newOutputStream(jar))) {
-            JarEntry entry = new JarEntry("video.mp4");
-            if ("STORED".equals(kind)) {
-                CRC32 crc = new CRC32();
-                crc.update(content);
-                entry.setMethod(ZipEntry.STORED);
-                entry.setSize(content.length);
-                entry.setCrc(crc.getValue());
-            }
-            jarOutput.putNextEntry(entry);
-            jarOutput.write(content);
+        if (enabled) {
+            assertTrue(body.contains("bytes 6-7/10\r\n\r\ngh"), body);
+            assertTrue(body.contains("bytes 1-2/10\r\n\r\nbc"), body);
+            verify(servletResponse).setStatus(206);
+            verify(servletResponse).setHeader("ETag",
+                    "\"" + Long.toHexString(crc.getValue()) + "-a\"");
+        } else {
+            assertEquals("abcdefghij", body);
+            verify(servletResponse, never()).setHeader(eq("Accept-Ranges"),
+                    anyString());
         }
-        URL jarUrl = new URL("jar:" + jar.toUri() + "!/video.mp4");
-        // an archive opened by the servlet container, such as a packed war,
-        // whose connection is not a JarURLConnection
-        URL containerUrl = new URL(null, "war:" + jar.toUri() + "*/video.mp4",
-                new URLStreamHandler() {
-                    @Override
-                    protected URLConnection openConnection(URL url)
-                            throws IOException {
-                        URLConnection jarConnection = jarUrl.openConnection();
-                        return new URLConnection(url) {
-                            @Override
-                            public void connect() {
-                                connected = true;
-                            }
-
-                            @Override
-                            public long getContentLengthLong() {
-                                return jarConnection.getContentLengthLong();
-                            }
-
-                            @Override
-                            public InputStream getInputStream()
-                                    throws IOException {
-                                return jarConnection.getInputStream();
-                            }
-                        };
-                    }
-                });
-        ServletContext servletContext = ((VaadinServletService) request
-                .getService()).getServlet().getServletContext();
-        URL fileUrl = Files.write(tempDir.resolve("video.mp4"), content).toUri()
-                .toURL();
-        URL resourceUrl = switch (kind) {
-        case "FILE" -> fileUrl;
-        case "CONTAINER" -> containerUrl;
-        default -> jarUrl;
-        };
-        when(servletContext.getResource(anyString())).thenReturn(resourceUrl);
-        // only content that cannot be read from a position is extracted
-        assertEquals(extracted,
-                AbstractDownloadHandler.SeekableContent
-                        .ofResource(resourceUrl, resourceUrl.openConnection())
-                        .sequential());
-        VaadinServletResponse servletResponse = mock(
-                VaadinServletResponse.class);
-        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
-        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
-        VaadinServletService servletService = mock(VaadinServletService.class);
-        when(servletResponse.getService()).thenReturn(servletService);
-        when(request.getHeader("Range")).thenReturn("bytes=2-5");
-
-        DownloadHandler.forServletResource("/video.mp4").handleDownloadRequest(
-                new DownloadEvent(request, servletResponse, session, owner));
-
-        assertEquals(4, servletOutput.getOutput().length);
-        verify(servletResponse).setStatus(206);
     }
 }

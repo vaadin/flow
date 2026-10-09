@@ -540,10 +540,9 @@ class InputStreamDownloadHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource(delimiter = '|', nullValues = "null", value = {
-            "\"v1\" | 6  | 206 | cdef", "null   | 6  | 200 | abcdef",
-            "\"v1\" | -1 | 200 | abcdef" })
-    void rangeRequested_servedOnlyWithETagAndLength(String eTag,
+    @CsvSource({ "true, 6, 206, cdef", "false, 6, 200, abcdef",
+            "true, -1, 200, abcdef" })
+    void rangeRequested_servedOnlyWhenEnabledWithLength(boolean enabled,
             long contentLength, int status, String body) throws IOException {
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
@@ -553,14 +552,13 @@ class InputStreamDownloadHandlerTest {
         when(servletResponse.getService()).thenReturn(servletService);
         when(request.getHeader("Range")).thenReturn("bytes=2-5");
         InputStreamDownloadHandler handler = DownloadHandler
-                .fromInputStream(event -> {
-                    DownloadResponse download = new DownloadResponse(
-                            new ByteArrayInputStream(
-                                    "abcdef".getBytes(StandardCharsets.UTF_8)),
-                            "content.txt", null, contentLength);
-                    download.setETag(eTag);
-                    return download;
-                });
+                .fromInputStream(event -> new DownloadResponse(
+                        new ByteArrayInputStream(
+                                "abcdef".getBytes(StandardCharsets.UTF_8)),
+                        "content.txt", null, contentLength));
+        if (enabled) {
+            handler.enableRangeRequests();
+        }
 
         handler.handleDownloadRequest(
                 new DownloadEvent(request, servletResponse, session, owner));
@@ -569,7 +567,7 @@ class InputStreamDownloadHandlerTest {
                 new String(servletOutput.getOutput(), StandardCharsets.UTF_8));
         if (status == 206) {
             verify(servletResponse).setStatus(206);
-            verify(servletResponse).setHeader("ETag", eTag);
+            verify(servletResponse).setHeader("Content-Range", "bytes 2-5/6");
         } else {
             verify(servletResponse, never()).setStatus(anyInt());
             verify(servletResponse, never()).setHeader(eq("Accept-Ranges"),

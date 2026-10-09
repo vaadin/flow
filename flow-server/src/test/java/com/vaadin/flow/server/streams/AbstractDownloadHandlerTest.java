@@ -23,9 +23,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +32,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,12 +47,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.MockVaadinContext;
-import com.vaadin.flow.server.ServiceDestroyListener;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletResponse;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
@@ -533,7 +526,7 @@ class AbstractDownloadHandlerTest {
                 new DownloadEvent(request, servletResponse, session, owner),
                 inputStream, servletOutput, 10, seekable
                         ? new AbstractDownloadHandler.SeekableContent("content",
-                                "\"v1\"", null, false)
+                                "\"v1\"", null)
                         : null);
 
         String body = new String(servletOutput.getOutput(),
@@ -547,74 +540,6 @@ class AbstractDownloadHandlerTest {
         } else {
             assertEquals(expected, body);
             verify(servletResponse, never()).setStatus(anyInt());
-        }
-    }
-
-    @ParameterizedTest
-    @CsvSource({ "false, 1", "true, 2" })
-    void transferContent_sequentialContent_extractedOnceAndDeletedOnDestroy(
-            boolean extractionFails, int expectedOpens) throws IOException {
-        byte[] content = "abcdefghij".getBytes(StandardCharsets.UTF_8);
-        AtomicInteger opens = new AtomicInteger();
-        URL url = new URL(null, "archive:/content.txt", new URLStreamHandler() {
-            @Override
-            protected URLConnection openConnection(URL u) {
-                return new URLConnection(u) {
-                    @Override
-                    public void connect() {
-                        connected = true;
-                    }
-
-                    @Override
-                    public InputStream getInputStream() throws IOException {
-                        opens.incrementAndGet();
-                        if (extractionFails) {
-                            throw new IOException("Archive unreadable");
-                        }
-                        return new ByteArrayInputStream(content);
-                    }
-                };
-            }
-        });
-        AbstractDownloadHandler.SeekableContent seekable = new AbstractDownloadHandler.SeekableContent(
-                url, "\"v1\"", url, true);
-        MockVaadinContext context = new MockVaadinContext();
-        VaadinServletService service = mock(VaadinServletService.class);
-        when(service.getContext()).thenReturn(context);
-        List<ServiceDestroyListener> destroyListeners = new ArrayList<>();
-        when(service.addServiceDestroyListener(any()))
-                .thenAnswer(invocation -> {
-                    destroyListeners.add(invocation.getArgument(0));
-                    return null;
-                });
-        when(request.getService()).thenReturn(service);
-        when(request.getHeader("Range")).thenReturn("bytes=2-5");
-
-        for (int i = 0; i < 2; i++) {
-            VaadinServletResponse servletResponse = mock(
-                    VaadinServletResponse.class);
-            CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
-            when(servletResponse.getOutputStream()).thenReturn(servletOutput);
-            // what the handler opened, read only if extraction failed
-            InputStream handlerStream = new ByteArrayInputStream(content);
-            handler.transferContent(
-                    new DownloadEvent(request, servletResponse, session, owner),
-                    handlerStream, servletOutput, 10, seekable);
-
-            assertEquals("cdef", new String(servletOutput.getOutput(),
-                    StandardCharsets.UTF_8));
-            assertEquals(extractionFails ? 4 : 10, handlerStream.available());
-        }
-        // extracted once for both requests, attempted again after a failure
-        assertEquals(expectedOpens, opens.get());
-
-        if (!extractionFails) {
-            Path extracted = AbstractDownloadHandler.ExtractedResources
-                    .extract(service, seekable, 10);
-            assertTrue(Files.isRegularFile(extracted));
-            assertEquals(1, destroyListeners.size());
-            destroyListeners.get(0).serviceDestroy(null);
-            assertFalse(Files.exists(extracted));
         }
     }
 }

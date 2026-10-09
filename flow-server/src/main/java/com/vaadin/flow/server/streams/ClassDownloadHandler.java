@@ -33,11 +33,9 @@ import com.vaadin.flow.server.HttpStatusCode;
  * {@code forClassResource(MyData.class, "MyData.json")}
  * <p>
  * Byte range requests, which media players use to seek and browsers use to
- * resume a download, are answered with the requested part of the resource. A
- * compressed entry of a packaged jar can only be read from its start, so one
- * larger than 4 MB is extracted to a temporary file when a range is first
- * requested from it, and ranges are served from that file. The file is shared
- * by all sessions and deleted when the service is destroyed.
+ * resume a download, are only answered after {@link #enableRangeRequests()}.
+ * Use {@link DownloadHandler#forFile(java.io.File)} to serve seekable media
+ * efficiently.
  *
  * @since 24.8
  */
@@ -47,6 +45,7 @@ public class ClassDownloadHandler
     private final Class<?> clazz;
     private final String resourceName;
     private String fileName;
+    private boolean rangeRequestsEnabled;
 
     /**
      * Create a class resource download handler with the resource name as the
@@ -118,7 +117,9 @@ public class ClassDownloadHandler
             }
             transferContent(downloadEvent, inputStream, outputStream,
                     connection.getContentLengthLong(),
-                    SeekableContent.ofResource(resource, connection));
+                    rangeRequestsEnabled
+                            ? SeekableContent.ofResource(resource, connection)
+                            : null);
         } catch (RangeRequestException e) {
             // Not reported again: a cancel is not an error, and a smaller
             // range was never reported as started
@@ -133,6 +134,33 @@ public class ClassDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
+    }
+
+    /**
+     * Enables answering byte range requests, which media players use to seek
+     * and browsers use to resume a download. Safari does not play audio or
+     * video without them.
+     * <p>
+     * Each range is read by skipping the resource up to its start. For a file
+     * on disk that is a seek, but an entry of a packaged jar is usually
+     * compressed and has to be inflated from its start for every range, which
+     * is costly for large media that a player fetches in many small ranges.
+     *
+     * @return this instance for method chaining
+     */
+    public ClassDownloadHandler enableRangeRequests() {
+        rangeRequestsEnabled = true;
+        return this;
+    }
+
+    /**
+     * Returns whether byte range requests are answered.
+     *
+     * @return {@code true} if byte range requests are answered
+     * @see #enableRangeRequests()
+     */
+    public boolean isRangeRequestsEnabled() {
+        return rangeRequestsEnabled;
     }
 
     @Override
