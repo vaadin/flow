@@ -14,28 +14,25 @@
  * the License.
  */
 
-/** The detail of the event fired when the client tries to reconnect. */
-export interface ReconnectionAttemptDetail {
-  /** The number of the reconnection attempt, starting from 1. */
-  readonly attempt: number;
-}
+import { TypedEventTarget } from './TypedEventTarget';
+import type { VaadinRequest } from './communication/VaadinRequest';
+import type { VaadinServerMessage } from './communication/VaadinServerMessage';
 
 /**
  * The events fired through an {@link EventBus}, by type.
  *
- * - `vaadin-request-start`: a request is sent to the server.
- * - `vaadin-response-start`: the client starts handling a message from the
- *   server, before it applies the changes.
- * - `vaadin-request-end`: the request is done: its response has been applied,
- *   or the request failed and the client has given up on it.
- * - `vaadin-reconnection-attempt`: the client tries to reach the server again
- *   after losing the connection.
+ * - `vaadin-request`: a request to the server is announced, when the first
+ *   invocation for it is queued, or right before it is first sent if it has no
+ *   invocations (such as a resynchronization). The {@link VaadinRequest} in the
+ *   detail then tracks its delivery.
+ * - `vaadin-server-message`: raw data arrived from the server, before it is
+ *   parsed. The {@link VaadinServerMessage} in the detail then tracks how the
+ *   client handles it. It covers both replies and messages the server pushes on
+ *   its own.
  */
 export interface EventMap {
-  'vaadin-request-start': CustomEvent<undefined>;
-  'vaadin-response-start': CustomEvent<undefined>;
-  'vaadin-request-end': CustomEvent<undefined>;
-  'vaadin-reconnection-attempt': CustomEvent<ReconnectionAttemptDetail>;
+  'vaadin-request': CustomEvent<VaadinRequest>;
+  'vaadin-server-message': CustomEvent<VaadinServerMessage>;
 }
 
 /**
@@ -48,80 +45,33 @@ export type EventBusListeners = Pick<EventBus, 'addEventListener' | 'removeEvent
  * An event bus for one client engine. The engine fires its events through it,
  * and its {@link EventBus.asListeners | listener methods} are published as
  * `window.Vaadin.Flow.clients[appId].eventBus` so that page scripts can follow
- * what the engine does:
+ * the requests the client sends and the messages it receives, for example to
+ * measure them:
  *
  * ```js
- * client.eventBus.addEventListener('vaadin-request-end', () => console.log('request done'));
+ * client.eventBus.addEventListener('vaadin-request', ({ detail: request }) => {
+ *   let sentAt;
+ *   request.addEventListener('sent', () => (sentAt = performance.now()));
+ *   request.addEventListener('response', () => console.log(`round trip ${performance.now() - sentAt} ms`));
+ *   request.addEventListener('end', () => console.log(`request ${request.outcome}`));
+ * });
  * ```
  *
- * It is a plain `EventTarget`, so listeners are added and removed with the
- * standard DOM methods and options such as `once` and `signal` work. An error
- * thrown by a listener is reported like any other uncaught error and does not
- * stop the engine or the other listeners. {@link EventMap} lists the event
- * types.
+ * The engine coordinates its own work through direct calls, never through
+ * these events, so firing an event does not make the engine do anything.
+ * Listeners run synchronously inside the engine's work: keep them cheap and do
+ * not call back into the client from them. Heartbeats and the overall state of
+ * the client are not covered.
  */
-export class EventBus extends EventTarget {
-  /**
-   * Adds a listener for an event type. The type and the event the listener
-   * gets are checked for the types listed in {@link EventMap}.
-   *
-   * @param type - the event type
-   * @param listener - the listener, called with the event
-   * @param options - the standard `addEventListener` options
-   * @typeParam K - the event type
-   */
-  override addEventListener<K extends keyof EventMap>(
-    type: K,
-    listener: (event: EventMap[K]) => void,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-  override addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject | null,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-  override addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject | null,
-    options?: boolean | AddEventListenerOptions
-  ): void {
-    super.addEventListener(type, listener, options);
-  }
-
-  /**
-   * Removes a listener added with {@link EventBus.addEventListener}.
-   *
-   * @param type - the event type
-   * @param listener - the listener to remove
-   * @param options - the standard `removeEventListener` options
-   * @typeParam K - the event type
-   */
-  override removeEventListener<K extends keyof EventMap>(
-    type: K,
-    listener: (event: EventMap[K]) => void,
-    options?: boolean | EventListenerOptions
-  ): void;
-  override removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject | null,
-    options?: boolean | EventListenerOptions
-  ): void;
-  override removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject | null,
-    options?: boolean | EventListenerOptions
-  ): void {
-    super.removeEventListener(type, listener, options);
-  }
-
+export class EventBus extends TypedEventTarget<EventMap> {
   /**
    * Fires an event to the listeners of its type.
    *
    * @param type - the event type
-   * @param detail - the detail the event carries, if its type has one
+   * @param detail - the detail the event carries
    * @typeParam K - the event type
    */
-  fireEvent<K extends keyof EventMap>(type: K, detail?: EventMap[K]['detail']): void {
+  fireEvent<K extends keyof EventMap>(type: K, detail: EventMap[K]['detail']): void {
     this.dispatchEvent(new CustomEvent(type, { detail }));
   }
 

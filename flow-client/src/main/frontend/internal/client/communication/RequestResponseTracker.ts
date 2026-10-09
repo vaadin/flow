@@ -15,15 +15,15 @@
  */
 
 // TypeScript port of com.vaadin.client.communication.RequestResponseTracker.
-// It ensures a single active server request at a time and fires the
-// request-start, response-start, request-end and reconnection-attempt events.
-// The GWT EventBus is replaced by the client's EventBus, through which page
-// scripts can follow the same events.
+// It ensures a single active server request at a time. The Java version fires
+// its lifecycle events through the GWT EventBus; their only listeners were in the
+// engine, which the port calls directly instead. Page scripts follow requests
+// through the VaadinRequest events, which MessageSender fires.
 
 import type { Registry } from '../Registry';
 import { ResynchronizationState } from './MessageSender';
 
-/** Tracks active server UIDL requests and fires their lifecycle events; mirrors RequestResponseTracker.java. */
+/** Tracks active server UIDL requests; mirrors RequestResponseTracker.java. */
 export class RequestResponseTracker {
   #hasActiveRequestState = false;
 
@@ -38,13 +38,12 @@ export class RequestResponseTracker {
     this.#registry = registry;
   }
 
-  /** Marks that a new request has started and fires the request-start event. */
+  /** Marks that a new request has started. */
   startRequest(): void {
     if (this.#hasActiveRequestState) {
       throw new Error('Trying to start a new request while another is active');
     }
     this.#hasActiveRequestState = true;
-    this.#registry.getEventBus().fireEvent('vaadin-request-start');
   }
 
   /**
@@ -57,8 +56,7 @@ export class RequestResponseTracker {
   }
 
   /**
-   * Marks that the current request has ended, sending any pending invocations
-   * and firing the request-end event.
+   * Marks that the current request has ended, sending any pending invocations.
    */
   endRequest(): void {
     if (!this.#hasActiveRequestState) {
@@ -80,16 +78,7 @@ export class RequestResponseTracker {
       messageSender.sendInvocationsToServer();
     }
 
-    this.#registry.getEventBus().fireEvent('vaadin-request-end');
-  }
-
-  /** Fires the response-start event (called by the message handler). */
-  fireResponseHandlingStarted(): void {
-    this.#registry.getEventBus().fireEvent('vaadin-response-start');
-  }
-
-  /** Fires a reconnection-attempt event with the attempt count. */
-  fireReconnectionAttempt(attempt: number): void {
-    this.#registry.getEventBus().fireEvent('vaadin-reconnection-attempt', { attempt });
+    // Java's XhrConnection listens to the response-handling-ended event for this.
+    this.#registry.getXhrConnection().clearWebkitMaybeIgnoringRequests();
   }
 }

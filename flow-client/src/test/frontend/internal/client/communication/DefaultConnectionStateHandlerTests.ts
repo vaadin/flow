@@ -5,6 +5,10 @@ import type { EventRemover } from '../../../../../main/frontend/internal/EventRe
 import { testRegistry } from '../testRegistry';
 import { DefaultConnectionStateHandler } from '../../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
 import { XhrConnectionError } from '../../../../../main/frontend/internal/client/communication/XhrConnectionError';
+import type {
+  VaadinRequestFailure,
+  VaadinRequestOutcome
+} from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
 import {
   CONNECTED,
   CONNECTION_LOST,
@@ -15,6 +19,7 @@ import {
 function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) {
   const log = {
     reconnectionAttempts: [] as number[],
+    requests: [] as Array<VaadinRequestFailure | VaadinRequestOutcome>,
     heartbeatSends: 0,
     sessionExpired: 0,
     unrecoverable: [] as string[],
@@ -47,8 +52,7 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
       },
       RequestResponseTracker: {
         hasActiveRequest: () => false,
-        endRequest: () => {},
-        fireReconnectionAttempt: (attempt: number) => log.reconnectionAttempts.push(attempt)
+        endRequest: () => {}
       },
       LoadingIndicatorStateHandler: { stopLoading: () => {} },
       Heartbeat: {
@@ -59,7 +63,14 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
         send: () => log.heartbeatSends++
       },
       ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
-      MessageSender: { sendInvocationsToServer: () => {} },
+      MessageSender: {
+        sendInvocationsToServer: () => {},
+        resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt),
+        failAttempt: (_payload: Record<string, unknown>, failure: VaadinRequestFailure) => log.requests.push(failure),
+        failPushAttempt: (failure: VaadinRequestFailure) => log.requests.push(failure),
+        settleRequest: (_payload: Record<string, unknown>, outcome: VaadinRequestOutcome) => log.requests.push(outcome),
+        discardSentRequests: () => {}
+      },
       SystemErrorHandler: {
         handleSessionExpiredError: () => log.sessionExpired++,
         handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
@@ -91,7 +102,7 @@ describe('DefaultConnectionStateHandler', () => {
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry.registry);
     handler.xhrException(xhrError({ rpc: 1 }));
-    // First attempt -> immediate doReconnect -> fireReconnectionAttempt(1).
+    // First attempt -> immediate doReconnect -> resendQueuedMessages(1).
     expect(registry.log.reconnectionAttempts).to.deep.equal([1]);
   });
 
@@ -143,6 +154,9 @@ describe('DefaultConnectionStateHandler', () => {
     handler.xhrInvalidStatusCode(xhrError({}, 401));
     expect(registry.log.sessionExpired).to.equal(1);
     expect(registry.log.reconnectionAttempts).to.deep.equal([]);
+    // The request fails with the status and ends as rejected, before the
+    // application stops and discards what is left.
+    expect(registry.log.requests).to.deep.equal([{ reason: 'http', status: 401 }, 'rejected']);
   });
 
   it('reports an unrecoverable error for invalid xhr content (no refresh token)', () => {
@@ -151,6 +165,7 @@ describe('DefaultConnectionStateHandler', () => {
     const handler = new DefaultConnectionStateHandler(registry.registry);
     handler.xhrInvalidContent(xhrError({}, 200, 'not json'));
     expect(registry.log.unrecoverable).to.have.length(1);
+    expect(registry.log.requests).to.deep.equal([{ reason: 'invalid-response', status: 200 }, 'discarded']);
     expect(registry.log.states).to.deep.equal(['TERMINATED']);
   });
 

@@ -2,7 +2,6 @@
 // src/test-gwt/java, so every case here is beyond the Java suite.
 import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
-import { EventBus } from '../../../../../main/frontend/internal/client/EventBus';
 import { RequestResponseTracker } from '../../../../../main/frontend/internal/client/communication/RequestResponseTracker';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
 
@@ -15,9 +14,13 @@ function makeRegistry(
   } = {}
 ) {
   let sends = 0;
-  const eventBus = new EventBus();
+  let webkitClears = 0;
   const registry = testRegistry({
-    EventBus: eventBus,
+    XhrConnection: {
+      clearWebkitMaybeIgnoringRequests: () => {
+        webkitClears++;
+      }
+    },
     UILifecycle: { isRunning: () => opts.running ?? true },
     ServerRpcQueue: { isFlushPending: () => opts.flushPending ?? false },
     MessageSender: {
@@ -28,20 +31,16 @@ function makeRegistry(
       }
     }
   });
-  return { registry, eventBus, sends: () => sends };
+  return { registry, sends: () => sends, webkitClears: () => webkitClears };
 }
 
 describe('RequestResponseTracker', () => {
-  it('tracks the active request and fires request-start', () => {
-    const { registry, eventBus } = makeRegistry();
+  it('tracks the active request', () => {
+    const { registry } = makeRegistry();
     const tracker = new RequestResponseTracker(registry);
-    const started: string[] = [];
-    eventBus.addEventListener('vaadin-request-start', () => started.push('x'));
-
     expect(tracker.hasActiveRequest()).to.be.false;
     tracker.startRequest();
     expect(tracker.hasActiveRequest()).to.be.true;
-    expect(started).to.have.length(1);
   });
 
   it('throws on a double start or an end without an active request', () => {
@@ -52,15 +51,13 @@ describe('RequestResponseTracker', () => {
     expect(() => tracker.startRequest()).to.throw('another is active');
   });
 
-  it('endRequest clears the flag, fires request-end, and does not send when idle', () => {
-    const { registry, eventBus, sends } = makeRegistry();
+  it('endRequest clears the flag and the WebKit retry, and does not send when idle', () => {
+    const { registry, sends, webkitClears } = makeRegistry();
     const tracker = new RequestResponseTracker(registry);
-    const ended: string[] = [];
-    eventBus.addEventListener('vaadin-request-end', () => ended.push('x'));
     tracker.startRequest();
     tracker.endRequest();
     expect(tracker.hasActiveRequest()).to.be.false;
-    expect(ended).to.have.length(1);
+    expect(webkitClears()).to.equal(1);
     expect(sends()).to.equal(0);
   });
 
@@ -84,17 +81,5 @@ describe('RequestResponseTracker', () => {
     t2.startRequest();
     t2.endRequest();
     expect(queued.sends()).to.equal(1);
-  });
-
-  it('fires response-start and reconnection-attempt with the attempt count', () => {
-    const { registry, eventBus } = makeRegistry();
-    const tracker = new RequestResponseTracker(registry);
-    const events: unknown[] = [];
-    eventBus.addEventListener('vaadin-response-start', () => events.push('started'));
-    eventBus.addEventListener('vaadin-reconnection-attempt', (event) => events.push(event.detail.attempt));
-
-    tracker.fireResponseHandlingStarted();
-    tracker.fireReconnectionAttempt(3);
-    expect(events).to.deep.equal(['started', 3]);
   });
 });

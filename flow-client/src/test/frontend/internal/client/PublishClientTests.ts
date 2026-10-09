@@ -5,6 +5,7 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { EventBus } from '../../../../main/frontend/internal/client/EventBus';
+import { VaadinRequest } from '../../../../main/frontend/internal/client/communication/VaadinRequest';
 import { publishClient } from '../../../../main/frontend/internal/client/publishClient';
 import type {
   ApplicationConfiguration,
@@ -85,13 +86,14 @@ describe('publishClient', () => {
     const client = $wnd.Vaadin.Flow.clients.ROOT;
     expect(Object.keys(client.eventBus)).to.have.members(['addEventListener', 'removeEventListener']);
 
-    const ends: string[] = [];
-    const listener = () => ends.push('end');
-    client.eventBus.addEventListener('vaadin-request-end', listener);
-    eventBus.fireEvent('vaadin-request-end');
-    client.eventBus.removeEventListener('vaadin-request-end', listener);
-    eventBus.fireEvent('vaadin-request-end');
-    expect(ends).to.deep.equal(['end']);
+    const announced: VaadinRequest[] = [];
+    const listener = (event: CustomEvent<VaadinRequest>) => announced.push(event.detail);
+    const request = new VaadinRequest();
+    client.eventBus.addEventListener('vaadin-request', listener);
+    eventBus.fireEvent('vaadin-request', request);
+    client.eventBus.removeEventListener('vaadin-request', listener);
+    eventBus.fireEvent('vaadin-request', new VaadinRequest());
+    expect(announced).to.deep.equal([request]);
   });
 
   it('omits dev-only and profiling methods in production without request timing', () => {

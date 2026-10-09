@@ -5,6 +5,7 @@ import {
   FragmentedMessage
 } from '../../../../../main/frontend/internal/client/communication/AtmospherePushConnection';
 import { URIResolver } from '../../../../../main/frontend/internal/client/URIResolver';
+import { VaadinServerMessage } from '../../../../../main/frontend/internal/client/communication/VaadinServerMessage';
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -66,6 +67,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     MessageHandler: {
       getPushId: () => null,
       getLastSeenServerSyncId: () => 5,
+      announceMessage: () => new VaadinServerMessage(),
       handleMessage: (json: unknown) => log.handled.push(json)
     },
     ResourceLoader: { loadScript: () => {} }

@@ -65,6 +65,7 @@ function makeWiredRegistry() {
   const tree = new StateTree(registry);
   registry.register('StateTree', tree);
   registry.register('EventBus', new EventBus());
+  registry.register('XhrConnection', { clearWebkitMaybeIgnoringRequests: () => {} });
   registry.register('RequestResponseTracker', new RequestResponseTracker(registry));
   registry.register('LoadingIndicatorStateHandler', new LoadingIndicatorStateHandler(registry));
   registry.register('ServerRpcQueue', new ServerRpcQueue(registry));
