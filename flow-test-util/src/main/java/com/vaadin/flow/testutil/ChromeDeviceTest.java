@@ -78,6 +78,10 @@ public class ChromeDeviceTest extends ViewOrUITest {
         if (Browser.CHROME == getRunLocallyBrowser()) {
             driver = new ChromeDriver(chromeOptions);
         } else {
+            // Starting from Chrome 144, CDP is not enabled by default and must
+            // be enabled explicitly with --remote-debugging-port option.
+            // This only affects CI builds, not local runs of GH actions
+            chromeOptions.addArguments("--remote-debugging-port=9222");
             URL remoteURL = new URL(getHubURL());
             driver = new RemoteWebDriver(remoteURL, chromeOptions);
             setDevToolsRuntimeCapabilities((RemoteWebDriver) driver, remoteURL);
