@@ -181,6 +181,7 @@ describe('DefaultConnectionStateHandler', () => {
   });
 
   it('reconnects a receive-only websocket when reopening it fails', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry.registry);
     const initialState = getState();
