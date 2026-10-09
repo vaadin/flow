@@ -35,7 +35,7 @@ env:
 jobs:
   quarkus-main:
     name: "Build against latest Quarkus main snapshot"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     # The `watch` event fires whenever anyone stars this repository, so the
     # actor check is what keeps this from running hundreds of times a day.
     if: github.actor == 'quarkusbot' || github.event_name == 'workflow_dispatch'

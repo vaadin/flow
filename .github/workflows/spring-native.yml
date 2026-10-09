@@ -28,7 +28,7 @@ jobs:
     # with and the report job below would open issues in the fork.
     if: ${{ github.repository == 'vaadin/flow' }}
     timeout-minutes: 60
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
       - uses: ./.github/actions/setup-frontend-tools
@@ -102,7 +102,7 @@ jobs:
     permissions:
       contents: read
       issues: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Sync the native build issue
         env:
