@@ -1165,11 +1165,11 @@ public class UITest {
                 return false;
             }
         };
+        RouteParameters parameters = RouteParameters.empty();
 
         NullPointerException exception = assertThrows(
                 NullPointerException.class,
-                () -> ui.navigate(FooBarNavigationTarget.class,
-                        RouteParameters.empty()));
+                () -> ui.navigate(FooBarNavigationTarget.class, parameters));
         assertEquals("Navigation is not supported by this UI",
                 exception.getMessage());
     }
