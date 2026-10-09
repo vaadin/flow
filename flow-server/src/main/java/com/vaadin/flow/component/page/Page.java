@@ -260,7 +260,7 @@ public class Page implements Serializable {
             dependencyId = UUID.randomUUID().toString();
         }
 
-        Dependency dependency = Dependency.styleSheet(url, loadMode,
+        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
                 dependencyId, layer);
         dependencyList.add(dependency);
 

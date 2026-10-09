@@ -106,21 +106,9 @@ public class Dependency implements Serializable {
         this(type, url, loadMode, id, null);
     }
 
-    private Dependency(Type type, String url, LoadMode loadMode, String id,
-            String layer) {
-        if (url == null) {
-            throw new IllegalArgumentException("url cannot be null");
-        }
-        this.type = Objects.requireNonNull(type);
-        this.url = url;
-        this.loadMode = loadMode;
-        this.id = id;
-        this.layer = layer;
-    }
-
     /**
-     * Creates a new style sheet dependency, to be loaded from the given URL
-     * into the given CSS cascade layer, with an optional ID for tracking.
+     * Creates a new dependency of the given type, to be loaded from the given
+     * URL into the given CSS cascade layer, with an optional ID for tracking.
      * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols, specified at
@@ -128,21 +116,37 @@ public class Dependency implements Serializable {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
+     * @param type
+     *            the type of the dependency, not {@code null}
      * @param url
-     *            the URL to load the style sheet from, not {@code null}
+     *            the URL to load the dependency from, not {@code null}
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
      * @param id
      *            optional ID for tracking the dependency
      * @param layer
-     *            the CSS cascade layer to load the style sheet into, or
+     *            the CSS cascade layer to load a style sheet into, or
      *            {@code null} to not use a layer
-     * @return the style sheet dependency
+     * @throws IllegalArgumentException
+     *             if a layer is given for a dependency that is not a
+     *             {@link Type#STYLESHEET}
      */
-    public static Dependency styleSheet(String url, LoadMode loadMode,
-            String id, String layer) {
-        return new Dependency(Type.STYLESHEET, url, loadMode, id, layer);
+    public Dependency(Type type, String url, LoadMode loadMode, String id,
+            String layer) {
+        if (url == null) {
+            throw new IllegalArgumentException("url cannot be null");
+        }
+        this.type = Objects.requireNonNull(type);
+        if (layer != null && type != Type.STYLESHEET) {
+            throw new IllegalArgumentException(
+                    "Only a style sheet can be loaded into a layer, not "
+                            + type);
+        }
+        this.url = url;
+        this.loadMode = loadMode;
+        this.id = id;
+        this.layer = layer;
     }
 
     /**
