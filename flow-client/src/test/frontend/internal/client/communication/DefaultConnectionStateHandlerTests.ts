@@ -194,6 +194,26 @@ describe('DefaultConnectionStateHandler', () => {
     expect(registry.log.heartbeatSends).to.equal(1);
   });
 
+  it('reports why each failed attempt of a request failed', () => {
+    const registry = makeRegistry(10);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+
+    handler.xhrException(xhrError({ rpc: 1 }));
+    // A request that got no response at all completes with status 0.
+    handler.xhrInvalidStatusCode(xhrError({ rpc: 1 }, 0));
+    handler.xhrInvalidStatusCode(xhrError({ rpc: 1 }, 500));
+    handler.pushNotConnected({ rpc: 1 });
+    handler.pushReconnectPending({ isBidirectional: () => true } as never);
+
+    expect(registry.log.requests).to.deep.equal([
+      { reason: 'network' },
+      { reason: 'network' },
+      { reason: 'http', status: 500 },
+      { reason: 'network' },
+      { reason: 'network' }
+    ]);
+  });
+
   it('stops heartbeats while the browser is offline and resumes them', () => {
     // Ported from test_browserEvents_stopsHeartbeats.
     // The Java suite configures the same interval it sets on the heartbeat,
