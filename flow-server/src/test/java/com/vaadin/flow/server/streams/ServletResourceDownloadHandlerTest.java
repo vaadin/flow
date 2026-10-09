@@ -42,7 +42,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -363,9 +363,10 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "FILE", "STORED", "DEFLATED", "CONTAINER" })
+    @CsvSource({ "FILE, false", "STORED, false", "DEFLATED, true",
+            "CONTAINER, true" })
     void handleDownloadRequest_largeResource_rangeServed(String kind,
-            @TempDir Path tempDir) throws IOException {
+            boolean extracted, @TempDir Path tempDir) throws IOException {
         byte[] content = new byte[(int) AbstractDownloadHandler.SeekableContent.MIN_EXTRACTED_LENGTH
                 + 1];
         Path jar = tempDir.resolve("resources.jar");
@@ -414,11 +415,17 @@ class ServletResourceDownloadHandlerTest {
                 .getService()).getServlet().getServletContext();
         URL fileUrl = Files.write(tempDir.resolve("video.mp4"), content).toUri()
                 .toURL();
-        when(servletContext.getResource(anyString())).thenReturn(switch (kind) {
+        URL resourceUrl = switch (kind) {
         case "FILE" -> fileUrl;
         case "CONTAINER" -> containerUrl;
         default -> jarUrl;
-        });
+        };
+        when(servletContext.getResource(anyString())).thenReturn(resourceUrl);
+        // only content that cannot be read from a position is extracted
+        assertEquals(extracted,
+                AbstractDownloadHandler.SeekableContent
+                        .ofResource(resourceUrl, resourceUrl.openConnection())
+                        .sequential());
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();

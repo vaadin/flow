@@ -426,16 +426,21 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 files.remove(key, existing);
                 return extract(content, contentLength);
             }
+            Path file = null;
             try {
-                extraction.complete(copy(content.url(), contentLength));
+                file = copy(content.url(), contentLength);
             } catch (IOException | RuntimeException e) {
                 LoggerFactory.getLogger(AbstractDownloadHandler.class).warn(
                         "Failed to extract {} to a temporary file, ranges are read from its start",
                         content.resource(), e);
-                files.remove(key, extraction);
-                extraction.complete(null);
+            } finally {
+                // Also on an error, so that waiting requests do not hang
+                if (file == null) {
+                    files.remove(key, extraction);
+                }
+                extraction.complete(file);
             }
-            return extraction.join();
+            return file;
         }
 
         private Path copy(URL url, long contentLength) throws IOException {
