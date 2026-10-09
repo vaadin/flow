@@ -2091,10 +2091,10 @@ public class Element extends Node<Element> {
      * @since 25.2
      */
     public Registration addJsInitializer(String expression,
-            @Nullable Object... parameters) {
+            @Nullable Object @Nullable... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
         return new ElementJsInitializerRegistration(getNode(), expression,
-                parameters == null ? new Object[0] : parameters);
+                parameters == null ? new @Nullable Object[0] : parameters);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
