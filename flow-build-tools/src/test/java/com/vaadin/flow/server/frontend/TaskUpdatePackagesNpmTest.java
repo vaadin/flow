@@ -433,18 +433,26 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_versionsJsonHasUrlVersion_urlVersionAdded()
+    void npmIsInUse_versionsJsonHasUrlVersion_urlVersionPinnedAndUpdated()
             throws IOException {
-        final String overlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762dfe309017d7928b26395bafb73226e28fd";
+        final String overlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d";
         createVaadinVersionsJson(PINNED_DIALOG_VERSION,
                 PINNED_ELEMENT_MIXIN_VERSION, overlayUrl);
-
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
-        task.execute();
-
+        createTask(createApplicationDependencies()).execute();
         verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 overlayUrl);
+
+        final String newOverlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@3a1f0c9";
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, newOverlayUrl);
+        createTask(createApplicationDependencies()).execute();
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
+                newOverlayUrl);
+
+        createBasicVaadinVersionsJson();
+        createTask(createApplicationDependencies()).execute();
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
     }
 
     @Test

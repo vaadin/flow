@@ -732,13 +732,6 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     protected static boolean pinNpmDependency(JsonNode packageJson,
             JsonNode pinnedNpmVersions, String pkg) {
-        final FrontendVersion pinnedVersion = FrontendUtils
-                .getPackageVersionFromJson(pinnedNpmVersions, pkg,
-                        "vaadin_dependencies.json");
-        if (pinnedVersion == null) {
-            return false;
-        }
-
         final ObjectNode vaadinDeps = (ObjectNode) packageJson
                 .get(VAADIN_DEP_KEY).get(DEPENDENCIES);
         final ObjectNode packageJsonDeps = (ObjectNode) packageJson
@@ -747,6 +740,19 @@ public class TaskUpdatePackages extends NodeUpdater {
         assert vaadinDeps != null : "vaadin{ dependencies { } } should exist";
         assert packageJsonDeps != null : "dependencies { } should exist";
 
+        if (pinnedNpmVersions.has(pkg) && FrontendBuildUtils
+                .isUrlVersion(pinnedNpmVersions.get(pkg).asString(null))) {
+            return pinNpmDependencyToUrl(packageJsonDeps, vaadinDeps, pkg,
+                    pinnedNpmVersions.get(pkg).asString());
+        }
+
+        final FrontendVersion pinnedVersion = FrontendUtils
+                .getPackageVersionFromJson(pinnedNpmVersions, pkg,
+                        "vaadin_dependencies.json");
+        if (pinnedVersion == null) {
+            return false;
+        }
+
         FrontendVersion packageJsonVersion = null, vaadinDepsVersion = null;
         try {
             if (packageJsonDeps.has(pkg)) {
@@ -754,8 +760,11 @@ public class TaskUpdatePackages extends NodeUpdater {
                         packageJsonDeps.get(pkg).asString());
             }
         } catch (NumberFormatException e) {
-            // Overridden to a file link in package.json, do not change
-            return false;
+            if (!packageJsonDeps.get(pkg).equals(vaadinDeps.get(pkg))) {
+                // Overridden to a file link in package.json, do not change
+                return false;
+            }
+            // Vaadin pinned a URL before, so it is replaced with the version
         }
         try {
             if (vaadinDeps.has(pkg)) {
@@ -781,6 +790,26 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         packageJsonDeps.put(pkg, pinnedVersion.getFullVersion());
         vaadinDeps.put(pkg, pinnedVersion.getFullVersion());
+        return true;
+    }
+
+    private static boolean pinNpmDependencyToUrl(ObjectNode packageJsonDeps,
+            ObjectNode vaadinDeps, String pkg, String url) {
+        final JsonNode packageJsonVersion = packageJsonDeps.get(pkg);
+        final JsonNode vaadinDepsVersion = vaadinDeps.get(pkg);
+        if (packageJsonVersion != null && vaadinDepsVersion != null
+                && !packageJsonVersion.equals(vaadinDepsVersion)) {
+            // The user has overridden the version, use that
+            return false;
+        }
+        if (packageJsonVersion != null
+                && url.equals(packageJsonVersion.asString())
+                && vaadinDepsVersion != null
+                && url.equals(vaadinDepsVersion.asString())) {
+            return false;
+        }
+        packageJsonDeps.put(pkg, url);
+        vaadinDeps.put(pkg, url);
         return true;
     }
 
