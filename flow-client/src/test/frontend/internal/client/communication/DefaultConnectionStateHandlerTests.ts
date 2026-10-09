@@ -179,6 +179,17 @@ describe('DefaultConnectionStateHandler', () => {
     expect(registry.log.heartbeatSends).to.equal(1);
   });
 
+  it('reconnects a pending websocket push reconnect when messages are sent over xhr', () => {
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+
+    // The default websocket-xhr transport closes the websocket when the server
+    // is lost, the same as a bidirectional websocket does.
+    handler.pushReconnectPending({ isBidirectional: () => false, getTransportType: () => 'websocket' } as never);
+    expect(getState()).to.equal(RECONNECTING);
+    expect(registry.log.heartbeatSends).to.equal(1);
+  });
+
   it('stops heartbeats while the browser is offline and resumes them', () => {
     // Ported from test_browserEvents_stopsHeartbeats.
     // The Java suite configures the same interval it sets on the heartbeat,
