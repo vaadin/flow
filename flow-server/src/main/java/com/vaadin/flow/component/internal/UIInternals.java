@@ -1404,7 +1404,8 @@ public class UIInternals implements Serializable {
                     .resolveToContextRoot(styleSheet.value());
             if (resolved != null) {
                 page.addStyleSheet(resolved, styleSheet.loadMode(),
-                        styleSheet.layer());
+                        styleSheet.layer().isEmpty() ? null
+                                : styleSheet.layer());
             }
         });
 

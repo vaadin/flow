@@ -1077,7 +1077,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return dependencyElement;
         }
 
-        static Element createStylesheetElement(String url, String layer) {
+        private static Element createStylesheetElement(String url,
+                String layer) {
             final Element cssElement;
             if (url != null && layer != null) {
                 cssElement = new Element(Tag.valueOf("style"), "")

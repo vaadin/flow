@@ -60,15 +60,26 @@ describe('DependencyLoader (class)', () => {
   });
 
   it('loads an eager stylesheet via the resolved URL and the loadStylesheet method', () => {
-    // Ported from loadStylesheet, extended with the cascade layer.
+    // Ported from loadStylesheet.
     const registry = makeRegistry();
     new DependencyLoader(registry.registry).loadDependencies(
-      new Map([['EAGER', [{ type: 'STYLESHEET', url: 'styles.css', id: 'dep-1', layer: 'theme' }]]])
+      new Map([['EAGER', [{ type: 'STYLESHEET', url: 'styles.css', id: 'dep-1' }]]])
     );
     const call = registry.calls.find((c) => c.method === 'loadStylesheet');
     expect(call).to.not.equal(undefined);
     expect(call?.args[0]).to.equal('resolved:styles.css');
     expect(call?.args[2]).to.equal('dep-1');
+    // No layer
+    expect(call?.args[3]).to.equal(null);
+  });
+
+  it('loads a stylesheet into the cascade layer of the dependency', () => {
+    const registry = makeRegistry();
+    new DependencyLoader(registry.registry).loadDependencies(
+      new Map([['EAGER', [{ type: 'STYLESHEET', url: 'styles.css', id: 'dep-1', layer: 'theme' }]]])
+    );
+    const call = registry.calls.find((c) => c.method === 'loadStylesheet');
+    expect(call?.args[0]).to.equal('resolved:styles.css');
     expect(call?.args[3]).to.equal('theme');
   });
 

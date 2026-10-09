@@ -95,25 +95,24 @@ class AppShellRegistryStyleSheetDataFilePathTest {
     }
 
     @Test
-    void modifyIndex_styleSheetWithLayer_importedIntoLayer() {
+    void modifyIndex_styleSheetWithLayer_trackedWithLayer() {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(LayeredShell.class);
 
         registry.modifyIndexHtml(document, createRequest("/", "/ctx"));
 
-        List<Element> styles = document.head().select("style[data-layer]");
-        assertEquals(1, styles.size());
-        Element style = styles.get(0);
-        assertEquals("@import url(\"./theme.css\") layer(theme.base);",
-                style.data());
-        assertEquals("theme.base", style.attr("data-layer"));
-        assertEquals("theme.css", style.attr("data-file-path"));
-        assertEquals("appShell-theme.css", style.attr("data-id"));
+        // The dev tools find the style sheet by these to hotswap or remove it
+        // in its layer
+        List<Element> themes = document.head()
+                .select("[data-file-path=theme.css]");
+        assertEquals(1, themes.size());
+        Element theme = themes.get(0);
+        assertEquals("appShell-theme.css", theme.attr("data-id"));
+        assertEquals("theme.base", theme.attr("data-layer"));
 
-        // A style sheet without a layer is still a link
-        List<Element> links = document.head().select("link[rel=stylesheet]");
-        assertEquals(1, links.size());
-        assertEquals("./app.css", links.get(0).attr("href"));
+        List<Element> apps = document.head().select("[data-file-path=app.css]");
+        assertEquals(1, apps.size());
+        assertFalse(apps.get(0).hasAttr("data-layer"));
     }
 
     @Test

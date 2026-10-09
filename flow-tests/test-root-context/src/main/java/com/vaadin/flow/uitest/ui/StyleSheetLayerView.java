@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
@@ -23,6 +24,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 @Route("com.vaadin.flow.uitest.ui.StyleSheetLayerView")
+@StyleSheet(value = "context://style-layer-annotated.css", layer = "theme")
 public class StyleSheetLayerView extends Div {
 
     private Registration layeredRegistration;
@@ -52,6 +54,10 @@ public class StyleSheetLayerView extends Div {
                 });
         removeLayered.setId("remove-layered-style");
 
-        add(testDiv, addLayered, removeLayered);
+        Div annotatedDiv = new Div("Annotated Content");
+        annotatedDiv.setId("annotated-div");
+        annotatedDiv.addClassName("layered");
+
+        add(testDiv, annotatedDiv, addLayered, removeLayered);
     }
 }

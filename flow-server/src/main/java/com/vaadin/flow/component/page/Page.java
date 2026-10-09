@@ -198,7 +198,7 @@ public class Page implements Serializable {
      * @see #addStyleSheet(String, LoadMode, String)
      */
     public Registration addStyleSheet(String url, LoadMode loadMode) {
-        return addStyleSheet(url, loadMode, "");
+        return addStyleSheet(url, loadMode, null);
     }
 
     /**
@@ -206,11 +206,7 @@ public class Page implements Serializable {
      * ensures that it is loaded successfully.
      * <p>
      * Styles in a layer have lower priority than styles outside of any layer,
-     * regardless of selector specificity. Unlike
-     * {@link #addStyleSheet(String, LoadMode)}, which adds a
-     * {@code <link rel="stylesheet">}, a layered style sheet is loaded through
-     * a CSS {@code @import} rule in a {@code <style>} element, since a link
-     * element cannot put a style sheet into a layer.
+     * regardless of selector specificity.
      * <p>
      * Relative URLs and the {@code context://} prefix are handled as in
      * {@link #addStyleSheet(String, LoadMode)}.
@@ -230,14 +226,14 @@ public class Page implements Serializable {
      *            details
      * @param layer
      *            the name of the cascade layer, such as {@code theme} or
-     *            {@code theme.base}, or an empty string to not use a layer
+     *            {@code theme.base}, or {@code null} to not use a layer
      * @return a registration object that can be used to remove the style sheet
      * @throws IllegalArgumentException
      *             if {@code layer} is not a valid cascade layer name
      */
     public Registration addStyleSheet(String url, LoadMode loadMode,
             String layer) {
-        if (!layer.isEmpty()) {
+        if (layer != null) {
             CssBundler.validateLayerName(layer);
         }
         DependencyList dependencyList = ui.getInternals().getDependencyList();
@@ -245,16 +241,14 @@ public class Page implements Serializable {
         // Check if dependency already exists with this URL
         Dependency existing = dependencyList.getDependencyByUrl(url,
                 Type.STYLESHEET);
-        String layerOrNull = layer.isEmpty() ? null : layer;
-        if (existing != null
-                && !Objects.equals(existing.getLayer(), layerOrNull)
+        if (existing != null && !Objects.equals(existing.getLayer(), layer)
                 && LOGGER.isWarnEnabled()) {
             // The browser has already loaded the URL and keeps it as it is
             LOGGER.warn(
                     "Style sheet {} is already added {}, so it is not added"
                             + " again {}",
                     url, describeLayer(existing.getLayer()),
-                    describeLayer(layerOrNull));
+                    describeLayer(layer));
         }
         String dependencyId;
 
@@ -266,8 +260,8 @@ public class Page implements Serializable {
             dependencyId = UUID.randomUUID().toString();
         }
 
-        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
-                dependencyId, layerOrNull);
+        Dependency dependency = Dependency.styleSheet(url, loadMode,
+                dependencyId, layer);
         dependencyList.add(dependency);
 
         // Return Registration for removal

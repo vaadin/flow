@@ -126,10 +126,13 @@ public class DependencyList implements Serializable {
             String idToUse = currentDependency.getId() != null
                     ? currentDependency.getId()
                     : newDependency.getId();
-            // Keep the layer the dependency was first added to
-            Dependency replacementDep = new Dependency(newDependency.getType(),
-                    newDependency.getUrl(), moreEagerLoadMode, idToUse,
-                    currentDependency.getLayer());
+            // Keep the layer the style sheet was first added to
+            Dependency replacementDep = currentDependency.getLayer() != null
+                    ? Dependency.styleSheet(newDependency.getUrl(),
+                            moreEagerLoadMode, idToUse,
+                            currentDependency.getLayer())
+                    : new Dependency(newDependency.getType(),
+                            newDependency.getUrl(), moreEagerLoadMode, idToUse);
             urlToLoadedDependency.replace(newDependency.getUrl(),
                     replacementDep);
             // Update the ID mapping if we have an ID

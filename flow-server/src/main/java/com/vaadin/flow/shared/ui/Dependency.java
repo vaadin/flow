@@ -106,30 +106,7 @@ public class Dependency implements Serializable {
         this(type, url, loadMode, id, null);
     }
 
-    /**
-     * Creates a new dependency of the given type, to be loaded from the given
-     * URL into the given CSS cascade layer, with an optional ID for tracking.
-     * <p>
-     * The URL is passed through the translation mechanism before loading, so
-     * custom protocols, specified at
-     * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
-     * <p>
-     * For internal use only. May be renamed or removed in a future release.
-     *
-     * @param type
-     *            the type of the dependency, not {@code null}
-     * @param url
-     *            the URL to load the dependency from, not {@code null}
-     * @param loadMode
-     *            determines dependency load mode, refer to {@link LoadMode} for
-     *            details
-     * @param id
-     *            optional ID for tracking the dependency
-     * @param layer
-     *            the CSS cascade layer to load a style sheet into, or
-     *            {@code null} to not use a layer
-     */
-    public Dependency(Type type, String url, LoadMode loadMode, String id,
+    private Dependency(Type type, String url, LoadMode loadMode, String id,
             String layer) {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
@@ -139,6 +116,33 @@ public class Dependency implements Serializable {
         this.loadMode = loadMode;
         this.id = id;
         this.layer = layer;
+    }
+
+    /**
+     * Creates a new style sheet dependency, to be loaded from the given URL
+     * into the given CSS cascade layer, with an optional ID for tracking.
+     * <p>
+     * The URL is passed through the translation mechanism before loading, so
+     * custom protocols, specified at
+     * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param url
+     *            the URL to load the style sheet from, not {@code null}
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param id
+     *            optional ID for tracking the dependency
+     * @param layer
+     *            the CSS cascade layer to load the style sheet into, or
+     *            {@code null} to not use a layer
+     * @return the style sheet dependency
+     */
+    public static Dependency styleSheet(String url, LoadMode loadMode,
+            String id, String layer) {
+        return new Dependency(Type.STYLESHEET, url, loadMode, id, layer);
     }
 
     /**

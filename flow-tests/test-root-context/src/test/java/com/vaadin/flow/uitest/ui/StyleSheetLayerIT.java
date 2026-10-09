@@ -26,6 +26,19 @@ public class StyleSheetLayerIT extends ChromeBrowserTest {
 
     private static final String BLUE = "rgba(0, 0, 255, 1)";
     private static final String GREEN = "rgba(0, 128, 0, 1)";
+    private static final String YELLOW = "rgba(255, 255, 0, 1)";
+
+    @Test
+    public void styleSheetAnnotationWithLayer_appliedBelowUnlayeredStyles() {
+        open();
+
+        WebElement annotatedDiv = findElement(By.id("annotated-div"));
+        // The layered sheet applies...
+        waitUntil(driver -> YELLOW
+                .equals(annotatedDiv.getCssValue("background-color")));
+        // ...but loses to the unlayered rule despite its higher specificity
+        Assert.assertEquals(GREEN, annotatedDiv.getCssValue("color"));
+    }
 
     @Test
     public void addLayeredStylesheet_appliedBelowUnlayeredStyles_andRemoved() {
@@ -41,10 +54,6 @@ public class StyleSheetLayerIT extends ChromeBrowserTest {
                 driver -> BLUE.equals(testDiv.getCssValue("background-color")));
         // ...but loses to the unlayered rule despite its higher specificity
         Assert.assertEquals(GREEN, testDiv.getCssValue("color"));
-        Assert.assertEquals("theme",
-                executeScript(
-                        "return document.querySelector('style[data-layer]')"
-                                + ".sheet.cssRules[0].layerName"));
 
         findElement(By.id("remove-layered-style")).click();
 

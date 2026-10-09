@@ -321,10 +321,6 @@ public class AppShellSettings {
 
     /**
      * Add a style sheet loaded into a CSS cascade layer to initial page head.
-     * <p>
-     * The style sheet is loaded with an {@code @import} rule in a
-     * {@code <style>} element, since a link element cannot put a style sheet
-     * into a layer.
      *
      * @param position
      *            prepend or append
@@ -333,7 +329,7 @@ public class AppShellSettings {
      * @param layer
      *            a valid cascade layer name
      * @param attributes
-     *            map of attributes for the style element
+     *            map of attributes for the element loading the style sheet
      */
     void addLayeredStyleSheet(Position position, String href, String layer,
             Map<String, String> attributes) {

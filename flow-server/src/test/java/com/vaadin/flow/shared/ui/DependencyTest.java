@@ -69,12 +69,12 @@ class DependencyTest {
     void layer_partOfEquality_serializedOnlyWhenSet() {
         Dependency plain = new Dependency(Dependency.Type.STYLESHEET, "a.css",
                 LoadMode.EAGER, "id");
-        Dependency layered = new Dependency(Dependency.Type.STYLESHEET, "a.css",
-                LoadMode.EAGER, "id", "theme");
+        Dependency layered = Dependency.styleSheet("a.css", LoadMode.EAGER,
+                "id", "theme");
 
         assertNotEquals(plain, layered);
-        assertEquals(layered, new Dependency(Dependency.Type.STYLESHEET,
-                "a.css", LoadMode.EAGER, "id", "theme"));
+        assertEquals(layered,
+                Dependency.styleSheet("a.css", LoadMode.EAGER, "id", "theme"));
         assertTrue(layered.toString().contains("layer=theme"));
         assertFalse(JacksonUtils.createNode(plain).has(Dependency.KEY_LAYER));
         assertEquals("theme", JacksonUtils.createNode(layered)

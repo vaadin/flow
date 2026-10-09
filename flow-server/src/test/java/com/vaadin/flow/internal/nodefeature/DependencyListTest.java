@@ -263,10 +263,8 @@ class DependencyListTest {
     @Test
     void addSameStyleSheetInDifferentModes_keepsFirstLayer() {
         String url = "foo/bar.css";
-        deps.add(new Dependency(Type.STYLESHEET, url, LoadMode.LAZY, null,
-                "theme"));
-        deps.add(new Dependency(Type.STYLESHEET, url, LoadMode.EAGER, null,
-                "other"));
+        deps.add(Dependency.styleSheet(url, LoadMode.LAZY, null, "theme"));
+        deps.add(Dependency.styleSheet(url, LoadMode.EAGER, null, "other"));
 
         Collection<Dependency> pendingSendToClient = deps
                 .getPendingSendToClient();

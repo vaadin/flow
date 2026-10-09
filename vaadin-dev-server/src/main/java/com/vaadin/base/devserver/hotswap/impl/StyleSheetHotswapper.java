@@ -392,7 +392,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                     try {
                         String layer = layers.getOrDefault(url, "");
                         ui.getPage().addStyleSheet(resolvedUrl, LoadMode.EAGER,
-                                layer);
+                                layer.isEmpty() ? null : layer);
                         Dependency dependency = ui.getInternals()
                                 .getDependencyList()
                                 .getDependencyByUrl(resolvedUrl,
