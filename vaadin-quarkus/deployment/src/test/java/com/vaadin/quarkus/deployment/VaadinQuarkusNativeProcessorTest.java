@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -644,18 +646,28 @@ class VaadinQuarkusNativeProcessorTest {
 
     @Test
     void findVaadinServiceInterfaces_onlyVaadinInterfacesOfAllArchives(
-            @TempDir Path application, @TempDir Path addon) throws IOException {
+            @TempDir Path tempDir) throws IOException {
+        Path application = tempDir.resolve("application");
         writeServiceFile(application, "com.vaadin.flow.server.SomeService");
         writeServiceFile(application, "org.example.OtherService");
         writeServiceFile(application, "nested/com.vaadin.NestedService");
-        writeServiceFile(addon, "com.vaadin.addon.AddonService");
+        Path addon = tempDir.resolve("addon.jar");
+        try (JarOutputStream jar = new JarOutputStream(
+                Files.newOutputStream(addon))) {
+            jar.putNextEntry(new JarEntry(
+                    "META-INF/services/com.vaadin.addon.AddonService"));
+            jar.write("com.example.Provider\n".getBytes());
+        }
+        // A dependency can also be a single file that is not an archive
+        Path plainFile = Files.writeString(tempDir.resolve("notes.txt"), "");
 
         assertEquals(
                 Set.of("com.vaadin.addon.AddonService",
                         "com.vaadin.flow.server.SomeService"),
                 VaadinQuarkusNativeProcessor.findVaadinServiceInterfaces(
-                        Stream.of(application, addon)
-                                .map(PathTree::ofDirectoryOrArchive)));
+                        Stream.of(PathTree.ofDirectoryOrArchive(application),
+                                PathTree.ofDirectoryOrArchive(addon),
+                                PathTree.ofDirectoryOrFile(plainFile))));
     }
 
     private static void writeServiceFile(Path root, String name)

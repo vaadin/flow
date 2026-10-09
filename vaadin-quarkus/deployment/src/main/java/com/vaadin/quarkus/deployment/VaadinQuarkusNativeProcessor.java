@@ -17,9 +17,12 @@ package com.vaadin.quarkus.deployment;
 
 import jakarta.inject.Inject;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -222,18 +225,24 @@ public class VaadinQuarkusNativeProcessor {
      */
     static Set<String> findVaadinServiceInterfaces(Stream<PathTree> archives) {
         Set<String> serviceInterfaces = new TreeSet<>();
-        archives.forEach(
-                archive -> archive.walkIfContains(SERVICES_FOLDER, visit -> {
-                    String path = visit.getRelativePath("/");
-                    String name = path.substring(path.lastIndexOf('/') + 1);
-                    // Only the files directly in the folder, not the folder
-                    // itself or anything nested in it
-                    if (path.equals(SERVICES_FOLDER + "/" + name)
-                            && name.startsWith("com.vaadin.")
-                            && Files.isRegularFile(visit.getPath())) {
-                        serviceInterfaces.add(name);
-                    }
-                }));
+        // apply() rather than walkIfContains(), which a dependency that is a
+        // single file, not a folder or an archive, does not support
+        archives.forEach(archive -> archive.apply(SERVICES_FOLDER, folder -> {
+            if (folder != null) {
+                try (Stream<Path> files = Files.list(folder.getPath())) {
+                    files.filter(Files::isRegularFile)
+                            .map(file -> file.getFileName().toString())
+                            .filter(name -> name.startsWith("com.vaadin."))
+                            .forEach(serviceInterfaces::add);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(
+                            "Unable to list the service files in "
+                                    + archive.getRoots(),
+                            e);
+                }
+            }
+            return null;
+        }));
         return serviceInterfaces;
     }
 
