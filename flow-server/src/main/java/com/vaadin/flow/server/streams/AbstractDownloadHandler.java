@@ -27,6 +27,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 import java.util.Optional;
+import java.util.jar.JarEntry;
+import java.util.zip.ZipEntry;
 
 import org.slf4j.LoggerFactory;
 
@@ -287,6 +289,14 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     record SeekableContent(Object resource, String eTag, URL url) {
 
         /**
+         * The largest compressed jar entry that ranges are served for. Each
+         * range inflates the entry up to its start, so a player that fetches an
+         * entry of this size in ranges of a megabyte inflates a few hundred
+         * megabytes in total.
+         */
+        static final long MAX_COMPRESSED_RANGE_LENGTH = 16 * 1024 * 1024;
+
+        /**
          * Describes a file, tagged with its modification time and length.
          */
         static SeekableContent ofFile(File file) throws IOException {
@@ -300,13 +310,27 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
          * file, or an entry in a jar or war. A jar entry is tagged with its
          * checksum, because reproducible builds fix the modification time of
          * every entry. Other resources are tagged with their modification time.
+         * <p>
+         * Returns {@code null} for a compressed jar entry larger than
+         * {@link #MAX_COMPRESSED_RANGE_LENGTH}: it cannot be read from a
+         * position without inflating everything before it, and a media player
+         * fetches it in many small ranges, so serving them would inflate the
+         * entry over and over again.
          */
         static SeekableContent ofResource(URL resource,
                 URLConnection connection) throws IOException {
             long length = connection.getContentLengthLong();
             String eTag;
             if (connection instanceof JarURLConnection jarConnection) {
-                long crc = jarConnection.getJarEntry().getCrc();
+                JarEntry entry = jarConnection.getJarEntry();
+                if (entry.getMethod() != ZipEntry.STORED
+                        && length > MAX_COMPRESSED_RANGE_LENGTH) {
+                    LoggerFactory.getLogger(AbstractDownloadHandler.class)
+                            .debug("Not serving ranges for {}, which is compressed and larger than {} bytes",
+                                    resource, MAX_COMPRESSED_RANGE_LENGTH);
+                    return null;
+                }
+                long crc = entry.getCrc();
                 eTag = crc < 0 ? null : createETag(crc, length);
             } else {
                 eTag = createETag(connection.getLastModified(), length);

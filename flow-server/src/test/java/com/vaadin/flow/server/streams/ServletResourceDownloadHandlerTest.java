@@ -33,10 +33,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -64,6 +67,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -354,5 +358,47 @@ class ServletResourceDownloadHandlerTest {
         verify(servletResponse).setStatus(206);
         verify(servletResponse).setHeader("ETag",
                 "\"" + Long.toHexString(crc.getValue()) + "-a\"");
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "true, 206", "false, 200" })
+    void handleDownloadRequest_largeJarEntry_rangesServedOnlyWhenStored(
+            boolean stored, int status, @TempDir Path tempDir)
+            throws IOException {
+        byte[] content = new byte[(int) AbstractDownloadHandler.SeekableContent.MAX_COMPRESSED_RANGE_LENGTH
+                + 1];
+        Path jar = tempDir.resolve("resources.jar");
+        try (JarOutputStream jarOutput = new JarOutputStream(
+                Files.newOutputStream(jar))) {
+            JarEntry entry = new JarEntry("video.mp4");
+            if (stored) {
+                CRC32 crc = new CRC32();
+                crc.update(content);
+                entry.setMethod(ZipEntry.STORED);
+                entry.setSize(content.length);
+                entry.setCrc(crc.getValue());
+            }
+            jarOutput.putNextEntry(entry);
+            jarOutput.write(content);
+        }
+        ServletContext servletContext = ((VaadinServletService) request
+                .getService()).getServlet().getServletContext();
+        when(servletContext.getResource(anyString()))
+                .thenReturn(new URL("jar:" + jar.toUri() + "!/video.mp4"));
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(servletResponse.getService())
+                .thenReturn(mock(VaadinServletService.class));
+        when(request.getHeader("Range")).thenReturn("bytes=2-5");
+
+        DownloadHandler.forServletResource("/video.mp4").handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner));
+
+        assertEquals(status == 206 ? 4 : content.length,
+                servletOutput.getOutput().length);
+        verify(servletResponse, status == 206 ? times(1) : never())
+                .setStatus(206);
     }
 }

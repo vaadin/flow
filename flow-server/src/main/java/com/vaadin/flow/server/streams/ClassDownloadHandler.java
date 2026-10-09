@@ -34,8 +34,10 @@ import com.vaadin.flow.server.HttpStatusCode;
  * <p>
  * Byte range requests, which media players use to seek and browsers use to
  * resume a download, are answered with the requested part of the resource. For
- * a resource inside a packaged jar, the bytes before a range are read and
- * skipped, unless the entry is stored uncompressed.
+ * a compressed entry of a packaged jar, each range is read by inflating the
+ * entry from its start, so ranges are only answered for entries of up to 16 MB;
+ * a larger entry is always sent whole. Use
+ * {@link DownloadHandler#forFile(java.io.File)} for large media.
  *
  * @since 24.8
  */
