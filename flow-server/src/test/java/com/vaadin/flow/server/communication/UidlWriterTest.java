@@ -144,6 +144,7 @@ class UidlWriterTest {
 
     @Tag("used")
     @Uses(ChildComponent.class)
+    @Uses(UsingComponent.class)
     public static class UsedComponent extends Component {
     }
 
