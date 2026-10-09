@@ -364,7 +364,8 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "STORED, 206", "DEFLATED, 200", "CONTAINER, 200" })
+    @CsvSource({ "FILE, 206", "STORED, 206", "DEFLATED, 200",
+            "CONTAINER, 200" })
     void handleDownloadRequest_largeResource_rangesServedOnlyWhenSeekable(
             String kind, int status, @TempDir Path tempDir) throws IOException {
         byte[] content = new byte[(int) AbstractDownloadHandler.SeekableContent.MAX_UNSEEKABLE_RANGE_LENGTH
@@ -413,8 +414,13 @@ class ServletResourceDownloadHandlerTest {
                 });
         ServletContext servletContext = ((VaadinServletService) request
                 .getService()).getServlet().getServletContext();
-        when(servletContext.getResource(anyString()))
-                .thenReturn("CONTAINER".equals(kind) ? containerUrl : jarUrl);
+        URL fileUrl = Files.write(tempDir.resolve("video.mp4"), content).toUri()
+                .toURL();
+        when(servletContext.getResource(anyString())).thenReturn(switch (kind) {
+        case "FILE" -> fileUrl;
+        case "CONTAINER" -> containerUrl;
+        default -> jarUrl;
+        });
         VaadinServletResponse servletResponse = mock(
                 VaadinServletResponse.class);
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
