@@ -2,6 +2,9 @@
 // it is a TypeScript-only split of DefaultConnectionStateHandler, whose Gwt cases drive the handler — so every case here is beyond the Java suite.
 import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
+import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
+import { getState } from '../../../../../main/frontend/internal/client/ConnectionIndicator';
+import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 import { ConnectionMessageType } from '../../../../../main/frontend/internal/client/communication/ConnectionMessageType';
 import { ReconnectStateMachine } from '../../../../../main/frontend/internal/client/communication/ReconnectStateMachine';
 
@@ -102,5 +105,60 @@ describe('ReconnectStateMachine', () => {
     const machine = new ReconnectStateMachine(registry, () => {});
     machine.handleRecoverableError(ConnectionMessageType.XHR, null);
     expect(machine.isReconnecting()).to.be.false;
+  });
+
+  describe('with the connection state store', () => {
+    // The real store the connection indicator renders, and the real loading
+    // handler resolving a PUSH or XHR failure goes through.
+    function makeMachine() {
+      (window as { Vaadin?: unknown }).Vaadin = {
+        connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
+      };
+      let activeRequest = false;
+      const registry = testRegistry({
+        UILifecycle: { isRunning: () => true },
+        ReconnectConfiguration: { getReconnectAttempts: () => 5 },
+        RequestResponseTracker: { hasActiveRequest: () => activeRequest, endRequest: () => {} },
+        Heartbeat: { setInterval: () => {} }
+      });
+      const loadingIndicatorStateHandler = new LoadingIndicatorStateHandler(registry);
+      registry.register('LoadingIndicatorStateHandler', loadingIndicatorStateHandler);
+      return {
+        machine: new ReconnectStateMachine(registry, () => {}),
+        loadingIndicatorStateHandler,
+        setActiveRequest: (v: boolean) => {
+          activeRequest = v;
+        }
+      };
+    }
+
+    // stopLoading defers its update through the scheduler.
+    const afterDeferred = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+    it('shows connected after a push connection is re-established', async () => {
+      const { machine } = makeMachine();
+      machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+      expect(getState()).to.equal(ConnectionState.RECONNECTING);
+
+      machine.resolveTemporaryError(ConnectionMessageType.PUSH);
+      await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.CONNECTED);
+    });
+
+    it('shows connected after a request that was loading is re-sent successfully', async () => {
+      const { machine, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+      loadingIndicatorStateHandler.processMessage(null, null);
+      loadingIndicatorStateHandler.startLoading();
+      setActiveRequest(true);
+      machine.handleRecoverableError(ConnectionMessageType.XHR, { rpc: 1 });
+      expect(getState()).to.equal(ConnectionState.RECONNECTING);
+
+      // The re-sent request succeeds, then its response has been handled.
+      machine.resolveTemporaryError(ConnectionMessageType.XHR);
+      setActiveRequest(false);
+      loadingIndicatorStateHandler.stopLoading();
+      await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.CONNECTED);
+    });
   });
 });
