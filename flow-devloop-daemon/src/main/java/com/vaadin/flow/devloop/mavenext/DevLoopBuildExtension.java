@@ -177,6 +177,42 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
      */
     static final String BOUND_EXECUTION = "vaadin-devloop-run";
 
+    /**
+     * Set by the daemon when it compiles an apply through Maven; see
+     * {@link #COMPILE_EXECUTION}.
+     */
+    public static final String COMPILE_PROPERTY = "vaadin.devloop.ext.compile";
+
+    /**
+     * The id every module's compile execution is also known by in a run
+     * {@link #COMPILE_PROPERTY} is set for.
+     * <p>
+     * The daemon compiles with one goal for the whole {@code -am} reactor, and
+     * a goal named on the command line takes its configuration from the
+     * execution its id names, in every module. Modules do not have to agree on
+     * that id - one can bind {@code default-compile}, another switch it off and
+     * bind an execution of its own with a different release - so naming any one
+     * module's id would compile the others without their configuration. Each
+     * module instead gets a copy of its own compile execution under this id.
+     * The copy is complete: Maven merged the plugin's configuration into the
+     * execution's while building the model. Bound to phase {@code none}, so it
+     * never runs as part of a lifecycle.
+     */
+    public static final String COMPILE_EXECUTION = "vaadin-devloop-compile";
+
+    /**
+     * Where a module's classes go in a run {@link #COMPILE_PROPERTY} is set
+     * for, relative to the module: not its classes directory, which the running
+     * application loads from. The daemon copies on only what changed; see
+     * {@code MavenCompile}. Resolved against the module directory rather than
+     * the build directory for the same reason as {@link #MODEL_FILE}.
+     */
+    public static final String COMPILE_OUTPUT = "target/devloop/maven-classes";
+
+    private static final String COMPILER_GROUP = "org.apache.maven.plugins";
+
+    private static final String COMPILER_ARTIFACT = "maven-compiler-plugin";
+
     private static final String LOG_PREFIX = "[vaadin-dev] ";
 
     /**
@@ -212,6 +248,19 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         // Never fatal. An extension that throws fails the whole build, and the
         // application not starting at all would be a far worse outcome than a
         // rescanner competing with apply - which the daemon warns about anyway.
+        if (Boolean.parseBoolean(property(session, COMPILE_PROPERTY))) {
+            // A compile for an apply needs only the executions aliased: the
+            // resolve has recorded the model already, and no server plugin
+            // runs.
+            try {
+                session.getProjects()
+                        .forEach(DevLoopBuildExtension::aliasCompileExecution);
+            } catch (RuntimeException | LinkageError e) {
+                System.out.println("[vaadin-dev] could not prepare the "
+                        + "compile executions: " + e);
+            }
+            return;
+        }
         // Recorded before anything is overridden, so the file describes the
         // project as Maven resolved it rather than as the dev loop bent it.
         try {
@@ -225,6 +274,68 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
         } catch (RuntimeException | LinkageError e) {
             System.out.println("[vaadin-dev] could not override the server "
                     + "plugin's configuration: " + e);
+        }
+    }
+
+    /**
+     * Gives a module's compile execution the id {@link #COMPILE_EXECUTION} as
+     * well, and points the module's output at {@link #COMPILE_OUTPUT}.
+     * <p>
+     * The execution copied is the one that runs the {@code compile} goal and is
+     * not switched off with phase {@code none}, the same choice the daemon
+     * makes when it reads the model back. A module without one - a {@code pom}
+     * module - is left alone and compiles nothing.
+     *
+     * @param project
+     *            the module, as Maven resolved it
+     */
+    private static void aliasCompileExecution(MavenProject project) {
+        for (Plugin plugin : project.getBuildPlugins()) {
+            if (!COMPILER_GROUP.equals(plugin.getGroupId())
+                    || !COMPILER_ARTIFACT.equals(plugin.getArtifactId())) {
+                continue;
+            }
+            PluginExecution own = null;
+            for (PluginExecution execution : plugin.getExecutions()) {
+                if (COMPILE_EXECUTION.equals(execution.getId())) {
+                    // Asked twice: the model may be read more than once.
+                    return;
+                }
+                if (own == null && execution.getGoals().contains("compile")
+                        && !"none".equals(execution.getPhase())) {
+                    own = execution;
+                }
+            }
+            if (own == null) {
+                return;
+            }
+            PluginExecution alias = new PluginExecution();
+            alias.setId(COMPILE_EXECUTION);
+            alias.setPhase("none");
+            alias.addGoal("compile");
+            File basedir = project.getBasedir();
+            String output = basedir == null ? null
+                    : new File(basedir, COMPILE_OUTPUT).getPath();
+            if (own.getConfiguration() instanceof Xpp3Dom configuration) {
+                Xpp3Dom copy = new Xpp3Dom(configuration);
+                // A pom that spells the parameter out - even as
+                // ${project.build.outputDirectory} - has it interpolated to
+                // the classes directory by now, so the project's output
+                // directory below would not reach it.
+                Xpp3Dom explicit = copy.getChild("outputDirectory");
+                if (explicit != null && output != null) {
+                    explicit.setValue(output);
+                }
+                alias.setConfiguration(copy);
+            }
+            plugin.addExecution(alias);
+            // Plugin caches its executions by id once asked; see bind.
+            plugin.flushExecutionMap();
+            // The compile's own default, and also what a module downstream
+            // compiles against in this run.
+            if (output != null) {
+                project.getBuild().setOutputDirectory(output);
+            }
         }
     }
 
@@ -305,11 +416,32 @@ public class DevLoopBuildExtension extends AbstractMavenLifecycleParticipant {
             // counts wherever it is declared, exactly as when the daemon reads
             // the pom itself.
             configurationOf(plugin.getConfiguration(), key, values);
-            for (PluginExecution execution : plugin.getExecutions()) {
+            List<PluginExecution> executions = plugin.getExecutions();
+            for (int at = 0; at < executions.size(); at++) {
+                PluginExecution execution = executions.get(at);
                 configurationOf(execution.getConfiguration(), key, values);
+                executionOf(execution, "execution." + index + "." + at, values);
             }
         }
         return values;
+    }
+
+    /**
+     * One execution's id, phase and goals, which is how the daemon names the
+     * execution when it runs a single goal of the plugin - a compile through
+     * Maven has to pick up the configuration of the execution the build binds,
+     * not only the plugin's own.
+     * <p>
+     * Under a prefix of its own rather than below {@code plugin.N.}, where it
+     * would read back as configuration.
+     */
+    private static void executionOf(PluginExecution execution, String key,
+            Properties values) {
+        values.setProperty(key, String.valueOf(execution.getId()));
+        values.setProperty(key + ".phase",
+                execution.getPhase() == null ? "" : execution.getPhase());
+        values.setProperty(key + ".goals",
+                String.join(",", execution.getGoals()));
     }
 
     /** The simple children of one {@code <configuration>}, if there is one. */

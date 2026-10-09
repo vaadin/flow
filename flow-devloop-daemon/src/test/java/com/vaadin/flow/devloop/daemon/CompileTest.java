@@ -42,6 +42,35 @@ class CompileTest {
     @TempDir
     private Path repo;
 
+    /**
+     * The property picks the backend; a value naming none of them is warned
+     * about and compiles with javac rather than failing every apply.
+     */
+    @Test
+    void theCompilerIsChosenByTheProperty() {
+        List<String> logged = new java.util.ArrayList<>();
+        String previous = System.getProperty(Compile.Compiler.PROPERTY);
+        try {
+            System.setProperty(Compile.Compiler.PROPERTY, "Maven");
+            assertEquals(Compile.Compiler.MAVEN,
+                    Compile.Compiler.configured(logged::add));
+            System.setProperty(Compile.Compiler.PROPERTY, "gradle");
+            assertEquals(Compile.Compiler.JAVAC,
+                    Compile.Compiler.configured(logged::add));
+            System.clearProperty(Compile.Compiler.PROPERTY);
+            assertEquals(Compile.Compiler.JAVAC,
+                    Compile.Compiler.configured(logged::add));
+        } finally {
+            if (previous == null) {
+                System.clearProperty(Compile.Compiler.PROPERTY);
+            } else {
+                System.setProperty(Compile.Compiler.PROPERTY, previous);
+            }
+        }
+        assertEquals(List.of("WARNING: vaadin.dev.compiler=gradle is not one "
+                + "of javac, maven; compiling with javac"), logged);
+    }
+
     @Test
     void compile_emitsBytecodeTheApplicationsJvmCanLoad() throws IOException {
         Reactor.Module app = module("app", "Main", """

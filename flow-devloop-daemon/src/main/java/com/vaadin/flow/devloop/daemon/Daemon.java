@@ -401,6 +401,7 @@ public final class Daemon {
             sb.append("  owner=daemon  registered=").append(app.isRegistered());
         }
         runtimeName().ifPresent(name -> sb.append("  runtime=").append(name));
+        sb.append("  compiler=").append(compilerName());
         List<String> lines = new java.util.ArrayList<>();
         lines.add(sb.toString());
         modulesLine().ifPresent(lines::add);
@@ -511,7 +512,8 @@ public final class Daemon {
                 + "\",\"logErrors\":" + Json.strings(appLogErrors())
                 + "},\"modules\":" + modulesJson() + ",\"daemon\":{\"pid\":"
                 + ProcessHandle.current().pid() + ",\"port\":" + currentPort
-                + ",\"version\":\"" + VERSION + "\",\"uptimeSeconds\":"
+                + ",\"version\":\"" + VERSION + "\",\"compiler\":\""
+                + compilerName() + "\",\"uptimeSeconds\":"
                 + Duration.between(startedAt, Instant.now()).toSeconds()
                 + "},\"transaction\":{\"inFlight\":"
                 + transactions.current()
@@ -522,6 +524,17 @@ public final class Daemon {
                         .map(TransactionEngine.Transaction::json).orElse("null")
                 + "}}";
         return List.of(json);
+    }
+
+    /**
+     * Which compiler an apply compiles with, for {@code status}: the opt-in to
+     * Maven changes what an apply costs and what it can compile, so it is worth
+     * seeing without reading the daemon's command line. An unrecognised value
+     * is warned about where the compile leg is built, not on every status.
+     */
+    private static String compilerName() {
+        return Compile.Compiler.configured(text -> {
+        }).label();
     }
 
     /**

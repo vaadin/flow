@@ -284,7 +284,8 @@ final class TransactionEngine {
         // was compiled against survives the hand-off: a module set changes
         // only because the application gained or lost a reactor dependency,
         // and that is the very move the compile leg has to see.
-        Compile fresh = new Compile(project, current);
+        Compile fresh = Compile.configured(project, current, launch);
+        log.line("compiler: " + fresh.compiler().label());
         // A baseline built while the app is already running must not swallow a
         // frontend edit made since it started - that is exactly the "start,
         // edit, first apply" sequence, and answering "no changes" to it is the
@@ -634,6 +635,10 @@ final class TransactionEngine {
                 return tx;
             }
 
+            // What the redefine below hands the application, for the backend
+            // to record once it has been taken.
+            Compile.Result compiled = new Compile.Result(true, List.of(),
+                    List.of(), 0);
             if (!changes.modified().isEmpty()) {
                 tx.state = "compiling";
 
@@ -661,6 +666,16 @@ final class TransactionEngine {
                             started);
                 }
                 tx.classes = result.writtenClasses();
+                compiled = result;
+                if (!result.removedClasses().isEmpty()) {
+                    // The deletion leg's reasoning, for a class the compile
+                    // took away from a source that is still there - a nested
+                    // class taken out, say.
+                    String reason = classEscalation(result.removedClasses());
+                    escalate(tx, reason);
+                    log.line("compile: " + reason
+                            + "; only a restart can apply that");
+                }
                 if (bailIfSuperseded(tx, started)) {
                     return tx;
                 }
@@ -672,6 +687,24 @@ final class TransactionEngine {
             // So the runtime leg is skipped rather than attempted and undone.
             drift.ifPresent(detail -> escalate(tx,
                     "classpath changed (" + detail + ")"));
+
+            // A compile that changed no class - an edit to whitespace or a
+            // comment, or a Maven rebuild that wrote the same bytecode - leaves
+            // nothing to redefine, and a restart would load exactly what is
+            // already running. Anything else in the change-set that needs a
+            // restart has escalated by now, and then this does not apply.
+            if (!changes.modified().isEmpty() && tx.classes.isEmpty()
+                    && tx.escalation.isEmpty()
+                    && app.state() == AppProcess.State.RUNNING) {
+                compile.markSourcesApplied(changes.modified(), compiled);
+                Optional<String> broken = devServerFailure(tx);
+                if (broken.isPresent()) {
+                    return finish(tx, Outcome.FAILED,
+                            "dev server: " + detail(broken.get()), "hmr",
+                            DEV_SERVER_NEXT_ACTION, started);
+                }
+                return finish(tx, Outcome.STABLE, "", "unchanged", "", started);
+            }
 
             // --- runtime leg: attempt the atomic redefine, escalate if it
             // cannot
@@ -715,7 +748,8 @@ final class TransactionEngine {
                             // These sources are now live in the JVM, so the
                             // next
                             // apply should not offer them again.
-                            compile.markSourcesApplied(changes.modified());
+                            compile.markSourcesApplied(changes.modified(),
+                                    compiled);
                             // The Java half held; the dev server says the
                             // frontend half of the same change did not. Not an
                             // escalation - a restart cannot compile a broken
@@ -838,6 +872,12 @@ final class TransactionEngine {
      * The file is named when it is the only one, for the same reason a resource
      * is: "OrderView.java deleted" is the whole explanation and a count is not.
      */
+    private static String classEscalation(List<String> removed) {
+        String what = removed.size() == 1 ? removed.get(0) + " removed"
+                : removed.size() + " class(es) removed";
+        return what + " (a loaded class cannot be un-defined)";
+    }
+
     private String sourceEscalation(List<Path> deleted) {
         String what = deleted.size() == 1
                 ? compile.relative(deleted.get(0)) + " deleted"
@@ -1907,6 +1947,12 @@ final class TransactionEngine {
             if ("hmr".equals(tx.classification)) {
                 lines.add("frontend → Stable   (" + seconds + ")");
                 lines.add("hmr: " + hmrDetail(tx));
+            } else if ("unchanged".equals(tx.classification)) {
+                lines.add("compiling → Stable   (" + seconds + ")");
+                if (hasFrontendHalf(tx)) {
+                    lines.add("hmr: " + hmrDetail(tx));
+                }
+                lines.add("compiled: no class changed, nothing to redefine");
             } else if ("hot-reload".equals(tx.classification)) {
                 lines.add("compiling → runtime → Stable   (" + seconds + ")");
                 // A mixed change-set pushed its frontend half first, and

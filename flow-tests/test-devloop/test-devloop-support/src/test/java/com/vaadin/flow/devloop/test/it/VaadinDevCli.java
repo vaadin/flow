@@ -87,6 +87,18 @@ final class VaadinDevCli {
     static final boolean WINDOWS = System.getProperty("os.name", "")
             .toLowerCase(Locale.ROOT).startsWith("windows");
 
+    /**
+     * The test JVM's property naming the compiler the daemon compiles applies
+     * with, {@code javac} or {@code maven}: how the build runs the same suite
+     * once per compiler.
+     */
+    static final String COMPILER = "devloop.it.compiler";
+
+    /** The compiler this run hands the daemon; see {@link #COMPILER}. */
+    static String compiler() {
+        return System.getProperty(COMPILER, "javac");
+    }
+
     /** What one CLI invocation produced. */
     record Outcome(int exitCode, String output) {
 
@@ -180,7 +192,8 @@ final class VaadinDevCli {
                         // reactor once the daemon drives Maven from here - so
                         // the
                         // profile has to stay out of the resolve.
-                        + " -Dvaadin.dev.mavenArgs=-P!install-git-hooks");
+                        + " -Dvaadin.dev.mavenArgs=-P!install-git-hooks"
+                        + " -Dvaadin.dev.compiler=" + compiler());
         // No spinner: the output is read by assertions, not by a person.
         builder.environment().put("VAADIN_DEV_PROGRESS", "never");
         String verb = "vaadin-dev " + String.join(" ", arguments);
