@@ -27,9 +27,16 @@ import com.vaadin.flow.server.VaadinResponse;
  * Download handler for serving an input stream for client download.
  * <p>
  * Byte range requests, which media players use to seek and browsers use to
- * resume a download, are only answered after {@link #enableRangeRequests()}.
- * Use {@link DownloadHandler#forFile(java.io.File)} to serve seekable media
- * efficiently.
+ * resume a download, are not answered by default. Every range request calls the
+ * callback again for a new stream, and the stream has to be read from its start
+ * up to the range: unless the stream can seek, such as a
+ * {@link java.io.FileInputStream}, each seek or resume reads all the bytes
+ * before it again, which adds up for large media that a player fetches in many
+ * small ranges. Ranges are also only correct if the callback returns the same
+ * content every time, which only the application knows. Call
+ * {@link #enableRangeRequests()} when that holds, or use
+ * {@link DownloadHandler#forFile(java.io.File)}, which answers ranges by
+ * seeking in the file.
  *
  * @since 24.8
  */

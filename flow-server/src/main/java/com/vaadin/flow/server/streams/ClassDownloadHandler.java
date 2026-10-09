@@ -33,9 +33,13 @@ import com.vaadin.flow.server.HttpStatusCode;
  * {@code forClassResource(MyData.class, "MyData.json")}
  * <p>
  * Byte range requests, which media players use to seek and browsers use to
- * resume a download, are only answered after {@link #enableRangeRequests()}.
- * Use {@link DownloadHandler#forFile(java.io.File)} to serve seekable media
- * efficiently.
+ * resume a download, are not answered by default. A resource is read as a
+ * stream from its start up to each range, and a resource in a packaged jar is
+ * usually compressed, so each seek inflates all the bytes before it again,
+ * which adds up for large media that a player fetches in many small ranges.
+ * Call {@link #enableRangeRequests()} to answer them anyway, or use
+ * {@link DownloadHandler#forFile(java.io.File)}, which answers ranges by
+ * seeking in the file.
  *
  * @since 24.8
  */
