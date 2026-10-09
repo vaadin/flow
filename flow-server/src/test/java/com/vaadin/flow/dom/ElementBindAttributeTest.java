@@ -147,11 +147,15 @@ class ElementBindAttributeTest extends SignalsUnitTest {
         UI.getCurrent().add(component);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
+        ValueSignal<String> nullSignal = new ValueSignal<>(null);
 
         component.getElement().bindAttribute("foo", signal);
+        component.getElement().bindAttribute("baz", nullSignal);
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().removeAttribute("foo"));
+        assertThrows(BindingActiveException.class,
+                () -> component.getElement().removeAttribute("baz"));
         assertTrue(events.isEmpty());
     }
 
