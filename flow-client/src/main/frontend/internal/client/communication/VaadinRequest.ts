@@ -15,6 +15,7 @@
  */
 
 import { TypedEventTarget } from '../TypedEventTarget';
+import type { VaadinServerMessage } from './VaadinServerMessage';
 
 /** Why an attempt to deliver a {@link VaadinRequest} failed. */
 export interface VaadinRequestFailure {
@@ -73,8 +74,8 @@ const states = new WeakMap<VaadinRequest, RequestState>();
 
 /**
  * One request from the client to the server, tracked from the moment the first
- * invocation for it is queued until its delivery is settled. It covers delivery
- * only, not how the client then processes the reply.
+ * invocation for it is queued until its delivery is settled. Delivery only: how
+ * the client then processes the reply is tracked by {@link VaadinServerMessage}.
  *
  * The client announces each request as the detail of a `vaadin-request` event
  * on `window.Vaadin.Flow.clients[appId].events`, and then dispatches the
