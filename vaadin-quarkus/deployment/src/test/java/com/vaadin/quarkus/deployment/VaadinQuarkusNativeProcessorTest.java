@@ -16,6 +16,8 @@
 package com.vaadin.quarkus.deployment;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,16 +25,19 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.paths.PathTree;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -635,5 +640,28 @@ class VaadinQuarkusNativeProcessorTest {
         public List<NestedDto> getExtendedData() {
             return null;
         }
+    }
+
+    @Test
+    void findVaadinServiceInterfaces_onlyVaadinInterfacesOfAllArchives(
+            @TempDir Path application, @TempDir Path addon) throws IOException {
+        writeServiceFile(application, "com.vaadin.flow.server.SomeService");
+        writeServiceFile(application, "org.example.OtherService");
+        writeServiceFile(application, "nested/com.vaadin.NestedService");
+        writeServiceFile(addon, "com.vaadin.addon.AddonService");
+
+        assertEquals(
+                Set.of("com.vaadin.addon.AddonService",
+                        "com.vaadin.flow.server.SomeService"),
+                VaadinQuarkusNativeProcessor.findVaadinServiceInterfaces(
+                        Stream.of(application, addon)
+                                .map(PathTree::ofDirectoryOrArchive)));
+    }
+
+    private static void writeServiceFile(Path root, String name)
+            throws IOException {
+        Path file = root.resolve("META-INF/services").resolve(name);
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, "com.example.Provider\n");
     }
 }

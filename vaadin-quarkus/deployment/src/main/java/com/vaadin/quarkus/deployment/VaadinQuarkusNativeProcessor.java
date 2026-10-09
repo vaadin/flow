@@ -16,16 +16,17 @@
 package com.vaadin.quarkus.deployment;
 
 import jakarta.inject.Inject;
-import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -48,9 +50,12 @@ import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedPackageBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.pkg.NativeConfig;
+import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.deployment.util.JandexUtil;
 import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
+import io.quarkus.maven.dependency.ResolvedDependency;
+import io.quarkus.paths.PathTree;
 import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
 import io.quarkus.vertx.http.deployment.DefaultRouteBuildItem;
 import org.atmosphere.cache.UUIDBroadcasterCache;
@@ -90,14 +95,12 @@ import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlagProvider;
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
@@ -111,12 +114,9 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.auth.AccessDeniedErrorRouter;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
-import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
-import com.vaadin.flow.server.startup.NavigationTargetFilter;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.quarkus.VaadinServletStartupRecorder;
@@ -143,6 +143,8 @@ public class VaadinQuarkusNativeProcessor {
 
     private static final Logger LOG = LoggerFactory
             .getLogger(VaadinQuarkusNativeProcessor.class);
+
+    private static final String SERVICES_FOLDER = "META-INF/services";
 
     private static final DotName JS_DEFINITION = DotName
             .createSimple(JsDefinition.class);
@@ -189,22 +191,50 @@ public class VaadinQuarkusNativeProcessor {
      * not registered here is not found in the native binary. The Vaadin
      * servlets start when the binary starts, so the lookups cannot happen on
      * the build JVM instead.
+     * <p>
+     * Every service interface in a {@code com.vaadin} package that has a
+     * provider anywhere on the runtime classpath is registered, so that a new
+     * Flow service interface, and a provider in an add-on or in the
+     * application, needs no change here. Service interfaces of other libraries
+     * are left to their own extensions.
      */
     @BuildStep(onlyIf = IsNativeBuild.class)
-    void registerServiceProviders(
+    void registerServiceProviders(CurateOutcomeBuildItem curateOutcome,
             BuildProducer<ServiceProviderBuildItem> serviceProviders) {
-        Stream.concat(Stream.of(FeatureFlagProvider.class,
-                VaadinServiceInitListener.class, NavigationTargetFilter.class,
-                // Loaded for a @WebServlet that extends VaadinServlet instead
-                // of QuarkusVaadinServlet
-                Instantiator.class),
-                // Lookup falls back to ServiceLoader for the types it handles
-                // when class scanning found no implementation
-                Stream.of(LookupServletContainerInitializer.class
-                        .getAnnotation(HandlesTypes.class).value()))
-                .map(Class::getName)
+        ApplicationModel model = curateOutcome.getApplicationModel();
+        findVaadinServiceInterfaces(Stream
+                .concat(Stream.of(model.getAppArtifact()),
+                        model.getRuntimeDependencies().stream())
+                .map(ResolvedDependency::getContentTree)).stream()
                 .map(ServiceProviderBuildItem::allProvidersFromClassPath)
                 .forEach(serviceProviders::produce);
+    }
+
+    /**
+     * Collects the service interfaces in a {@code com.vaadin} package that the
+     * given archives list providers for in {@code META-INF/services}.
+     * <p>
+     * Not private for testing purposes only.
+     *
+     * @param archives
+     *            the content of the archives on the classpath
+     * @return the names of the service interfaces, sorted
+     */
+    static Set<String> findVaadinServiceInterfaces(Stream<PathTree> archives) {
+        Set<String> serviceInterfaces = new TreeSet<>();
+        archives.forEach(
+                archive -> archive.walkIfContains(SERVICES_FOLDER, visit -> {
+                    String path = visit.getRelativePath("/");
+                    String name = path.substring(path.lastIndexOf('/') + 1);
+                    // Only the files directly in the folder, not the folder
+                    // itself or anything nested in it
+                    if (path.equals(SERVICES_FOLDER + "/" + name)
+                            && name.startsWith("com.vaadin.")
+                            && Files.isRegularFile(visit.getPath())) {
+                        serviceInterfaces.add(name);
+                    }
+                }));
+        return serviceInterfaces;
     }
 
     /*
