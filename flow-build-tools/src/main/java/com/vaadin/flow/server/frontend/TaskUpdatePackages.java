@@ -359,7 +359,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 // Already provided by the default (e.g. workbox) overrides.
                 continue;
             }
-            final FrontendVersion pinnedVersion = getPinnableVersion(
+            final String pinnedVersion = getPinnableVersion(
                     pinnedEntry.getValue());
             if (pinnedVersion == null) {
                 continue;
@@ -368,8 +368,9 @@ public class TaskUpdatePackages extends NodeUpdater {
                     devDependencies, dependency);
             if (directVersion == null) {
                 // Not declared directly, pin to the pinned version.
-                vaadinOverrides.put(dependency, pinnedVersion.getFullVersion());
-            } else if (isNumericVersion(directVersion)) {
+                vaadinOverrides.put(dependency, pinnedVersion);
+            } else if (isNumericVersion(directVersion)
+                    || FrontendBuildUtils.isUrlVersion(directVersion)) {
                 // Pinned by a dependency/devDependency; reference it so the
                 // declared version is enforced for transitive uses too.
                 vaadinOverrides.put(dependency, "$" + dependency);
@@ -385,20 +386,24 @@ public class TaskUpdatePackages extends NodeUpdater {
      *
      * @param version
      *            the version declared for the package
-     * @return the version to pin the package to, or {@code null} if it cannot
-     *         be pinned, which is the case for a package that points at the
-     *         build folder and for a SNAPSHOT or otherwise non-numeric version
+     * @return the version to pin the package to, which is a numeric version or
+     *         a URL, or {@code null} if it cannot be pinned, which is the case
+     *         for a package that points at the build folder and for a SNAPSHOT
+     *         or otherwise non-numeric version
      */
-    private FrontendVersion getPinnableVersion(String version) {
+    private String getPinnableVersion(String version) {
         if (isInternalPseudoDependency(version)) {
             return null;
+        }
+        if (FrontendBuildUtils.isUrlVersion(version)) {
+            return version;
         }
         try {
             final FrontendVersion frontendVersion = new FrontendVersion(
                     version);
             return "SNAPSHOT".equals(frontendVersion.getBuildIdentifier())
                     ? null
-                    : frontendVersion;
+                    : frontendVersion.getFullVersion();
         } catch (NumberFormatException nfe) {
             return null;
         }
