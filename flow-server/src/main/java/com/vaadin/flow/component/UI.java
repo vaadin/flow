@@ -1698,8 +1698,6 @@ public class UI extends Component
      * @throws IllegalArgumentException
      *             if the given component doesn't belong to this UI
      */
-    // Callers outside null-marked code can still pass null
-    @SuppressWarnings("java:S2583")
     public ExecutionRegistration beforeClientResponse(Component component,
             SerializableConsumer<ExecutionContext> execution)
             throws IllegalArgumentException {
@@ -1832,8 +1830,6 @@ public class UI extends Component
      * @see Shortcuts for a more generic way to add a shortcut
      * @since 1.3
      */
-    // Callers outside null-marked code can still pass null
-    @SuppressWarnings("java:S2583")
     public ShortcutRegistration addShortcutListener(Command command, Key key,
             KeyModifier... keyModifiers) {
         if (command == null) {
@@ -1869,8 +1865,6 @@ public class UI extends Component
      * @see Shortcuts for a more generic way to add a shortcut
      * @since 1.3
      */
-    // Callers outside null-marked code can still pass null
-    @SuppressWarnings("java:S2583")
     public ShortcutRegistration addShortcutListener(
             ShortcutEventListener listener, Key key,
             KeyModifier... keyModifiers) {
