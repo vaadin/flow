@@ -16,7 +16,6 @@
 package com.vaadin.flow.internal;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
@@ -24,11 +23,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
@@ -99,6 +101,8 @@ public final class ResourceFolderUtil {
         void visit(FolderFile file) throws IOException;
     }
 
+    private static final String NATIVE_IMAGE_RESOURCE_PROTOCOL = "resource";
+
     private ResourceFolderUtil() {
     }
 
@@ -124,11 +128,49 @@ public final class ResourceFolderUtil {
         case "jar", "wsjar" -> visitFilesInJar(folder, visitor);
         // WildFly serves a deployed archive through a virtual file system
         case JBossVfsUtil.PROTOCOL -> visitFilesInVfsFolder(folder, visitor);
+        // A GraalVM native image serves its resources from a file system of
+        // its own
+        case NATIVE_IMAGE_RESOURCE_PROTOCOL ->
+            visitFilesInNativeImageFolder(folder, visitor);
         // Any other protocol, such as the vfsfile of an exploded WildFly
         // deployment or the bundleresource of OSGi, is served from a folder
         // that the URL points at
         default -> visitFilesInFolder(folder, visitor);
         }
+    }
+
+    private static void visitFilesInNativeImageFolder(URL folder,
+            FolderFileVisitor visitor) throws IOException {
+        URI uri;
+        try {
+            uri = folder.toURI();
+        } catch (URISyntaxException e) {
+            throw new IOException("Unable to list the files in '" + folder
+                    + "' as it is not a valid URI", e);
+        }
+        Path path;
+        try {
+            path = Path.of(uri);
+        } catch (FileSystemNotFoundException e) {
+            // The image has a single resource file system, which is only
+            // available once it has been opened. It stays open, as other code
+            // in the application may be using it.
+            try {
+                FileSystems.newFileSystem(uri, Map.of());
+            } catch (FileSystemAlreadyExistsException alreadyOpened) {
+                // Opened by another thread in the meantime
+            }
+            try {
+                path = Path.of(uri);
+            } catch (FileSystemNotFoundException closed) {
+                // Closed by other code in the meantime
+                throw new IOException(
+                        "Unable to list the files in '" + folder
+                                + "' as the resource file system was closed",
+                        closed);
+            }
+        }
+        visitFilesInPath(path, visitor);
     }
 
     private static void visitFilesInFolder(URL folder,
@@ -152,6 +194,11 @@ public final class ResourceFolderUtil {
                         pathException);
             }
         }
+        visitFilesInPath(path, visitor);
+    }
+
+    private static void visitFilesInPath(Path path, FolderFileVisitor visitor)
+            throws IOException {
         try (Stream<Path> files = Files.list(path)) {
             for (Path file : files.filter(Files::isRegularFile).toList()) {
                 visitor.visit(new FileSystemFile(file));
@@ -317,7 +364,9 @@ public final class ResourceFolderUtil {
 
         @Override
         public InputStream open() throws IOException {
-            return new FileInputStream(path.toFile());
+            // Not through toFile(), which only works for the default file
+            // system
+            return Files.newInputStream(path);
         }
     }
 
