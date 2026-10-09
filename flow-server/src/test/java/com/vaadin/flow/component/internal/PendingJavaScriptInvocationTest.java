@@ -28,7 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
@@ -36,16 +38,23 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.SingleCaptureConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PendingJavaScriptInvocationTest {
     private static final JsonNode fooJsonString = JacksonUtils
@@ -72,6 +81,11 @@ class PendingJavaScriptInvocationTest {
         jsonFutureHandler = futureHandler(jsonSuccessConsumer, errorConsumer);
         stringFutureHandler = futureHandler(stringSuccessConsumer,
                 errorConsumer);
+    }
+
+    @AfterEach
+    void tearDown() {
+        CurrentInstance.clearAll();
     }
 
     private static <T> BiConsumer<T, Throwable> futureHandler(
@@ -366,6 +380,69 @@ class PendingJavaScriptInvocationTest {
         return Arrays.asList(completableFuture::get,
                 () -> completableFuture.get(1, TimeUnit.HOURS),
                 completableFuture::join);
+    }
+
+    /**
+     * Stand-in for {@code elemental.json.JsonValue}, the type that Vaadin 14-24
+     * add-ons used for the argument of {@code then}.
+     */
+    interface LegacyJsonValue {
+    }
+
+    /**
+     * Simulates an add-on compiled against Vaadin 24, where {@code then} took a
+     * {@code SerializableConsumer<JsonValue>}. Due to erasure, the call links
+     * fine against the Vaadin 25 signature.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void scheduleCallbackFromIncompatibleAddon() {
+        SerializableConsumer<LegacyJsonValue> legacyCallback = value -> {
+        };
+        invocation.then((SerializableConsumer) legacyCallback);
+    }
+
+    @Test
+    void incompatibleSuccessHandler_developmentMode_exceptionIdentifiesWhereHandlerWasRegistered() {
+        setCurrentService(false);
+        scheduleCallbackFromIncompatibleAddon();
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        // The failing cast is in a hidden lambda frame, so only the trace
+        // captured at registration points to the code that registered it
+        assertTrue(
+                mentionsMethod(exception,
+                        "scheduleCallbackFromIncompatibleAddon"),
+                "Exception should identify where the callback was registered");
+    }
+
+    @Test
+    void incompatibleSuccessHandler_productionMode_registrationIsNotTraced() {
+        setCurrentService(true);
+        scheduleCallbackFromIncompatibleAddon();
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertEquals(0, exception.getSuppressed().length);
+    }
+
+    private static void setCurrentService(boolean productionMode) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(productionMode);
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        VaadinService.setCurrent(service);
+    }
+
+    private static boolean mentionsMethod(Throwable throwable,
+            String methodName) {
+        return Stream.iterate(throwable, t -> t != null, Throwable::getCause)
+                .flatMap(t -> Stream.concat(Stream.of(t),
+                        Stream.of(t.getSuppressed())))
+                .flatMap(t -> Stream.of(t.getStackTrace()))
+                .anyMatch(frame -> methodName.equals(frame.getMethodName()));
     }
 
     private void assertStringSuccess() {
