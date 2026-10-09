@@ -41,6 +41,7 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -707,6 +708,14 @@ public class ShortcutRegistration implements Registration, Serializable {
                         component, KeyDownEvent.class,
                         event -> fireShortcutEvent(component),
                         domRegistration -> {
+                            /*
+                             * A field that synchronizes its value on change or
+                             * blur still has focus when the shortcut fires, so
+                             * its value would otherwise reach the server only
+                             * after the shortcut listener has run (#7046).
+                             */
+                            domRegistration.addEventData(
+                                    JsonConstants.SYNCHRONIZE_FOCUSED_ELEMENT_TOKEN);
                             shortcutListenerRegistrations[listenOnIndex]
                                     .addRegistration(domRegistration);
                             configureHandlerListenerRegistration(listenOnIndex);

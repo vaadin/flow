@@ -56,6 +56,7 @@ public class ShortcutsWithValueChangeModeView extends Div
                 KeyModifier.ALT);
         button.addClickShortcut(Key.ENTER, KeyModifier.CONTROL)
                 .setResetFocusOnActiveElement(true);
+        button.addClickShortcut(Key.KEY_Q);
         button.addClickListener(e -> value.setText(input.getValue()));
 
         add(input, button, value);
