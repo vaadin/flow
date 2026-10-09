@@ -104,6 +104,16 @@ public class FileDownloadHandler
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Range requests are always answered for a file.
+     */
+    @Override
+    public boolean isRangeRequestsEnabled() {
+        return true;
+    }
+
     @Override
     public String getUrlPostfix() {
         if (fileNameOverride != null) {

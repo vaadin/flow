@@ -154,11 +154,11 @@ public class ClassDownloadHandler
     }
 
     /**
-     * Returns whether byte range requests are answered.
-     *
-     * @return {@code true} if byte range requests are answered
-     * @see #enableRangeRequests()
+     * {@inheritDoc}
+     * <p>
+     * Range requests are answered after {@link #enableRangeRequests()}.
      */
+    @Override
     public boolean isRangeRequestsEnabled() {
         return rangeRequestsEnabled;
     }
