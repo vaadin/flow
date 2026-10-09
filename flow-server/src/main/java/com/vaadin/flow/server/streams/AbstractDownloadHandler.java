@@ -294,7 +294,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
          * entry of this size in ranges of a megabyte inflates a few hundred
          * megabytes in total.
          */
-        static final long MAX_COMPRESSED_RANGE_LENGTH = 16 * 1024 * 1024;
+        static final long MAX_COMPRESSED_RANGE_LENGTH = 16L * 1024 * 1024;
 
         /**
          * Describes a file, tagged with its modification time and length.

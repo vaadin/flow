@@ -549,8 +549,8 @@ class InputStreamDownloadHandlerTest {
                 VaadinServletResponse.class);
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
         when(servletResponse.getOutputStream()).thenReturn(servletOutput);
-        when(servletResponse.getService())
-                .thenReturn(mock(VaadinServletService.class));
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        when(servletResponse.getService()).thenReturn(servletService);
         when(request.getHeader("Range")).thenReturn("bytes=2-5");
         InputStreamDownloadHandler handler = DownloadHandler
                 .fromInputStream(event -> {

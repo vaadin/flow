@@ -342,8 +342,8 @@ class ServletResourceDownloadHandlerTest {
                 VaadinServletResponse.class);
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
         when(servletResponse.getOutputStream()).thenReturn(servletOutput);
-        when(servletResponse.getService())
-                .thenReturn(mock(VaadinServletService.class));
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        when(servletResponse.getService()).thenReturn(servletService);
         // out of order, so the second part is read from the jar again
         when(request.getHeader("Range")).thenReturn("bytes=6-7,1-2");
 
@@ -389,8 +389,8 @@ class ServletResourceDownloadHandlerTest {
                 VaadinServletResponse.class);
         CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
         when(servletResponse.getOutputStream()).thenReturn(servletOutput);
-        when(servletResponse.getService())
-                .thenReturn(mock(VaadinServletService.class));
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        when(servletResponse.getService()).thenReturn(servletService);
         when(request.getHeader("Range")).thenReturn("bytes=2-5");
 
         DownloadHandler.forServletResource("/video.mp4").handleDownloadRequest(
