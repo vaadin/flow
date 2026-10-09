@@ -138,9 +138,12 @@ public interface DownloadHandler extends ElementRequestHandler {
      * not play audio or video from a handler that does not answer them.
      * <p>
      * A handler that does not answer them sends the whole content for every
-     * request. The default implementation returns {@code false}.
+     * request. A handler that does may still send the whole content for a
+     * particular response, for example when the length of its content is not
+     * known. The default implementation returns {@code false}.
      *
-     * @return {@code true} if byte range requests are answered
+     * @return {@code true} if the handler is configured to answer byte range
+     *         requests
      * @since 25.4
      */
     default boolean isRangeRequestsEnabled() {

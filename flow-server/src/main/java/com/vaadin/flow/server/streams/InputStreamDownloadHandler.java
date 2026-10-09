@@ -180,7 +180,9 @@ public class InputStreamDownloadHandler
     /**
      * {@inheritDoc}
      * <p>
-     * Range requests are answered after {@link #enableRangeRequests()}.
+     * Range requests are answered after {@link #enableRangeRequests()}, but
+     * only for a {@link DownloadResponse} with a known content length. When the
+     * callback reports the length as {@code -1}, the whole content is sent.
      */
     @Override
     public boolean isRangeRequestsEnabled() {
