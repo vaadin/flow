@@ -46,15 +46,11 @@ env:
 jobs:
   build:
     timeout-minutes: 30
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
       matrix-quarkus: ${{ steps.set-matrix.outputs.matrix-quarkus }}
-      # The Node.js and pnpm versions Flow installs by default, read from
-      # FrontendTools so that CI does not carry its own copy of them.
-      node-version: ${{ steps.frontend-tools.outputs.node-version }}
-      pnpm-version: ${{ steps.frontend-tools.outputs.pnpm-version }}
     steps:
       - run: echo "Concurrency Group = $GITHUB_WORKFLOW-${_MERGE_GROUP_SHA:-${_HEAD_REF:-$_REF_NAME}}"
       - name: Check secrets
@@ -68,12 +64,7 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
-      - name: Read the frontend tool versions
-        id: frontend-tools
-        run: scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: ${{ steps.frontend-tools.outputs.node-version }}
+      - uses: ./.github/actions/setup-frontend-tools
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -120,7 +111,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -223,17 +214,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{env._HEAD_SHA}}
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: ./.github/actions/setup-frontend-tools
         with:
-          node-version: ${{ needs.build.outputs.node-version }}
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        with:
-          version: ${{ needs.build.outputs.pnpm-version }}
+          pnpm: true
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 'latest'
@@ -341,7 +329,7 @@ jobs:
       fail-fast: false
       matrix:
         profile: [tomee, wildfly, payara, liberty, tomcat-weld]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -391,14 +379,10 @@ jobs:
             fi
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: ./.github/actions/setup-frontend-tools
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: ${{ needs.build.outputs.node-version }}
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        if: ${{ steps.decide.outputs.run == 'true' }}
-        with:
-          version: ${{ needs.build.outputs.pnpm-version }}
+          pnpm: true
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -524,7 +508,7 @@ jobs:
       # One job per module of the suite that declares validation.run in its
       # POM; see flow-tests/vaadin-quarkus-tests/pom.xml.
       matrix: ${{ fromJson(needs.build.outputs.matrix-quarkus) }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -572,14 +556,10 @@ jobs:
             fi
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: ./.github/actions/setup-frontend-tools
         if: ${{ steps.decide.outputs.run == 'true' }}
         with:
-          node-version: ${{ needs.build.outputs.node-version }}
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
-        if: ${{ steps.decide.outputs.run == 'true' }}
-        with:
-          version: ${{ needs.build.outputs.pnpm-version }}
+          pnpm: true
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -675,7 +655,7 @@ jobs:
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
@@ -736,10 +716,8 @@ jobs:
             fi
           fi
           echo "run=$run" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: ./.github/actions/setup-frontend-tools
         if: ${{ steps.decide.outputs.run == 'true' }}
-        with:
-          node-version: ${{ needs.build.outputs.node-version }}
       - name: Set up JDK
         if: ${{ steps.decide.outputs.run == 'true' }}
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -863,7 +841,7 @@ jobs:
     needs: unit-tests
     if: ${{ (github.event_name == 'pull_request' || github.event_name == 'merge_group' || github.event_name == 'push') && !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 60
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
@@ -946,7 +924,7 @@ jobs:
     # protection — letting auto-merge proceed past a cancelled IT.
     if: ${{ always() && !github.event.pull_request.head.repo.fork }}
     needs: [unit-tests, it-tests, cdi-tests, quarkus-tests]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -980,7 +958,7 @@ jobs:
     # Sonar analysis, which starts as soon as the unit tests finish.
     if: ${{ always() && !github.event.pull_request.head.repo.fork }}
     needs: [test-results, sonar-analysis, gradle-tests]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: geekyeggo/delete-artifact@176a747ab7e287e3ff4787bf8a148716375ca118 # v6.0.0
         with:
@@ -990,7 +968,7 @@ jobs:
     needs: api-diff-labeling
     if: github.event_name == 'pull_request'
     timeout-minutes: 5
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: write
       pull-requests: write
@@ -1012,10 +990,12 @@ jobs:
           repository: vaadin/platform-build-script
           ref: main
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
+      # The workspace holds platform-build-script rather than Flow, so the
+      # Node.js version comes from the job this one waits for.
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         with:
-          node-version: '26.11.1'
+          node-version: ${{ needs.api-diff-labeling.outputs.node-version }}
       - name: Auto-merge PR
         if: ${{ env.VAADIN_BOT_TOKEN != '' }}
         env:
@@ -1026,7 +1006,9 @@ jobs:
   api-diff-labeling:
     if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
     timeout-minutes: 15
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
+    outputs:
+      node-version: ${{ steps.frontend-tools.outputs.node-version }}
     permissions:
       contents: read
       issues: write
@@ -1036,15 +1018,12 @@ jobs:
         with:
           ref: ${{env._HEAD_SHA}}
           fetch-depth: 0
-      - name: Read the frontend tool versions
-        id: frontend-tools
-        run: scripts/frontendToolVersions.sh >> "$GITHUB_OUTPUT"
       # The base build and the apicmp build each run npm install in
       # flow-client, flow-polymer2lit and vaadin-dev-server. Without a warm
       # ~/.npm those six installs dominate the job and exhaust its timeout.
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: ./.github/actions/setup-frontend-tools
+        id: frontend-tools
         with:
-          node-version: ${{ steps.frontend-tools.outputs.node-version }}
           cache: npm
           cache-dependency-path: 'flow-client/package-lock.json'
       - name: Set up JDK
