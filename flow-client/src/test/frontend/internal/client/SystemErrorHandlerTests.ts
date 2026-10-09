@@ -1,8 +1,9 @@
-import { expect } from '@open-wc/testing';
+import { expect, waitUntil } from '@open-wc/testing';
 import { testRegistry } from './testRegistry';
 import sinon from 'sinon';
 import { Console } from '../../../../main/frontend/internal/client/Console';
 import { SystemErrorHandler } from '../../../../main/frontend/internal/client/SystemErrorHandler';
+import { VaadinServerMessage } from '../../../../main/frontend/internal/client/communication/VaadinServerMessage';
 
 // Ported from com.vaadin.client.flow.GwtErrotHandlerTest (the class name carries
 // a typo in the Java source), whose single case is ported below. Every other case
@@ -166,6 +167,42 @@ describe('SystemErrorHandler', () => {
       handler.handleUnrecoverableError(null, null, null, null, null);
 
       expect(intervals).to.deep.equal([-1]);
+    });
+
+    it('announces the session resynchronization message and hands it on', async () => {
+      const message = new VaadinServerMessage();
+      const handled: unknown[] = [];
+      const handler = new SystemErrorHandler(
+        testRegistry({
+          ApplicationConfiguration: {
+            isWebComponentMode: () => true,
+            getExportedWebComponents: () => [],
+            getSessionExpiredError: () => null,
+            // The resync request reads the message from a JSON file the test
+            // server serves; the path and parameters it appends land in the
+            // fragment.
+            getServiceUrl: () => '/package.json#',
+            getUIId: () => 0,
+            setUIId: () => {},
+            getHeartbeatInterval: () => 0
+          },
+          Heartbeat: { setInterval: () => {} },
+          PushConfiguration: { isPushEnabled: () => false },
+          MessageSender: { setPushEnabled: () => {} },
+          UILifecycle: { setState: () => {} },
+          MessageHandler: {
+            announceMessage: () => message,
+            handleMessage: (json: unknown, announced: unknown) => handled.push(json, announced)
+          }
+        })
+      );
+
+      handler.handleUnrecoverableError(null, null, null, null, null);
+
+      await waitUntil(() => handled.length > 0);
+      const [json, announced] = handled;
+      expect(json).to.include({ name: '@vaadin/flow-client' });
+      expect(announced).to.equal(message);
     });
 
     it('handleErrorObject extracts the error message', () => {
