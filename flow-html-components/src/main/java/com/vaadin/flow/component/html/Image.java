@@ -265,12 +265,8 @@ public class Image extends HtmlComponent
      *            the alternate text
      */
     public void setAlt(String alt) {
-        if (alt == null) {
-            getElement().removeAttribute(ALT_ATTRIBUTE);
-        } else {
-            // Also an empty string should be set as alt
-            getElement().setAttribute(ALT_ATTRIBUTE, alt);
-        }
+        // Also an empty string should be set as alt
+        getElement().setAttribute(ALT_ATTRIBUTE, alt);
     }
 
     /**

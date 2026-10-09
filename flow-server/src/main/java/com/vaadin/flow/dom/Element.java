@@ -336,14 +336,16 @@ public class Element extends Node<Element> {
      * @param attribute
      *            the name of the attribute
      * @param value
-     *            the value of the attribute, not null
+     *            the value of the attribute, or <code>null</code> to remove the
+     *            attribute
      * @return this element
+     * @see #removeAttribute(String)
      */
-    public Element setAttribute(String attribute, String value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
-        }
+    public Element setAttribute(String attribute, @Nullable String value) {
         String lowerCaseAttribute = validateAttribute(attribute);
+        if (value == null) {
+            return removeAttribute(lowerCaseAttribute);
+        }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -400,14 +402,16 @@ public class Element extends Node<Element> {
      * @param attribute
      *            the name of the attribute
      * @param resource
-     *            the resource value, not null
+     *            the resource value, or <code>null</code> to remove the
+     *            attribute
      * @return this element
+     * @see #removeAttribute(String)
      */
     public Element setAttribute(String attribute,
-            AbstractStreamResource resource) {
+            @Nullable AbstractStreamResource resource) {
         String lowerCaseAttribute = validateAttribute(attribute);
         if (resource == null) {
-            throw new IllegalArgumentException("Value cannot be null");
+            return removeAttribute(lowerCaseAttribute);
         }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
