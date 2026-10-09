@@ -367,8 +367,11 @@ public class ComponentUtil {
         try {
             component.onDetach(detachEvent);
         } catch (RuntimeException e) {
-            VaadinSession.getCurrent().getErrorHandler()
-                    .error(new ErrorEvent(e));
+            VaadinSession session = VaadinSession.getCurrent();
+            if (session == null) {
+                throw e;
+            }
+            session.getErrorHandler().error(new ErrorEvent(e));
         }
         fireEvent(component, detachEvent);
 
@@ -750,7 +753,7 @@ public class ComponentUtil {
             router = tree.getUI().getInternals().getRouter();
         }
         if (router == null) {
-            router = VaadinService.getCurrent().getRouter();
+            router = VaadinService.getCurrentOrThrow().getRouter();
         }
         if (router == null) {
             throw new IllegalStateException(

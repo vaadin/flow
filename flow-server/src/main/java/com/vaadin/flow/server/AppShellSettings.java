@@ -121,7 +121,7 @@ public class AppShellSettings {
      * @return browser information
      */
     public Optional<WebBrowser> getBrowser() {
-        return getUi().map(ui -> ui.getSession().getBrowser());
+        return getUi().map(UI::getSession).map(VaadinSession::getBrowser);
     }
 
     /**
