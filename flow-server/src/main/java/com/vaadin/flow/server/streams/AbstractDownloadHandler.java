@@ -26,9 +26,11 @@ import java.io.OutputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -446,7 +448,6 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         private Path copy(URL url, long contentLength) throws IOException {
             Path file = Files.createTempFile(getDirectory(), "resource",
                     ".tmp");
-            file.toFile().deleteOnExit();
             try (InputStream inputStream = url.openStream()) {
                 long copied = Files.copy(inputStream, file,
                         StandardCopyOption.REPLACE_EXISTING);
@@ -463,8 +464,16 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
 
         private synchronized Path getDirectory() throws IOException {
             if (directory == null || !Files.isDirectory(directory)) {
-                directory = Files.createTempDirectory("vaadin-downloads");
-                directory.toFile().deleteOnExit();
+                // Readable only by the owner, as the parent is shared
+                if (FileSystems.getDefault().supportedFileAttributeViews()
+                        .contains("posix")) {
+                    directory = Files.createTempDirectory("vaadin-downloads",
+                            PosixFilePermissions
+                                    .asFileAttribute(PosixFilePermissions
+                                            .fromString("rwx------")));
+                } else {
+                    directory = Files.createTempDirectory("vaadin-downloads");
+                }
             }
             return directory;
         }
