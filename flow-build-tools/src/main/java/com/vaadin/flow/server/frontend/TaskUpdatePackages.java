@@ -732,6 +732,11 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     protected static boolean pinNpmDependency(JsonNode packageJson,
             JsonNode pinnedNpmVersions, String pkg) {
+        final String pinnedVersion = getPinnedVersion(pinnedNpmVersions, pkg);
+        if (pinnedVersion == null) {
+            return false;
+        }
+
         final ObjectNode vaadinDeps = (ObjectNode) packageJson
                 .get(VAADIN_DEP_KEY).get(DEPENDENCIES);
         final ObjectNode packageJsonDeps = (ObjectNode) packageJson
@@ -740,77 +745,63 @@ public class TaskUpdatePackages extends NodeUpdater {
         assert vaadinDeps != null : "vaadin{ dependencies { } } should exist";
         assert packageJsonDeps != null : "dependencies { } should exist";
 
-        if (pinnedNpmVersions.has(pkg) && FrontendBuildUtils
-                .isUrlVersion(pinnedNpmVersions.get(pkg).asString(null))) {
-            return pinNpmDependencyToUrl(packageJsonDeps, vaadinDeps, pkg,
-                    pinnedNpmVersions.get(pkg).asString());
-        }
+        final String packageJsonVersion = packageJsonDeps.has(pkg)
+                ? packageJsonDeps.get(pkg).asString()
+                : null;
+        final String vaadinDepsVersion = vaadinDeps.has(pkg)
+                ? vaadinDeps.get(pkg).asString()
+                : null;
 
-        final FrontendVersion pinnedVersion = FrontendUtils
-                .getPackageVersionFromJson(pinnedNpmVersions, pkg,
-                        "vaadin_dependencies.json");
-        if (pinnedVersion == null) {
+        if (packageJsonVersion != null && vaadinDepsVersion == null
+                && !isNumericVersion(packageJsonVersion)) {
+            // Overridden to a file link in package.json, do not change
             return false;
         }
-
-        FrontendVersion packageJsonVersion = null, vaadinDepsVersion = null;
-        try {
-            if (packageJsonDeps.has(pkg)) {
-                packageJsonVersion = new FrontendVersion(
-                        packageJsonDeps.get(pkg).asString());
-            }
-        } catch (NumberFormatException e) {
-            if (!packageJsonDeps.get(pkg).equals(vaadinDeps.get(pkg))) {
-                // Overridden to a file link in package.json, do not change
-                return false;
-            }
-            // Vaadin pinned a URL before, so it is replaced with the version
-        }
-        try {
-            if (vaadinDeps.has(pkg)) {
-                vaadinDepsVersion = new FrontendVersion(
-                        vaadinDeps.get(pkg).asString());
-            }
-        } catch (NumberFormatException e) {
-            // Vaadin defines a non-numeric version. Not sure what the case
-            // would be but probably it should be pinned like any other version
-        }
-
-        if ((vaadinDepsVersion != null && packageJsonVersion != null)
-                && !vaadinDepsVersion.isSameDependency(packageJsonVersion)) {
+        if (packageJsonVersion != null && vaadinDepsVersion != null
+                && !isSameDependency(vaadinDepsVersion, packageJsonVersion)) {
             // The user has overridden the version, use that
             return false;
         }
-
-        if (packageJsonVersion != null && vaadinDepsVersion != null
-                && pinnedVersion.isSameDependency(packageJsonVersion)
-                && pinnedVersion.isSameDependency(vaadinDepsVersion)) {
+        if (isSameDependency(pinnedVersion, packageJsonVersion)
+                && isSameDependency(pinnedVersion, vaadinDepsVersion)) {
             return false;
         }
 
-        packageJsonDeps.put(pkg, pinnedVersion.getFullVersion());
-        vaadinDeps.put(pkg, pinnedVersion.getFullVersion());
+        packageJsonDeps.put(pkg, pinnedVersion);
+        vaadinDeps.put(pkg, pinnedVersion);
         return true;
     }
 
-    private static boolean pinNpmDependencyToUrl(ObjectNode packageJsonDeps,
-            ObjectNode vaadinDeps, String pkg, String url) {
-        final JsonNode packageJsonVersion = packageJsonDeps.get(pkg);
-        final JsonNode vaadinDepsVersion = vaadinDeps.get(pkg);
-        if (packageJsonVersion != null && vaadinDepsVersion != null
-                && !packageJsonVersion.equals(vaadinDepsVersion)) {
-            // The user has overridden the version, use that
+    /**
+     * Gets the version a package is pinned to, which is either a numeric
+     * version or a URL, or {@code null} if it has no such version.
+     */
+    private static String getPinnedVersion(JsonNode pinnedNpmVersions,
+            String pkg) {
+        if (pinnedNpmVersions.has(pkg) && FrontendBuildUtils
+                .isUrlVersion(pinnedNpmVersions.get(pkg).asString(null))) {
+            return pinnedNpmVersions.get(pkg).asString();
+        }
+        final FrontendVersion pinnedVersion = FrontendUtils
+                .getPackageVersionFromJson(pinnedNpmVersions, pkg,
+                        "vaadin_dependencies.json");
+        return pinnedVersion == null ? null : pinnedVersion.getFullVersion();
+    }
+
+    /**
+     * Compares two versions as versions when both are numeric, and as is
+     * otherwise, e.g. when one is a URL or a file link.
+     */
+    private static boolean isSameDependency(String version,
+            String otherVersion) {
+        if (version == null || otherVersion == null) {
             return false;
         }
-        if (packageJsonVersion != null
-                && url.equals(packageJsonVersion.asString())
-                && vaadinDepsVersion != null
-                && url.equals(vaadinDepsVersion.asString())) {
-            return false;
+        if (isNumericVersion(version) && isNumericVersion(otherVersion)) {
+            return new FrontendVersion(version)
+                    .isSameDependency(new FrontendVersion(otherVersion));
         }
-        packageJsonDeps.put(pkg, url);
-        vaadinDeps.put(pkg, url);
-        return true;
+        return version.equals(otherVersion);
     }
 
     /**
