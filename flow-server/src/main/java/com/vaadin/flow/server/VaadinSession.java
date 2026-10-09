@@ -361,11 +361,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Updates the transient session lock from VaadinService.
      */
-    private void refreshLock() {
-        assert lock == null || lock == service.getSessionLock(session)
+    private void refreshLock(WrappedSession wrappedSession) {
+        assert lock == null || lock == service.getSessionLock(wrappedSession)
                 : "Cannot change the lock from one instance to another";
-        assert hasLock(service, session);
-        lock = service.getSessionLock(session);
+        assert hasLock(service, wrappedSession);
+        // The caller holds the lock, so it is stored in the wrapped session
+        lock = Objects.requireNonNull(service.getSessionLock(wrappedSession));
         if (lock instanceof InstrumentedReentrantLock instrumentedLock) {
             instrumentedLock.bind(service, this);
         }
@@ -701,7 +702,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     protected static boolean hasLock(VaadinService service,
             WrappedSession session) {
         ReentrantLock l = (ReentrantLock) service.getSessionLock(session);
-        return l.isHeldByCurrentThread();
+        return l != null && l.isHeldByCurrentThread();
     }
 
     /**
@@ -1248,7 +1249,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             VaadinService vaadinService) {
         session = wrappedSession;
         service = vaadinService;
-        refreshLock();
+        refreshLock(wrappedSession);
     }
 
     /**

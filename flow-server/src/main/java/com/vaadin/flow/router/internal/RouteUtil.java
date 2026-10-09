@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -624,15 +625,15 @@ public class RouteUtil {
      * use.
      *
      * @param service
-     *            VaadinService instance
+     *            VaadinService instance, or <code>null</code> to skip the check
      * @param flowRoutes
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
      * @since 24.5.1
      */
-    public static void checkForClientRouteCollisions(VaadinService service,
-            List<RouteData> flowRoutes)
+    public static void checkForClientRouteCollisions(
+            @Nullable VaadinService service, List<RouteData> flowRoutes)
             throws InvalidRouteConfigurationException {
         checkForClientRouteCollisions(service, flowRoutes.stream()
                 .map(RouteData::getTemplate).toArray(String[]::new));
@@ -646,15 +647,15 @@ public class RouteUtil {
      * use.
      *
      * @param service
-     *            VaadinService instance
+     *            VaadinService instance, or <code>null</code> to skip the check
      * @param flowRouteTemplates
      *            Flow routes to check against
      * @throws InvalidRouteConfigurationException
      *             if a collision is detected
      * @since 24.5.1
      */
-    public static void checkForClientRouteCollisions(VaadinService service,
-            String... flowRouteTemplates)
+    public static void checkForClientRouteCollisions(
+            @Nullable VaadinService service, String... flowRouteTemplates)
             throws InvalidRouteConfigurationException {
         if (service == null
                 || service.getDeploymentConfiguration().isProductionMode()

@@ -480,8 +480,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *            the relative path from the UI (servlet) path to the
          *            context root
          * @param session
-         *            the vaadin session, or <code>null</code> if the UI is not
-         *            attached to a session
+         *            the vaadin session, not used by the resolver; may be
+         *            <code>null</code>
          * @since 2.0
          */
         public BootstrapUriResolver(String contextRootRelatiePath,
