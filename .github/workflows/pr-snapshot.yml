@@ -44,9 +44,6 @@ env:
   _HEAD_REF: ${{ github.head_ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
-  # Same mapping as validation.yml: a pull request builds with the JDK of the
-  # branch it targets.
-  JAVA_VERSION: ${{ (startsWith(github.base_ref, '23.') && '11') || (startsWith(github.base_ref, '24.') && '17') || '21' }}
 
 jobs:
   snapshot:
@@ -80,13 +77,11 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{ env._HEAD_SHA }}
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '24.20.0'
+      - uses: ./.github/actions/setup-frontend-tools
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
-          java-version: "${{ env.JAVA_VERSION }}"
+          java-version-file: .tool-versions
           distribution: 'temurin'
           # Writes the settings.xml server entry the deploy below authenticates
           # with; the values are read from the environment at that point.
