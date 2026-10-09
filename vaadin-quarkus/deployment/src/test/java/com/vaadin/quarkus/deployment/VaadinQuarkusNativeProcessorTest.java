@@ -16,12 +16,13 @@
 package com.vaadin.quarkus.deployment;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
@@ -406,13 +407,18 @@ class VaadinQuarkusNativeProcessorTest {
                         + "reflection registration either");
     }
 
+    // Matches against the globs instead of the produced item: the item has no
+    // getter that exists in every supported Quarkus version, since newer
+    // versions replaced getIncludePatterns() with getIncludeGlobs()
     private static boolean isIncluded(
             List<NativeImageResourcePatternsBuildItem> resources,
             String resource) {
-        return resources.stream()
-                .flatMap(item -> item.getIncludePatterns().stream())
-                .anyMatch(pattern -> Pattern.compile(pattern).matcher(resource)
-                        .matches());
+        assertEquals(1, resources.size(),
+                "The resource globs should be registered as one item");
+        return VaadinQuarkusNativeProcessor.NATIVE_RESOURCE_GLOBS.stream()
+                .anyMatch(glob -> FileSystems.getDefault()
+                        .getPathMatcher("glob:" + glob)
+                        .matches(Path.of(resource)));
     }
 
     // Only an interface can be implemented by the JDK proxy the definitions

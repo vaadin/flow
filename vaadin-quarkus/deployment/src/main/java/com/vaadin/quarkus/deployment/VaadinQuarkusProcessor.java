@@ -477,6 +477,10 @@ class VaadinQuarkusProcessor {
         }
     }
 
+    // The WebSocket build items are only consumed to run after the WebSocket
+    // container is set up. Their values are not read: newer Quarkus versions
+    // turned them into markers without getInfo() and getContainer(), so the
+    // recorder looks the container up in the servlet context instead.
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
     void setupPush(ServletDeploymentManagerBuildItem deployment,
@@ -486,8 +490,6 @@ class VaadinQuarkusProcessor {
             WebsocketHttpSessionAttachRecorder recorder) {
 
         filterProd.produce(new FilterBuildItem(recorder.createWebSocketHandler(
-                webSocketDeploymentInfoBuildItem.getInfo(),
-                serverWebSocketContainerBuildItem.getContainer(),
                 deployment.getDeploymentManager()), 120));
     }
 
