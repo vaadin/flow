@@ -1158,6 +1158,23 @@ public class UITest {
     }
 
     @Test
+    public void navigate_navigationNotSupported_throws() {
+        UI ui = new UI() {
+            @Override
+            public boolean isNavigationSupported() {
+                return false;
+            }
+        };
+
+        NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> ui.navigate(FooBarNavigationTarget.class,
+                        RouteParameters.empty()));
+        assertEquals("Navigation is not supported by this UI",
+                exception.getMessage());
+    }
+
+    @Test
     public void access_detachedUi_throws() {
         UI ui = createTestUI();
 
