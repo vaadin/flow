@@ -19,18 +19,22 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -44,10 +48,12 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.UidlRequestHandler.MprPushStateJs;
 import com.vaadin.flow.server.dau.DAUUtils;
 import com.vaadin.flow.server.dau.DauEnforcementException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockUI;
 
@@ -257,7 +263,7 @@ class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        ObjectNode uidl = generateUidl(true, true);
+        ObjectNode uidl = generateUidl(ui, true, true);
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
@@ -278,7 +284,8 @@ class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        ObjectNode uidl = generateUidl(true, true);
+        ObjectNode uidl = generateUidl(ui, true, true);
+        int invocations = uidl.get("execute").size();
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
@@ -286,10 +293,18 @@ class UidlRequestHandlerTest {
         String out = writer.toString();
         uidl = JacksonUtils.readTree(out);
 
+        String location = "http://localhost:9998/#!away";
+        assertEquals(invocations, uidl.get("execute").size(),
+                "the corrected push state should replace the one the router scheduled rather than be added next to it: "
+                        + uidl);
         assertEquals(
-                "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
-                whatRuns(uidl, 1),
+                new JsCall(MprPushStateJs.class, "pushLocation",
+                        List.of(location)).getFunctionId(),
+                getFunctionIdRunBy(uidl, 1),
                 "the push state of the corrected location should replace the one the response carried: "
+                        + uidl);
+        assertEquals(location, uidl.get("execute").get(1).get(0).asString(),
+                "the corrected location should be the argument of the call: "
                         + uidl);
     }
 
@@ -300,7 +315,7 @@ class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        ObjectNode uidl = generateUidl(false, true);
+        ObjectNode uidl = generateUidl(ui, false, true);
         doReturn(uidl).when(handler).createUidl(ui, false);
 
         handler.writeUidl(ui, writer, false);
@@ -309,9 +324,13 @@ class UidlRequestHandlerTest {
         uidl = JacksonUtils.readTree(out);
 
         assertEquals(
-                "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
-                whatRuns(uidl, 1),
+                new JsCall(MprPushStateJs.class, "pushHash", List.of("!away"))
+                        .getFunctionId(),
+                getFunctionIdRunBy(uidl, 1),
                 "the push state of the corrected hash should replace the one the response carried: "
+                        + uidl);
+        assertEquals("!away", uidl.get("execute").get(1).get(0).asString(),
+                "the corrected hash should be the argument of the call: "
                         + uidl);
     }
 
@@ -322,7 +341,7 @@ class UidlRequestHandlerTest {
         handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
 
-        ObjectNode uidl = generateUidl(true, true);
+        ObjectNode uidl = generateUidl(ui, true, true);
         ((ArrayNode) uidl.get("execute").get(2)).remove(1);
 
         doReturn(uidl).when(handler).createUidl(ui, false);
@@ -353,8 +372,13 @@ class UidlRequestHandlerTest {
 
         handler.writeUidl(ui, writer, false);
 
-        String out = writer.toString();
-        assertFalse(out.contains("history.pushState"));
+        ObjectNode written = JacksonUtils.readTree(writer.toString());
+        assertEquals(1, written.get("execute").size(),
+                "nothing should be pushed when the v7 location carries no hash: "
+                        + written);
+        assertFalse(written.has("constants"),
+                "nothing should be pushed when the v7 location carries no hash: "
+                        + written);
     }
 
     @Test
@@ -529,16 +553,19 @@ class UidlRequestHandlerTest {
     }
 
     /**
-     * What the invocation at the given index of the given response runs, which
-     * the invocation names among the constants of the response.
+     * Gets the identifier of the function that the invocation at the given
+     * index of the given response runs, which the invocation names among the
+     * constants of the response.
      */
-    private static String whatRuns(ObjectNode uidl, int index) {
-        ArrayNode invocation = (ArrayNode) uidl.get("execute").get(index);
+    private static String getFunctionIdRunBy(ObjectNode uidl, int index) {
+        JsonNode invocation = uidl.get("execute").get(index);
         String name = invocation.get(invocation.size() - 1).asString();
-        return uidl.get("constants").get(name).asString();
+        return uidl.get("constants").get(name)
+                .get(JsonConstants.UIDL_KEY_JS_FUNCTION).asString();
     }
 
-    private ObjectNode generateUidl(boolean withLocation, boolean withHash) {
+    private ObjectNode generateUidl(UI ui, boolean withLocation,
+            boolean withHash) {
 
         // @formatter:off
         ObjectNode uidl = JacksonUtils.readTree(
@@ -603,6 +630,22 @@ class UidlRequestHandlerTest {
         }
 
         ((ArrayNode) uidl.get("execute").get(2)).set(1, v7String);
+
+        // The push state the router schedules for a location change with the
+        // non-React router, encoded the way a response encodes it, so that
+        // what the fix-up recognizes is what the writer actually sends
+        when(ui.getSession().getService().getDeploymentConfiguration())
+                .thenReturn(mock(DeploymentConfiguration.class));
+        ui.getPage().getHistory().pushState(null, "away");
+        ConstantPool constantPool = ui.getInternals().getConstantPool();
+        ((ArrayNode) uidl.get("execute")).set(1,
+                UidlWriter.encodeExecuteJavaScriptList(
+                        ui.getInternals().dumpPendingJavaScriptInvocations(),
+                        constantPool).get(0));
+        ((ObjectNode) uidl.get("constants")).remove("pushState");
+        ((ObjectNode) uidl.get("constants"))
+                .setAll(constantPool.dumpConstants());
+
         return uidl;
     }
 
