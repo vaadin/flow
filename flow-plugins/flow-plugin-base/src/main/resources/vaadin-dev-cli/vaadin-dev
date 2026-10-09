@@ -35,8 +35,21 @@ fi
 # from the arguments so the daemon never sees it. Accepted anywhere in the command
 # line: "vaadin-dev --app ../admin apply" and "vaadin-dev apply --app ../admin"
 # mean the same thing.
+#
+# --jvm-args is gathered here too, from anywhere on the line and as often as it is
+# given, and sent on below one flag per word.
 app_override="${VAADIN_DEV_APP:-}"
 args=()
+jvm_args=()
+jvm_args_given=
+add_jvm_args() { # $1=a --jvm-args value; split on any whitespace, never globbed
+    local words=()
+    # -d '' reads the whole value rather than its first line, so flags on later
+    # lines are kept; read reports the missing delimiter as a failure.
+    IFS=$' \t\n' read -r -d '' -a words <<<"$1" || true
+    jvm_args+=(${words[@]+"${words[@]}"})
+    jvm_args_given=1
+}
 while (( $# )); do
     case "$1" in
         --app)
@@ -45,10 +58,30 @@ while (( $# )); do
             app_override="$1"
             ;;
         --app=*) app_override="${1#--app=}" ;;
+        --jvm-args)
+            shift
+            (( $# )) || { echo "vaadin-dev: --jvm-args needs a value" >&2; exit 64; }
+            add_jvm_args "$1"
+            ;;
+        --jvm-args=*) add_jvm_args "${1#--jvm-args=}" ;;
         *)       args+=("$1") ;;
     esac
     shift
 done
+# The daemon splits a request line on whitespace, and no flag holds any after the
+# split above, so each flag travels as a --jvm-arg= word of its own and arrives as
+# given. The bare --jvm-args says flags were given at all: alone, it is how a
+# restart clears flags an earlier one set.
+if [[ -n "$jvm_args_given" ]]; then
+    case "${args[0]:-}" in
+        start|restart) ;;
+        *) echo "vaadin-dev: --jvm-args goes with start or restart" >&2; exit 64 ;;
+    esac
+    args+=("--jvm-args")
+    for flag in ${jvm_args[@]+"${jvm_args[@]}"}; do
+        args+=("--jvm-arg=$flag")
+    done
+fi
 # The ${args+...} guard keeps an empty array from tripping set -u on bash 3.2,
 # which is still what macOS ships.
 set -- ${args+"${args[@]}"}
@@ -90,6 +123,8 @@ DAEMON_LOG="$WORK_DIR/daemon.log"
 DAEMON_JAR_CACHE="$WORK_DIR/daemon-jar.txt"
 POM_STAMP="$WORK_DIR/cp.stamp"
 
+# Write-Usage in vaadin-dev.ps1 prints this same text, word for word; a change
+# here belongs there too.
 usage() {
     cat <<'EOF'
 usage: vaadin-dev [--app <dir>] <command> [options]
@@ -104,6 +139,13 @@ usage: vaadin-dev [--app <dir>] <command> [options]
   restart           stop then start
   shutdown          stop the daemon (and the app it owns)
   ping              check the daemon is alive
+
+  start|restart --jvm-args "<flags>"
+                    extra JVM flags for the app, after the loop's own, e.g.
+                    --jvm-args "-Xmx2g --add-exports java.base/x.y=ALL-UNNAMED".
+                    Kept for every later restart, including one an apply
+                    escalates to, until the next --jvm-args (--jvm-args "" clears
+                    them) or the daemon shuts down
 
   redefine <a.b.C,...>
                     diagnostic: push named classes at the running app and print
@@ -126,22 +168,40 @@ loop too: apply scans, compiles and hot-reloads those the same way. status names
                            and the answer cached under target/devloop/
   VAADIN_DEV_PROGRESS      auto (default: a moving phase line on stderr when it is
                            a terminal), never, or always
-  VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g.
-                           -Dvaadin.dev.daemonJar=<path> to pin the daemon jar,
-                           -Dvaadin.frontend.hotdeploy=true (any vaadin.* property
-                           is forwarded on to the app), -Dvaadin.dev.idleSeconds=60
-                           or -Dvaadin.dev.startSettleMillis=15000 (how long a
-                           registered app is given to report a listening web
-                           server; only reached if it never logs one).
-                           Multi-module: -Dvaadin.dev.reactorRoot=<dir> when the
-                           reactor root is not an ancestor of the application,
-                           -Dvaadin.dev.modules=<dirs> to set the loop by hand
-                           ("." for this module alone), -Dvaadin.dev.maven=<path>
-                           to pick the Maven that resolves the classpath,
-                           -Dvaadin.dev.mavenArgs=<args> to add arguments to it
-                           (a profile the resolve must not run, say),
-                           -Dvaadin.dev.mainClass=<class> when the application
-                           class cannot be discovered
+  VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, space-separated. Read only when
+                           a daemon is spawned, so shutdown first to change them. Split
+                           on spaces even inside quotes, so no value can hold one.
+
+    For the app:
+      -Dvaadin.*, -Dspring.*           forwarded on to the app, e.g.
+                                       -Dvaadin.frontend.hotdeploy=true or
+                                       -Dspring.profiles.active=dev,local
+      -Dvaadin.dev.jvmArgs=<flags>     JVM flags for the app alone, joined with | and
+                                       in the = form, e.g. -Xmx2g|-XX:+UseZGC; start
+                                       --jvm-args is easier
+      -Dvaadin.dev.mainClass=<class>   the application class, when it cannot be
+                                       discovered
+      -Dvaadin.dev.startSettleMillis=<ms>
+                                       how long a registered app is given to report
+                                       a listening web server (default 15000; only
+                                       reached if it never logs one)
+
+    For the daemon:
+      -Dvaadin.dev.daemonJar=<path>    pin the daemon jar
+      -Dvaadin.dev.idleSeconds=<n>     shut down after this long idle with no app
+                                       running (default 1800)
+
+    For Maven and multi-module builds:
+      -Dvaadin.dev.maven=<path>        the Maven that resolves the classpath
+      -Dvaadin.dev.mavenArgs=<args>    extra arguments for that Maven, e.g. a profile
+                                       it must not run: -P!some-profile. Several
+                                       profiles go comma-joined in one -P: -Pa,b
+      -Dvaadin.dev.reactorRoot=<dir>   the reactor root, when it is not an ancestor
+                                       of the application
+      -Dvaadin.dev.modules=<dirs>      set the loop by hand ("." for this module alone)
+
+  JDK_JAVA_OPTIONS         reaches the app too, but also every JVM this script starts,
+                           Maven and the daemon included
 EOF
 }
 

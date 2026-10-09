@@ -42,6 +42,8 @@ if ((Split-Path -Leaf $scriptDir) -eq '.vaadin') {
     $scriptApp = $scriptDir
 }
 
+# The same text as usage() in the bash port, word for word: both read the same
+# variables and options, so a user of either is told the same thing.
 function Write-Usage {
     @'
 usage: vaadin-dev [--app <dir>] <command> [options]
@@ -49,27 +51,89 @@ usage: vaadin-dev [--app <dir>] <command> [options]
   status [--json]   app up? owner? dev server? current/last transaction
   apply [--json]    commit pending edits; blocks until Stable or Failed
                     (--no-restart to stop after the compile gate)
-  start             launch the app in dev mode (daemon owns it)
+  start             launch the app in dev mode (daemon owns it); blocks until
+                    the app is serving or has failed, and a failure names the
+                    reason and prints the tail of app.log
   stop              stop the app
   restart           stop then start
   shutdown          stop the daemon (and the app it owns)
   ping              check the daemon is alive
 
+  start|restart --jvm-args "<flags>"
+                    extra JVM flags for the app, after the loop's own, e.g.
+                    --jvm-args "-Xmx2g --add-exports java.base/x.y=ALL-UNNAMED".
+                    Kept for every later restart, including one an apply
+                    escalates to, until the next --jvm-args (--jvm-args "" clears
+                    them) or the daemon shuts down
+
   redefine <a.b.C,...>
                     diagnostic: push named classes at the running app and print
                     the raw reply, without apply's escalation policy
 
-The daemon starts automatically on first use and serves this application only.
-See vaadin-dev (the bash script beside this one) for the full option and
-environment-variable reference; both read the same variables.
+The daemon starts automatically on first use and serves this application only. When the
+application is one module of a Maven reactor, every reactor module it depends on is in the
+loop too: apply scans, compiles and hot-reloads those the same way. status names them.
+
+  --app <dir>              the application to act on (default: the directory this
+                           script is in, or the one above it when the script is
+                           installed in an application's .vaadin/). One daemon, one
+                           .vaadin/ and one target/devloop/ per application, so a
+                           reactor holding several Vaadin applications is driven by
+                           this one script:  vaadin-dev --app ../admin apply
+  VAADIN_DEV_APP           the same, as an environment variable; --app wins
+  VAADIN_DEV_HOME          a directory holding flow-devloop-daemon.jar, for an
+                           air-gapped setup or a jar built by hand. Otherwise the
+                           jar is resolved once from the project's own dependencies
+                           and the answer cached under target/devloop/
+  VAADIN_DEV_PROGRESS      auto (default: a moving phase line on stderr when it is
+                           a terminal), never, or always
+  VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, space-separated. Read only when
+                           a daemon is spawned, so shutdown first to change them. Split
+                           on spaces even inside quotes, so no value can hold one.
+
+    For the app:
+      -Dvaadin.*, -Dspring.*           forwarded on to the app, e.g.
+                                       -Dvaadin.frontend.hotdeploy=true or
+                                       -Dspring.profiles.active=dev,local
+      -Dvaadin.dev.jvmArgs=<flags>     JVM flags for the app alone, joined with | and
+                                       in the = form, e.g. -Xmx2g|-XX:+UseZGC; start
+                                       --jvm-args is easier
+      -Dvaadin.dev.mainClass=<class>   the application class, when it cannot be
+                                       discovered
+      -Dvaadin.dev.startSettleMillis=<ms>
+                                       how long a registered app is given to report
+                                       a listening web server (default 15000; only
+                                       reached if it never logs one)
+
+    For the daemon:
+      -Dvaadin.dev.daemonJar=<path>    pin the daemon jar
+      -Dvaadin.dev.idleSeconds=<n>     shut down after this long idle with no app
+                                       running (default 1800)
+
+    For Maven and multi-module builds:
+      -Dvaadin.dev.maven=<path>        the Maven that resolves the classpath
+      -Dvaadin.dev.mavenArgs=<args>    extra arguments for that Maven, e.g. a profile
+                                       it must not run: -P!some-profile. Several
+                                       profiles go comma-joined in one -P: -Pa,b
+      -Dvaadin.dev.reactorRoot=<dir>   the reactor root, when it is not an ancestor
+                                       of the application
+      -Dvaadin.dev.modules=<dirs>      set the loop by hand ("." for this module alone)
+
+  JDK_JAVA_OPTIONS         reaches the app too, but also every JVM this script starts,
+                           Maven and the daemon included
 '@
 }
 
 # --- argument handling --------------------------------------------------------
 # --app is consumed here, before anything derives a path from $root, and stripped
 # from the arguments so the daemon never sees it.
+#
+# --jvm-args is gathered here too, from anywhere on the line and as often as it is
+# given, and sent on below one flag per word.
 $appOverride = $env:VAADIN_DEV_APP
 $rest = New-Object System.Collections.Generic.List[string]
+$jvmArgs = New-Object System.Collections.Generic.List[string]
+$jvmArgsGiven = $false
 for ($i = 0; $i -lt $args.Count; $i++) {
     $argument = [string]$args[$i]
     if ($argument -eq '--app') {
@@ -81,9 +145,36 @@ for ($i = 0; $i -lt $args.Count; $i++) {
         $appOverride = [string]$args[$i]
     } elseif ($argument -like '--app=*') {
         $appOverride = $argument.Substring('--app='.Length)
+    } elseif ($argument -eq '--jvm-args' -or $argument -like '--jvm-args=*') {
+        if ($argument -eq '--jvm-args') {
+            $i++
+            if ($i -ge $args.Count) {
+                [Console]::Error.WriteLine('vaadin-dev: --jvm-args needs a value')
+                exit 64
+            }
+            $value = [string]$args[$i]
+        } else {
+            $value = $argument.Substring('--jvm-args='.Length)
+        }
+        foreach ($flag in ($value -split '\s+')) {
+            if ($flag) { $jvmArgs.Add($flag) }
+        }
+        $jvmArgsGiven = $true
     } else {
         $rest.Add($argument)
     }
+}
+# The daemon splits a request line on whitespace, and no flag holds any after the
+# split above, so each flag travels as a --jvm-arg= word of its own and arrives as
+# given. The bare --jvm-args says flags were given at all: alone, it is how a
+# restart clears flags an earlier one set.
+if ($jvmArgsGiven) {
+    if ($rest.Count -eq 0 -or $rest[0] -notin @('start', 'restart')) {
+        [Console]::Error.WriteLine('vaadin-dev: --jvm-args goes with start or restart')
+        exit 64
+    }
+    $rest.Add('--jvm-args')
+    foreach ($flag in $jvmArgs) { $rest.Add('--jvm-arg=' + $flag) }
 }
 
 if ($appOverride) {

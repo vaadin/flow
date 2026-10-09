@@ -200,7 +200,8 @@ VAADIN_DEV_DAEMON_OPTS   JVM options for the daemon, e.g. -Dvaadin.frontend.hotd
                          -Dvaadin.dev.modules=<dirs>, -Dvaadin.dev.maven=<path>,
                          -Dvaadin.dev.mavenArgs=<args>, -Dvaadin.dev.mainClass=<class>,
                          -Dvaadin.dev.runtime=<main|jetty-ee10|jetty-ee11|wildfly|tomee|payara|payara-micro|liberty|cargo>,
-                         -Dvaadin.dev.daemonJar=<path>.
+                         -Dvaadin.dev.daemonJar=<path>,
+                         -Dvaadin.dev.jvmArgs=<flags> (see below).
                          Read ONLY when a daemon is spawned: a daemon that is already
                          running ignores it, so `shutdown` first when changing a value.
                          Every vaadin.* and spring.* property is passed on to the
@@ -226,6 +227,25 @@ A property set here lives as long as the daemon and appears in no file, so it is
 steering one local run. If a profile is what the project normally runs under,
 `spring.profiles.active` in `application.properties` is the better answer and needs none
 of this.
+
+JVM flags (`--add-exports`, `-Xmx`, `-XX:...`) are not properties; pass them to `start` or
+`restart` with `--jvm-args`. No `shutdown` is needed, and they reach the application JVM
+alone, after the loop's own flags:
+
+```
+.vaadin/vaadin-dev restart --jvm-args "-Xmx2g --add-exports java.base/jdk.internal.misc=ALL-UNNAMED"
+```
+
+The daemon keeps them for every later restart, including one an `apply` escalates to, until
+the next `--jvm-args` (`--jvm-args ""` clears them). The `flags:` line `start` prints shows
+what the app got. Where only the environment can be set, `-Dvaadin.dev.jvmArgs=<flags>` in
+`VAADIN_DEV_DAEMON_OPTS` does the same, but that variable is split on spaces, quotes or not,
+so join several with `|` and use the `=` form:
+`-Dvaadin.dev.jvmArgs=-Xmx2g|--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED`.
+
+`JDK_JAVA_OPTIONS` also works, but it reaches the daemon and every Maven run too, and a bad
+value surfaces only as "could not resolve flow-devloop-daemon". `JAVA_TOOL_OPTIONS` takes
+only the `=` form of `--add-exports`.
 
 `.vaadin/vaadin-dev --help` lists the rest, including the `redefine <a.b.C,...>` diagnostic.
 
