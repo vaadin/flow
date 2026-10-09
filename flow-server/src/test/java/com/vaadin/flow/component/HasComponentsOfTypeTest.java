@@ -31,6 +31,12 @@ class HasComponentsOfTypeTest {
         }
     }
 
+    static class SpecialItem extends Item {
+        SpecialItem(String id) {
+            super(id);
+        }
+    }
+
     @Tag("breadcrumb-trail")
     static class Trail extends Component implements HasComponentsOfType<Item> {
     }
@@ -74,6 +80,25 @@ class HasComponentsOfTypeTest {
         trail.add(a, b, c);
 
         trail.remove(List.of(a, c));
+
+        assertEquals(1, trail.getComponentCount());
+        assertSame(b, trail.getComponentAt(0));
+    }
+
+    @Test
+    void typedContainer_addAndRemoveCollectionOfSubtype() {
+        Trail trail = new Trail();
+        SpecialItem a = new SpecialItem("a");
+        SpecialItem b = new SpecialItem("b");
+        List<SpecialItem> items = List.of(a, b);
+
+        trail.add(items);
+
+        assertEquals(2, trail.getComponentCount());
+        assertSame(a, trail.getComponentAt(0));
+        assertSame(b, trail.getComponentAt(1));
+
+        trail.remove(List.of(a));
 
         assertEquals(1, trail.getComponentCount());
         assertSame(b, trail.getComponentAt(0));

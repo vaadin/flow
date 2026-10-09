@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.List;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -67,6 +69,21 @@ class HasComponentsTest {
         component.add(text);
 
         assertEquals(text, component.getElement().getText());
+    }
+
+    @Test
+    void addAndRemoveCollectionOfSubtype() {
+        TestComponent component = new TestComponent();
+        TestComponent child1 = new TestComponent("child1");
+        TestComponent child2 = new TestComponent("child2");
+        List<TestComponent> children = List.of(child1, child2);
+
+        component.add(children);
+        assertEquals(2, component.getChildren().count());
+
+        component.remove(List.of(child1));
+        assertEquals(1, component.getChildren().count());
+        assertEquals(child2, component.getChildren().findFirst().get());
     }
 
     @Test

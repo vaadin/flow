@@ -139,7 +139,7 @@ public class TableColumnGroup extends HtmlComponent
     }
 
     @Override
-    public void add(Collection<TableColumn> columns) {
+    public void add(Collection<? extends TableColumn> columns) {
         rejectColumnsWhileSpanIsSet();
         HasComponentsOfType.super.add(columns);
     }

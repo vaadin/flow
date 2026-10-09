@@ -82,7 +82,7 @@ public interface HasComponentsOfType<T extends Component>
      * @param components
      *            the components to add
      */
-    default void add(Collection<T> components) {
+    default void add(Collection<? extends T> components) {
         Objects.requireNonNull(components, "Components should not be null");
         throwIfTextBindingIsActive("add");
         if (hasChildrenBinding()) {
@@ -140,7 +140,7 @@ public interface HasComponentsOfType<T extends Component>
      *             if there is a component whose non {@code null} parent is not
      *             this component
      */
-    default void remove(Collection<T> components) {
+    default void remove(Collection<? extends T> components) {
         Objects.requireNonNull(components, "Components should not be null");
         throwIfTextBindingIsActive("remove");
         if (hasChildrenBinding()) {
