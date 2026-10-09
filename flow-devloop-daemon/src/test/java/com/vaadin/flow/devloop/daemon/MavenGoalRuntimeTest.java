@@ -315,34 +315,6 @@ class MavenGoalRuntimeTest {
     }
 
     /**
-     * mvn.cmd pastes MAVEN_OPTS into its java line unquoted, so a {@code |}
-     * from {@code --jvm-args} would be a pipe to cmd. Every flag goes to the
-     * argument file, in order, so the developer's still come last.
-     */
-    @Test
-    void withLauncherSyntaxInArgFile_movesEveryFlagInOrder(@TempDir Path dir)
-            throws IOException {
-        Path file = dir.resolve("maven-opts-args.txt");
-
-        List<String> passed = MavenGoalRuntime.withLauncherSyntaxInArgFile(
-                List.of("-javaagent:/ha.jar", "-Dpattern=a|b", "-Xmx1g"), file);
-
-        assertEquals(List.of("@" + file), passed);
-        assertEquals("\"-javaagent:/ha.jar\"\n\"-Dpattern=a|b\"\n\"-Xmx1g\"\n",
-                Files.readString(file));
-    }
-
-    @Test
-    void withLauncherSyntaxInArgFile_plainFlagsStayInline(@TempDir Path dir)
-            throws IOException {
-        Path file = dir.resolve("maven-opts-args.txt");
-
-        assertEquals(NEEDED,
-                MavenGoalRuntime.withLauncherSyntaxInArgFile(NEEDED, file));
-        assertFalse(Files.exists(file));
-    }
-
-    /**
      * Liberty's channel carries one flag per property, each becoming one line
      * of the server's generated jvm.options - so a line holding all of them
      * would reach the JVM as a single argument. The key is the flag's position,
@@ -399,6 +371,30 @@ class MavenGoalRuntimeTest {
                 .endsWith(String.join(" ", NEEDED)));
         assertTrue(hotswapAgentProperties(launch)
                 .contains("extraClasspath=" + agent.toUri()));
+    }
+
+    /**
+     * mvn.cmd pastes MAVEN_OPTS into its java line unquoted, so a {@code |}
+     * from {@code --jvm-args} would be a pipe to cmd. Every flag goes to an
+     * argument file, in order, so the developer's still come last.
+     */
+    @Test
+    void invocation_embeddedServer_launcherSyntaxMovesTheFlagsToAnArgFile()
+            throws IOException {
+        Launch launch = launchOf(module("jetty-app", JETTY));
+        Path file = Launch.workDir(launch.reactor().app().dir())
+                .resolve("maven-opts-args.txt");
+
+        AppRuntime.Invocation invocation = runtimeOf(launch).invocation(
+                projectOf(launch),
+                List.of("-javaagent:/ha.jar", "-Dpattern=a|b", "-Xmx1g"),
+                List.of());
+
+        String opts = invocation.environment().get("MAVEN_OPTS");
+        assertTrue(opts.endsWith("@" + file), opts);
+        assertFalse(opts.contains("-Dpattern"), opts);
+        assertEquals("\"-javaagent:/ha.jar\"\n\"-Dpattern=a|b\"\n\"-Xmx1g\"\n",
+                Files.readString(file));
     }
 
     /**

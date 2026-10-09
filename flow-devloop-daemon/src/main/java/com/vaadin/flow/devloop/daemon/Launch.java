@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 /**
  * Composes the app JVM command line, resolves the classpath through Maven, and
@@ -82,6 +81,10 @@ final class Launch {
      */
     static final String JVM_ARGS_PROPERTY = "vaadin.dev.jvmArgs";
 
+    /** What separates the flags in {@value #JVM_ARGS_PROPERTY}. */
+    private static final Pattern JVM_ARGS_SEPARATOR = Pattern
+            .compile("[\\s|]+");
+
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
             "java.base/java.util", "java.desktop/java.beans");
@@ -113,7 +116,8 @@ final class Launch {
     private volatile Project project;
 
     /** See {@link #requestJvmFlags}. */
-    private volatile List<String> requestedJvmFlags = List.of();
+    private final AtomicReference<List<String>> requestedJvmFlags = new AtomicReference<>(
+            List.of());
 
     /**
      * Why the last resolution failed, when it failed and there was no earlier
@@ -1174,7 +1178,7 @@ final class Launch {
         // Last, so that where the JVM takes the last value of a repeated flag
         // the developer's wins - and of the developer's, the command line's.
         jvmFlags.addAll(readConfiguredJvmFlags());
-        jvmFlags.addAll(requestedJvmFlags);
+        jvmFlags.addAll(requestedJvmFlags.get());
         // Only a runtime that hands these to a string something else splits
         // can be defeated by a space in one of them, and only it knows which
         // string that is; see MavenGoalRuntime.unsplittable.
@@ -1304,7 +1308,7 @@ final class Launch {
         if (configured == null || configured.isBlank()) {
             return List.of();
         }
-        return Stream.of(configured.split("[\\s|]+"))
+        return JVM_ARGS_SEPARATOR.splitAsStream(configured)
                 .filter(flag -> !flag.isEmpty()).toList();
     }
 
@@ -1321,7 +1325,7 @@ final class Launch {
      *            the flags, empty to clear them
      */
     void requestJvmFlags(List<String> flags) {
-        requestedJvmFlags = List.copyOf(flags);
+        requestedJvmFlags.set(List.copyOf(flags));
     }
 
     /**
@@ -1330,7 +1334,7 @@ final class Launch {
      * @return the flags, empty when none were asked for
      */
     List<String> requestedJvmFlags() {
-        return requestedJvmFlags;
+        return requestedJvmFlags.get();
     }
 
     /**

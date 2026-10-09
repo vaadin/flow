@@ -16,11 +16,11 @@
 package com.vaadin.flow.devloop.daemon;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * The CLI sends {@code --jvm-args} as a bare marker followed by one
@@ -30,20 +30,21 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class DaemonTest {
 
     @Test
-    void parseJvmArgsOption_isNullWhenNotGiven() {
-        // Null rather than empty: a restart without --jvm-args keeps the flags
-        // the last launch had, where an empty value clears them.
-        assertNull(Daemon.parseJvmArgsOption(List.of()));
-        assertNull(Daemon.parseJvmArgsOption(List.of("--json")));
+    void parseJvmArgsOption_isAbsentWhenNotGiven() {
+        // Absent rather than an empty list: a restart without --jvm-args keeps
+        // the flags the last launch had, where an empty list clears them.
+        assertEquals(Optional.empty(), Daemon.parseJvmArgsOption(List.of()));
+        assertEquals(Optional.empty(),
+                Daemon.parseJvmArgsOption(List.of("--json")));
     }
 
     @Test
     void parseJvmArgsOption_keepsEachFlagAsGiven() {
         // A | or a comma is part of the flag, not a separator.
         assertEquals(
-                List.of("-Xmx2g", "--add-exports",
+                Optional.of(List.of("-Xmx2g", "--add-exports",
                         "java.base/jdk.internal.misc=ALL-UNNAMED",
-                        "-Dpattern=a|b", "-Dlist=a,b"),
+                        "-Dpattern=a|b", "-Dlist=a,b")),
                 Daemon.parseJvmArgsOption(List.of("--jvm-args",
                         "--jvm-arg=-Xmx2g", "--jvm-arg=--add-exports",
                         "--jvm-arg=java.base/jdk.internal.misc=ALL-UNNAMED",
@@ -52,7 +53,7 @@ class DaemonTest {
 
     @Test
     void parseJvmArgsOption_markerAloneClears() {
-        assertEquals(List.of(),
+        assertEquals(Optional.of(List.of()),
                 Daemon.parseJvmArgsOption(List.of("--jvm-args")));
     }
 }

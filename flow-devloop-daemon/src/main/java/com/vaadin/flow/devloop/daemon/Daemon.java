@@ -353,7 +353,7 @@ public final class Daemon {
             }
             case "start" -> {
                 AppProcess.Startup startup = app.start(log, "start",
-                        parseJvmArgsOption(args));
+                        parseJvmArgsOption(args).orElse(null));
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -364,7 +364,7 @@ public final class Daemon {
             case "restart" -> {
                 app.stop();
                 AppProcess.Startup startup = app.start(log, "restart",
-                        parseJvmArgsOption(args));
+                        parseJvmArgsOption(args).orElse(null));
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -402,16 +402,17 @@ public final class Daemon {
      *
      * @param args
      *            the request's words after the verb
-     * @return the flags, or {@code null} when the request has no
-     *         {@code --jvm-args}
+     * @return the flags, empty when the request has no {@code --jvm-args} -
+     *         which is not the same as an empty list, the answer that clears
+     *         them
      */
-    static List<String> parseJvmArgsOption(List<String> args) {
+    static Optional<List<String>> parseJvmArgsOption(List<String> args) {
         if (!args.contains("--jvm-args")) {
-            return null;
+            return Optional.empty();
         }
         String prefix = "--jvm-arg=";
-        return args.stream().filter(arg -> arg.startsWith(prefix))
-                .map(arg -> arg.substring(prefix.length())).toList();
+        return Optional.of(args.stream().filter(arg -> arg.startsWith(prefix))
+                .map(arg -> arg.substring(prefix.length())).toList());
     }
 
     private List<String> statusText() {

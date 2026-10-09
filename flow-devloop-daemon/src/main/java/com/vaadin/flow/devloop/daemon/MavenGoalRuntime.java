@@ -870,6 +870,11 @@ final class MavenGoalRuntime implements AppRuntime {
      * but the developer's from {@code --jvm-args} can. The {@code java}
      * launcher reads an {@code @file} it is given before the main class, so the
      * file reaches the JVM with none of that in the way.
+     * <p>
+     * All of the flags go to the file, not only the ones that need it: the JVM
+     * takes the last of a repeated flag, and the developer's flags are last on
+     * purpose, so moving some of them behind the rest would change which value
+     * wins.
      *
      * @param jvmFlags
      *            the flags the application JVM needs
@@ -879,44 +884,19 @@ final class MavenGoalRuntime implements AppRuntime {
      */
     private List<String> withoutLauncherSyntax(List<String> jvmFlags)
             throws IOException {
-        Path file = Launch.workDir(launch.reactor().app().dir())
-                .resolve("maven-opts-args.txt");
-        List<String> passed = withLauncherSyntaxInArgFile(jvmFlags, file);
-        if (passed != jvmFlags) {
-            // The path itself still travels in MAVEN_OPTS.
-            unsplittable(passed).forEach(log::line);
-            log.line("the JVM flags go to " + file + ", since Maven's "
-                    + "launcher would read characters in them as shell "
-                    + "syntax");
-        }
-        return passed;
-    }
-
-    /**
-     * The flags, or one {@code @file} token for an argument file holding all of
-     * them when any one holds a character Maven's launcher script interprets;
-     * see {@link #withoutLauncherSyntax}.
-     * <p>
-     * All of them, not only the ones that need it: the JVM takes the last of a
-     * repeated flag, and the developer's flags are last on purpose, so moving
-     * some of them behind the rest would change which value wins.
-     *
-     * @param jvmFlags
-     *            the flags as they would have been passed inline
-     * @param file
-     *            the argument file to write, if any flag needs one
-     * @return {@code jvmFlags} itself when no flag needs the file
-     * @throws IOException
-     *             if the argument file cannot be written
-     */
-    static List<String> withLauncherSyntaxInArgFile(List<String> jvmFlags,
-            Path file) throws IOException {
         if (jvmFlags.stream().noneMatch(flag -> flag.chars()
                 .anyMatch(c -> "|&<>^\"!*?[".indexOf(c) >= 0))) {
             return jvmFlags;
         }
+        Path file = Launch.workDir(launch.reactor().app().dir())
+                .resolve("maven-opts-args.txt");
         AppProcess.writeArgFile(file, jvmFlags);
-        return List.of("@" + file);
+        String token = "@" + file;
+        // The path itself still travels in MAVEN_OPTS.
+        unsplittable(List.of(token)).forEach(log::line);
+        log.line("the JVM flags go to " + file + ", since Maven's launcher "
+                + "would read characters in them as shell syntax");
+        return List.of(token);
     }
 
     /**
