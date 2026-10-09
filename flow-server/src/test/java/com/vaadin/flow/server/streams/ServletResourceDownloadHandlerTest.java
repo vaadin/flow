@@ -18,30 +18,39 @@ package com.vaadin.flow.server.streams;
 import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -265,5 +274,42 @@ class ServletResourceDownloadHandlerTest {
 
         verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"my-download.bin\"");
+    }
+
+    @Test
+    void handleDownloadRequest_smallRangeReadFails_propagatedWithoutListenerEvents(
+            @TempDir Path tempDir) throws IOException {
+        File file = Files.write(tempDir.resolve("content.bin"), new byte[1000])
+                .toFile();
+        ServletContext servletContext = ((VaadinServletService) request
+                .getService()).getServlet().getServletContext();
+        when(servletContext.getResource(anyString()))
+                .thenReturn(file.toURI().toURL());
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream() {
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                // the out-of-order part reopens a file that is gone by then
+                file.delete();
+                super.write(b, off, len);
+            }
+        };
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(servletResponse.getService())
+                .thenReturn(mock(VaadinServletService.class));
+        when(request.getHeader("Range")).thenReturn("bytes=500-509,0-9");
+        ServletResourceDownloadHandler handler = DownloadHandler
+                .forServletResource("/content.bin");
+        AtomicBoolean listenerNotified = new AtomicBoolean();
+        handler.whenStart(() -> listenerNotified.set(true));
+        handler.whenComplete(success -> listenerNotified.set(true));
+
+        assertThrows(IOException.class, () -> handler.handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner)));
+
+        assertFalse(listenerNotified.get(),
+                "A range the listeners never saw start must not end for them");
+        verify(servletResponse).setStatus(500);
     }
 }
