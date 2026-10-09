@@ -135,7 +135,7 @@ public class InputStreamDownloadHandler
                     download.getContentLength(),
                     download.getETag() == null ? null
                             : new SeekableContent(downloadName,
-                                    download.getETag(), null));
+                                    download.getETag(), null, false));
         } catch (RangeRequestException e) {
             // Not reported again: a cancel is not an error, and a smaller
             // range was never reported as started

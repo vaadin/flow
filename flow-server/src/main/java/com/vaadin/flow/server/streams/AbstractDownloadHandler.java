@@ -18,6 +18,7 @@ package com.vaadin.flow.server.streams;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,18 +26,27 @@ import java.io.OutputStream;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarEntry;
 import java.util.zip.ZipEntry;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
@@ -125,9 +135,10 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * range request too. Ranges are only served for content that is the same on
      * every request and whose length is known. The stream is skipped to the
      * start of a range, which is a seek for a file and reads the preceding
-     * bytes for other streams, such as an entry of a compressed jar. That still
-     * costs less than sending the whole content again. The ranges are parsed
-     * and written the same way as for a static file.
+     * bytes for other streams, such as an entry of a compressed jar. Large
+     * sequential content is instead extracted to a temporary file once, when a
+     * range smaller than the content is first requested, and served from there.
+     * The ranges are parsed and written the same way as for a static file.
      * <p>
      * The response carries the strong {@code ETag} of the content, if it has
      * one. A request whose {@code If-Range} does not match it gets the whole
@@ -222,8 +233,21 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 transferContent(downloadEvent, inputStream, clientOutput,
                         contentLength);
             } else {
-                ResponseWriter.writeRanges(ranges, contentLength, inputStream,
-                        content.url(), clientOutput, response);
+                Path extracted = content.sequential() ? ExtractedResources
+                        .extract(downloadEvent.getRequest().getService(),
+                                content, contentLength)
+                        : null;
+                if (extracted == null) {
+                    ResponseWriter.writeRanges(ranges, contentLength,
+                            inputStream, content.url(), clientOutput, response);
+                } else {
+                    try (InputStream extractedStream = new FileInputStream(
+                            extracted.toFile())) {
+                        ResponseWriter.writeRanges(ranges, contentLength,
+                                extractedStream, extracted.toUri().toURL(),
+                                clientOutput, response);
+                    }
+                }
                 // Send the body now so that a client that is gone fails here
                 // and not when the handler closes the stream
                 clientOutput.flush();
@@ -285,16 +309,19 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *            the URL to read the content again from, for multipart ranges
      *            that are not in ascending order, or {@code null} if it cannot
      *            be read again, in which case such ranges are ignored
+     * @param sequential
+     *            whether the content can only be read from its start, so that
+     *            it is extracted to a temporary file to serve a range from
      */
-    record SeekableContent(Object resource, String eTag, URL url) {
+    record SeekableContent(Object resource, String eTag, URL url,
+            boolean sequential) {
 
         /**
-         * The largest resource that ranges are served for when it may not be
-         * seekable, such as a compressed archive entry. Each range reads the
-         * resource from its start, so a player that fetches a resource of this
-         * size in ranges of a megabyte reads a few hundred megabytes in total.
+         * The smallest resource that is extracted to a temporary file to serve
+         * ranges from when it cannot be read from a position. A smaller one is
+         * read from its start for every range, which costs little.
          */
-        static final long MAX_UNSEEKABLE_RANGE_LENGTH = 16L * 1024 * 1024;
+        static final long MIN_EXTRACTED_LENGTH = 4L * 1024 * 1024;
 
         /**
          * Describes a file, tagged with its modification time and length.
@@ -302,7 +329,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         static SeekableContent ofFile(File file) throws IOException {
             return new SeekableContent(file,
                     createETag(file.lastModified(), file.length()),
-                    file.toURI().toURL());
+                    file.toURI().toURL(), false);
         }
 
         /**
@@ -311,13 +338,13 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
          * checksum, because reproducible builds fix the modification time of
          * every entry. Other resources are tagged with their modification time.
          * <p>
-         * Returns {@code null} for a resource larger than
-         * {@link #MAX_UNSEEKABLE_RANGE_LENGTH} unless it is a file or an
-         * uncompressed jar entry. Any other resource may be a compressed entry
-         * of an archive that the servlet container opens its own way, such as a
-         * packed war, which cannot be read from a position without inflating
-         * everything before it. A media player fetches a large resource in many
-         * small ranges, so serving them would inflate it over and over again.
+         * A resource larger than {@link #MIN_EXTRACTED_LENGTH} is sequential
+         * unless it is a file or an uncompressed jar entry. Any other resource
+         * may be a compressed entry of an archive, possibly one that the
+         * servlet container opens its own way, such as a packed war, which
+         * cannot be read from a position without inflating everything before
+         * it. A media player fetches a large resource in many small ranges, so
+         * serving them from the resource would inflate it over and over again.
          */
         static SeekableContent ofResource(URL resource,
                 URLConnection connection) throws IOException {
@@ -333,13 +360,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 eTag = createETag(connection.getLastModified(), length);
                 seekable = "file".equals(resource.getProtocol());
             }
-            if (!seekable && length > MAX_UNSEEKABLE_RANGE_LENGTH) {
-                LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
-                        "Not serving ranges for {}, which may not be seekable and is larger than {} bytes",
-                        resource, MAX_UNSEEKABLE_RANGE_LENGTH);
-                return null;
-            }
-            return new SeekableContent(resource, eTag, resource);
+            return new SeekableContent(resource, eTag, resource,
+                    !seekable && length > MIN_EXTRACTED_LENGTH);
         }
 
         private static String createETag(long version, long length) {
@@ -348,6 +370,103 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
             }
             return "\"" + Long.toHexString(version) + "-"
                     + Long.toHexString(length) + "\"";
+        }
+    }
+
+    /**
+     * Copies of sequential resources in a temporary directory, which ranges are
+     * served from. A resource is extracted once for all sessions, when a range
+     * is first requested from it, and the copies are deleted when the service
+     * is destroyed. A resource does not change while the application is
+     * deployed, and its entity tag is part of the key in case it does.
+     */
+    static final class ExtractedResources {
+        private final Map<String, CompletableFuture<Path>> files = new ConcurrentHashMap<>();
+        private Path directory;
+
+        /**
+         * Returns a copy of the content in a temporary file, extracting it if
+         * it has not been extracted yet. Requests for a resource that is being
+         * extracted wait for the extraction.
+         *
+         * @return the copy, or {@code null} if there is no service to tie the
+         *         copy to or extracting the content failed, in which case the
+         *         content is read from its start
+         */
+        static Path extract(VaadinService service, SeekableContent content,
+                long contentLength) {
+            VaadinContext context = service == null ? null
+                    : service.getContext();
+            if (context == null) {
+                return null;
+            }
+            ExtractedResources extractedResources = context
+                    .getAttribute(ExtractedResources.class, () -> {
+                        ExtractedResources created = new ExtractedResources();
+                        service.addServiceDestroyListener(event -> {
+                            context.removeAttribute(ExtractedResources.class);
+                            created.deleteFiles();
+                        });
+                        return created;
+                    });
+            return extractedResources.extract(content, contentLength);
+        }
+
+        private Path extract(SeekableContent content, long contentLength) {
+            String key = content.url() + " " + content.eTag();
+            CompletableFuture<Path> extraction = new CompletableFuture<>();
+            CompletableFuture<Path> existing = files.putIfAbsent(key,
+                    extraction);
+            if (existing != null) {
+                Path file = existing.join();
+                if (file == null || Files.isRegularFile(file)) {
+                    return file;
+                }
+                // Removed by a cleanup of the temporary directory
+                files.remove(key, existing);
+                return extract(content, contentLength);
+            }
+            try {
+                extraction.complete(copy(content.url(), contentLength));
+            } catch (IOException | RuntimeException e) {
+                LoggerFactory.getLogger(AbstractDownloadHandler.class).warn(
+                        "Failed to extract {} to a temporary file, ranges are read from its start",
+                        content.resource(), e);
+                files.remove(key, extraction);
+                extraction.complete(null);
+            }
+            return extraction.join();
+        }
+
+        private Path copy(URL url, long contentLength) throws IOException {
+            Path file = Files.createTempFile(getDirectory(), "resource",
+                    ".tmp");
+            file.toFile().deleteOnExit();
+            try (InputStream inputStream = url.openStream()) {
+                long copied = Files.copy(inputStream, file,
+                        StandardCopyOption.REPLACE_EXISTING);
+                if (copied != contentLength) {
+                    throw new IOException("Expected " + contentLength
+                            + " bytes but extracted " + copied);
+                }
+                return file;
+            } catch (IOException | RuntimeException e) {
+                Files.deleteIfExists(file);
+                throw e;
+            }
+        }
+
+        private synchronized Path getDirectory() throws IOException {
+            if (directory == null || !Files.isDirectory(directory)) {
+                directory = Files.createTempDirectory("vaadin-downloads");
+                directory.toFile().deleteOnExit();
+            }
+            return directory;
+        }
+
+        private synchronized void deleteFiles() {
+            files.clear();
+            FileIOUtils.deleteQuietly(directory);
         }
     }
 

@@ -42,7 +42,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -70,7 +70,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -364,11 +363,10 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "FILE, 206", "STORED, 206", "DEFLATED, 200",
-            "CONTAINER, 200" })
-    void handleDownloadRequest_largeResource_rangesServedOnlyWhenSeekable(
-            String kind, int status, @TempDir Path tempDir) throws IOException {
-        byte[] content = new byte[(int) AbstractDownloadHandler.SeekableContent.MAX_UNSEEKABLE_RANGE_LENGTH
+    @ValueSource(strings = { "FILE", "STORED", "DEFLATED", "CONTAINER" })
+    void handleDownloadRequest_largeResource_rangeServed(String kind,
+            @TempDir Path tempDir) throws IOException {
+        byte[] content = new byte[(int) AbstractDownloadHandler.SeekableContent.MIN_EXTRACTED_LENGTH
                 + 1];
         Path jar = tempDir.resolve("resources.jar");
         try (JarOutputStream jarOutput = new JarOutputStream(
@@ -432,9 +430,7 @@ class ServletResourceDownloadHandlerTest {
         DownloadHandler.forServletResource("/video.mp4").handleDownloadRequest(
                 new DownloadEvent(request, servletResponse, session, owner));
 
-        assertEquals(status == 206 ? 4 : content.length,
-                servletOutput.getOutput().length);
-        verify(servletResponse, status == 206 ? times(1) : never())
-                .setStatus(206);
+        assertEquals(4, servletOutput.getOutput().length);
+        verify(servletResponse).setStatus(206);
     }
 }

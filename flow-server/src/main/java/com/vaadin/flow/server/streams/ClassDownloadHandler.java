@@ -33,11 +33,11 @@ import com.vaadin.flow.server.HttpStatusCode;
  * {@code forClassResource(MyData.class, "MyData.json")}
  * <p>
  * Byte range requests, which media players use to seek and browsers use to
- * resume a download, are answered with the requested part of the resource. For
- * a compressed entry of a packaged jar, each range is read by inflating the
- * entry from its start, so a resource larger than 16 MB is always sent whole,
- * unless it is a file or an uncompressed jar entry. Use
- * {@link DownloadHandler#forFile(java.io.File)} for large media.
+ * resume a download, are answered with the requested part of the resource. A
+ * compressed entry of a packaged jar can only be read from its start, so one
+ * larger than 4 MB is extracted to a temporary file when a range is first
+ * requested from it, and ranges are served from that file. The file is shared
+ * by all sessions and deleted when the service is destroyed.
  *
  * @since 24.8
  */
