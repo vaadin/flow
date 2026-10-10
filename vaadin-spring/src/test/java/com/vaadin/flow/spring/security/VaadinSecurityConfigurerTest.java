@@ -542,7 +542,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void successUrlResolver_withLoginView_redirectsToResolvedUrl()
+    void successUrlResolver_withLoginViewAndAlwaysUseDefaultTargetUrl_redirectsToResolvedUrl()
             throws Exception {
         http.with(configurer, c -> c.loginView("/login")
                 .defaultSuccessUrl("/dashboard", true)
@@ -552,6 +552,7 @@ class VaadinSecurityConfigurerTest {
 
         var handler = http.getSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isTrue();
         var loginResponse = new MockHttpServletResponse();
         handler.onAuthenticationSuccess(
                 new MockHttpServletRequest("POST", "/login"), loginResponse,
