@@ -22,8 +22,9 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URISyntaxException;
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 import java.util.Optional;
 
@@ -113,19 +114,23 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     /**
      * Writes the content to the response like
      * {@link #transferContent(DownloadEvent, InputStream, OutputStream, long)},
-     * but answers a {@code Range} request header when the content is a file.
+     * but answers a {@code Range} request header when the content is seekable.
      * <p>
      * Media players rely on range requests to seek: without
      * {@code Accept-Ranges} and {@code 206 Partial Content}, a browser cannot
-     * jump ahead of what it has downloaded. Ranges are only served for a file,
-     * whose length is known and which can be read from any position without
-     * reading the bytes before it. The ranges are parsed and written the same
-     * way as for a static file.
+     * jump ahead of what it has downloaded, and Safari does not play audio or
+     * video at all. A download that was cut off can only be resumed with a
+     * range request too. Ranges are only served for content that is the same on
+     * every request and whose length is known. The stream is skipped to the
+     * start of a range, which is a seek for a file and reads the preceding
+     * bytes for other streams, such as an entry of a compressed jar. That still
+     * costs less than sending the whole content again. The ranges are parsed
+     * and written the same way as for a static file.
      * <p>
-     * The response carries a strong {@code ETag} derived from the modification
-     * time and length of the file. A request whose {@code If-Range} does not
-     * match it gets the whole content, so a client cannot join parts of a file
-     * that was replaced between its requests.
+     * The response carries the strong {@code ETag} of the content, if it has
+     * one. A request whose {@code If-Range} does not match it gets the whole
+     * content, so a client cannot join parts of content that changed between
+     * its requests.
      * <p>
      * A range that covers the whole content, such as the {@code bytes=0-} that
      * media elements send first, is reported to the transfer progress listeners
@@ -141,14 +146,14 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * {@link RangeRequestException} is thrown, which the handler ends the
      * request on without reporting it again.
      * <p>
-     * A failure to read the content, such as a file shorter than its length or
-     * a file that cannot be opened again for multipart ranges, is propagated.
-     * For a whole-content range it is reported to the listeners like for any
-     * other transfer. A smaller range, which the listeners never saw start, is
-     * not reported to them: a {@link RangeRequestException} is thrown, which
-     * the handler propagates without notifying the listeners. If nothing has
-     * been sent yet, the response becomes an empty server error without the
-     * range headers.
+     * A failure to read the content, such as content shorter than its length or
+     * a resource that cannot be opened again for multipart ranges, is
+     * propagated. For a whole-content range it is reported to the listeners
+     * like for any other transfer. A smaller range, which the listeners never
+     * saw start, is not reported to them: a {@link RangeRequestException} is
+     * thrown, which the handler propagates without notifying the listeners. If
+     * nothing has been sent yet, the response becomes an empty server error
+     * without the range headers.
      *
      * @param downloadEvent
      *            the download event
@@ -157,10 +162,11 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * @param outputStream
      *            the response output stream
      * @param contentLength
-     *            the length of the content, or {@code -1} if unknown
-     * @param file
-     *            the file the content is read from, or {@code null} if it is
-     *            not a file, in which case ranges are not served
+     *            the length of the content, or {@code -1} if unknown, in which
+     *            case ranges are not served
+     * @param content
+     *            the seekable content the stream reads, or {@code null} if it
+     *            is not seekable, in which case ranges are not served
      * @throws RangeRequestException
      *             if the client cancelled a range request, or reading a range
      *             smaller than the content failed
@@ -168,16 +174,16 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      *             if reading or writing the content fails
      */
     void transferContent(DownloadEvent downloadEvent, InputStream inputStream,
-            OutputStream outputStream, long contentLength, File file)
-            throws IOException {
-        if (file == null || contentLength < 0 || !(downloadEvent
+            OutputStream outputStream, long contentLength,
+            SeekableContent content) throws IOException {
+        if (content == null || contentLength < 0 || !(downloadEvent
                 .getResponse() instanceof HttpServletResponse response)) {
             transferContent(downloadEvent, inputStream, outputStream,
                     contentLength);
             return;
         }
         response.setHeader("Accept-Ranges", "bytes");
-        String etag = createETag(file, contentLength);
+        String etag = content.eTag();
         if (etag != null) {
             response.setHeader("ETag", etag);
         }
@@ -187,7 +193,15 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         List<Pair<Long, Long>> ranges = range == null
                 || (ifRange != null && !ifRange.equals(etag)) ? null
                         : ResponseWriter.parseRanges(range, contentLength,
-                                file);
+                                content.resource());
+        if (ranges != null && content.url() == null && !isAscending(ranges)) {
+            // Answering would need the content from the start again, which
+            // only a URL can provide. A server may ignore a Range header.
+            LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
+                    "Ignoring ranges not in ascending order for {}",
+                    content.resource());
+            ranges = null;
+        }
         if (ranges == null) {
             transferContent(downloadEvent, inputStream, outputStream,
                     contentLength);
@@ -207,7 +221,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                         contentLength);
             } else {
                 ResponseWriter.writeRanges(ranges, contentLength, inputStream,
-                        file.toURI().toURL(), clientOutput, response);
+                        content.url(), clientOutput, response);
                 // Send the body now so that a client that is gone fails here
                 // and not when the handler closes the stream
                 clientOutput.flush();
@@ -217,8 +231,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 // Media players cancel range requests on every seek. Like for
                 // static files, that is not an error of the content.
                 LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
-                        "Range request for {} cancelled by the client", file,
-                        e);
+                        "Range request for {} cancelled by the client",
+                        content.resource(), e);
                 if (wholeContent) {
                     // Reported as started, so it ends like any cancelled
                     // download
@@ -245,31 +259,68 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         }
     }
 
-    /**
-     * Returns the file a resource URL points to, or {@code null} if it is not a
-     * file on disk, for example an entry in a jar or war.
-     */
-    static File toFile(URL resource) {
-        if (!"file".equals(resource.getProtocol())) {
-            return null;
+    private static boolean isAscending(List<Pair<Long, Long>> ranges) {
+        long position = 0;
+        for (Pair<Long, Long> range : ranges) {
+            if (range.getFirst() < position) {
+                return false;
+            }
+            position = range.getSecond() + 1;
         }
-        try {
-            return new File(resource.toURI());
-        } catch (URISyntaxException | IllegalArgumentException e) {
-            LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
-                    "Resource {} is not a file, ranges are not served",
-                    resource, e);
-            return null;
-        }
+        return true;
     }
 
-    private static String createETag(File file, long contentLength) {
-        long lastModified = file.lastModified();
-        if (lastModified == 0) {
-            return null;
+    /**
+     * Content that ranges can be served from, because it is the same on every
+     * request.
+     *
+     * @param resource
+     *            what the content is read from, for log messages
+     * @param eTag
+     *            the strong entity tag of the content, or {@code null} if it
+     *            has none
+     * @param url
+     *            the URL to read the content again from, for multipart ranges
+     *            that are not in ascending order, or {@code null} if it cannot
+     *            be read again, in which case such ranges are ignored
+     */
+    record SeekableContent(Object resource, String eTag, URL url) {
+
+        /**
+         * Describes a file, tagged with its modification time and length.
+         */
+        static SeekableContent ofFile(File file) throws IOException {
+            return new SeekableContent(file,
+                    createETag(file.lastModified(), file.length()),
+                    file.toURI().toURL());
         }
-        return "\"" + Long.toHexString(lastModified) + "-"
-                + Long.toHexString(contentLength) + "\"";
+
+        /**
+         * Describes a resource read through the given connection, such as a
+         * file, or an entry in a jar or war. A jar entry is tagged with its
+         * checksum, because reproducible builds fix the modification time of
+         * every entry. Other resources are tagged with their modification time.
+         */
+        static SeekableContent ofResource(URL resource,
+                URLConnection connection) throws IOException {
+            long length = connection.getContentLengthLong();
+            String eTag;
+            if (connection instanceof JarURLConnection jarConnection) {
+                long crc = jarConnection.getJarEntry().getCrc();
+                eTag = crc < 0 ? null : createETag(crc, length);
+            } else {
+                eTag = createETag(connection.getLastModified(), length);
+            }
+            return new SeekableContent(resource, eTag, resource);
+        }
+
+        private static String createETag(long version, long length) {
+            if (version == 0) {
+                return null;
+            }
+            return "\"" + Long.toHexString(version) + "-"
+                    + Long.toHexString(length) + "\"";
+        }
     }
 
     /**

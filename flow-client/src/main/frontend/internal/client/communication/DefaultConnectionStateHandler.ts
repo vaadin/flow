@@ -167,9 +167,8 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       return;
     }
     if (payload !== null && payload !== undefined) {
-      // Re-send the queued UIDL via the reconnection-attempt listener.
       Console.debug('Trying to re-establish server connection (UIDL)...');
-      this.#registry.getRequestResponseTracker().fireReconnectionAttempt(this.#machine.getReconnectAttempt());
+      this.#registry.getMessageSender().resendQueuedMessages(this.#machine.getReconnectAttempt());
     } else {
       // Use heartbeat
       Console.debug('Trying to re-establish server connection (heartbeat)...');

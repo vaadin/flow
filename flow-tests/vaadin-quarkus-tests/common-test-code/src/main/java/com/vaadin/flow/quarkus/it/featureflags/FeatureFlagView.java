@@ -21,8 +21,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Shows whether a feature flag that vaadin-featureflags.properties enables is
- * enabled at runtime.
+ * Shows whether the feature flag that {@link TestFeatureFlagProvider} declares
+ * and vaadin-featureflags.properties enables is enabled at runtime.
  */
 @Route("feature-flag")
 public class FeatureFlagView extends Span {
@@ -31,8 +31,9 @@ public class FeatureFlagView extends Span {
 
     public FeatureFlagView() {
         setId(FEATURE_ID);
-        setText(String.valueOf(
-                FeatureFlags.get(VaadinService.getCurrent().getContext())
-                        .isEnabled(FeatureFlags.ACCESSIBLE_DISABLED_BUTTONS)));
+        setText("Feature flag " + TestFeatureFlagProvider.FEATURE_ID
+                + " enabled: "
+                + FeatureFlags.get(VaadinService.getCurrent().getContext())
+                        .isEnabled(TestFeatureFlagProvider.FEATURE_ID));
     }
 }
