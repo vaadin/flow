@@ -135,6 +135,16 @@ class ComponentUtilTest {
     }
 
     @Test
+    void unregisterAllComponentClasses_removesAllTagMappings() {
+        ComponentUtil.registerComponentClass("first-tag", TestDiv.class);
+        ComponentUtil.registerComponentClass("second-tag", TestComponent.class);
+
+        ComponentUtil.unregisterAllComponentClasses();
+
+        assertTrue(ComponentUtil.getAllTagMappings().isEmpty());
+    }
+
+    @Test
     void getComponentsByTag_withUnregisteredTag_shouldReturnEmptySet() {
         String unregisteredTag = "unregistered-tag";
 
