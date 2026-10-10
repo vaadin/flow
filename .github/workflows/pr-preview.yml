@@ -39,7 +39,7 @@ env:
   # is retried rather than failing the build outright. See the note there.
   MAVEN_ARGS: >-
     -Daether.connector.http.retryHandler.count=3
-    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
 
 jobs:

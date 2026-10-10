@@ -37,11 +37,13 @@ env:
   # asked to. Central answers a client it has blocked with 403, and the retry
   # handler treats a status outside its retryable list as the final answer:
   # that list defaults to 429,503, so a 403 failed the build on the first
-  # artifact a job asked for. connectionMaxTtl keeps the 25 seconds the wagon
-  # property was meant to set, against a resolver default of 300.
+  # artifact a job asked for. The other 5xx statuses Central returns while it
+  # is overloaded or behind a failing proxy (500, 502, 504) are just as
+  # transient. connectionMaxTtl keeps the 25 seconds the wagon property was
+  # meant to set, against a resolver default of 300.
   MAVEN_ARGS: >-
     -Daether.connector.http.retryHandler.count=3
-    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
 jobs:
   build:
@@ -289,17 +291,13 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Pbun $ARGS"
+          args="-V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Pbun $ARGS"
           set -x -e
-          LOG=mvn-it-tests-${{matrix.current}}.out
-          : > "$LOG"
-          # Detach mvn's stdio from this shell so an orphan child JVM (e.g. a
+          # Detaches mvn's stdio from this shell so an orphan child JVM (e.g. a
           # Spring Boot fork that spring-boot:stop failed to kill) can't pin
-          # the step open by holding the pipe to tee.
-          $cmd verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          # the step open by holding the pipe to tee, and retries a build that
+          # failed to download from a repository.
+          scripts/runMavenWithRetry.sh mvn-it-tests-${{matrix.current}}.out $args verify
       - name: Kill leftover Java processes
         if: ${{ always() }}
         run: |
@@ -451,19 +449,14 @@ jobs:
           # the dependencyConvergence rule in the default-cli execution, so no
           # lifecycle phase evaluates it. Each container profile brings its own
           # Arquillian adapter, so this is where a divergence would appear.
-          cmd="mvn -V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
+          args="-V -B -ntp -e -pl flow-tests/vaadin-cdi-tests -P${{ matrix.profile }} -Dcom.vaadin.testbench.Parameters.maxAttempts=2"
           set -x -e
-          LOG=mvn-cdi-tests-${{ matrix.profile }}.out
-          : > "$LOG"
           # Detached the same way the it-tests job detaches its Maven, and for
           # the same reason twice over: these tests fork application server
           # JVMs that can outlive Maven and pin the step open by holding a pipe
           # to tee, and piping would also make the step exit with tee's status
           # instead of Maven's, so a failing container would report success.
-          $cmd enforcer:enforce verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          scripts/runMavenWithRetry.sh mvn-cdi-tests-${{ matrix.profile }}.out $args enforcer:enforce verify
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
@@ -612,23 +605,16 @@ jobs:
           # Flow suites these tests share a single Quarkus application per
           # module and have never been run in parallel. Flaky runs are retried
           # instead.
-          cmd="mvn -V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
+          args="-V -B -ntp -e -f flow-tests/vaadin-quarkus-tests/pom.xml \
             -pl ${{ matrix.module }} -am \
             -Dcom.vaadin.testbench.Parameters.maxAttempts=2 \
-            -Dfailsafe.rerunFailingTestsCount=2 \
-            -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 \
-            -Dmaven.wagon.http.retryHandler.count=3"
+            -Dfailsafe.rerunFailingTestsCount=2"
           set -x -e
-          LOG=mvn-quarkus-tests-${{ matrix.name }}.out
-          : > "$LOG"
           # Detached the same way the it-tests job detaches its Maven: these
           # tests fork Quarkus JVMs that can outlive Maven and pin the step
           # open by holding a pipe to tee, and piping would also make the step
           # exit with tee's status instead of Maven's.
-          $cmd verify </dev/null >"$LOG" 2>&1 &
-          MVN_PID=$!
-          tail -f --pid=$MVN_PID "$LOG" &
-          wait $MVN_PID
+          scripts/runMavenWithRetry.sh mvn-quarkus-tests-${{ matrix.name }}.out $args verify
       - name: Kill leftover Java processes
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         run: |
@@ -1068,7 +1054,8 @@ jobs:
         run: |
           echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from merge base ${{ steps.merge-base.outputs.merge_base_sha }} with ${{ env._BASE_REF }}"
           echo "Running in $(pwd)"
-          mvn clean install -B -ntp -DskipTests
+          "$GITHUB_WORKSPACE/scripts/runMavenWithRetry.sh" mvn-api-diff-base.out \
+            clean install -B -ntp -DskipTests
       - name: Use temporary flow version for PR
         # working-directory is not set, so it defaults back to the PR branch checkout
         run: |
@@ -1088,7 +1075,8 @@ jobs:
             fi
           done | paste -sd, -)
           echo "Comparing $MODULES"
-          mvn clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+          scripts/runMavenWithRetry.sh mvn-api-diff.out \
+            clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
           #!/bin/bash
