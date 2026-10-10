@@ -168,6 +168,74 @@ describe('SystemErrorHandler', () => {
       expect(intervals).to.deep.equal([-1]);
     });
 
+    it('recreates exported web components after resynchronization, also those that never connected', async () => {
+      const connected = document.createElement('x-resync-test') as HTMLElement & {
+        $server?: { disconnected: () => void };
+      };
+      const disconnected = sinon.spy();
+      connected.$server = { disconnected };
+      // Its connection was rejected before the server could attach $server.
+      const unconnected = document.createElement('x-resync-test');
+      document.body.append(connected, unconnected);
+
+      const handler = new SystemErrorHandler(
+        testRegistry({
+          ApplicationConfiguration: {
+            isWebComponentMode: () => true,
+            getExportedWebComponents: () => ['x-resync-test'],
+            getSessionExpiredError: () => null,
+            getServiceUrl: () => '',
+            getUIId: () => 0,
+            setUIId: () => {},
+            getHeartbeatInterval: () => 0
+          },
+          Heartbeat: { setInterval: () => {} },
+          PushConfiguration: { isPushEnabled: () => false },
+          MessageSender: { setPushEnabled: () => {} },
+          UILifecycle: { setState: () => {} },
+          MessageHandler: { handleMessage: () => {} }
+        })
+      );
+
+      // Answers the resynchronization request as soon as it is sent.
+      const xhr = {
+        readyState: 0,
+        status: 0,
+        responseText: '',
+        withCredentials: false,
+        onreadystatechange: null as (() => void) | null,
+        onerror: null,
+        open: () => {},
+        send: () => {
+          xhr.readyState = 4;
+          xhr.status = 200;
+          xhr.responseText = '{"uiId": 0}';
+          xhr.onreadystatechange?.();
+        }
+      };
+      const original = window.XMLHttpRequest;
+      const stub = function XhrStub() {
+        return xhr;
+      };
+      (stub as unknown as { DONE: number }).DONE = 4;
+      (window as unknown as { XMLHttpRequest: unknown }).XMLHttpRequest = stub;
+      try {
+        handler.handleUnrecoverableError(null, null, null, null, null);
+      } finally {
+        (window as unknown as { XMLHttpRequest: unknown }).XMLHttpRequest = original;
+      }
+      // The web components are recreated in a deferred command.
+      await new Promise((resolve) => setTimeout(resolve));
+
+      const recreated = Array.from(document.getElementsByTagName('x-resync-test'));
+      recreated.forEach((el) => el.remove());
+      expect(recreated).to.have.length(2);
+      expect(recreated).to.not.include(connected);
+      expect(recreated).to.not.include(unconnected);
+      connected.$server.disconnected();
+      expect(disconnected.called).to.be.false;
+    });
+
     it('handleErrorObject extracts the error message', () => {
       const messages: string[] = [];
       const original = console.error;

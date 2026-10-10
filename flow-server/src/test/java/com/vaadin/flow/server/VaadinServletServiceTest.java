@@ -45,9 +45,11 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -207,6 +209,29 @@ class VaadinServletServiceTest {
                 mocks.getDeploymentConfiguration());
         vaadinServlet.destroy();
         assertNull(service.getPwaRegistry());
+    }
+
+    @Test
+    void requestCanCreateSession_webComponentScript_doesNotCreateSession() {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        WebComponentConfigurationRegistry registry = Mockito
+                .mock(WebComponentConfigurationRegistry.class);
+        when(registry.hasConfigurations()).thenReturn(true);
+        when(context.getAttribute(
+                Mockito.eq(WebComponentConfigurationRegistry.class),
+                Mockito.any())).thenReturn(registry);
+        VaadinService requestService = Mockito.mock(VaadinService.class);
+        when(requestService.getContext()).thenReturn(context);
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        when(request.getService()).thenReturn(requestService);
+
+        when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.js");
+        assertFalse(service.requestCanCreateSession(request));
+
+        when(request.getPathInfo())
+                .thenReturn("/web-component/web-component-bootstrap.js");
+        assertTrue(service.requestCanCreateSession(request));
     }
 
     private String testLocation(String base, String contextPath,

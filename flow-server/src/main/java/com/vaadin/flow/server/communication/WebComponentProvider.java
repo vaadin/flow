@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -46,7 +47,8 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVA
  * @author Vaadin Ltd.
  * @since 2.0
  */
-public class WebComponentProvider extends SynchronizedRequestHandler {
+public class WebComponentProvider extends SynchronizedRequestHandler
+        implements SessionExpiredHandler {
     private static final String WEB_COMPONENT_PATH = "web-component/";
     private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
     private static final String HTML_EXTENSION = "html";
@@ -67,30 +69,46 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        if (!hasWebComponentConfigurations(request)) {
-            return false;
-        }
-        String pathInfo = request.getPathInfo();
-
-        if (pathInfo == null || pathInfo.isEmpty()) {
-            return false;
-        }
-
-        if (!pathInfo.startsWith(PATH_PREFIX)) {
-            return false;
-        }
-
-        if (WebComponentBootstrapHandler.PATH_PATTERN.matcher(pathInfo)
-                .find()) {
-            return false;
-        }
-
-        return true;
+        return isWebComponentScriptRequest(request);
     }
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        return writeWebComponentScript(request, response);
+    }
+
+    @Override
+    public boolean handleSessionExpired(VaadinRequest request,
+            VaadinResponse response) throws IOException {
+        // The script is the same for every session. It is served without one
+        // so that a host page loading the scripts of several web components in
+        // parallel does not get a new session from each of them, leaving the
+        // browser with a cookie for a session other than the one its embedded
+        // UI was created in.
+        return canHandleRequest(request)
+                && writeWebComponentScript(request, response);
+    }
+
+    /**
+     * Checks whether the request asks for the script of an exported web
+     * component. Such a request does not need a session, see
+     * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)}.
+     *
+     * @param request
+     *            the request to check
+     * @return {@code true} if the request is for a web component script
+     */
+    public static boolean isWebComponentScriptRequest(VaadinRequest request) {
+        String pathInfo = request.getPathInfo();
+        return pathInfo != null && pathInfo.startsWith(PATH_PREFIX)
+                && !WebComponentBootstrapHandler.PATH_PATTERN.matcher(pathInfo)
+                        .find()
+                && hasWebComponentConfigurations(request);
+    }
+
+    private boolean writeWebComponentScript(VaadinRequest request,
+            VaadinResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
 
         final ComponentInfo componentInfo = new ComponentInfo(pathInfo);
@@ -250,7 +268,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return bootstrapJS;
     }
 
-    private boolean hasWebComponentConfigurations(VaadinRequest request) {
+    private static boolean hasWebComponentConfigurations(
+            VaadinRequest request) {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(request.getService().getContext());
         return registry.hasConfigurations();
