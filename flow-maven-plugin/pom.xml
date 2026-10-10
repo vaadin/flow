@@ -47,6 +47,13 @@
             <artifactId>frontend-plugin-core</artifactId>
             <version>1.6</version>
         </dependency>
+        <!-- frontend-plugin-core 1.6 brings 3.0.22. Declared here so the plugin resolves a
+             current one, since that is the only copy on its classpath. -->
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>3.6.2</version>
+        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
