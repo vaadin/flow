@@ -224,6 +224,40 @@ Configuration:
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
 
+## Formatter suggestions
+
+`formatter.yml` runs `mvn spotless:apply` on every pull request and fails
+when it changes anything. `formatter-suggestions.yml` then reports the
+result on the pull request: a comment listing the files that are not
+formatted, and a review that suggests each change on the lines it applies
+to, so the author can accept them with **Commit suggestions** instead of
+running the formatter locally. The suggestions are taken verbatim from the
+formatter diff by `scripts/formatterSuggestions.js`; nothing is generated.
+
+Each suggestion starts with `Formatting suggestion:`, which is how a later
+run finds the suggestions of the earlier ones among the review comments of
+`github-actions[bot]`. A suggestion the current run still makes, on the
+same lines, is not posted again. One it no longer makes — accepted,
+formatted otherwise, or on lines that have since changed — is resolved,
+unless someone other than the bot replied to it. Once the format is fixed,
+all of them are resolved and the comment is deleted.
+
+The two are split so that pull requests from forks get the report too. The
+formatter runs code of the pull request — its build files and Maven plugins
+— so it runs without write access and only uploads the diff.
+`formatter-suggestions.yml` is triggered by `workflow_run`, which runs it
+from the default branch with write access, and treats the diff as text: it
+checks out only `scripts/` of the default branch, finds the pull request
+from the commit the formatter checked, and suggests changes only in files
+the pull request changes.
+
+A suggestion can only be placed on lines that are part of the pull request
+diff, and can't add a missing newline at the end of a file. Such changes,
+and those beyond the first 12, are counted in the comment, which still
+points at `mvn spotless:apply`. Being a `workflow_run` workflow, a change to
+`formatter-suggestions.yml` takes effect only once it is on the default
+branch.
+
 ## Code review
 
 `code-review.yml` has Claude review a pull request and post the findings as
