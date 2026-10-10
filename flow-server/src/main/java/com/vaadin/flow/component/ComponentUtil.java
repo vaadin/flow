@@ -81,10 +81,9 @@ public class ComponentUtil {
      * @param componentClass
      *            The component class to be registered with the given tag.
      * @since 24.5
-     * @deprecated the mapping is not used by Flow, and it is only filled in
-     *             development mode when the servlet container runs the dev mode
-     *             startup listener, which is not the case on Spring Boot. It
-     *             will be removed without a replacement.
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public static void registerComponentClass(String tag,
@@ -104,10 +103,9 @@ public class ComponentUtil {
      * after the application has been reloaded in a new class loader.
      *
      * @see #registerComponentClass(String, Class)
-     * @deprecated the mapping is not used by Flow, and it is only filled in
-     *             development mode when the servlet container runs the dev mode
-     *             startup listener, which is not the case on Spring Boot. It
-     *             will be removed without a replacement.
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public static void unregisterAllComponentClasses() {
@@ -128,10 +126,9 @@ public class ComponentUtil {
      *         tag. Returns an empty set if no classes are associated with the
      *         tag or if running in production mode.
      * @since 24.5
-     * @deprecated the mapping is not used by Flow, and it is only filled in
-     *             development mode when the servlet container runs the dev mode
-     *             startup listener, which is not the case on Spring Boot. It
-     *             will be removed without a replacement.
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public static Set<Class<? extends Component>> getComponentsByTag(
@@ -149,10 +146,9 @@ public class ComponentUtil {
      *         This map is only populated in development mode and will be empty
      *         in production mode.
      * @since 24.5
-     * @deprecated the mapping is not used by Flow, and it is only filled in
-     *             development mode when the servlet container runs the dev mode
-     *             startup listener, which is not the case on Spring Boot. It
-     *             will be removed without a replacement.
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public static Map<String, Set<Class<? extends Component>>> getAllTagMappings() {
