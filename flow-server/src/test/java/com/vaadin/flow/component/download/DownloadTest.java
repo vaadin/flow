@@ -50,7 +50,7 @@ class DownloadTest {
         ui = new MockUI();
         // The mock session has no resource registry by default; install a
         // real one so a DownloadHandler can be registered.
-        VaadinSession session = ui.getSession();
+        VaadinSession session = ui.getSessionOrThrow();
         when(session.getResourceRegistry())
                 .thenReturn(new StreamResourceRegistry(session));
         button = new TestButton();
