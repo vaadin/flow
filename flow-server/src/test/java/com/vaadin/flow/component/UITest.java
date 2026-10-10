@@ -415,20 +415,25 @@ public class UITest {
         UI ui = new UI();
         initUI(ui, "", null);
 
-        ui.navigate(FooBarNavigationTarget.class,
-                QueryParameters.of("t", "abc"));
+        assertEquals(
+                FooBarNavigationTarget.class, ui
+                        .navigate(FooBarNavigationTarget.class,
+                                QueryParameters.of("t", "abc"))
+                        .get().getClass());
 
         Location location = ui.getInternals().getActiveViewLocation();
         assertEquals("foo/bar", location.getPath());
         assertEquals("t=abc", location.getQueryParameters().getQueryString());
 
-        ui.navigate(Parameterized.class, "baz", QueryParameters.of("t", "def"));
+        assertEquals(
+                Parameterized.class, ui
+                        .navigate(Parameterized.class, "baz",
+                                QueryParameters.of("t", "def"))
+                        .get().getClass());
 
         location = ui.getInternals().getActiveViewLocation();
         assertEquals("foo-bar/baz", location.getPath());
         assertEquals("t=def", location.getQueryParameters().getQueryString());
-        MatcherAssert.assertThat(ui.getCurrentView(),
-                CoreMatchers.instanceOf(Parameterized.class));
     }
 
     @Test
