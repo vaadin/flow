@@ -48,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -528,6 +529,27 @@ class StagedTransactionTest extends SignalTestBase {
         });
 
         TestUtil.assertSuccess(operation);
+    }
+
+    @Test
+    void commit_commitAndObserverFail_commitFailureKeptAsPrimary() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        IllegalStateException commitFailure = new IllegalStateException();
+        IllegalArgumentException observerFailure = new IllegalArgumentException();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            throw observerFailure;
+        });
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> Transaction.runInTransaction(
+                        () -> Transaction.getCurrent().include(tree,
+                                TestUtil.writeRootValueCommand(), result -> {
+                                    throw commitFailure;
+                                })));
+
+        assertSame(commitFailure, thrown);
+        assertEquals(List.of(observerFailure), List.of(thrown.getSuppressed()));
     }
 
     @Test

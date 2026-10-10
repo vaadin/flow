@@ -15,8 +15,13 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -33,6 +38,7 @@ import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.TestUtil;
+import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Accept;
 import com.vaadin.flow.signals.shared.impl.CommandResult.Reject;
@@ -139,110 +145,128 @@ class SynchronousSignalTreeTest {
     void commit_acceptableCommand_changeAppliedAndPublished() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
+        try {
+            AtomicReference<CommandResult> result = new AtomicReference<>();
 
-        AtomicReference<CommandResult> result = new AtomicReference<>();
+            PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
+                    TestUtil.writeRootValueCommand(), result::set));
 
-        PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
-                TestUtil.writeRootValueCommand(), result::set));
+            assertNull(TestUtil.readConfirmedRootValue(tree));
+            assertNull(result.get());
 
-        assertNull(TestUtil.readConfirmedRootValue(tree));
-        assertNull(result.get());
+            assertTrue(commit.canCommit());
 
-        assertTrue(commit.canCommit());
+            commit.applyChanges();
 
-        commit.applyChanges();
+            assertNotNull(TestUtil.readConfirmedRootValue(tree));
+            assertSame(tree.confirmed(), tree.submitted());
+            assertNull(result.get());
 
-        assertNotNull(TestUtil.readConfirmedRootValue(tree));
-        assertSame(tree.confirmed(), tree.submitted());
-        assertNull(result.get());
-
-        commit.publishChanges();
-        assertInstanceOf(Accept.class, result.get());
+            commit.publishChanges();
+            assertInstanceOf(Accept.class, result.get());
+        } finally {
+            tree.getLock().unlock();
+        }
     }
 
     @Test
     void commit_failingCommand_cannotCommitAndErrorReported() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
+        try {
+            AtomicReference<CommandResult> result = new AtomicReference<>();
 
-        AtomicReference<CommandResult> result = new AtomicReference<>();
+            PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
+                    TestUtil.failingCommand(), result::set));
 
-        PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
-                TestUtil.failingCommand(), result::set));
+            assertNull(result.get());
+            assertFalse(commit.canCommit());
 
-        assertNull(result.get());
-        assertFalse(commit.canCommit());
+            commit.markAsAborted();
 
-        commit.markAsAborted();
-
-        assertInstanceOf(Reject.class, result.get());
+            assertInstanceOf(Reject.class, result.get());
+        } finally {
+            tree.getLock().unlock();
+        }
     }
 
     @Test
     void commit_failingCommand_applyAndPublishTrows() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
+        try {
+            PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
+                    TestUtil.failingCommand(), ignore -> {
+                    }));
 
-        PendingCommit commit = tree.prepareCommit(
-                new CommandsAndHandlers(TestUtil.failingCommand(), ignore -> {
-                }));
+            assertThrows(AssertionError.class, () -> {
+                commit.applyChanges();
+            });
 
-        assertThrows(AssertionError.class, () -> {
-            commit.applyChanges();
-        });
-
-        assertThrows(AssertionError.class, () -> {
-            commit.publishChanges();
-        });
+            assertThrows(AssertionError.class, () -> {
+                commit.publishChanges();
+            });
+        } finally {
+            tree.getLock().unlock();
+        }
     }
 
     @Test
     void apply_multipleAcceptableCommands_allApplied() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
+        try {
+            Id a = Id.random();
+            AtomicReference<CommandResult> aResult = new AtomicReference<>();
+            Id b = Id.random();
+            AtomicReference<CommandResult> bResult = new AtomicReference<>();
 
-        Id a = Id.random();
-        AtomicReference<CommandResult> aResult = new AtomicReference<>();
-        Id b = Id.random();
-        AtomicReference<CommandResult> bResult = new AtomicReference<>();
+            PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
+                    List.of(new SignalCommand.SetCommand(a, Id.ZERO,
+                            new DoubleNode(41)),
+                            new SignalCommand.IncrementCommand(b, Id.ZERO, 1)),
+                    Map.of(a, aResult::set, b, bResult::set)));
 
-        PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
-                List.of(new SignalCommand.SetCommand(a, Id.ZERO,
-                        new DoubleNode(41)),
-                        new SignalCommand.IncrementCommand(b, Id.ZERO, 1)),
-                Map.of(a, aResult::set, b, bResult::set)));
+            commit.applyChanges();
+            commit.publishChanges();
 
-        commit.applyChanges();
-        commit.publishChanges();
-
-        assertInstanceOf(Accept.class, aResult.get());
-        assertInstanceOf(Accept.class, bResult.get());
-        assertEquals(new DoubleNode(42), TestUtil.readConfirmedRootValue(tree));
+            assertInstanceOf(Accept.class, aResult.get());
+            assertInstanceOf(Accept.class, bResult.get());
+            assertEquals(new DoubleNode(42),
+                    TestUtil.readConfirmedRootValue(tree));
+        } finally {
+            tree.getLock().unlock();
+        }
     }
 
     @Test
     void apply_secondCommandInvalidBecauseOfFirst_noneApplied() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         tree.getLock().lock();
+        try {
+            Id a = Id.random();
+            AtomicReference<CommandResult> aResult = new AtomicReference<>();
+            Id b = Id.random();
+            AtomicReference<CommandResult> bResult = new AtomicReference<>();
 
-        Id a = Id.random();
-        AtomicReference<CommandResult> aResult = new AtomicReference<>();
-        Id b = Id.random();
-        AtomicReference<CommandResult> bResult = new AtomicReference<>();
+            PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
+                    List.of(new SignalCommand.SetCommand(a, Id.ZERO,
+                            new StringNode("text")),
+                            new SignalCommand.IncrementCommand(b, Id.ZERO, 1)),
+                    Map.of(a, aResult::set, b, bResult::set)));
 
-        PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
-                List.of(new SignalCommand.SetCommand(a, Id.ZERO,
-                        new StringNode("text")),
-                        new SignalCommand.IncrementCommand(b, Id.ZERO, 1)),
-                Map.of(a, aResult::set, b, bResult::set)));
+            assertFalse(commit.canCommit());
 
-        assertFalse(commit.canCommit());
+            commit.markAsAborted();
 
-        commit.markAsAborted();
-
-        assertEquals("Transaction aborted", ((Reject) aResult.get()).reason());
-        assertEquals("Value is not numeric", ((Reject) bResult.get()).reason());
-        assertNull(TestUtil.readConfirmedRootValue(tree));
+            assertEquals("Transaction aborted",
+                    ((Reject) aResult.get()).reason());
+            assertEquals("Value is not numeric",
+                    ((Reject) bResult.get()).reason());
+            assertNull(TestUtil.readConfirmedRootValue(tree));
+        } finally {
+            tree.getLock().unlock();
+        }
     }
 
     @Test
@@ -398,6 +422,207 @@ class SynchronousSignalTreeTest {
                 childId, new DoubleNode(3)));
 
         assertEquals(1, count.get());
+    }
+
+    @Test
+    void observe_changeWhileHoldingTreeLocks_invokedAfterLastUnlock() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        SynchronousSignalTree other = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            assertFalse(tree.hasLock());
+            assertFalse(other.hasLock());
+            count.incrementAndGet();
+            return false;
+        });
+
+        other.getLock().lock();
+        tree.getLock().lock();
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+        assertEquals(0, count.get());
+
+        tree.getLock().unlock();
+        assertEquals(0, count.get());
+
+        other.getLock().unlock();
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void observe_manyObserversOnSameNode_allInvokedWithoutDeepRecursion() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+        AtomicInteger maxDepth = new AtomicInteger();
+        int baseDepth = Thread.currentThread().getStackTrace().length;
+
+        for (int i = 0; i < 20_000; i++) {
+            tree.observeNextChange(Id.ZERO, immediate -> {
+                count.incrementAndGet();
+                maxDepth.accumulateAndGet(
+                        Thread.currentThread().getStackTrace().length
+                                - baseDepth,
+                        Math::max);
+                return false;
+            });
+        }
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+
+        assertEquals(20_000, count.get());
+        // Removing one observer must not deliver the others recursively
+        assertTrue(maxDepth.get() < 100, "Stack depth " + maxDepth.get());
+    }
+
+    @Test
+    void observe_commitAndObserverFail_commitFailureKeptAsPrimary() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        IllegalStateException commitFailure = new IllegalStateException();
+        IllegalArgumentException observerFailure = new IllegalArgumentException();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            throw observerFailure;
+        });
+
+        SignalCommand command = TestUtil.writeRootValueCommand();
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(command, result -> {
+                    throw commitFailure;
+                }));
+
+        assertSame(commitFailure, thrown);
+        assertEquals(List.of(observerFailure), List.of(thrown.getSuppressed()));
+    }
+
+    @Test
+    void observe_notifyImmediately_invokedAfterUnlockAsImmediate() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        SynchronousSignalTree other = new SynchronousSignalTree(false);
+        List<Boolean> invocations = new ArrayList<>();
+
+        other.getLock().lock();
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            invocations.add(immediate);
+            return true;
+        }, true);
+        assertEquals(List.of(), invocations);
+
+        other.getLock().unlock();
+        assertEquals(List.of(true), invocations);
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+        assertEquals(List.of(true, false), invocations);
+    }
+
+    @Test
+    void observe_changesDuringInvocation_coalescedIntoOneReinvocation() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+        AtomicBoolean invoking = new AtomicBoolean();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            assertFalse(invoking.getAndSet(true), "Invoked re-entrantly");
+            if (count.incrementAndGet() == 1) {
+                tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+                tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+            }
+            invoking.set(false);
+            return true;
+        });
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+
+        assertEquals(2, count.get());
+    }
+
+    @Test
+    void observe_changeFromOtherThreadDuringInvocation_reinvocationReadsLatestValue()
+            throws Exception {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        CountDownLatch invoked = new CountDownLatch(1);
+        CountDownLatch otherChangeApplied = new CountDownLatch(1);
+        List<String> values = new CopyOnWriteArrayList<>();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            values.add(Objects
+                    .requireNonNull(TestUtil.readTransactionRootValue(tree))
+                    .asString());
+            if (values.size() == 1) {
+                invoked.countDown();
+                try {
+                    otherChangeApplied.await(10, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            return true;
+        });
+
+        Thread writer = new Thread(() -> Transaction.runInTransaction(() -> {
+            TestUtil.readTransactionRootValue(tree);
+            Transaction.getCurrent().include(tree,
+                    TestUtil.writeRootValueCommand("first"), null);
+        }, Transaction.Type.WRITE_THROUGH));
+        writer.start();
+        assertTrue(invoked.await(10, TimeUnit.SECONDS));
+
+        // Coalesced into the delivery still running on the writer thread,
+        // which must not read it through the writer's repeatable-read view
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"));
+        otherChangeApplied.countDown();
+        writer.join(10_000);
+
+        assertEquals(List.of("first", "second"), values);
+    }
+
+    @Test
+    void observe_commitAndObserverThrowSameInstance_failurePropagated() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        IllegalStateException failure = new IllegalStateException();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            throw failure;
+        });
+
+        SignalCommand command = TestUtil.writeRootValueCommand();
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(command, result -> {
+                    throw failure;
+                }));
+
+        assertSame(failure, thrown);
+        assertEquals(0, thrown.getSuppressed().length);
+    }
+
+    @Test
+    void observe_observersThrow_allInvokedFailuresCollectedAndRemoved() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+        AtomicInteger count = new AtomicInteger();
+        IllegalStateException first = new IllegalStateException();
+        AssertionError second = new AssertionError();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            count.incrementAndGet();
+            throw first;
+        });
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            count.incrementAndGet();
+            throw second;
+        });
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            count.incrementAndGet();
+            return true;
+        });
+
+        SignalCommand command = TestUtil.writeRootValueCommand();
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(command));
+        assertSame(first, thrown);
+        assertEquals(List.of(second), List.of(thrown.getSuppressed()));
+        assertEquals(3, count.get());
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand());
+        assertEquals(4, count.get());
     }
 
     @Test

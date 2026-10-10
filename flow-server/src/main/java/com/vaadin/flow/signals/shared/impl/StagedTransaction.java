@@ -236,9 +236,12 @@ public class StagedTransaction extends Transaction {
             } else {
                 pendingCommits.forEach(PendingCommit::markAsAborted);
             }
-        } finally {
-            trees.forEach(tree -> tree.getLock().unlock());
+        } catch (RuntimeException | Error e) {
+            trees.forEach(
+                    tree -> SignalTree.unlockAfterFailure(tree.getLock(), e));
+            throw e;
         }
+        trees.forEach(tree -> tree.getLock().unlock());
     }
 
     private CommandsAndHandlers createChange(SignalTree tree,
