@@ -16,10 +16,12 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 
 /**
@@ -35,6 +37,16 @@ import com.vaadin.flow.internal.StateNode;
 public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
 
     /**
+     * Handlers of a component class, cached since every component instance
+     * needs them and finding them scans the methods of the whole class
+     * hierarchy. They only depend on the class, so they are found with a
+     * throwaway instance on a node of its own.
+     */
+    private static final ReflectionCache<Component, Map<String, DisabledUpdateMode>> handlersCache = new ReflectionCache<>(
+            type -> new ClientCallableHandlers(new StateNode())
+                    .findHandlers(type));
+
+    /**
      * Creates a new meta information list for the given state node.
      *
      * @param node
@@ -42,6 +54,12 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
      */
     public ClientCallableHandlers(StateNode node) {
         super(node);
+    }
+
+    @Override
+    protected void collectHandlerMethods(Class<?> classWithAnnotations) {
+        handlersCache.get(classWithAnnotations.asSubclass(Component.class))
+                .forEach(this::add);
     }
 
     @Override

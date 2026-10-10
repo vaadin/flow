@@ -17,6 +17,7 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 
@@ -41,6 +43,16 @@ class ClientCallableHandlersTest {
 
         @ClientCallable
         public void publishedMethod1() {
+
+        }
+    }
+
+    @Tag("div")
+    static class ComponentWithEventHandlerEnabledWhenDisabled
+            extends Component {
+
+        @ClientCallable(DisabledUpdateMode.ALWAYS)
+        public void publishedMethod2() {
 
         }
     }
@@ -79,6 +91,22 @@ class ClientCallableHandlersTest {
         ClientCallableHandlers feature = component.getElement().getNode()
                 .getFeature(ClientCallableHandlers.class);
         assertListFeature(feature, "publishedMethod1");
+    }
+
+    @Test
+    void componentsOfSameClass_eachHaveHandlerWithUpdateMode() {
+        UI ui = new UI();
+        ComponentWithEventHandlerEnabledWhenDisabled first = new ComponentWithEventHandlerEnabledWhenDisabled();
+        ComponentWithEventHandlerEnabledWhenDisabled second = new ComponentWithEventHandlerEnabledWhenDisabled();
+        ui.add(first, second);
+
+        for (Component component : List.of(first, second)) {
+            ClientCallableHandlers feature = component.getElement().getNode()
+                    .getFeature(ClientCallableHandlers.class);
+            assertListFeature(feature, "publishedMethod2");
+            assertEquals(DisabledUpdateMode.ALWAYS,
+                    feature.getDisabledUpdateMode("publishedMethod2"));
+        }
     }
 
     @Test
