@@ -392,8 +392,9 @@ public class Effect implements Serializable {
             snapshot = new ArrayList<>(usages);
         }
 
-        // hasChanges() reads signal state but does not acquire the
-        // SignalTree lock, so it is safe to call without the monitor held.
+        // hasChanges() may run user code (e.g. revalidating a cached signal)
+        // and acquire SignalTree locks, so it must be called without the
+        // monitor held.
         boolean needsRevalidation = snapshot.isEmpty()
                 || snapshot.stream().anyMatch(UsageTracker.Usage::hasChanges);
 
