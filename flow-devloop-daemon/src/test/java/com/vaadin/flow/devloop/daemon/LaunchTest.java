@@ -102,6 +102,42 @@ class LaunchTest {
         assertFalse(Launch.forwardedToApp("os.name"));
     }
 
+    @Test
+    void forwardedToApp_holdsBackTheJvmArgsProperty() {
+        // The app gets the flags themselves; a -D copy of the raw value would
+        // only carry its | separators into MAVEN_OPTS.
+        assertFalse(Launch.forwardedToApp(Launch.JVM_ARGS_PROPERTY));
+    }
+
+    @Test
+    void configuredJvmFlags_isEmptyWhenUnset() {
+        assertEquals(List.of(), Launch.readConfiguredJvmFlags());
+        setProperty(Launch.JVM_ARGS_PROPERTY, "  ");
+        assertEquals(List.of(), Launch.readConfiguredJvmFlags());
+    }
+
+    @Test
+    void configuredJvmFlags_splitsOnWhitespace() {
+        setProperty(Launch.JVM_ARGS_PROPERTY,
+                " --add-exports java.base/jdk.internal.misc=ALL-UNNAMED\t-Xmx2g ");
+        assertEquals(
+                List.of("--add-exports",
+                        "java.base/jdk.internal.misc=ALL-UNNAMED", "-Xmx2g"),
+                Launch.readConfiguredJvmFlags());
+    }
+
+    @Test
+    void configuredJvmFlags_splitsOnPipe() {
+        // The CLI splits VAADIN_DEV_DAEMON_OPTS on whitespace without honouring
+        // quotes, so through it several flags can only be joined with |. A
+        // comma has to survive: it separates --add-exports targets.
+        setProperty(Launch.JVM_ARGS_PROPERTY,
+                "-Xmx2g|--add-exports=java.base/jdk.internal.misc=a,b||-XX:+UseZGC|");
+        assertEquals(List.of("-Xmx2g",
+                "--add-exports=java.base/jdk.internal.misc=a,b", "-XX:+UseZGC"),
+                Launch.readConfiguredJvmFlags());
+    }
+
     private static String classpath(String... entries) {
         return String.join(File.pathSeparator, entries);
     }

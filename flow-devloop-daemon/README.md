@@ -210,7 +210,8 @@ would override rather than repeat them (a later `-D` wins):
 `spring.devtools.restart.enabled`, `vaadin.launch-browser` and
 `vaadin.devloop.classes`. Devtools is the one that matters — two things
 restarting the application on their own schedules is what the transaction model
-exists to prevent.
+exists to prevent. `vaadin.dev.jvmArgs` is held back too: the app gets its
+flags, not the property.
 
 Anything set this way lives as long as the daemon and appears in no file, so it
 is for steering one local run. What the project always needs belongs in its own
@@ -226,12 +227,53 @@ properties files, where the rest of the team can see it (see
 | `vaadin.dev.frontend` | discovered | the frontend folder, when it is neither what the build recorded nor a conventional location (see `Frontend`) |
 | `vaadin.dev.maven` | wrapper, then `PATH` | which Maven resolves the classpath |
 | `vaadin.dev.mavenArgs` | none | extra arguments for the resolve, e.g. `-P!some-profile` |
+| `vaadin.dev.jvmArgs` | none | extra flags for the app JVM, split on whitespace and `\|`; `start --jvm-args` is the easier route (see below) |
 | `vaadin.dev.javaHome` | the best JBR for the project (see `Jvm`) | which JVM runs the app |
 | `vaadin.dev.hotswapAgentJar` | downloaded | an already-present HotswapAgent jar |
 | `vaadin.dev.agentJar` | this jar | the javaagent, for a daemon run from an exploded build |
 | `vaadin.dev.idleSeconds` | 1800 | shut down after this long idle with no app running |
 | `vaadin.dev.startSettleMillis` | 15000 | how long a registered app has to report a listening server |
 | `vaadin.dev.errorSettleMillis` | 400 | how long an apply follows the app log after a redefine |
+
+### JVM flags for the application
+
+`--add-exports`, `-Xmx`, `-XX:…` and the like are not system properties, so the
+forwarding above cannot carry them. `start` and `restart` take them with
+`--jvm-args`, quoted as the shell quotes anything, and need no `shutdown` first:
+
+```
+.vaadin/vaadin-dev start --jvm-args "-Xmx2g --add-exports java.base/jdk.internal.misc=ALL-UNNAMED"
+```
+
+The flags are added to the app JVM after the loop's own, so where the JVM takes
+the last of a repeated flag the developer's wins. Nothing stops one from
+overriding a flag the loop needs, such as one of its `--add-opens` or
+`-javaagent`s. They work for every runtime, since each already delivers the
+loop's own flags. The daemon keeps them for every later launch — a plain
+`restart`, and the restart an apply escalates to — until the next `--jvm-args`
+replaces them (`--jvm-args ""` clears them) or the daemon shuts down. A `start`
+whose app is already running changes nothing and says so. The value is split on
+any whitespace, newlines included, and the CLI sends each flag as a word of its
+own, because the daemon splits a request line on whitespace; a flag arrives as
+given, `|` included (see `Daemon.parseJvmArgsOption`).
+
+`vaadin.dev.jvmArgs` is the same thing as a daemon property, for a setup that
+can only set the environment. Its flags go before those of `--jvm-args`. The
+CLI splits `VAADIN_DEV_DAEMON_OPTS` on whitespace, quotes or not, so join
+several flags with `|` and use the `=` form of the ones that take a value. A
+flag that needs a literal `|` has to go through `--jvm-args` instead:
+
+```
+.vaadin/vaadin-dev shutdown
+VAADIN_DEV_DAEMON_OPTS='-Dvaadin.dev.jvmArgs=-Xmx2g|--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED' .vaadin/vaadin-dev start
+```
+
+The JVM's own `JDK_JAVA_OPTIONS` reaches the app too, since the daemon passes
+its environment on, but it also reaches the daemon and every Maven run the CLI
+starts: an `-Xmx` caps those as well, and a bad flag fails at the first one,
+reported only as "could not resolve flow-devloop-daemon". `JAVA_TOOL_OPTIONS`
+does the same and accepts only the `=` form of `--add-exports` and
+`--add-opens`.
 
 ## How the application is started
 

@@ -374,6 +374,30 @@ class MavenGoalRuntimeTest {
     }
 
     /**
+     * mvn.cmd pastes MAVEN_OPTS into its java line unquoted, so a {@code |}
+     * from {@code --jvm-args} would be a pipe to cmd. Every flag goes to an
+     * argument file, in order, so the developer's still come last.
+     */
+    @Test
+    void invocation_embeddedServer_launcherSyntaxMovesTheFlagsToAnArgFile()
+            throws IOException {
+        Launch launch = launchOf(module("jetty-app", JETTY));
+        Path file = Launch.workDir(launch.reactor().app().dir())
+                .resolve("maven-opts-args.txt");
+
+        AppRuntime.Invocation invocation = runtimeOf(launch).invocation(
+                projectOf(launch),
+                List.of("-javaagent:/ha.jar", "-Dpattern=a|b", "-Xmx1g"),
+                List.of());
+
+        String opts = invocation.environment().get("MAVEN_OPTS");
+        assertTrue(opts.endsWith("@" + file), opts);
+        assertFalse(opts.contains("-Dpattern"), opts);
+        assertEquals("\"-javaagent:/ha.jar\"\n\"-Dpattern=a|b\"\n\"-Xmx1g\"\n",
+                Files.readString(file));
+    }
+
+    /**
      * A forked server takes its flags from one plugin parameter, so they are
      * folded into one setting with every module option held together with its
      * value, and none of them go to Maven's own JVM. In a reactor the WAR the

@@ -170,8 +170,10 @@ final class MavenGoalRuntime implements AppRuntime {
         // added only when the application is going to run in this JVM. Adding
         // them for a forked server would put the agents on Maven instead,
         // where they would find no application and instrument nothing.
-        environment.put("MAVEN_OPTS", mavenOpts(System.getenv("MAVEN_OPTS"),
-                plugin.embedded() ? jvmFlags : List.of()));
+        environment.put("MAVEN_OPTS",
+                mavenOpts(System.getenv("MAVEN_OPTS"),
+                        plugin.embedded() ? withoutLauncherSyntax(jvmFlags)
+                                : List.of()));
         // The application JVM is Maven's JVM, so this is the only way the
         // JetBrains Runtime that Jvm chose is the one the application runs on -
         // and with it, enhanced class redefinition.
@@ -852,6 +854,49 @@ final class MavenGoalRuntime implements AppRuntime {
         }
         return needed.isEmpty() ? inherited.strip()
                 : inherited.strip() + " " + needed;
+    }
+
+    /**
+     * The flags bound for {@code MAVEN_OPTS}, moved into an argument file when
+     * Maven's launcher script would read part of one as its own syntax.
+     * <p>
+     * The script pastes {@code MAVEN_OPTS} into the {@code java} command line
+     * unquoted. {@code mvn.cmd} runs with delayed expansion on, so a {@code |},
+     * {@code &}, {@code <}, {@code >}, {@code ^}, {@code "} or {@code !} in a
+     * flag is a pipe, a redirect, an escape or a variable to {@code cmd} -
+     * {@code -Dpattern=a|b} ends in "'b' is not recognized" - and the shell
+     * script's expansion globs a {@code *}, {@code ?} or {@code [} against the
+     * files in the working directory. The loop's own flags hold none of these,
+     * but the developer's from {@code --jvm-args} can. The {@code java}
+     * launcher reads an {@code @file} it is given before the main class, so the
+     * file reaches the JVM with none of that in the way.
+     * <p>
+     * All of the flags go to the file, not only the ones that need it: the JVM
+     * takes the last of a repeated flag, and the developer's flags are last on
+     * purpose, so moving some of them behind the rest would change which value
+     * wins.
+     *
+     * @param jvmFlags
+     *            the flags the application JVM needs
+     * @return the same flags, or one {@code @file} token holding them
+     * @throws IOException
+     *             if the argument file cannot be written
+     */
+    private List<String> withoutLauncherSyntax(List<String> jvmFlags)
+            throws IOException {
+        if (jvmFlags.stream().noneMatch(flag -> flag.chars()
+                .anyMatch(c -> "|&<>^\"!*?[".indexOf(c) >= 0))) {
+            return jvmFlags;
+        }
+        Path file = Launch.workDir(launch.reactor().app().dir())
+                .resolve("maven-opts-args.txt");
+        AppProcess.writeArgFile(file, jvmFlags);
+        String token = "@" + file;
+        // The path itself still travels in MAVEN_OPTS.
+        unsplittable(List.of(token)).forEach(log::line);
+        log.line("the JVM flags go to " + file + ", since Maven's launcher "
+                + "would read characters in them as shell syntax");
+        return List.of(token);
     }
 
     /**

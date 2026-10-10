@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.List;
 import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -192,6 +194,61 @@ class AppProcessTest {
         assertTrue(
                 app.failureReason().orElseThrow().contains("did not register"),
                 app.failureReason().orElse("<none>"));
+    }
+
+    /**
+     * {@code --jvm-args} on a start whose app is already up changes nothing: an
+     * escalated apply relaunches with the flags the running app has. The answer
+     * says how to change them, but only when they would change.
+     */
+    @Test
+    void startWithJvmFlags_appAlreadyLaunching_keepsTheFlagsItHas()
+            throws IOException {
+        Launch launch = launch();
+        AppProcess app = new AppProcess(root, launch);
+        app.markStarting();
+
+        assertEquals("already starting", app.start(text -> {
+        }, "start").message());
+        assertEquals("already starting", app.start(text -> {
+        }, "start", List.of()).message());
+        assertTrue(app.start(text -> {
+        }, "start", List.of("-Xmx1g")).message()
+                .contains("restart --jvm-args"));
+        assertEquals(List.of(), launch.requestedJvmFlags());
+    }
+
+    /**
+     * Taken before the launch is composed, so a launch that fails - here on a
+     * Maven that does not exist - leaves them for the restart that tries again.
+     */
+    @Test
+    void startWithJvmFlags_keepsThemEvenWhenTheLaunchFails()
+            throws IOException {
+        System.setProperty("vaadin.dev.maven",
+                root.resolve("no-such-mvn").toString());
+        try {
+            Launch launch = launch();
+            AppProcess app = new AppProcess(root, launch);
+
+            assertThrows(IOException.class, () -> app.start(text -> {
+            }, "start", List.of("-Xmx1g")));
+            assertEquals(List.of("-Xmx1g"), launch.requestedJvmFlags());
+        } finally {
+            System.clearProperty("vaadin.dev.maven");
+        }
+    }
+
+    private Launch launch() throws IOException {
+        Files.writeString(root.resolve("pom.xml"), """
+                <project>
+                  <artifactId>app</artifactId>
+                  <packaging>jar</packaging>
+                </project>
+                """);
+        return new Launch(Reactor.discover(root, text -> {
+        }), text -> {
+        });
     }
 
     private Path log() {

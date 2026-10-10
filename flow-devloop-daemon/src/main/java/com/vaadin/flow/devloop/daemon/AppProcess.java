@@ -380,11 +380,45 @@ final class AppProcess {
      *             if the command line cannot be built or the process started
      */
     Startup start(Launch.Log log, String launchKind) throws IOException {
+        return start(log, launchKind, null);
+    }
+
+    /**
+     * Launches the application with the JVM flags a {@code start} or
+     * {@code restart} asked for; see {@link Launch#requestJvmFlags}.
+     * <p>
+     * Set here, under the lifecycle lock, rather than by the caller: an app
+     * that is already up keeps the flags it was launched with, so the flags
+     * that the next escalated apply relaunches with stay the ones the running
+     * app has.
+     *
+     * @param log
+     *            where provisioning progress goes
+     * @param launchKind
+     *            see {@link #start(Launch.Log, String)}
+     * @param jvmFlags
+     *            the flags from {@code --jvm-args}, or {@code null} to keep the
+     *            ones the last launch had
+     * @return the outcome of the launch
+     * @throws IOException
+     *             if the command line cannot be built or the process started
+     */
+    Startup start(Launch.Log log, String launchKind, List<String> jvmFlags)
+            throws IOException {
         lifecycle.lock();
         try {
             if (alreadyLaunching()) {
-                return Startup.ok(state == State.STARTING ? "already starting"
-                        : "already running");
+                String message = state == State.STARTING ? "already starting"
+                        : "already running";
+                if (jvmFlags != null
+                        && !jvmFlags.equals(launch.requestedJvmFlags())) {
+                    message += "; the JVM flags given apply only to a new "
+                            + "launch: restart --jvm-args to change them";
+                }
+                return Startup.ok(message);
+            }
+            if (jvmFlags != null) {
+                launch.requestJvmFlags(jvmFlags);
             }
             // Composing resolves, and the order matters: how a WAR starts is
             // read out of the model Maven writes as it resolves, so asking
