@@ -40,6 +40,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
@@ -382,6 +383,27 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
+     * Fails when a package is declared with a URL version, such as a link to a
+     * tarball, and URL versions are not allowed, as such a package is not
+     * installed from the npm registry.
+     */
+    private void verifyUrlVersionsAllowed(Map<String, String> dependencies) {
+        if (options.isNpmAllowUrlVersions()) {
+            return;
+        }
+        final String urlDependencies = dependencies.entrySet().stream()
+                .filter(dep -> FrontendBuildUtils.isUrlVersion(dep.getValue()))
+                .map(dep -> "'" + dep.getKey() + "': '" + dep.getValue() + "'")
+                .sorted().collect(Collectors.joining(", "));
+        if (!urlDependencies.isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "The npm packages %s are declared with a URL version using @NpmPackage,"
+                            + " which is not allowed by default. Set '%s' to true to allow URL versions.",
+                    urlDependencies, InitParameters.NPM_ALLOW_URL_VERSIONS));
+        }
+    }
+
+    /**
      * Gets the version an npm package can be pinned to.
      *
      * @param version
@@ -396,7 +418,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             return null;
         }
         if (FrontendBuildUtils.isUrlVersion(version)) {
-            return version;
+            return options.isNpmAllowUrlVersions() ? version : null;
         }
         try {
             final FrontendVersion frontendVersion = new FrontendVersion(
@@ -630,6 +652,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents())
                 .exclude(applicationDependencies);
+        verifyUrlVersionsAllowed(filteredApplicationDependencies);
+        verifyUrlVersionsAllowed(applicationDevDependencies);
 
         // Add application dependencies
         for (Entry<String, String> dep : filteredApplicationDependencies

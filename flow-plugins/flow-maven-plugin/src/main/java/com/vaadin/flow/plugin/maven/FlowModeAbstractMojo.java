@@ -290,6 +290,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean npmExcludeWebComponents;
 
     /**
+     * Whether npm packages may be declared with a URL version, such as a link
+     * to a tarball, instead of a version number.
+     */
+    @Parameter(property = "vaadin."
+            + InitParameters.NPM_ALLOW_URL_VERSIONS, defaultValue = "false")
+    private boolean npmAllowUrlVersions;
+
+    /**
      * Parameter for adding file extensions to handle when generating bundles.
      * Hashes are calculated for these files as part of detecting if a new
      * bundle should be generated.
@@ -790,6 +798,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isNpmExcludeWebComponents() {
         return npmExcludeWebComponents;
+    }
+
+    @Override
+    public boolean isNpmAllowUrlVersions() {
+        return npmAllowUrlVersions;
     }
 
     @Override

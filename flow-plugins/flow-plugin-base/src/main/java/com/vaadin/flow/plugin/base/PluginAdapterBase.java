@@ -387,6 +387,14 @@ public interface PluginAdapterBase {
     boolean isNpmExcludeWebComponents();
 
     /**
+     * Whether npm packages may be declared with a URL version, such as a link
+     * to a tarball, instead of a version number.
+     *
+     * @return {@code true} to allow URL versions
+     */
+    boolean isNpmAllowUrlVersions();
+
+    /**
      * Whether to ignore node/npm tool version checks or not.
      *
      * Note that disabling frontend tools version checking could cause failing
