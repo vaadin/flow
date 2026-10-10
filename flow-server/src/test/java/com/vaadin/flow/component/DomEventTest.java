@@ -117,22 +117,23 @@ class DomEventTest {
             return;
         }
 
-        assertEquals(new ArrayList<String>() {
-            {
-                add(expectedFilter);
-            }
-        }, JacksonUtils.getKeys(settings));
+        // The entries are keyed by a derived key, so find the entry by its
+        // expression
+        assertEquals(1, JacksonUtils.getKeys(settings).size());
+        JsonNode entry = settings.get(JacksonUtils.getKeys(settings).get(0));
+        assertEquals(expectedFilter, entry.get("e").textValue());
+
+        JsonNode debounceSettings = entry.get("d");
 
         if (expectedTimeout == 0 && expectedPhases.length == 0) {
-            assertEquals(JsonNodeType.BOOLEAN,
-                    settings.get(expectedFilter).getNodeType(),
+            assertEquals(JsonNodeType.BOOLEAN, debounceSettings.getNodeType(),
                     "There should be a boolean instead of empty phase list");
-            boolean isFilter = settings.get(expectedFilter).booleanValue();
+            boolean isFilter = debounceSettings.booleanValue();
             assertTrue(isFilter, "Expression should be used as a filter");
             return;
         }
 
-        ArrayNode filterSettings = (ArrayNode) settings.get(expectedFilter);
+        ArrayNode filterSettings = (ArrayNode) debounceSettings;
 
         assertEquals(1, filterSettings.size());
 
