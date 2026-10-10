@@ -29,6 +29,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -118,6 +120,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  *
  * @since 1.0
  */
+@NullMarked
 @JsModule("@vaadin/common-frontend/ConnectionIndicator.js")
 public class UI extends Component
         implements PollNotifier, HasComponents, RouterLayout {
@@ -170,11 +173,11 @@ public class UI extends Component
      * @since 24.0
      */
     @Deprecated(forRemoval = true)
-    public Element wrapperElement;
-    private NavigationState clientViewNavigationState;
+    public @Nullable Element wrapperElement;
+    private @Nullable NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 
-    private String forwardToClientUrl = null;
+    private @Nullable String forwardToClientUrl = null;
 
     private boolean firstNavigation = true;
 
@@ -222,7 +225,7 @@ public class UI extends Component
      * @return the parent application of the component or <code>null</code>.
      * @see #onAttach(AttachEvent)
      */
-    public VaadinSession getSession() {
+    public @Nullable VaadinSession getSession() {
         return internals.getSession();
     }
 
@@ -359,12 +362,13 @@ public class UI extends Component
      * it is not explicitly cleared.
      *
      * @param ui
-     *            the UI to register as the current UI
+     *            the UI to register as the current UI, or {@code null} to clear
+     *            the current UI
      *
      * @see #getCurrent()
      * @see ThreadLocal
      */
-    public static void setCurrent(UI ui) {
+    public static void setCurrent(@Nullable UI ui) {
         CurrentInstance.set(UI.class, ui);
     }
 
@@ -380,7 +384,7 @@ public class UI extends Component
      *
      * @see #setCurrent(UI)
      */
-    public static UI getCurrent() {
+    public static @Nullable UI getCurrent() {
         return CurrentInstance.get(UI.class);
     }
 
@@ -567,7 +571,8 @@ public class UI extends Component
         accessSynchronously(command, null);
     }
 
-    private static void handleAccessDetach(SerializableRunnable detachHandler) {
+    private static void handleAccessDetach(
+            @Nullable SerializableRunnable detachHandler) {
         if (detachHandler != null) {
             detachHandler.run();
         } else {
@@ -581,7 +586,7 @@ public class UI extends Component
      * while allowing new APIs to use newer conventions.
      */
     private void accessSynchronously(Command command,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
 
         Map<Class<?>, CurrentInstance> old = null;
 
@@ -653,8 +658,26 @@ public class UI extends Component
      *         cancel the task
      */
     public Future<Void> access(final Command command) {
-        // null detach handler -> throw UIDetachEvent
-        return access(command, null);
+        VaadinSession session = getSession();
+
+        if (session == null) {
+            throw new UIDetachedException();
+        }
+
+        // null detach handler -> throw UIDetachedException if the UI is
+        // detached before the command runs
+        return access(session, command, null);
+    }
+
+    private void accessOrHandleDetach(Command command,
+            @Nullable SerializableRunnable detachHandler) {
+        VaadinSession session = getSession();
+
+        if (session == null) {
+            handleAccessDetach(detachHandler);
+        } else {
+            access(session, command, detachHandler);
+        }
     }
 
     /*
@@ -662,15 +685,8 @@ public class UI extends Component
      * is done for this internal method since it helps preserve old APIs as-is
      * while allowing new APIs to use newer conventions.
      */
-    private Future<Void> access(Command command,
-            SerializableRunnable detachHandler) {
-        VaadinSession session = getSession();
-
-        if (session == null) {
-            handleAccessDetach(detachHandler);
-            return null;
-        }
-
+    private Future<Void> access(VaadinSession session, Command command,
+            @Nullable SerializableRunnable detachHandler) {
         return session.access(new ErrorHandlingCommand() {
             @Override
             public void execute() {
@@ -736,10 +752,10 @@ public class UI extends Component
      * @since 1.3
      */
     public SerializableRunnable accessLater(SerializableRunnable accessTask,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
-        return () -> access(accessTask::run, detachHandler);
+        return () -> accessOrHandleDetach(accessTask::run, detachHandler);
     }
 
     /**
@@ -767,10 +783,11 @@ public class UI extends Component
      */
     public <T> SerializableConsumer<T> accessLater(
             SerializableConsumer<T> accessTask,
-            SerializableRunnable detachHandler) {
+            @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
-        return value -> access(() -> accessTask.accept(value), detachHandler);
+        return value -> accessOrHandleDetach(() -> accessTask.accept(value),
+                detachHandler);
     }
 
     /**
@@ -1200,7 +1217,7 @@ public class UI extends Component
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
-            Class<? extends C> navigationTarget, T parameter) {
+            Class<? extends C> navigationTarget, @Nullable T parameter) {
         navigate(navigationTarget,
                 HasUrlParameterFormat.getParameters(parameter));
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
@@ -1349,7 +1366,7 @@ public class UI extends Component
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
-            Class<? extends C> navigationTarget, T parameter,
+            Class<? extends C> navigationTarget, @Nullable T parameter,
             QueryParameters queryParameters) {
 
         RouteConfiguration configuration = RouteConfiguration
@@ -1894,7 +1911,7 @@ public class UI extends Component
      *         active and originated from this UI, {@literal null} otherwise.
      * @since 2.0
      */
-    public Component getActiveDragSourceComponent() {
+    public @Nullable Component getActiveDragSourceComponent() {
         return getInternals().getActiveDragSourceComponent();
     }
 
@@ -2072,10 +2089,11 @@ public class UI extends Component
     /**
      * Gets the new forward url.
      *
-     * @return the new forward url
+     * @return the new forward url, or {@code null} if the last navigation did
+     *         not forward to a client route
      * @since 24.0
      */
-    public String getForwardToClientUrl() {
+    public @Nullable String getForwardToClientUrl() {
         return forwardToClientUrl;
     }
 
@@ -2097,9 +2115,10 @@ public class UI extends Component
          *            {@code true} if the event originated from the client side,
          *            {@code false} otherwise
          * @param route
-         *            the route the user is navigating to.
+         *            the route the user is navigating to, not {@code null}
          * @param query
-         *            the query string the user is navigating to.
+         *            the query string the user is navigating to, not
+         *            {@code null}
          */
         public BrowserLeaveNavigationEvent(UI source, boolean fromClient,
                 @EventData("route") String route,
@@ -2119,8 +2138,8 @@ public class UI extends Component
 
         private final String route;
         private final String query;
-        private final String appShellTitle;
-        private final JsonNode historyState;
+        private final @Nullable String appShellTitle;
+        private final @Nullable JsonNode historyState;
         private final String trigger;
 
         /**
@@ -2133,23 +2152,25 @@ public class UI extends Component
          *            {@code false} otherwise
          * @param route
          *            flow route path that should be attached to the client
-         *            element
+         *            element, not {@code null}
          * @param query
-         *            flow route query string
+         *            flow route query string, not {@code null}
          * @param appShellTitle
-         *            client side title of the application shell
+         *            client side title of the application shell, or
+         *            {@code null} if the client has none
          * @param historyState
-         *            client side history state value
+         *            client side history state value, or {@code null} if the
+         *            history entry has no state
          * @param trigger
-         *            navigation trigger
+         *            navigation trigger, not {@code null}
          *
          * @since 24.8
          */
         public BrowserNavigateEvent(UI source, boolean fromClient,
                 @EventData("route") String route,
                 @EventData("query") String query,
-                @EventData("appShellTitle") String appShellTitle,
-                @EventData("historyState") JsonNode historyState,
+                @EventData("appShellTitle") @Nullable String appShellTitle,
+                @EventData("historyState") @Nullable JsonNode historyState,
                 @EventData("trigger") String trigger) {
             super(source, true);
             this.route = route;
