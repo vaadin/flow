@@ -57,13 +57,11 @@ jobs:
     # A fork that syncs its main from here would otherwise spend its own minutes
     # warming entries only that fork can read.
     if: ${{ github.repository == 'vaadin/flow' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '26.10.0'
+      - uses: ./.github/actions/setup-frontend-tools
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -159,7 +157,7 @@ jobs:
 
   warm-gradle:
     if: ${{ github.repository == 'vaadin/flow' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 30
     permissions:
       contents: read
@@ -167,9 +165,7 @@ jobs:
       actions: write
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '26.10.0'
+      - uses: ./.github/actions/setup-frontend-tools
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
