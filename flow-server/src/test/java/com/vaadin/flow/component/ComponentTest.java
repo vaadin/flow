@@ -52,6 +52,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
@@ -626,6 +627,19 @@ public class ComponentTest {
         UI ui = new UI();
         ui.add(parent);
         assertEquals(ui, child.getUI().get());
+    }
+
+    @Test
+    public void getUIOrThrow_attached_returnsUI_detached_throws() {
+        TestComponent child = new TestComponent();
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, child::getUIOrThrow);
+        assertThat(exception.getMessage(), containsString(
+                TestComponent.class.getName() + " is not attached to a UI"));
+
+        UI ui = new UI();
+        ui.add(child);
+        assertSame(ui, child.getUIOrThrow());
     }
 
     private void assertEmpty(Optional<?> optional) {
@@ -1912,6 +1926,26 @@ public class ComponentTest {
         assertEquals(ui, component.findAncestor(UI.class));
         assertEquals(ui, component.findAncestor(PollNotifier.class));
         assertNull(component.findAncestor(TestButton.class));
+    }
+
+    @Test
+    public void findAncestor_predicate_returnsNearestMatchingAncestor() {
+        UI ui = new UI();
+        TestComponentContainer outer = new TestComponentContainer();
+        TestComponentContainer inner = new TestComponentContainer();
+        TestComponent component = new TestComponent();
+        component.setId("card");
+        outer.setId("card");
+        inner.add(component);
+        outer.add(inner);
+        ui.add(outer);
+
+        assertEquals(Optional.of(outer), component.findAncestor(
+                c -> c.getId().filter("card"::equals).isPresent()));
+        assertEquals(Optional.of(inner), component.findAncestor(c -> true));
+        assertEquals(Optional.empty(), component.findAncestor(c -> false));
+        assertThrows(NullPointerException.class, () -> component
+                .findAncestor((SerializablePredicate<Component>) null));
     }
 
     @Test

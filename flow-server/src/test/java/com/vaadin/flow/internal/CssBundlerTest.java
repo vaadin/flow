@@ -23,11 +23,15 @@ import java.nio.file.Files;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CssBundlerTest {
@@ -766,5 +770,34 @@ class CssBundlerTest {
         // No @import statements should remain (all were inlined or skipped)
         assertFalse(result.contains("@import"),
                 "Should not contain any @import statements");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "theme", "theme.base", "_a-1", "-x", "--y" })
+    void validateLayerName_validName_accepted(String layer) {
+        assertDoesNotThrow(() -> CssBundler.validateLayerName(layer));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "", "1st", "a.", ".a", "a b", "a;}", "a)" })
+    void validateLayerName_invalidName_throws(String layer) {
+        assertThrows(IllegalArgumentException.class,
+                () -> CssBundler.validateLayerName(layer));
+    }
+
+    @Test
+    void createLayerImport_escapesUrl() {
+        assertEquals("@import url(\"a\\\"b\\\\c.css\") layer(theme);",
+                CssBundler.createLayerImport("a\"b\\c.css", "theme"));
+    }
+
+    @Test
+    void wrapInLayer_importRule_throws() {
+        assertThrows(IllegalArgumentException.class,
+                () -> CssBundler.wrapInLayer(
+                        "@import url('a.css');\n.x { color: red; }", "theme"));
+        // An @import in a comment is not a rule
+        assertEquals("@layer theme {\n/* @import 'a.css'; */\n}",
+                CssBundler.wrapInLayer("/* @import 'a.css'; */", "theme"));
     }
 }

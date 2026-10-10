@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.IntConsumer;
+import java.util.function.IntSupplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
@@ -40,6 +42,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
@@ -399,19 +402,21 @@ public class Router implements Serializable {
         assert ui != null;
         assert location != null;
         assert trigger != null;
-        ui.getSession().checkHasLock();
+        ui.getSessionOrThrow().checkHasLock();
 
         if (handleNavigationForLocation(ui, location)) {
-            ui.getInternals().setLastHandledNavigation(location);
-            try {
-                return handleNavigation(ui, location, trigger, state,
-                        forceInstantiation, recreateLayoutChain);
-            } catch (Exception exception) {
-                return handleExceptionNavigation(ui, location, exception,
-                        trigger, state);
-            } finally {
-                ui.getInternals().clearLastHandledNavigation();
-            }
+            return observeNavigation(ui, location, trigger, () -> {
+                ui.getInternals().setLastHandledNavigation(location);
+                try {
+                    return handleNavigation(ui, location, trigger, state,
+                            forceInstantiation, recreateLayoutChain);
+                } catch (Exception exception) {
+                    return handleExceptionNavigation(ui, location, exception,
+                            trigger, state);
+                } finally {
+                    ui.getInternals().clearLastHandledNavigation();
+                }
+            });
         }
         return HttpStatusCode.NOT_MODIFIED.getCode();
     }
@@ -484,6 +489,12 @@ public class Router implements Serializable {
     public int handleExceptionNavigation(UI ui, Location location,
             Exception exception, NavigationTrigger trigger,
             BaseJsonNode state) {
+        return observeNavigation(ui, location, trigger,
+                () -> renderErrorView(ui, location, exception, trigger, state));
+    }
+
+    private int renderErrorView(UI ui, Location location, Exception exception,
+            NavigationTrigger trigger, BaseJsonNode state) {
         Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
                 exception);
 
@@ -567,20 +578,107 @@ public class Router implements Serializable {
     public int executeNavigation(UI ui, Location location,
             NavigationEvent navigationEvent, NavigationHandler handler,
             IntConsumer onSuccess) {
-        ui.getInternals().setLastHandledNavigation(location);
+        return observeNavigation(ui, location, navigationEvent.getTrigger(),
+                () -> {
+                    ui.getInternals().setLastHandledNavigation(location);
+                    try {
+                        int result = handler.handle(navigationEvent);
+                        if (onSuccess != null) {
+                            onSuccess.accept(result);
+                        }
+                        return result;
+                    } catch (Exception exception) {
+                        return handleExceptionNavigation(ui, location,
+                                exception, navigationEvent.getTrigger(),
+                                navigationEvent.getState().orElse(null));
+                    } finally {
+                        ui.getInternals().clearLastHandledNavigation();
+                    }
+                });
+    }
+
+    /**
+     * Runs a navigation, firing {@link NavigationStartedEvent} and
+     * {@link NavigationEndedEvent} around it when it is the outermost
+     * navigation of the UI and the service event bus has a listener for either.
+     * A navigation nested inside another one, such as a forward, a trailing
+     * slash redirect or an error view, only runs.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param ui
+     *            the UI that navigates
+     * @param location
+     *            the requested location
+     * @param trigger
+     *            the action that triggered the navigation
+     * @param navigation
+     *            handles the navigation and returns its HTTP status code
+     * @return the HTTP status code of the navigation
+     * @since 25.4
+     */
+    public static int observeNavigation(UI ui, Location location,
+            NavigationTrigger trigger, IntSupplier navigation) {
+        UIInternals internals = ui.getInternals();
+        boolean outermost = internals.enterNavigation();
         try {
-            int result = handler.handle(navigationEvent);
-            if (onSuccess != null) {
-                onSuccess.accept(result);
+            if (!outermost) {
+                return navigation.getAsInt();
             }
-            return result;
-        } catch (Exception exception) {
-            return handleExceptionNavigation(ui, location, exception,
-                    navigationEvent.getTrigger(),
-                    navigationEvent.getState().orElse(null));
+            VaadinServiceEventBus eventBus = ui.getSessionOrThrow().getService()
+                    .getEventBus();
+            if (!eventBus.hasListener(NavigationStartedEvent.class)
+                    && !eventBus.hasListener(NavigationEndedEvent.class)) {
+                return navigation.getAsInt();
+            }
+            RouterState stateBefore = internals.getRouterStateSignal().peek();
+            eventBus.fireEvent(
+                    new NavigationStartedEvent(ui, location, trigger));
+            Throwable thrown = null;
+            int statusCode = -1;
+            try {
+                statusCode = navigation.getAsInt();
+                return statusCode;
+            } catch (Throwable t) {
+                // Throwable rather than Exception so that the ended event
+                // reports an Error too; it is rethrown right away
+                thrown = t;
+                throw t;
+            } finally {
+                eventBus.fireEventInReverseOrder(
+                        new NavigationEndedEvent(ui, location, trigger,
+                                resolveOutcome(internals, stateBefore, thrown),
+                                statusCode));
+            }
         } finally {
-            ui.getInternals().clearLastHandledNavigation();
+            internals.exitNavigation();
         }
+    }
+
+    private static NavigationEndedEvent.Outcome resolveOutcome(
+            UIInternals internals, RouterState stateBefore, Throwable thrown) {
+        if (thrown != null) {
+            return new NavigationEndedEvent.Failed(thrown);
+        }
+        Exception failure = internals.getNavigationFailure();
+        if (failure != null) {
+            return new NavigationEndedEvent.Failed(failure);
+        }
+        if (internals.getContinueNavigationAction() != null) {
+            return new NavigationEndedEvent.Postponed();
+        }
+        // Every view that is shown, error views included, replaces the router
+        // state with a new instance
+        RouterState stateAfter = internals.getRouterStateSignal().peek();
+        if (stateAfter != stateBefore) {
+            Class<? extends Component> target = stateAfter.navigationTarget();
+            // The placeholder only clears the server view for a client-side
+            // view that the browser renders
+            return UI.ClientViewPlaceholder.class.isAssignableFrom(target)
+                    ? new NavigationEndedEvent.NotShown()
+                    : new NavigationEndedEvent.Completed(target);
+        }
+        return new NavigationEndedEvent.NotShown();
     }
 
     private RouteResolver getRouteResolver() {

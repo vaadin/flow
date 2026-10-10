@@ -11,6 +11,12 @@ const globalExclusions = [
   // Deploys to a real application server, so it needs one of the container
   // profiles and has its own job in validation.yml
   'flow-tests/vaadin-cdi-tests',
+  // Only in the reactor with -Dnative; runs in spring-native.yml
+  'flow-tests/vaadin-spring-tests/test-spring-native',
+  // Boots Quarkus applications instead of deploying to a servlet container,
+  // so it has its own job in validation.yml. Only the quarkus-tests profile
+  // lists it, but the module lists here are read regardless of profiles
+  'flow-tests/vaadin-quarkus-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
@@ -30,6 +36,10 @@ const globalExclusions = [
 //  Tests that need shared modules, check validation.yml to see how they are generated before running ITs
 // Containers 4, 5 & 6:
 //  Spring tests, they need also spring shared modules to be generated in validation.yml
+// Containers 7, 9 & 10:
+//  Dev loop fixtures, they need their devloop-shared modules to be installed in
+//  validation.yml. 9 and 10 hold the forked servers other than Cargo's Tomcat,
+//  which do not fit in 7's time budget beside it.
 // Container 6:
 //  Live Reload Multimodule test needs being executed in the same container.
 //  Also holds a subset of the lighter spring-security tests offloaded from
@@ -133,6 +143,18 @@ const moduleWeights = {
   'flow-tests/test-devloop/test-devloop-spring/devloop-app': { pos: 7, weight: 5 },
   'flow-tests/test-devloop/test-devloop-jetty/devloop-shared': { pos: 7 },
   'flow-tests/test-devloop/test-devloop-jetty/devloop-app': { pos: 7, weight: 8 },
+  'flow-tests/test-devloop/test-devloop-cargo/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-cargo/devloop-app': { pos: 7, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-tomee/devloop-shared': { pos: 9 },
+  'flow-tests/test-devloop/test-devloop-tomee/devloop-app': { pos: 9, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-liberty/devloop-shared': { pos: 9 },
+  'flow-tests/test-devloop/test-devloop-liberty/devloop-app': { pos: 9, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-payara-micro/devloop-shared': { pos: 9 },
+  'flow-tests/test-devloop/test-devloop-payara-micro/devloop-app': { pos: 9, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-payara/devloop-shared': { pos: 10 },
+  'flow-tests/test-devloop/test-devloop-payara/devloop-app': { pos: 10, weight: 12 },
+  'flow-tests/test-devloop/test-devloop-jbosseap/devloop-shared': { pos: 10 },
+  'flow-tests/test-devloop/test-devloop-jbosseap/devloop-app': { pos: 10, weight: 14 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },

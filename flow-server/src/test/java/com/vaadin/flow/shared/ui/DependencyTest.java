@@ -17,12 +17,19 @@ package com.vaadin.flow.shared.ui;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Vaadin Ltd
@@ -59,6 +66,29 @@ class DependencyTest {
 
         assertDependency(dependency);
 
+    }
+
+    @Test
+    void layer_partOfEquality_serializedOnlyWhenSet() {
+        Dependency plain = new Dependency(Dependency.Type.STYLESHEET, "a.css",
+                LoadMode.EAGER, "id");
+        Dependency layered = new Dependency(Dependency.Type.STYLESHEET, "a.css",
+                LoadMode.EAGER, "id", "theme");
+
+        assertNotEquals(plain, layered);
+        assertEquals(layered, new Dependency(Dependency.Type.STYLESHEET,
+                "a.css", LoadMode.EAGER, "id", "theme"));
+        assertTrue(layered.toString().contains("layer=theme"));
+        assertFalse(JacksonUtils.createNode(plain).has(Dependency.KEY_LAYER));
+        assertEquals("theme", JacksonUtils.createNode(layered)
+                .get(Dependency.KEY_LAYER).asString());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = Dependency.Type.class, names = "STYLESHEET", mode = EnumSource.Mode.EXCLUDE)
+    void layer_notStyleSheet_throws(Dependency.Type type) {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Dependency(type, "a", LoadMode.EAGER, null, "theme"));
     }
 
     private void assertDependency(Dependency dependency) {

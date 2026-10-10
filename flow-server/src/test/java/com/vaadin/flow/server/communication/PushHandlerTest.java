@@ -19,6 +19,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -40,6 +44,7 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.RequestEndedEvent;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.VaadinContext;
@@ -53,10 +58,15 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -128,6 +138,51 @@ class PushHandlerTest {
         // error handler and the client would get an "Internal error" instead of
         // the response it is waiting for.
         verify(connection).resendLastResponse();
+    }
+
+    @Test
+    void callWithUi_handlingFails_requestEndedEventReportsFailure()
+            throws Exception {
+        AtomicReference<UI> currentUi = new AtomicReference<>();
+        AtomicReference<VaadinSession> currentSession = new AtomicReference<>();
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                VaadinSession.setCurrent(currentSession.get());
+                return currentSession.get();
+            }
+
+            @Override
+            public UI findUI(VaadinRequest request) {
+                UI.setCurrent(currentUi.get());
+                return currentUi.get();
+            }
+        };
+        MockVaadinSession session = new MockVaadinSession(service);
+        currentSession.set(session);
+        session.runWithLock(() -> {
+            currentUi.set(new MockUI(session));
+            return null;
+        });
+        AtmosphereResource resource = mockWebsocketResource("1");
+        Map<String, Object> attributes = new HashMap<>();
+        AtmosphereRequest request = resource.getRequest();
+        when(request.getAttribute(anyString()))
+                .then(i -> attributes.get(i.getArgument(0, String.class)));
+        Mockito.doAnswer(i -> attributes.put(i.getArgument(0, String.class),
+                i.getArgument(1))).when(request)
+                .setAttribute(anyString(), any());
+        List<RequestEndedEvent> ended = new ArrayList<>();
+        service.getEventBus().addListener(RequestEndedEvent.class, ended::add);
+        IllegalStateException failure = new IllegalStateException("BOOM");
+
+        new PushHandler(service).callWithUi(resource, (r, ui) -> {
+            throw failure;
+        });
+
+        assertEquals(1, ended.size());
+        assertSame(failure, ended.get(0).getFailure().orElseThrow());
+        assertTrue(ended.get(0).getResponse().isEmpty());
     }
 
     @Test
@@ -634,6 +689,51 @@ class PushHandlerTest {
         } finally {
             VaadinSession.setCurrent(null);
         }
+    }
+
+    @Test
+    void onConnect_noSessionForRequest_sessionExpiredNotificationSent()
+            throws Exception {
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                // As for a request that closes the application
+                return null;
+            }
+        };
+        setProductionMode(service, false);
+        AtomicReference<AtmosphereResource> res = new AtomicReference<>();
+
+        runTest(service, (handler, resource) -> {
+            Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+            handler.onConnect(resource);
+            res.set(resource);
+        });
+
+        Mockito.verify(res.get().getResponse().getWriter())
+                .write(VaadinService.createSessionExpiredJSON(true));
+    }
+
+    @Test
+    void connectionLost_noSessionForRequest_noFailure() {
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinSession findVaadinSession(VaadinRequest request) {
+                // As for a request that closes the application
+                return null;
+            }
+        };
+        setProductionMode(service, false);
+        PushHandler handler = new PushHandler(service);
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        Mockito.when(resource.getRequest())
+                .thenReturn(Mockito.mock(AtmosphereRequest.class));
+        Mockito.when(resource.uuid()).thenReturn("1");
+        AtmosphereResourceEvent event = Mockito
+                .mock(AtmosphereResourceEvent.class);
+        Mockito.when(event.getResource()).thenReturn(resource);
+
+        assertDoesNotThrow(() -> handler.connectionLost(event));
     }
 
     @Test

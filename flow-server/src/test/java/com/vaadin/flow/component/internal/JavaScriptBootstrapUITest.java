@@ -17,7 +17,9 @@ package com.vaadin.flow.component.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -38,12 +41,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UI.BrowserLeaveNavigationEvent;
 import com.vaadin.flow.component.UI.BrowserNavigateEvent;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -55,18 +60,23 @@ import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEndedEvent;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -117,6 +127,18 @@ class JavaScriptBootstrapUITest {
         public Dirty() {
             add(new DirtyChild());
         }
+    }
+
+    @Route("preserved")
+    @Tag(Tag.SPAN)
+    @PreserveOnRefresh
+    public static class PreservedView extends Component {
+    }
+
+    @Route("partially-preserved")
+    @Tag(Tag.SPAN)
+    @PreserveOnRefresh(partialMatch = true)
+    public static class PartiallyPreservedView extends Component {
     }
 
     @Route("product")
@@ -201,6 +223,14 @@ class JavaScriptBootstrapUITest {
                 Dirty.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("product",
                 ProductView.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("preserved",
+                PreservedView.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "partially-preserved", PartiallyPreservedView.class,
+                Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "partially-preserved/1", PartiallyPreservedView.class,
+                Collections.emptyList());
 
         Class<? extends ProductView> routeProxyClass = new ByteBuddy()
                 .subclass(ProductView.class)
@@ -363,6 +393,44 @@ class JavaScriptBootstrapUITest {
                 new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
 
         assertEquals(0, ui.getInternals().getWrapperElement().getChildCount());
+    }
+
+    @Test
+    void leaveNavigation_toClientView_firesNotShownOutcome() {
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
+        List<NavigationEndedEvent> ended = recordNavigationEndedEvents();
+
+        ui.leaveNavigation(
+                new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
+
+        assertEquals(1, ended.size());
+        assertEquals(new NavigationEndedEvent.NotShown(),
+                ended.get(0).getOutcome());
+    }
+
+    @Test
+    void browserNavigate_unknownRoute_firesOneFailedNavigation() {
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
+        List<NavigationEndedEvent> ended = recordNavigationEndedEvents();
+
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/unknown", "",
+                "", null, "link"));
+
+        assertEquals(1, ended.size());
+        NavigationEndedEvent event = ended.get(0);
+        assertEquals("unknown", event.getLocation().getPath());
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) event.getOutcome()).error());
+        assertEquals(404, event.getStatusCode());
+    }
+
+    private List<NavigationEndedEvent> recordNavigationEndedEvents() {
+        List<NavigationEndedEvent> ended = new ArrayList<>();
+        mocks.getService().getEventBus().addListener(NavigationEndedEvent.class,
+                ended::add);
+        return ended;
     }
 
     @Test
@@ -622,6 +690,58 @@ class JavaScriptBootstrapUITest {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true, "dirty", "",
                 "app-shell-title", null, ""));
         assertEquals("app-shell-title", ui.getInternals().getTitle());
+    }
+
+    @Test
+    void should_restoreIndexHtmlTitle_when_preserveOnRefreshViewReloadedBeforeWindowNameKnown() {
+        assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown("preserved",
+                "preserved");
+    }
+
+    @Test
+    void should_restoreIndexHtmlTitle_when_partialMatchPreserveOnRefreshViewReloadedBeforeWindowNameKnown() {
+        assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown(
+                "partially-preserved", "partially-preserved/1");
+    }
+
+    private void assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown(
+            String location, String reloadLocation) {
+        // The preserved chain is cached in a session attribute
+        VaadinSession session = mocks.getSession();
+        Map<Class<?>, Object> attributes = new HashMap<>();
+        attributes.put(SessionRouteRegistry.class,
+                session.getAttribute(SessionRouteRegistry.class));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(session)
+                .setAttribute(Mockito.any(Class.class), Mockito.any());
+        Mockito.doAnswer(
+                invocation -> attributes.get(invocation.getArgument(0)))
+                .when(session).getAttribute(Mockito.any(Class.class));
+
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
+        Mockito.when(details.getWindowName()).thenReturn("window");
+        ui.getInternals().setExtendedClientDetails(details);
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, location, "",
+                "app-shell-title", null, ""));
+        assertEquals("app-shell-title", ui.getInternals().getTitle());
+
+        // Reload: the new UI does not know the window name yet, so the
+        // preserved chain is only reused once the client has responded
+        UI reloadedUI = new UI();
+        reloadedUI.getInternals().setSession(mocks.getSession());
+        reloadedUI.doInit(null, 0, "reloadedUiId");
+        reloadedUI.browserNavigate(new BrowserNavigateEvent(reloadedUI, true,
+                reloadLocation, "", "app-shell-title", null, ""));
+
+        ObjectNode browserDetails = JacksonUtils.createObjectNode();
+        browserDetails.put("v-wn", "window");
+        reloadedUI.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .filter(invocation -> invocation.getInvocation().getExpression()
+                        .contains("getBrowserDetailsParameters"))
+                .findFirst().orElseThrow().complete(browserDetails);
+
+        assertEquals("app-shell-title", reloadedUI.getInternals().getTitle());
     }
 
     @Test

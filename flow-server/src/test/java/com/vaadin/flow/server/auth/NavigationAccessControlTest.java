@@ -559,6 +559,7 @@ class NavigationAccessControlTest {
         Mockito.when(ui.getPage()).thenReturn(page);
         VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
         Mockito.when(ui.getSession()).thenReturn(vaadinSession);
+        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(vaadinSession.getConfiguration())

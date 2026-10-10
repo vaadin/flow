@@ -108,9 +108,18 @@ difference between the overloads in the Javadoc of both. See
 Apply `@NullMarked` (JSpecify) at the package level and annotate only what
 genuinely may be null with `@Nullable`.
 
-Prefer a sentinel value over a nullable return in the public API. Jackson wire
-records are the legitimate exception, because the wire format permits
-omissions — keep the wire record private and translate to a non-null public
+Return an empty collection, array, map or stream — never `null` — when there
+are no values.
+
+Return `@Nullable T`, not `Optional<T>`, from a getter whose value may be
+unset, such as `getLabel()` or `getPlaceholder()`. Do not use a stand-in value
+such as `""` or `-1` to mean "not set". See `guidelines/design.md`.
+
+Model a "no data yet" state of a signal or a sealed result type as a named
+value (`UNKNOWN`, `Pending`), not as `null`.
+
+Jackson wire records may have `@Nullable` fields, because the wire format
+permits omissions. Keep the wire record private and translate it to the public
 shape at the boundary.
 
 Put `@Nullable` on the declared type (`ValueSignal<@Nullable X>`). NullAway
@@ -200,6 +209,13 @@ the problem into a `NoClassDefFoundError` at goal execution time.
 Derive the version of a provisioned tool from the project's own dependency tree
 instead of pinning it in the plugin, otherwise the pre-provisioned artifact
 does not match what the running process expects and the network is hit anyway.
+
+Derive the set of modules a script or CI workflow iterates over from the poms
+that declare them, never from a list written into the script — a hard-coded
+list drifts the moment someone adds a module and forgets it. Read the
+`<module>` entries of `flow-tests/pom.xml`, or a per-module marker such as the
+`validation.run` property, so a new module is picked up without being listed
+anywhere else. See `scripts/computeMatrix.js` and `scripts/previewModule.js`.
 
 Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
