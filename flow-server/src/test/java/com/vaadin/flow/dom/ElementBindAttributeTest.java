@@ -138,6 +138,8 @@ class ElementBindAttributeTest extends SignalsUnitTest {
 
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().setAttribute("foo", "baz"));
+        assertThrows(BindingActiveException.class, () -> component.getElement()
+                .setAttribute("foo", (String) null));
         assertTrue(events.isEmpty());
     }
 
