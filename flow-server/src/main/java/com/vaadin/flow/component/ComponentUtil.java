@@ -97,6 +97,10 @@ public class ComponentUtil {
      * classes. Unregister the classes of an application when it stops, so that
      * the mapping does not keep them, and through them their class loader,
      * reachable after the application has been reloaded in a new class loader.
+     * <p>
+     * The classes are removed for every application in the JVM, including other
+     * applications that registered the same classes through a shared class
+     * loader.
      *
      * @param componentClasses
      *            the component classes to remove, not {@code null}
