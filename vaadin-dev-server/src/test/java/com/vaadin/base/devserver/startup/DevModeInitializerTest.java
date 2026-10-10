@@ -343,6 +343,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
+    @SuppressWarnings("removal")
     void listener_should_unregisterAllComponentClasses_onDestroy()
             throws Exception {
         classes.add(TaggedComponent.class);
