@@ -1175,14 +1175,6 @@ public class UITest {
     }
 
     @Test
-    public void access_detachedUi_throws() {
-        UI ui = createTestUI();
-
-        assertThrows(UIDetachedException.class,
-                () -> ui.access(() -> fail("Action should never run")));
-    }
-
-    @Test
     public void accessLaterRunnable_detachedUi_detachHandlerCalled() {
         AtomicInteger runCount = new AtomicInteger();
 

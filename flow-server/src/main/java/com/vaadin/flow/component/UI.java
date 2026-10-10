@@ -653,26 +653,8 @@ public class UI extends Component
      *         cancel the task
      */
     public Future<Void> access(final Command command) {
-        VaadinSession session = getSession();
-
-        if (session == null) {
-            throw new UIDetachedException();
-        }
-
-        // null detach handler -> throw UIDetachedException if the UI is
-        // detached before the command runs
-        return access(session, command, null);
-    }
-
-    private void accessOrHandleDetach(Command command,
-            SerializableRunnable detachHandler) {
-        VaadinSession session = getSession();
-
-        if (session == null) {
-            handleAccessDetach(detachHandler);
-        } else {
-            access(session, command, detachHandler);
-        }
+        // null detach handler -> throw UIDetachEvent
+        return access(command, null);
     }
 
     /*
@@ -680,8 +662,15 @@ public class UI extends Component
      * is done for this internal method since it helps preserve old APIs as-is
      * while allowing new APIs to use newer conventions.
      */
-    private Future<Void> access(VaadinSession session, Command command,
+    private Future<Void> access(Command command,
             SerializableRunnable detachHandler) {
+        VaadinSession session = getSession();
+
+        if (session == null) {
+            handleAccessDetach(detachHandler);
+            return null;
+        }
+
         return session.access(new ErrorHandlingCommand() {
             @Override
             public void execute() {
@@ -750,7 +739,7 @@ public class UI extends Component
             SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
-        return () -> accessOrHandleDetach(accessTask::run, detachHandler);
+        return () -> access(accessTask::run, detachHandler);
     }
 
     /**
@@ -781,8 +770,7 @@ public class UI extends Component
             SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
 
-        return value -> accessOrHandleDetach(() -> accessTask.accept(value),
-                detachHandler);
+        return value -> access(() -> accessTask.accept(value), detachHandler);
     }
 
     /**
