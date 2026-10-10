@@ -251,7 +251,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                 .createScanner(
                     !adapter.get().optimizeBundle(),  adapter.get().getClassFinder(),
                     adapter.get().generateEmbeddableWebComponents(), featureFlags,
-                    reactEnabled
+                    reactEnabled, true
                 )
 
             BuildFrontendUtil.runNodeUpdater(adapter.get(), frontendDependencies)

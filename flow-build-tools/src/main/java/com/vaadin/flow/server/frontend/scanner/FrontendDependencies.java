@@ -109,11 +109,37 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private PwaConfiguration pwaConfiguration;
     private Class<? extends Annotation> routeClass;
     private Set<String> eagerRoutes = null;
+    private final boolean productionMode;
 
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
             boolean reactEnabled) {
+        this(finder, generateEmbeddableWebComponents, featureFlags,
+                reactEnabled, false);
+    }
+
+    /**
+     * Scans the application classes for frontend dependencies.
+     *
+     * @param finder
+     *            a class finder
+     * @param generateEmbeddableWebComponents
+     *            checks {@code WebComponentExporter} classes for dependencies
+     *            if {@code true}, doesn't check otherwise
+     * @param featureFlags
+     *            available feature flags and their status
+     * @param reactEnabled
+     *            {@code true} if react is enabled, {@code false} otherwise
+     * @param productionMode
+     *            {@code true} if scanning for a production build, in which case
+     *            routes marked with {@link Route#developmentOnly()} are not
+     *            collected as entry points
+     */
+    public FrontendDependencies(ClassFinder finder,
+            boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
+            boolean reactEnabled, boolean productionMode) {
         super(finder, featureFlags);
+        this.productionMode = productionMode;
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
@@ -448,6 +474,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         routeClasses.sort(this::compareEntryPoints);
 
         for (Class<?> route : routeClasses) {
+            if (productionMode && isDevelopmentOnlyRoute(route)) {
+                log().debug(
+                        "Skipping development only route {} in production mode",
+                        route.getName());
+                continue;
+            }
             List<String> triggerClasses = getDependencyTriggers(route,
                     triggerClass);
             boolean eager = isEagerRoute(route);
@@ -497,6 +529,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             collectExporterEntrypoints(WebComponentExporterFactory.class);
         }
 
+    }
+
+    private boolean isDevelopmentOnlyRoute(Class<?> route) {
+        try {
+            Annotation routeAnnotation = route.getAnnotation(routeClass);
+            Method developmentOnlyMethod = routeClass
+                    .getMethod("developmentOnly");
+            return (boolean) developmentOnlyMethod.invoke(routeAnnotation);
+        } catch (ReflectiveOperationException | SecurityException
+                | IllegalArgumentException e) {
+            log().error(
+                    "Unable to read @Route annotation for " + route.getName(),
+                    e);
+        }
+        return false;
     }
 
     private boolean isEagerRoute(Class<?> route) {
