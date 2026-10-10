@@ -103,6 +103,20 @@ class PublishedServerEventHandlerRpcHandlerTest {
 
     }
 
+    public interface InterfaceWithClientCallable {
+        @ClientCallable
+        default void defaultMethod() {
+            ((ComponentWithDefaultClientCallable) this).isInvoked = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class ComponentWithDefaultClientCallable extends Component
+            implements InterfaceWithClientCallable {
+
+        private boolean isInvoked;
+    }
+
     enum Title {
         MR, MRS;
     }
@@ -230,6 +244,16 @@ class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
+
+        assertTrue(component.isInvoked);
+    }
+
+    @Test
+    void interfaceDefaultMethodIsInvoked() {
+        ComponentWithDefaultClientCallable component = new ComponentWithDefaultClientCallable();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "defaultMethod",
+                JacksonUtils.createArrayNode(), -1);
 
         assertTrue(component.isInvoked);
     }

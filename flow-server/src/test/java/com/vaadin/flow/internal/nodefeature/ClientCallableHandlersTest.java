@@ -45,6 +45,17 @@ class ClientCallableHandlersTest {
         }
     }
 
+    interface InterfaceWithClientCallable {
+        @ClientCallable
+        default void publishedDefaultMethod() {
+        }
+    }
+
+    @Tag("div")
+    static class NonTemplateComponentWithInterfaceEventHandler extends Component
+            implements InterfaceWithClientCallable {
+    }
+
     @Test
     void attach_noFeature() {
         StateTree tree = new StateTree(new UI().getInternals(),
@@ -79,6 +90,17 @@ class ClientCallableHandlersTest {
         ClientCallableHandlers feature = component.getElement().getNode()
                 .getFeature(ClientCallableHandlers.class);
         assertListFeature(feature, "publishedMethod1");
+    }
+
+    @Test
+    void nonTemplateComponentWithInterfaceDefaultEventHandler() {
+        UI ui = new UI();
+        NonTemplateComponentWithInterfaceEventHandler component = new NonTemplateComponentWithInterfaceEventHandler();
+        ui.add(component);
+
+        ClientCallableHandlers feature = component.getElement().getNode()
+                .getFeature(ClientCallableHandlers.class);
+        assertListFeature(feature, "publishedDefaultMethod");
     }
 
     @Test
