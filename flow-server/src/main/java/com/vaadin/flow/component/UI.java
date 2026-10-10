@@ -1987,6 +1987,8 @@ public class UI extends Component
         }
         if (mode == ModalityMode.STRICT) {
             getInternals().setChildModal(childComponent);
+        } else if (mode == ModalityMode.VISUAL) {
+            getInternals().setChildVisuallyModal(childComponent);
         } else {
             getInternals().setChildModeless(childComponent);
         }
