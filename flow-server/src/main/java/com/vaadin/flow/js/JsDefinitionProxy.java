@@ -49,7 +49,8 @@ public final class JsDefinitionProxy {
      * The JavaScript definitions whose methods have been checked, so that the
      * methods of an interface are checked once rather than every time a call is
      * made through it. A definition that fails the check is not kept, so it
-     * fails again on the next attempt.
+     * fails again on the next attempt. Keyed by any class, since a JavaScript
+     * definition is marked by an annotation rather than by a common supertype.
      */
     private static final ReflectionCache<Object, Boolean> checkedDefinitions = new ReflectionCache<>(
             definitionType -> {

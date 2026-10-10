@@ -68,7 +68,9 @@ public record JsCall(Class<?> definitionType, String methodName,
      * the function each one declares, or to <code>null</code> for a method that
      * declares no JavaScript. Cached since a call is resolved several times
      * when it is sent, and resolving it otherwise copies the methods of the
-     * interface and hashes the declared JavaScript every time.
+     * interface and hashes the declared JavaScript every time. Keyed by any
+     * class, since a JavaScript definition is marked by an annotation rather
+     * than by a common supertype.
      */
     private static final ReflectionCache<Object, Map<Method, @Nullable String>> functionIds = new ReflectionCache<>(
             JsCall::collectFunctionIds);
