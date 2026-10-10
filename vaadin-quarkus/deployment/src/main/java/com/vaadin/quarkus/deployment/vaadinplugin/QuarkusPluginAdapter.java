@@ -478,8 +478,8 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
     }
 
     @Override
-    public boolean isNpmAllowUrlVersions() {
-        return config.npmAllowUrlVersions();
+    public boolean isNpmAllowExoticVersions() {
+        return config.npmAllowExoticVersions();
     }
 
     @Override

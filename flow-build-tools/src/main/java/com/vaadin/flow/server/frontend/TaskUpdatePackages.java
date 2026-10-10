@@ -383,23 +383,27 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Fails when a package is declared with a URL version, such as a link to a
-     * tarball, and URL versions are not allowed, as such a package is not
-     * installed from the npm registry.
+     * Fails when a package is declared with an exotic version, such as a
+     * tarball URL or a git repository, and exotic versions are not allowed, as
+     * such a package is installed from neither the npm registry nor a local
+     * path.
      */
-    private void verifyUrlVersionsAllowed(Map<String, String> dependencies) {
-        if (options.isNpmAllowUrlVersions()) {
+    private void verifyExoticVersionsAllowed(Map<String, String> dependencies) {
+        if (options.isNpmAllowExoticVersions()) {
             return;
         }
-        final String urlDependencies = dependencies.entrySet().stream()
-                .filter(dep -> FrontendBuildUtils.isUrlVersion(dep.getValue()))
+        final String exoticDependencies = dependencies.entrySet().stream()
+                .filter(dep -> FrontendBuildUtils
+                        .isExoticVersion(dep.getValue()))
                 .map(dep -> "'" + dep.getKey() + "': '" + dep.getValue() + "'")
                 .sorted().collect(Collectors.joining(", "));
-        if (!urlDependencies.isEmpty()) {
+        if (!exoticDependencies.isEmpty()) {
             throw new IllegalStateException(String.format(
-                    "The npm packages %s are declared with a URL version using @NpmPackage,"
-                            + " which is not allowed by default. Set '%s' to true to allow URL versions.",
-                    urlDependencies, InitParameters.NPM_ALLOW_URL_VERSIONS));
+                    "The npm packages %s are declared using @NpmPackage with a version that is neither"
+                            + " a registry version nor a local path, which is not allowed by default."
+                            + " Set '%s' to true to allow such versions.",
+                    exoticDependencies,
+                    InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
         }
     }
 
@@ -418,7 +422,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             return null;
         }
         if (FrontendBuildUtils.isUrlVersion(version)) {
-            return options.isNpmAllowUrlVersions() ? version : null;
+            return options.isNpmAllowExoticVersions() ? version : null;
         }
         try {
             final FrontendVersion frontendVersion = new FrontendVersion(
@@ -652,8 +656,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents())
                 .exclude(applicationDependencies);
-        verifyUrlVersionsAllowed(filteredApplicationDependencies);
-        verifyUrlVersionsAllowed(applicationDevDependencies);
+        verifyExoticVersionsAllowed(filteredApplicationDependencies);
+        verifyExoticVersionsAllowed(applicationDevDependencies);
 
         // Add application dependencies
         for (Entry<String, String> dep : filteredApplicationDependencies

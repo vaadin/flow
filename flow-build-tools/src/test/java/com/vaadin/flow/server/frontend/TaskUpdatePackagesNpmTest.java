@@ -435,7 +435,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_versionsJsonHasUrlVersion_urlVersionsAllowed_urlVersionPinnedAndUpdated()
+    void npmIsInUse_versionsJsonHasUrlVersion_exoticVersionsAllowed_urlVersionPinnedAndUpdated()
             throws IOException {
         final String overlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d";
         createVaadinVersionsJson(PINNED_DIALOG_VERSION,
@@ -459,7 +459,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_versionsJsonHasUrlVersion_urlVersionsNotAllowed_urlVersionIgnored()
+    void npmIsInUse_versionsJsonHasUrlVersion_exoticVersionsNotAllowed_urlVersionIgnored()
             throws IOException {
         createVaadinVersionsJson(PINNED_DIALOG_VERSION,
                 PINNED_ELEMENT_MIXIN_VERSION,
@@ -472,7 +472,7 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_npmPackageHasUrlVersion_urlVersionsNotAllowed_fails()
+    void npmIsInUse_npmPackageHasUrlVersion_exoticVersionsNotAllowed_fails()
             throws IOException {
         createBasicVaadinVersionsJson();
         final Map<String, String> dependencies = createApplicationDependencies();
@@ -484,11 +484,11 @@ class TaskUpdatePackagesNpmTest {
                 IllegalStateException.class, task::execute);
         assertTrue(exception.getMessage().contains(dialogUrl));
         assertTrue(exception.getMessage()
-                .contains(InitParameters.NPM_ALLOW_URL_VERSIONS));
+                .contains(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
     }
 
     @Test
-    void npmIsInUse_npmPackageHasUrlVersion_urlVersionsAllowed_urlVersionAdded()
+    void npmIsInUse_npmPackageHasUrlVersion_exoticVersionsAllowed_urlVersionAdded()
             throws IOException {
         createBasicVaadinVersionsJson();
         final Map<String, String> dependencies = createApplicationDependencies();
@@ -1401,7 +1401,7 @@ class TaskUpdatePackagesNpmTest {
 
     private TaskUpdatePackages createTask(
             Map<String, String> applicationDependencies, boolean enablePnpm,
-            boolean allowUrlVersions) {
+            boolean allowExoticVersions) {
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
@@ -1409,7 +1409,7 @@ class TaskUpdatePackagesNpmTest {
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
                 .withBundleBuild(true).withReact(false)
-                .withNpmAllowUrlVersions(allowUrlVersions)
+                .withNpmAllowExoticVersions(allowExoticVersions)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner);
         return new TaskUpdatePackages(options) {
         };

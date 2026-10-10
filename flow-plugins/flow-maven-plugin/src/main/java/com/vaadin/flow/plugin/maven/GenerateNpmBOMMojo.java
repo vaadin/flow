@@ -179,7 +179,7 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withReact(isReactEnabled())
                         .withNpmExcludeWebComponents(
                                 isNpmExcludeWebComponents())
-                        .withNpmAllowUrlVersions(isNpmAllowUrlVersions())
+                        .withNpmAllowExoticVersions(isNpmAllowExoticVersions())
                         .withFrontendIgnoreVersionChecks(
                                 isFrontendIgnoreVersionChecks());
                 new NodeTasks(options).execute();

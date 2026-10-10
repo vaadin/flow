@@ -175,8 +175,8 @@ internal class PrepareFrontendInputProperties(
         config.npmExcludeWebComponents
 
     @Input
-    fun getNpmAllowUrlVersions(): Provider<Boolean> =
-        config.npmAllowUrlVersions
+    fun getNpmAllowExoticVersions(): Provider<Boolean> =
+        config.npmAllowExoticVersions
 
     @Input
     fun getFrontendIgnoreVersionChecks(): Provider<Boolean> =

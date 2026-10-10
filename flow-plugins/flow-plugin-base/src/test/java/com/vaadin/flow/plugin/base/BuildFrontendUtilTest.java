@@ -319,7 +319,7 @@ class BuildFrontendUtilTest {
         Mockito.when(adapter.isPrepareFrontendCacheDisabled()).thenReturn(true);
         Mockito.when(adapter.isFrontendHotdeploy()).thenReturn(true);
         Mockito.when(adapter.isNpmExcludeWebComponents()).thenReturn(true);
-        Mockito.when(adapter.isNpmAllowUrlVersions()).thenReturn(true);
+        Mockito.when(adapter.isNpmAllowExoticVersions()).thenReturn(true);
         Mockito.when(adapter.frontendExtraFileExtensions())
                 .thenReturn(List.of("svg"));
 

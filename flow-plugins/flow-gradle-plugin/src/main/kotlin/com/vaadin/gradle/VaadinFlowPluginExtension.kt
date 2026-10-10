@@ -351,10 +351,11 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val npmExcludeWebComponents: Property<Boolean>
 
     /**
-     * Whether npm packages may be declared with a URL version, such as a link
-     * to a tarball, instead of a version number. Defaults to `false`.
+     * Whether npm packages may be declared with an exotic version, such as a
+     * tarball URL or a git repository, rather than a registry version or a
+     * local path. Defaults to `false`.
      */
-    public abstract val npmAllowUrlVersions: Property<Boolean>
+    public abstract val npmAllowExoticVersions: Property<Boolean>
 
     /**
      * Whether to ignore node/npm tool version checks or not. Defaults to
@@ -694,8 +695,8 @@ public class PluginEffectiveConfiguration(
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)
 
-    public val npmAllowUrlVersions: Provider<Boolean> = extension
-        .npmAllowUrlVersions.convention(false)
+    public val npmAllowExoticVersions: Provider<Boolean> = extension
+        .npmAllowExoticVersions.convention(false)
 
     public val commercialWithBanner: Provider<Boolean> =
         extension.commercialWithBanner.convention(false)
@@ -790,7 +791,7 @@ public class PluginEffectiveConfiguration(
             "cleanFrontendFiles=${cleanFrontendFiles.get()}," +
             "frontendExtraFileExtensions=${frontendExtraFileExtensions.get()}," +
             "npmExcludeWebComponents=${npmExcludeWebComponents.get()}," +
-            "npmAllowUrlVersions=${npmAllowUrlVersions.get()}," +
+            "npmAllowExoticVersions=${npmAllowExoticVersions.get()}," +
             "commercialWithBanner=${commercialWithBanner.get()}" +
             ")"
 

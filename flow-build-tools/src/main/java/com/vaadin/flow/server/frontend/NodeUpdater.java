@@ -144,15 +144,16 @@ public abstract class NodeUpdater implements FallibleCommand {
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents(),
                 new VersionsJsonFilter(getPackageJson(), DEPENDENCIES));
-        if (!options.isNpmAllowUrlVersions()) {
+        if (!options.isNpmAllowExoticVersions()) {
             for (String pkg : JacksonUtils.getKeys(dependencies)) {
                 final String version = dependencies.get(pkg).asString();
-                if (FrontendBuildUtils.isUrlVersion(version)) {
+                if (FrontendBuildUtils.isExoticVersion(version)) {
                     log().warn(
-                            "Ignoring the URL version '{}' of npm package '{}' declared in a versions file,"
-                                    + " as URL versions are not allowed. Set '{}' to true to allow them.",
+                            "Ignoring the version '{}' of npm package '{}' declared in a versions file,"
+                                    + " as versions that are neither a registry version nor a local path"
+                                    + " are not allowed. Set '{}' to true to allow them.",
                             version, pkg,
-                            InitParameters.NPM_ALLOW_URL_VERSIONS);
+                            InitParameters.NPM_ALLOW_EXOTIC_VERSIONS);
                     dependencies.remove(pkg);
                 }
             }

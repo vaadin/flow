@@ -251,7 +251,7 @@ class QuarkusPluginAdapterTest {
         when(config.requireHomeNodeExec()).thenReturn(true);
         when(config.skipDevBundleBuild()).thenReturn(true);
         when(config.npmExcludeWebComponents()).thenReturn(true);
-        when(config.npmAllowUrlVersions()).thenReturn(true);
+        when(config.npmAllowExoticVersions()).thenReturn(true);
         when(config.frontendIgnoreVersionChecks()).thenReturn(true);
         when(config.commercialWithBanner()).thenReturn(true);
         when(config.cleanFrontendFiles()).thenReturn(true);
@@ -270,7 +270,7 @@ class QuarkusPluginAdapterTest {
         assertTrue(adapter.requireHomeNodeExec());
         assertTrue(adapter.skipDevBundleBuild());
         assertTrue(adapter.isNpmExcludeWebComponents());
-        assertTrue(adapter.isNpmAllowUrlVersions());
+        assertTrue(adapter.isNpmAllowExoticVersions());
         assertTrue(adapter.isFrontendIgnoreVersionChecks());
         assertTrue(adapter.isCommercialBannerEnabled());
         assertTrue(adapter.cleanFrontendFiles());
