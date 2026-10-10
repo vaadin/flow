@@ -939,7 +939,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .matcher(index);
             while (cssMatcher.find()) {
                 Element link = createStylesheetElement(
-                        "VAADIN/build/" + cssMatcher.group(1));
+                        "VAADIN/build/" + cssMatcher.group(1), null);
                 head.appendChild(link);
             }
         }
@@ -1054,7 +1054,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             final Element dependencyElement;
             switch (type) {
             case STYLESHEET:
-                dependencyElement = createStylesheetElement(url);
+                dependencyElement = createStylesheetElement(url,
+                        dependency.path(Dependency.KEY_LAYER).asString(null));
                 break;
             case JAVASCRIPT:
                 dependencyElement = createJavaScriptElement(url,
@@ -1076,9 +1077,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return dependencyElement;
         }
 
-        private Element createStylesheetElement(String url) {
+        static Element createStylesheetElement(String url, String layer) {
             final Element cssElement;
-            if (url != null) {
+            if (url != null && layer != null) {
+                cssElement = new Element(Tag.valueOf("style"), "")
+                        .attr("type", CSS_TYPE_ATTRIBUTE_VALUE)
+                        .appendChild(new DataNode(
+                                CssBundler.createLayerImport(url, layer)));
+            } else if (url != null) {
                 cssElement = new Element(Tag.valueOf("link"), "")
                         .attr("rel", "stylesheet")
                         .attr("type", CSS_TYPE_ATTRIBUTE_VALUE)

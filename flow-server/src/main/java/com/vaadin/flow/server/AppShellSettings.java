@@ -37,6 +37,7 @@ import com.vaadin.flow.component.page.Inline.Position;
 import com.vaadin.flow.component.page.Inline.Wrapping;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.internal.CssBundler;
 
 /**
  * Initial page settings class for modifying the application shell.
@@ -316,6 +317,26 @@ public class AppShellSettings {
         Element link = createElement("link", null, "href", href);
         attributes.forEach(link::attr);
         getHeadElements(position).add(link);
+    }
+
+    /**
+     * Add a style sheet loaded into a CSS cascade layer to initial page head.
+     *
+     * @param position
+     *            prepend or append
+     * @param href
+     *            location of the style sheet
+     * @param layer
+     *            a valid cascade layer name
+     * @param attributes
+     *            map of attributes for the element loading the style sheet
+     */
+    void addLayeredStyleSheet(Position position, String href, String layer,
+            Map<String, String> attributes) {
+        Element style = createElement("style",
+                CssBundler.createLayerImport(href, layer));
+        attributes.forEach(style::attr);
+        getHeadElements(position).add(style);
     }
 
     /**
