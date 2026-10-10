@@ -140,14 +140,12 @@ export class ReconnectStateMachine {
     this.#reconnectionCause = null;
     this.#reconnectAttempt = 0;
     this.#cancelScheduledReconnect();
-    if (type === ConnectionMessageType.HEARTBEAT) {
-      // Heartbeat never has loading indication, it is safe to assume that no
-      // other requests are in progress and set the `CONNECTED` state directly.
-      setState(CONNECTED);
-    } else {
-      // Let the loading indicator state handler check and remove the prior
-      // loading state indication if necessary.
-      this.#registry.getLoadingIndicatorStateHandler().stopLoading();
+    setState(CONNECTED);
+    if (type !== ConnectionMessageType.HEARTBEAT) {
+      // Heartbeat never has loading indication. For the other types, let the
+      // loading indicator state handler show a request still in progress, or
+      // remove the prior loading state indication if necessary.
+      this.#registry.getLoadingIndicatorStateHandler().restoreLoading();
     }
     Console.debug('Re-established connection to server');
   }

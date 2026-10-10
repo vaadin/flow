@@ -91,6 +91,19 @@ export class LoadingIndicatorStateHandler {
   }
 
   /**
+   * Restores the loading indication after the connection state was reset, e.g.
+   * by a reconnect, which drops the loading count of the connection state.
+   * Re-announces an ongoing loading indication and stops it if no request
+   * remains active.
+   */
+  restoreLoading(): void {
+    if (this.#loading) {
+      loadingStarted();
+    }
+    this.stopLoading();
+  }
+
+  /**
    * Processes an RPC message to determine if a loading indicator should be displayed.
    *
    * @param rpcType - the type of RPC request being processed
