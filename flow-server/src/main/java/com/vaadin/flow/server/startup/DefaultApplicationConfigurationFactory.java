@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -33,12 +36,14 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AbstractPropertyConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 
 import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -185,6 +190,12 @@ public class DefaultApplicationConfigurationFactory
      * <p>
      * Else we will accept any flow-build-info and log a warning that it may not
      * be the correct file, but it's the best we could find.
+     * <p>
+     * A candidate that cannot be used for the application that is being run is
+     * skipped, see {@link #getReasonToIgnore(String)}.
+     *
+     * @return the token file content, or {@code null} if no usable file was
+     *         found
      */
     private String getPossibleJarResource(VaadinContext context,
             List<URL> resources) throws IOException {
@@ -203,32 +214,161 @@ public class DefaultApplicationConfigurationFactory
         // If vite.generated.ts is inside 2 archives then we are running
         // from a jar, as the jar of flow-server is inside the jar of the
         // application
-        if (viteGenerated != null
-                && countArchiveLevels(viteGenerated.getPath()) >= 2) {
-            for (URL resource : resources) {
-                // As we now know that we are running from a jar we can accept a
-                // build info with a single jar in the path
-                if (countArchiveLevels(resource.getPath()) == 1) {
-                    return FrontendUtils.streamToString(resource.openStream());
-                }
+        boolean runningFromJar = viteGenerated != null
+                && countArchiveLevels(viteGenerated.getPath()) >= 2;
+
+        // As we now know that we are running from a jar, the file of the
+        // application is the one in the outermost archive, so look at the
+        // least nested ones first
+        List<URL> candidates = runningFromJar
+                ? resources.stream()
+                        .sorted(Comparator.comparingInt(
+                                url -> countArchiveLevels(url.getPath())))
+                        .toList()
+                : resources;
+
+        for (URL candidate : candidates) {
+            String content = FrontendUtils
+                    .streamToString(candidate.openStream());
+            String reasonToIgnore = getReasonToIgnore(content);
+            if (reasonToIgnore != null) {
+                getLogger().warn(
+                        "Ignoring the file '{}' found inside a jar, as {}.",
+                        candidate.getPath(), reasonToIgnore);
+                continue;
+            }
+            // The file is only known to be the right one when it was
+            // picked by the rule for a packaged application
+            boolean confidentPick = runningFromJar
+                    && countArchiveLevels(candidate.getPath()) == 1;
+            if (candidates.size() > 1 && !confidentPick) {
+                String warningMessage = String.format(
+                        "Unable to fully determine correct flow-build-info.%n"
+                                + "Accepting file '%s' first match of '%s' possible (%s).%n"
+                                + "Please verify flow-build-info file content.",
+                        candidate.getPath(), resources.size(), resources);
+                getLogger().warn(warningMessage);
+            } else {
+                String debugMessage = String.format(
+                        "Unable to fully determine correct flow-build-info.%n"
+                                + "Accepting file '%s'",
+                        candidate.getPath());
+                getLogger().debug(debugMessage);
+            }
+            return content;
+        }
+        return null;
+    }
+
+    /**
+     * Checks whether a token file found inside a jar can be used for the
+     * application that is being run.
+     * <p>
+     * A file from a production build carries no folders of the machine it was
+     * built on and is always used, as it is the file of a packaged application.
+     * A file from a development build is used only when it was written for the
+     * application that is being run: the project it names has to be on this
+     * machine and, when the project folder of the application can be told from
+     * the class path or the working directory, has to be that folder. This
+     * keeps an application packaged in development mode working, and leaves out
+     * a file packaged into a dependency, whether the dependency was built
+     * somewhere else or on this machine.
+     *
+     * @param content
+     *            the token file content, not {@code null}
+     * @return the reason not to use the file, or {@code null} when it can be
+     *         used
+     */
+    private String getReasonToIgnore(String content) {
+        JsonNode buildInfo;
+        try {
+            buildInfo = JacksonUtils.readTree(content);
+        } catch (RuntimeException e) {
+            getLogger().debug("Unable to parse a token file from a jar", e);
+            return "it cannot be read as JSON";
+        }
+        if (buildInfo.has(SERVLET_PARAMETER_PRODUCTION_MODE) && buildInfo
+                .get(SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue()) {
+            return null;
+        }
+        if (!buildInfo.has(NPM_TOKEN)) {
+            return "it is not from a production build and does not name the project it was written for";
+        }
+        String projectFolder = buildInfo.get(NPM_TOKEN).asString();
+        if (!new File(projectFolder).exists()) {
+            return String.format(
+                    "it is not from a production build and the project it was written for, '%s', is not on this machine, so it is packaged into a dependency by mistake",
+                    projectFolder);
+        }
+        File project = new File(projectFolder);
+        File classpathProjectFolder = getClasspathProjectFolder();
+        if (classpathProjectFolder != null) {
+            // The application runs from the output folder of its project, so
+            // the file has to be for exactly that project
+            if (!isSameFolder(project, classpathProjectFolder)) {
+                return notWrittenForThisApplication(projectFolder,
+                        classpathProjectFolder);
+            }
+        } else {
+            // The working directory is only a hint: a multi-module build may
+            // be started from its root, so a project inside it is accepted
+            File workingDirectory = getWorkingDirectoryProjectFolder();
+            if (workingDirectory != null
+                    && !isInsideFolder(project, workingDirectory)) {
+                return notWrittenForThisApplication(projectFolder,
+                        workingDirectory);
             }
         }
-        URL firstResource = resources.get(0);
-        if (resources.size() > 1) {
-            String warningMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s' first match of '%s' possible (%s).%n"
-                            + "Please verify flow-build-info file content.",
-                    firstResource.getPath(), resources.size(), resources);
-            getLogger().warn(warningMessage);
-        } else {
-            String debugMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'",
-                    firstResource.getPath());
-            getLogger().debug(debugMessage);
+        return null;
+    }
+
+    private static String notWrittenForThisApplication(String projectFolder,
+            File applicationProjectFolder) {
+        return String.format(
+                "it is not from a production build and was written for the project in '%s', not for the application being run from '%s', so it is packaged into a dependency by mistake",
+                projectFolder, applicationProjectFolder);
+    }
+
+    /**
+     * Gets the project folder of the application that is being run from the
+     * class path, which is known when the application runs from the output
+     * folder of its project.
+     *
+     * @return the project folder, or {@code null} if it cannot be told
+     */
+    // Package-private for testing
+    File getClasspathProjectFolder() {
+        return FileIOUtils.getProjectFolderFromClasspath();
+    }
+
+    /**
+     * Gets the working directory, if it is the folder of a Maven or Gradle
+     * project.
+     *
+     * @return the project folder, or {@code null} if the working directory is
+     *         not a project folder
+     */
+    // Package-private for testing
+    File getWorkingDirectoryProjectFolder() {
+        return FileIOUtils.getProjectFolderFromWorkingDirectory();
+    }
+
+    private static boolean isSameFolder(File folder, File other) {
+        try {
+            return Files.isSameFile(folder.toPath(), other.toPath());
+        } catch (IOException e) {
+            return folder.getAbsoluteFile().equals(other.getAbsoluteFile());
         }
-        return FrontendUtils.streamToString(firstResource.openStream());
+    }
+
+    private static boolean isInsideFolder(File folder, File parent) {
+        try {
+            return folder.toPath().toRealPath()
+                    .startsWith(parent.toPath().toRealPath());
+        } catch (IOException e) {
+            return folder.toPath().toAbsolutePath().normalize()
+                    .startsWith(parent.toPath().toAbsolutePath().normalize());
+        }
     }
 
     /**
