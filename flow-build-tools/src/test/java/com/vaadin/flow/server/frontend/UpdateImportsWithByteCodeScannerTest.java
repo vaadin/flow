@@ -61,7 +61,7 @@ class UpdateImportsWithByteCodeScannerTest extends AbstractUpdateImportsTest {
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true, null, true);
+                .createScanner(false, finder, true, null, true, false);
     }
 
     @Test
