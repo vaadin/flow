@@ -759,7 +759,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         if (packageJsonVersion != null && vaadinDepsVersion == null
                 && !isNumericVersion(packageJsonVersion)) {
-            // Overridden to a file link in package.json, do not change
+            // The user declared a non-numeric version, such as a file link, a
+            // URL or a dist-tag, which is not compared and so not changed
             return false;
         }
         if (packageJsonVersion != null && vaadinDepsVersion != null
