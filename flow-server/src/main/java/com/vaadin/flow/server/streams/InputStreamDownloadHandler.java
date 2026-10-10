@@ -22,10 +22,21 @@ import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving an input stream for client download.
+ * <p>
+ * Byte range requests, which media players use to seek and browsers use to
+ * resume a download, are not answered by default. Every range request calls the
+ * callback again for a new stream, and the stream has to be read from its start
+ * up to the range: unless the stream can seek, such as a
+ * {@link java.io.FileInputStream}, each seek or resume reads all the bytes
+ * before it again, which adds up for large media that a player fetches in many
+ * small ranges. Ranges are also only correct if the callback returns the same
+ * content every time, which only the application knows. Call
+ * {@link #enableRangeRequests()} when that holds, or use
+ * {@link DownloadHandler#forFile(java.io.File)}, which answers ranges by
+ * seeking in the file.
  *
  * @since 24.8
  */
@@ -34,6 +45,7 @@ public class InputStreamDownloadHandler
 
     private final InputStreamDownloadCallback callback;
     private String fileNameOverride;
+    private boolean rangeRequestsEnabled;
 
     /**
      * Create an input stream download handler for given event -> response
@@ -117,7 +129,6 @@ public class InputStreamDownloadHandler
                 ? getContentType(downloadName, response)
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
-        downloadEvent.setContentLength(download.getContentLength());
 
         if (isInline()) {
             downloadEvent.inline(downloadName);
@@ -127,8 +138,17 @@ public class InputStreamDownloadHandler
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
-            TransferUtil.transfer(inputStream, outputStream,
-                    getTransferContext(downloadEvent), getListeners());
+            transferContent(downloadEvent, inputStream, outputStream,
+                    download.getContentLength(),
+                    rangeRequestsEnabled
+                            ? new SeekableContent(downloadName, null, null)
+                            : null);
+        } catch (RangeRequestException e) {
+            // Not reported again: a cancel is not an error, and a smaller
+            // range was never reported as started
+            if (!e.isCancelled()) {
+                throw e;
+            }
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -136,6 +156,37 @@ public class InputStreamDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
+    }
+
+    /**
+     * Enables answering byte range requests, which media players use to seek
+     * and browsers use to resume a download. Safari does not play audio or
+     * video without them.
+     * <p>
+     * Only enable them if the callback returns the same content on every call,
+     * with a known content length: the callback is called for every range
+     * request, and a range that a client joins with a range of other content
+     * ends up as corrupt data. The bytes before a range are skipped from the
+     * returned stream, which is a seek for a stream that supports it, such as a
+     * {@link java.io.FileInputStream}, but reads them for other streams.
+     *
+     * @return this instance for method chaining
+     */
+    public InputStreamDownloadHandler enableRangeRequests() {
+        rangeRequestsEnabled = true;
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Range requests are answered after {@link #enableRangeRequests()}, but
+     * only for a {@link DownloadResponse} with a known content length. When the
+     * callback reports the length as {@code -1}, the whole content is sent.
+     */
+    @Override
+    public boolean isRangeRequestsEnabled() {
+        return rangeRequestsEnabled;
     }
 
     @Override

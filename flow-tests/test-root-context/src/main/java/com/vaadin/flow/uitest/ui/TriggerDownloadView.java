@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.flow.component.download.Download;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
@@ -26,6 +28,7 @@ import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
@@ -36,6 +39,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * resolved at fire time. The IT replaces
  * {@code window.Vaadin.Flow.download.start} with a recording shim so the
  * assertions don't depend on the browser actually saving the file.
+ * <p>
+ * Two more buttons use the public {@link Download#onClick} API: one whose
+ * handler decides the file name when the file is requested, and one whose
+ * handler fails so the IT can check that the browser gets an error response.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerDownloadView", layout = ViewTestLayout.class)
 public class TriggerDownloadView extends AbstractDivView {
@@ -56,6 +63,12 @@ public class TriggerDownloadView extends AbstractDivView {
      */
     static final String HANDLER_BODY = "handler-body-content";
 
+    /**
+     * File name that the {@code #download-on-click} button's handler decides
+     * when the file is requested, sent back in {@code Content-Disposition}.
+     */
+    static final String LAZY_FILENAME = "lazy-name.txt";
+
     @Override
     protected void onShow() {
         NativeButton urlButton = new NativeButton("Download URL");
@@ -70,8 +83,15 @@ public class TriggerDownloadView extends AbstractDivView {
         Input urlField = new Input();
         urlField.setId("url-source");
 
+        NativeButton onClickButton = new NativeButton(
+                "Download.onClick with handler");
+        onClickButton.setId("download-on-click");
+        NativeButton onClickFailureButton = new NativeButton(
+                "Download.onClick with failing handler");
+        onClickFailureButton.setId("download-on-click-failure");
+
         add(urlButton, urlWithFilenameButton, handlerButton, inputButton,
-                urlField);
+                urlField, onClickButton, onClickFailureButton);
 
         new ClickTrigger(urlButton)
                 .triggers(new DownloadAction("/static/sample.bin"));
@@ -86,5 +106,15 @@ public class TriggerDownloadView extends AbstractDivView {
                 }));
         new ClickTrigger(inputButton).triggers(new DownloadAction(
                 new PropertyInput<>(urlField, "value", String.class)));
+
+        Download.onClick(onClickButton,
+                DownloadHandler.fromInputStream(event -> new DownloadResponse(
+                        new ByteArrayInputStream(
+                                HANDLER_BODY.getBytes(StandardCharsets.UTF_8)),
+                        LAZY_FILENAME, "text/plain", HANDLER_BODY.length())));
+        Download.onClick(onClickFailureButton,
+                DownloadHandler.fromInputStream(event -> {
+                    throw new IllegalStateException("report not available");
+                }));
     }
 }

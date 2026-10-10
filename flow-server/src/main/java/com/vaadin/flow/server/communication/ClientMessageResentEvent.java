@@ -28,6 +28,8 @@ import com.vaadin.flow.server.VaadinService;
  * The client re-sends a message when it did not get a response to it, for
  * example because of a timeout. The message is not processed again: the server
  * responds with the response it sent the first time.
+ * 
+ * @since 25.4
  */
 public class ClientMessageResentEvent extends EventObject {
 

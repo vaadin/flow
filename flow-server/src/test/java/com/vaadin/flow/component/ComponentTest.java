@@ -629,6 +629,19 @@ public class ComponentTest {
         assertEquals(ui, child.getUI().get());
     }
 
+    @Test
+    public void getUIOrThrow_attached_returnsUI_detached_throws() {
+        TestComponent child = new TestComponent();
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, child::getUIOrThrow);
+        assertThat(exception.getMessage(), containsString(
+                TestComponent.class.getName() + " is not attached to a UI"));
+
+        UI ui = new UI();
+        ui.add(child);
+        assertSame(ui, child.getUIOrThrow());
+    }
+
     private void assertEmpty(Optional<?> optional) {
         assertEquals(Optional.empty(), optional,
                 "Optional should be empty but is " + optional);

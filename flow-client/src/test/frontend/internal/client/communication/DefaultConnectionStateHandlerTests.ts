@@ -47,8 +47,7 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
       },
       RequestResponseTracker: {
         hasActiveRequest: () => false,
-        endRequest: () => {},
-        fireReconnectionAttempt: (attempt: number) => log.reconnectionAttempts.push(attempt)
+        endRequest: () => {}
       },
       LoadingIndicatorStateHandler: { stopLoading: () => {} },
       Heartbeat: {
@@ -59,7 +58,10 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
         send: () => log.heartbeatSends++
       },
       ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
-      MessageSender: { sendInvocationsToServer: () => {} },
+      MessageSender: {
+        sendInvocationsToServer: () => {},
+        resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt)
+      },
       SystemErrorHandler: {
         handleSessionExpiredError: () => log.sessionExpired++,
         handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
@@ -91,7 +93,7 @@ describe('DefaultConnectionStateHandler', () => {
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry.registry);
     handler.xhrException(xhrError({ rpc: 1 }));
-    // First attempt -> immediate doReconnect -> fireReconnectionAttempt(1).
+    // First attempt -> immediate doReconnect -> resendQueuedMessages(1).
     expect(registry.log.reconnectionAttempts).to.deep.equal([1]);
   });
 

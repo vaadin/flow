@@ -313,8 +313,8 @@ public class PublishedServerEventHandlerRpcHandler
                     throw new IllegalStateException(
                             "Rpc handler may not be called for a detached component");
                 }
-                VaadinContext context = ui.get().getSession().getService()
-                        .getContext();
+                VaadinContext context = ui.get().getSessionOrThrow()
+                        .getService().getContext();
                 DeprecatedPolymerPublishedEventHandler handler = context
                         .getAttribute(Lookup.class)
                         .lookup(DeprecatedPolymerPublishedEventHandler.class);
@@ -329,8 +329,17 @@ public class PublishedServerEventHandlerRpcHandler
             if (decoder.isPresent()) {
                 try {
                     return decoder.get().decode(argValue, convertedType);
-                } catch (RpcDecodeException exception) {
-                    throw new IllegalArgumentException(exception);
+                } catch (RpcDecodeException
+                        | IllegalArgumentException exception) {
+                    // The decoders do not know the method, so name it here to
+                    // tell which of the client callables failed
+                    String msg = String.format("Class '%s' has the method '%s' "
+                            + "whose parameter %d of type '%s' cannot be "
+                            + "decoded from the received value: %s",
+                            method.getDeclaringClass().getName(),
+                            method.getName(), index, type.getName(),
+                            exception.getMessage());
+                    throw new IllegalArgumentException(msg, exception);
                 }
             }
             String msg = String.format("Class '%s' has the method '%s' "

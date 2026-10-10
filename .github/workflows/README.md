@@ -257,3 +257,27 @@ and those beyond the first 12, are counted in the comment, which still
 points at `mvn spotless:apply`. Being a `workflow_run` workflow, a change to
 `formatter-suggestions.yml` takes effect only once it is on the default
 branch.
+
+## Code review
+
+`code-review.yml` has Claude review a pull request and post the findings as
+one review under the `vaadin-review-bot` identity. The review itself is the
+shared [`vaadin/github-actions/code-review`](https://github.com/vaadin/github-actions/tree/main/code-review)
+action; the workflow only decides when it runs.
+
+A review starts when a pull request against `main` is opened or marked ready
+for review, so a draft can be iterated on without one. Pull requests from
+bots and ones titled `chore:` are skipped, and so are pull requests from forks,
+because GitHub gives those no secrets. A review can also be asked for at any
+time by commenting `/code-review` on the pull request, which works for forks
+too, or by requesting a review from `vaadin-review-bot`. Only users with write,
+maintain, or admin permission on the repository can trigger it, the same rule
+the other comment-triggered bots here use.
+
+Configuration:
+
+| Name | Kind | Purpose |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | secret | Key the review runs with. |
+| `VAADIN_REVIEW_BOT` | secret | Token of the `vaadin-review-bot` account, used to post the review and react to the trigger. Without it both fall back to the workflow token. |
+| `CLAUDE_DEBUG` | variable (optional) | Set to `true` to upload the full execution log as a run artifact. It contains every tool call and its result, so it is world-readable on this public repository. |

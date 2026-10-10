@@ -1007,6 +1007,34 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Checks whether a pending invocation is a call of the named method of the
+     * given JavaScript definition.
+     * <p>
+     * This lets a caller recognize what it scheduled itself, such as the router
+     * checking for a pending location change, without matching text in a
+     * script.
+     * <p>
+     * Methods are matched by name only, so a call of any overload with the
+     * given name counts.
+     *
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @param methodName
+     *            the name of the called method, not <code>null</code>
+     * @return <code>true</code> if such a call is pending, <code>false</code>
+     *         otherwise
+     * @since 25.4
+     */
+    public boolean containsPendingJsCall(Class<?> definitionType,
+            String methodName) {
+        return getPendingJavaScriptInvocations()
+                .map(js -> js.getInvocation().getJsCall())
+                .anyMatch(call -> call != null
+                        && call.definitionType() == definitionType
+                        && call.methodName().equals(methodName));
+    }
+
+    /**
      * Records the page title set with {@link Page#setTitle(String)}.
      * <p>
      * You should not set the page title for the browser with this method, use
@@ -1653,6 +1681,7 @@ public class UIInternals implements Serializable {
      * @return {@code true} if this is the outermost navigation, {@code false}
      *         if it is nested inside a navigation that is already being
      *         handled, such as a forward, a reroute or an error view
+     * @since 25.4
      */
     public boolean enterNavigation() {
         boolean outermost = navigationDepth++ == 0;
@@ -1667,6 +1696,8 @@ public class UIInternals implements Serializable {
     /**
      * Marks that the router has finished handling a navigation started with
      * {@link #enterNavigation()}. For framework use only.
+     * 
+     * @since 25.4
      */
     public void exitNavigation() {
         navigationDepth--;
@@ -1684,6 +1715,7 @@ public class UIInternals implements Serializable {
      *
      * @param exception
      *            the exception the error view is rendered for, not {@code null}
+     * @since 25.4
      */
     public void recordNavigationFailure(Exception exception) {
         if (navigationDepth > 0 && navigationFailure == null) {
@@ -1697,6 +1729,7 @@ public class UIInternals implements Serializable {
      *
      * @return the exception, or {@code null} if no error view has been rendered
      *         during the ongoing navigation
+     * @since 25.4
      */
     public @Nullable Exception getNavigationFailure() {
         return navigationFailure;

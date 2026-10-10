@@ -47,7 +47,7 @@ public abstract class AbstractAttachDetachEvent
      * @return the UI this component is attached to
      */
     public UI getUI() {
-        return getSource().getUI().get();
+        return getSource().getUIOrThrow();
     }
 
     /**
@@ -56,7 +56,7 @@ public abstract class AbstractAttachDetachEvent
      * @return the session this component is attached to
      */
     public VaadinSession getSession() {
-        return getUI().getSession();
+        return getUI().getSessionOrThrow();
     }
 
 }

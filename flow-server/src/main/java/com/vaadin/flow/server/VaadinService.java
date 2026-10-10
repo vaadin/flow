@@ -1558,6 +1558,30 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Gets the currently used Vaadin service, throwing an exception if none is
+     * available. Use this method when the code must run within an active
+     * service context.
+     * <p>
+     * If the code can work without a service, use {@link #getCurrent()} instead
+     * and check for null.
+     *
+     * @return the current Vaadin service instance, never <code>null</code>
+     * @throws IllegalStateException
+     *             if no service is bound to the current thread
+     * @see #getCurrent()
+     * @since 25.4
+     */
+    public static VaadinService getCurrentOrThrow() {
+        VaadinService service = getCurrent();
+        if (service == null) {
+            throw new IllegalStateException(
+                    "No currently active VaadinService found. This code must be run while a request is handled "
+                            + "or within UI.access() or VaadinSession.access().");
+        }
+        return service;
+    }
+
+    /**
      * Sets the this Vaadin service as the current service and also sets the
      * current Vaadin request and Vaadin response. This method is used by the
      * framework to set the current instances when a request related to the
@@ -1911,7 +1935,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         // Check for long running tasks
-        Lock lockInstance = ui.getSession().getLockInstance();
+        Lock lockInstance = ui.getSessionOrThrow().getLockInstance();
         if (lockInstance instanceof ReentrantLock
                 && ((ReentrantLock) lockInstance).hasQueuedThreads()) {
             /*
@@ -1998,6 +2022,7 @@ public abstract class VaadinService implements Serializable {
      * @param failure
      *            the exception that made handling the request fail, not
      *            {@code null}
+     * @since 25.4
      */
     public void recordRequestFailure(VaadinRequest request, Exception failure) {
         if (eventBus.hasListener(RequestEndedEvent.class)) {
@@ -2546,7 +2571,7 @@ public abstract class VaadinService implements Serializable {
      */
     public static boolean isCsrfTokenValid(UI ui, String requestToken) {
 
-        if (ui.getSession().getService().getDeploymentConfiguration()
+        if (ui.getSessionOrThrow().getService().getDeploymentConfiguration()
                 .isXsrfProtectionEnabled()) {
             String uiToken = ui.getCsrfToken();
 

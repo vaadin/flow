@@ -799,7 +799,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private ObjectNode getInitialUidl(UI ui) {
             ObjectNode json = new UidlWriter().createUidl(ui, false);
 
-            VaadinSession session = ui.getSession();
+            VaadinSession session = ui.getSessionOrThrow();
             if (session.getConfiguration().isXsrfProtectionEnabled()) {
                 writeSecurityKeyUIDL(json, ui);
             }
@@ -1485,7 +1485,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static ObjectNode getInitialUidl(UI ui) {
         ObjectNode json = new UidlWriter().createUidl(ui, false);
 
-        VaadinSession session = ui.getSession();
+        VaadinSession session = ui.getSessionOrThrow();
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
             writeSecurityKeyUIDL(json, ui);
         }
