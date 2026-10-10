@@ -333,6 +333,9 @@ internal class GradlePluginAdapter private constructor(
     override fun isNpmExcludeWebComponents(): Boolean =
         config.npmExcludeWebComponents.get()
 
+    override fun isNpmAllowUrlVersions(): Boolean =
+        config.npmAllowUrlVersions.get()
+
     override fun checkRuntimeDependency(
         groupId: String,
         artifactId: String,

@@ -167,6 +167,8 @@ public class Options implements Serializable {
 
     private boolean npmExcludeWebComponents = false;
 
+    private boolean npmAllowUrlVersions = false;
+
     /**
      * Removes generated files from a previous execution that are no more
      * created.
@@ -1143,6 +1145,33 @@ public class Options implements Serializable {
      */
     public Options withNpmExcludeWebComponents(boolean exclude) {
         this.npmExcludeWebComponents = exclude;
+        return this;
+    }
+
+    /**
+     * Gets whether npm packages may be declared with a URL version, such as a
+     * link to a tarball, instead of a version number.
+     *
+     * @return {@code true} if URL versions are allowed
+     * @since 25.4
+     */
+    public boolean isNpmAllowUrlVersions() {
+        return npmAllowUrlVersions;
+    }
+
+    /**
+     * Sets whether npm packages may be declared with a URL version, such as a
+     * link to a tarball, instead of a version number. When not allowed, an
+     * {@code @NpmPackage} with a URL version fails the build and a URL version
+     * in a versions file is ignored.
+     *
+     * @param allow
+     *            whether to allow URL versions
+     * @return this builder
+     * @since 25.4
+     */
+    public Options withNpmAllowUrlVersions(boolean allow) {
+        this.npmAllowUrlVersions = allow;
         return this;
     }
 

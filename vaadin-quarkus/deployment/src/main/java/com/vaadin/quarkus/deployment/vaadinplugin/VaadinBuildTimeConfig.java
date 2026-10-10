@@ -271,6 +271,13 @@ public interface VaadinBuildTimeConfig {
     boolean npmExcludeWebComponents();
 
     /**
+     * Whether npm packages may be declared with a URL version, such as a link
+     * to a tarball, instead of a version number.
+     */
+    @WithDefault("false")
+    boolean npmAllowUrlVersions();
+
+    /**
      * Set to {@code true} to ignore node/npm tool version checks.
      * <p>
      * </p>

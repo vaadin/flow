@@ -205,6 +205,9 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
     private boolean npmExcludeWebComponents;
 
+    @Parameter(property = InitParameters.NPM_ALLOW_URL_VERSIONS, defaultValue = "false")
+    private boolean npmAllowUrlVersions;
+
     /**
      * Set to {@code true} to ignore node/npm tool version checks.
      */
@@ -611,6 +614,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isNpmExcludeWebComponents() {
         return npmExcludeWebComponents;
+    }
+
+    @Override
+    public boolean isNpmAllowUrlVersions() {
+        return npmAllowUrlVersions;
     }
 
     @Override
