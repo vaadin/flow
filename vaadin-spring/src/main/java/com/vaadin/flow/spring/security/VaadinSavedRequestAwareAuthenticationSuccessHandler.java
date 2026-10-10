@@ -140,8 +140,16 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
          *            the authentication created during the authentication
          *            process
          * @param savedUrl
-         *            the URL the user tried to access before being asked to log
-         *            in, or {@code null} if there is none
+         *            the absolute URL the user tried to access before being
+         *            asked to log in, or {@code null} if there is none. When
+         *            the request was intercepted by Spring Security, this is
+         *            the saved request URL, which may carry Spring Security's
+         *            {@code continue} query parameter (for example
+         *            {@code http://localhost:8080/admin?continue}); when the
+         *            navigation was intercepted by Vaadin, it is the plain
+         *            absolute URL. Parse it, for example with
+         *            {@link java.net.URI#getPath()}, rather than comparing it
+         *            to a path directly
          * @return the URL to redirect to, or {@code null} to redirect to the
          *         saved URL or the default target URL as if no resolver was set
          */

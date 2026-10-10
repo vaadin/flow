@@ -545,7 +545,7 @@ class VaadinSecurityConfigurerTest {
     void successUrlResolver_withLoginView_redirectsToResolvedUrl()
             throws Exception {
         http.with(configurer, c -> c.loginView("/login")
-                .defaultSuccessUrl("/dashboard")
+                .defaultSuccessUrl("/dashboard", true)
                 .successUrlResolver((request, authentication,
                         savedUrl) -> "/landing-" + authentication.getName()))
                 .build();

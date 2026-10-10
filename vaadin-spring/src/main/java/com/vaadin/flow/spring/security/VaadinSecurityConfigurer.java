@@ -441,6 +441,11 @@ public final class VaadinSecurityConfigurer
      * {@link #loginView(String)} or {@link #oauth2LoginPage(String)} and their
      * variants.
      * <p>
+     * If the handler redirects to a URL other than the login view, access to
+     * that URL must be permitted explicitly, as it is otherwise denied by the
+     * default authorization rules and the user ends up back on the login view
+     * without seeing the error.
+     * <p>
      * For auditing only, listening to Spring Security's
      * {@code AbstractAuthenticationFailureEvent} is an alternative that keeps
      * the default behavior.
