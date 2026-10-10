@@ -60,6 +60,7 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
@@ -575,6 +576,12 @@ public class Element extends Node<Element> {
                 getStateProvider().removeAttribute(getNode(),
                         lowerCaseAttribute);
             }
+        } else if (getNode().hasFeature(ElementAttributeMap.class) && getNode()
+                .getFeatureIfInitialized(ElementAttributeMap.class)
+                .filter(map -> map.hasSignal(lowerCaseAttribute)).isPresent()) {
+            // A bound attribute whose signal value is null is not present,
+            // but removing it must still fail while the binding is active
+            getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
         }
         return this;
     }
