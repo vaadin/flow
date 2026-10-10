@@ -48,6 +48,9 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
@@ -74,8 +77,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -333,6 +341,33 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertTrue(hasDevServerProcess(handler));
         runDestroy();
         assertFalse(hasDevServerProcess(handler));
+    }
+
+    @Tag("dev-mode-tagged")
+    public static class TaggedComponent extends Component {
+    }
+
+    @Test
+    void listener_should_unregisterComponentClasses_onDestroy()
+            throws Exception {
+        Map<String, Object> attributes = new HashMap<>();
+        doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(servletContext)
+                .setAttribute(anyString(), any());
+        when(servletContext.getAttribute(argThat(attributes::containsKey)))
+                .thenAnswer(invocation -> attributes
+                        .get(invocation.<String> getArgument(0)));
+        doAnswer(invocation -> attributes.remove(invocation.getArgument(0)))
+                .when(servletContext).removeAttribute(anyString());
+        classes.add(TaggedComponent.class);
+
+        process();
+        assertEquals(Set.of(TaggedComponent.class),
+                ComponentUtil.getComponentsByTag("dev-mode-tagged"));
+
+        runDestroy();
+        assertTrue(
+                ComponentUtil.getComponentsByTag("dev-mode-tagged").isEmpty());
     }
 
     @LoadDependenciesOnStartup
