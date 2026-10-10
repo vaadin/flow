@@ -21,7 +21,6 @@ import jakarta.servlet.annotation.HandlesTypes;
 import jakarta.servlet.annotation.WebListener;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.LoggerFactory;
@@ -96,21 +95,14 @@ public class DevModeStartupListener
             throws VaadinInitializerException {
         lookupDevModeHandlerManager(context).initDevModeHandler(classes,
                 context);
-        Set<Class<? extends Component>> registeredClasses = new HashSet<>();
         classes.stream().filter(Component.class::isAssignableFrom)
                 .forEach(clazz -> {
                     Tag tag = clazz.getAnnotation(Tag.class);
                     if (tag != null) {
-                        Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
                         ComponentUtil.registerComponentClass(tag.value(),
-                                componentClass);
-                        registeredClasses.add(componentClass);
+                                (Class<? extends Component>) clazz);
                     }
                 });
-        // The servlet container creates one instance of this class as an
-        // initializer and another one as a context listener, so the classes
-        // to unregister on destroy are passed on through the context
-        context.setAttribute(new RegisteredComponentClasses(registeredClasses));
     }
 
     @Override
@@ -143,17 +135,7 @@ public class DevModeStartupListener
             devModeHandlerManager.stopDevModeHandler();
         }
         devModeHandlerManager = null;
-        unregisterComponentClasses(
-                new VaadinServletContext(ctx.getServletContext()));
-    }
-
-    private static void unregisterComponentClasses(VaadinContext context) {
-        RegisteredComponentClasses registered = context
-                .getAttribute(RegisteredComponentClasses.class);
-        if (registered != null) {
-            ComponentUtil.unregisterComponentClasses(registered.classes());
-            context.removeAttribute(RegisteredComponentClasses.class);
-        }
+        ComponentUtil.unregisterAllComponentClasses();
     }
 
     private DevModeHandlerManager lookupDevModeHandlerManager(
@@ -165,14 +147,5 @@ public class DevModeStartupListener
             return null;
         }
         return lookup.lookup(DevModeHandlerManager.class);
-    }
-
-    /**
-     * The component classes that this listener registered with
-     * {@link ComponentUtil} for a context, to be unregistered when the context
-     * is destroyed.
-     */
-    private record RegisteredComponentClasses(
-            Set<Class<? extends Component>> classes) implements Serializable {
     }
 }

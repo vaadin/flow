@@ -135,21 +135,6 @@ class ComponentUtilTest {
     }
 
     @Test
-    void unregisterComponentClasses_removesClassesFromAllTags() {
-        ComponentUtil.registerComponentClass("first-tag", TestDiv.class);
-        ComponentUtil.registerComponentClass("second-tag", TestDiv.class);
-        ComponentUtil.registerComponentClass("second-tag", TestComponent.class);
-
-        ComponentUtil.unregisterComponentClasses(List.of(TestDiv.class));
-
-        assertTrue(ComponentUtil.getComponentsByTag("first-tag").isEmpty());
-        assertEquals(Set.of(TestComponent.class),
-                ComponentUtil.getComponentsByTag("second-tag"));
-
-        ComponentUtil.unregisterComponentClasses(List.of(TestComponent.class));
-    }
-
-    @Test
     void getComponentsByTag_withUnregisteredTag_shouldReturnEmptySet() {
         String unregisteredTag = "unregistered-tag";
 

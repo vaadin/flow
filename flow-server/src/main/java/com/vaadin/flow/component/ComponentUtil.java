@@ -90,26 +90,18 @@ public class ComponentUtil {
     }
 
     /**
-     * Removes the given component classes from the mapping of HTML tags to
-     * component classes, regardless of which tags they were registered with.
+     * Removes all component classes from the mapping of HTML tags to component
+     * classes.
      * <p>
      * The mapping is static, so it outlives the application that registered the
-     * classes. Unregister the classes of an application when it stops, so that
-     * the mapping does not keep them, and through them their class loader,
-     * reachable after the application has been reloaded in a new class loader.
-     * <p>
-     * The classes are removed for every application in the JVM, including other
-     * applications that registered the same classes through a shared class
-     * loader.
+     * classes. Clear it when the application stops, so that the mapping does
+     * not keep the classes, and through them their class loader, reachable
+     * after the application has been reloaded in a new class loader.
      *
-     * @param componentClasses
-     *            the component classes to remove, not {@code null}
      * @see #registerComponentClass(String, Class)
      */
-    public static void unregisterComponentClasses(
-            Collection<Class<? extends Component>> componentClasses) {
-        tagToComponentsMap.values()
-                .forEach(classes -> classes.removeAll(componentClasses));
+    public static void unregisterAllComponentClasses() {
+        tagToComponentsMap.clear();
     }
 
     /**
