@@ -47,12 +47,18 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class RouteConfigurationTest {
@@ -71,13 +77,13 @@ class RouteConfigurationTest {
 
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.getFrontendFolder())
+        when(configuration.getFrontendFolder())
                 .thenReturn(new File("/frontend"));
 
-        vaadinService = Mockito.mock(MockService.class);
-        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
-        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
-        Mockito.when(vaadinService.getDeploymentConfiguration())
+        vaadinService = mock(MockService.class);
+        when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        when(vaadinService.getContext()).thenReturn(vaadinContext);
+        when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(configuration);
 
         VaadinService.setCurrent(vaadinService);
@@ -410,9 +416,9 @@ class RouteConfigurationTest {
 
     @Test
     void addListenerToApplicationScoped_noEventForSessionChange() {
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
-        Mockito.when(vaadinService.getServlet()).thenReturn(servlet);
+        VaadinServlet servlet = mock(VaadinServlet.class);
+        when(servlet.getServletContext()).thenReturn(servletContext);
+        when(vaadinService.getServlet()).thenReturn(servlet);
 
         try {
             CurrentInstance.set(VaadinService.class, vaadinService);
@@ -453,9 +459,9 @@ class RouteConfigurationTest {
 
     @Test
     void addListenerToSessionScoped_alsoEventsForApplicationScope() {
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
-        Mockito.when(vaadinService.getServlet()).thenReturn(servlet);
+        VaadinServlet servlet = mock(VaadinServlet.class);
+        when(servlet.getServletContext()).thenReturn(servletContext);
+        when(vaadinService.getServlet()).thenReturn(servlet);
 
         try {
             CurrentInstance.set(VaadinService.class, vaadinService);
@@ -524,9 +530,9 @@ class RouteConfigurationTest {
             registry.setRoute("path", Secondary.class, Collections.emptyList());
         });
 
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        Mockito.when(servlet.getServletContext()).thenReturn(servletContext);
-        Mockito.when(vaadinService.getServlet()).thenReturn(servlet);
+        VaadinServlet servlet = mock(VaadinServlet.class);
+        when(servlet.getServletContext()).thenReturn(servletContext);
+        when(vaadinService.getServlet()).thenReturn(servlet);
 
         try {
             CurrentInstance.set(VaadinService.class, vaadinService);
@@ -548,11 +554,11 @@ class RouteConfigurationTest {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
 
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             ((Command) args[0]).execute();
             return null;
-        }).when(registry).update(Mockito.any(Command.class));
+        }).when(registry).update(any(Command.class));
 
         routeConfiguration.update(() -> {
             routeConfiguration.getHandledRegistry().clean();
@@ -561,18 +567,18 @@ class RouteConfigurationTest {
                     .forEach(routeConfiguration::setAnnotatedRoute);
         });
 
-        Mockito.verify(registry).update(Mockito.any());
+        verify(registry).update(any());
 
-        Mockito.verify(registry).setRoute("home", MyRoute.class,
+        verify(registry).setRoute("home", MyRoute.class,
                 Collections.emptyList());
 
-        Mockito.verify(registry).setRoute("info", MyInfo.class,
+        verify(registry).setRoute("info", MyInfo.class,
                 Collections.emptyList());
 
-        Mockito.verify(registry).setRoute("palace", MyPalace.class,
+        verify(registry).setRoute("palace", MyPalace.class,
                 Collections.emptyList());
 
-        Mockito.verify(registry).setRoute("modular", MyModular.class,
+        verify(registry).setRoute("modular", MyModular.class,
                 Collections.emptyList());
     }
 
@@ -584,11 +590,11 @@ class RouteConfigurationTest {
 
         routeConfiguration.setAnnotatedRoute(MyRouteWithAliases.class);
 
-        Mockito.verify(registry).setRoute("withAliases",
-                MyRouteWithAliases.class, Collections.emptyList());
-        Mockito.verify(registry).setRoute("version", MyRouteWithAliases.class,
+        verify(registry).setRoute("withAliases", MyRouteWithAliases.class,
                 Collections.emptyList());
-        Mockito.verify(registry).setRoute("person", MyRouteWithAliases.class,
+        verify(registry).setRoute("version", MyRouteWithAliases.class,
+                Collections.emptyList());
+        verify(registry).setRoute("person", MyRouteWithAliases.class,
                 Collections.emptyList());
 
     }
@@ -601,26 +607,72 @@ class RouteConfigurationTest {
 
         routeConfiguration.setAnnotatedRoute(SingleLayout.class);
 
-        Mockito.verify(registry).setRoute("single", SingleLayout.class,
+        verify(registry).setRoute("single", SingleLayout.class,
                 Collections.singletonList(MainLayout.class));
 
         routeConfiguration.setAnnotatedRoute(DoubleLayout.class);
 
-        Mockito.verify(registry).setRoute("double", DoubleLayout.class,
+        verify(registry).setRoute("double", DoubleLayout.class,
                 Arrays.asList(MiddleLayout.class, MainLayout.class));
     }
 
     @Test
     void parentLayoutAnnotatedClass_parentsCorrecltCollected() {
-        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        RouteRegistry registry = mock(RouteRegistry.class);
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
 
         routeConfiguration.setParentAnnotatedRoute("middle",
                 MiddleLayout.class);
 
-        Mockito.verify(registry).setRoute("middle", MiddleLayout.class,
+        verify(registry).setRoute("middle", MiddleLayout.class,
                 Collections.singletonList(MainLayout.class));
+    }
+
+    @Test
+    void developmentOnlyRoute_productionMode_onlyExplicitPathIsRegistered() {
+        setProductionMode(true);
+        RouteConfiguration applicationConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        RouteConfiguration sessionConfiguration = RouteConfiguration
+                .forRegistry(getRegistry(session));
+
+        applicationConfiguration.setAnnotatedRoute(DevelopmentOnlyView.class);
+        sessionConfiguration.setAnnotatedRoute(DevelopmentOnlyView.class);
+
+        assertFalse(applicationConfiguration
+                .isRouteRegistered(DevelopmentOnlyView.class));
+        assertFalse(sessionConfiguration
+                .isRouteRegistered(DevelopmentOnlyView.class));
+
+        applicationConfiguration.setRoute("custom", DevelopmentOnlyView.class);
+
+        assertEquals(List.of("custom"),
+                applicationConfiguration.getAvailableRoutes().stream()
+                        .map(RouteData::getTemplate).toList());
+    }
+
+    @Test
+    void developmentOnlyRoute_developmentMode_isRegisteredWithAliases() {
+        setProductionMode(false);
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+
+        routeConfiguration.setAnnotatedRoute(DevelopmentOnlyView.class);
+
+        assertEquals(Optional.of(DevelopmentOnlyView.class),
+                routeConfiguration.getRoute("dev-tools"));
+        assertEquals(Optional.of(DevelopmentOnlyView.class),
+                routeConfiguration.getRoute("dev-alias"));
+    }
+
+    private void setProductionMode(boolean productionMode) {
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
+        when(applicationConfiguration.isProductionMode())
+                .thenReturn(productionMode);
+        vaadinContext.setAttribute(ApplicationConfiguration.class,
+                applicationConfiguration);
     }
 
     private void awaitCountDown(CountDownLatch countDownLatch) {
@@ -632,15 +684,21 @@ class RouteConfigurationTest {
     }
 
     private RouteRegistry mockRegistry() {
-        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        RouteRegistry registry = mock(RouteRegistry.class);
         VaadinContext context = new MockVaadinContext();
-        Mockito.when(registry.getContext()).thenReturn(context);
+        when(registry.getContext()).thenReturn(context);
         return registry;
     }
 
     @Tag("div")
     @Route("home")
     private static class MyRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route(value = "dev-tools", developmentOnly = true)
+    @RouteAlias("dev-alias")
+    private static class DevelopmentOnlyView extends Component {
     }
 
     @Tag("div")

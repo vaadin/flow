@@ -99,6 +99,24 @@ class FrontendDependenciesTest {
     }
 
     @Test
+    void developmentOnlyRoute_collectedOnlyOutsideProductionMode() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(DevelopmentOnlyRoute.class));
+
+        FrontendDependencies development = new FrontendDependencies(classFinder,
+                false, null, true, false);
+        DepsTests.assertImportsExcludingUI(development.getModules(),
+                "dev-only.js");
+
+        FrontendDependencies production = new FrontendDependencies(classFinder,
+                false, null, true, true);
+        DepsTests.assertImportsExcludingUI(production.getModules());
+        assertFalse(production.getEntryPoints().stream()
+                .anyMatch(entryPoint -> entryPoint.getName()
+                        .equals(DevelopmentOnlyRoute.class.getName())));
+    }
+
+    @Test
     void appShellConfigurator_collectedAsEntryPoint()
             throws ClassNotFoundException {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
@@ -602,6 +620,12 @@ class FrontendDependenciesTest {
                 MyComponent component) {
             Referenced ref = new Referenced();
         }
+    }
+
+    @Route(value = "dev-only", developmentOnly = true)
+    @JsModule("dev-only.js")
+    @Tag("div")
+    public static class DevelopmentOnlyRoute extends Component {
     }
 
     @Route("reference")
