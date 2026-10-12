@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,7 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
@@ -123,6 +125,23 @@ class RouteRegistryHotswapperTest {
                 appRouteRegistryTracker.added.stream()
                         .map(RouteBaseData::getNavigationTarget)
                         .collect(Collectors.toSet()));
+    }
+
+    @Test
+    void onClassLoadEvent_applicationRegistry_reflectionCacheClearedBeforeRoutesUpdated() {
+        ReflectionCache<Object, String> cache = new ReflectionCache<>(
+                Class::getName);
+        cache.get(MyRouteB.class);
+        AtomicBoolean cachedWhenRoutesChanged = new AtomicBoolean(true);
+        ApplicationRouteRegistry.getInstance(vaadinService.getContext())
+                .addRoutesChangeListener(event -> cachedWhenRoutesChanged
+                        .set(cache.contains(MyRouteB.class)));
+
+        updater.onClassesChange(new HotswapClassEvent(vaadinService,
+                Set.of(MyRouteB.class), true));
+
+        assertFalse(cachedWhenRoutesChanged.get(),
+                "Expected reflection data of modified classes to be cleared before routes are registered again");
     }
 
     @Test
