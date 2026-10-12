@@ -25,7 +25,12 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     pushNotConnected: 0,
     handled: [] as unknown[],
     pushed: [] as string[],
-    closed: 0
+    closed: 0,
+    pushClientTimeout: 0,
+    lastSeenServerSyncId: 5,
+    subscribeError: null as Error | null,
+    // When set, subscribe() resolves only once this is called
+    releaseSubscription: null as (() => void) | null
   };
   const capture: AtmosphereCapture = { request: null, handlers: null };
   const fakeSubscription = {
@@ -41,6 +46,14 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
         async subscribe(request: Record<string, unknown>, handlers: Record<string, Handler>) {
           capture.request = request;
           capture.handlers = handlers;
+          if (log.releaseSubscription) {
+            await new Promise<void>((resolve) => {
+              log.releaseSubscription = resolve;
+            });
+          }
+          if (log.subscribeError) {
+            throw log.subscribeError;
+          }
           return fakeSubscription;
         }
       }
@@ -57,7 +70,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
       pushOk: () => log.pushOk++,
       pushError: () => log.pushError++,
       pushClosed: () => log.pushClosed++,
-      pushClientTimeout: () => {},
+      pushClientTimeout: () => log.pushClientTimeout++,
       pushReconnectPending: () => {},
       pushInvalidContent: (_c: unknown, message: string) => log.pushInvalidContent.push(message),
       pushNotConnected: () => log.pushNotConnected++,
@@ -76,7 +89,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     ),
     MessageHandler: {
       getPushId: () => null,
-      getLastSeenServerSyncId: () => 5,
+      getLastSeenServerSyncId: () => log.lastSeenServerSyncId,
       handleMessage: (json: unknown) => log.handled.push(json)
     },
     ResourceLoader: { loadScript: () => {} }
@@ -178,6 +191,53 @@ describe('AtmospherePushConnection', () => {
       expect(request.enableProtocol).to.be.true;
       expect(request.messageDelimiter).to.equal('|');
       expect(request.reconnect).to.be.true;
+    });
+
+    it('reads the last seen sync id anew for every request', async () => {
+      // Ported from the header-supplier case: atmosphere.js reads the headers for each request it makes.
+      const { registry, log, capture } = setupPush();
+      new AtmospherePushConnection(registry);
+      await tick();
+      const headers = capture.request!.headers as Record<string, string>;
+      expect(headers['X-Vaadin-LastSeenServerSyncId']).to.equal('5');
+
+      log.lastSeenServerSyncId = 8;
+      expect(headers['X-Vaadin-LastSeenServerSyncId']).to.equal('8');
+    });
+
+    it('sends pushes made before the subscription is handed out, in order', async () => {
+      // atmosphere.js may report a connection open before subscribe() resolves.
+      const { registry, log, capture } = setupPush();
+      log.releaseSubscription = () => {};
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      capture.handlers!.open(response('websocket'));
+      connection.push({ a: 1 });
+      connection.push({ b: 2 });
+      expect(log.pushed).to.deep.equal([]);
+
+      log.releaseSubscription();
+      await tick();
+      expect(log.pushed).to.deep.equal(['7|{"a":1}', '7|{"b":2}']);
+    });
+
+    it('reports an error when neither transport can connect', async () => {
+      const { registry, log } = setupPush();
+      log.subscribeError = new Error('Long-polling connection failed');
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      await tick();
+      expect(log.pushError).to.equal(1);
+      expect(connection.isActive()).to.be.false;
+    });
+
+    it('reports a client timeout', async () => {
+      const { registry, log, capture } = setupPush();
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      capture.handlers!.clientTimeout({ transport: 'long-polling' });
+      expect(log.pushClientTimeout).to.equal(1);
+      expect(connection.isActive()).to.be.false;
     });
 
     it('becomes connected and bidirectional on a websocket open, and fragments pushes', async () => {

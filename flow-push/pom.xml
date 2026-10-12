@@ -15,6 +15,7 @@
     <jandex.skip>true</jandex.skip>
     <pushDirectory>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push</pushDirectory>
     <vaadinPush.js>${pushDirectory}/vaadinPush.js</vaadinPush.js>
+    <atmosphere.js.registry>https://registry.npmjs.org</atmosphere.js.registry>
     <vaadinPush-min.js>${pushDirectory}/vaadinPush-min.js</vaadinPush-min.js>
   </properties>
 
@@ -82,9 +83,12 @@
                 <property location="${project.build.sourceDirectory}/../templates" name="templates.dir"/>
                 <property location="${javascript.unpack}/atmosphere.js-${atmosphere.js.version}.tgz" name="atmosphere.js.tgz"/>
 
-                <!-- atmosphere.js 5 is published to npm only -->
+                <!-- atmosphere.js 5 is published to npm only, so this needs
+                     access to an npm registry: Maven mirrors and offline mode
+                     do not apply. Point atmosphere.js.registry at an npm proxy
+                     where the public registry is not reachable. -->
                 <mkdir dir="${javascript.unpack}"/>
-                <get dest="${atmosphere.js.tgz}" skipexisting="true" src="https://registry.npmjs.org/atmosphere.js/-/atmosphere.js-${atmosphere.js.version}.tgz"/>
+                <get dest="${atmosphere.js.tgz}" skipexisting="true" src="${atmosphere.js.registry}/atmosphere.js/-/atmosphere.js-${atmosphere.js.version}.tgz"/>
                 <checksum algorithm="SHA-512" file="${atmosphere.js.tgz}" property="${atmosphere.js.sha512}" verifyproperty="atmosphere.js.verified"/>
                 <fail message="${atmosphere.js.tgz} does not match the atmosphere.js.sha512 checksum">
                   <condition>
@@ -94,11 +98,18 @@
                 <untar compression="gzip" dest="${javascript.unpack}" src="${atmosphere.js.tgz}">
                   <patternset>
                     <include name="package/dist/atmosphere.global.js"/>
-                    <include name="package/dist/atmosphere.global.js.map"/>
                   </patternset>
                 </untar>
 
-                <loadfile property="atmosphere.js.contents" srcfile="${javascript.unpack}/package/dist/atmosphere.global.js"/>
+                <!-- The source map of the library does not match its position
+                     inside vaadinPush.js, so it is not shipped or referenced -->
+                <loadfile property="atmosphere.js.contents" srcfile="${javascript.unpack}/package/dist/atmosphere.global.js">
+                  <filterchain>
+                    <tokenfilter>
+                      <replaceregex flags="g" pattern="//# sourceMappingURL=\S*" replace=""/>
+                    </tokenfilter>
+                  </filterchain>
+                </loadfile>
 
                 <loadfile property="vaadinPush.js.contents" srcfile="${templates.dir}/vaadinPush.js.tpl">
                   <filterchain>
@@ -111,7 +122,6 @@
                 <!-- atmosphere.js ships minified, so both variants are the
                      same file -->
                 <copy file="${vaadinPush.js}" tofile="${vaadinPush-min.js}"/>
-                <copy file="${javascript.unpack}/package/dist/atmosphere.global.js.map" todir="${pushDirectory}"/>
               </target>
             </configuration>
           </execution>

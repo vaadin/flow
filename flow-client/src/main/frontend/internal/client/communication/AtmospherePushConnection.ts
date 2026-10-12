@@ -305,7 +305,11 @@ export class AtmospherePushConnection implements PushConnection {
     if (this.#socket) {
       messages.forEach((message) => this.#socket!.push(message));
     } else {
-      void this.#subscription!.then((subscription) => messages.forEach((message) => subscription.push(message)));
+      this.#subscription!.then((subscription) => messages.forEach((message) => subscription.push(message))).catch(
+        () => {
+          // A subscription that failed is reported through onError
+        }
+      );
     }
   }
 
