@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -33,6 +31,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
@@ -78,9 +77,28 @@ public abstract class NodeMap extends NodeFeature {
 
         Stream<Serializable> streamValues();
 
-        // Named set instead of put to avoid incompatibility with HashMap where
-        // put returns the previous value
-        void set(String key, Serializable value);
+        /**
+         * Stores a value for the given key.
+         *
+         * @param key
+         *            the key to use
+         * @param value
+         *            the value to store
+         * @return the instance to use from now on, either this instance or a
+         *         new instance if the set of keys changed
+         */
+        Values put(String key, Serializable value);
+
+        /**
+         * Removes the value for the given key, which must be present.
+         *
+         * @param key
+         *            the key to remove
+         * @return the instance to use from now on, or <code>null</code> if no
+         *         values remain
+         */
+        @Nullable
+        Values remove(String key);
     }
 
     private static class SingleValue implements Values {
@@ -125,21 +143,35 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         @Override
-        public void set(String key, Serializable value) {
-            assert key.equals(this.key);
-            this.value = value;
+        public Values put(String key, Serializable value) {
+            if (this.key.equals(key)) {
+                this.value = value;
+                return this;
+            }
+            SharedKeySet keySet = SharedKeySet
+                    .of(new String[] { this.key, key });
+            SharedKeySetValues result = SharedKeySetValues.create(keySet);
+            result.setValue(keySet.indexOf(this.key), this.value);
+            result.setValue(keySet.indexOf(key), value);
+            return result;
+        }
+
+        @Override
+        public @Nullable Values remove(String key) {
+            assert containsKey(key);
+            return null;
         }
     }
 
     /**
-     * An immutable set of keys that is shared between all {@link ArrayValues}
-     * instances that contain exactly those keys, regardless of the order in
-     * which the keys were added. The key order of the instance defines the
-     * order of the values in {@link ArrayValues}. Instances are canonicalized
-     * through a global registry so that each distinct set of keys is stored
-     * only once regardless of how many maps use it. The registry only holds
-     * weak references so that key sets that are no longer used by any map can
-     * be garbage collected.
+     * An immutable set of keys that is shared between all
+     * {@link SharedKeySetValues} instances that contain exactly those keys,
+     * regardless of the order in which the keys were added. The key order of
+     * the instance defines the order of the values in
+     * {@link SharedKeySetValues}. Instances are canonicalized through a global
+     * registry so that each distinct set of keys is stored only once regardless
+     * of how many maps use it. The registry only holds weak references so that
+     * key sets that are no longer used by any map can be garbage collected.
      */
     private static final class SharedKeySet extends AbstractSet<String>
             implements Serializable {
@@ -265,29 +297,41 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * Stores values in an exactly sized array, in the order defined by a
-     * {@link SharedKeySet}. Used when there are multiple keys.
+     * Base class for values with multiple keys. Stores the values in the order
+     * defined by a {@link SharedKeySet}, with specialized subclasses for small
+     * sizes to avoid the overhead of a separate array.
      */
-    private static class ArrayValues implements Values {
+    private abstract static class SharedKeySetValues implements Values {
 
-        private SharedKeySet keySet;
+        private final SharedKeySet keySet;
 
-        private Serializable[] values;
-
-        public ArrayValues(SingleValue previousValue) {
-            keySet = SharedKeySet.of(new String[] { previousValue.key });
-            values = new Serializable[] { previousValue.value };
+        private SharedKeySetValues(SharedKeySet keySet) {
+            this.keySet = keySet;
         }
+
+        private static SharedKeySetValues create(SharedKeySet keySet) {
+            return switch (keySet.size()) {
+            case 2 -> new TwoValues(keySet);
+            case 3 -> new ThreeValues(keySet);
+            case 4 -> new FourValues(keySet);
+            case 5 -> new FiveValues(keySet);
+            default -> new ArrayValues(keySet);
+            };
+        }
+
+        abstract Serializable getValue(int index);
+
+        abstract void setValue(int index, Serializable value);
 
         @Override
         public int size() {
-            return values.length;
+            return keySet.size();
         }
 
         @Override
         public Serializable get(String key) {
             int index = keySet.indexOf(key);
-            return index < 0 ? null : values[index];
+            return index < 0 ? null : getValue(index);
         }
 
         @Override
@@ -302,71 +346,209 @@ public abstract class NodeMap extends NodeFeature {
 
         @Override
         public Stream<Serializable> streamValues() {
-            return Arrays.stream(values);
+            return IntStream.range(0, size()).mapToObj(this::getValue);
         }
 
         @Override
-        public void set(String key, Serializable value) {
+        public Values put(String key, Serializable value) {
             int index = keySet.indexOf(key);
             if (index >= 0) {
-                values[index] = value;
-                return;
+                setValue(index, value);
+                return this;
             }
 
-            SharedKeySet newKeySet = keySet.withKey(key);
-            Serializable[] newValues = copyValues(newKeySet);
-            newValues[newKeySet.indexOf(key)] = value;
-
-            keySet = newKeySet;
-            values = newValues;
+            SharedKeySetValues result = copyTo(keySet.withKey(key));
+            result.setValue(result.keySet.indexOf(key), value);
+            return result;
         }
 
-        /**
-         * Removes the value for the given key.
-         *
-         * @param key
-         *            the key to remove
-         * @return the removed value, or <code>null</code> if there was no value
-         *         for the key
-         */
-        public Serializable remove(String key) {
+        @Override
+        public Values remove(String key) {
             int index = keySet.indexOf(key);
-            if (index < 0) {
-                return null;
+            assert index >= 0;
+
+            if (size() == 2) {
+                int remaining = 1 - index;
+                return new SingleValue(keySet.keys[remaining],
+                        getValue(remaining));
             }
-            Serializable oldValue = values[index];
-
-            SharedKeySet newKeySet = keySet.withoutKey(index);
-            values = copyValues(newKeySet);
-            keySet = newKeySet;
-
-            return oldValue;
+            return copyTo(keySet.withoutKey(index));
         }
 
         /**
-         * Copies the current values into a new array in the order defined by
-         * the given key set. Keys that are not present in the current key set
-         * get a <code>null</code> value.
+         * Creates a new instance for the given key set with the current values
+         * copied into the order defined by that key set. Keys that are not
+         * present in the current key set get a <code>null</code> value.
          */
-        private Serializable[] copyValues(SharedKeySet target) {
-            Serializable[] result = new Serializable[target.size()];
-            for (int i = 0; i < result.length; i++) {
+        private SharedKeySetValues copyTo(SharedKeySet target) {
+            SharedKeySetValues result = create(target);
+            for (int i = 0; i < target.size(); i++) {
                 int sourceIndex = keySet.indexOf(target.keys[i]);
                 if (sourceIndex >= 0) {
-                    result[i] = values[sourceIndex];
+                    result.setValue(i, getValue(sourceIndex));
                 }
             }
             return result;
         }
 
-        private void readObject(ObjectInputStream in)
-                throws IOException, ClassNotFoundException {
-            in.defaultReadObject();
+        protected Object readResolve() {
             // The registry may define a different key order for the same keys
             // than the one that was serialized
-            SharedKeySet canonical = SharedKeySet.of(keySet.keys);
-            values = copyValues(canonical);
-            keySet = canonical;
+            return copyTo(SharedKeySet.of(keySet.keys));
+        }
+    }
+
+    private static class TwoValues extends SharedKeySetValues {
+        private Serializable value0;
+        private Serializable value1;
+
+        private TwoValues(SharedKeySet keySet) {
+            super(keySet);
+        }
+
+        @Override
+        Serializable getValue(int index) {
+            return switch (index) {
+            case 0 -> value0;
+            case 1 -> value1;
+            default -> throw new IndexOutOfBoundsException(index);
+            };
+        }
+
+        @Override
+        void setValue(int index, Serializable value) {
+            switch (index) {
+            case 0 -> value0 = value;
+            case 1 -> value1 = value;
+            default -> throw new IndexOutOfBoundsException(index);
+            }
+        }
+    }
+
+    private static class ThreeValues extends SharedKeySetValues {
+        private Serializable value0;
+        private Serializable value1;
+        private Serializable value2;
+
+        private ThreeValues(SharedKeySet keySet) {
+            super(keySet);
+        }
+
+        @Override
+        Serializable getValue(int index) {
+            return switch (index) {
+            case 0 -> value0;
+            case 1 -> value1;
+            case 2 -> value2;
+            default -> throw new IndexOutOfBoundsException(index);
+            };
+        }
+
+        @Override
+        void setValue(int index, Serializable value) {
+            switch (index) {
+            case 0 -> value0 = value;
+            case 1 -> value1 = value;
+            case 2 -> value2 = value;
+            default -> throw new IndexOutOfBoundsException(index);
+            }
+        }
+    }
+
+    private static class FourValues extends SharedKeySetValues {
+        private Serializable value0;
+        private Serializable value1;
+        private Serializable value2;
+        private Serializable value3;
+
+        private FourValues(SharedKeySet keySet) {
+            super(keySet);
+        }
+
+        @Override
+        Serializable getValue(int index) {
+            return switch (index) {
+            case 0 -> value0;
+            case 1 -> value1;
+            case 2 -> value2;
+            case 3 -> value3;
+            default -> throw new IndexOutOfBoundsException(index);
+            };
+        }
+
+        @Override
+        void setValue(int index, Serializable value) {
+            switch (index) {
+            case 0 -> value0 = value;
+            case 1 -> value1 = value;
+            case 2 -> value2 = value;
+            case 3 -> value3 = value;
+            default -> throw new IndexOutOfBoundsException(index);
+            }
+        }
+    }
+
+    private static class FiveValues extends SharedKeySetValues {
+        private Serializable value0;
+        private Serializable value1;
+        private Serializable value2;
+        private Serializable value3;
+        private Serializable value4;
+
+        private FiveValues(SharedKeySet keySet) {
+            super(keySet);
+        }
+
+        @Override
+        Serializable getValue(int index) {
+            return switch (index) {
+            case 0 -> value0;
+            case 1 -> value1;
+            case 2 -> value2;
+            case 3 -> value3;
+            case 4 -> value4;
+            default -> throw new IndexOutOfBoundsException(index);
+            };
+        }
+
+        @Override
+        void setValue(int index, Serializable value) {
+            switch (index) {
+            case 0 -> value0 = value;
+            case 1 -> value1 = value;
+            case 2 -> value2 = value;
+            case 3 -> value3 = value;
+            case 4 -> value4 = value;
+            default -> throw new IndexOutOfBoundsException(index);
+            }
+        }
+    }
+
+    /**
+     * Stores values in an exactly sized array. Used for key sets that are too
+     * large for the specialized classes with one field per value.
+     */
+    private static class ArrayValues extends SharedKeySetValues {
+        private final Serializable[] values;
+
+        private ArrayValues(SharedKeySet keySet) {
+            super(keySet);
+            values = new Serializable[keySet.size()];
+        }
+
+        @Override
+        Serializable getValue(int index) {
+            return values[index];
+        }
+
+        @Override
+        void setValue(int index, Serializable value) {
+            values[index] = value;
+        }
+
+        @Override
+        public Stream<Serializable> streamValues() {
+            return Arrays.stream(values);
         }
     }
 
@@ -446,10 +628,7 @@ public abstract class NodeMap extends NodeFeature {
         if (values == null) {
             values = new SingleValue(key, value);
         } else {
-            if (values instanceof SingleValue && !values.containsKey(key)) {
-                values = new ArrayValues((SingleValue) values);
-            }
-            values.set(key, value);
+            values = values.put(key, value);
         }
 
         detatchPotentialChild(oldValue);
@@ -588,24 +767,13 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected Serializable remove(String key) {
         setChanged(key);
-        Serializable oldValue;
 
-        if (values == null) {
+        if (values == null || !values.containsKey(key)) {
             return null;
-        } else if (values instanceof SingleValue) {
-            oldValue = values.get(key);
-            if (values.containsKey(key)) {
-                values = null;
-            }
-        } else {
-            assert values instanceof ArrayValues;
-            ArrayValues arrayValues = (ArrayValues) values;
-            oldValue = arrayValues.remove(key);
-
-            if (arrayValues.isEmpty()) {
-                values = null;
-            }
         }
+
+        Serializable oldValue = values.get(key);
+        values = values.remove(key);
 
         detatchPotentialChild(oldValue);
 

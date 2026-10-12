@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -434,26 +435,36 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    void put_manyKeys_removeFromMiddle_valuesKept() {
+    void putAndRemove_allSizes_valuesKept() {
+        List<String> keys = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
             nodeMap.put("key" + i, i);
+            keys.add("key" + i);
+            assertValues(keys);
         }
-        nodeMap.remove("key5");
+        // Remove from the middle so that values have to be moved
+        while (!keys.isEmpty()) {
+            String key = keys.remove(keys.size() / 2);
+            nodeMap.remove(key);
+            assertFalse(nodeMap.contains(key));
+            assertNull(nodeMap.get(key));
+            assertValues(keys);
+        }
+    }
 
+    private void assertValues(List<String> keys) {
         NodeMap copy = SerializationUtils
                 .deserialize(SerializationUtils.serialize(nodeMap));
-
         for (NodeMap map : List.of(nodeMap, copy)) {
-            assertFalse(map.contains("key5"));
-            assertNull(map.get("key5"));
-            for (int i = 0; i < 12; i++) {
-                if (i != 5) {
-                    assertTrue(map.contains("key" + i));
-                    assertEquals(i, map.get("key" + i));
-                }
+            assertEquals(new HashSet<>(keys), map.keySet());
+            for (String key : keys) {
+                assertTrue(map.contains(key));
+                assertEquals(Integer.valueOf(key.substring(3)), map.get(key));
             }
         }
-        assertSame(nodeMap.keySet(), copy.keySet());
+        if (keys.size() > 1) {
+            assertSame(nodeMap.keySet(), copy.keySet());
+        }
     }
 
     @Test
