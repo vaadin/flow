@@ -205,9 +205,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
     private boolean npmExcludeWebComponents;
 
-    @Parameter(property = InitParameters.NPM_ALLOW_EXOTIC_VERSIONS, defaultValue = "false")
-    private boolean npmAllowExoticVersions;
-
     /**
      * Set to {@code true} to ignore node/npm tool version checks.
      */
@@ -237,6 +234,14 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = "vaadin."
             + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS)
     private Integer minimumFrontendPackageAgeDays;
+
+    /**
+     * Set to {@code true} to allow npm packages declared with a version that is
+     * neither a registry version nor a local path, such as a tarball URL or a
+     * git repository.
+     */
+    @Parameter(property = InitParameters.NPM_ALLOW_EXOTIC_VERSIONS, defaultValue = "false")
+    private boolean npmAllowExoticVersions;
 
     /**
      * The folder where the META-INF/resources files are copied. Used for
@@ -617,11 +622,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isNpmAllowExoticVersions() {
-        return npmAllowExoticVersions;
-    }
-
-    @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
     }
@@ -629,6 +629,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public Integer minimumFrontendPackageAgeDays() {
         return minimumFrontendPackageAgeDays;
+    }
+
+    @Override
+    public boolean isNpmAllowExoticVersions() {
+        return npmAllowExoticVersions;
     }
 
     @Override
