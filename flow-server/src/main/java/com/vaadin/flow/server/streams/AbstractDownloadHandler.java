@@ -26,6 +26,7 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     // Content-Disposition: attachment by default
     private boolean inline = false;
 
+    private String contentType;
+
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
@@ -60,8 +63,30 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     }
 
     protected String getContentType(String fileName, VaadinResponse response) {
+        if (contentType != null) {
+            return contentType;
+        }
         return Optional.ofNullable(response.getService().getMimeType(fileName))
                 .orElse("application/octet-stream");
+    }
+
+    /**
+     * Sets the MIME type that the content is served with, such as
+     * <code>text/vtt</code>, instead of the one that the servlet container maps
+     * to the file name, or <code>application/octet-stream</code> when it maps
+     * none.
+     * <p>
+     * A content type that a {@link DownloadResponse} gives for a particular
+     * download still takes precedence over this one.
+     *
+     * @param contentType
+     *            the MIME type of the content, not <code>null</code>
+     * @return this instance for method chaining
+     */
+    public R withContentType(String contentType) {
+        this.contentType = Objects.requireNonNull(contentType,
+                "Content type cannot be null");
+        return (R) this;
     }
 
     /**

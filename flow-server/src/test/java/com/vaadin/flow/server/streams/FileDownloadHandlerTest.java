@@ -330,6 +330,19 @@ class FileDownloadHandlerTest {
     }
 
     @Test
+    void withContentType_replacesContentTypeOfServletContainer()
+            throws IOException, URISyntaxException {
+        URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
+        DownloadHandler handler = DownloadHandler
+                .forFile(new File(resource.toURI()), "captions.vtt")
+                .withContentType("text/vtt");
+
+        handler.handleDownloadRequest(downloadEvent);
+
+        verify(response).setContentType("text/vtt");
+    }
+
+    @Test
     void attachment_doesNotSetFileNameWhenInlined()
             throws IOException, URISyntaxException {
         URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
