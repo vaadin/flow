@@ -339,6 +339,8 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // XHR. The server also closes it on purpose, e.g. when logging out
       // invalidates the session and the page is about to navigate away, so
       // the connection is lost only if reopening the websocket fails as well.
+      // Atmosphere reports each close once, before it tries to reopen the
+      // websocket, and a successful reopen reaches pushOk.
       if (this.#websocketReopenPending) {
         this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
       }
