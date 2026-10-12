@@ -581,9 +581,9 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * For a <code>Binder</code> created using the
          * {@link Binder#Binder(Class)} constructor, introspection will be used
-         * to find a Java Bean property. If a JSR-303 bean validation
-         * implementation is present on the classpath, a {@link BeanValidator}
-         * is also added to the binding.
+         * to find a Java Bean property. A regular {@code Binder} does not add a
+         * {@link BeanValidator} even if a JSR-303 implementation is on the
+         * classpath; use {@link BeanValidationBinder} for that.
          * <p>
          * The property must have an accessible getter method. It need not have
          * an accessible setter; in that case the property value is never
@@ -622,9 +622,9 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * For a <code>Binder</code> created using the
          * {@link Binder#Binder(Class)} constructor, introspection will be used
-         * to find a Java Bean property. If a JSR-303 bean validation
-         * implementation is present on the classpath, a {@link BeanValidator}
-         * is also added to the binding.
+         * to find a Java Bean property. A regular {@code Binder} does not add a
+         * {@link BeanValidator} even if a JSR-303 implementation is on the
+         * classpath; use {@link BeanValidationBinder} for that.
          * <p>
          * The property must have an accessible getter method.
          *
@@ -2530,9 +2530,10 @@ public class Binder<BEAN> implements Serializable {
      * setter of the property are looked up using a {@link PropertySet}.
      * <p>
      * For a <code>Binder</code> created using the {@link Binder#Binder(Class)}
-     * constructor, introspection will be used to find a Java Bean property. If
-     * a JSR-303 bean validation implementation is present on the classpath, a
-     * {@link BeanValidator} is also added to the binding.
+     * constructor, introspection will be used to find a Java Bean property. A
+     * regular {@code Binder} does not add a {@link BeanValidator} even if a
+     * JSR-303 implementation is on the classpath; use
+     * {@link BeanValidationBinder} for that.
      * <p>
      * The property must have an accessible getter method. It need not have an
      * accessible setter; in that case the property value is never updated and
@@ -2575,9 +2576,10 @@ public class Binder<BEAN> implements Serializable {
      * not written back to the bean so the binding is read-only.
      * <p>
      * For a <code>Binder</code> created using the {@link Binder#Binder(Class)}
-     * constructor, introspection will be used to find a Java Bean property. If
-     * a JSR-303 bean validation implementation is present on the classpath, a
-     * {@link BeanValidator} is also added to the binding.
+     * constructor, introspection will be used to find a Java Bean property. A
+     * regular {@code Binder} does not add a {@link BeanValidator} even if a
+     * JSR-303 implementation is on the classpath; use
+     * {@link BeanValidationBinder} for that.
      * <p>
      * The property must have an accessible getter method.
      *
@@ -2663,7 +2665,17 @@ public class Binder<BEAN> implements Serializable {
         } else {
             doRemoveBean(false);
             this.bean = bean;
-            getBindings().forEach(b -> b.initFieldValue(bean, true));
+            getBindings().forEach(binding -> {
+                /*
+                 * Some bindings may have been removed from the binder during
+                 * setBean. We should skip those bindings to avoid NPE inside
+                 * initFieldValue. It happens e.g. when we unbind a binding in
+                 * valueChangeListener of another field.
+                 */
+                if (binding.getField() != null) {
+                    binding.initFieldValue(bean, true);
+                }
+            });
             // if there has been field value change listeners that trigger
             // validation, need to make sure the validation errors are cleared
             var status = BinderValidationStatus.createUnresolvedStatus(this);
@@ -3297,9 +3309,16 @@ public class Binder<BEAN> implements Serializable {
      * Clear all the bound fields for this binder.
      */
     private void clearFields() {
-        bindings.forEach(binding -> {
-            binding.getField().clear();
-            clearError(binding.getField());
+        /*
+         * Iterate over a copy and skip already unbound bindings, as clearing a
+         * field may trigger a valueChangeListener that removes a binding.
+         */
+        getBindings().forEach(binding -> {
+            HasValue<?, ?> field = binding.getField();
+            if (field != null) {
+                field.clear();
+                clearError(field);
+            }
         });
         if (hasChanges()) {
             fireStatusChangeEvent(false);

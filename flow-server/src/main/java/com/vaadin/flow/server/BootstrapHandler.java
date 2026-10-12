@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -63,8 +62,6 @@ import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.Viewport;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
@@ -126,11 +123,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String META_TAG = "meta";
     protected static final String SCRIPT_TAG = "script";
 
-    /**
-     * Location of client nocache file, relative to the context root.
-     */
-    private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_PATH
-            + "/client.nocache.js";
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
@@ -807,7 +799,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private ObjectNode getInitialUidl(UI ui) {
             ObjectNode json = new UidlWriter().createUidl(ui, false);
 
-            VaadinSession session = ui.getSession();
+            VaadinSession session = ui.getSessionOrThrow();
             if (session.getConfiguration().isXsrfProtectionEnabled()) {
                 writeSecurityKeyUIDL(json, ui);
             }
@@ -910,8 +902,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             head.appendChild(getBootstrapScript(initialUIDL, context));
-            head.appendChild(
-                    createJavaScriptElement(getClientEngineUrl(context)));
         }
 
         private void appendNpmBundle(Element head, VaadinService service,
@@ -949,7 +939,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .matcher(index);
             while (cssMatcher.find()) {
                 Element link = createStylesheetElement(
-                        "VAADIN/build/" + cssMatcher.group(1));
+                        "VAADIN/build/" + cssMatcher.group(1), null);
                 head.appendChild(link);
             }
         }
@@ -969,63 +959,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return JacksonUtils.getKeys(chunks).stream()
                     .filter(s -> !EXPORT_CHUNK.equals(s))
                     .collect(Collectors.toList());
-        }
-
-        private String getClientEngineUrl(BootstrapContext context) {
-            // use nocache version of client engine if it
-            // has been compiled by SDM or eclipse
-            // In production mode, this should really be loaded by the static
-            // block
-            // so emit a warning if we get here (tests will always get here)
-            final boolean productionMode = context.getSession()
-                    .getConfiguration().isProductionMode();
-
-            ResourceProvider resourceProvider = getResourceProvider(context);
-            String clientEngine = getClientEngine(resourceProvider);
-            boolean resolveNow = !productionMode || clientEngine == null;
-            if (resolveNow
-                    && resourceProvider.getClientResource("META-INF/resources/"
-                            + CLIENT_ENGINE_NOCACHE_FILE) != null) {
-                return context.getUriResolver().resolveVaadinUri(
-                        "context://" + CLIENT_ENGINE_NOCACHE_FILE);
-            }
-
-            if (clientEngine == null) {
-                throw new BootstrapException(
-                        "Client engine file name has not been resolved during initialization");
-            }
-            return context.getUriResolver()
-                    .resolveVaadinUri("context://" + clientEngine);
-        }
-
-        private ResourceProvider getResourceProvider(BootstrapContext context) {
-            ResourceProvider resourceProvider = context.getSession()
-                    .getService().getContext().getAttribute(Lookup.class)
-                    .lookup(ResourceProvider.class);
-            return resourceProvider;
-        }
-
-        private String getClientEngine(ResourceProvider resourceProvider) {
-            // read client engine file name
-            try (InputStream prop = resourceProvider
-                    .getClientResourceAsStream("META-INF/resources/"
-                            + ApplicationConstants.CLIENT_ENGINE_PATH
-                            + "/compile.properties")) {
-                // null when running SDM or tests
-                if (prop != null) {
-                    Properties properties = new Properties();
-                    properties.load(prop);
-                    return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
-                            + properties.getProperty("jsFile");
-                } else {
-                    getLogger().warn(
-                            "No compile.properties available on initialization, "
-                                    + "could not read client engine file name.");
-                }
-            } catch (IOException e) {
-                throw new ExceptionInInitializerError(e);
-            }
-            return null;
         }
 
         protected void setupCss(Element head, BootstrapContext context) {
@@ -1121,7 +1054,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             final Element dependencyElement;
             switch (type) {
             case STYLESHEET:
-                dependencyElement = createStylesheetElement(url);
+                dependencyElement = createStylesheetElement(url,
+                        dependency.path(Dependency.KEY_LAYER).asString(null));
                 break;
             case JAVASCRIPT:
                 dependencyElement = createJavaScriptElement(url,
@@ -1143,9 +1077,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return dependencyElement;
         }
 
-        private Element createStylesheetElement(String url) {
+        static Element createStylesheetElement(String url, String layer) {
             final Element cssElement;
-            if (url != null) {
+            if (url != null && layer != null) {
+                cssElement = new Element(Tag.valueOf("style"), "")
+                        .attr("type", CSS_TYPE_ATTRIBUTE_VALUE)
+                        .appendChild(new DataNode(
+                                CssBundler.createLayerImport(url, layer)));
+            } else if (url != null) {
                 cssElement = new Element(Tag.valueOf("link"), "")
                         .attr("rel", "stylesheet")
                         .attr("type", CSS_TYPE_ATTRIBUTE_VALUE)
@@ -1374,6 +1313,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
+        // Let the handler contribute its own push defaults while they can
+        // still be overridden by a UIInitListener
+        modifyPushConfiguration(context, pushConfiguration);
+
         // Parse browser details from request parameters and store in UI
         extractAndStoreBrowserDetails(request, ui);
 
@@ -1451,6 +1394,30 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 ui.getInternals().getSession(), ui, contextPathCallback);
     }
 
+    /**
+     * Applies handler specific push defaults on top of the configuration
+     * resolved from the deployment configuration and the {@link Push} page
+     * configuration annotation.
+     * <p>
+     * Called while the UI is being created, before it is initialized and the
+     * {@link com.vaadin.flow.server.UIInitEvent UIInitEvent} is fired, so that
+     * programmatic configuration done in a
+     * {@link com.vaadin.flow.server.UIInitListener UIInitListener} takes
+     * precedence over the declarative one.
+     * <p>
+     * Does nothing by default.
+     *
+     * @param context
+     *            the bootstrap context of the UI being created
+     * @param pushConfiguration
+     *            the push configuration of the UI being created
+     * @since 25.2.10
+     */
+    protected void modifyPushConfiguration(BootstrapContext context,
+            PushConfiguration pushConfiguration) {
+        // NO-OP by default
+    }
+
     protected void setupPushConnectionFactory(
             PushConfiguration pushConfiguration, BootstrapContext context) {
         VaadinService service = context.getSession().getService();
@@ -1524,7 +1491,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     protected static ObjectNode getInitialUidl(UI ui) {
         ObjectNode json = new UidlWriter().createUidl(ui, false);
 
-        VaadinSession session = ui.getSession();
+        VaadinSession session = ui.getSessionOrThrow();
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
             writeSecurityKeyUIDL(json, ui);
         }

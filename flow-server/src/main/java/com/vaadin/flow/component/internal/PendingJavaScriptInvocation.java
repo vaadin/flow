@@ -46,9 +46,14 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
     /**
      * The UI internals whose undelivered invocation count includes this
-     * invocation, or <code>null</code> if it is not counted, either because no
-     * UI could be resolved when it was scheduled or because it is no longer
-     * waiting to be sent.
+     * invocation, or <code>null</code> if it is not counted, either because its
+     * owner is not attached to a UI or because it is no longer waiting to be
+     * sent.
+     * <p>
+     * Only ever set to the internals of the UI that the owner belongs to, so
+     * this reaches nothing that the owner does not reach anyway. That also
+     * makes it safe to serialize: an invocation restored with its UI keeps
+     * updating the count that was restored with it.
      */
     private UIInternals countedIn;
 
@@ -68,8 +73,6 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
 
         this.owner = owner;
         this.invocation = invocation;
-
-        countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
     }
 
     /**
@@ -146,6 +149,26 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         return sentToBrowser;
     }
 
+    /**
+     * Counts this invocation as undelivered in the UI that its owner belongs
+     * to, unless it is already counted or no longer waiting to be sent.
+     * <p>
+     * An invocation is not counted when it is created, since its owner is not
+     * necessarily attached to a UI then, and an owner that is detached, or
+     * attached to a UI that has been closed since, has no count to be part of.
+     * It starts counting once the owner is attached, which is also when it
+     * starts being on its way to a client. Called by the framework when the
+     * owner is attached, and when the invocation is queued for a UI.
+     * 
+     * @since 25.3
+     */
+    public void countWhenAttached() {
+        if (countedIn != null || sentToBrowser || canceled) {
+            return;
+        }
+        countedIn = PendingJavaScriptInvocationUtil.invocationScheduled(this);
+    }
+
     // Non-private for testing purposes
     void setSentToBrowser() {
         assert !sentToBrowser;
@@ -153,7 +176,18 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         stopCounting();
     }
 
-    private void stopCounting() {
+    /**
+     * Stops counting this invocation as undelivered in the UI it was counted
+     * in, without otherwise changing its state.
+     * <p>
+     * Called when the invocation stops waiting to be sent, either because it
+     * has been sent or canceled, or because the framework discards it, for
+     * instance when its owner is detached. It is counted again through
+     * {@link #countWhenAttached()} if it ends up waiting to be sent again.
+     * 
+     * @since 25.3
+     */
+    public void stopCounting() {
         if (countedIn == null) {
             return;
         }

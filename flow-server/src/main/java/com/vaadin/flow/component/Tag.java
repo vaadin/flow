@@ -53,6 +53,10 @@ public @interface Tag {
      */
     String ASIDE = "aside";
     /**
+     * Tag for an <code>&lt;audio&gt;</code>.
+     */
+    String AUDIO = "audio";
+    /**
      * Tag for an <code>&lt;br&gt;</code>.
      */
     String BR = "br";
@@ -74,10 +78,14 @@ public @interface Tag {
     String CODE = "code";
     /**
      * Tag for a <code>&lt;col&gt;</code>.
+     * 
+     * @since 25.3
      */
     String COL = "col";
     /**
      * Tag for a <code>&lt;colgroup&gt;</code>.
+     * 
+     * @since 25.3
      */
     String COLGROUP = "colgroup";
     /**
@@ -211,6 +219,10 @@ public @interface Tag {
      */
     String SELECT = "select";
     /**
+     * Tag for a <code>&lt;source&gt;</code>.
+     */
+    String SOURCE = "source";
+    /**
      * Tag for an <code>&lt;span&gt;</code>.
      */
     String SPAN = "span";
@@ -274,6 +286,10 @@ public @interface Tag {
      * Tag for a <code>&lt;ul&gt;</code>.
      */
     String UL = "ul";
+    /**
+     * Tag for a <code>&lt;video&gt;</code>.
+     */
+    String VIDEO = "video";
 
     /**
      * Gets the tag name.

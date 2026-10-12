@@ -59,6 +59,13 @@ class VersionsJsonFilter {
     ObjectNode getFilteredVersions(ObjectNode versions, String versionOrigin) {
         ObjectNode json = JacksonUtils.createObjectNode();
         for (String key : JacksonUtils.getKeys(versions)) {
+            if (FrontendBuildUtils
+                    .isUrlVersion(versions.get(key).asString(null))) {
+                // a URL cannot be compared with the version of the user, so it
+                // is used as is
+                json.put(key, versions.get(key).asString());
+                continue;
+            }
             final FrontendVersion version = FrontendUtils
                     .getPackageVersionFromJson(versions, key, versionOrigin);
             if (version == null) {
@@ -118,7 +125,7 @@ class VersionsJsonFilter {
                         vaadinDep.get(key).asString());
                 FrontendVersion dep = new FrontendVersion(key,
                         dependencies.get(key).asString());
-                return !vaadin.isEqualTo(dep);
+                return !vaadin.isSameDependency(dep);
             } catch (NumberFormatException nfe) {
                 LoggerFactory.getLogger("VersionsFilter").debug(
                         "Received version with non numbers {} and {}",

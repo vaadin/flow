@@ -56,6 +56,8 @@ public class HotswapClassSessionEvent extends HotswapClassEvent {
      *
      * @param vaadinService
      *            the active {@link VaadinService} instance
+     * @param vaadinSession
+     *            the session the changed classes are applied to
      * @param classes
      *            the set of classes that were updated
      * @param redefined

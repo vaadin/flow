@@ -100,6 +100,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
                 "com\\.vaadin\\.base\\.devserver\\.editor..*",
                 "com\\.vaadin\\.base\\.devserver\\.hotswap\\..*",
+                "com\\.vaadin\\.base\\.devserver\\.devloop\\..*",
+                // The dev-loop daemon is a separate program, not part of any
+                // application's session state
+                "com\\.vaadin\\.flow\\.devloop\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.themeeditor..*",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",
@@ -228,6 +232,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.WebComponentBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.TransferContext",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.DownloadEvent",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$ClientOutputStream",
+                "com\\.vaadin\\.flow\\.server\\.streams\\.AbstractDownloadHandler\\$SeekableContent",
                 "com\\.vaadin\\.flow\\.server\\.communication\\.StreamRequestHandler\\$PathData",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadEvent",
                 "com\\.vaadin\\.flow\\.server\\.streams\\.UploadMetadata",
@@ -239,6 +245,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.CssBundler",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.PinnedNpmVersions(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonFilter",
 
@@ -263,11 +270,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
                 // Static Utilities
                 "com\\.vaadin\\.flow\\.component\\.wakelock\\.WakeLock",
+                "com\\.vaadin\\.flow\\.js\\.JsDefinitionProxy",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",
-                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker",
-                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker\\$Script",
 
                 // Node downloader classes
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultFileDownloader(\\$.*)?",

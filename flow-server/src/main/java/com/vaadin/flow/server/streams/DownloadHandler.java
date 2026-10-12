@@ -77,6 +77,30 @@ import com.vaadin.flow.server.VaadinSession;
  *     }
  * };
  * </pre>
+ * <p>
+ * A download is served independently of the owning component's lifecycle. The
+ * owner's attached, visible, enabled and inert state is checked when the
+ * download request is received, but not while the download is being served.
+ * Once handling has started, detaching the owner component, navigating to
+ * another view or closing the browser tab does not abort the transfer on the
+ * server: it runs to completion as long as the client keeps reading the
+ * response, and browsers typically keep an ongoing download running after the
+ * tab that started it has been closed. This is intentional and supported
+ * behavior, so that a download the user has already started is not lost when
+ * the view that started it goes away.
+ * <p>
+ * A UI that is closed while a download for it is ongoing is kept attached to
+ * its session until the download has completed, so that transfer progress
+ * listeners bound to that UI are still notified even though there is no client
+ * left to receive the UI changes.
+ * <p>
+ * A download does not, however, outlive its session: if the session is
+ * invalidated, either explicitly or by timing out, an ongoing download is
+ * terminated. The output stream of the download stops accepting bytes and
+ * throws an {@link java.io.IOException} instead, which leaves the response
+ * truncated. An application with long-lived downloads that should survive can
+ * keep the session alive while the download is ongoing, or serve the download
+ * through a servlet of its own that is not tied to a UI and a session.
  *
  * @since 24.8
  */
@@ -86,6 +110,11 @@ public interface DownloadHandler extends ElementRequestHandler {
     /**
      * Method that is called when the client wants to download from the url
      * stored for this specific handler registration.
+     * <p>
+     * Once this method has been called, the download is no longer bound to the
+     * owner component's lifecycle and is not interrupted by detaching the owner
+     * or by closing the browser tab, see the {@link DownloadHandler class-level
+     * documentation}.
      *
      * @param event
      *            download event containing the necessary data for writing the
@@ -104,6 +133,24 @@ public interface DownloadHandler extends ElementRequestHandler {
     }
 
     /**
+     * Returns whether this handler answers byte range requests, which media
+     * players use to seek and browsers use to resume a download. Safari does
+     * not play audio or video from a handler that does not answer them.
+     * <p>
+     * A handler that does not answer them sends the whole content for every
+     * request. A handler that does may still send the whole content for a
+     * particular response, for example when the length of its content is not
+     * known. The default implementation returns {@code false}.
+     *
+     * @return {@code true} if the handler is configured to answer byte range
+     *         requests
+     * @since 25.4
+     */
+    default boolean isRangeRequestsEnabled() {
+        return false;
+    }
+
+    /**
      * Returns a view of this handler that is served even when the owning
      * component is disabled.
      * <p>
@@ -117,9 +164,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      * {@code src} of an icon or image inside a disabled container.
      * <p>
      * This method returns a wrapper that delegates
-     * {@link #handleDownloadRequest}, {@link #getUrlPostfix()} and
-     * {@link #isAllowInert()} to this handler and overrides
-     * {@link #getDisabledUpdateMode()} to return
+     * {@link #handleDownloadRequest}, {@link #getUrlPostfix()},
+     * {@link #isAllowInert()} and {@link #isRangeRequestsEnabled()} to this
+     * handler and overrides {@link #getDisabledUpdateMode()} to return
      * {@link DisabledUpdateMode#ALWAYS}. If this handler already reports
      * {@code ALWAYS}, the same instance is returned.
      *
@@ -148,6 +195,11 @@ public interface DownloadHandler extends ElementRequestHandler {
             @Override
             public boolean isAllowInert() {
                 return delegate.isAllowInert();
+            }
+
+            @Override
+            public boolean isRangeRequestsEnabled() {
+                return delegate.isRangeRequestsEnabled();
             }
 
             @Override

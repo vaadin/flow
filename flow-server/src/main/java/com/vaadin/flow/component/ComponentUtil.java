@@ -81,12 +81,35 @@ public class ComponentUtil {
      * @param componentClass
      *            The component class to be registered with the given tag.
      * @since 24.5
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static void registerComponentClass(String tag,
             Class<? extends Component> componentClass) {
         tagToComponentsMap
                 .computeIfAbsent(tag, k -> ConcurrentHashMap.newKeySet())
                 .add(componentClass);
+    }
+
+    /**
+     * Removes all component classes from the mapping of HTML tags to component
+     * classes.
+     * <p>
+     * The mapping is static, so it outlives the application that registered the
+     * classes. Clear it when the application stops, so that the mapping does
+     * not keep the classes, and through them their class loader, reachable
+     * after the application has been reloaded in a new class loader.
+     *
+     * @see #registerComponentClass(String, Class)
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
+     */
+    @Deprecated(since = "25.4", forRemoval = true)
+    public static void unregisterAllComponentClasses() {
+        tagToComponentsMap.clear();
     }
 
     /**
@@ -103,7 +126,11 @@ public class ComponentUtil {
      *         tag. Returns an empty set if no classes are associated with the
      *         tag or if running in production mode.
      * @since 24.5
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static Set<Class<? extends Component>> getComponentsByTag(
             String tag) {
         return tagToComponentsMap.getOrDefault(tag, Collections.emptySet());
@@ -119,7 +146,11 @@ public class ComponentUtil {
      *         This map is only populated in development mode and will be empty
      *         in production mode.
      * @since 24.5
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static Map<String, Set<Class<? extends Component>>> getAllTagMappings() {
         return Collections.unmodifiableMap(tagToComponentsMap);
     }
@@ -367,8 +398,11 @@ public class ComponentUtil {
         try {
             component.onDetach(detachEvent);
         } catch (RuntimeException e) {
-            VaadinSession.getCurrent().getErrorHandler()
-                    .error(new ErrorEvent(e));
+            VaadinSession session = VaadinSession.getCurrent();
+            if (session == null) {
+                throw e;
+            }
+            session.getErrorHandler().error(new ErrorEvent(e));
         }
         fireEvent(component, detachEvent);
 
@@ -750,7 +784,7 @@ public class ComponentUtil {
             router = tree.getUI().getInternals().getRouter();
         }
         if (router == null) {
-            router = VaadinService.getCurrent().getRouter();
+            router = VaadinService.getCurrentOrThrow().getRouter();
         }
         if (router == null) {
             throw new IllegalStateException(
@@ -809,6 +843,47 @@ public class ComponentUtil {
         parent.getElement().getChildren().forEach(childElement -> ComponentUtil
                 .findComponents(childElement, childComponents::add));
         return childComponents.build();
+    }
+
+    /**
+     * Gets the child components of the given parent that are instances of the
+     * given type, in child order.
+     * <p>
+     * Useful for components whose children have a known structure, such as the
+     * rows of a table or the items of a list, where the child of interest is
+     * identified by its type rather than by its position.
+     *
+     * @param <T>
+     *            the child component type
+     * @param parent
+     *            the parent component from which to get the child components
+     * @param type
+     *            the type the children must be instances of
+     * @return the children of the given type, in child order
+     * @since 25.3
+     */
+    public static <T extends Component> Stream<T> getChildrenOfType(
+            Component parent, Class<T> type) {
+        return parent.getChildren().filter(type::isInstance).map(type::cast);
+    }
+
+    /**
+     * Gets the first child component of the given parent that is an instance of
+     * the given type.
+     *
+     * @param <T>
+     *            the child component type
+     * @param parent
+     *            the parent component from which to get the child component
+     * @param type
+     *            the type the child must be an instance of
+     * @return the first child of the given type, or an empty optional if the
+     *         parent has no such child
+     * @since 25.3
+     */
+    public static <T extends Component> Optional<T> getFirstChildOfType(
+            Component parent, Class<T> type) {
+        return getChildrenOfType(parent, type).findFirst();
     }
 
     /**

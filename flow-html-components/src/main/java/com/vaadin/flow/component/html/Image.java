@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.HasAriaLabel;
-import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
@@ -34,12 +34,18 @@ import com.vaadin.flow.server.streams.DownloadResponse;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
+ * <p>
+ * Embeds an image. Always set alternative text so the content is available when
+ * the image cannot be shown.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img">MDN:
+ *      &lt;img&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Tag(Tag.IMG)
-public class Image extends HtmlContainer
+public class Image extends HtmlComponent
         implements ClickNotifier<Image>, HasAriaLabel {
 
     private static final String ALT_ATTRIBUTE = "alt";

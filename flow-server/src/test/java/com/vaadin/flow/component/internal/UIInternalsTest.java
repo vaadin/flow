@@ -37,6 +37,8 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.page.Push;
@@ -60,6 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class UIInternalsTest {
@@ -137,6 +140,7 @@ class UIInternalsTest {
         MockitoAnnotations.initMocks(this);
 
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        Mockito.when(ui.getUIOrThrow()).thenCallRealMethod();
         Element body = new Element("body");
         Mockito.when(ui.getElement()).thenReturn(body);
 
@@ -146,9 +150,20 @@ class UIInternalsTest {
                 vaadinService);
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
         Mockito.when(ui.getInternals()).thenReturn(internals);
         Page page = new Page(ui);
         Mockito.when(ui.getPage()).thenReturn(page);
+    }
+
+    @Test
+    public void setLastProcessedClientToServerId_forgetsTheRecordedResponse() {
+        internals.setLastRequestResponse("{\"syncId\":0}");
+
+        internals.setLastProcessedClientToServerId(1, new byte[0]);
+
+        assertNull(internals.getLastRequestResponse(),
+                "The recorded response answers the previous message, so it must not be sent as this one's");
     }
 
     @Test
@@ -631,6 +646,16 @@ class UIInternalsTest {
     }
 
     @Test
+    void addUndeliveredJsInvocations_uncountingMoreThanCounted_clampedToZero() {
+        internals.addUndeliveredJsInvocations(1);
+
+        assertEquals(0, internals.addUndeliveredJsInvocations(-2),
+                "the count should never go negative");
+        assertEquals(1, internals.addUndeliveredJsInvocations(1),
+                "counting should continue from zero after being clamped");
+    }
+
+    @Test
     void markUndeliveredJsInvocationsWarningLogged_onlyTheFirstCallReturnsTrue() {
         assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
                 "the warning should be logged when the threshold is first exceeded");
@@ -735,5 +760,32 @@ class UIInternalsTest {
         Mockito.verify(session).getService();
         Mockito.verify(mockVaadinServletService).getDeploymentConfiguration();
         assertEquals(config, result);
+    }
+
+    @Test
+    void containsPendingJsCall_recognizesTheLocationReplaceOfEitherRouter() {
+        // The router checks this before scheduling a second location replace
+        History history = new History(ui);
+        MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration();
+
+        assertFalse(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "replaceState"),
+                "nothing should be pending before anything is scheduled");
+
+        configuration.setReactEnabled(false);
+        history.replaceState(null, "somewhere");
+        assertTrue(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "replaceState"),
+                "the replace the router scheduled should be recognized");
+
+        configuration.setReactEnabled(true);
+        history.replaceState(null, "elsewhere");
+        assertTrue(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "navigateReplacing"),
+                "the replace the React router scheduled should be recognized");
     }
 }

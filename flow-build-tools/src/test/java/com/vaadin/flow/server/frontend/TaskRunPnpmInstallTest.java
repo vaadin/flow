@@ -35,6 +35,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -117,7 +118,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // Write package json file
         Files.writeString(packageJson.toPath(), "{}");
 
-        File versions = File.createTempFile("tmp", null, temporaryFolder);
+        File versions = createVersionsFile();
         // The versions file defines a pinned version
         // @formatter:off
         Files.writeString(versions.toPath(), String.format(
@@ -177,7 +178,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String versionsNotificationVersion = "1.5.0-alpha1";
         String versionsUploadVersion = "4.2.0-beta2";
 
-        File versions = File.createTempFile("tmp", null, temporaryFolder);
+        File versions = createVersionsFile();
         // @formatter:off
         Files.writeString(versions.toPath(), String.format(
                 "{"
@@ -442,6 +443,43 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "pnpm install in CI build should not use --no-frozen-lockfile");
     }
 
+    @Test
+    void runPnpmInstall_excludesVaadinPackagesFromTheMinimumAge()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask();
+        getNodeUpdater().modified = true;
+
+        task.execute();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(logger).info(
+                Mockito.eq("using '{}' for frontend package installation"),
+                captor.capture());
+        assertTrue(
+                captor.getValue().contains(
+                        "--config.minimum-release-age-exclude=@vaadin/*"),
+                "pnpm install should let the packages Vaadin publishes be "
+                        + "installed regardless of the minimum frontend "
+                        + "package age");
+    }
+
+    @Test
+    void runPnpmInstall_postinstallDoesNotVerifyTheDependencies()
+            throws ExecutionFailedException, IOException {
+        setupPostinstallPackages();
+        MockLogger mockLogger = new MockLogger();
+        logger = mockLogger;
+        TaskRunNpmInstall task = createTask();
+
+        task.execute();
+
+        assertTrue(
+                mockLogger.getLogs()
+                        .contains("--config.verify-deps-before-run=false"),
+                "the postinstall command should stop pnpm from running an "
+                        + "install of its own, was: " + mockLogger.getLogs());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
@@ -481,12 +519,19 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return new TaskRunNpmInstall(updater, options);
     }
 
+    private File createVersionsFile() throws IOException {
+        File versionsFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "versions")
+                .toFile();
+        return new File(versionsFolder, "versions.json");
+    }
+
     private JsonNode getGeneratedVersionsContent(File versions,
             File packageJsonFile) throws IOException {
         ClassFinder classFinder = getClassFinder();
         Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versions.getParentFile().toURI().toURL()));
 
         ObjectNode packageJson = JacksonUtils
                 .readTree(Files.readString(packageJsonFile.toPath()));

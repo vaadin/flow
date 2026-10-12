@@ -51,6 +51,7 @@ import com.vaadin.flow.server.frontend.scanner.samples.MyServiceListener;
 import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
+import com.vaadin.flow.server.frontend.scanner.samples.RuntimeJavaScriptComponent;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -96,6 +97,34 @@ class FrontendDependenciesTest {
 
         DepsTests.assertImportsExcludingUI(dependencies.getModules(), "foo.js");
         DepsTests.assertImports(dependencies.getScripts(), "bar.js");
+    }
+
+    @Test
+    void developmentOnlyRoute_collectedOnlyOutsideProductionMode() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(Collections.singleton(DevelopmentOnlyRoute.class));
+
+        FrontendDependencies development = new FrontendDependencies(classFinder,
+                false, null, true, false);
+        DepsTests.assertImportsExcludingUI(development.getModules(),
+                "dev-only.js");
+
+        FrontendDependencies production = new FrontendDependencies(classFinder,
+                false, null, true, true);
+        DepsTests.assertImportsExcludingUI(production.getModules());
+        assertFalse(production.getEntryPoints().stream()
+                .anyMatch(entryPoint -> entryPoint.getName()
+                        .equals(DevelopmentOnlyRoute.class.getName())));
+    }
+
+    @Test
+    void javaScriptWithTypeModule_excludedFromBundleImports() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        DepsTests.assertImports(dependencies.getScripts(), "bundled.js");
     }
 
     @Test
@@ -602,6 +631,12 @@ class FrontendDependenciesTest {
                 MyComponent component) {
             Referenced ref = new Referenced();
         }
+    }
+
+    @Route(value = "dev-only", developmentOnly = true)
+    @JsModule("dev-only.js")
+    @Tag("div")
+    public static class DevelopmentOnlyRoute extends Component {
     }
 
     @Route("reference")

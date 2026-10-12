@@ -129,6 +129,7 @@ class ErrorHandlerUtilTest {
         internals = new UIInternals(ui);
 
         Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        Mockito.when(ui.getUIOrThrow()).thenCallRealMethod();
         Mockito.when(ui.getInternals()).thenReturn(internals);
 
         RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
@@ -147,6 +148,7 @@ class ErrorHandlerUtilTest {
                 .thenReturn(Mockito.mock(Router.class));
 
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
 
         Mockito.when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(config);

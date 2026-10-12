@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -37,6 +38,7 @@ import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -431,6 +433,28 @@ public abstract class Component
             return parent.flatMap(Component::getUI);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Gets the UI this component is attached to, throwing an exception if the
+     * component is not attached.
+     * <p>
+     * Use this method when the code can only run while the component is
+     * attached, e.g. in an event listener or in {@link #onAttach(AttachEvent)}.
+     * If the code has to work also for a detached component, use
+     * {@link #getUI()} instead.
+     *
+     * @return the UI this component is attached to, never <code>null</code>
+     * @throws IllegalStateException
+     *             if this component is not attached to a UI
+     * @see #getUI()
+     * @since 25.4
+     */
+    public UI getUIOrThrow() {
+        return getUI().orElseThrow(() -> new IllegalStateException("Component "
+                + getClass().getName()
+                + " is not attached to a UI. This code must be run while the component is attached, "
+                + "e.g. from an attach listener or onAttach()."));
     }
 
     /**
@@ -970,6 +994,9 @@ public abstract class Component
     /**
      * Traverses the component tree up and returns the first ancestor component
      * that matches the given type.
+     * <p>
+     * Use {@link #findAncestor(SerializablePredicate)} when the ancestor is
+     * identified by something other than its type.
      *
      * @param componentType
      *            the class of the ancestor component to search for
@@ -980,16 +1007,37 @@ public abstract class Component
      * @since 23.2
      */
     public <T> T findAncestor(Class<T> componentType) {
+        return findAncestor(componentType::isInstance).map(componentType::cast)
+                .orElse(null);
+    }
+
+    /**
+     * Traverses the component tree up and returns the first ancestor component
+     * that matches the given predicate.
+     * <p>
+     * Unlike {@link #findAncestor(Class)}, the ancestor can be identified by
+     * any condition, such as its id, a class name or its enabled state, and the
+     * result is an {@link Optional} instead of a nullable value. This component
+     * itself is not tested, only its ancestors.
+     *
+     * @param predicate
+     *            the condition the ancestor component must satisfy, not
+     *            {@code null}
+     * @return the first ancestor that satisfies the predicate, or an empty
+     *         optional if no ancestor satisfies it
+     * @since 25.4
+     */
+    public Optional<Component> findAncestor(
+            SerializablePredicate<Component> predicate) {
+        Objects.requireNonNull(predicate, "Predicate must not be null");
         Optional<Component> optionalParent = getParent();
         while (optionalParent.isPresent()) {
-            Component parent = optionalParent.get();
-            if (componentType.isAssignableFrom(parent.getClass())) {
-                return componentType.cast(parent);
-            } else {
-                optionalParent = parent.getParent();
+            if (predicate.test(optionalParent.get())) {
+                return optionalParent;
             }
+            optionalParent = optionalParent.get().getParent();
         }
-        return null;
+        return Optional.empty();
     }
 
     /**

@@ -33,13 +33,16 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.DependencyList;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -118,16 +121,11 @@ public class Page implements Serializable {
      */
     public void setColorScheme(ColorScheme.Value colorScheme) {
         if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
-            executeJs("""
-                    document.documentElement.removeAttribute('theme');
-                    document.documentElement.style.colorScheme = '';
-                    """);
+            executeJs(PageJs.class).resetColorScheme();
             getExtendedClientDetails().setColorScheme(ColorScheme.Value.NORMAL);
         } else {
-            executeJs("""
-                    document.documentElement.setAttribute('theme', $0);
-                    document.documentElement.style.colorScheme = $1;
-                    """, colorScheme.getThemeValue(), colorScheme.getValue());
+            executeJs(PageJs.class).setColorScheme(colorScheme.getThemeValue(),
+                    colorScheme.getValue());
             getExtendedClientDetails().setColorScheme(colorScheme);
         }
     }
@@ -197,13 +195,61 @@ public class Page implements Serializable {
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
      * @return a registration object that can be used to remove the style sheet
+     * @see #addStyleSheet(String, LoadMode, String)
      */
     public Registration addStyleSheet(String url, LoadMode loadMode) {
+        return addStyleSheet(url, loadMode, null);
+    }
+
+    /**
+     * Adds the given style sheet to the page into a CSS cascade layer and
+     * ensures that it is loaded successfully.
+     * <p>
+     * Styles in a layer have lower priority than styles outside of any layer,
+     * regardless of selector specificity.
+     * <p>
+     * Relative URLs and the {@code context://} prefix are handled as in
+     * {@link #addStyleSheet(String, LoadMode)}.
+     * <p>
+     * A style sheet is loaded only once per URL. Adding a URL that is already
+     * on the page keeps it in the layer it was first added to, and logs a
+     * warning if the layers differ.
+     * <p>
+     * For component related style sheet dependencies, you should use the
+     * {@link StyleSheet#layer() layer} attribute of the
+     * {@link StyleSheet @StyleSheet} annotation.
+     *
+     * @param url
+     *            the URL to load the style sheet from, not <code>null</code>
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param layer
+     *            the name of the cascade layer, such as {@code theme} or
+     *            {@code theme.base}, or {@code null} to not use a layer
+     * @return a registration object that can be used to remove the style sheet
+     * @throws IllegalArgumentException
+     *             if {@code layer} is not a valid cascade layer name
+     */
+    public Registration addStyleSheet(String url, LoadMode loadMode,
+            String layer) {
+        if (layer != null) {
+            CssBundler.validateLayerName(layer);
+        }
         DependencyList dependencyList = ui.getInternals().getDependencyList();
 
         // Check if dependency already exists with this URL
         Dependency existing = dependencyList.getDependencyByUrl(url,
                 Type.STYLESHEET);
+        if (existing != null && !Objects.equals(existing.getLayer(), layer)
+                && LOGGER.isWarnEnabled()) {
+            // The browser has already loaded the URL and keeps it as it is
+            LOGGER.warn(
+                    "Style sheet {} is already added {}, so it is not added"
+                            + " again {}",
+                    url, describeLayer(existing.getLayer()),
+                    describeLayer(layer));
+        }
         String dependencyId;
 
         if (existing != null && existing.getId() != null) {
@@ -215,11 +261,15 @@ public class Page implements Serializable {
         }
 
         Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
-                dependencyId);
+                dependencyId, layer);
         dependencyList.add(dependency);
 
         // Return Registration for removal
         return () -> ui.getInternals().removeStyleSheet(dependencyId);
+    }
+
+    private static String describeLayer(String layer) {
+        return layer == null ? "without a layer" : ("to layer '" + layer + "'");
     }
 
     /**
@@ -273,7 +323,58 @@ public class Page implements Serializable {
      *            details
      */
     public void addJavaScript(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.JAVASCRIPT, url, loadMode));
+        addJavaScript(url, loadMode, JavaScript.Type.SCRIPT);
+    }
+
+    /**
+     * Adds the given JavaScript to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * Relative URLs are interpreted as relative to the static web resources
+     * directory. You can prefix the URL with {@code context://} to make it
+     * relative to the context path or use an absolute URL to refer to files
+     * outside the frontend directory.
+     * <p>
+     * The {@code type} parameter selects the kind of {@code <script>} tag the
+     * browser receives: {@link JavaScript.Type#SCRIPT} renders a classic
+     * {@code <script>} element (the default of {@link #addJavaScript(String)});
+     * {@link JavaScript.Type#MODULE} renders a {@code <script type="module">}
+     * element, which is the recommended way to load runtime ES modules
+     * (replaces the deprecated {@link #addJsModule(String)}).
+     * <p>
+     * {@link JavaScript.Type#MODULE} supports {@link LoadMode#EAGER} and
+     * {@link LoadMode#LAZY}, but not {@link LoadMode#INLINE}: the browser
+     * cannot be given the contents of a module without also losing the module's
+     * identity, so use {@link JavaScript.Type#SCRIPT} if the contents must be
+     * inlined into the page.
+     * <p>
+     * For component related JavaScript dependencies, you should use the
+     * {@link JavaScript @JavaScript} annotation.
+     *
+     * @param url
+     *            the URL to load the JavaScript from, not <code>null</code>
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param type
+     *            the kind of {@code <script>} tag to render; {@code null} is
+     *            treated as {@link JavaScript.Type#SCRIPT}
+     * @throws IllegalArgumentException
+     *             if {@code type} is {@link JavaScript.Type#MODULE} and
+     *             {@code loadMode} is {@link LoadMode#INLINE}
+     * @since 25.4
+     */
+    public void addJavaScript(String url, LoadMode loadMode,
+            JavaScript.Type type) {
+        if (type == JavaScript.Type.MODULE && loadMode == LoadMode.INLINE) {
+            throw new IllegalArgumentException(
+                    "Inline load mode is not supported for JavaScript.Type.MODULE ("
+                            + url
+                            + "). Use LoadMode.EAGER or LoadMode.LAZY, or JavaScript.Type.SCRIPT if the contents must be inlined into the page.");
+        }
+        Type dependencyType = type == JavaScript.Type.MODULE ? Type.JS_MODULE
+                : Type.JAVASCRIPT;
+        addDependency(new Dependency(dependencyType, url, loadMode));
     }
 
     /**
@@ -286,8 +387,12 @@ public class Page implements Serializable {
      * @param url
      *            the URL to load the JavaScript module from, not
      *            <code>null</code>
+     * @deprecated use {@link #addJavaScript(String, LoadMode, JavaScript.Type)}
+     *             with {@link JavaScript.Type#MODULE} instead. The new overload
+     *             also accepts a {@link LoadMode}.
      * @since 2.0
      */
+    @Deprecated(since = "25.4")
     public void addJsModule(String url) {
         if (UrlUtil.isExternal(url) || url.startsWith("/")) {
             addDependency(new Dependency(Type.JS_MODULE, url, LoadMode.EAGER));
@@ -313,6 +418,65 @@ public class Page implements Serializable {
      */
     public void addDynamicImport(String expression) {
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
+    }
+
+    /**
+     * Asynchronously runs the JavaScript that the given interface declares in
+     * the browser, through an implementation of the interface that this method
+     * answers with: calling a method of the implementation runs the JavaScript
+     * that the method declares, with the arguments of the call as its
+     * parameters.
+     * <p>
+     * The interface is annotated with {@link JsDefinition}, and each of its
+     * methods declares the JavaScript it runs with {@link JsExpression}:
+     *
+     * <pre>
+     * &#64;JsDefinition
+     * public interface ClipboardJs extends Serializable {
+     *     &#64;JsExpression("return navigator.clipboard.readText()")
+     *     PendingJavaScriptResult readText();
+     * }
+     *
+     * page.executeJs(ClipboardJs.class).readText().then(String.class,
+     *         text -&gt; ...);
+     * </pre>
+     *
+     * The declared JavaScript runs the way an expression given to
+     * {@link #executeJs(String, Object...)} does: in an <code>async</code>
+     * JavaScript method, with the arguments of the call as <code>$0</code>,
+     * <code>$1</code>, and so on, and a method that returns
+     * {@link PendingJavaScriptResult} can be used to retrieve the
+     * <code>return</code> value the same way. It runs on nothing in particular
+     * - page JavaScript works on globals - where the JavaScript of
+     * {@link Element#executeJs(Class)} runs on the element it was obtained
+     * from.
+     * <p>
+     * What differs from an expression is that nothing about the JavaScript is
+     * decided at the call site: the build collects the declarations of every
+     * JavaScript definition into the bundle, and the client runs the collected
+     * function after looking it up by an identifier of the JavaScript itself.
+     * No expression is sent and none is compiled in the browser, so the call
+     * works under a content security policy without <code>unsafe-eval</code>,
+     * and what declared the JavaScript in Java is not sent to a production
+     * browser either.
+     *
+     * @param <T>
+     *            the JavaScript definition type
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @return an implementation of the interface, to call the declared
+     *         JavaScript through, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the type is not an interface, is not annotated with
+     *             {@link JsDefinition}, or has a method that can not be
+     *             answered
+     * @since 25.4
+     */
+    public <T> T executeJs(Class<T> definitionType) {
+        // Queued the way an expression given to the page is, so that the two
+        // reach the client in the order they were made
+        return JsDefinitionProxy.create(definitionType,
+                ui.getInternals()::addJavaScriptInvocation);
     }
 
     // When updating JavaDocs here, keep in sync with Element.executeJavaScript
@@ -363,15 +527,8 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters);
-
-        PendingJavaScriptInvocation execution = new PendingJavaScriptInvocation(
-                ui.getInternals().getStateTree().getRootNode(), invocation);
-
-        ui.getInternals().addJavaScriptInvocation(execution);
-
-        return execution;
+        return ui.getInternals().addJavaScriptInvocation(
+                new JavaScriptInvocation(expression, parameters));
     }
 
     /**
@@ -406,7 +563,7 @@ public class Page implements Serializable {
      * Reloads the page in the browser.
      */
     public void reload() {
-        executeJs("window.location.reload();");
+        executeJs(PageJs.class).reload();
     }
 
     /**
@@ -809,8 +966,7 @@ public class Page implements Serializable {
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
         Objects.requireNonNull(callback,
                 "Url consumer callback should not be null.");
-        final String js = "return window.location.href";
-        executeJs(js).then(String.class, urlString -> {
+        executeJs(PageJs.class).getHref().then(String.class, urlString -> {
             try {
                 callback.accept(new URL(urlString));
             } catch (MalformedURLException e) {
@@ -818,6 +974,64 @@ public class Page implements Serializable {
                         "Error while encoding the URL from client", e);
             }
         });
+    }
+
+    /**
+     * What this page asks of the browser, as a JavaScript definition for
+     * {@link #executeJs(Class)}: the build collects it into the bundle, so none
+     * of it needs an expression and all of it works under a content security
+     * policy without <code>unsafe-eval</code>.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface PageJs extends Serializable {
+
+        /**
+         * The address the browser is at.
+         *
+         * @return the pending address
+         */
+        @JsExpression("return window.location.href")
+        PendingJavaScriptResult getHref();
+
+        /**
+         * Lets the document follow the color scheme the user asked the browser
+         * for.
+         */
+        @JsExpression("""
+                document.documentElement.removeAttribute('theme');
+                document.documentElement.style.colorScheme = '';
+                """)
+        void resetColorScheme();
+
+        /**
+         * Pins the document to a color scheme.
+         *
+         * @param theme
+         *            the theme to set on the document
+         * @param colorScheme
+         *            the color scheme to set on the document
+         */
+        @JsExpression("""
+                document.documentElement.setAttribute('theme', $0);
+                document.documentElement.style.colorScheme = $1;
+                """)
+        void setColorScheme(String theme, String colorScheme);
+
+        /**
+         * Loads the page again.
+         */
+        @JsExpression("window.location.reload();")
+        void reload();
+
+        /**
+         * Reads the direction the document is read in.
+         *
+         * @return the pending direction
+         */
+        @JsExpression("return document.dir")
+        PendingJavaScriptResult readDirection();
     }
 
     /**
@@ -838,7 +1052,7 @@ public class Page implements Serializable {
      * @since 24.0
      */
     public void fetchPageDirection(SerializableConsumer<Direction> callback) {
-        executeJs("return document.dir").then(String.class, dir -> {
+        executeJs(PageJs.class).readDirection().then(String.class, dir -> {
             Direction direction = getDirectionByClientName(dir);
             callback.accept(direction);
         });

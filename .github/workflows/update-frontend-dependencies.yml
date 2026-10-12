@@ -8,11 +8,11 @@ on:
 
 jobs:
   update-dependencies:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
-        branch: [main, '25.2', '25.1', '24.10', '24.9']
+        branch: [main, '25.3', '25.2', '25.1', '24.10', '24.9']
     permissions:
       contents: write
       pull-requests: write

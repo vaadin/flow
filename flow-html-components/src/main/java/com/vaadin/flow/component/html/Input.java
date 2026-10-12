@@ -30,7 +30,13 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
+ * <p>
+ * An empty form field. The type attribute selects the control (text, checkbox,
+ * and so on).
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input">MDN:
+ *      &lt;input&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -45,8 +51,10 @@ public class Input extends AbstractSinglePropertyField<Input, String>
     private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
             .attributeWithDefault("type", "text");
 
+    /** The value change timeout in milliseconds. */
     private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
 
+    /** The value change mode currently applied to the element. */
     private ValueChangeMode currentMode;
 
     /**

@@ -414,18 +414,16 @@ public final class Constants implements Serializable {
     public static final String STATISTICS_EXPORTED_WC = "exported-wc";
 
     /**
-     * The name of platform core components and tools versions file.
+     * The path of the folder containing the versions files, listing the npm
+     * packages whose versions are pinned and the versions to pin them to.
+     * <p>
+     * Every jar pinning npm package versions ships one or more {@code .json}
+     * files in this folder and all of them are read and merged.
      * 
-     * @since 23.1.3
+     * @since 25.3
      */
-    public static final String VAADIN_CORE_VERSIONS_JSON = "vaadin-core-versions.json";
-
-    /**
-     * The name of platform commercial components and tools versions file.
-     * 
-     * @since 2.2
-     */
-    public static final String VAADIN_VERSIONS_JSON = "vaadin-versions.json";
+    public static final String PINNED_NPM_VERSIONS_FOLDER = VAADIN_SERVLET_RESOURCES
+            + "versions/";
 
     /**
      * Default live reload port as defined in Spring Boot Dev Tools.
@@ -595,6 +593,27 @@ public final class Constants implements Serializable {
      * @since 25.1.12
      */
     public static final String URL_SAFE_SCHEMES_WILDCARD = "*";
+
+    /**
+     * The class name that asks the Aura and Lumo themes to style plain HTML
+     * elements, such as a <code>&lt;table&gt;</code>. It works on the element
+     * itself and on an ancestor, where it covers every native element inside
+     * it; with {@link InitParameters#THEMED_HTML}, the page's {@code <body>}
+     * carries it.
+     *
+     * @see #UNTHEMED_HTML_CLASS_NAME
+     * @since 25.3.1
+     */
+    public static final String THEMED_HTML_CLASS_NAME = "vaadin-themed-html";
+
+    /**
+     * The class name that keeps the theme's styles off a plain HTML element
+     * under an ancestor with {@link #THEMED_HTML_CLASS_NAME}, leaving the
+     * element to the browser or to the application's own styles.
+     * 
+     * @since 25.3.1
+     */
+    public static final String UNTHEMED_HTML_CLASS_NAME = "vaadin-unthemed-html";
 
     private Constants() {
         // prevent instantiation constants class only

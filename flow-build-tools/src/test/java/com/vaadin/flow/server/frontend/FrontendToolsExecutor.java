@@ -31,9 +31,11 @@ public class FrontendToolsExecutor {
      * Manual testing utility to demonstrate which Node.js installation will be
      * used.
      * <p>
-     * The resolution logic uses any installed Node.js >= minimum supported
-     * version (v24.0.0). If no suitable installation exists, it installs the
-     * preferred version specified by -DnodeVersion.
+     * The resolution logic uses any installed Node.js that is at least
+     * {@link FrontendTools#SUPPORTED_NODE_VERSION} and on the same major
+     * version as {@link FrontendTools#MAX_SUPPORTED_NODE_MAJOR_VERSION}. If no
+     * suitable installation exists, it installs the preferred version specified
+     * by -DnodeVersion.
      * <p>
      * Usage examples:
      * <ul>

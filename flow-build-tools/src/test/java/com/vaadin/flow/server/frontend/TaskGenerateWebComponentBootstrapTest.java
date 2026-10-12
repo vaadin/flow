@@ -75,6 +75,14 @@ class TaskGenerateWebComponentBootstrapTest {
     }
 
     @Test
+    void should_importBrowserHelpers() throws ExecutionFailedException {
+        taskGenerateWebComponentBootstrap.execute();
+        String content = taskGenerateWebComponentBootstrap.getFileContent();
+        assertTrue(content.contains("import '"
+                + FrontendUtils.JAR_RESOURCES_IMPORT + "BrowserHelpers.js';"));
+    }
+
+    @Test
     void should_importFeatureFlagTS() throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();

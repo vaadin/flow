@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# The upstream settings file mirrors external:* to the Google Maven Central
+# mirror (quarkusio/quarkus-ecosystem-ci#226), which would swallow requests
+# for the vaadin-prereleases repository. Exclude it from the mirror.
+if grep -q '<mirrorOf>external:\*</mirrorOf>' .github/quarkus-ecosystem-maven-settings.xml; then
+  sed -i 's|<mirrorOf>external:\*</mirrorOf>|<mirrorOf>external:*,!vaadin-prereleases</mirrorOf>|' \
+    .github/quarkus-ecosystem-maven-settings.xml
+fi
+
+MVN="mvn --settings .github/quarkus-ecosystem-maven-settings.xml -B -ntp -e -V -Drequire.home.node=true"
+
+# Update the Quarkus version. -N because quarkus.version is declared in the
+# root POM, and the extension and the test modules both resolve it from there.
+$MVN -N versions:set-property -Dproperty=quarkus.version -DnewVersion=${QUARKUS_VERSION} -DgenerateBackupPoms=false
+
+# The groupId:artifactId of each module that Maven selects for the given -pl,
+# -am and -amd options. The quarkus-tests profile adds the test suite, which is
+# not a module of flow-tests, to the reactor.
+compute_modules() {
+  $MVN -Pquarkus-tests "$@" validate | sed -n 's/.*--< \(.*\) >--.*/\1/p'
+}
+
+# The extension and the test suite. The extension's deployment module comes
+# first in the build order, before the suite modules that need it.
+QUARKUS_PL="-pl vaadin-quarkus,flow-tests/vaadin-quarkus-tests -amd"
+
+# Install the Flow modules the extension and the suite depend on. They come
+# from the POMs, so a new module is picked up without listing it.
+QUARKUS=$(compute_modules $QUARKUS_PL)
+FLOW=$(compute_modules -pl "$(paste -sd, <<<"$QUARKUS")" -am | grep -vxF "$QUARKUS")
+$MVN -DskipTests -DskipITs install -pl "$(paste -sd, <<<"$FLOW")"
+
+# The extension with its tests, and then the test suite, in one reactor. The
+# root reactor, not the suite's own POM, so that the flow-bom the suite
+# imports is read from the sources.
+$MVN -Pquarkus-tests $QUARKUS_PL -Dcom.vaadin.testbench.Parameters.maxAttempts=2 install

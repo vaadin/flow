@@ -169,7 +169,9 @@ public class ElementAttributeMap extends NodeMap {
      * @return a stream of all the attribute names which have been set
      */
     public Stream<String> attributes() {
-        return super.keySet().stream();
+        // A bound attribute keeps its key while the signal value is null, but
+        // the attribute is then not set, so it must not be listed either.
+        return super.keySet().stream().filter(this::has);
     }
 
     /**
@@ -314,7 +316,7 @@ public class ElementAttributeMap extends NodeMap {
     private VaadinSession getSession() {
         NodeOwner owner = getNode().getOwner();
         assert owner instanceof StateTree;
-        return ((StateTree) owner).getUI().getSession();
+        return ((StateTree) owner).getUI().getSessionOrThrow();
     }
 
 }

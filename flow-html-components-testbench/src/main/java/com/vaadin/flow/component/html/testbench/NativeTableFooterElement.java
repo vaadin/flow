@@ -22,7 +22,10 @@ import com.vaadin.testbench.elementsbase.Element;
  * A TestBench element representing a <code>&lt;tfoot&gt;</code> element.
  *
  * @since 24.5
+ * @deprecated since 25.3, scheduled for removal in Vaadin 26 together with the
+ *             component it matches. Use {@code TableFootElement} instead.
  */
+@Deprecated(since = "25.3", forRemoval = true)
 @Element("tfoot")
 public class NativeTableFooterElement extends TestBenchElement {
 }

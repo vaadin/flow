@@ -16,22 +16,21 @@
 package com.vaadin.flow.internal;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystemNotFoundException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
@@ -102,6 +101,8 @@ public final class ResourceFolderUtil {
         void visit(FolderFile file) throws IOException;
     }
 
+    private static final String NATIVE_IMAGE_RESOURCE_PROTOCOL = "resource";
+
     private ResourceFolderUtil() {
     }
 
@@ -125,13 +126,51 @@ public final class ResourceFolderUtil {
         case "file" -> visitFilesInFolder(folder, visitor);
         // wsjar is the protocol OpenLiberty uses for a jar
         case "jar", "wsjar" -> visitFilesInJar(folder, visitor);
-        // vfs is the protocol WildFly uses for a deployed archive
-        case "vfs" -> visitFilesInVfsFolder(folder, visitor);
+        // WildFly serves a deployed archive through a virtual file system
+        case JBossVfsUtil.PROTOCOL -> visitFilesInVfsFolder(folder, visitor);
+        // A GraalVM native image serves its resources from a file system of
+        // its own
+        case NATIVE_IMAGE_RESOURCE_PROTOCOL ->
+            visitFilesInNativeImageFolder(folder, visitor);
         // Any other protocol, such as the vfsfile of an exploded WildFly
         // deployment or the bundleresource of OSGi, is served from a folder
         // that the URL points at
         default -> visitFilesInFolder(folder, visitor);
         }
+    }
+
+    private static void visitFilesInNativeImageFolder(URL folder,
+            FolderFileVisitor visitor) throws IOException {
+        URI uri;
+        try {
+            uri = folder.toURI();
+        } catch (URISyntaxException e) {
+            throw new IOException("Unable to list the files in '" + folder
+                    + "' as it is not a valid URI", e);
+        }
+        Path path;
+        try {
+            path = Path.of(uri);
+        } catch (FileSystemNotFoundException e) {
+            // The image has a single resource file system, which is only
+            // available once it has been opened. It stays open, as other code
+            // in the application may be using it.
+            try {
+                FileSystems.newFileSystem(uri, Map.of());
+            } catch (FileSystemAlreadyExistsException alreadyOpened) {
+                // Opened by another thread in the meantime
+            }
+            try {
+                path = Path.of(uri);
+            } catch (FileSystemNotFoundException closed) {
+                // Closed by other code in the meantime
+                throw new IOException(
+                        "Unable to list the files in '" + folder
+                                + "' as the resource file system was closed",
+                        closed);
+            }
+        }
+        visitFilesInPath(path, visitor);
     }
 
     private static void visitFilesInFolder(URL folder,
@@ -155,6 +194,11 @@ public final class ResourceFolderUtil {
                         pathException);
             }
         }
+        visitFilesInPath(path, visitor);
+    }
+
+    private static void visitFilesInPath(Path path, FolderFileVisitor visitor)
+            throws IOException {
         try (Stream<Path> files = Files.list(path)) {
             for (Path file : files.filter(Files::isRegularFile).toList()) {
                 visitor.visit(new FileSystemFile(file));
@@ -177,8 +221,10 @@ public final class ResourceFolderUtil {
 
     private static void visitFilesInVfsFolder(URL folder,
             FolderFileVisitor visitor) throws IOException {
-        for (File file : listJBossVfsDirectory(folder)) {
-            visitor.visit(new FileSystemFile(file.toPath()));
+        // Read as they are, so that the virtual file system does not have to
+        // create them on disk first
+        for (JBossVfsUtil.VfsFile file : JBossVfsUtil.listFiles(folder)) {
+            visitor.visit(new VfsFolderFile(folder, file));
         }
     }
 
@@ -271,34 +317,37 @@ public final class ResourceFolderUtil {
         }
     }
 
-    // Borrowed from DevModeInitializer
-    private static List<File> listJBossVfsDirectory(URL url) {
-        List<File> files = new ArrayList<>();
-        try {
-            Object virtualFile = url.openConnection().getContent();
-            Class<?> virtualFileClass = virtualFile.getClass();
-
-            // Reflection as we cannot afford a dependency to
-            // WildFly or JBoss
-            Method getChildren = virtualFileClass.getMethod("getChildren");
-            Method getPhysicalFileMethod = virtualFileClass
-                    .getMethod("getPhysicalFile");
-
-            List<?> virtualFiles = (List<?>) getChildren.invoke(virtualFile);
-            for (Object child : virtualFiles) {
-                // side effect: create real-world files
-                files.add((File) getPhysicalFileMethod.invoke(child));
-            }
-        } catch (Exception exc) {
-            getLogger().debug(
-                    "Failed to list entries in JBoss VFS directory {}", url,
-                    exc);
-        }
-        return files;
+    /**
+     * Gets the location of a file of the given folder, for a folder that is not
+     * read through the file system.
+     */
+    private static String locationIn(URL folder, String name) {
+        String folderUrl = folder.toExternalForm();
+        return folderUrl.endsWith("/") ? folderUrl + name
+                : folderUrl + "/" + name;
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ResourceFolderUtil.class);
+    }
+
+    private record VfsFolderFile(URL folder,
+            JBossVfsUtil.VfsFile file) implements FolderFile {
+
+        @Override
+        public String getName() {
+            return file.getName();
+        }
+
+        @Override
+        public String getLocation() {
+            return locationIn(folder, getName());
+        }
+
+        @Override
+        public InputStream open() throws IOException {
+            return file.open();
+        }
     }
 
     private record FileSystemFile(Path path) implements FolderFile {
@@ -315,7 +364,9 @@ public final class ResourceFolderUtil {
 
         @Override
         public InputStream open() throws IOException {
-            return new FileInputStream(path.toFile());
+            // Not through toFile(), which only works for the default file
+            // system
+            return Files.newInputStream(path);
         }
     }
 
@@ -329,9 +380,7 @@ public final class ResourceFolderUtil {
 
         @Override
         public String getLocation() {
-            String folderUrl = folder.toExternalForm();
-            return folderUrl.endsWith("/") ? folderUrl + getName()
-                    : folderUrl + "/" + getName();
+            return locationIn(folder, getName());
         }
 
         @Override
