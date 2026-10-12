@@ -18,29 +18,26 @@ package com.example.application;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 
 /**
- * Uses what the application ships as resources: translations under vaadin-i18n,
- * vaadin-featureflags.properties, and a JavaScript module that the browser
- * loads when the server lists it as a dependency of the view.
+ * Uses what the application ships as resources: vaadin-featureflags.properties,
+ * and a JavaScript module that the browser loads when the server lists it as a
+ * dependency of the view. The translations are in {@link TranslationView}.
  */
 @Route("resources")
 @JsModule("./native-module.js")
 public class ResourcesView extends Div {
 
-    public static final String TRANSLATION_ID = "translation";
     public static final String FEATURE_ID = "feature";
 
     public ResourcesView() {
-        Span translation = new Span(getTranslation("greeting"));
-        translation.setId(TRANSLATION_ID);
-        Span feature = new Span(String.valueOf(
-                FeatureFlags.get(VaadinService.getCurrent().getContext())
-                        .isEnabled(FeatureFlags.ACCESSIBLE_DISABLED_BUTTONS)));
+        Div feature = new Div("Feature flag "
+                + TestFeatureFlagProvider.FEATURE_ID + " enabled: "
+                + FeatureFlags.get(VaadinService.getCurrent().getContext())
+                        .isEnabled(TestFeatureFlagProvider.FEATURE_ID));
         feature.setId(FEATURE_ID);
-        add(translation, feature);
+        add(feature);
     }
 }
