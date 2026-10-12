@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.newtab;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +32,11 @@ import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.FileDownloadHandler;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +49,7 @@ class NewTabTest {
 
     private UI ui;
     private TestButton button;
+    private StreamResourceRegistry registry;
 
     @BeforeEach
     void setUp() {
@@ -53,8 +57,8 @@ class NewTabTest {
         // The mock session has no resource registry by default; install a
         // real one so a DownloadHandler can be registered.
         VaadinSession session = ui.getSessionOrThrow();
-        when(session.getResourceRegistry())
-                .thenReturn(new StreamResourceRegistry(session));
+        registry = new StreamResourceRegistry(session);
+        when(session.getResourceRegistry()).thenReturn(registry);
         button = new TestButton();
         ui.getElement().appendChild(button.getElement());
     }
@@ -86,6 +90,19 @@ class NewTabTest {
         assertTrue(action.getBody().contains("window.open(u, \"_blank\""),
                 "Expected a window.open call, got: " + action.getBody());
         assertEquals("/files/terms.html", urlCapture(action));
+    }
+
+    @Test
+    void removeRegistration_handlerNoLongerServed() {
+        Registration registration = NewTab.onClick(button,
+                event -> event.getOutputStream().write(1));
+        URI uri = URI.create((String) urlCapture(actionOf(singleInstallFn())));
+        assertTrue(registry.getResource(uri).isPresent());
+
+        registration.remove();
+
+        assertFalse(registry.getResource(uri).isPresent(),
+                "Removing the registration should unregister the handler");
     }
 
     private static Object urlCapture(JsFunction action) {

@@ -68,7 +68,8 @@ public final class NewTab implements Serializable {
      * click. The browser shows the content when it can, for example a PDF, an
      * image or plain text. The built-in handlers, such as
      * {@link DownloadHandler#forFile(java.io.File)}, are switched to serve the
-     * content inline; a custom handler should call
+     * content inline. This changes the given handler instance, so it also
+     * serves inline wherever else it is used. A custom handler should call
      * {@link com.vaadin.flow.server.streams.DownloadEvent#inline(String)
      * DownloadEvent.inline} itself, since content served as an attachment is
      * downloaded instead of shown.
@@ -78,7 +79,11 @@ public final class NewTab implements Serializable {
      * enabled. A button that disables itself on click can be disabled before
      * the new tab requests the content; pass
      * {@link DownloadHandler#allowDisabled() handler.allowDisabled()} to serve
-     * the content in that case.
+     * the content in that case. The handler that {@code allowDisabled()}
+     * returns can no longer be switched to inline, so call
+     * {@link AbstractDownloadHandler#inline() inline()} on a built-in handler
+     * first, for example
+     * {@code DownloadHandler.forFile(file).inline().allowDisabled()}.
      *
      * @param component
      *            the component whose clicks open the new tab, not {@code null}
