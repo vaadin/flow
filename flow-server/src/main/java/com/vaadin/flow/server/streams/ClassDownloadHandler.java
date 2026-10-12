@@ -32,12 +32,14 @@ import com.vaadin.flow.server.HttpStatusCode;
  * class {@code com.example.ui.MyData} the definition would be
  * {@code forClassResource(MyData.class, "MyData.json")}
  * <p>
- * Byte range requests, which media players use to seek, are answered only when
- * the resource is a file on disk, such as with exploded classes in a
- * development environment. A resource inside a packaged jar or war is always
- * sent whole, so seeking in audio or video served from it does not work. Use
- * {@link DownloadHandler#forFile(java.io.File)} to serve seekable media in
- * production.
+ * Byte range requests, which media players use to seek and browsers use to
+ * resume a download, are not answered by default. A resource is read as a
+ * stream from its start up to each range, and a resource in a packaged jar is
+ * usually compressed, so each seek inflates all the bytes before it again,
+ * which adds up for large media that a player fetches in many small ranges.
+ * Call {@link #enableRangeRequests()} to answer them anyway, or use
+ * {@link DownloadHandler#forFile(java.io.File)}, which answers ranges by
+ * seeking in the file.
  *
  * @since 24.8
  */
@@ -47,6 +49,7 @@ public class ClassDownloadHandler
     private final Class<?> clazz;
     private final String resourceName;
     private String fileName;
+    private boolean rangeRequestsEnabled;
 
     /**
      * Create a class resource download handler with the resource name as the
@@ -117,7 +120,10 @@ public class ClassDownloadHandler
                 downloadEvent.setFileName(resourceName);
             }
             transferContent(downloadEvent, inputStream, outputStream,
-                    connection.getContentLengthLong(), toFile(resource));
+                    connection.getContentLengthLong(),
+                    rangeRequestsEnabled
+                            ? SeekableContent.ofResource(resource, connection)
+                            : null);
         } catch (RangeRequestException e) {
             // Not reported again: a cancel is not an error, and a smaller
             // range was never reported as started
@@ -132,6 +138,33 @@ public class ClassDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
+    }
+
+    /**
+     * Enables answering byte range requests, which media players use to seek
+     * and browsers use to resume a download. Safari does not play audio or
+     * video without them.
+     * <p>
+     * Each range is read by skipping the resource up to its start. For a file
+     * on disk that is a seek, but an entry of a packaged jar is usually
+     * compressed and has to be inflated from its start for every range, which
+     * is costly for large media that a player fetches in many small ranges.
+     *
+     * @return this instance for method chaining
+     */
+    public ClassDownloadHandler enableRangeRequests() {
+        rangeRequestsEnabled = true;
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Range requests are answered after {@link #enableRangeRequests()}.
+     */
+    @Override
+    public boolean isRangeRequestsEnabled() {
+        return rangeRequestsEnabled;
     }
 
     @Override

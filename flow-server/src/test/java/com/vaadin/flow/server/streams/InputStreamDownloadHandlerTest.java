@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,14 +29,19 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -46,9 +52,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -529,6 +537,42 @@ class InputStreamDownloadHandlerTest {
         handler.handleDownloadRequest(event);
 
         verify(response).setContentLengthLong(expectedContentLength);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "true, 6, 206, cdef", "false, 6, 200, abcdef",
+            "true, -1, 200, abcdef" })
+    void rangeRequested_servedOnlyWhenEnabledWithLength(boolean enabled,
+            long contentLength, int status, String body) throws IOException {
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        when(servletResponse.getService()).thenReturn(servletService);
+        when(request.getHeader("Range")).thenReturn("bytes=2-5");
+        InputStreamDownloadHandler handler = DownloadHandler
+                .fromInputStream(event -> new DownloadResponse(
+                        new ByteArrayInputStream(
+                                "abcdef".getBytes(StandardCharsets.UTF_8)),
+                        "content.txt", null, contentLength));
+        if (enabled) {
+            handler.enableRangeRequests();
+        }
+
+        handler.handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner));
+
+        assertEquals(body,
+                new String(servletOutput.getOutput(), StandardCharsets.UTF_8));
+        if (status == 206) {
+            verify(servletResponse).setStatus(206);
+            verify(servletResponse).setHeader("Content-Range", "bytes 2-5/6");
+        } else {
+            verify(servletResponse, never()).setStatus(anyInt());
+            verify(servletResponse, never()).setHeader(eq("Accept-Ranges"),
+                    anyString());
+        }
     }
 
     private static byte[] getBytes() {
