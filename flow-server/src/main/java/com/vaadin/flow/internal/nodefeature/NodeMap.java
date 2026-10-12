@@ -16,13 +16,21 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -122,36 +130,226 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    private static class HashMapValues extends HashMap<String, Serializable>
-            implements Values {
+    /**
+     * An immutable, ordered set of keys that is shared between all
+     * {@link ArrayValues} instances that contain exactly those keys in the same
+     * order. Instances are canonicalized through a global registry so that each
+     * distinct key permutation is stored only once regardless of how many maps
+     * use it. The registry only holds weak references so that key sets that are
+     * no longer used by any map can be garbage collected.
+     */
+    private static final class SharedKeySet extends AbstractSet<String>
+            implements Serializable {
 
-        public HashMapValues(Values previousValues) {
-            super(previousValues == null ? 0 : previousValues.size());
-            if (previousValues != null) {
-                previousValues.keySet().forEach(
-                        key -> super.put(key, previousValues.get(key)));
+        /**
+         * Key sets larger than this use a map for finding the index of a key
+         * instead of a linear scan.
+         */
+        private static final int INDEX_MAP_THRESHOLD = 8;
+
+        private static final class RegistryReference
+                extends WeakReference<SharedKeySet> {
+            private final List<String> registryKey;
+
+            private RegistryReference(SharedKeySet keySet) {
+                super(keySet, staleReferences);
+                registryKey = keySet.registryKey();
             }
+        }
+
+        private static final ConcurrentHashMap<List<String>, RegistryReference> registry = new ConcurrentHashMap<>();
+
+        private static final ReferenceQueue<SharedKeySet> staleReferences = new ReferenceQueue<>();
+
+        private final String[] keys;
+
+        private final transient @Nullable Map<String, Integer> indices;
+
+        private SharedKeySet(String[] keys) {
+            this.keys = keys;
+            if (keys.length > INDEX_MAP_THRESHOLD) {
+                indices = new HashMap<>(keys.length * 2);
+                for (int i = 0; i < keys.length; i++) {
+                    indices.put(keys[i], i);
+                }
+            } else {
+                indices = null;
+            }
+        }
+
+        /**
+         * Gets the canonical key set instance for the given keys.
+         *
+         * @param keys
+         *            the keys without duplicates. The array is retained and
+         *            must not be modified afterwards.
+         * @return the canonical key set, not <code>null</code>
+         */
+        private static SharedKeySet of(String[] keys) {
+            removeStaleReferences();
+
+            List<String> registryKey = Arrays.asList(keys);
+            RegistryReference reference = registry.get(registryKey);
+            SharedKeySet keySet = reference == null ? null : reference.get();
+            if (keySet != null) {
+                return keySet;
+            }
+
+            SharedKeySet[] result = new SharedKeySet[1];
+            registry.compute(registryKey, (key, existing) -> {
+                SharedKeySet existingKeySet = existing == null ? null
+                        : existing.get();
+                if (existingKeySet != null) {
+                    result[0] = existingKeySet;
+                    return existing;
+                }
+                result[0] = new SharedKeySet(keys);
+                return new RegistryReference(result[0]);
+            });
+            return result[0];
+        }
+
+        private static void removeStaleReferences() {
+            Reference<? extends SharedKeySet> stale;
+            while ((stale = staleReferences.poll()) != null) {
+                RegistryReference reference = (RegistryReference) stale;
+                registry.remove(reference.registryKey, reference);
+            }
+        }
+
+        private List<String> registryKey() {
+            // Must not reference this instance since it's used as a key in the
+            // registry that only weakly references this instance
+            return Arrays.asList(keys);
+        }
+
+        private int indexOf(String key) {
+            if (indices != null) {
+                Integer index = indices.get(key);
+                return index == null ? -1 : index;
+            }
+            for (int i = 0; i < keys.length; i++) {
+                if (keys[i].equals(key)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        private SharedKeySet withKey(String key) {
+            String[] newKeys = Arrays.copyOf(keys, keys.length + 1);
+            newKeys[keys.length] = key;
+            return of(newKeys);
+        }
+
+        private SharedKeySet withoutKey(int index) {
+            return of(removeIndex(keys, new String[keys.length - 1], index));
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return o instanceof String key && indexOf(key) >= 0;
+        }
+
+        @Override
+        public Iterator<String> iterator() {
+            return Arrays.asList(keys).iterator();
+        }
+
+        @Override
+        public int size() {
+            return keys.length;
+        }
+
+        private Object readResolve() {
+            return of(keys);
+        }
+    }
+
+    /**
+     * Stores values in an exactly sized array, in the order defined by a
+     * {@link SharedKeySet}. Used when there are multiple keys.
+     */
+    private static class ArrayValues implements Values {
+
+        private SharedKeySet keySet;
+
+        private Serializable[] values;
+
+        public ArrayValues(SingleValue previousValue) {
+            keySet = SharedKeySet.of(new String[] { previousValue.key });
+            values = new Serializable[] { previousValue.value };
+        }
+
+        @Override
+        public int size() {
+            return values.length;
         }
 
         @Override
         public Serializable get(String key) {
-            return super.get(key);
+            int index = keySet.indexOf(key);
+            return index < 0 ? null : values[index];
         }
 
         @Override
-        public void set(String key, Serializable value) {
-            super.put(key, value);
+        public Set<String> keySet() {
+            return keySet;
         }
 
         @Override
         public boolean containsKey(String key) {
-            return super.containsKey(key);
+            return keySet.indexOf(key) >= 0;
         }
 
         @Override
         public Stream<Serializable> streamValues() {
-            return super.values().stream();
+            return Arrays.stream(values);
         }
+
+        @Override
+        public void set(String key, Serializable value) {
+            int index = keySet.indexOf(key);
+            if (index >= 0) {
+                values[index] = value;
+                return;
+            }
+
+            Serializable[] newValues = Arrays.copyOf(values, values.length + 1);
+            newValues[values.length] = value;
+
+            keySet = keySet.withKey(key);
+            values = newValues;
+        }
+
+        /**
+         * Removes the value for the given key.
+         *
+         * @param key
+         *            the key to remove
+         * @return the removed value, or <code>null</code> if there was no value
+         *         for the key
+         */
+        public Serializable remove(String key) {
+            int index = keySet.indexOf(key);
+            if (index < 0) {
+                return null;
+            }
+            Serializable oldValue = values[index];
+
+            keySet = keySet.withoutKey(index);
+            values = removeIndex(values, new Serializable[values.length - 1],
+                    index);
+
+            return oldValue;
+        }
+    }
+
+    private static <T> T[] removeIndex(T[] source, T[] target, int index) {
+        System.arraycopy(source, 0, target, 0, index);
+        System.arraycopy(source, index + 1, target, index,
+                source.length - index - 1);
+        return target;
     }
 
     /**
@@ -224,7 +422,7 @@ public abstract class NodeMap extends NodeFeature {
             values = new SingleValue(key, value);
         } else {
             if (values instanceof SingleValue && !values.containsKey(key)) {
-                values = new HashMapValues(values);
+                values = new ArrayValues((SingleValue) values);
             }
             values.set(key, value);
         }
@@ -375,11 +573,11 @@ public abstract class NodeMap extends NodeFeature {
                 values = null;
             }
         } else {
-            assert values instanceof HashMapValues;
-            HashMapValues hashMapValues = (HashMapValues) values;
-            oldValue = hashMapValues.remove(key);
+            assert values instanceof ArrayValues;
+            ArrayValues arrayValues = (ArrayValues) values;
+            oldValue = arrayValues.remove(key);
 
-            if (hashMapValues.isEmpty()) {
+            if (arrayValues.isEmpty()) {
                 values = null;
             }
         }

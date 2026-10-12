@@ -297,6 +297,8 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         assertNotSame(nodeMap, copy);
 
         assertEquals(values.keySet(), copy.keySet());
+        // The deserialized map uses the same shared key set instance
+        assertSame(nodeMap.keySet(), copy.keySet());
         // Also verify that original value wasn't changed by the serialization
         assertEquals(values.keySet(), nodeMap.keySet());
 
@@ -405,6 +407,31 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put("foo", "baz");
 
         assertTrue(nodeMap.usesSingleMap());
+    }
+
+    @Test
+    void put_sameKeysInSameOrder_keySetIsShared() {
+        nodeMap.put("foo", "a");
+        nodeMap.put("bar", "b");
+        nodeMap.put("baz", "c");
+
+        ElementStylePropertyMap otherMap = createFeature();
+        otherMap.put("foo", "d");
+        otherMap.put("qux", "e");
+        otherMap.put("bar", "f");
+        otherMap.put("baz", "g");
+        otherMap.remove("qux");
+
+        assertSame(nodeMap.keySet(), otherMap.keySet());
+        assertEquals(List.of("foo", "bar", "baz"),
+                new ArrayList<>(otherMap.keySet()));
+        assertEquals("a", nodeMap.get("foo"));
+        assertEquals("b", nodeMap.get("bar"));
+        assertEquals("c", nodeMap.get("baz"));
+        assertEquals("d", otherMap.get("foo"));
+        assertEquals("f", otherMap.get("bar"));
+        assertEquals("g", otherMap.get("baz"));
+        assertNull(otherMap.get("qux"));
     }
 
     @Test
