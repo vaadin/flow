@@ -628,7 +628,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     @Override
     public void uiInit(UIInitEvent event) {
         UI ui = event.getUI();
-        sessions.add(ui.getSession());
+        sessions.add(ui.getSessionOrThrow());
     }
 
     /**

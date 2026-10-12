@@ -232,7 +232,7 @@ public class GeolocationWatcher implements Serializable {
         if (listeners.isEmpty()) {
             return;
         }
-        UI ui = owner.getUI().orElseThrow();
+        UI ui = owner.getUIOrThrow();
         List<PositionListener> snapshot = new ArrayList<>(listeners);
         if (result instanceof GeolocationPosition position) {
             for (PositionListener listener : snapshot) {

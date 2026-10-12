@@ -73,6 +73,7 @@ class ShortcutRegistrationTest {
         Arrays.setAll(listenOn, i -> mock(Component.class));
 
         when(lifecycleOwner.getUI()).thenReturn(Optional.of(ui));
+        when(lifecycleOwner.getUIOrThrow()).thenCallRealMethod();
         when(lifecycleOwner.addAttachListener(any()))
                 .thenReturn(mock(Registration.class));
         when(lifecycleOwner.addDetachListener(any()))
@@ -694,6 +695,7 @@ class ShortcutRegistrationTest {
 
         Component modal = Mockito.mock(Component.class);
         when(modal.getUI()).thenReturn(Optional.of(ui));
+        when(modal.getUIOrThrow()).thenCallRealMethod();
         when(modal.getEventBus()).thenReturn(new ComponentEventBus(modal));
         when(modal.getElement()).thenReturn(new Element("tag"));
         when(modal.isVisible()).thenReturn(true);
@@ -705,6 +707,7 @@ class ShortcutRegistrationTest {
 
         listenOn = new Component[] { ui };
         when(ui.getUI()).thenReturn(Optional.of(ui));
+        when(ui.getUIOrThrow()).thenCallRealMethod();
 
         new ShortcutRegistration(lifecycleOwner, () -> listenOn, eventRef::set,
                 Key.KEY_A);

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -56,6 +57,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
  * Handles the automatic hotswapping of CSS resources and classes annotated
@@ -123,14 +125,14 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
         vaadinService.addUIInitListener(uiInitEvent -> {
             UI ui = uiInitEvent.getUI();
-            VaadinSession session = ui.getSession();
+            VaadinSession session = ui.getSessionOrThrow();
             ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker
                     .get(session.getService());
             ui.addAfterNavigationListener(navigationEvent -> {
                 UI newUi = navigationEvent.getLocationChangeEvent().getUI();
                 Set<String> allUrls = new LinkedHashSet<>();
                 lookupUrlsForComponents(newUi, allUrls,
-                        newUi.getSession().getService());
+                        newUi.getSessionOrThrow().getService());
                 allUrls.forEach(tracker::trackAddForComponent);
             });
         });
@@ -380,6 +382,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                 }
 
                 // Add new stylesheets
+                Map<String, String> layers = getStyleSheetLayers(clazz);
                 for (String url : addedStylesheets) {
                     String resolvedUrl = FrontendDependencyUrlResolver
                             .resolveToContextRoot(url);
@@ -387,7 +390,9 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                         continue;
                     }
                     try {
-                        ui.getPage().addStyleSheet(resolvedUrl);
+                        String layer = layers.getOrDefault(url, "");
+                        ui.getPage().addStyleSheet(resolvedUrl, LoadMode.EAGER,
+                                layer.isEmpty() ? null : layer);
                         Dependency dependency = ui.getInternals()
                                 .getDependencyList()
                                 .getDependencyByUrl(resolvedUrl,
@@ -396,9 +401,13 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                         ActiveStyleSheetTracker.get(event.getVaadinService())
                                 .trackAddForComponent(resolvedUrl);
                         // Immediately push bundled CSS content for the added
-                        // URL so client applies it without link reload
+                        // URL so client applies it without link reload. A
+                        // layered style sheet is skipped: the pushed content
+                        // would arrive before the layered element is created
+                        // and apply outside of the layer. Its @import loads
+                        // the current file anyway.
                         String normalized = normalizeStylesheetUrl(resolvedUrl);
-                        if (normalized != null) {
+                        if (normalized != null && layer.isEmpty()) {
                             tryBundlePublicStylesheet(event, normalized)
                                     .ifPresent(content -> event
                                             .updateClientResource(
@@ -452,29 +461,33 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
     private static Set<String> getStyleSheetUrls(Class<?> clazz) {
         Set<String> urls = new LinkedHashSet<>();
-        if (Component.class.isAssignableFrom(clazz)) {
-            @SuppressWarnings("unchecked")
-            Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
-            List<StyleSheet> annotations = AnnotationReader
-                    .getStyleSheetAnnotations(componentClass);
-            for (StyleSheet annotation : annotations) {
-                String url = annotation.value();
-                if (url != null && !url.isEmpty()) {
-                    urls.add(url);
-                }
-            }
-        } else {
-            // For App Shell classes, check annotations directly
-            StyleSheet[] annotations = clazz
-                    .getAnnotationsByType(StyleSheet.class);
-            for (StyleSheet annotation : annotations) {
-                String url = annotation.value();
-                if (url != null && !url.isEmpty()) {
-                    urls.add(url);
-                }
+        for (StyleSheet annotation : getStyleSheetAnnotations(clazz)) {
+            String url = annotation.value();
+            if (url != null && !url.isEmpty()) {
+                urls.add(url);
             }
         }
         return urls;
+    }
+
+    // The cascade layer of each style sheet, keyed by the annotation value.
+    // Style sheets without a layer map to an empty string.
+    private static Map<String, String> getStyleSheetLayers(Class<?> clazz) {
+        Map<String, String> layers = new HashMap<>();
+        for (StyleSheet annotation : getStyleSheetAnnotations(clazz)) {
+            layers.putIfAbsent(annotation.value(), annotation.layer());
+        }
+        return layers;
+    }
+
+    private static List<StyleSheet> getStyleSheetAnnotations(Class<?> clazz) {
+        if (Component.class.isAssignableFrom(clazz)) {
+            @SuppressWarnings("unchecked")
+            Class<? extends Component> componentClass = (Class<? extends Component>) clazz;
+            return AnnotationReader.getStyleSheetAnnotations(componentClass);
+        }
+        // For App Shell classes, check annotations directly
+        return List.of(clazz.getAnnotationsByType(StyleSheet.class));
     }
 
     private Registry getRegistry(VaadinSession session) {

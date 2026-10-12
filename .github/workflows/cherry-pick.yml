@@ -1,0 +1,71 @@
+name: Cherry Pick
+
+on:
+  # Merges into main.
+  push:
+    branches:
+      - main
+  # Catches PRs merged into maintenance branches and target/* labels added
+  # after the merge.
+  schedule:
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
+
+# Every run picks up everything that is pending, so queue runs instead of
+# running them in parallel.
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  cherry-pick:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 180
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          # The action pushes with an explicit token; no credentials are kept
+          # in .git/config so Claude cannot push.
+          persist-credentials: false
+
+      # JDK 21 also builds the maintenance branches, which compile with
+      # --release 17 (24.x) or --release 11 (23.x).
+      - name: Setup JDK 21
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Setup Node
+        uses: ./.github/actions/setup-frontend-tools
+
+      - name: Cherry-pick
+        uses: vaadin/github-actions/cherry-pick@main
+        env:
+          MAVEN_ARGS: -ntp -B
+        with:
+          github-token: ${{ secrets.CHERRY_PICK_TOKEN }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          verify-instructions: |
+            - Run the formatter on the affected module(s). The formatter
+              differs per branch: if the root pom.xml configures
+              spotless-maven-plugin (25.x and newer) run
+              mvn spotless:apply -pl <module>, otherwise (24.x and older,
+              formatter-maven-plugin) run mvn formatter:format -pl <module>
+            - Make sure the project compiles: build the affected module(s) and
+              the modules they depend on, test sources included:
+              mvn install -DskipTests -pl <module> -am
+              The build must succeed. A resolved pick often uses an API that
+              does not exist on the target branch; adapt the change to what the
+              branch has instead of committing code that does not compile.
+            - Do not run the tests, the validation workflow of the pull request
+              runs them.
+          extra-allowed-tools: Bash(mvn:*)

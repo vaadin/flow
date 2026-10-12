@@ -56,10 +56,10 @@ public class BeforeLeaveEvent extends BeforeEvent {
         public void setReferences(NavigationHandler handler,
                 NavigationEvent event) {
             if (event != null) {
-                event.getUI().getSession().hasLock();
+                event.getUI().getSessionOrThrow().hasLock();
             } else {
                 assert UI.getCurrent() != null
-                        && UI.getCurrent().getSession().hasLock();
+                        && UI.getCurrent().getSessionOrThrow().hasLock();
             }
             this.handler = handler;
             this.event = event;
@@ -71,7 +71,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
         public void proceed() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
             if (handler != null && event != null) {
-                if (!event.getUI().getSession().hasLock()) {
+                if (!event.getUI().getSessionOrThrow().hasLock()) {
                     throw new IllegalStateException(
                             "The method 'proceed' may not be called without the session lock. "
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");

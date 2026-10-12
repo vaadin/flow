@@ -44,10 +44,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-jandex</artifactId>
-        </dependency>
         -->
     </dependencies>
 

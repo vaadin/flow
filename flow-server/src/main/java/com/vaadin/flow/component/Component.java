@@ -436,6 +436,28 @@ public abstract class Component
     }
 
     /**
+     * Gets the UI this component is attached to, throwing an exception if the
+     * component is not attached.
+     * <p>
+     * Use this method when the code can only run while the component is
+     * attached, e.g. in an event listener or in {@link #onAttach(AttachEvent)}.
+     * If the code has to work also for a detached component, use
+     * {@link #getUI()} instead.
+     *
+     * @return the UI this component is attached to, never <code>null</code>
+     * @throws IllegalStateException
+     *             if this component is not attached to a UI
+     * @see #getUI()
+     * @since 25.4
+     */
+    public UI getUIOrThrow() {
+        return getUI().orElseThrow(() -> new IllegalStateException("Component "
+                + getClass().getName()
+                + " is not attached to a UI. This code must be run while the component is attached, "
+                + "e.g. from an attach listener or onAttach()."));
+    }
+
+    /**
      * Sets the id of the root element of this component. The id is used with
      * various APIs to identify the element, and it should be unique on the
      * page.
@@ -1003,6 +1025,7 @@ public abstract class Component
      *            {@code null}
      * @return the first ancestor that satisfies the predicate, or an empty
      *         optional if no ancestor satisfies it
+     * @since 25.4
      */
     public Optional<Component> findAncestor(
             SerializablePredicate<Component> predicate) {

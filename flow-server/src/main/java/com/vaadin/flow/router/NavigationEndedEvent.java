@@ -60,6 +60,7 @@ import com.vaadin.flow.server.VaadinService;
  * </pre>
  *
  * @see NavigationStartedEvent
+ * @since 25.4
  */
 public class NavigationEndedEvent extends EventObject {
 

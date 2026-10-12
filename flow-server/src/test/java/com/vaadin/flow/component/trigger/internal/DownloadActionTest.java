@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.net.URI;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.JsFunction;
@@ -26,9 +28,12 @@ import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
+import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.installFns;
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.singleInstallFn;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 class DownloadActionTest {
 
@@ -94,7 +99,7 @@ class DownloadActionTest {
         // The mock session has no resource registry by default; install a
         // real one so the action can register its DownloadHandler.
         VaadinSession session = ui.getSession();
-        Mockito.when(session.getResourceRegistry())
+        when(session.getResourceRegistry())
                 .thenReturn(new StreamResourceRegistry(session));
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -116,6 +121,64 @@ class DownloadActionTest {
                 uri instanceof String && ((String) uri)
                         .startsWith("VAADIN/dynamic/resource/"),
                 "Expected a Vaadin dynamic-resource URI, got: " + uri);
+    }
+
+    @Test
+    void downloadHandler_triggerRemoved_unregistersResource() {
+        UI ui = new MockUI();
+        VaadinSession session = ui.getSession();
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
+        when(session.getResourceRegistry()).thenReturn(registry);
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        DomEventTrigger trigger = new DomEventTrigger(button, "click");
+        trigger.triggers(new DownloadAction(
+                (DownloadHandler) event -> event.getOutputStream().write(1)));
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        JsFunction action = actionOf(singleInstallFn(ui));
+        URI uri = URI.create((String) ((JsFunction) action.getCaptures().get(0))
+                .getCaptures().get(0));
+        assertTrue(registry.getResource(uri).isPresent());
+
+        trigger.remove();
+
+        assertFalse(registry.getResource(uri).isPresent(),
+                "Removing the trigger should unregister the handler");
+    }
+
+    @Test
+    void downloadHandler_sharedOnSameHost_removingOneTriggerKeepsOther() {
+        UI ui = new MockUI();
+        VaadinSession session = ui.getSession();
+        StreamResourceRegistry registry = new StreamResourceRegistry(session);
+        when(session.getResourceRegistry()).thenReturn(registry);
+        TagComponent button = new TagComponent("button");
+        ui.getElement().appendChild(button.getElement());
+
+        DownloadAction download = new DownloadAction(
+                (DownloadHandler) event -> event.getOutputStream().write(1));
+        DomEventTrigger click = new DomEventTrigger(button, "click");
+        click.triggers(download);
+        DomEventTrigger keydown = new DomEventTrigger(button, "keydown");
+        keydown.triggers(download);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        List<URI> uris = installFns(ui).stream().map(fn -> URI.create(
+                (String) ((JsFunction) actionOf(fn).getCaptures().get(0))
+                        .getCaptures().get(0)))
+                .toList();
+        assertEquals(2, uris.size());
+
+        click.remove();
+
+        assertFalse(registry.getResource(uris.get(0)).isPresent(),
+                "Removing the trigger should unregister its handler");
+        assertTrue(registry.getResource(uris.get(1)).isPresent(),
+                "The other trigger's URL should keep serving the file");
     }
 
     private static void assertLiteralInputValue(JsFunction action,

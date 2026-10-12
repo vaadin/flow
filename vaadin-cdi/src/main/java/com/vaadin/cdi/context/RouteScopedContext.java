@@ -77,7 +77,7 @@ public class RouteScopedContext extends AbstractContext {
 
         @Override
         protected ContextualStorage newContextualStorage(RouteStorageKey key) {
-            UI.getCurrent().addDetachListener(
+            UI.getCurrentOrThrow().addDetachListener(
                     event -> handleUIDetach(event.getUI(), key));
             return super.newContextualStorage(key);
         }
@@ -138,7 +138,7 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private UI findPreservingUI(UI ui) {
-            VaadinSession session = ui.getSession();
+            VaadinSession session = ui.getSessionOrThrow();
             String windowName = getWindowName(ui);
             for (UI sessionUi : session.getUIs()) {
                 if (sessionUi != ui && windowName != null
@@ -204,7 +204,7 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private List<ContextualStorage> getActiveContextualStorages() {
-            Set<String> uiStoreIds = getUIStoreIds(UI.getCurrent());
+            Set<String> uiStoreIds = getUIStoreIds(UI.getCurrentOrThrow());
             return getKeySet().stream()
                     .filter(key -> uiStoreIds.contains(key.getUIId()))
                     .map(key -> getContextualStorage(key, false))
@@ -357,7 +357,7 @@ public class RouteScopedContext extends AbstractContext {
     protected ContextualStorage getContextualStorage(Contextual<?> contextual,
             boolean createIfNotExist) {
         Bean<?> bean = getBean(contextual);
-        UI ui = UI.getCurrent();
+        UI ui = UI.getCurrentOrThrow();
         Class<?> owner = getOwner(ui, bean);
         if (!navigationChainHasOwner(ui, owner) && createIfNotExist) {
             throw new IllegalStateException(String.format(

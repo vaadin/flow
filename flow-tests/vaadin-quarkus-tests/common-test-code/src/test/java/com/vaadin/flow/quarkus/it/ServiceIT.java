@@ -70,11 +70,14 @@ public class ServiceIT extends AbstractCdiIT {
     }
 
     @Test
-    public void sessionExpiredMessageCustomized() {
+    public void sessionExpiredMessageCustomized() throws IOException {
         open();
         click(ServiceView.EXPIRE);
         click(ServiceView.ACTION);
         assertSystemMessageEquals(TestSystemMessagesProvider.EXPIRED_BY_TEST);
+        // Wait for the session destroy, otherwise it may happen after the
+        // next test has reset the counters
+        waitForCount(1, SessionDestroyEvent.class.getSimpleName());
     }
 
     @Test
@@ -102,7 +105,7 @@ public class ServiceIT extends AbstractCdiIT {
         open();
         assertCountEquals(0, destroyCounter);
         click(ServiceView.EXPIRE);
-        assertCountEquals(1, destroyCounter);
+        waitForCount(1, destroyCounter);
     }
 
     @Test

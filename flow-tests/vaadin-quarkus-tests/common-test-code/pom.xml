@@ -25,6 +25,10 @@
       <groupId>com.vaadin</groupId>
       <artifactId>flow-html-components</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-lit-template</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>com.vaadin</groupId>

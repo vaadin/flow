@@ -19,7 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -35,6 +39,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * noise a developer cannot tell from a whim.
  */
 class LaunchTest {
+
+    private final List<String> properties = new ArrayList<>();
+
+    @AfterEach
+    void clearProperties() {
+        properties.forEach(System::clearProperty);
+    }
 
     @Test
     void membership_ignoresOrder() {
@@ -116,5 +127,52 @@ class LaunchTest {
         });
 
         assertTrue(launch.projectIfResolved().isEmpty());
+    }
+
+    /**
+     * {@code disabledPlugins} only ever reached the system class loader: every
+     * other loader's configuration re-reads the empty {@code disabledPlugins=}
+     * bundled in HotswapAgent's jar, which shadows the system property. So a
+     * container's own loaders kept JacksonPlugin, and its patch deadlocked
+     * Payara Micro's boot against Hazelcast's bootstrap. The global key is the
+     * one every loader consults.
+     */
+    @Test
+    void jvmFlags_disableHotswapAgentPluginsForEveryClassLoader(
+            @TempDir Path repo) throws IOException {
+        Files.writeString(repo.resolve("pom.xml"), """
+                <project>
+                  <artifactId>app</artifactId>
+                  <packaging>jar</packaging>
+                </project>
+                """);
+        Path jar = Files.writeString(repo.resolve("ha.jar"), "");
+        setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, jar.toString());
+        setProperty("vaadin.dev.agentJar", jar.toString());
+        setProperty("vaadin.dev.javaHome", System.getProperty("java.home"));
+        Launch launch = new Launch(Reactor.discover(repo, text -> {
+        }), text -> {
+        });
+
+        List<String> flags = launch.jvmFlags(text -> {
+        });
+
+        String prefix = "-Dhotswapagent.disablePlugin=";
+        List<String> disabled = flags.stream()
+                .filter(flag -> flag.startsWith(prefix))
+                .flatMap(flag -> Stream
+                        .of(flag.substring(prefix.length()).split(",")))
+                .toList();
+        assertTrue(disabled.contains("JacksonPlugin"), flags.toString());
+        assertTrue(disabled.contains("Vaadin"), flags.toString());
+        assertTrue(
+                flags.stream().noneMatch(
+                        flag -> flag.startsWith("-DdisabledPlugins=")),
+                flags.toString());
+    }
+
+    private void setProperty(String name, String value) {
+        properties.add(name);
+        System.setProperty(name, value);
     }
 }

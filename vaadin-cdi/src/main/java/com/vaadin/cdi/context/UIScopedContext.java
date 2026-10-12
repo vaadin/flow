@@ -76,13 +76,13 @@ public class UIScopedContext extends AbstractContext {
 
         public ContextualStorage getContextualStorage(
                 boolean createIfNotExist) {
-            final Integer uiId = UI.getCurrent().getUIId();
+            final Integer uiId = UI.getCurrentOrThrow().getUIId();
             return super.getContextualStorage(uiId, createIfNotExist);
         }
 
         @Override
         protected ContextualStorage newContextualStorage(Integer uiId) {
-            UI.getCurrent().addDetachListener(this::destroy);
+            UI.getCurrentOrThrow().addDetachListener(this::destroy);
             return super.newContextualStorage(uiId);
         }
 

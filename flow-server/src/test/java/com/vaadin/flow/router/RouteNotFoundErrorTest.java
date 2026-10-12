@@ -128,6 +128,7 @@ class RouteNotFoundErrorTest {
         UI ui = Mockito.mock(UI.class);
         VaadinSession session = Mockito.mock(VaadinSession.class);
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
         Mockito.when(session.getConfiguration()).thenReturn(config);

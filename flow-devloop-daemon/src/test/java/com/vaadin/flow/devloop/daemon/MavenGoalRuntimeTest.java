@@ -300,16 +300,17 @@ class MavenGoalRuntimeTest {
             throws IOException {
         Path file = dir.resolve("payara-args.txt");
 
-        List<String> passed = MavenGoalRuntime
-                .withCommasInArgFile(List.of("-javaagent:/ha.jar",
-                        "-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty",
-                        "-XX:+AllowEnhancedClassRedefinition"), file);
+        List<String> passed = MavenGoalRuntime.withCommasInArgFile(List.of(
+                "-javaagent:/ha.jar",
+                "-Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin",
+                "-XX:+AllowEnhancedClassRedefinition"), file);
 
         assertEquals(
                 List.of("-javaagent:/ha.jar",
                         "-XX:+AllowEnhancedClassRedefinition", "@" + file),
                 passed);
-        assertEquals("\"-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty\"\n",
+        assertEquals(
+                "\"-Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin\"\n",
                 Files.readString(file));
     }
 
@@ -324,11 +325,11 @@ class MavenGoalRuntimeTest {
         assertEquals(List.of("-Dliberty.jvm.devloop0=-javaagent:/ha.jar",
                 "-Dliberty.jvm.devloop1="
                         + "-XX:+AllowEnhancedClassRedefinition",
-                "-Dliberty.jvm.devloop2=-DdisabledPlugins=Vaadin,Spring"),
+                "-Dliberty.jvm.devloop2=-Dhotswapagent.disablePlugin=Vaadin,Spring"),
                 MavenGoalRuntime.flagProperties("liberty.jvm.devloop",
                         List.of("-javaagent:/ha.jar",
                                 "-XX:+AllowEnhancedClassRedefinition",
-                                "-DdisabledPlugins=Vaadin,Spring")));
+                                "-Dhotswapagent.disablePlugin=Vaadin,Spring")));
     }
 
     /**
@@ -413,7 +414,8 @@ class MavenGoalRuntimeTest {
                         .startsWith(launch.appJvm().home().resolve("bin")
                                 + File.pathSeparator),
                 invocation.environment().get("PATH"));
-        assertFalse(hotswapAgentProperties(launch).contains("extraClasspath"));
+        assertFalse(Files.exists(launch.reactor().app().classesDir()
+                .resolve("hotswap-agent.properties")));
     }
 
     /**

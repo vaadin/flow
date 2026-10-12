@@ -16,23 +16,30 @@
 package com.vaadin.quarkus.deployment;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.paths.PathTree;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -635,5 +642,38 @@ class VaadinQuarkusNativeProcessorTest {
         public List<NestedDto> getExtendedData() {
             return null;
         }
+    }
+
+    @Test
+    void findVaadinServiceInterfaces_onlyVaadinInterfacesOfAllArchives(
+            @TempDir Path tempDir) throws IOException {
+        Path application = tempDir.resolve("application");
+        writeServiceFile(application, "com.vaadin.flow.server.SomeService");
+        writeServiceFile(application, "org.example.OtherService");
+        writeServiceFile(application, "nested/com.vaadin.NestedService");
+        Path addon = tempDir.resolve("addon.jar");
+        try (JarOutputStream jar = new JarOutputStream(
+                Files.newOutputStream(addon))) {
+            jar.putNextEntry(new JarEntry(
+                    "META-INF/services/com.vaadin.addon.AddonService"));
+            jar.write("com.example.Provider\n".getBytes());
+        }
+        // A dependency can also be a single file that is not an archive
+        Path plainFile = Files.writeString(tempDir.resolve("notes.txt"), "");
+
+        assertEquals(
+                Set.of("com.vaadin.addon.AddonService",
+                        "com.vaadin.flow.server.SomeService"),
+                VaadinQuarkusNativeProcessor.findVaadinServiceInterfaces(
+                        Stream.of(PathTree.ofDirectoryOrArchive(application),
+                                PathTree.ofDirectoryOrArchive(addon),
+                                PathTree.ofDirectoryOrFile(plainFile))));
+    }
+
+    private static void writeServiceFile(Path root, String name)
+            throws IOException {
+        Path file = root.resolve("META-INF/services").resolve(name);
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, "com.example.Provider\n");
     }
 }

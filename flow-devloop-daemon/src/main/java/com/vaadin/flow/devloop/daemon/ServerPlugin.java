@@ -567,9 +567,10 @@ record ServerPlugin(String name, String groupId, String artifactId, String goal,
      * kind. The mojo then turns each element into a key and a value at the
      * first {@code =} and <em>drops any element that has none</em>, in silence.
      * So a comma does not merely split the value, it deletes most of it: the
-     * loop's own {@code -DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty} would
-     * arrive as {@code -DdisabledPlugins=Vaadin} and nothing would say so. That
-     * is what {@link #commaSplitFlags} is for.
+     * loop's own
+     * {@code -Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin}
+     * would arrive as {@code -Dhotswapagent.disablePlugin=Vaadin} and nothing
+     * would say so. That is what {@link #commaSplitFlags} is for.
      * <p>
      * The same drop rule would take {@code -XX:+AllowEnhancedClassRedefinition}
      * with it, that flag carrying no {@code =} - and with it enhanced class
