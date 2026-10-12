@@ -47,6 +47,75 @@
 
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
+    <!-- The ITs the maven-compile execution below runs: the ones that put the
+         compile leg through its paths - an apply, an edit in a sibling module,
+         a deleted source. -Pdevloop-maven-compile runs every IT instead. -->
+    <devloop.maven-compile.its>**/DevLoopApplyIT.java, **/DevLoopMultiModuleIT.java, **/DevLoopDeletionIT.java</devloop.maven-compile.its>
   </properties>
+
+  <build>
+    <plugins>
+      <!-- Every fixture runs its ITs twice: the default execution with the
+           daemon compiling applies with javac, its default, and this one with
+           -Dvaadin.dev.compiler=maven, the opt-in. A run of its own rather than
+           a parameter on each test: the compiler is fixed for a daemon's life,
+           and each failsafe run starts its own daemon. Its reports go to a
+           directory of their own so the two verify goals read their own
+           summaries. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>maven-compile</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <!-- includes rather than test, which would also override the
+                   excludes a fixture declares for ITs it cannot pass. -->
+              <includes>
+                <include>${devloop.maven-compile.its}</include>
+              </includes>
+              <reportsDirectory>${project.build.directory}/failsafe-reports-maven-compile</reportsDirectory>
+              <summaryFile>${project.build.directory}/failsafe-reports-maven-compile/failsafe-summary.xml</summaryFile>
+              <systemPropertyVariables>
+                <devloop.it.compiler>maven</devloop.it.compiler>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- The whole suite compiled by Maven, and only that:
+         mvn verify -Pdevloop-maven-compile -pl <fixture>/devloop-app
+         Narrow it with -Ddevloop.maven-compile.its=**/DevLoopApplyIT.java. -->
+    <profile>
+      <id>devloop-maven-compile</id>
+      <properties>
+        <devloop.maven-compile.its>**/*IT.java</devloop.maven-compile.its>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default</id>
+                <configuration>
+                  <skipITs>true</skipITs>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
