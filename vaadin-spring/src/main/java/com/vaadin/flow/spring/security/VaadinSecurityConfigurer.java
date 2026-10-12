@@ -165,7 +165,7 @@ public final class VaadinSecurityConfigurer
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver successUrlResolver;
 
-    private AuthenticationFailureHandler authenticationFailureHandler;
+    private AuthenticationFailureHandler failureHandler;
 
     private String logoutSuccessUrl;
 
@@ -450,13 +450,13 @@ public final class VaadinSecurityConfigurer
      * {@code AbstractAuthenticationFailureEvent} is an alternative that keeps
      * the default behavior.
      *
-     * @param authenticationFailureHandler
+     * @param failureHandler
      *            the authentication failure handler
      * @return the current configurer instance for method chaining
      */
-    public VaadinSecurityConfigurer authenticationFailureHandler(
-            AuthenticationFailureHandler authenticationFailureHandler) {
-        this.authenticationFailureHandler = authenticationFailureHandler;
+    public VaadinSecurityConfigurer failureHandler(
+            AuthenticationFailureHandler failureHandler) {
+        this.failureHandler = failureHandler;
         return this;
     }
 
@@ -703,16 +703,16 @@ public final class VaadinSecurityConfigurer
             http.formLogin(configurer -> {
                 configurer.loginPage(formLoginPage).permitAll();
                 configurer.successHandler(getAuthenticationSuccessHandler());
-                if (authenticationFailureHandler != null) {
-                    configurer.failureHandler(authenticationFailureHandler);
+                if (failureHandler != null) {
+                    configurer.failureHandler(failureHandler);
                 }
             });
         } else if (oauth2LoginPage != null) {
             http.oauth2Login(configurer -> {
                 configurer.loginPage(oauth2LoginPage).permitAll();
                 configurer.successHandler(getAuthenticationSuccessHandler());
-                if (authenticationFailureHandler != null) {
-                    configurer.failureHandler(authenticationFailureHandler);
+                if (failureHandler != null) {
+                    configurer.failureHandler(failureHandler);
                 }
                 if (keycloakRoleMapping) {
                     // The role prefix holder is only populated with the prefix

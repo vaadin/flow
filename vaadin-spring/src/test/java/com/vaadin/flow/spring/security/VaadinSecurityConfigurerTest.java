@@ -563,7 +563,7 @@ class VaadinSecurityConfigurerTest {
 
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
-    void authenticationFailureHandler_customHandlerIsUsedByAuthenticationFilter(
+    void failureHandler_customHandlerIsUsedByAuthenticationFilter(
             boolean oauth2) throws Exception {
         var failureHandler = mock(AuthenticationFailureHandler.class);
 
@@ -573,7 +573,7 @@ class VaadinSecurityConfigurerTest {
             } else {
                 c.loginView("/login");
             }
-            c.authenticationFailureHandler(failureHandler);
+            c.failureHandler(failureHandler);
         }).build().getFilters();
 
         var filter = filters.stream().filter(
