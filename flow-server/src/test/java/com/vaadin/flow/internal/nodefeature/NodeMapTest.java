@@ -435,6 +435,29 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
+    void put_manyKeys_removeFromMiddle_valuesKept() {
+        for (int i = 0; i < 12; i++) {
+            nodeMap.put("key" + i, i);
+        }
+        nodeMap.remove("key5");
+
+        NodeMap copy = SerializationUtils
+                .deserialize(SerializationUtils.serialize(nodeMap));
+
+        for (NodeMap map : List.of(nodeMap, copy)) {
+            assertFalse(map.contains("key5"));
+            assertNull(map.get("key5"));
+            for (int i = 0; i < 12; i++) {
+                if (i != 5) {
+                    assertTrue(map.contains("key" + i));
+                    assertEquals(i, map.get("key" + i));
+                }
+            }
+        }
+        assertSame(nodeMap.keySet(), copy.keySet());
+    }
+
+    @Test
     void streamSingleNullValue() {
         nodeMap.put("foo", null);
 
