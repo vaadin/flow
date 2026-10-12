@@ -416,10 +416,10 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put("baz", "c");
 
         ElementStylePropertyMap otherMap = createFeature();
-        otherMap.put("baz", "g");
-        otherMap.put("qux", "e");
-        otherMap.put("foo", "d");
         otherMap.put("bar", "f");
+        otherMap.put("foo", "d");
+        otherMap.put("qux", "e");
+        otherMap.put("baz", "g");
         otherMap.remove("qux");
 
         assertSame(nodeMap.keySet(), otherMap.keySet());
