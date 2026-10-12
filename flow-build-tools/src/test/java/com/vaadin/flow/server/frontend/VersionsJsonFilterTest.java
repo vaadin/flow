@@ -116,8 +116,11 @@ class VersionsJsonFilterTest {
 
             ObjectNode sourceJsonMocked = getMockedJsonNode();
 
-            Mockito.when(sourceJsonMocked.get(Mockito.anyString()))
+            JsonNode versionMocked = Mockito.mock(JsonNode.class);
+            Mockito.when(versionMocked.asString())
                     .thenThrow(new ClassCastException());
+            Mockito.when(sourceJsonMocked.get(Mockito.anyString()))
+                    .thenReturn(versionMocked);
             filter.getFilteredVersions(sourceJsonMocked, versionOrigin);
             Mockito.verify(logger, Mockito.times(1)).warn(
                     "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
@@ -126,8 +129,11 @@ class VersionsJsonFilterTest {
             sourceJsonMocked = getMockedJsonNode();
 
             String nfeMessage = "NFE MSG";
-            Mockito.when(sourceJsonMocked.get(Mockito.anyString()))
+            versionMocked = Mockito.mock(JsonNode.class);
+            Mockito.when(versionMocked.asString())
                     .thenThrow(new NumberFormatException(nfeMessage));
+            Mockito.when(sourceJsonMocked.get(Mockito.anyString()))
+                    .thenReturn(versionMocked);
             filter.getFilteredVersions(sourceJsonMocked, versionOrigin);
             Mockito.verify(logger, Mockito.times(1)).warn(
                     "Ignoring error while parsing frontend dependency version in {}: {}",
