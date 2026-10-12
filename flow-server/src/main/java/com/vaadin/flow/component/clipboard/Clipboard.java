@@ -168,17 +168,21 @@ public final class Clipboard implements Serializable {
     /**
      * Starts a clipboard write that is not bound to any component — the entry
      * point for copy affordances rendered on the client, where there is no
-     * server-side component to bind to. Chain the payload onto the returned
-     * {@link ClipboardWrite} and hand the resulting
-     * {@link com.vaadin.flow.component.trigger.ClientAction} to whatever
-     * renders the affordance:
+     * server-side component to bind to. The returned {@link ClipboardWrite} is
+     * itself a {@link com.vaadin.flow.component.trigger.ClientAction} that
+     * copies the first argument it is called with, so the template decides what
+     * to copy:
      *
      * <pre>{@code
      * LitRenderer.<Customer> of(
-     *         "<span>${item.email}</span><button @click=${copy}>Copy</button>")
-     *         .withProperty("email", Customer::email).withClientAction("copy",
-     *                 Clipboard.write().text(ClientValue.itemProperty("email")));
+     *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
+     *         .withProperty("email", Customer::email)
+     *         .withClientAction("copy", Clipboard.write());
      * }</pre>
+     *
+     * Chain
+     * {@link ClipboardWrite#text(com.vaadin.flow.component.trigger.ClientValue)}
+     * onto it to copy a different client-side value.
      *
      * The action still runs inside the browser's own event handler, so the user
      * gesture is valid, exactly as with {@link #onClick(Component)}.

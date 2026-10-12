@@ -28,8 +28,10 @@ import com.vaadin.flow.shared.Registration;
  * passes the function into its own client-side template so a {@code @click}
  * binding can call it. The function takes {@code (event, context)}: the client
  * event that fired it, and an object describing what it fired for. A row
- * renderer supplies {@code {item, index, key}} for the row the event came from;
- * that context is what {@link ClientValue#itemProperty(String)} reads.
+ * renderer supplies {@code {item, index, key, args}}: the row the event came
+ * from, and the arguments the template called the action with. That context is
+ * what {@link ClientValue#itemProperty(String)} and
+ * {@link ClientValue#argument(int)} read.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */

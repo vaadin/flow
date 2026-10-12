@@ -21,11 +21,14 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.trigger.ClientAction;
+import com.vaadin.flow.component.trigger.ClientActionSink;
 import com.vaadin.flow.component.trigger.ClientValue;
 import com.vaadin.flow.component.trigger.internal.ClientActions;
 import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Fluent surface returned from {@link Clipboard#write()}, used to declare what
@@ -35,18 +38,35 @@ import com.vaadin.flow.function.SerializableConsumer;
  * write declared here is not bound to a component: it produces a
  * {@link ClientAction} that whatever renders the affordance fires — typically a
  * renderer that draws the same affordance for every item it renders.
+ * <p>
+ * Used as is, it is itself an action that copies the first argument the
+ * template passes when calling it, so the template decides what to copy:
  *
  * <pre>{@code
  * LitRenderer.<Customer> of(
- *         "<span>${item.email}</span><button @click=${copy}>Copy</button>")
- *         .withProperty("email", Customer::email).withClientAction("copy",
- *                 Clipboard.write().text(ClientValue.itemProperty("email")));
+ *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
+ *         .withProperty("email", Customer::email)
+ *         .withClientAction("copy", Clipboard.write());
  * }</pre>
+ *
+ * Use {@link #text(ClientValue)} to copy some other client-side value instead,
+ * or {@link #text(ClientValue, SerializableConsumer, SerializableConsumer)} to
+ * also hear back whether the copy succeeded.
  */
-public final class ClipboardWrite implements Serializable {
+public final class ClipboardWrite implements ClientAction, Serializable {
 
     ClipboardWrite() {
         // Created by Clipboard.write()
+    }
+
+    /**
+     * Binds an action that copies the first argument the action is called with
+     * to the clipboard as {@code text/plain}, as
+     * {@code text(ClientValue.argument(0))} does.
+     */
+    @Override
+    public Registration bindTo(Element host, ClientActionSink sink) {
+        return text(ClientValue.argument(0)).bindTo(host, sink);
     }
 
     /**

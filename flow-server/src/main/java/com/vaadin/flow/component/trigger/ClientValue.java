@@ -27,11 +27,13 @@ import com.vaadin.flow.component.trigger.internal.LiteralInput;
  * one captured on the server when it is bound.
  * <p>
  * This is what makes a single binding usable for many rendered elements: the
- * copy button in every grid row is one action, and
- * {@link #itemProperty(String)} resolves the row it was clicked in.
+ * copy button in every grid row is one action, and {@link #argument(int)} reads
+ * what the row's template passed when calling it, or
+ * {@link #itemProperty(String)} reads the row it was clicked in directly.
  *
  * <pre>{@code
- * Clipboard.write().text(ClientValue.itemProperty("email"));
+ * // Template: <button @click=${() => copy(item.email)}>Copy</button>
+ * Clipboard.write().text(ClientValue.argument(0));
  * }</pre>
  *
  * @param <T>
@@ -43,6 +45,30 @@ public final class ClientValue<T> implements Serializable {
 
     private ClientValue(Action.Input<T> input) {
         this.input = input;
+    }
+
+    /**
+     * An argument the action was called with, as passed by the template that
+     * calls it. For a {@code LitRenderer} template
+     * {@code @click=${() => copy(item.email)}}, {@code argument(0)} is the
+     * clicked row's {@code email}.
+     * <p>
+     * The template must pass a string at that position; when calling the action
+     * directly as an event listener ({@code @click=${copy}}), argument
+     * {@code 0} is the event instead.
+     *
+     * @param index
+     *            the zero-based position of the argument, not negative
+     * @return a value resolving to that argument of the call that fired the
+     *         action
+     */
+    public static ClientValue<String> argument(int index) {
+        if (index < 0) {
+            throw new IllegalArgumentException(
+                    "index must not be negative, was " + index);
+        }
+        return new ClientValue<>(
+                new ContextInput<>("args", String.valueOf(index)));
     }
 
     /**

@@ -93,6 +93,29 @@ class ClientActionTest {
     }
 
     @Test
+    void plainWrite_copiesTheFirstArgumentTheTemplatePasses() {
+        UI ui = new MockUI();
+        Div container = new Div();
+        ui.add(container);
+        RecordingSink sink = new RecordingSink();
+
+        // Template: <button @click=${() => copy(item.email)}>Copy</button>
+        Clipboard.write().bindTo(container.getElement(), sink);
+
+        assertEquals(1, sink.installed.size());
+        JsFunction text = (JsFunction) sink.installed.get(0).getCaptures()
+                .get(0);
+        assertEquals("return context[$0][$1]", text.getBody());
+        assertEquals(List.of("args", "0"), text.getCaptures());
+    }
+
+    @Test
+    void argument_negativeIndex_isRejected() {
+        assertThrows(IllegalArgumentException.class,
+                () -> ClientValue.argument(-1));
+    }
+
+    @Test
     void unarmedCheckPasses_andRegistrationDetachesTheBinding() {
         UI ui = new MockUI();
         Div container = new Div();

@@ -33,9 +33,9 @@ import com.vaadin.flow.shared.Registration;
  *
  * <pre>{@code
  * grid.addColumn(LitRenderer.<Customer> of(
- *         "<span>${item.email}</span><button @click=${copy}>Copy</button>")
- *         .withProperty("email", Customer::email).withClientAction("copy",
- *                 Clipboard.write().text(ClientValue.itemProperty("email"))));
+ *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
+ *         .withProperty("email", Customer::email)
+ *         .withClientAction("copy", Clipboard.write()));
  * }</pre>
  *
  * The action runs inside the browser's own event handler, so the user gesture
