@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -298,6 +299,9 @@ public class Element extends Node<Element> {
      * @see #setAttribute(String, String)
      * @since 25.0
      */
+    // The signal value may be null, which Signal<String> can't express here
+    // without rejecting signals of non-null values
+    @NullUnmarked
     public SignalBinding<String> bindAttribute(String attribute,
             Signal<String> signal) {
         String validAttribute = validateAttribute(attribute);
@@ -1434,6 +1438,9 @@ public class Element extends Node<Element> {
      * @see #setText(String)
      * @since 25.0
      */
+    // The signal value may be null, which Signal<String> can't express here
+    // without rejecting signals of non-null values
+    @NullUnmarked
     public SignalBinding<String> bindText(Signal<String> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBindingFeature feature = getNode()
@@ -2209,6 +2216,9 @@ public class Element extends Node<Element> {
      * @see #setVisible(boolean)
      * @since 25.1
      */
+    // The signal value may be null, which Signal<Boolean> can't express here
+    // without rejecting signals of non-null values
+    @NullUnmarked
     public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
         Objects.requireNonNull(visibleSignal, "Signal cannot be null");
         return getStateProvider().bindVisibleSignal(this, visibleSignal);
@@ -2268,6 +2278,9 @@ public class Element extends Node<Element> {
      * @see #setEnabled(boolean)
      * @since 25.1
      */
+    // The signal value may be null, which Signal<Boolean> can't express here
+    // without rejecting signals of non-null values
+    @NullUnmarked
     public SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
         Objects.requireNonNull(enabledSignal, "Signal cannot be null");
         SignalBindingFeature feature = getNode()
@@ -2411,7 +2424,7 @@ public class Element extends Node<Element> {
      * @since 24.0
      */
     @Deprecated(since = "25.0", forRemoval = true)
-    public Element scrollIntoView(ScrollOptions scrollOptions) {
+    public Element scrollIntoView(@Nullable ScrollOptions scrollOptions) {
         ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
         if (scrollOptions == null) {
             scroll.scrollIntoView();
