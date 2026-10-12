@@ -111,7 +111,7 @@ class SourceTest extends ComponentTest {
     }
 
     @Test
-    void setSrc_handlerWithoutRanges_warnsOnceInDevelopmentMode() {
+    void setSrc_handlerWithoutRanges_warnsOncePerMediaFileInDevelopmentMode() {
         UI ui = createUi(false);
         MockLogger logger = new MockLogger();
 
@@ -131,16 +131,23 @@ class SourceTest extends ComponentTest {
                     "video/webm"));
             ui.add(new Source(DownloadHandler.forFile(new File("forest.mp4")),
                     "video/mp4"));
+            ui.add(new Source(event -> event.getResponse().setStatus(500),
+                    "video/mp4"));
         }
 
         String logs = logger.getLogs();
-        assertEquals(1,
+        assertEquals(2,
                 logs.lines().filter(line -> line.startsWith(MockLogger.WARN))
                         .count(),
-                "Only the handler without ranges should be warned about, and only once, logs were "
+                "Only the handlers without ranges should be warned about, each only once, logs were "
                         + logs);
         assertTrue(logs.contains("'lake.webm'"),
                 "The warning should name the media file, logs were " + logs);
+        assertTrue(
+                logs.contains("served by a lambda in "
+                        + SourceTest.class.getName() + " does not"),
+                "The warning should name the class that declares the lambda, logs were "
+                        + logs);
     }
 
     @Test

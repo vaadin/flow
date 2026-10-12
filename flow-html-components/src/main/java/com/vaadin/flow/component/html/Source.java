@@ -173,15 +173,22 @@ public class Source extends HtmlComponent {
             return;
         }
         String urlPostfix = downloadHandler.getUrlPostfix();
-        // A handler without a name in its URL is told apart by its class
-        String mediaFile = urlPostfix != null
-                ? "The media file '%s'".formatted(urlPostfix)
-                : "A media file of %s"
-                        .formatted(downloadHandler.getClass().getName());
+        String mediaFile;
+        if (urlPostfix != null) {
+            mediaFile = "The media file '%s'".formatted(urlPostfix);
+        } else if (downloadHandler.getClass().isHidden()) {
+            // The class of a lambda has a generated name, so it is named after
+            // the class that declares the lambda instead
+            mediaFile = "A media file served by a lambda in %s".formatted(
+                    downloadHandler.getClass().getNestHost().getName());
+        } else {
+            mediaFile = "A media file served by %s"
+                    .formatted(downloadHandler.getClass().getName());
+        }
         if (warnedMediaFiles.size() < WARNED_MEDIA_FILES_LIMIT
                 && warnedMediaFiles.add(mediaFile)) {
             LoggerFactory.getLogger(Source.class).warn(
-                    "{} is served by a download handler that does not answer byte range requests, so the player cannot seek in it and Safari does not play it. Serve it with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or override isRangeRequestsEnabled() in a custom handler that answers them itself.",
+                    "{} does not answer byte range requests, so the player cannot seek in it and Safari does not play it. Serve it with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or return true from isRangeRequestsEnabled() in a handler class of your own that answers them.",
                     mediaFile);
         }
     }
