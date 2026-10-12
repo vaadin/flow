@@ -100,21 +100,6 @@ public abstract class Trigger implements Serializable {
     }
 
     /**
-     * Creates a new trigger bound to the given element.
-     * <p>
-     * Used by triggers whose host has no component of its own — for example a
-     * renderer whose container element is all the server side has of the rows
-     * it renders.
-     *
-     * @param host
-     *            the element the trigger fires on, not {@code null}
-     */
-    protected Trigger(Element host) {
-        this.host = Objects.requireNonNull(host);
-        verifyArmedBeforeClientResponse();
-    }
-
-    /**
      * Schedules a check, run once the host is attached and just before the
      * client response is built, that fails if no action was committed to this
      * trigger via {@link #triggers(Action...)} or its deferred
