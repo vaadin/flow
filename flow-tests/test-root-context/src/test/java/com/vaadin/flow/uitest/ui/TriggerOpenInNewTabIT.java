@@ -111,6 +111,33 @@ public class TriggerOpenInNewTabIT extends ChromeBrowserTest {
                 pwned);
     }
 
+    @Test
+    public void clickHandler_opensRegisteredResourceServedInline() {
+        open();
+        installRecordingShim();
+
+        findElement(By.id("open-tab-handler")).click();
+
+        Map<String, Object> recorded = waitForFirstOpen();
+        Assert.assertEquals("_blank", recorded.get("target"));
+        // Fetch the URL the new tab would load to check that the content is
+        // served inline, which is what makes the browser show it in the tab.
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("""
+                        const done = arguments[arguments.length - 1];
+                        fetch(arguments[0]).then(r => r.text().then(t => done({
+                            disposition: r.headers.get('Content-Disposition'),
+                            body: t})));
+                        """, recorded.get("url"));
+        Assert.assertTrue(
+                "Expected inline content, got: " + response.get("disposition"),
+                String.valueOf(response.get("disposition"))
+                        .startsWith("inline"));
+        Assert.assertEquals(TriggerOpenInNewTabView.HANDLER_CONTENT,
+                response.get("body"));
+    }
+
     // Replace window.open with a recorder so the IT does not depend on Chrome
     // actually opening a popup (headless Chrome's popup behaviour is fragile)
     // and so the popup blocker is irrelevant. Each invocation pushes
