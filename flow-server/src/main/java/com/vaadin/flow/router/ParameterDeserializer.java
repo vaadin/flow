@@ -55,7 +55,7 @@ public final class ParameterDeserializer {
      * of a navigation target, cached since resolving them requires reflection
      * that is too slow to repeat for every link or navigation.
      */
-    private static final ReflectionCache<Object, Set<Class<? extends Annotation>>> parameterAnnotationsCache = new ReflectionCache<>(
+    static final ReflectionCache<Object, Set<Class<? extends Annotation>>> parameterAnnotationsCache = new ReflectionCache<>(
             ParameterDeserializer::collectParameterAnnotations);
 
     private ParameterDeserializer() {
@@ -218,6 +218,24 @@ public final class ParameterDeserializer {
         }
         return parameterAnnotationsCache.get(navigationTarget)
                 .contains(parameterAnnotation);
+    }
+
+    /**
+     * Clears the cached parameter annotations of the given navigation target,
+     * so that they are resolved again on next use.
+     * <p>
+     * Needed when the class is redefined at runtime, e.g. by hotswap during
+     * development, and its route has to be registered again before the
+     * reflection caches are cleared globally.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param navigationTarget
+     *            the navigation target whose cached data should be cleared, not
+     *            {@code null}
+     */
+    public static void clearCache(Class<?> navigationTarget) {
+        parameterAnnotationsCache.clear(navigationTarget);
     }
 
     private static Set<Class<? extends Annotation>> collectParameterAnnotations(

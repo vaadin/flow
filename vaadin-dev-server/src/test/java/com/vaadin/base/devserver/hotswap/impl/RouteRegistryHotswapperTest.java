@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -128,20 +127,16 @@ class RouteRegistryHotswapperTest {
     }
 
     @Test
-    void onClassLoadEvent_applicationRegistry_reflectionCacheClearedBeforeRoutesUpdated() {
+    void onClassLoadEvent_applicationRegistry_otherReflectionCachesNotCleared() {
         ReflectionCache<Object, String> cache = new ReflectionCache<>(
                 Class::getName);
         cache.get(MyRouteB.class);
-        AtomicBoolean cachedWhenRoutesChanged = new AtomicBoolean(true);
-        ApplicationRouteRegistry.getInstance(vaadinService.getContext())
-                .addRoutesChangeListener(event -> cachedWhenRoutesChanged
-                        .set(cache.contains(MyRouteB.class)));
 
         updater.onClassesChange(new HotswapClassEvent(vaadinService,
                 Set.of(MyRouteB.class), true));
 
-        assertFalse(cachedWhenRoutesChanged.get(),
-                "Expected reflection data of modified classes to be cleared before routes are registered again");
+        assertTrue(cache.contains(MyRouteB.class),
+                "Reflection caches must only be cleared after all hotswappers have run");
     }
 
     @Test

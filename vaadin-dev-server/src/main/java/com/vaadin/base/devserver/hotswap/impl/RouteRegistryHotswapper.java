@@ -26,7 +26,6 @@ import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -86,12 +85,6 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
             // regeneration if something changed
             Set<Class<?>> layouts = new HashSet<>(
                     ((AbstractRouteRegistry) appRegistry).getLayouts());
-
-            // Route templates are computed from reflection data that may be
-            // cached, e.g. the URL parameter annotations. Since
-            // ReflectionCacheHotswapper runs last, stale entries of modified
-            // classes must be cleared before the routes are registered again.
-            modifiedClasses.forEach(ReflectionCache::clearAll);
 
             RouteUtil.updateRouteRegistry(appRegistry, addedClasses,
                     modifiedClasses, removedClasses);
