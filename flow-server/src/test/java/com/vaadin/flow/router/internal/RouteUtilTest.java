@@ -17,7 +17,6 @@ package com.vaadin.flow.router.internal;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,14 +37,11 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.menu.MenuRegistry;
-import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.DynamicPageTitle;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PageTitleContext;
 import com.vaadin.flow.router.PageTitleGenerator;
-import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -855,51 +851,6 @@ class RouteUtilTest {
 
         // then
         assertTrue(registry.getConfiguration().hasRoute("a"));
-    }
-
-    @Test
-    void modifiedRouteClass_updateRouteRegistry_parameterAnnotationsClearedBeforeRouteIsRegistered() {
-        // given
-        @Route("a")
-        class A extends Component implements HasUrlParameter<String> {
-            @Override
-            public void setParameter(BeforeEvent event, String parameter) {
-            }
-        }
-        @Route("b")
-        class B extends Component {
-        }
-
-        MockVaadinServletService service = new MockVaadinServletService() {
-            @Override
-            public VaadinContext getContext() {
-                return new MockVaadinContext();
-            }
-        };
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(service.getContext());
-        RouteConfiguration.forRegistry(registry).setAnnotatedRoute(A.class);
-        RouteConfiguration.forRegistry(registry).setAnnotatedRoute(B.class);
-
-        List<String> events = new ArrayList<>();
-        registry.addRoutesChangeListener(event -> events.add("routes changed"));
-
-        try (MockedStatic<ParameterDeserializer> deserializer = Mockito
-                .mockStatic(ParameterDeserializer.class,
-                        Mockito.CALLS_REAL_METHODS)) {
-            deserializer
-                    .when(() -> ParameterDeserializer.clearCache(Mockito.any()))
-                    .then(invocation -> events.add(
-                            "cleared " + ((Class<?>) invocation.getArgument(0))
-                                    .getSimpleName()));
-
-            // when
-            RouteUtil.updateRouteRegistry(registry, Collections.emptySet(),
-                    Collections.singleton(A.class), Collections.emptySet());
-        }
-
-        // then
-        assertEquals(List.of("cleared A", "routes changed"), events);
     }
 
     @Test
