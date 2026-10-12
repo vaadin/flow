@@ -56,6 +56,18 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
         super(node);
     }
 
+    /**
+     * Checks whether a component class has any methods annotated with
+     * {@link ClientCallable}.
+     *
+     * @param componentType
+     *            the component class to check
+     * @return {@code true} if the class has at least one handler
+     */
+    static boolean hasHandlers(Class<? extends Component> componentType) {
+        return !handlersCache.get(componentType).isEmpty();
+    }
+
     @Override
     protected void collectHandlerMethods(Class<?> classWithAnnotations) {
         handlersCache.get(classWithAnnotations.asSubclass(Component.class))

@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ClientCallableHandlersTest {
 
@@ -115,9 +116,9 @@ class ClientCallableHandlersTest {
         NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
         ui.add(component);
 
-        ClientCallableHandlers feature = component.getElement().getNode()
-                .getFeature(ClientCallableHandlers.class);
-        assertListFeature(feature);
+        assertFalse(component.getElement().getNode()
+                .getFeatureIfInitialized(ClientCallableHandlers.class)
+                .isPresent());
     }
 
     private void assertListFeature(SerializableNodeList<String> feature,
