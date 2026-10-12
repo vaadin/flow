@@ -116,8 +116,15 @@ export class PendingMessageQueue {
     return this.#pending.length;
   }
 
-  clear(): void {
+  /**
+   * Drops all pending messages.
+   *
+   * @returns the dropped messages
+   */
+  clear(): ValueMap[] {
+    const dropped = this.#pending.map((message) => message.getJson());
     this.#pending = [];
+    return dropped;
   }
 
   /** The index of the next pending message that can be handled now, or -1. */
@@ -135,15 +142,21 @@ export class PendingMessageQueue {
     return this.#pending.splice(index, 1)[0].getJson();
   }
 
-  /** Drops pending messages whose server id is older than the expected one. */
-  removeOld(): void {
+  /**
+   * Drops pending messages whose server id is older than the expected one.
+   *
+   * @returns the dropped messages
+   */
+  removeOld(): ValueMap[] {
+    const dropped: ValueMap[] = [];
     for (let i = 0; i < this.#pending.length; i++) {
       const serverId = getServerId(this.#pending[i].getJson());
       if (serverId !== -1 && serverId < this.getExpectedServerId()) {
         Console.debug(`Removing old message with id ${serverId}`);
-        this.#pending.splice(i, 1);
+        dropped.push(this.#pending.splice(i, 1)[0].getJson());
         i--;
       }
     }
+    return dropped;
   }
 }
