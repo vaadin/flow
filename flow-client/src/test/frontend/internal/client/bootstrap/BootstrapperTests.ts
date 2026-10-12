@@ -157,9 +157,9 @@ describe('Bootstrapper', () => {
     let savedWebComponents: unknown;
 
     // The bootstrap imports the engine lazily, and esbuild compiles it on that
-    // first request: around a second on an idle machine and more on a loaded CI
-    // runner, past what waitUntil allows. Load it here, under the hook timeout,
-    // so the cases only wait for the start itself.
+    // first request: a few hundred milliseconds on an idle machine, and past
+    // waitUntil's one-second default on a loaded CI runner. Load it here, under
+    // the hook timeout, so the cases only wait for the start itself.
     before(async () => {
       await import('../../../../../main/frontend/internal/client/ApplicationConnection');
     });
