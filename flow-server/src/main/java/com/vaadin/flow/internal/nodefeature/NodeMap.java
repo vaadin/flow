@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
@@ -25,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -131,12 +132,14 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     /**
-     * An immutable, ordered set of keys that is shared between all
-     * {@link ArrayValues} instances that contain exactly those keys in the same
-     * order. Instances are canonicalized through a global registry so that each
-     * distinct key permutation is stored only once regardless of how many maps
-     * use it. The registry only holds weak references so that key sets that are
-     * no longer used by any map can be garbage collected.
+     * An immutable set of keys that is shared between all {@link ArrayValues}
+     * instances that contain exactly those keys, regardless of the order in
+     * which the keys were added. The key order of the instance defines the
+     * order of the values in {@link ArrayValues}. Instances are canonicalized
+     * through a global registry so that each distinct set of keys is stored
+     * only once regardless of how many maps use it. The registry only holds
+     * weak references so that key sets that are no longer used by any map can
+     * be garbage collected.
      */
     private static final class SharedKeySet extends AbstractSet<String>
             implements Serializable {
@@ -149,15 +152,16 @@ public abstract class NodeMap extends NodeFeature {
 
         private static final class RegistryReference
                 extends WeakReference<SharedKeySet> {
-            private final List<String> registryKey;
+            private final Set<String> registryKey;
 
-            private RegistryReference(SharedKeySet keySet) {
+            private RegistryReference(SharedKeySet keySet,
+                    Set<String> registryKey) {
                 super(keySet, staleReferences);
-                registryKey = keySet.registryKey();
+                this.registryKey = registryKey;
             }
         }
 
-        private static final ConcurrentHashMap<List<String>, RegistryReference> registry = new ConcurrentHashMap<>();
+        private static final ConcurrentHashMap<Set<String>, RegistryReference> registry = new ConcurrentHashMap<>();
 
         private static final ReferenceQueue<SharedKeySet> staleReferences = new ReferenceQueue<>();
 
@@ -178,7 +182,9 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         /**
-         * Gets the canonical key set instance for the given keys.
+         * Gets the canonical key set instance for the given keys. The key order
+         * of the returned instance may differ from the order of the given keys
+         * if a key set with the same keys is already registered.
          *
          * @param keys
          *            the keys without duplicates. The array is retained and
@@ -188,7 +194,9 @@ public abstract class NodeMap extends NodeFeature {
         private static SharedKeySet of(String[] keys) {
             removeStaleReferences();
 
-            List<String> registryKey = Arrays.asList(keys);
+            // Must not reference the SharedKeySet instance since it's used as
+            // a key in the registry that only weakly references the instance
+            Set<String> registryKey = Set.of(keys);
             RegistryReference reference = registry.get(registryKey);
             SharedKeySet keySet = reference == null ? null : reference.get();
             if (keySet != null) {
@@ -204,7 +212,7 @@ public abstract class NodeMap extends NodeFeature {
                     return existing;
                 }
                 result[0] = new SharedKeySet(keys);
-                return new RegistryReference(result[0]);
+                return new RegistryReference(result[0], key);
             });
             return result[0];
         }
@@ -215,12 +223,6 @@ public abstract class NodeMap extends NodeFeature {
                 RegistryReference reference = (RegistryReference) stale;
                 registry.remove(reference.registryKey, reference);
             }
-        }
-
-        private List<String> registryKey() {
-            // Must not reference this instance since it's used as a key in the
-            // registry that only weakly references this instance
-            return Arrays.asList(keys);
         }
 
         private int indexOf(String key) {
@@ -259,10 +261,6 @@ public abstract class NodeMap extends NodeFeature {
         @Override
         public int size() {
             return keys.length;
-        }
-
-        private Object readResolve() {
-            return of(keys);
         }
     }
 
@@ -315,10 +313,11 @@ public abstract class NodeMap extends NodeFeature {
                 return;
             }
 
-            Serializable[] newValues = Arrays.copyOf(values, values.length + 1);
-            newValues[values.length] = value;
+            SharedKeySet newKeySet = keySet.withKey(key);
+            Serializable[] newValues = copyValues(newKeySet);
+            newValues[newKeySet.indexOf(key)] = value;
 
-            keySet = keySet.withKey(key);
+            keySet = newKeySet;
             values = newValues;
         }
 
@@ -337,11 +336,37 @@ public abstract class NodeMap extends NodeFeature {
             }
             Serializable oldValue = values[index];
 
-            keySet = keySet.withoutKey(index);
-            values = removeIndex(values, new Serializable[values.length - 1],
-                    index);
+            SharedKeySet newKeySet = keySet.withoutKey(index);
+            values = copyValues(newKeySet);
+            keySet = newKeySet;
 
             return oldValue;
+        }
+
+        /**
+         * Copies the current values into a new array in the order defined by
+         * the given key set. Keys that are not present in the current key set
+         * get a <code>null</code> value.
+         */
+        private Serializable[] copyValues(SharedKeySet target) {
+            Serializable[] result = new Serializable[target.size()];
+            for (int i = 0; i < result.length; i++) {
+                int sourceIndex = keySet.indexOf(target.keys[i]);
+                if (sourceIndex >= 0) {
+                    result[i] = values[sourceIndex];
+                }
+            }
+            return result;
+        }
+
+        private void readObject(ObjectInputStream in)
+                throws IOException, ClassNotFoundException {
+            in.defaultReadObject();
+            // The registry may define a different key order for the same keys
+            // than the one that was serialized
+            SharedKeySet canonical = SharedKeySet.of(keySet.keys);
+            values = copyValues(canonical);
+            keySet = canonical;
         }
     }
 

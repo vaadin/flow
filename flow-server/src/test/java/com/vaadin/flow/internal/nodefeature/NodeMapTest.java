@@ -410,21 +410,20 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
-    void put_sameKeysInSameOrder_keySetIsShared() {
+    void put_sameKeysInDifferentOrder_keySetIsShared() {
         nodeMap.put("foo", "a");
         nodeMap.put("bar", "b");
         nodeMap.put("baz", "c");
 
         ElementStylePropertyMap otherMap = createFeature();
-        otherMap.put("foo", "d");
-        otherMap.put("qux", "e");
-        otherMap.put("bar", "f");
         otherMap.put("baz", "g");
+        otherMap.put("qux", "e");
+        otherMap.put("foo", "d");
+        otherMap.put("bar", "f");
         otherMap.remove("qux");
 
         assertSame(nodeMap.keySet(), otherMap.keySet());
-        assertEquals(List.of("foo", "bar", "baz"),
-                new ArrayList<>(otherMap.keySet()));
+        assertEquals(Set.of("foo", "bar", "baz"), otherMap.keySet());
         assertEquals("a", nodeMap.get("foo"));
         assertEquals("b", nodeMap.get("bar"));
         assertEquals("c", nodeMap.get("baz"));
