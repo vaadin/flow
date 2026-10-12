@@ -443,11 +443,31 @@ final class Reactor {
      * @return the plugin, or empty when this build does not run it
      */
     Optional<PluginConfig> plugin(String groupId, String artifactId) {
-        return EffectiveModel
-                .read(app.dir(),
-                        List.of(app.dir().resolve("pom.xml"),
-                                root.resolve("pom.xml")))
-                .flatMap(model -> model.plugin(groupId, artifactId));
+        return appModel().flatMap(model -> model.plugin(groupId, artifactId));
+    }
+
+    /**
+     * The application module's execution of a plugin goal, as Maven assembled
+     * it; see {@link EffectiveModel#findExecution}.
+     *
+     * @param groupId
+     *            the plugin's group
+     * @param artifactId
+     *            the plugin's artifact
+     * @param goal
+     *            the goal the execution runs
+     * @return the execution id, or empty when there is no current model or it
+     *         names no such execution
+     */
+    Optional<String> findExecution(String groupId, String artifactId,
+            String goal) {
+        return appModel().flatMap(
+                model -> model.findExecution(groupId, artifactId, goal));
+    }
+
+    private Optional<EffectiveModel> appModel() {
+        return EffectiveModel.read(app.dir(),
+                List.of(app.dir().resolve("pom.xml"), root.resolve("pom.xml")));
     }
 
     /**
