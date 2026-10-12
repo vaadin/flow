@@ -27,6 +27,7 @@ import type { Registry } from '../Registry';
 import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
 import { parseJson } from './MessageHandler';
+import { sendBeacon } from './MessageSender';
 import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import type { Command } from '../Command';
@@ -115,6 +116,13 @@ interface AtmosphereModule {
 
 interface AtmosphereClient {
   subscribe: (request: AtmosphereRequest, handlers: AtmosphereHandlers) => Promise<AtmosphereSubscription>;
+  // Not public API of atmosphere.js, which keeps the transport to itself: it
+  // is the only way to the tracking id that the close message has to carry.
+  createTransport: (request: AtmosphereRequest, handlers: AtmosphereHandlers) => AtmosphereTransport;
+}
+
+interface AtmosphereTransport {
+  readonly uuid: string;
 }
 
 interface AtmosphereSubscription {
@@ -216,6 +224,10 @@ export class AtmospherePushConnection implements PushConnection {
 
   #request: AtmosphereRequest | null = null;
 
+  #atmosphereTransport: AtmosphereTransport | null = null;
+
+  #pushUri: string | null = null;
+
   #transport: string | null = null;
 
   #url = '';
@@ -251,6 +263,15 @@ export class AtmospherePushConnection implements PushConnection {
     this.#url = this.#computePushUrl();
 
     this.#runWhenAtmosphereLoaded(() => setTimeout(() => this.#connect(), 0));
+
+    // The server keeps the UI of a page that is left when it is preserved on
+    // refresh, and its push connection would otherwise stay bound to a
+    // request the browser has dropped.
+    window.addEventListener('pagehide', () => {
+      if (this.#subscription && this.isActive()) {
+        this.#close();
+      }
+    });
   }
 
   #getConnectionStateHandler(): ConnectionStateHandler {
@@ -271,7 +292,14 @@ export class AtmospherePushConnection implements PushConnection {
     const request = createRequest(pushUrl, this.#config, () =>
       this.#registry.getMessageHandler().getLastSeenServerSyncId()
     );
+    this.#pushUri = pushUrl;
     const client = new (atmosphere()!.Atmosphere)({ logLevel: this.#config.logLevel });
+    const createTransport = client.createTransport.bind(client);
+    // With a fallback, the last transport created is the one in use
+    client.createTransport = (transportRequest, handlers) => {
+      this.#atmosphereTransport = createTransport(transportRequest, handlers);
+      return this.#atmosphereTransport;
+    };
     this.#subscription = client.subscribe(request, {
       open: (response) => this.onOpen(response),
       reopen: (response) => this.onReopen(response),
@@ -454,6 +482,16 @@ export class AtmospherePushConnection implements PushConnection {
     if (this.#request) {
       this.#request.closed = true;
       this.#request.reconnect = false;
+    }
+    // atmosphere.js only drops its own end of the connection. The server does
+    // not notice a long-polling request that the browser abandons, so tell it,
+    // as Atmosphere's close message does. A beacon still goes out while the page
+    // is being unloaded.
+    const uuid = this.#atmosphereTransport?.uuid;
+    if (uuid && uuid !== '0') {
+      let closeUri = addGetParameter(this.#pushUri!, 'X-Atmosphere-Transport', 'close');
+      closeUri = addGetParameter(closeUri, 'X-Atmosphere-tracking-id', uuid);
+      sendBeacon(closeUri, '');
     }
     this.#subscription!.then((subscription) => subscription.close()).catch(() => {
       // The connection is gone either way

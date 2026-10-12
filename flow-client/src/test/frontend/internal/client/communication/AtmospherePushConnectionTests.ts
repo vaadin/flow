@@ -43,6 +43,10 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
   (window as unknown as { vaadinPush?: unknown }).vaadinPush = {
     atmosphere: {
       Atmosphere: class {
+        createTransport() {
+          return { uuid: '0' };
+        }
+
         async subscribe(request: Record<string, unknown>, handlers: Record<string, Handler>) {
           capture.request = request;
           capture.handlers = handlers;
@@ -360,12 +364,21 @@ describe('AtmospherePushConnection', () => {
       return `${body.length}|${body}`;
     };
 
+    let beacons: string[];
+    const nativeSendBeacon = navigator.sendBeacon;
+
     beforeEach(() => {
       sockets = [];
+      beacons = [];
       (window as unknown as { WebSocket: unknown }).WebSocket = FakeWebSocket;
+      navigator.sendBeacon = (url: string | URL) => {
+        beacons.push(String(url));
+        return true;
+      };
     });
     afterEach(() => {
       window.WebSocket = NativeWebSocket;
+      navigator.sendBeacon = nativeSendBeacon;
       delete (window as { vaadinPush?: unknown }).vaadinPush;
     });
 
@@ -401,7 +414,7 @@ describe('AtmospherePushConnection', () => {
       expect(socket.sent).to.deep.equal(['7|{"a":1}']);
     });
 
-    it('does not reconnect a connection it closed', async () => {
+    it('tells the server and does not reconnect when it closes the connection', async () => {
       const { registry, log } = setupAtmosphere();
       const connection = new AtmospherePushConnection(registry);
       await tick();
@@ -412,8 +425,31 @@ describe('AtmospherePushConnection', () => {
       connection.disconnect(() => {});
       await new Promise((resolve) => setTimeout(resolve, 50));
 
+      expect(beacons).to.deep.equal([
+        '/app/VAADIN/push?v-r=push&v-uiId=1&X-Atmosphere-Transport=close&X-Atmosphere-tracking-id=abc'
+      ]);
       expect(sockets).to.have.length(1);
       expect(log.pushClosed).to.equal(0);
+    });
+
+    it('closes the connection when the page is left', async () => {
+      const { registry } = setupAtmosphere();
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      sockets[0].open();
+      sockets[0].receive(handshake('left'));
+      await tick();
+
+      window.dispatchEvent(new Event('pagehide'));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Connections of the other cases are still listening as well
+      expect(
+        beacons.filter((url) => url.endsWith('&X-Atmosphere-Transport=close&X-Atmosphere-tracking-id=left'))
+      ).to.have.length(1);
+      expect(sockets).to.have.length(1);
+      // The page is going away, so the connection state is left as it is
+      expect(connection.isActive()).to.be.true;
     });
   });
 });
