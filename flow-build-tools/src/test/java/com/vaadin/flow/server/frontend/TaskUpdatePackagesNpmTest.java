@@ -35,6 +35,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -471,14 +473,16 @@ class TaskUpdatePackagesNpmTest {
         verifyVersionPinningWithNpmOverrides(true, true, false);
     }
 
-    @Test
-    void npmIsInUse_npmPackageHasUrlVersion_exoticVersionsNotAllowed_fails()
-            throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void npmIsInUse_npmPackageHasUrlVersion_exoticVersionsNotAllowed_fails(
+            boolean dev) throws IOException {
         createBasicVaadinVersionsJson();
-        final Map<String, String> dependencies = createApplicationDependencies();
         final String dialogUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/dialog@275762d";
-        dependencies.put(VAADIN_DIALOG, dialogUrl);
-        final TaskUpdatePackages task = createTask(dependencies);
+        final TaskUpdatePackages task = dev
+                ? createTask(createApplicationDependencies(),
+                        Map.of("dev-tool", dialogUrl), false, false)
+                : createTask(Map.of(VAADIN_DIALOG, dialogUrl));
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class, task::execute);
@@ -1402,10 +1406,20 @@ class TaskUpdatePackagesNpmTest {
     private TaskUpdatePackages createTask(
             Map<String, String> applicationDependencies, boolean enablePnpm,
             boolean allowExoticVersions) {
+        return createTask(applicationDependencies, Map.of(), enablePnpm,
+                allowExoticVersions);
+    }
+
+    private TaskUpdatePackages createTask(
+            Map<String, String> applicationDependencies,
+            Map<String, String> applicationDevDependencies, boolean enablePnpm,
+            boolean allowExoticVersions) {
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
+        Mockito.when(frontendDependenciesScanner.getDevPackages())
+                .thenReturn(applicationDevDependencies);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
                 .withBundleBuild(true).withReact(false)

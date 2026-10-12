@@ -1154,7 +1154,6 @@ public class Options implements Serializable {
      * local path.
      *
      * @return {@code true} if exotic versions are allowed
-     * @since 25.4
      */
     public boolean isNpmAllowExoticVersions() {
         return npmAllowExoticVersions;
@@ -1169,7 +1168,6 @@ public class Options implements Serializable {
      * @param allow
      *            whether to allow exotic versions
      * @return this builder
-     * @since 25.4
      */
     public Options withNpmAllowExoticVersions(boolean allow) {
         this.npmAllowExoticVersions = allow;

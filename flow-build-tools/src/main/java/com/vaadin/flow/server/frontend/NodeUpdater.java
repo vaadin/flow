@@ -151,7 +151,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                     log().warn(
                             "Ignoring the version '{}' of npm package '{}' declared in a versions file,"
                                     + " as versions that are neither a registry version nor a local path"
-                                    + " are not allowed. Set '{}' to true to allow them.",
+                                    + " are not allowed. Set the 'npmAllowExoticVersions' plugin parameter"
+                                    + " or the '{}' configuration property to true to allow them.",
                             version, pkg,
                             InitParameters.NPM_ALLOW_EXOTIC_VERSIONS);
                     dependencies.remove(pkg);

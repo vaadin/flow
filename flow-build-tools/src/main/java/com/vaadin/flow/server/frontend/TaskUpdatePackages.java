@@ -401,7 +401,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             throw new IllegalStateException(String.format(
                     "The npm packages %s are declared using @NpmPackage with a version that is neither"
                             + " a registry version nor a local path, which is not allowed by default."
-                            + " Set '%s' to true to allow such versions.",
+                            + " Set the 'npmAllowExoticVersions' plugin parameter or the '%s'"
+                            + " configuration property to true to allow such versions.",
                     exoticDependencies,
                     InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
         }

@@ -403,8 +403,6 @@ public class InitParameters implements Serializable {
      * Configuration name for allowing npm packages to be declared with an
      * exotic version, such as a tarball URL or a git repository, rather than a
      * registry version or a local path.
-     *
-     * @since 25.4
      */
     public static final String NPM_ALLOW_EXOTIC_VERSIONS = "npm.allowExoticVersions";
 
