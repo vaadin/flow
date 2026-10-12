@@ -73,10 +73,10 @@ public class ElementListenerMap extends NodeMap {
     /**
      * Placeholder stored in the map instead of the actual event settings. The
      * settings JSON is derived on demand from the registered listeners when
-     * changes are collected, to avoid keeping it in memory. A new instance is
-     * used for every update so that the change is detected.
+     * changes are collected, to avoid keeping it in memory.
      */
-    private static class EventSettingsMarker implements Serializable {
+    private enum EventSettingsMarker {
+        INSTANCE
     }
 
     private static class ExpressionSettings implements Serializable {
@@ -429,7 +429,15 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
-        put(eventType, new EventSettingsMarker());
+        put(eventType, EventSettingsMarker.INSTANCE);
+    }
+
+    @Override
+    protected boolean producePutChange(String key, boolean hadValueEarlier,
+            Serializable newValue) {
+        // The stored marker never changes even though the settings derived
+        // from it do, so every update needs to be sent
+        return true;
     }
 
     private ConstantPoolKey createEventSettingsKey(String eventType) {
