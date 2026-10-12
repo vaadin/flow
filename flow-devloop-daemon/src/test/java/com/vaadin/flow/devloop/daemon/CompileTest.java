@@ -568,10 +568,11 @@ class CompileTest {
         // already running would otherwise swallow the edit and answer "no
         // changes" to the very change it was asked about.
         Compile compile = withFrontend("views/main.ts", "views/settled.ts");
-        long appStarted = System.currentTimeMillis();
+        Compile.Snapshot launched = Compile.Snapshot
+                .of(project(Reactor.Module.of(repo.resolve("app"), "app")));
         touch("app/src/main/frontend/views/main.ts");
 
-        compile.seedFromDisk(appStarted, appStarted);
+        compile.seedFrom(launched);
 
         Compile.FrontendChanges changes = compile.staleFrontend();
         assertEquals(
@@ -810,16 +811,17 @@ class CompileTest {
                 "server.port=8080");
         Path served = write(
                 "app/src/main/resources/META-INF/resources/site.css", "body{}");
-        Compile compile = new Compile(project(app));
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
         compile.copyResources(List.of(served));
-        long appStarted = System.currentTimeMillis();
+        Compile.Snapshot launched = Compile.Snapshot.of(project);
         touch("app/src/main/resources/application.properties");
         // What the re-resolve's process-resources leaves behind: a copy at
         // least as new as its source.
         compile.copyResources(List.of(config));
         touch("app/target/classes/application.properties");
 
-        compile.seedFromDisk(appStarted, appStarted);
+        compile.seedFrom(launched);
 
         Compile.ResourceChanges changes = compile.staleResources();
         assertEquals(List.of(config), changes.startup().modified());
@@ -841,13 +843,36 @@ class CompileTest {
                 """);
         Path config = write("app/src/main/resources/application.properties",
                 "server.port=8080");
-        Compile compile = new Compile(project(app));
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
         compile.copyResources(List.of(config));
         Files.setLastModifiedTime(config, FileTime
                 .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
 
-        long appStarted = System.currentTimeMillis();
-        compile.seedFromDisk(appStarted, appStarted);
+        compile.seedFrom(Compile.Snapshot.of(project));
+
+        assertTrue(compile.staleResources().startup().isEmpty());
+    }
+
+    @Test
+    void staleResources_seedingTakesAResourceDatedSlightlyAheadAsReadAtStart()
+            throws IOException {
+        // A file system on another host stamps with its own clock, a few
+        // seconds ahead of this one. What the launch read is what it read,
+        // whatever the clocks say about when it was written.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Path config = write("app/src/main/resources/application.properties",
+                "server.port=8080");
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Files.setLastModifiedTime(config,
+                FileTime.fromMillis(System.currentTimeMillis() + 30_000L));
+        compile.copyResources(List.of(config));
+
+        compile.seedFrom(Compile.Snapshot.of(project));
 
         assertTrue(compile.staleResources().startup().isEmpty());
     }
@@ -867,8 +892,7 @@ class CompileTest {
         compile.compile(List.of(main), project);
         Files.setLastModifiedTime(main, FileTime
                 .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
-        long appStarted = System.currentTimeMillis();
-        compile.seedFromDisk(appStarted, appStarted);
+        compile.seedFrom(Compile.Snapshot.of(project));
 
         assertTrue(compile.stale().isEmpty());
 
@@ -896,8 +920,7 @@ class CompileTest {
         compile.compile(List.of(main), project);
         long dated = System.currentTimeMillis() + 60_500;
         Files.setLastModifiedTime(main, FileTime.fromMillis(dated));
-        long appStarted = System.currentTimeMillis();
-        compile.seedFromDisk(appStarted, appStarted);
+        compile.seedFrom(Compile.Snapshot.of(project));
         long withinSkew = dated - 60_000;
         assumeTrue(System.currentTimeMillis() < withinSkew,
                 "seeded while the source was still capped");
@@ -905,6 +928,76 @@ class CompileTest {
         while (System.currentTimeMillis() <= withinSkew) {
             java.util.concurrent.locks.LockSupport.parkNanos(10_000_000);
         }
+
+        assertTrue(compile.stale().isEmpty());
+    }
+
+    @Test
+    void stale_seedingKeepsASourceEditedSinceTheLaunch() throws IOException {
+        // The baseline is taken after the application has read its sources.
+        // An edit in between that something else has already compiled is
+        // current against its class file, so only the launch's own stamp can
+        // say the application does not have it.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Compile.Snapshot launched = Compile.Snapshot.of(project);
+        Files.writeString(main, """
+                package app;
+                public class Main { int edited; }
+                """);
+        compile.compile(List.of(main), project);
+
+        compile.seedFrom(launched);
+
+        assertEquals(List.of(main), compile.stale().modified());
+    }
+
+    @Test
+    void stale_seedingReportsASourceDeletedSinceTheLaunch() throws IOException {
+        // The application loaded the class, so the source going away before
+        // the baseline is taken is still a deletion it has to be told of.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Path main = source(app, "Main");
+        compile.compile(List.of(main), project);
+        Compile.Snapshot launched = Compile.Snapshot.of(project);
+        Files.delete(main);
+
+        compile.seedFrom(launched);
+
+        assertEquals(List.of(main), compile.stale().deleted());
+    }
+
+    @Test
+    void stale_seedingLeavesOutAModuleThatLeftTheLoop() throws IOException {
+        // A pom edit rebuilds the baseline for a module set the launch did
+        // not have. A source of a module no longer in the loop is not one an
+        // apply can act on, and must not read as deleted.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Reactor.Module lib = module("lib", "Util", """
+                package lib;
+                public class Util { }
+                """);
+        Launch.Project withLib = project(app, lib);
+        new Compile(withLib).compile(
+                List.of(source(app, "Main"), source(lib, "Util")), withLib);
+        Compile.Snapshot launched = Compile.Snapshot.of(withLib);
+        Compile compile = new Compile(project(app));
+
+        compile.seedFrom(launched);
 
         assertTrue(compile.stale().isEmpty());
     }
@@ -951,12 +1044,13 @@ class CompileTest {
                 """);
         Path config = write("app/src/main/resources/application.properties",
                 "server.port=8080");
-        Compile compile = new Compile(project(app));
-        long appStarted = System.currentTimeMillis();
+        Launch.Project project = project(app);
+        Compile compile = new Compile(project);
+        Compile.Snapshot launched = Compile.Snapshot.of(project);
         touch("app/src/main/resources/application.properties");
         compile.copyResources(List.of(config));
 
-        compile.seedFromDisk(appStarted, appStarted);
+        compile.seedFrom(launched);
         Files.delete(config);
 
         assertEquals(List.of(config),

@@ -224,6 +224,64 @@ final class Compile {
     }
 
     /**
+     * The stamps of the files a launch reads, taken the moment the daemon
+     * spawns its JVM: every Java source, resource and frontend file of the
+     * module set it was launched with.
+     * <p>
+     * This is what "the files the application started with" means, and it has
+     * to be taken then rather than reconstructed later. The baseline it seeds
+     * is built after the application has already read its files - the compile
+     * leg is built lazily, and a registration is handled a moment after the
+     * command that waited for it returned - and an edit made in between is not
+     * one the application has. Telling such an edit apart by comparing its
+     * modification time with the launch time trusts two clocks to agree; a file
+     * dated ahead of the clock, by an archive extracted in a time zone behind
+     * the one it was packed in, is then newer than every launch. A stamp that
+     * is still the one the launch saw needs no clock at all.
+     * <p>
+     * Class files are deliberately not in it. A launch through a build plugin's
+     * run goal compiles before it starts the application, so the class files a
+     * spawn-time walk would see are not the ones the application runs; they are
+     * walked when the baseline is seeded instead.
+     *
+     * @param sources
+     *            the Java sources, by path
+     * @param resources
+     *            the tracked resources, by path
+     * @param frontend
+     *            the tracked frontend files, by path
+     */
+    record Snapshot(Map<Path, Stamp> sources, Map<Path, Stamp> resources,
+            Map<Path, Stamp> frontend) {
+
+        /**
+         * Stamps the files a launch of this project reads.
+         *
+         * @param project
+         *            the resolved build the launch runs
+         * @return the stamps as they are now
+         */
+        static Snapshot of(Launch.Project project) {
+            return of(project.modules(), Frontend.of(project.app()));
+        }
+
+        private static Snapshot of(List<Reactor.Module> modules,
+                Frontend frontend) {
+            Map<Path, Stamp> sources = new java.util.HashMap<>();
+            forEachSource(modules,
+                    (module, file, stamp) -> sources.put(file, stamp));
+            Map<Path, Stamp> resources = new java.util.HashMap<>();
+            forEachResource(modules,
+                    (module, file, stamp) -> resources.put(file, stamp));
+            Map<Path, Stamp> frontendFiles = new java.util.HashMap<>();
+            frontend.root().ifPresent(root -> forEachFrontendFile(frontend,
+                    root, frontendFiles::put));
+            return new Snapshot(Map.copyOf(sources), Map.copyOf(resources),
+                    Map.copyOf(frontendFiles));
+        }
+    }
+
+    /**
      * A source's stamp as of the last time it went live, and whether that stamp
      * was dated ahead of the clock when it was recorded; see {@link #isStale}.
      */
@@ -238,18 +296,13 @@ final class Compile {
      * timestamp says a file was written and not that its content changed.
      *
      * @param stamp
-     *            the resource's stamp as of then, or {@code null} for one the
-     *            running application has not read
+     *            the resource's stamp as of then
      * @param digest
      *            a fingerprint of the bytes the daemon acted on, or
-     *            {@code null} when they could not be read
+     *            {@code null} when they could not be read - or are no longer on
+     *            disk to be read
      */
     private record Content(Stamp stamp, String digest) {
-        /**
-         * A resource the running application has not read: in the inventory, so
-         * a deletion is still reported, but matching nothing on disk.
-         */
-        static final Content UNSEEN = new Content(null, null);
     }
 
     record Changes(List<Path> modified, List<Path> deleted) {
@@ -362,7 +415,7 @@ final class Compile {
 
     /**
      * How far ahead of this clock a modification time may be and still be taken
-     * at face value; see {@link #predates}.
+     * at face value; see {@link #isFutureDated}.
      */
     private static final long FUTURE_SKEW_MILLIS = 60_000;
 
@@ -600,11 +653,11 @@ final class Compile {
      * <p>
      * Deletions are the third question, and the walk cannot answer it: a file
      * that is gone is not visited. The fingerprint map is the inventory that
-     * can - every resource on disk at the last seed is a key in it - and a
-     * deletion has to be noticed, because the copy under {@code target/classes}
-     * is what the application actually reads. Leave that behind and the file
-     * goes on being served, and the config goes on being loaded, until the next
-     * full Maven build.
+     * can - every resource the application was launched with is a key in it -
+     * and a deletion has to be noticed, because the copy under
+     * {@code target/classes} is what the application actually reads. Leave that
+     * behind and the file goes on being served, and the config goes on being
+     * loaded, until the next full Maven build.
      * <p>
      * The fingerprint map is seeded at daemon start, so a first apply with
      * nothing edited is still quiet.
@@ -615,7 +668,7 @@ final class Compile {
         List<Path> deletedLive = new ArrayList<>();
         List<Path> deletedStartup = new ArrayList<>();
         java.util.Set<Path> seen = new java.util.HashSet<>();
-        forEachResource((module, source, stamp) -> {
+        forEachResource(modules, (module, source, stamp) -> {
             seen.add(source);
             Content known = notified.get(source);
             // Both questions above are asked of timestamps, and a build that
@@ -773,39 +826,46 @@ final class Compile {
      * build.
      */
     void seedResources() {
-        seedResources(Long.MAX_VALUE);
+        Map<Path, Stamp> onDisk = new java.util.HashMap<>();
+        forEachResource(modules,
+                (module, source, stamp) -> onDisk.put(source, stamp));
+        seedResources(onDisk);
     }
 
     /**
-     * Seeds the fingerprints of the resources the running application can have
-     * read.
+     * Seeds the fingerprints of the resources the running application was
+     * launched with.
      * <p>
-     * The same bound {@link #seedFromDisk(long, long)} puts on sources, and for
-     * a sharper reason: a startup-only resource has no other way back into a
+     * The same bound {@link #seedFrom(Snapshot)} puts on sources, and for a
+     * sharper reason: a startup-only resource has no other way back into a
      * change-set. The re-resolve that rebuilds the baseline after a pom edit
      * has also copied the file onto the classpath, so its copy is current, and
      * a baseline that took the edit as acted on would report "no changes" for a
      * config the running JVM never loaded - on this apply and every later one.
      * <p>
-     * Such a resource is still recorded, as {@link Content#UNSEEN}, for the
-     * reason an unreadable one is: its key is the inventory a deletion is
-     * reported from, so an edit deleted again before the next apply is still
-     * reported.
+     * Only a resource whose stamp is still the launched one is read for its
+     * digest, since only then are the bytes on disk the ones the application
+     * read. One edited since is recorded with no digest, which reports it
+     * changed until it is acted on. It is still recorded, for the reason an
+     * unreadable one is: its key is the inventory a deletion is reported from,
+     * so an edit deleted again before the next apply is still reported - and so
+     * is a resource deleted before this baseline was taken.
      *
-     * @param startedAtMillis
-     *            when the running application was launched
+     * @param launched
+     *            the resources the application was launched with, and their
+     *            stamps then
      */
-    void seedResources(long startedAtMillis) {
+    private void seedResources(Map<Path, Stamp> launched) {
         notified.clear();
-        forEachResource(
-                (module, source,
-                        stamp) -> notified
-                                .put(source,
-                                        predates(stamp, startedAtMillis)
-                                                ? new Content(stamp,
-                                                        digestOf(source)
-                                                                .orElse(null))
-                                                : Content.UNSEEN));
+        launched.forEach((source, stamp) -> {
+            if (resourceOwner(source).isPresent()) {
+                notified.put(source,
+                        new Content(stamp,
+                                stampOf(source).filter(stamp::equals)
+                                        .flatMap(same -> digestOf(source))
+                                        .orElse(null)));
+            }
+        });
     }
 
     /**
@@ -825,7 +885,7 @@ final class Compile {
         }
         List<Path> modified = new ArrayList<>();
         java.util.Set<Path> seen = new java.util.HashSet<>();
-        forEachFrontendFile(root, (file, stamp) -> {
+        forEachFrontendFile(frontend, root, (file, stamp) -> {
             seen.add(file);
             if (!stamp.equals(frontendNotified.get(file))) {
                 modified.add(file);
@@ -847,61 +907,39 @@ final class Compile {
     }
 
     /**
-     * Seeds the fingerprints, so an untouched project reports no changes.
+     * Seeds the fingerprints with the frontend files the running application
+     * was launched with.
      * <p>
-     * Files newer than the cutoff are deliberately left unstamped. A frontend
-     * file has no artifact to be compared against - no {@code .class}, no
-     * classpath copy - so without this a baseline taken while the app is
-     * already running would swallow an edit made since it started, and the very
-     * first apply after a cold daemon would answer "no changes" to the change
-     * it was asked about. The cutoff is the app's own start time, which is what
-     * read the frontend folder.
+     * A frontend file has no artifact to be compared against - no
+     * {@code .class}, no classpath copy - so the stamp recorded here is the
+     * whole of the answer. One taken from the disk as it is when the baseline
+     * is built would swallow an edit made since the launch, and the very first
+     * apply after a cold daemon would answer "no changes" to the change it was
+     * asked about.
      *
-     * @param cutoffMillis
-     *            the newest modification time still considered live;
-     *            {@code Long.MAX_VALUE} to accept everything on disk
+     * @param launched
+     *            the frontend files the application was launched with, and
+     *            their stamps then
      */
-    void seedFrontend(long cutoffMillis) {
+    private void seedFrontend(Map<Path, Stamp> launched) {
         frontendNotified.clear();
-        frontend.root()
-                .ifPresent(root -> forEachFrontendFile(root, (file, stamp) -> {
-                    if (predates(stamp, cutoffMillis)) {
-                        frontendNotified.put(file, stamp);
-                    }
-                }));
-    }
-
-    /**
-     * Whether a file was written no later than the cutoff, with a modification
-     * time in the future capped at the cutoff.
-     * <p>
-     * A save stamps a file with the current time, so a time well ahead of the
-     * clock was not set by an edit made since the application started: it came
-     * with the file. An archive extracted in a time zone behind the one it was
-     * packed in dates every file hours ahead, and taken at face value such a
-     * file stays newer than every start for those hours - a startup-only
-     * resource would restart the application on every apply, each restart
-     * leaving it as unseen as before.
-     * <p>
-     * Only a time more than {@link #FUTURE_SKEW_MILLIS} ahead is capped. A file
-     * system on another host - a network share, a container or VM mount - can
-     * stamp a real edit with a clock a few seconds ahead of this one, and such
-     * an edit must still count as made after the start.
-     *
-     * @param stamp
-     *            the file's stamp
-     * @param cutoffMillis
-     *            the newest modification time to accept
-     * @return {@code true} when the file counts as written by the cutoff
-     */
-    private static boolean predates(Stamp stamp, long cutoffMillis) {
-        return stamp.modified() <= cutoffMillis
-                || isFutureDated(stamp.modified());
+        frontend.root().ifPresent(root -> launched.forEach((file, stamp) -> {
+            if (file.startsWith(root)) {
+                frontendNotified.put(file, stamp);
+            }
+        }));
     }
 
     /**
      * Whether a modification time is too far ahead of the clock to have been
-     * set by an edit; see {@link #predates}.
+     * set by an edit.
+     * <p>
+     * A save stamps a file with the current time, so a time well ahead of the
+     * clock came with the file - an archive extracted in a time zone behind the
+     * one it was packed in dates every file hours ahead. Only a time more than
+     * {@link #FUTURE_SKEW_MILLIS} ahead counts: a file system on another host -
+     * a network share, a container or VM mount - can stamp a real edit with a
+     * clock a few seconds ahead of this one.
      */
     private static boolean isFutureDated(long modifiedMillis) {
         return modifiedMillis > System.currentTimeMillis() + FUTURE_SKEW_MILLIS;
@@ -921,7 +959,8 @@ final class Compile {
      * from {@link #walk} rather than generalising it: that one is the compile
      * leg's, it is tested, and it has no reason to grow a pruning concept.
      */
-    private void forEachFrontendFile(Path root, FrontendVisitor action) {
+    private static void forEachFrontendFile(Frontend frontend, Path root,
+            FrontendVisitor action) {
         try {
             Files.walkFileTree(root, new java.nio.file.SimpleFileVisitor<>() {
                 @Override
@@ -1056,7 +1095,8 @@ final class Compile {
         }
     }
 
-    private void forEachResource(Visitor action) {
+    private static void forEachResource(List<Reactor.Module> modules,
+            Visitor action) {
         for (Reactor.Module module : modules) {
             java.util.function.Predicate<Path> tracked = file -> resourceKindOf(
                     module, file) != ResourceKind.IGNORED;
@@ -1064,7 +1104,8 @@ final class Compile {
         }
     }
 
-    private ResourceKind resourceKindOf(Reactor.Module module, Path file) {
+    private static ResourceKind resourceKindOf(Reactor.Module module,
+            Path file) {
         return resourceKindOf(module.resourceDir().relativize(file).toString());
     }
 
@@ -1182,7 +1223,7 @@ final class Compile {
     Changes stale() {
         List<Path> modified = new ArrayList<>();
         java.util.Set<Path> seen = new java.util.HashSet<>();
-        forEachSource((module, source, stamp) -> {
+        forEachSource(modules, (module, source, stamp) -> {
             seen.add(source);
             // Two questions again, and for the same reason as resources. The
             // artifact check answers "does this need compiling?"; it cannot
@@ -1368,45 +1409,48 @@ final class Compile {
     }
 
     /**
-     * Declares everything on disk to be live, which is true immediately after
-     * the app starts or restarts: it loaded its classes and resources from
-     * there.
+     * Declares everything on disk to be live, which is true of an application
+     * launched from the disk as it is now - and the right baseline when none is
+     * running, as the launch that starts one seeds its own.
      */
     void seedFromDisk() {
-        seedFromDisk(Long.MAX_VALUE, Long.MAX_VALUE);
+        seedFrom(Snapshot.of(modules, frontend));
     }
 
     /**
-     * @param startedAtMillis
-     *            when the running application was launched, which bounds which
-     *            sources it can have read
-     * @param frontendCutoffMillis
-     *            how new a frontend file may be and still count as live; see
-     *            {@link #seedFrontend(long)}
+     * Declares what the application was launched with to be live.
+     * <p>
+     * Only that, whenever this baseline happens to be taken - and it can be
+     * taken late: the compile leg is built lazily, and a registration is
+     * handled a moment after the command that waited for it returned. Both are
+     * windows a developer's next keystroke fits into, and a baseline that walks
+     * "whatever is on disk now" claims those edits as the application's own. A
+     * file whose stamp has moved since the launch is therefore recorded with
+     * the launched stamp, which reports it changed, and one deleted since is
+     * still recorded, which reports it deleted.
+     * <p>
+     * Only the files of this baseline's modules are taken: a pom edit can
+     * rebuild the baseline for a module set the launch did not have, and a file
+     * of a module that has left the loop is nothing an apply can act on.
+     *
+     * @param launched
+     *            the stamps taken when the application was launched
      */
-    void seedFromDisk(long startedAtMillis, long frontendCutoffMillis) {
+    void seedFrom(Snapshot launched) {
         seedClasses();
         applied.clear();
-        forEachSource((module, source, stamp) -> {
-            // Only what the application could have read. A source written
-            // after it was launched is not one it started with, whenever this
-            // baseline happens to be taken - and it can be taken late: the
-            // compile leg is built lazily, and a registration is handled a
-            // moment after the command that waited for it returned. Both are
-            // windows a developer's next keystroke fits into, and a baseline
-            // that walks "whatever is on disk now" claims those edits as the
-            // application's own.
-            if (predates(stamp, startedAtMillis)) {
+        launched.sources().forEach((source, stamp) -> {
+            if (sourceOwner(source).isPresent()) {
                 markApplied(source, stamp);
             }
         });
-        seedResources(startedAtMillis);
+        seedResources(launched.resources());
         // Load-bearing for the frontend leg, not just tidiness: a bundled
         // frontend edit escalates to a restart, the restart re-registers, and
         // this runs again. Without it the same file would be offered after the
         // restart that already folded it into the bundle, and would restart the
         // app for ever.
-        seedFrontend(frontendCutoffMillis);
+        seedFrontend(launched.frontend());
     }
 
     /**
@@ -1430,14 +1474,15 @@ final class Compile {
         backend.seed(classes);
     }
 
-    private void forEachSource(Visitor action) {
+    private static void forEachSource(List<Reactor.Module> modules,
+            Visitor action) {
         for (Reactor.Module module : modules) {
             walk(module, module.sourceDir(),
                     path -> path.toString().endsWith(JAVA_SUFFIX), action);
         }
     }
 
-    private void walk(Reactor.Module module, Path tree,
+    private static void walk(Reactor.Module module, Path tree,
             java.util.function.Predicate<Path> accept, Visitor action) {
         if (!Files.isDirectory(tree)) {
             return;

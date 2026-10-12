@@ -137,7 +137,7 @@ final class Launch {
     private volatile boolean classpathUnusable;
 
     /**
-     * The classpath the running app was actually launched with.
+     * The resolved build the running app was actually launched with.
      * <p>
      * A JVM's class path is fixed for its lifetime, so this is the only way to
      * answer "is the running app still the app the poms describe?". Editing a
@@ -146,7 +146,7 @@ final class Launch {
      * scan finds nothing and the apply used to report "no changes" over an app
      * running a classpath that no longer exists on paper.
      */
-    private volatile String launchedClasspath;
+    private volatile Project launchedProject;
 
     /** How many times Maven has actually been run, so a caller can tell. */
     private final AtomicLong resolutions = new AtomicLong();
@@ -418,10 +418,11 @@ final class Launch {
      * indistinguishable from the daemon deciding to restart on a whim.
      */
     Optional<String> classpathDrift() {
-        String launched = launchedClasspath;
-        if (launched == null) {
+        Project launchedWith = launchedProject;
+        if (launchedWith == null) {
             return Optional.empty();
         }
+        String launched = launchedWith.appClasspath();
         String current = project().appClasspath();
         Set<String> before = new LinkedHashSet<>(split(launched));
         Set<String> after = new LinkedHashSet<>(split(current));
@@ -1207,8 +1208,18 @@ final class Launch {
         // recorded even for a runtime that is never handed a classpath,
         // because the question it answers - is the running app still the app
         // the poms describe? - is the same either way.
-        launchedClasspath = resolved.appClasspath();
+        launchedProject = resolved;
         return invocation;
+    }
+
+    /**
+     * The resolved build the last composed launch runs, which is the module set
+     * whose files {@link Compile.Snapshot} stamps as the launch is spawned.
+     *
+     * @return the project, or empty when no launch has been composed
+     */
+    Optional<Project> launchedProject() {
+        return Optional.ofNullable(launchedProject);
     }
 
     /**

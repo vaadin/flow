@@ -267,10 +267,10 @@ final class TransactionEngine {
     }
 
     /**
-     * The compile leg for the current module set, seeded from disk the moment
-     * it is built, so an untouched project reports "no changes" on its first
-     * apply. A changed module set - someone edited a pom - starts a new
-     * baseline rather than carrying stamps that describe a different build.
+     * The compile leg for the current module set, seeded the moment it is
+     * built, so an untouched project reports "no changes" on its first apply. A
+     * changed module set - someone edited a pom - starts a new baseline rather
+     * than carrying stamps that describe a different build.
      */
     private Compile compileFor(Launch.Project project, Launch.Log log) {
         Compile current = compile;
@@ -286,13 +286,15 @@ final class TransactionEngine {
         // and that is the very move the compile leg has to see.
         Compile fresh = Compile.configured(project, current, launch);
         log.line("compiler: " + fresh.compiler().label());
-        // A baseline built while the app is already running must not swallow a
-        // frontend edit made since it started - that is exactly the "start,
+        // A baseline built while the app is already running must not swallow
+        // an edit made since it was launched - that is exactly the "start,
         // edit, first apply" sequence, and answering "no changes" to it is the
-        // bug the frontend leg exists to fix. With no app running there is
-        // nothing to be newer than: starting it re-seeds through onConnector.
-        long started = app.startedAtMillis().orElse(Long.MAX_VALUE);
-        fresh.seedFromDisk(started, started);
+        // bug the frontend leg exists to fix. So it is seeded from what the
+        // launch stamped, not from the disk as it is now. With no app running
+        // there is nothing to be behind: starting it re-seeds through
+        // onConnector.
+        app.launchSnapshot().ifPresentOrElse(fresh::seedFrom,
+                fresh::seedFromDisk);
         // Said once per baseline rather than per apply: "why did apply not see
         // my edit?" is answerable from daemon.log only if the folder the daemon
         // decided on is written down somewhere.
@@ -1322,25 +1324,21 @@ final class TransactionEngine {
             // Maven. A project that is mid-resolve leaves the baseline to the
             // first apply, exactly as before.
             //
-            // Seeded by compileFor as it is built, and deliberately not seeded
-            // again below: that seed carries the startup cutoff which keeps a
-            // frontend file edited while the application was starting visible
-            // to the first apply, and a second pass with no cutoff would
-            // declare it live and answer "no changes" over it.
+            // Seeded by compileFor as it is built, from the same launch
+            // snapshot the seed below would use.
             if (launch != null) {
                 launch.projectIfResolved().ifPresent(
                         project -> compileFor(project, launch.log()));
             }
             return;
         }
-        // An app that has just registered is running exactly what is on disk -
-        // for the frontend, which a restart re-reads whole, so the cutoff
-        // there is open. Not for the Java side: this is handled a moment after
-        // the command that waited for the registration returned, and a source
-        // written in that moment is not something the application started
-        // with.
-        current.seedFromDisk(app.startedAtMillis().orElse(Long.MAX_VALUE),
-                Long.MAX_VALUE);
+        // An app that has just registered is running what it was launched
+        // with, which is not what is on disk now: this is handled a moment
+        // after the command that waited for the registration returned, and a
+        // file written in that moment is not something the application
+        // started with.
+        app.launchSnapshot().ifPresentOrElse(current::seedFrom,
+                current::seedFromDisk);
     }
 
     /**
