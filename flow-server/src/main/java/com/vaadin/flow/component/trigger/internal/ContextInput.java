@@ -21,16 +21,14 @@ import com.vaadin.flow.dom.JsFunction;
 
 /**
  * Reads a value out of the trigger context — the object a trigger supplies to
- * describe what it fired for. A {@link SinkTrigger} rendered into a row
- * renderer supplies {@code {item, index, key, args}} — the row the event came
- * from and the arguments the template called the action with — so
- * {@code new ContextInput<String>("item", "email")} yields that row's
- * {@code email} property at fire time, and
- * {@code new ContextInput<String>("args", "0")} the first call argument.
+ * describe what it fired for. A {@link SinkTrigger} rendered into a template
+ * supplies {@code {args}}, the arguments the template called the action with,
+ * so {@code new ContextInput<String>("args", "0")} yields the first of them at
+ * fire time.
  * <p>
- * This is what lets one action serve a whole column: the value is not captured
- * on the server per row, it is read from the row's own client-side data when
- * the action runs.
+ * This is what lets one action serve every element a renderer draws: the value
+ * is not captured on the server per element, the template passes it when the
+ * action runs.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -47,7 +45,7 @@ public class ContextInput<T> extends Action.Input<T> {
      * at fire time.
      *
      * @param contextProperty
-     *            the context member to read from (e.g. {@code "item"}), not
+     *            the context member to read from (e.g. {@code "args"}), not
      *            {@code null}
      * @param valueProperty
      *            the property to read off that member, not {@code null}
@@ -59,13 +57,6 @@ public class ContextInput<T> extends Action.Input<T> {
 
     @Override
     public JsFunction toJs(Trigger trigger) {
-        if (!trigger.suppliesContext()) {
-            throw new IllegalArgumentException("Input reads the trigger "
-                    + "context, but a " + trigger.getClass().getSimpleName()
-                    + " supplies none. Use a value source that does not depend "
-                    + "on the context, or bind the action to something that "
-                    + "renders repeating elements.");
-        }
         // Both names are captures, so nothing is concatenated into the body.
         return JsFunction
                 .of("return context[$0][$1]", contextProperty, valueProperty)

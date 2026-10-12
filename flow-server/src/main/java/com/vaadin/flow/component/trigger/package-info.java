@@ -14,8 +14,8 @@
  * the License.
  */
 /**
- * Actions that run in the browser when something fires them, and the values
- * they read when they do.
+ * Actions that run in the browser when something rendered on the client fires
+ * them.
  * <p>
  * Most applications never touch this package: they bind an action to a
  * component through a feature facade ({@code Clipboard.onClick(button)},

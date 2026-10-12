@@ -23,7 +23,11 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.ClientAction;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
+import com.vaadin.flow.component.trigger.internal.ClientActions;
+import com.vaadin.flow.component.trigger.internal.ContextInput;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -166,12 +170,10 @@ public final class Clipboard implements Serializable {
     }
 
     /**
-     * Starts a clipboard write that is not bound to any component — the entry
-     * point for copy affordances rendered on the client, where there is no
-     * server-side component to bind to. The returned {@link ClipboardWrite} is
-     * itself a {@link com.vaadin.flow.component.trigger.ClientAction} that
-     * copies the first argument it is called with, so the template decides what
-     * to copy:
+     * Creates a clipboard write that is not bound to any component, for copy
+     * affordances rendered on the client where there is no server-side
+     * component to bind to. The action copies the first argument it is called
+     * with as {@code text/plain}, so the template decides what to copy:
      *
      * <pre>{@code
      * LitRenderer.<Customer> of(
@@ -180,18 +182,14 @@ public final class Clipboard implements Serializable {
      *         .withClientAction("copy", Clipboard.write());
      * }</pre>
      *
-     * The template must call it with the value to copy; bound directly as a
-     * listener ({@code @click=${copy}}) it would copy the event instead. Chain
-     * {@link ClipboardWrite#text(com.vaadin.flow.component.trigger.ClientValue)}
-     * onto it to copy a different client-side value.
-     *
      * The action still runs inside the browser's own event handler, so the user
      * gesture is valid, exactly as with {@link #onClick(Component)}.
      *
-     * @return a fluent surface for declaring what to copy
+     * @return an unbound action, to be handed to whatever fires it
      */
-    public static ClipboardWrite write() {
-        return new ClipboardWrite();
+    public static ClientAction write() {
+        return ClientActions.of(new WriteToClipboardAction(
+                new ContextInput<>("args", "0"), null));
     }
 
     /**

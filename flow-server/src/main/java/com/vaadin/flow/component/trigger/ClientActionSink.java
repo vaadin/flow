@@ -27,11 +27,9 @@ import com.vaadin.flow.shared.Registration;
  * Implemented by whatever accepts client actions — typically a renderer that
  * passes the function into its own client-side template so a {@code @click}
  * binding can call it. The function takes {@code (event, context)}: the client
- * event that fired it, and an object describing what it fired for. A row
- * renderer supplies {@code {item, index, key, args}}: the row the event came
- * from, and the arguments the template called the action with. That context is
- * what {@link ClientValue#itemProperty(String)} and
- * {@link ClientValue#argument(int)} read.
+ * event that fired it, if any, and {@code {args}}, the arguments the template
+ * called the action with. {@code Clipboard.write()}, for example, copies
+ * {@code args[0]}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */

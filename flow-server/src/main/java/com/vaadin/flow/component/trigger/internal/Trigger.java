@@ -137,23 +137,6 @@ public abstract class Trigger implements Serializable {
     }
 
     /**
-     * Whether this trigger supplies a context object to the actions it fires,
-     * describing what the trigger fired for.
-     * <p>
-     * {@code false} for the plain event triggers, whose handler has nothing to
-     * say beyond the event itself; {@code true} for triggers rendered into
-     * something that repeats, such as a row renderer. Inputs that read the
-     * context ({@link ContextInput}) reject a trigger that supplies none, so
-     * the mistake surfaces on the server instead of as an undefined value in
-     * the browser.
-     *
-     * @return whether a context is supplied, {@code false} by default
-     */
-    public boolean suppliesContext() {
-        return false;
-    }
-
-    /**
      * The host element this trigger fires on.
      *
      * @return the host element, never {@code null}

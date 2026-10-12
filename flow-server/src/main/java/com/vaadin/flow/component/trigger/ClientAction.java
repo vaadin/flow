@@ -42,10 +42,8 @@ import com.vaadin.flow.shared.Registration;
  * is still valid — the whole reason clipboard, share and fullscreen calls
  * cannot be made from a server-side listener.
  * <p>
- * Instances are created by the feature facades ({@code Clipboard.write()},
- * {@code WebShare.share(…)}, …), not by application code.
- *
- * @see ClientValue
+ * Instances are created by the feature facades, such as
+ * {@code Clipboard.write()}, not by application code.
  */
 public interface ClientAction extends Serializable {
 

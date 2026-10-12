@@ -29,10 +29,10 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * Used where the thing that fires is rendered on the client and has no
  * server-side component to listen on — a {@code LitRenderer} template binding
- * {@code @click=${copy}}, for example. The sink passes the function into the
- * renderer, the template calls it from its own event binding, and the action
- * therefore runs inside the browser's event handler with the user gesture still
- * valid, exactly as it does for a {@link DomEventTrigger}.
+ * {@code @click=${() => copy(item.email)}}, for example. The sink passes the
+ * function into the renderer, the template calls it from its own event binding,
+ * and the action therefore runs inside the browser's event handler with the
+ * user gesture still valid, exactly as it does for a {@link DomEventTrigger}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -52,13 +52,6 @@ public class SinkTrigger extends Trigger {
     public SinkTrigger(Element host, ClientActionSink sink) {
         super(host);
         this.sink = Objects.requireNonNull(sink, "sink must not be null");
-    }
-
-    @Override
-    public boolean suppliesContext() {
-        // The renderer knows which item each rendered element belongs to and
-        // passes it to the action as the context argument.
-        return true;
     }
 
     @Override
