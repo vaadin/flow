@@ -15,11 +15,16 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
@@ -45,6 +50,17 @@ public class Source extends HtmlComponent {
 
     private static final String SRC_ATTRIBUTE = "src";
     private static final String TYPE_ATTRIBUTE = "type";
+
+    /**
+     * Names of the media files that {@link #setSrc(DownloadHandler)} has
+     * already warned about, so that a view that is opened again does not repeat
+     * the warning. Bounded so that generated names cannot make this grow
+     * without limit; once the bound is reached the warning is simply not logged
+     * again.
+     */
+    private static final Set<String> warnedMediaFiles = ConcurrentHashMap
+            .newKeySet();
+    private static final int WARNED_MEDIA_FILES_LIMIT = 100;
 
     /**
      * Creates a new source without a URL.
@@ -123,6 +139,11 @@ public class Source extends HtmlComponent {
      * its ancestors, is disabled. The browser fetches it as part of rendering
      * rather than as a user action, so blocking the request on the disabled
      * state would leave the player empty.
+     * <p>
+     * A player seeks by requesting byte ranges of the media file, and Safari
+     * does not play audio or video without them. In development mode a warning
+     * is logged when the handler does not answer them, as reported by
+     * {@link DownloadHandler#isRangeRequestsEnabled()}.
      *
      * @param downloadHandler
      *            the download handler that serves the media file, not
@@ -137,6 +158,30 @@ public class Source extends HtmlComponent {
         }
         getElement().setAttribute(SRC_ATTRIBUTE,
                 downloadHandler.allowDisabled());
+        if (!downloadHandler.isRangeRequestsEnabled()) {
+            getElement().getNode().runWhenAttached(
+                    ui -> warnAboutMissingRangeRequests(ui, downloadHandler));
+        }
+    }
+
+    private static void warnAboutMissingRangeRequests(UI ui,
+            DownloadHandler downloadHandler) {
+        // Without a session, as for a UI created on its own, there is no
+        // configuration to tell the mode from
+        if (ui.getSession() == null || ui.getInternals()
+                .getDeploymentConfiguration().isProductionMode()) {
+            return;
+        }
+        String urlPostfix = downloadHandler.getUrlPostfix();
+        // A handler without a name in its URL is told apart by its class
+        String mediaFile = urlPostfix != null ? urlPostfix
+                : downloadHandler.getClass().getName();
+        if (warnedMediaFiles.size() < WARNED_MEDIA_FILES_LIMIT
+                && warnedMediaFiles.add(mediaFile)) {
+            LoggerFactory.getLogger(Source.class).warn(
+                    "The media file '{}' is served by a download handler that does not answer byte range requests, so the player cannot seek in it and Safari does not play it. Serve it with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or override isRangeRequestsEnabled() in a custom handler that answers them itself.",
+                    mediaFile);
+        }
     }
 
     /**

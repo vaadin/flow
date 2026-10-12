@@ -15,14 +15,26 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.File;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.MockLogger;
+import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -30,9 +42,15 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 
 class SourceTest extends ComponentTest {
+
+    @AfterEach
+    void tearDown() {
+        CurrentInstance.clearAll();
+    }
 
     @Override
     protected void addProperties() {
@@ -76,7 +94,8 @@ class SourceTest extends ComponentTest {
             }
         }
         InputStreamDownloadHandler handler = DownloadHandler
-                .fromInputStream(event -> DownloadResponse.error(500));
+                .fromInputStream(event -> DownloadResponse.error(500))
+                .enableRangeRequests();
         assertFalse(handler.isInline());
 
         new TestSource().setSrc(handler);
@@ -89,5 +108,63 @@ class SourceTest extends ComponentTest {
         assertEquals(DisabledUpdateMode.ALWAYS,
                 captor.getValue().getDisabledUpdateMode(),
                 "The browser fetches the media file while rendering, so it must be served even when the player is disabled");
+    }
+
+    @Test
+    void setSrc_handlerWithoutRanges_warnsOnceInDevelopmentMode() {
+        UI ui = createUi(false);
+        MockLogger logger = new MockLogger();
+
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(() -> LoggerFactory.getLogger(Source.class))
+                    .thenReturn(logger);
+            for (int i = 0; i < 2; i++) {
+                ui.add(new Source(DownloadHandler.fromInputStream(
+                        event -> DownloadResponse.error(500), "lake.webm"),
+                        "video/webm"));
+            }
+            ui.add(new Source(
+                    DownloadHandler.fromInputStream(
+                            event -> DownloadResponse.error(500),
+                            "harbour.webm").enableRangeRequests(),
+                    "video/webm"));
+            ui.add(new Source(DownloadHandler.forFile(new File("forest.mp4")),
+                    "video/mp4"));
+        }
+
+        String logs = logger.getLogs();
+        assertEquals(1,
+                logs.lines().filter(line -> line.startsWith(MockLogger.WARN))
+                        .count(),
+                "Only the handler without ranges should be warned about, and only once, logs were "
+                        + logs);
+        assertTrue(logs.contains("'lake.webm'"),
+                "The warning should name the media file, logs were " + logs);
+    }
+
+    @Test
+    void setSrc_handlerWithoutRanges_productionMode_doesNotWarn() {
+        UI ui = createUi(true);
+        MockLogger logger = new MockLogger();
+
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(() -> LoggerFactory.getLogger(Source.class))
+                    .thenReturn(logger);
+            ui.add(new Source(
+                    DownloadHandler.fromInputStream(
+                            event -> DownloadResponse.error(500), "meadow.ogg"),
+                    "audio/ogg"));
+        }
+
+        assertEquals("", logger.getLogs());
+    }
+
+    private static UI createUi(boolean productionMode) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(productionMode);
+        return new MockUI(new AlwaysLockedVaadinSession(
+                new MockVaadinServletService(configuration)));
     }
 }
