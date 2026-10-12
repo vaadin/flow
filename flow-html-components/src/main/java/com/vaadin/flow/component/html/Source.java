@@ -63,6 +63,12 @@ public class Source extends HtmlComponent {
     private static final int WARNED_MEDIA_FILES_LIMIT = 100;
 
     /**
+     * The handler without byte ranges that is warned about once this source is
+     * attached, unless the source is given another one first.
+     */
+    private @Nullable DownloadHandler handlerWithoutRanges;
+
+    /**
      * Creates a new source without a URL.
      */
     public Source() {
@@ -118,6 +124,7 @@ public class Source extends HtmlComponent {
      *            URL
      */
     public void setSrc(@Nullable String src) {
+        handlerWithoutRanges = null;
         if (src == null) {
             getElement().removeAttribute(SRC_ATTRIBUTE);
         } else {
@@ -158,18 +165,29 @@ public class Source extends HtmlComponent {
         }
         getElement().setAttribute(SRC_ATTRIBUTE,
                 downloadHandler.allowDisabled());
-        if (!downloadHandler.isRangeRequestsEnabled()) {
-            getElement().getNode().runWhenAttached(
-                    ui -> warnAboutMissingRangeRequests(ui, downloadHandler));
+        if (downloadHandler.isRangeRequestsEnabled()) {
+            handlerWithoutRanges = null;
+        } else {
+            handlerWithoutRanges = downloadHandler;
+            getElement().getNode().runWhenAttached(ui -> {
+                if (handlerWithoutRanges == downloadHandler) {
+                    warnAboutMissingRangeRequests(ui, downloadHandler);
+                }
+            });
         }
+    }
+
+    /**
+     * Forgets which media files have already been warned about, so that tests
+     * do not depend on the ones that ran before them.
+     */
+    static void clearWarnedMediaFiles() {
+        warnedMediaFiles.clear();
     }
 
     private static void warnAboutMissingRangeRequests(UI ui,
             DownloadHandler downloadHandler) {
-        // Without a session, as for a UI created on its own, there is no
-        // configuration to tell the mode from
-        if (ui.getSession() == null || ui.getInternals()
-                .getDeploymentConfiguration().isProductionMode()) {
+        if (ui.getInternals().getDeploymentConfiguration().isProductionMode()) {
             return;
         }
         String urlPostfix = downloadHandler.getUrlPostfix();

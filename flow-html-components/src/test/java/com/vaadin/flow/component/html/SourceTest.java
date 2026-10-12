@@ -16,19 +16,21 @@
 package com.vaadin.flow.component.html;
 
 import java.io.File;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
@@ -40,16 +42,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 class SourceTest extends ComponentTest {
 
     @AfterEach
     void tearDown() {
         CurrentInstance.clearAll();
+        Source.clearWarnedMediaFiles();
     }
 
     @Override
@@ -113,12 +119,8 @@ class SourceTest extends ComponentTest {
     @Test
     void setSrc_handlerWithoutRanges_warnsOncePerMediaFileInDevelopmentMode() {
         UI ui = createUi(false);
-        MockLogger logger = new MockLogger();
 
-        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
-                LoggerFactory.class)) {
-            loggerFactory.when(() -> LoggerFactory.getLogger(Source.class))
-                    .thenReturn(logger);
+        List<String> warnings = captureWarnings(() -> {
             for (int i = 0; i < 2; i++) {
                 ui.add(new Source(DownloadHandler.fromInputStream(
                         event -> DownloadResponse.error(500), "lake.webm"),
@@ -133,39 +135,91 @@ class SourceTest extends ComponentTest {
                     "video/mp4"));
             ui.add(new Source(event -> event.getResponse().setStatus(500),
                     "video/mp4"));
-        }
+            ui.add(new Source(new FailingHandler(), "video/mp4"));
+        });
 
-        String logs = logger.getLogs();
-        assertEquals(2,
-                logs.lines().filter(line -> line.startsWith(MockLogger.WARN))
-                        .count(),
-                "Only the handlers without ranges should be warned about, each only once, logs were "
-                        + logs);
-        assertTrue(logs.contains("'lake.webm'"),
-                "The warning should name the media file, logs were " + logs);
-        assertTrue(
-                logs.contains("served by a lambda in "
-                        + SourceTest.class.getName() + " does not"),
-                "The warning should name the class that declares the lambda, logs were "
-                        + logs);
+        // Only the handlers without ranges are warned about, each only once,
+        // named after the file, the class declaring the lambda, or the class
+        assertEquals(List.of("The media file 'lake.webm'",
+                "A media file served by a lambda in "
+                        + SourceTest.class.getName(),
+                "A media file served by " + FailingHandler.class.getName()),
+                warnings);
+    }
+
+    @Test
+    void setSrc_manyMediaFilesWithoutRanges_warnsAboutTheFirstHundred() {
+        UI ui = createUi(false);
+
+        List<String> warnings = captureWarnings(() -> {
+            for (int i = 0; i < 101; i++) {
+                ui.add(new Source(DownloadHandler.fromInputStream(
+                        event -> DownloadResponse.error(500), "clip" + i),
+                        "video/webm"));
+            }
+        });
+
+        assertEquals(100, warnings.size());
+        assertEquals("The media file 'clip99'", warnings.get(99));
+    }
+
+    @Test
+    void setSrc_handlerWithoutRangesReplacedBeforeAttach_doesNotWarn() {
+        UI ui = createUi(false);
+        Source replacedByHandler = new Source(
+                DownloadHandler.fromInputStream(
+                        event -> DownloadResponse.error(500), "dune.webm"),
+                "video/webm");
+        replacedByHandler
+                .setSrc(DownloadHandler.forFile(new File("dune.webm")));
+        Source replacedByUrl = new Source(
+                DownloadHandler.fromInputStream(
+                        event -> DownloadResponse.error(500), "reef.webm"),
+                "video/webm");
+        replacedByUrl.setSrc("/reef.webm");
+
+        List<String> warnings = captureWarnings(
+                () -> ui.add(replacedByHandler, replacedByUrl));
+
+        assertEquals(List.of(), warnings);
     }
 
     @Test
     void setSrc_handlerWithoutRanges_productionMode_doesNotWarn() {
         UI ui = createUi(true);
-        MockLogger logger = new MockLogger();
 
+        List<String> warnings = captureWarnings(() -> ui.add(new Source(
+                DownloadHandler.fromInputStream(
+                        event -> DownloadResponse.error(500), "meadow.ogg"),
+                "audio/ogg")));
+
+        assertEquals(List.of(), warnings);
+    }
+
+    /**
+     * Runs the action and returns how each warning that it logged names the
+     * media file.
+     */
+    private static List<String> captureWarnings(Runnable action) {
+        Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
                 LoggerFactory.class)) {
             loggerFactory.when(() -> LoggerFactory.getLogger(Source.class))
                     .thenReturn(logger);
-            ui.add(new Source(
-                    DownloadHandler.fromInputStream(
-                            event -> DownloadResponse.error(500), "meadow.ogg"),
-                    "audio/ogg"));
+            action.run();
         }
+        ArgumentCaptor<Object> mediaFiles = ArgumentCaptor
+                .forClass(Object.class);
+        verify(logger, atLeast(0)).warn(anyString(), mediaFiles.capture());
+        verifyNoMoreInteractions(logger);
+        return mediaFiles.getAllValues().stream().map(String::valueOf).toList();
+    }
 
-        assertEquals("", logger.getLogs());
+    private static class FailingHandler implements DownloadHandler {
+        @Override
+        public void handleDownloadRequest(DownloadEvent event) {
+            event.getResponse().setStatus(500);
+        }
     }
 
     private static UI createUi(boolean productionMode) {
