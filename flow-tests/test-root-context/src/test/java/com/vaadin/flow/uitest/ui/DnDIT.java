@@ -105,8 +105,8 @@ public class DnDIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("event-2"));
 
         TestBenchElement eventlog = getEventlog(2);
-        String expected = "2: DragImage: <img alt=\"Gift\" src=\"/images/gift.png\">";
-        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
+        assertDragImage(eventlog, "2: DragImage: <img ", ">", "alt=\"Gift\"",
+                "src=\"/images/gift.png\"");
     }
 
     @Test
@@ -193,8 +193,10 @@ public class DnDIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("event-2"));
 
         TestBenchElement eventlog = getEventlog(2);
-        String expected = "2: DragImage: <div id=\"box-no-effect\" style=\"width:100px;border:1px solid;margin:10px;height:60px\">no-effect</div>";
-        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
+        assertDragImage(eventlog,
+                "2: DragImage: <div id=\"box-no-effect\" style=\"",
+                "\">no-effect</div>", "width:100px", "border:1px solid",
+                "margin:10px", "height:60px");
     }
 
     @Test
@@ -210,8 +212,8 @@ public class DnDIT extends ChromeBrowserTest {
 
         waitForElementPresent(By.id("event-2"));
         TestBenchElement eventlog = getEventlog(2);
-        String expected = "2: DragImage: <img alt=\"Gift\" src=\"/images/gift.png\">";
-        Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
+        assertDragImage(eventlog, "2: DragImage: <img ", ">", "alt=\"Gift\"",
+                "src=\"/images/gift.png\"");
     }
 
     private void dragBoxToLanes(TestBenchElement boxElement,
@@ -269,6 +271,27 @@ public class DnDIT extends ChromeBrowserTest {
                 .toString();
         Assert.assertEquals("Invalid drop event details", expected,
                 eventlog.getText());
+    }
+
+    /**
+     * Asserts the logged drag image HTML without depending on the order of
+     * attributes or style declarations, which is not defined.
+     */
+    private void assertDragImage(TestBenchElement eventlog, String prefix,
+            String suffix, String... fragments) {
+        String text = eventlog.getText();
+        Assert.assertTrue("Invalid drag image: " + text,
+                text.startsWith(prefix) && text.endsWith(suffix));
+        int expectedLength = prefix.length() + suffix.length();
+        for (String fragment : fragments) {
+            Assert.assertTrue("Invalid drag image: " + text,
+                    text.contains(fragment));
+            expectedLength += fragment.length();
+        }
+        // Separators: one between attributes or one per style declaration
+        expectedLength += fragments.length - 1;
+        Assert.assertEquals("Invalid drag image: " + text, expectedLength,
+                text.length());
     }
 
     private TestBenchElement getEventlog(int i) {
