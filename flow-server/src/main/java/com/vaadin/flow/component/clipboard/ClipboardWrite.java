@@ -49,6 +49,10 @@ import com.vaadin.flow.shared.Registration;
  *         .withClientAction("copy", Clipboard.write());
  * }</pre>
  *
+ * The template must call it with the value to copy. Bound directly as a
+ * listener ({@code @click=${copy}}), its first argument is the event, and the
+ * event's string form is what gets copied.
+ * <p>
  * Use {@link #text(ClientValue)} to copy some other client-side value instead,
  * or {@link #text(ClientValue, SerializableConsumer, SerializableConsumer)} to
  * also hear back whether the copy succeeded.

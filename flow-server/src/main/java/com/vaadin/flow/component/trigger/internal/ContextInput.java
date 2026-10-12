@@ -22,9 +22,11 @@ import com.vaadin.flow.dom.JsFunction;
 /**
  * Reads a value out of the trigger context — the object a trigger supplies to
  * describe what it fired for. A {@link SinkTrigger} rendered into a row
- * renderer supplies {@code {item, index, key}} for the row the event came from,
- * so {@code new ContextInput<String>("item", "email")} yields that row's
- * {@code email} property at fire time.
+ * renderer supplies {@code {item, index, key, args}} — the row the event came
+ * from and the arguments the template called the action with — so
+ * {@code new ContextInput<String>("item", "email")} yields that row's
+ * {@code email} property at fire time, and
+ * {@code new ContextInput<String>("args", "0")} the first call argument.
  * <p>
  * This is what lets one action serve a whole column: the value is not captured
  * on the server per row, it is read from the row's own client-side data when

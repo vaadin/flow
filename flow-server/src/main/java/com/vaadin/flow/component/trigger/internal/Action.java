@@ -62,8 +62,9 @@ public abstract class Action implements Serializable {
      * trigger context — an object describing what the trigger fired for, or
      * {@code undefined} for triggers that have no such notion. A
      * {@link SinkTrigger} rendered into a client-side row renderer, for
-     * example, supplies {@code {item, index, key}} for the row the event came
-     * from, which is what lets one action serve a whole column.
+     * example, supplies {@code {item, index, key, args}} for the row the event
+     * came from and the arguments the template called the action with, which is
+     * what lets one action serve a whole column.
      * <p>
      * The body is one statement. To embed a value produced on the client,
      * capture an {@link Input}'s {@link Input#toJs(Trigger) JsFunction} as a

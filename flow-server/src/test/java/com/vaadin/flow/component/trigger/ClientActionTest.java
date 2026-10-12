@@ -93,7 +93,7 @@ class ClientActionTest {
     }
 
     @Test
-    void plainWrite_copiesTheFirstArgumentTheTemplatePasses() {
+    void write_copiesTheArgumentTheTemplatePasses() {
         UI ui = new MockUI();
         Div container = new Div();
         ui.add(container);
@@ -107,6 +107,12 @@ class ClientActionTest {
                 .get(0);
         assertEquals("return context[$0][$1]", text.getBody());
         assertEquals(List.of("args", "0"), text.getCaptures());
+
+        Clipboard.write().text(ClientValue.argument(2))
+                .bindTo(container.getElement(), sink);
+        JsFunction third = (JsFunction) sink.installed.get(1).getCaptures()
+                .get(0);
+        assertEquals(List.of("args", "2"), third.getCaptures());
     }
 
     @Test

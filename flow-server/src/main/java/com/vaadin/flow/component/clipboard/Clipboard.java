@@ -180,7 +180,8 @@ public final class Clipboard implements Serializable {
      *         .withClientAction("copy", Clipboard.write());
      * }</pre>
      *
-     * Chain
+     * The template must call it with the value to copy; bound directly as a
+     * listener ({@code @click=${copy}}) it would copy the event instead. Chain
      * {@link ClipboardWrite#text(com.vaadin.flow.component.trigger.ClientValue)}
      * onto it to copy a different client-side value.
      *
