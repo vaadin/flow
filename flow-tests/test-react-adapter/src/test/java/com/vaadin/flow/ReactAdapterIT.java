@@ -17,6 +17,7 @@ package com.vaadin.flow;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
@@ -158,8 +159,14 @@ public class ReactAdapterIT extends ChromeBrowserTest {
         Assert.assertEquals(typedValue, input.getPropertyString("value"));
 
         $(NativeButtonElement.class).id("setOwnRootValueButton").click();
-        waitUntil(driver -> ReactAdapterView.OWN_ROOT_SERVER_VALUE
-                .equals(input.getPropertyString("value")));
+        try {
+            waitUntil(driver -> ReactAdapterView.OWN_ROOT_SERVER_VALUE
+                    .equals(input.getPropertyString("value")));
+        } catch (TimeoutException e) {
+            Assert.fail("Value set on the server must be rendered, expected '"
+                    + ReactAdapterView.OWN_ROOT_SERVER_VALUE + "' but was '"
+                    + input.getPropertyString("value") + "'");
+        }
     }
 
     private TestBenchElement getAdapterElement() {
