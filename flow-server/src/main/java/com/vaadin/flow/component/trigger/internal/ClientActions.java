@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.trigger.ClientAction;
@@ -29,7 +30,7 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-public final class ClientActions {
+public final class ClientActions implements Serializable {
 
     private ClientActions() {
         // utility class
