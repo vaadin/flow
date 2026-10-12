@@ -22,32 +22,45 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -144,6 +157,101 @@ class FileDownloadHandlerTest {
         verify(response).setContentType("application/octet-stream");
         verify(response).setContentLengthLong(165000);
         assertNull(downloadEvent.getException());
+    }
+
+    @Test
+    void handleDownloadRequest_rangeRequested_sendsRequestedBytes()
+            throws URISyntaxException, IOException {
+        File file = new File(
+                getClass().getClassLoader().getResource(PATH_TO_FILE).toURI());
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        when(servletResponse.getService()).thenReturn(servletService);
+        when(request.getHeader("Range")).thenReturn("bytes=100000-100099");
+
+        DownloadHandler.forFile(file).handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner));
+
+        assertArrayEquals(Arrays.copyOfRange(Files.readAllBytes(file.toPath()),
+                100000, 100100), servletOutput.getOutput());
+        verify(servletResponse).setStatus(206);
+        verify(servletResponse).setHeader("Content-Range",
+                "bytes 100000-100099/165000");
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "bytes=100000-100099, false", "bytes=0-, true" })
+    void handleDownloadRequest_rangeCancelledByClient_closeFailsToo_noServerError(
+            String range, boolean reportedAsError)
+            throws URISyntaxException, IOException {
+        File file = new File(
+                getClass().getClassLoader().getResource(PATH_TO_FILE).toURI());
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream() {
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                throw new IOException("Connection reset by peer");
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException("Connection reset by peer");
+            }
+        };
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(servletResponse.isCommitted()).thenReturn(true);
+        when(servletResponse.getService())
+                .thenReturn(mock(VaadinServletService.class));
+        when(request.getHeader("Range")).thenReturn(range);
+        FileDownloadHandler handler = DownloadHandler.forFile(file);
+        AtomicBoolean errorReported = new AtomicBoolean();
+        handler.whenComplete(success -> errorReported.set(!success));
+        DownloadEvent event = new DownloadEvent(request, servletResponse,
+                session, owner);
+
+        handler.handleDownloadRequest(event);
+
+        // a whole-content range was reported as started, so it ends like a
+        // cancelled download without a Range header
+        assertEquals(reportedAsError, errorReported.get());
+        assertEquals(reportedAsError, event.getException() != null);
+        verify(servletResponse, never()).setStatus(500);
+    }
+
+    @Test
+    void handleDownloadRequest_smallRangeReadFails_propagatedWithoutListenerEvents(
+            @TempDir Path tempDir) throws IOException {
+        File file = Files.write(tempDir.resolve("content.bin"), new byte[1000])
+                .toFile();
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream() {
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                // the out-of-order part reopens a file that is gone by then
+                file.delete();
+                super.write(b, off, len);
+            }
+        };
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(servletResponse.getService())
+                .thenReturn(mock(VaadinServletService.class));
+        when(request.getHeader("Range")).thenReturn("bytes=500-509,0-9");
+        FileDownloadHandler handler = DownloadHandler.forFile(file);
+        AtomicBoolean listenerNotified = new AtomicBoolean();
+        handler.whenStart(() -> listenerNotified.set(true));
+        handler.whenComplete(success -> listenerNotified.set(true));
+
+        assertThrows(IOException.class, () -> handler.handleDownloadRequest(
+                new DownloadEvent(request, servletResponse, session, owner)));
+
+        assertFalse(listenerNotified.get(),
+                "A range the listeners never saw start must not end for them");
+        verify(servletResponse).setStatus(500);
     }
 
     @Test

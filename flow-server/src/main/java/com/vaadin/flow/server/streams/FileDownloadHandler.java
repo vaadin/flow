@@ -26,6 +26,9 @@ import com.vaadin.flow.server.VaadinResponse;
 /**
  * Download handler for use with a given File that will be read and written as
  * binary data to the response.
+ * <p>
+ * Byte range requests, which media players use to seek, are answered with the
+ * requested part of the file.
  *
  * @since 24.8
  */
@@ -85,7 +88,13 @@ public class FileDownloadHandler
             downloadEvent
                     .setContentType(getContentType(resourceName, response));
             transferContent(downloadEvent, inputStream, outputStream,
-                    file.length());
+                    file.length(), SeekableContent.ofFile(file));
+        } catch (RangeRequestException e) {
+            // Not reported again: a cancel is not an error, and a smaller
+            // range was never reported as started
+            if (!e.isCancelled()) {
+                throw e;
+            }
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -93,6 +102,16 @@ public class FileDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Range requests are always answered for a file.
+     */
+    @Override
+    public boolean isRangeRequestsEnabled() {
+        return true;
     }
 
     @Override

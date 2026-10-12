@@ -17,11 +17,16 @@ package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +35,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -37,9 +45,11 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
@@ -47,12 +57,18 @@ import com.vaadin.flow.shared.Registration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -74,6 +90,9 @@ class AbstractDownloadHandlerTest {
     private ByteArrayOutputStream outputStream;
     private Element owner;
     private UI ui;
+
+    @TempDir
+    private Path tempDir;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -303,5 +322,224 @@ class AbstractDownloadHandlerTest {
             listener.onError(mockContext, EXCEPTION);
         });
         assertTrue(invoked.get(), "Progress with context should be invoked");
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', nullValues = "null", value = {
+            "null      | null | 200 | abcdefghij | null         | true",
+            "bytes=2-5 | null | 206 | cdef       | bytes 2-5/10 | false",
+            "bytes=0-  | null | 206 | abcdefghij | bytes 0-9/10 | true",
+            "bytes=abc | null | 200 | abcdefghij | null         | true",
+            "bytes=2-5 | x    | 200 | abcdefghij | null         | true",
+            "bytes=2-5 | etag | 206 | cdef       | bytes 2-5/10 | false" })
+    void transferContent_file_rangeAnswered(String range, String ifRange,
+            int status, String body, String contentRange,
+            boolean listenersNotified) throws IOException {
+        Path file = Files.writeString(tempDir.resolve("content.txt"),
+                "abcdefghij");
+        Files.setLastModifiedTime(file, FileTime.fromMillis(0x1234567L));
+        String etag = "\"1234567-a\"";
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(request.getHeader("Range")).thenReturn(range);
+        when(request.getHeader("If-Range"))
+                .thenReturn("etag".equals(ifRange) ? etag : ifRange);
+        handler.addTransferProgressListener(listener);
+
+        try (InputStream inputStream = Files.newInputStream(file)) {
+            handler.transferContent(
+                    new DownloadEvent(request, servletResponse, session, owner),
+                    inputStream, servletOutput, 10,
+                    AbstractDownloadHandler.SeekableContent
+                            .ofFile(file.toFile()));
+        }
+
+        assertEquals(body,
+                new String(servletOutput.getOutput(), StandardCharsets.UTF_8));
+        verify(servletResponse, atLeastOnce()).setHeader("Accept-Ranges",
+                "bytes");
+        verify(servletResponse).setHeader("ETag", etag);
+        if (status == 200) {
+            verify(servletResponse, never()).setStatus(anyInt());
+            verify(servletResponse, never()).setHeader(eq("Content-Range"),
+                    anyString());
+        } else {
+            verify(servletResponse).setStatus(status);
+            verify(servletResponse).setHeader("Content-Range", contentRange);
+        }
+        if (listenersNotified) {
+            verify(listener).onStart(any());
+            verify(listener).onComplete(any(), eq(10L));
+        } else {
+            verify(listener, never()).onStart(any());
+            verify(listener, never()).onComplete(any(), anyLong());
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "bytes=15-19, 10, 20, false", "bytes=5-14, 10, 20, false",
+            "bytes=1-49999, 40000, 50000, true" })
+    void transferContent_fileShorterThanLength_failsWithoutRangeHeaders(
+            String range, int actualLength, long declaredLength,
+            boolean failsMidBody) throws IOException {
+        Path file = Files.write(tempDir.resolve("content.bin"),
+                new byte[actualLength]);
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        when(servletResponse.getOutputStream())
+                .thenReturn(new CapturingServletOutputStream());
+        when(request.getHeader("Range")).thenReturn(range);
+
+        try (InputStream inputStream = new FileInputStream(file.toFile())) {
+            AbstractDownloadHandler.RangeRequestException failure = assertThrows(
+                    AbstractDownloadHandler.RangeRequestException.class,
+                    () -> handler.transferContent(
+                            new DownloadEvent(request, servletResponse, session,
+                                    owner),
+                            inputStream, outputStream, declaredLength,
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
+            assertFalse(failure.isCancelled());
+            assertTrue(failure.getCause() instanceof EOFException);
+        }
+        // only a failure after the first chunk has set the 206 status
+        verify(servletResponse, failsMidBody ? times(1) : never())
+                .setStatus(206);
+        // set before the handler closes the stream, keeping other headers
+        verify(servletResponse).setStatus(500);
+        verify(servletResponse).setHeader("Content-Range", null);
+        verify(servletResponse).setContentLengthLong(0);
+        verify(servletResponse, never()).reset();
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "bytes=10-99999, 50000", "bytes=10-19, 0" })
+    void transferContent_readFailsAfterCommit_propagated(String range,
+            long failAfter) throws IOException {
+        Path file = Files.write(tempDir.resolve("content.bin"),
+                new byte[100000]);
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        when(servletResponse.getOutputStream())
+                .thenReturn(new CapturingServletOutputStream());
+        when(servletResponse.isCommitted()).thenReturn(true);
+        when(request.getHeader("Range")).thenReturn(range);
+        handler.addTransferProgressListener(listener);
+
+        try (InputStream inputStream = new FileInputStream(file.toFile()) {
+            private long read;
+
+            @Override
+            public int read(byte[] b, int off, int len) throws IOException {
+                if (read >= failAfter) {
+                    throw new IOException("Disk read failed");
+                }
+                int count = super.read(b, off, len);
+                read += count;
+                return count;
+            }
+        }) {
+            AbstractDownloadHandler.RangeRequestException failure = assertThrows(
+                    AbstractDownloadHandler.RangeRequestException.class,
+                    () -> handler.transferContent(
+                            new DownloadEvent(request, servletResponse, session,
+                                    owner),
+                            inputStream, outputStream, 100000,
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
+            // propagated as a failure, not mistaken for a cancel
+            assertFalse(failure.isCancelled());
+        }
+        verify(servletResponse, never()).setStatus(500);
+        verify(listener, never()).onComplete(any(), anyLong());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "bytes=10-99999", "bytes=10-19", "bytes=0-" })
+    void transferContent_rangeCancelledByClient_notAnErrorOfTheContent(
+            String range) throws IOException {
+        Path file = Files.write(tempDir.resolve("content.bin"),
+                new byte[100000]);
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream() {
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                if (len > 10) {
+                    throw new IOException("Connection reset by peer");
+                }
+                super.write(b, off, len);
+            }
+
+            @Override
+            public void flush() throws IOException {
+                // a small range only fails when the buffered body is sent
+                throw new IOException("Connection reset by peer");
+            }
+        };
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(servletResponse.isCommitted()).thenReturn(true);
+        when(request.getHeader("Range")).thenReturn(range);
+        handler.addTransferProgressListener(listener);
+
+        try (InputStream inputStream = new FileInputStream(file.toFile())) {
+            assertThrows(AbstractDownloadHandler.RangeRequestException.class,
+                    () -> handler.transferContent(
+                            new DownloadEvent(request, servletResponse, session,
+                                    owner),
+                            inputStream, servletOutput, 100000,
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
+        }
+
+        verify(listener, never()).onComplete(any(), anyLong());
+        if ("bytes=0-".equals(range)) {
+            // reported as started, so it ends like a cancelled download
+            verify(listener).onStart(any());
+            verify(listener).onError(any(), any());
+        } else {
+            verify(listener, never()).onStart(any());
+            verify(listener, never()).onError(any(), any());
+        }
+        verify(servletResponse, never()).setStatus(500);
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', nullValues = "null", value = {
+            "false | bytes=2-5     | abcdefghij",
+            "true  | bytes=1-2,6-7 | bc;gh",
+            "true  | bytes=6-7,1-2 | abcdefghij" })
+    void transferContent_streamWithoutUrl_rangesNeedingNoRereadAnswered(
+            boolean seekable, String range, String expected)
+            throws IOException {
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(request.getHeader("Range")).thenReturn(range);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                "abcdefghij".getBytes(StandardCharsets.UTF_8));
+
+        handler.transferContent(
+                new DownloadEvent(request, servletResponse, session, owner),
+                inputStream, servletOutput, 10, seekable
+                        ? new AbstractDownloadHandler.SeekableContent("content",
+                                "\"v1\"", null)
+                        : null);
+
+        String body = new String(servletOutput.getOutput(),
+                StandardCharsets.UTF_8);
+        if (expected.contains(";")) {
+            verify(servletResponse).setStatus(206);
+            // each part follows its headers and precedes the next boundary
+            for (String part : expected.split(";")) {
+                assertTrue(body.contains("\r\n\r\n" + part + "\r\n"), body);
+            }
+        } else {
+            assertEquals(expected, body);
+            verify(servletResponse, never()).setStatus(anyInt());
+        }
     }
 }

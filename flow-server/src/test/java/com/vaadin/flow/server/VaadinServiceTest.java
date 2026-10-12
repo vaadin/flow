@@ -50,6 +50,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
 import com.vaadin.flow.di.Lookup;
@@ -71,6 +72,7 @@ import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.CoreMatchers.containsString;
@@ -119,6 +121,11 @@ class VaadinServiceTest {
     @kotlin.Metadata
     @Tag("div")
     public static class KotlinTestView extends Component {
+
+    }
+
+    @Theme("my-theme")
+    public static class ThemedAppShell implements AppShellConfigurator {
 
     }
 
@@ -298,6 +305,25 @@ class VaadinServiceTest {
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
         assertFalse(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_HAS_AUTO_LAYOUT.equals(e.getName())));
+        assertFalse(UsageStatistics.getEntries()
+                .anyMatch(e -> "flow/theme-annotation".equals(e.getName())));
+    }
+
+    @Test
+    void themeAnnotationOnAppShell_themeAnnotationReported() {
+        UsageStatistics.resetEntries();
+
+        VaadinServiceInitListener initListener = event -> AppShellRegistry
+                .getInstance(event.getSource().getContext())
+                .setShell(ThemedAppShell.class);
+        MockVaadinServletService service = new MockVaadinServletService();
+
+        service.init(new MockInstantiator(initListener));
+
+        assertTrue(
+                UsageStatistics.getEntries().anyMatch(
+                        e -> "flow/theme-annotation".equals(e.getName())),
+                "@Theme on the app shell should be reported");
     }
 
     @Test
@@ -319,6 +345,8 @@ class VaadinServiceTest {
                     .setAnnotatedRoute(AnnotatedTestView.class);
             RouteConfiguration.forApplicationScope().setRoute("kotlin",
                     KotlinTestView.class);
+            AppShellRegistry.getInstance(event.getSource().getContext())
+                    .setShell(ThemedAppShell.class);
         };
         MockVaadinServletService service = new MockVaadinServletService(
                 configuration, false);

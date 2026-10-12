@@ -15,11 +15,25 @@
  */
 package com.vaadin.flow.server.streams;
 
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.File;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.communication.TransferUtil;
 
@@ -95,5 +109,287 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         downloadEvent.setContentLength(contentLength);
         TransferUtil.transfer(inputStream, outputStream,
                 getTransferContext(downloadEvent), getListeners());
+    }
+
+    /**
+     * Writes the content to the response like
+     * {@link #transferContent(DownloadEvent, InputStream, OutputStream, long)},
+     * but answers a {@code Range} request header when the content is seekable.
+     * <p>
+     * Media players rely on range requests to seek: without
+     * {@code Accept-Ranges} and {@code 206 Partial Content}, a browser cannot
+     * jump ahead of what it has downloaded, and Safari does not play audio or
+     * video at all. A download that was cut off can only be resumed with a
+     * range request too. Ranges are only served for content that is the same on
+     * every request and whose length is known. The stream is skipped to the
+     * start of a range, which is a seek for a file and reads the preceding
+     * bytes for other streams, such as an entry of a compressed jar. That still
+     * costs less than sending the whole content again. The ranges are parsed
+     * and written the same way as for a static file.
+     * <p>
+     * The response carries the strong {@code ETag} of the content, if it has
+     * one. A request whose {@code If-Range} does not match it gets the whole
+     * content, so a client cannot join parts of content that changed between
+     * its requests.
+     * <p>
+     * A range that covers the whole content, such as the {@code bytes=0-} that
+     * media elements send first, is reported to the transfer progress listeners
+     * like a normal transfer. A smaller range is not reported as started,
+     * progressed or completed: a media player sends many overlapping, often
+     * cancelled range requests, which do not describe a download of the
+     * content.
+     * <p>
+     * A smaller range that the client cancels, as media players do on every
+     * seek, is only logged, as for static files. A cancelled whole-content
+     * range, which was reported as started, is reported as an error, like a
+     * cancelled download without a {@code Range} header. In both cases a
+     * {@link RangeRequestException} is thrown, which the handler ends the
+     * request on without reporting it again.
+     * <p>
+     * A failure to read the content, such as content shorter than its length or
+     * a resource that cannot be opened again for multipart ranges, is
+     * propagated. For a whole-content range it is reported to the listeners
+     * like for any other transfer. A smaller range, which the listeners never
+     * saw start, is not reported to them: a {@link RangeRequestException} is
+     * thrown, which the handler propagates without notifying the listeners. If
+     * nothing has been sent yet, the response becomes an empty server error
+     * without the range headers.
+     *
+     * @param downloadEvent
+     *            the download event
+     * @param inputStream
+     *            the content, positioned at its first byte
+     * @param outputStream
+     *            the response output stream
+     * @param contentLength
+     *            the length of the content, or {@code -1} if unknown, in which
+     *            case ranges are not served
+     * @param content
+     *            the seekable content the stream reads, or {@code null} if it
+     *            is not seekable, in which case ranges are not served
+     * @throws RangeRequestException
+     *             if the client cancelled a range request, or reading a range
+     *             smaller than the content failed
+     * @throws IOException
+     *             if reading or writing the content fails
+     */
+    void transferContent(DownloadEvent downloadEvent, InputStream inputStream,
+            OutputStream outputStream, long contentLength,
+            SeekableContent content) throws IOException {
+        if (content == null || contentLength < 0 || !(downloadEvent
+                .getResponse() instanceof HttpServletResponse response)) {
+            transferContent(downloadEvent, inputStream, outputStream,
+                    contentLength);
+            return;
+        }
+        response.setHeader("Accept-Ranges", "bytes");
+        String etag = content.eTag();
+        if (etag != null) {
+            response.setHeader("ETag", etag);
+        }
+        VaadinRequest request = downloadEvent.getRequest();
+        String range = request.getHeader("Range");
+        String ifRange = request.getHeader("If-Range");
+        List<Pair<Long, Long>> ranges = range == null
+                || (ifRange != null && !ifRange.equals(etag)) ? null
+                        : ResponseWriter.parseRanges(range, contentLength,
+                                content.resource());
+        if (ranges != null && content.url() == null && !isAscending(ranges)) {
+            // Answering would need the content from the start again, which
+            // only a URL can provide. A server may ignore a Range header.
+            LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
+                    "Ignoring ranges not in ascending order for {}",
+                    content.resource());
+            ranges = null;
+        }
+        if (ranges == null) {
+            transferContent(downloadEvent, inputStream, outputStream,
+                    contentLength);
+            return;
+        }
+        String contentType = response.getContentType();
+        ClientOutputStream clientOutput = new ClientOutputStream(outputStream);
+        boolean wholeContent = ranges.size() == 1
+                && ranges.get(0).getFirst() == 0
+                && ranges.get(0).getSecond() == contentLength - 1;
+        try {
+            if (wholeContent) {
+                response.setStatus(HttpStatusCode.PARTIAL_CONTENT.getCode());
+                response.setHeader("Content-Range",
+                        "bytes 0-" + (contentLength - 1) + "/" + contentLength);
+                transferContent(downloadEvent, inputStream, clientOutput,
+                        contentLength);
+            } else {
+                ResponseWriter.writeRanges(ranges, contentLength, inputStream,
+                        content.url(), clientOutput, response);
+                // Send the body now so that a client that is gone fails here
+                // and not when the handler closes the stream
+                clientOutput.flush();
+            }
+        } catch (IOException e) {
+            if (clientOutput.failed) {
+                // Media players cancel range requests on every seek. Like for
+                // static files, that is not an error of the content.
+                LoggerFactory.getLogger(AbstractDownloadHandler.class).debug(
+                        "Range request for {} cancelled by the client",
+                        content.resource(), e);
+                if (wholeContent) {
+                    // Reported as started, so it ends like any cancelled
+                    // download
+                    downloadEvent.setException(e);
+                    notifyError(downloadEvent, e);
+                }
+                throw new RangeRequestException(e, true);
+            }
+            if (!response.isCommitted()) {
+                // Nothing sent yet: make the response a server error instead
+                // of an empty 206 or 200 when the handler closes the stream,
+                // keeping the headers that were not set for the range
+                response.resetBuffer();
+                response.setStatus(
+                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                response.setHeader("Content-Range", null);
+                response.setHeader("Transfer-Encoding", null);
+                response.setHeader("ETag", null);
+                response.setContentType(contentType);
+                response.setContentLengthLong(0);
+            }
+            // Listeners only see a range that covers the whole content
+            throw wholeContent ? e : new RangeRequestException(e, false);
+        }
+    }
+
+    private static boolean isAscending(List<Pair<Long, Long>> ranges) {
+        long position = 0;
+        for (Pair<Long, Long> range : ranges) {
+            if (range.getFirst() < position) {
+                return false;
+            }
+            position = range.getSecond() + 1;
+        }
+        return true;
+    }
+
+    /**
+     * Content that ranges can be served from, because it is the same on every
+     * request.
+     *
+     * @param resource
+     *            what the content is read from, for log messages
+     * @param eTag
+     *            the strong entity tag of the content, or {@code null} if it
+     *            has none
+     * @param url
+     *            the URL to read the content again from, for multipart ranges
+     *            that are not in ascending order, or {@code null} if it cannot
+     *            be read again, in which case such ranges are ignored
+     */
+    record SeekableContent(Object resource, String eTag, URL url) {
+
+        /**
+         * Describes a file, tagged with its modification time and length.
+         */
+        static SeekableContent ofFile(File file) throws IOException {
+            return new SeekableContent(file,
+                    createETag(file.lastModified(), file.length()),
+                    file.toURI().toURL());
+        }
+
+        /**
+         * Describes a resource read through the given connection, such as a
+         * file, or an entry in a jar or war. A jar entry is tagged with its
+         * checksum, because reproducible builds fix the modification time of
+         * every entry. Other resources are tagged with their modification time.
+         */
+        static SeekableContent ofResource(URL resource,
+                URLConnection connection) throws IOException {
+            long length = connection.getContentLengthLong();
+            String eTag;
+            if (connection instanceof JarURLConnection jarConnection) {
+                long crc = jarConnection.getJarEntry().getCrc();
+                eTag = crc < 0 ? null : createETag(crc, length);
+            } else {
+                eTag = createETag(connection.getLastModified(), length);
+            }
+            return new SeekableContent(resource, eTag, resource);
+        }
+
+        private static String createETag(long version, long length) {
+            if (version == 0) {
+                return null;
+            }
+            return "\"" + Long.toHexString(version) + "-"
+                    + Long.toHexString(length) + "\"";
+        }
+    }
+
+    /**
+     * Thrown when a range request fails in a way that the handler must not
+     * report to the transfer progress listeners, because it has already been
+     * reported or the listeners never saw the range start. A handler ends the
+     * request quietly if the client cancelled it, and otherwise propagates this
+     * exception. Closing the response stream afterwards may fail too, which is
+     * then suppressed by this exception.
+     */
+    static final class RangeRequestException extends IOException {
+        private final boolean cancelled;
+
+        private RangeRequestException(IOException cause, boolean cancelled) {
+            super(cancelled ? "Range request cancelled by the client"
+                    : "Range request failed", cause);
+            this.cancelled = cancelled;
+        }
+
+        /**
+         * Returns whether the client cancelled the request, which is not an
+         * error.
+         *
+         * @return {@code true} if the client cancelled the request
+         */
+        boolean isCancelled() {
+            return cancelled;
+        }
+    }
+
+    /**
+     * Records whether writing to the client failed, which means that the client
+     * went away, unlike a failure to read the content.
+     */
+    private static final class ClientOutputStream extends FilterOutputStream {
+        private boolean failed;
+
+        private ClientOutputStream(OutputStream out) {
+            super(out);
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            try {
+                out.write(b);
+            } catch (IOException e) {
+                failed = true;
+                throw e;
+            }
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            try {
+                out.write(b, off, len);
+            } catch (IOException e) {
+                failed = true;
+                throw e;
+            }
+        }
+
+        @Override
+        public void flush() throws IOException {
+            try {
+                out.flush();
+            } catch (IOException e) {
+                failed = true;
+                throw e;
+            }
+        }
     }
 }
