@@ -299,8 +299,9 @@ public class Element extends Node<Element> {
      * @see #setAttribute(String, String)
      * @since 25.0
      */
-    // The signal value may be null, which Signal<String> can't express here
-    // without rejecting signals of non-null values
+    // The signal value may be null. Signal<? extends @Nullable String> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
     @NullUnmarked
     public SignalBinding<String> bindAttribute(String attribute,
             Signal<String> signal) {
@@ -1438,8 +1439,9 @@ public class Element extends Node<Element> {
      * @see #setText(String)
      * @since 25.0
      */
-    // The signal value may be null, which Signal<String> can't express here
-    // without rejecting signals of non-null values
+    // The signal value may be null. Signal<? extends @Nullable String> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
     @NullUnmarked
     public SignalBinding<String> bindText(Signal<String> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
@@ -2216,8 +2218,9 @@ public class Element extends Node<Element> {
      * @see #setVisible(boolean)
      * @since 25.1
      */
-    // The signal value may be null, which Signal<Boolean> can't express here
-    // without rejecting signals of non-null values
+    // The signal value may be null. Signal<? extends @Nullable Boolean> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
     @NullUnmarked
     public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
         Objects.requireNonNull(visibleSignal, "Signal cannot be null");
@@ -2278,8 +2281,9 @@ public class Element extends Node<Element> {
      * @see #setEnabled(boolean)
      * @since 25.1
      */
-    // The signal value may be null, which Signal<Boolean> can't express here
-    // without rejecting signals of non-null values
+    // The signal value may be null. Signal<? extends @Nullable Boolean> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
     @NullUnmarked
     public SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
         Objects.requireNonNull(enabledSignal, "Signal cannot be null");
