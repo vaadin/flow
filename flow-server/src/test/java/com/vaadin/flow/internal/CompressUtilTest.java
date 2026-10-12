@@ -106,4 +106,14 @@ public class CompressUtilTest {
                 "Zip Slip entry must not be written outside the target dir",
                 new File(target.getParentFile(), "evil.txt").exists());
     }
+
+    @Test
+    public void deflateString_inflateString_returnsOriginal() {
+        String text = "{\"syncId\":3,\"title\":\"Ä € 日本\"}".repeat(50);
+
+        byte[] compressed = CompressUtil.deflateString(text);
+
+        Assert.assertTrue(compressed.length < text.length());
+        Assert.assertEquals(text, CompressUtil.inflateString(compressed));
+    }
 }
