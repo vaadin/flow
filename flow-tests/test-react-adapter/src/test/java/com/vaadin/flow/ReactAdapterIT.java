@@ -117,6 +117,50 @@ public class ReactAdapterIT extends ChromeBrowserTest {
                 container.$("input").all().get(0).getPropertyString("value"));
     }
 
+    @Test
+    public void ownRootReconnectedQuickly_rendersComponentOnceAndStaysBound() {
+        open();
+
+        waitForDevServer();
+
+        // Moved into document.body and reconnected before the root exists
+        $(NativeButtonElement.class).id("moveOwnRootInputToBodyButton").click();
+        TestBenchElement adapter = $(TestBenchElement.class).id("ownRootInput");
+        waitUntil(driver -> !adapter.$("input").all().isEmpty());
+        Assert.assertEquals(ReactAdapterView.OWN_ROOT_VALUE,
+                adapter.$("input").first().getPropertyString("value"));
+        assertOwnRootInputRenderedOnceAndBound(adapter, "typed after move");
+
+        // Reconnected after the root has rendered
+        $(NativeButtonElement.class).id("reconnectOwnRootInputButton").click();
+        assertOwnRootInputRenderedOnceAndBound(adapter,
+                "typed after reconnect");
+
+        checkLogsForErrors();
+    }
+
+    private void assertOwnRootInputRenderedOnceAndBound(
+            TestBenchElement adapter, String typedValue) {
+        waitUntil(driver -> !adapter.$("input").all().isEmpty());
+        Assert.assertEquals(
+                "Reconnected adapter element must render exactly one "
+                        + "React component",
+                1, adapter.$("input").all().size());
+
+        TestBenchElement input = adapter.$("input").first();
+        input.clear();
+        input.focus();
+        input.sendKeys(typedValue);
+        Assert.assertEquals("Typed value must reach the server", typedValue,
+                $(SpanElement.class).id("ownRootListenerOutput").getText());
+        Assert.assertEquals(typedValue, input.getPropertyString("value"));
+
+        $(NativeButtonElement.class).id("setOwnRootValueButton").click();
+        Assert.assertEquals("Value set on the server must be rendered",
+                ReactAdapterView.OWN_ROOT_SERVER_VALUE,
+                input.getPropertyString("value"));
+    }
+
     private TestBenchElement getAdapterElement() {
         return $("react-input").first();
     }
