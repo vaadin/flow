@@ -129,7 +129,20 @@
                 <property location="${project.build.directory}/temp" name="javascript.unpack"/>
                 <property location="${project.build.sourceDirectory}/../templates" name="templates.dir"/>
 
-                <loadfile property="atmosphere.js.contents" srcfile="${javascript.unpack}/javascript/atmosphere.js"/>
+                <!-- Chromium blocks unload listeners by default via the
+                     unload permissions policy, so listen to pagehide instead -->
+                <loadfile property="atmosphere.js.contents" srcfile="${javascript.unpack}/javascript/atmosphere.js">
+                  <filterchain>
+                    <tokenfilter>
+                      <replacestring from="(window, &quot;unload&quot;, atmosphere.callbacks.unload)" to="(window, &quot;pagehide&quot;, atmosphere.callbacks.unload)"/>
+                    </tokenfilter>
+                  </filterchain>
+                </loadfile>
+                <fail message="atmosphere.js still registers an unload listener, update the pagehide replacement in flow-push/pom.xml">
+                  <condition>
+                    <contains string="${atmosphere.js.contents}" substring="&quot;unload&quot;"/>
+                  </condition>
+                </fail>
 
                 <loadfile property="vaadinPush.js.contents" srcfile="${templates.dir}/vaadinPush.js.tpl">
                   <filterchain>
