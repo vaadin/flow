@@ -213,7 +213,7 @@ public class ElementListenersTest
     }
 
     @Test
-    void collectChanges_settingsChangedAfterRegistration_currentSettingsSent() {
+    void collectChanges_settingsChangedAfterEarlierSend_updatedSettingsSent() {
         DomListenerRegistration registration = ns.add("eventType", noOp);
         assertFalse(collectEventSettings("eventType").has("data1"));
 
