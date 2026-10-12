@@ -410,6 +410,33 @@ public class UITest {
     }
 
     @Test
+    public void navigateToClassWithQueryParameters_parametersAreApplied()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        assertEquals(
+                FooBarNavigationTarget.class, ui
+                        .navigate(FooBarNavigationTarget.class,
+                                QueryParameters.of("t", "abc"))
+                        .get().getClass());
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("t=abc", location.getQueryParameters().getQueryString());
+
+        assertEquals(
+                Parameterized.class, ui
+                        .navigate(Parameterized.class, "baz",
+                                QueryParameters.of("t", "def"))
+                        .get().getClass());
+
+        location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo-bar/baz", location.getPath());
+        assertEquals("t=def", location.getQueryParameters().getQueryString());
+    }
+
+    @Test
     public void navigateWithQueryStringOrFragmentAndQueryParameters_throws()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
@@ -1155,6 +1182,23 @@ public class UITest {
         SerializableRunnable wrapped = ui
                 .accessLater(() -> fail("Action should never run"), null);
         assertThrows(UIDetachedException.class, () -> wrapped.run());
+    }
+
+    @Test
+    public void navigate_navigationNotSupported_throws() {
+        UI ui = new UI() {
+            @Override
+            public boolean isNavigationSupported() {
+                return false;
+            }
+        };
+        RouteParameters parameters = RouteParameters.empty();
+
+        NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> ui.navigate(FooBarNavigationTarget.class, parameters));
+        assertEquals("Navigation is not supported by this UI",
+                exception.getMessage());
     }
 
     @Test

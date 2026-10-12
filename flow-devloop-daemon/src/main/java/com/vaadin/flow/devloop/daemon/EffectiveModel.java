@@ -137,6 +137,45 @@ final class EffectiveModel {
         return Optional.empty();
     }
 
+    /**
+     * The id of the execution that runs a plugin's goal in this build.
+     * <p>
+     * An execution bound to phase {@code none} is skipped: that is how a pom
+     * switches off an inherited default execution, and naming it would run the
+     * goal with the configuration the project meant to replace.
+     *
+     * @param groupId
+     *            the plugin's group
+     * @param artifactId
+     *            the plugin's artifact
+     * @param goal
+     *            the goal the execution has to run
+     * @return the execution id, or empty when the build runs no execution of
+     *         that goal
+     */
+    Optional<String> findExecution(String groupId, String artifactId,
+            String goal) {
+        for (int index = 0; index < count(); index++) {
+            String[] coordinates = values.getProperty("plugin." + index, "")
+                    .split(":", 3);
+            if (coordinates.length < 2 || !groupId.equals(coordinates[0])
+                    || !artifactId.equals(coordinates[1])) {
+                continue;
+            }
+            for (int at = 0; values
+                    .containsKey("execution." + index + "." + at); at++) {
+                String key = "execution." + index + "." + at;
+                List<String> goals = List
+                        .of(values.getProperty(key + ".goals", "").split(","));
+                if (goals.contains(goal) && !"none"
+                        .equals(values.getProperty(key + ".phase", ""))) {
+                    return Optional.of(values.getProperty(key));
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
     /** The profiles this build ran with, for a log line that has to say why. */
     List<String> activeProfiles() {
         String profiles = values.getProperty("profiles", "");

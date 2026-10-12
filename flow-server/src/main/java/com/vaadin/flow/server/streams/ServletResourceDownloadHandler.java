@@ -32,12 +32,14 @@ import com.vaadin.flow.server.VaadinServletService;
  * For instance for the file {@code webapp/WEB-INF/servlet.json} the path would
  * be {@code /WEB-INF/servlet.json}
  * <p>
- * Byte range requests, which media players use to seek, are answered only when
- * the resource is a file on disk, such as in an exploded web application in a
- * development environment. A resource inside a packaged jar or war is always
- * sent whole, so seeking in audio or video served from it does not work. Use
- * {@link DownloadHandler#forFile(java.io.File)} to serve seekable media in
- * production.
+ * Byte range requests, which media players use to seek and browsers use to
+ * resume a download, are not answered by default. A resource is read as a
+ * stream from its start up to each range, and in a packaged war it may be
+ * compressed, depending on the servlet container, so each seek may inflate all
+ * the bytes before it again, which adds up for large media that a player
+ * fetches in many small ranges. Call {@link #enableRangeRequests()} to answer
+ * them anyway, or use {@link DownloadHandler#forFile(java.io.File)}, which
+ * answers ranges by seeking in the file.
  *
  * @since 24.8
  */
@@ -46,6 +48,7 @@ public class ServletResourceDownloadHandler
 
     private final String path;
     private final String fileNameOverride;
+    private boolean rangeRequestsEnabled;
 
     /**
      * Create download handler for servlet resource. Uses url postfix as file
@@ -106,7 +109,11 @@ public class ServletResourceDownloadHandler
                     downloadEvent.setFileName(resourceName);
                 }
                 transferContent(downloadEvent, inputStream, outputStream,
-                        connection.getContentLengthLong(), toFile(resource));
+                        connection.getContentLengthLong(),
+                        rangeRequestsEnabled
+                                ? SeekableContent.ofResource(resource,
+                                        connection)
+                                : null);
             } catch (RangeRequestException e) {
                 // Not reported again: a cancel is not an error, and a smaller
                 // range was never reported as started
@@ -122,6 +129,34 @@ public class ServletResourceDownloadHandler
                 throw ioe;
             }
         }
+    }
+
+    /**
+     * Enables answering byte range requests, which media players use to seek
+     * and browsers use to resume a download. Safari does not play audio or
+     * video without them.
+     * <p>
+     * Each range is read by skipping the resource up to its start. For a file
+     * on disk that is a seek, but a resource inside a packaged war may have to
+     * be read, and inflated if compressed, from its start for every range,
+     * depending on the servlet container. That is costly for large media that a
+     * player fetches in many small ranges.
+     *
+     * @return this instance for method chaining
+     */
+    public ServletResourceDownloadHandler enableRangeRequests() {
+        rangeRequestsEnabled = true;
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Range requests are answered after {@link #enableRangeRequests()}.
+     */
+    @Override
+    public boolean isRangeRequestsEnabled() {
+        return rangeRequestsEnabled;
     }
 
     @Override
