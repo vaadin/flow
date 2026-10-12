@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -27,13 +28,12 @@ import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -104,7 +104,7 @@ class ClientActionTest {
                 .bindTo(container.getElement(), sink);
 
         // The action is committed as part of binding, so the trigger is armed
-        // and the before-response check does not fail.
+        // and the before-response check must not throw.
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         registration.remove();
@@ -128,12 +128,55 @@ class ClientActionTest {
         // The outcome comes back over a return channel on the renderer's own
         // node — the row identity is not part of it, only the copied value.
         JsFunction action = sink.installed.get(0);
-        Object channel = action.getCaptures().stream()
-                .filter(ReturnChannelRegistration.class::isInstance).findFirst()
+        ReturnChannelRegistration channel = action.getCaptures().stream()
+                .filter(ReturnChannelRegistration.class::isInstance)
+                .map(ReturnChannelRegistration.class::cast).findFirst()
                 .orElseThrow();
-        assertInstanceOf(ReturnChannelRegistration.class, channel);
-        assertFalse(action.getBody().contains("context["),
-                "the outcome wrapper itself carries no context");
+        assertEquals(container.getElement().getNode().getId(),
+                channel.getStateNodeId());
+
+        ObjectNode resolved = JacksonUtils.createObjectNode();
+        resolved.put("ok", true);
+        resolved.put("value", "ada@example.com");
+        channel.invoke(JacksonUtils.createArrayNode().add(resolved));
+
+        ObjectNode error = JacksonUtils.createObjectNode();
+        error.put("name", "NotAllowedError");
+        error.put("message", "denied");
+        ObjectNode rejected = JacksonUtils.createObjectNode();
+        rejected.put("ok", false);
+        rejected.set("error", error);
+        channel.invoke(JacksonUtils.createArrayNode().add(rejected));
+
+        assertEquals(List.of("ada@example.com", "error: NotAllowedError"),
+                copied);
+    }
+
+    @Test
+    void literalValue_isRenderedAsAConstant() {
+        UI ui = new MockUI();
+        Div container = new Div();
+        ui.add(container);
+        RecordingSink sink = new RecordingSink();
+
+        Clipboard.write().text(ClientValue.of("hello"))
+                .bindTo(container.getElement(), sink);
+
+        JsFunction text = (JsFunction) sink.installed.get(0).getCaptures()
+                .get(0);
+        assertEquals("return $0", text.getBody());
+        assertEquals(List.of("hello"), text.getCaptures());
+    }
+
+    @Test
+    void sinkReturningNullRegistration_isRejected() {
+        UI ui = new MockUI();
+        Div container = new Div();
+        ui.add(container);
+
+        assertThrows(NullPointerException.class,
+                () -> Clipboard.write().text(ClientValue.of("hello"))
+                        .bindTo(container.getElement(), action -> null));
     }
 
     @Test

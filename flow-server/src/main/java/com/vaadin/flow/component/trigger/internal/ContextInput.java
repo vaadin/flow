@@ -23,8 +23,8 @@ import com.vaadin.flow.dom.JsFunction;
  * Reads a value out of the trigger context — the object a trigger supplies to
  * describe what it fired for. A {@link SinkTrigger} rendered into a row
  * renderer supplies {@code {item, index, key}} for the row the event came from,
- * so {@code new ContextInput<>("item", "email", String.class)} yields that
- * row's {@code email} property at fire time.
+ * so {@code new ContextInput<String>("item", "email")} yields that row's
+ * {@code email} property at fire time.
  * <p>
  * This is what lets one action serve a whole column: the value is not captured
  * on the server per row, it is read from the row's own client-side data when
@@ -49,14 +49,10 @@ public class ContextInput<T> extends Action.Input<T> {
      *            {@code null}
      * @param valueProperty
      *            the property to read off that member, not {@code null}
-     * @param valueType
-     *            runtime type of the produced value, not {@code null}
      */
-    public ContextInput(String contextProperty, String valueProperty,
-            Class<T> valueType) {
+    public ContextInput(String contextProperty, String valueProperty) {
         this.contextProperty = Objects.requireNonNull(contextProperty);
         this.valueProperty = Objects.requireNonNull(valueProperty);
-        Objects.requireNonNull(valueType);
     }
 
     @Override

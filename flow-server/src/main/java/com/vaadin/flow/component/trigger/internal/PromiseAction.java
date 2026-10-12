@@ -173,9 +173,9 @@ public abstract class PromiseAction<T> extends Action {
         ReturnChannelRegistration channel = channelFor(
                 trigger.getHost().getNode());
         // $0(observer)($1(event, context)(promise), $2(channel)) — invoke the
-        // inner
-        // function to get a Promise, then hand it plus the return channel to
-        // the shared observer JsFunction which subscribes to .then/.catch.
+        // inner function to get a Promise, then hand it plus the return
+        // channel to the shared observer JsFunction which subscribes to
+        // .then/.catch.
         return JsFunction.of("$0($1(event, context), $2)", OBSERVE_PROMISE,
                 inner, channel).withArguments("event", "context");
     }

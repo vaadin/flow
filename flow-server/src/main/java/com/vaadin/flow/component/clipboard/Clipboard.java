@@ -180,7 +180,7 @@ public final class Clipboard implements Serializable {
      *                 Clipboard.write().text(ClientValue.itemProperty("email")));
      * }</pre>
      *
-     * The action still runs inside the browser.s own event handler, so the user
+     * The action still runs inside the browser's own event handler, so the user
      * gesture is valid, exactly as with {@link #onClick(Component)}.
      *
      * @return a fluent surface for declaring what to copy

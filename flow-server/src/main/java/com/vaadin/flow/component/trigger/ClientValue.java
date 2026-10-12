@@ -58,8 +58,7 @@ public final class ClientValue<T> implements Serializable {
      */
     public static ClientValue<String> itemProperty(String propertyName) {
         Objects.requireNonNull(propertyName, "propertyName must not be null");
-        return new ClientValue<>(
-                new ContextInput<>("item", propertyName, String.class));
+        return new ClientValue<>(new ContextInput<>("item", propertyName));
     }
 
     /**
