@@ -83,7 +83,7 @@ class ClientActionTest {
 
         JsFunction text = (JsFunction) action.getCaptures().get(0);
         assertEquals(List.of("event", "context"), text.getArgumentNames());
-        assertEquals("return context[$0][$1]", text.getBody());
+        assertEquals("return context?.[$0]?.[$1]", text.getBody());
         assertEquals(List.of("args", "0"), text.getCaptures());
     }
 

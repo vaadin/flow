@@ -133,9 +133,8 @@ public class ShareAction extends PromiseAction<Void> {
         // navigator.share({title:$0(event, context), ...}) with only the slots
         // that were set; each slot's value is produced on the client by
         // invoking the input's JsFunction with the trigger event. validate()
-        // already ensures
-        // at least one slot is present, so the object is never empty (the Web
-        // Share API rejects a call with no payload fields).
+        // already ensures at least one slot is present, so the object is never
+        // empty (the Web Share API rejects a call with no payload fields).
         StringBuilder expression = new StringBuilder(
                 "return navigator.share({");
         List<JsFunction> args = new ArrayList<>();
