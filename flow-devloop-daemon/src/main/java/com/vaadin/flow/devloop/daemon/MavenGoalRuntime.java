@@ -864,12 +864,17 @@ final class MavenGoalRuntime implements AppRuntime {
      * unquoted. {@code mvn.cmd} runs with delayed expansion on, so a {@code |},
      * {@code &}, {@code <}, {@code >}, {@code ^}, {@code "} or {@code !} in a
      * flag is a pipe, a redirect, an escape or a variable to {@code cmd} -
-     * {@code -Dpattern=a|b} ends in "'b' is not recognized" - and the shell
-     * script's expansion globs a {@code *}, {@code ?} or {@code [} against the
-     * files in the working directory. The loop's own flags hold none of these,
-     * but the developer's from {@code --jvm-args} can. The {@code java}
-     * launcher reads an {@code @file} it is given before the main class, so the
-     * file reaches the JVM with none of that in the way.
+     * {@code -Dpattern=a|b} ends in "'b' is not recognized". The loop's own
+     * flags hold none of these, so only the developer's from {@code --jvm-args}
+     * can send a launch this way. The {@code java} launcher reads an
+     * {@code @file} it is given before the main class, so the file reaches the
+     * JVM with none of that in the way.
+     * <p>
+     * A glob character is not on the list, although the shell script's
+     * expansion does glob: it globs the whole word, {@code -D} and all, so a
+     * {@code *} only expands where a file is named like the flag itself - and
+     * the loop's own {@code -DexcludedClassLoaderPatterns=...Reflector.*} has
+     * gone through {@code MAVEN_OPTS} that way all along.
      * <p>
      * All of the flags go to the file, not only the ones that need it: the JVM
      * takes the last of a repeated flag, and the developer's flags are last on
@@ -885,7 +890,7 @@ final class MavenGoalRuntime implements AppRuntime {
     private List<String> withoutLauncherSyntax(List<String> jvmFlags)
             throws IOException {
         if (jvmFlags.stream().noneMatch(flag -> flag.chars()
-                .anyMatch(c -> "|&<>^\"!*?[".indexOf(c) >= 0))) {
+                .anyMatch(c -> "|&<>^\"!".indexOf(c) >= 0))) {
             return jvmFlags;
         }
         Path file = Launch.workDir(launch.reactor().app().dir())

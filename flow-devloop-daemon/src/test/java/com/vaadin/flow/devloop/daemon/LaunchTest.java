@@ -176,21 +176,7 @@ class LaunchTest {
     @Test
     void jvmFlags_disableHotswapAgentPluginsForEveryClassLoader(
             @TempDir Path repo) throws IOException {
-        Files.writeString(repo.resolve("pom.xml"), """
-                <project>
-                  <artifactId>app</artifactId>
-                  <packaging>jar</packaging>
-                </project>
-                """);
-        Path jar = Files.writeString(repo.resolve("ha.jar"), "");
-        setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, jar.toString());
-        setProperty("vaadin.dev.agentJar", jar.toString());
-        setProperty("vaadin.dev.javaHome", System.getProperty("java.home"));
-        Launch launch = new Launch(Reactor.discover(repo, text -> {
-        }), text -> {
-        });
-
-        List<String> flags = launch.jvmFlags(text -> {
+        List<String> flags = launchWithAgents(repo).jvmFlags(text -> {
         });
 
         String prefix = "-Dhotswapagent.disablePlugin=";
@@ -205,6 +191,46 @@ class LaunchTest {
                 flags.stream().noneMatch(
                         flag -> flag.startsWith("-DdisabledPlugins=")),
                 flags.toString());
+    }
+
+    /**
+     * The developer's flags come after the loop's and the runtime's, the
+     * property's before those of {@code --jvm-args}, because the JVM lets the
+     * last of a repeated flag win.
+     */
+    @Test
+    void composeJvmFlags_putsTheDevelopersFlagsLast(@TempDir Path repo)
+            throws IOException {
+        Launch launch = launchWithAgents(repo);
+        setProperty(Launch.JVM_ARGS_PROPERTY, "-Xmx1g|-Dfrom=property");
+        launch.requestJvmFlags(List.of("-Xmx2g", "-Dfrom=command-line"));
+
+        List<String> flags = launch.composeJvmFlags(text -> {
+        }, List.of("-Druntime=extra"));
+
+        List<String> own = launch.jvmFlags(text -> {
+        });
+        assertEquals(own, flags.subList(0, own.size()), flags.toString());
+        assertEquals(
+                List.of("-Druntime=extra", "-Xmx1g", "-Dfrom=property",
+                        "-Xmx2g", "-Dfrom=command-line"),
+                flags.subList(own.size(), flags.size()));
+    }
+
+    private Launch launchWithAgents(Path repo) throws IOException {
+        Files.writeString(repo.resolve("pom.xml"), """
+                <project>
+                  <artifactId>app</artifactId>
+                  <packaging>jar</packaging>
+                </project>
+                """);
+        Path jar = Files.writeString(repo.resolve("ha.jar"), "");
+        setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, jar.toString());
+        setProperty("vaadin.dev.agentJar", jar.toString());
+        setProperty("vaadin.dev.javaHome", System.getProperty("java.home"));
+        return new Launch(Reactor.discover(repo, text -> {
+        }), text -> {
+        });
     }
 
     private void setProperty(String name, String value) {

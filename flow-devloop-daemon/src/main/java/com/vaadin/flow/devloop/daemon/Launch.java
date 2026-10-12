@@ -1193,12 +1193,8 @@ final class Launch {
                             + resolutionError);
         }
         AppRuntime appRuntime = runtime();
-        List<String> jvmFlags = new ArrayList<>(jvmFlags(tee));
-        jvmFlags.addAll(appRuntime.extraJvmFlags());
-        // Last, so that where the JVM takes the last value of a repeated flag
-        // the developer's wins - and of the developer's, the command line's.
-        jvmFlags.addAll(readConfiguredJvmFlags());
-        jvmFlags.addAll(requestedJvmFlags.get());
+        List<String> jvmFlags = composeJvmFlags(tee,
+                appRuntime.extraJvmFlags());
         // Only a runtime that hands these to a string something else splits
         // can be defeated by a space in one of them, and only it knows which
         // string that is; see MavenGoalRuntime.unsplittable.
@@ -1213,6 +1209,30 @@ final class Launch {
         // the poms describe? - is the same either way.
         launchedClasspath = resolved.appClasspath();
         return invocation;
+    }
+
+    /**
+     * Every flag the app JVM starts with, in the order it gets them: the loop's
+     * own, then the runtime's, then the developer's from
+     * {@link #readConfiguredJvmFlags()} and from {@code --jvm-args}. The
+     * developer's are last so that where the JVM takes the last value of a
+     * repeated flag theirs wins - and of theirs, the command line's.
+     *
+     * @param tee
+     *            where a warning about the loop's own flags goes
+     * @param runtimeFlags
+     *            what the runtime adds, see {@link AppRuntime#extraJvmFlags()}
+     * @return the flags
+     * @throws IOException
+     *             if the loop's own flags cannot be composed
+     */
+    List<String> composeJvmFlags(Log tee, List<String> runtimeFlags)
+            throws IOException {
+        List<String> flags = new ArrayList<>(jvmFlags(tee));
+        flags.addAll(runtimeFlags);
+        flags.addAll(readConfiguredJvmFlags());
+        flags.addAll(requestedJvmFlags.get());
+        return flags;
     }
 
     /**

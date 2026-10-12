@@ -350,16 +350,21 @@ class MavenGoalRuntimeTest {
      * An embedded server is Maven's own JVM, so the loop's flags ride in
      * {@code MAVEN_OPTS} and the system properties go on the command line, each
      * as an argument of its own. Its webapp loader is where HotswapAgent has to
-     * find itself, which is what the extra class path is for.
+     * find itself, which is what the extra class path is for. The flags are the
+     * ones a launch hands it, the runtime's own extras included, and they stay
+     * inline where the start output shows them.
      */
     @Test
     void invocation_embeddedServer_flagsGoToMavensOwnJvm() throws IOException {
         Path agent = Files.writeString(repo.resolve("ha.jar"), "");
         setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, agent.toString());
         Launch launch = launchOf(module("jetty-app", JETTY));
+        MavenGoalRuntime runtime = runtimeOf(launch);
+        List<String> flags = new ArrayList<>(NEEDED);
+        flags.addAll(runtime.extraJvmFlags());
 
-        AppRuntime.Invocation invocation = runtimeOf(launch).invocation(
-                projectOf(launch), NEEDED, List.of("-Dvaadin.x=a b"));
+        AppRuntime.Invocation invocation = runtime.invocation(projectOf(launch),
+                flags, List.of("-Dvaadin.x=a b"));
 
         List<String> command = invocation.command();
         assertTrue(command.contains("-Dvaadin.x=a b"), command.toString());
@@ -367,8 +372,10 @@ class MavenGoalRuntimeTest {
         // A module of its own compiles nothing for a sibling, so there is no
         // phase to name.
         assertFalse(command.contains("compile"), command.toString());
-        assertTrue(invocation.environment().get("MAVEN_OPTS")
-                .endsWith(String.join(" ", NEEDED)));
+        String opts = invocation.environment().get("MAVEN_OPTS");
+        assertTrue(opts.endsWith(String.join(" ", flags)), opts);
+        assertFalse(Files.exists(Launch.workDir(launch.reactor().app().dir())
+                .resolve("maven-opts-args.txt")));
         assertTrue(hotswapAgentProperties(launch)
                 .contains("extraClasspath=" + agent.toUri()));
     }
