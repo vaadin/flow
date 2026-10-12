@@ -174,12 +174,14 @@ public class Source extends HtmlComponent {
         }
         String urlPostfix = downloadHandler.getUrlPostfix();
         // A handler without a name in its URL is told apart by its class
-        String mediaFile = urlPostfix != null ? urlPostfix
-                : downloadHandler.getClass().getName();
+        String mediaFile = urlPostfix != null
+                ? "The media file '%s'".formatted(urlPostfix)
+                : "A media file of %s"
+                        .formatted(downloadHandler.getClass().getName());
         if (warnedMediaFiles.size() < WARNED_MEDIA_FILES_LIMIT
                 && warnedMediaFiles.add(mediaFile)) {
             LoggerFactory.getLogger(Source.class).warn(
-                    "The media file '{}' is served by a download handler that does not answer byte range requests, so the player cannot seek in it and Safari does not play it. Serve it with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or override isRangeRequestsEnabled() in a custom handler that answers them itself.",
+                    "{} is served by a download handler that does not answer byte range requests, so the player cannot seek in it and Safari does not play it. Serve it with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or override isRangeRequestsEnabled() in a custom handler that answers them itself.",
                     mediaFile);
         }
     }
