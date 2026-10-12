@@ -14,7 +14,8 @@
  * the License.
  */
 
-// Atmosphere-wiring helpers migrated from AtmospherePushConnection.java.
+// The push connection on top of atmosphere.js 5, which vaadinPush.js loads on
+// demand and exposes as window.vaadinPush.atmosphere.
 //
 // FragmentedMessage below is the TS port of the websocket
 // message-fragmentation helper from AtmospherePushConnection.java (pure logic).
@@ -104,68 +105,76 @@ export class FragmentedMessage {
   }
 }
 
-interface Atmosphere {
-  subscribe: (config: unknown) => unknown;
-  unsubscribeUrl: (url: string) => void;
+/**
+ * The atmosphere.js module, which vaadinPush.js exposes as
+ * `window.vaadinPush.atmosphere` (the subset used here).
+ */
+interface AtmosphereModule {
+  Atmosphere: new (config: { logLevel?: unknown }) => AtmosphereClient;
 }
 
-// The Atmosphere connection callbacks, supplied from the Java side already
-// wrapped in $entry (so uncaught exceptions reach GWT's handler). The
-// getLastSeenServerSyncId value supplier is deliberately not $entry-wrapped, to
-// mirror the original JSNI.
-interface AtmosphereCallbacks {
-  onOpen: (response: unknown) => void;
-  onReopen: (response: unknown) => void;
-  onMessage: (response: unknown) => void;
-  onError: (response: unknown) => void;
-  onTransportFailure: (reason: unknown, request: unknown) => void;
-  onClose: (response: unknown) => void;
-  onReconnect: (request: unknown, response: unknown) => void;
-  onClientTimeout: (request: unknown) => void;
-  getLastSeenServerSyncId: () => unknown;
+interface AtmosphereClient {
+  subscribe: (request: AtmosphereRequest, handlers: AtmosphereHandlers) => Promise<AtmosphereSubscription>;
 }
 
-function atmosphere(): Atmosphere | undefined {
-  return (window as unknown as { vaadinPush?: { atmosphere?: Atmosphere } }).vaadinPush?.atmosphere;
+interface AtmosphereSubscription {
+  push: (message: string) => void;
+  close: () => Promise<void>;
+}
+
+/**
+ * The request atmosphere.js connects with. The transports read `reconnect` and
+ * `closed` from the live request object, which atmosphere.js hands back in the
+ * responses.
+ */
+interface AtmosphereRequest extends Record<string, unknown> {
+  reconnect?: boolean;
+  closed?: boolean;
+}
+
+interface AtmosphereHandlers {
+  open: (response: AtmosphereResponse) => void;
+  reopen: (response: AtmosphereResponse) => void;
+  message: (response: AtmosphereResponse) => void;
+  error: (error: Error) => void;
+  transportFailure: (reason: string, request: AtmosphereRequest) => void;
+  close: (response: AtmosphereResponse) => void;
+  reconnect: (request: AtmosphereRequest, response: AtmosphereResponse) => void;
+  failureToReconnect: (request: AtmosphereRequest, response: AtmosphereResponse) => void;
+  clientTimeout: (request: AtmosphereRequest) => void;
+}
+
+function atmosphere(): AtmosphereModule | undefined {
+  return (window as unknown as { vaadinPush?: { atmosphere?: AtmosphereModule } }).vaadinPush?.atmosphere;
 }
 
 /** Whether the Atmosphere push library is loaded. */
 function isAtmosphereLoaded(): boolean {
-  return !!atmosphere();
-}
-
-/** Pushes a message over the given Atmosphere socket. */
-function doPush(socket: unknown, message: string): void {
-  (socket as { push: (message: string) => void }).push(message);
-}
-
-/** Unsubscribes the Atmosphere connection for the given url. */
-function doDisconnect(url: string): void {
-  // Java dereferences $wnd.vaadinPush.atmosphere unconditionally here: the
-  // connection only reaches a disconnect after the library has loaded.
-  atmosphere()!.unsubscribeUrl(url);
+  return !!atmosphere()?.Atmosphere;
 }
 
 /**
- * Wires the connection url and callbacks onto the Atmosphere config and
- * subscribes, returning the resulting socket. The header value supplier is
- * read on every request, so it is wrapped in a function rather than assigned
- * once.
+ * Creates the request atmosphere.js subscribes with from the connection url
+ * and the Atmosphere config. atmosphere.js sends headers as query parameters
+ * and reads them anew for every request it makes, so the last seen sync id is
+ * an enumerable getter rather than a value fixed when the connection was made.
  */
-function doConnect(uri: string, config: Record<string, unknown>, callbacks: AtmosphereCallbacks): unknown {
-  config.url = uri;
-  config.onOpen = callbacks.onOpen;
-  config.onReopen = callbacks.onReopen;
-  config.onMessage = callbacks.onMessage;
-  config.onError = callbacks.onError;
-  config.onTransportFailure = callbacks.onTransportFailure;
-  config.onClose = callbacks.onClose;
-  config.onReconnect = callbacks.onReconnect;
-  config.onClientTimeout = callbacks.onClientTimeout;
-  config.headers = {
-    'X-Vaadin-LastSeenServerSyncId': (): unknown => callbacks.getLastSeenServerSyncId()
+function createRequest(
+  uri: string,
+  config: Record<string, unknown>,
+  getLastSeenServerSyncId: () => unknown
+): AtmosphereRequest {
+  return {
+    ...config,
+    url: uri,
+    // atmosphere.js only reconnects a lost connection when asked to
+    reconnect: true,
+    headers: {
+      get 'X-Vaadin-LastSeenServerSyncId'(): string {
+        return String(getLastSeenServerSyncId());
+      }
+    }
   };
-  return atmosphere()!.subscribe(config);
 }
 
 // Connection states; mirrors AtmospherePushConnection.State.
@@ -180,12 +189,11 @@ type State = (typeof State)[keyof typeof State];
 /** The atmosphere configuration/response key holding the transport name. */
 export const TRANSPORT_KEY = 'transport';
 
-/** An Atmosphere response object (the subset used here). atmosphere.js exposes
- * these as plain properties, not the getX() overlay methods GWT's JSNI wrapped
- * them in. */
+/** An Atmosphere response object (the subset used here). */
 interface AtmosphereResponse {
   [TRANSPORT_KEY]: string;
-  responseBody: string;
+  responseBody: unknown;
+  request?: AtmosphereRequest;
 }
 
 /**
@@ -202,9 +210,11 @@ export class AtmospherePushConnection implements PushConnection {
 
   readonly #config: Record<string, unknown>;
 
-  #socket: unknown = null;
+  #subscription: Promise<AtmosphereSubscription> | null = null;
 
-  #pushUri: string | null = null;
+  #socket: AtmosphereSubscription | null = null;
+
+  #request: AtmosphereRequest | null = null;
 
   #transport: string | null = null;
 
@@ -258,18 +268,45 @@ export class AtmospherePushConnection implements PushConnection {
     }
 
     Console.debug('Establishing push connection');
-    this.#pushUri = pushUrl;
-    this.#socket = doConnect(pushUrl, this.#config, {
-      onOpen: (response) => this.onOpen(response as AtmosphereResponse),
-      onReopen: (response) => this.onReopen(response as AtmosphereResponse),
-      onMessage: (response) => this.onMessage(response as AtmosphereResponse),
-      onError: (response) => this.onError(response as AtmosphereResponse),
-      onTransportFailure: () => this.onTransportFailure(),
-      onClose: (response) => this.onClose(response as AtmosphereResponse),
-      onReconnect: (request, response) => this.onReconnect(request, response as AtmosphereResponse),
-      onClientTimeout: (response) => this.onClientTimeout(response as AtmosphereResponse),
-      getLastSeenServerSyncId: () => this.#registry.getMessageHandler().getLastSeenServerSyncId()
+    const request = createRequest(pushUrl, this.#config, () =>
+      this.#registry.getMessageHandler().getLastSeenServerSyncId()
+    );
+    const client = new (atmosphere()!.Atmosphere)({ logLevel: this.#config.logLevel });
+    this.#subscription = client.subscribe(request, {
+      open: (response) => this.onOpen(response),
+      reopen: (response) => this.onReopen(response),
+      message: (response) => this.onMessage(response),
+      // atmosphere.js reports every failed attempt here and goes on to reconnect
+      // or fall back, so only a connection that is given up on is an error.
+      error: (error) => Console.debug(`Push connection error: ${error.message}`),
+      transportFailure: () => this.onTransportFailure(),
+      close: (response) => this.onClose(response),
+      reconnect: (req, response) => this.onReconnect(req, response),
+      failureToReconnect: (_req, response) => this.onError(response),
+      clientTimeout: (req) => this.onClientTimeout({ transport: String(req.transport), responseBody: '', request: req })
     });
+    this.#subscription.then(
+      (subscription) => {
+        this.#socket = subscription;
+      },
+      (error: unknown) => {
+        Console.debug(`Push connection could not be established: ${String(error)}`);
+        // Neither the transport nor the fallback could connect
+        this.onError({ transport: String(this.#config.fallbackTransport ?? this.#config.transport), responseBody: '' });
+      }
+    );
+  }
+
+  /**
+   * Sends the messages over the subscription, which atmosphere.js may report
+   * open before it hands the subscription out.
+   */
+  #send(messages: string[]): void {
+    if (this.#socket) {
+      messages.forEach((message) => this.#socket!.push(message));
+    } else {
+      void this.#subscription!.then((subscription) => messages.forEach((message) => subscription.push(message)));
+    }
   }
 
   #computePushUrl(): string {
@@ -328,11 +365,13 @@ export class AtmospherePushConnection implements PushConnection {
       Console.debug(`Sending push (${this.#transport}) message to server: ${messageJson}`);
       if (this.#transport === 'websocket') {
         const fragmented = new FragmentedMessage(messageJson);
+        const fragments: string[] = [];
         while (fragmented.hasNextFragment()) {
-          doPush(this.#socket, fragmented.getNextFragment());
+          fragments.push(fragmented.getNextFragment());
         }
+        this.#send(fragments);
       } else {
-        doPush(this.#socket, messageJson);
+        this.#send([messageJson]);
       }
       return;
     }
@@ -364,6 +403,7 @@ export class AtmospherePushConnection implements PushConnection {
    */
   protected onConnect(response: AtmosphereResponse): void {
     this.#transport = response.transport;
+    this.#request = response.request ?? null;
     switch (this.#state) {
       case State.CONNECT_PENDING:
         this.#state = State.CONNECTED;
@@ -395,7 +435,7 @@ export class AtmospherePushConnection implements PushConnection {
       case State.CONNECTED:
         // Normal disconnect
         Console.debug('Closing push connection');
-        doDisconnect(this.#pushUri!);
+        this.#close();
         this.#state = State.DISCONNECTED;
         command();
         break;
@@ -404,13 +444,25 @@ export class AtmospherePushConnection implements PushConnection {
     }
   }
 
+  #close(): void {
+    // atmosphere.js reacts to the close event of the socket it closed itself as
+    // to a lost connection, unless the request says it is closed.
+    if (this.#request) {
+      this.#request.closed = true;
+      this.#request.reconnect = false;
+    }
+    this.#subscription!.then((subscription) => subscription.close()).catch(() => {
+      // The connection is gone either way
+    });
+  }
+
   /**
    * Called whenever a message is received by Atmosphere.
    *
    * @param response - the Atmosphere response object, which contains the message
    */
   protected onMessage(response: AtmosphereResponse): void {
-    const message = response.responseBody;
+    const message = String(response.responseBody);
     const json = parseJson(message);
     if (json === null) {
       // Invalid JSON string
@@ -486,19 +538,15 @@ export class AtmospherePushConnection implements PushConnection {
   protected createConfig(): Record<string, unknown> {
     return {
       transport: 'websocket',
-      maxStreamingLength: 1000000,
       fallbackTransport: 'long-polling',
       contentType: 'application/json; charset=UTF-8',
       reconnectInterval: 5000,
       withCredentials: true,
-      maxWebsocketErrorRetries: 12,
       timeout: -1,
       maxReconnectOnClose: 10000000,
       trackMessageLength: true,
       enableProtocol: true,
-      handleOnlineOffline: false,
-      executeCallbackBeforeReconnect: true,
-      messageDelimiter: String.fromCharCode(MESSAGE_DELIMITER.charCodeAt(0))
+      messageDelimiter: MESSAGE_DELIMITER
     };
   }
 

@@ -67,54 +67,6 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <!-- Create minified vaadin push js-->
-        <groupId>net.alchim31.maven</groupId>
-        <artifactId>yuicompressor-maven-plugin</artifactId>
-        <version>1.5.1</version>
-        <configuration>
-          <sourceDirectory>${pushDirectory}</sourceDirectory>
-          <jswarn>false</jswarn>
-          <includes>
-            <include>vaadinPush.js</include>
-          </includes>
-          <outputDirectory>${pushDirectory}</outputDirectory>
-        </configuration>
-        <executions>
-          <execution>
-            <id>minifyjs</id>
-            <goals>
-              <goal>compress</goal>
-            </goals>
-            <phase>process-resources</phase>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>3.11.0</version>
-        <executions>
-          <execution>
-            <id>unpack-atmosphere-js</id>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.atmosphere.client</groupId>
-                  <artifactId>javascript</artifactId>
-                  <version>${atmosphere.client.version}</version>
-                  <type>war</type>
-                  <outputDirectory>${project.build.directory}/temp</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>3.2.0</version>
         <executions>
@@ -126,10 +78,27 @@
             <phase>generate-resources</phase>
             <configuration>
               <target>
-                <property location="${project.build.directory}/temp" name="javascript.unpack"/>
+                <property location="${project.build.directory}/atmosphere-js" name="javascript.unpack"/>
                 <property location="${project.build.sourceDirectory}/../templates" name="templates.dir"/>
+                <property location="${javascript.unpack}/atmosphere.js-${atmosphere.js.version}.tgz" name="atmosphere.js.tgz"/>
 
-                <loadfile property="atmosphere.js.contents" srcfile="${javascript.unpack}/javascript/atmosphere.js"/>
+                <!-- atmosphere.js 5 is published to npm only -->
+                <mkdir dir="${javascript.unpack}"/>
+                <get dest="${atmosphere.js.tgz}" skipexisting="true" src="https://registry.npmjs.org/atmosphere.js/-/atmosphere.js-${atmosphere.js.version}.tgz"/>
+                <checksum algorithm="SHA-512" file="${atmosphere.js.tgz}" property="${atmosphere.js.sha512}" verifyproperty="atmosphere.js.verified"/>
+                <fail message="${atmosphere.js.tgz} does not match the atmosphere.js.sha512 checksum">
+                  <condition>
+                    <isfalse value="${atmosphere.js.verified}"/>
+                  </condition>
+                </fail>
+                <untar compression="gzip" dest="${javascript.unpack}" src="${atmosphere.js.tgz}">
+                  <patternset>
+                    <include name="package/dist/atmosphere.global.js"/>
+                    <include name="package/dist/atmosphere.global.js.map"/>
+                  </patternset>
+                </untar>
+
+                <loadfile property="atmosphere.js.contents" srcfile="${javascript.unpack}/package/dist/atmosphere.global.js"/>
 
                 <loadfile property="vaadinPush.js.contents" srcfile="${templates.dir}/vaadinPush.js.tpl">
                   <filterchain>
@@ -139,6 +108,10 @@
                   </filterchain>
                 </loadfile>
                 <echo file="${vaadinPush.js}">${vaadinPush.js.contents}</echo>
+                <!-- atmosphere.js ships minified, so both variants are the
+                     same file -->
+                <copy file="${vaadinPush.js}" tofile="${vaadinPush-min.js}"/>
+                <copy file="${javascript.unpack}/package/dist/atmosphere.global.js.map" todir="${pushDirectory}"/>
               </target>
             </configuration>
           </execution>

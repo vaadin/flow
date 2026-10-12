@@ -168,7 +168,11 @@
     <jsoup.version>1.23.2</jsoup.version>
     <!-- Note that this should be kept in sync with the class Constants -->
     <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
-    <atmosphere.client.version>4.0.1</atmosphere.client.version>
+    <!-- atmosphere.js is published to npm only. flow-push downloads the
+         tarball and checks it against the SHA-512 below, and flow-client
+         pins the same version as a test dependency in its package.json. -->
+    <atmosphere.js.version>5.0.47</atmosphere.js.version>
+    <atmosphere.js.sha512>f9f1051e972a57f4d5691db48291085d422da1e9413f5dc99930867e8a854138082a6ec1c1ff5676cbcce74817812d97addd665cbc4f6776bdb96de808855438</atmosphere.js.sha512>
 
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
