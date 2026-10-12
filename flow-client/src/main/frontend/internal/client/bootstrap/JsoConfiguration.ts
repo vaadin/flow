@@ -139,9 +139,9 @@ export function getAtmosphereVersion(config: ConfigObject): string | null {
  * @returns a string with the version
  */
 export function getAtmosphereJSVersion(): string | null {
-  const atmosphere = (window as unknown as { vaadinPush?: { atmosphere?: { version?: string } } }).vaadinPush
+  const atmosphere = (window as unknown as { vaadinPush?: { atmosphere?: { VERSION?: string } } }).vaadinPush
     ?.atmosphere;
-  return atmosphere?.version ?? null;
+  return atmosphere?.VERSION ?? null;
 }
 
 /**

@@ -67,8 +67,8 @@ describe('JsoConfiguration', () => {
     const saved = win.vaadinPush;
     try {
       expect(getAtmosphereJSVersion()).to.equal(null);
-      win.vaadinPush = { atmosphere: { version: '3.0.0' } };
-      expect(getAtmosphereJSVersion()).to.equal('3.0.0');
+      win.vaadinPush = { atmosphere: { VERSION: '5.0.7' } };
+      expect(getAtmosphereJSVersion()).to.equal('5.0.7');
     } finally {
       win.vaadinPush = saved;
     }

@@ -14,46 +14,59 @@ export class WebSocketConnection extends Connection {
       return;
     }
 
-    const config = {
+    const request = {
       transport: 'websocket',
-      fallbackTransport: 'websocket',
       url,
       contentType: 'application/json; charset=UTF-8',
+      reconnect: true,
       reconnectInterval: 5000,
       timeout: -1,
       maxReconnectOnClose: 10000000,
       trackMessageLength: true,
       enableProtocol: true,
-      handleOnlineOffline: false,
-      executeCallbackBeforeReconnect: true,
-      messageDelimiter: '|',
-      onMessage: (response: any) => {
+      messageDelimiter: '|'
+    };
+    const handlers = {
+      message: (response: any) => {
         const message = { data: response.responseBody };
         this.handleMessage(message);
       },
-      onError: (response: any) => {
+      // atmosphere.js reports every failed attempt here and goes on to
+      // reconnect, so only a connection that is given up on is an error.
+      error: () => {
+        this.canSend = false;
+      },
+      failureToReconnect: (_request: any, response: any) => {
         this.canSend = false;
         this.handleError(response);
       },
-      onOpen: () => {
+      open: () => {
         this.canSend = true;
       },
-      onClose: () => {
+      close: () => {
         this.canSend = false;
       },
-      onClientTimeout: () => {
+      clientTimeout: () => {
         this.canSend = false;
       },
-      onReconnect: () => {
+      reconnect: () => {
         this.canSend = false;
       },
-      onReopen: () => {
+      reopen: () => {
         this.canSend = true;
       }
     };
 
     waitForPush().then((atmosphere) => {
-      this.socket = atmosphere.subscribe(config);
+      new atmosphere.Atmosphere().subscribe(request, handlers).then(
+        (subscription: any) => {
+          this.socket = subscription;
+        },
+        (error: any) => {
+          this.canSend = false;
+          this.handleError(error);
+        }
+      );
     });
   }
 
@@ -130,7 +143,7 @@ function waitFor<T>(check: () => T | undefined, callback: (value: T) => void) {
 }
 
 function waitForPush(): Promise<any> {
-  // Wait for window.vaadinPush.atmosphere to be defined and return it
+  // Wait for vaadinPush.js to expose the atmosphere.js module and return it
   return new Promise<any>((resolve, _reject) => {
     waitFor(() => (window as any)?.vaadinPush?.atmosphere, resolve);
   });

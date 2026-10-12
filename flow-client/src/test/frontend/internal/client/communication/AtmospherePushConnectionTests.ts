@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import * as AtmosphereJS from 'atmosphere.js';
 import { testRegistry } from '../testRegistry';
 import {
   AtmospherePushConnection,
@@ -8,8 +9,11 @@ import { URIResolver } from '../../../../../main/frontend/internal/client/URIRes
 
 const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
-interface AtmosphereConfigCapture {
-  config: Record<string, (...args: unknown[]) => unknown> | null;
+type Handler = (...args: unknown[]) => void;
+
+interface AtmosphereCapture {
+  request: Record<string, unknown> | null;
+  handlers: Record<string, Handler> | null;
 }
 
 function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
@@ -21,18 +25,42 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     pushNotConnected: 0,
     handled: [] as unknown[],
     pushed: [] as string[],
-    disconnected: [] as string[]
+    closed: 0,
+    pushClientTimeout: 0,
+    lastSeenServerSyncId: 5,
+    subscribeError: null as Error | null,
+    // When set, subscribe() resolves only once this is called
+    releaseSubscription: null as (() => void) | null
   };
-  const capture: AtmosphereConfigCapture = { config: null };
-  const fakeSocket = { push: (message: string) => log.pushed.push(message) };
+  const capture: AtmosphereCapture = { request: null, handlers: null };
+  const fakeSubscription = {
+    push: (message: string) => log.pushed.push(message),
+    close: async () => {
+      log.closed++;
+    }
+  };
   // Install a fake Atmosphere library.
   (window as unknown as { vaadinPush?: unknown }).vaadinPush = {
     atmosphere: {
-      subscribe: (config: Record<string, (...args: unknown[]) => unknown>) => {
-        capture.config = config;
-        return fakeSocket;
-      },
-      unsubscribeUrl: (url: string) => log.disconnected.push(url)
+      Atmosphere: class {
+        createTransport() {
+          return { uuid: '0' };
+        }
+
+        async subscribe(request: Record<string, unknown>, handlers: Record<string, Handler>) {
+          capture.request = request;
+          capture.handlers = handlers;
+          if (log.releaseSubscription) {
+            await new Promise<void>((resolve) => {
+              log.releaseSubscription = resolve;
+            });
+          }
+          if (log.subscribeError) {
+            throw log.subscribeError;
+          }
+          return fakeSubscription;
+        }
+      }
     }
   };
   const registry = testRegistry({
@@ -46,7 +74,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
       pushOk: () => log.pushOk++,
       pushError: () => log.pushError++,
       pushClosed: () => log.pushClosed++,
-      pushClientTimeout: () => {},
+      pushClientTimeout: () => log.pushClientTimeout++,
       pushReconnectPending: () => {},
       pushInvalidContent: (_c: unknown, message: string) => log.pushInvalidContent.push(message),
       pushNotConnected: () => log.pushNotConnected++,
@@ -65,7 +93,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     ),
     MessageHandler: {
       getPushId: () => null,
-      getLastSeenServerSyncId: () => 5,
+      getLastSeenServerSyncId: () => log.lastSeenServerSyncId,
       handleMessage: (json: unknown) => log.handled.push(json)
     },
     ResourceLoader: { loadScript: () => {} }
@@ -73,9 +101,8 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
   return { registry, log, capture };
 }
 
-function response(transport: string, body = ''): { transport: string; responseBody: string } {
-  // atmosphere.js exposes these as plain properties (not getX() methods).
-  return { transport, responseBody: body };
+function response(transport: string, body = '', request: Record<string, unknown> = {}) {
+  return { transport, responseBody: body, request };
 }
 
 // Reassembles fragments produced by FragmentedMessage back into the original
@@ -106,7 +133,7 @@ describe('AtmospherePushConnection', () => {
     win.vaadinPush = undefined;
     new AtmospherePushConnection(registry);
     await tick();
-    expect(capture.config).to.equal(null);
+    expect(capture.request).to.equal(null);
   });
 
   describe('FragmentedMessage', () => {
@@ -154,23 +181,67 @@ describe('AtmospherePushConnection', () => {
       expect(connection.getTransportType()).to.equal(null);
     });
 
-    it('subscribes with the default config and a sync-id supplier', async () => {
-      // Beyond the Java suite: The Gwt suite reads the subscribe url only; the config defaults and the header supplier have no Java case.
+    it('subscribes with the default config and reconnects enabled', async () => {
+      // Beyond the Java suite: The Gwt suite reads the subscribe url only; the config defaults have no Java case.
       const { registry, capture } = setupPush();
       new AtmospherePushConnection(registry);
       await tick();
 
-      const config = capture.config!;
-      expect(config.url).to.equal('/app/VAADIN/push?v-r=push&v-uiId=1');
-      expect(config.transport).to.equal('websocket');
-      expect(config.fallbackTransport).to.equal('long-polling');
-      expect(config.trackMessageLength).to.be.true;
-      expect(config.messageDelimiter).to.equal('|');
+      const request = capture.request!;
+      expect(request.url).to.equal('/app/VAADIN/push?v-r=push&v-uiId=1');
+      expect(request.transport).to.equal('websocket');
+      expect(request.fallbackTransport).to.equal('long-polling');
+      expect(request.trackMessageLength).to.be.true;
+      expect(request.enableProtocol).to.be.true;
+      expect(request.messageDelimiter).to.equal('|');
+      expect(request.reconnect).to.be.true;
+    });
 
-      // The header is a supplier, so the id is re-read on every request rather
-      // than frozen when the connection was made.
-      const headers = config.headers as unknown as Record<string, () => unknown>;
-      expect(headers['X-Vaadin-LastSeenServerSyncId']()).to.equal(5);
+    it('reads the last seen sync id anew for every request', async () => {
+      // Ported from the header-supplier case: atmosphere.js reads the headers for each request it makes.
+      const { registry, log, capture } = setupPush();
+      new AtmospherePushConnection(registry);
+      await tick();
+      const headers = capture.request!.headers as Record<string, string>;
+      expect(headers['X-Vaadin-LastSeenServerSyncId']).to.equal('5');
+
+      log.lastSeenServerSyncId = 8;
+      expect(headers['X-Vaadin-LastSeenServerSyncId']).to.equal('8');
+    });
+
+    it('sends pushes made before the subscription is handed out, in order', async () => {
+      // atmosphere.js may report a connection open before subscribe() resolves.
+      const { registry, log, capture } = setupPush();
+      log.releaseSubscription = () => {};
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      capture.handlers!.open(response('websocket'));
+      connection.push({ a: 1 });
+      connection.push({ b: 2 });
+      expect(log.pushed).to.deep.equal([]);
+
+      log.releaseSubscription();
+      await tick();
+      expect(log.pushed).to.deep.equal(['7|{"a":1}', '7|{"b":2}']);
+    });
+
+    it('reports an error when neither transport can connect', async () => {
+      const { registry, log } = setupPush();
+      log.subscribeError = new Error('Long-polling connection failed');
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      await tick();
+      expect(log.pushError).to.equal(1);
+      expect(connection.isActive()).to.be.false;
+    });
+
+    it('reports a client timeout', async () => {
+      const { registry, log, capture } = setupPush();
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      capture.handlers!.clientTimeout({ transport: 'long-polling' });
+      expect(log.pushClientTimeout).to.equal(1);
+      expect(connection.isActive()).to.be.false;
     });
 
     it('becomes connected and bidirectional on a websocket open, and fragments pushes', async () => {
@@ -178,9 +249,9 @@ describe('AtmospherePushConnection', () => {
       const { registry, log, capture } = setupPush();
       const connection = new AtmospherePushConnection(registry);
       await tick();
-      expect(capture.config).to.not.equal(null); // subscribe was called
+      expect(capture.request).to.not.equal(null); // subscribe was called
 
-      capture.config!.onOpen(response('websocket'));
+      capture.handlers!.open(response('websocket'));
       expect(log.pushOk).to.equal(1);
       expect(connection.getTransportType()).to.equal('websocket');
       expect(connection.isBidirectional()).to.be.true;
@@ -195,49 +266,190 @@ describe('AtmospherePushConnection', () => {
       const { registry, log, capture } = setupPush();
       new AtmospherePushConnection(registry);
       await tick();
-      capture.config!.onOpen(response('websocket'));
+      capture.handlers!.open(response('websocket'));
 
-      capture.config!.onMessage(response('websocket', '{"syncId":0}'));
+      capture.handlers!.message(response('websocket', '{"syncId":0}'));
       expect(log.handled).to.deep.equal([{ syncId: 0 }]);
 
-      capture.config!.onMessage(response('websocket', 'not json'));
+      capture.handlers!.message(response('websocket', 'not json'));
       expect(log.pushInvalidContent).to.deep.equal(['not json']);
     });
 
-    it('reports errors and closes, and disconnects an open connection', async () => {
-      // Beyond the Java suite: No Java case covers onError/onClose.
+    it('reports closes, and closes the subscription of an open connection', async () => {
+      // Beyond the Java suite: No Java case covers onClose.
       const { registry, log, capture } = setupPush();
       const connection = new AtmospherePushConnection(registry);
       await tick();
-      capture.config!.onOpen(response('websocket'));
+      capture.handlers!.open(response('websocket'));
 
-      capture.config!.onClose(response('websocket'));
+      capture.handlers!.close(response('websocket'));
       expect(log.pushClosed).to.equal(1);
       expect(connection.isActive()).to.be.true; // CONNECT_PENDING after close
 
       // Re-open then disconnect cleanly.
-      capture.config!.onOpen(response('websocket'));
+      capture.handlers!.reopen(response('websocket'));
       let disconnected = false;
       connection.disconnect(() => {
         disconnected = true;
       });
       expect(disconnected).to.be.true;
-      expect(log.disconnected.length).to.equal(1);
       expect(connection.isActive()).to.be.false; // DISCONNECTED
+      await tick();
+      expect(log.closed).to.equal(1);
     });
-    it('unsubscribes from the same url it subscribed to', async () => {
-      // Ported from testDisconnect_disconnectUrlIsSameAsInConnect.
-      const { registry, log, capture } = setupPush('context://foo', 'bar/');
+
+    it('reports an error only once atmosphere.js gives the connection up', async () => {
+      // Beyond the Java suite: atmosphere.js 5 reports every failed attempt through its error handler.
+      const { registry, log, capture } = setupPush();
       const connection = new AtmospherePushConnection(registry);
       await tick();
-      const pushUri = capture.config!.url as unknown as string;
+      capture.handlers!.open(response('websocket'));
 
-      capture.config!.onOpen(response('websocket'));
+      capture.handlers!.error(new Error('WebSocket connection error'));
+      expect(log.pushError).to.equal(0);
+      expect(connection.isActive()).to.be.true;
+
+      capture.handlers!.failureToReconnect({}, response('websocket'));
+      expect(log.pushError).to.equal(1);
+      expect(connection.isActive()).to.be.false;
+    });
+  });
+
+  describe('with atmosphere.js', () => {
+    // Drives the real atmosphere.js over a fake WebSocket, so what is checked is
+    // the contract between the two rather than a stand-in for the library.
+    const NativeWebSocket = window.WebSocket;
+    let sockets: FakeWebSocket[];
+
+    class FakeWebSocket {
+      static readonly OPEN = 1;
+      readyState = 0;
+      binaryType = '';
+      readonly sent: string[] = [];
+      onopen: (() => void) | null = null;
+      onmessage: ((event: { data: string }) => void) | null = null;
+      onerror: (() => void) | null = null;
+      onclose: ((event: { code: number; reason: string }) => void) | null = null;
+
+      readonly url: string;
+
+      constructor(url: string) {
+        this.url = url;
+        sockets.push(this);
+      }
+
+      send(message: string): void {
+        this.sent.push(message);
+      }
+
+      close(): void {
+        this.readyState = 3;
+        setTimeout(() => this.onclose?.({ code: 1000, reason: '' }), 0);
+      }
+
+      open(): void {
+        this.readyState = FakeWebSocket.OPEN;
+        this.onopen?.();
+      }
+
+      receive(data: string): void {
+        this.onmessage?.({ data });
+      }
+    }
+
+    // The Atmosphere protocol handshake: uuid, heartbeat interval and padding,
+    // length-prefixed as every message when trackMessageLength is on.
+    const handshake = (uuid: string): string => {
+      const body = `${uuid}|0|X|`;
+      return `${body.length}|${body}`;
+    };
+
+    let beacons: string[];
+    const nativeSendBeacon = navigator.sendBeacon;
+
+    beforeEach(() => {
+      sockets = [];
+      beacons = [];
+      (window as unknown as { WebSocket: unknown }).WebSocket = FakeWebSocket;
+      navigator.sendBeacon = (url: string | URL) => {
+        beacons.push(String(url));
+        return true;
+      };
+    });
+    afterEach(() => {
+      window.WebSocket = NativeWebSocket;
+      navigator.sendBeacon = nativeSendBeacon;
+      delete (window as { vaadinPush?: unknown }).vaadinPush;
+    });
+
+    // setupPush installs a fake library; replace it with the real one.
+    function setupAtmosphere() {
+      const setup = setupPush();
+      (window as unknown as { vaadinPush?: unknown }).vaadinPush = { atmosphere: AtmosphereJS };
+      return setup;
+    }
+
+    it('opens on the handshake and delivers length-prefixed messages', async () => {
+      const { registry, log } = setupAtmosphere();
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      const socket = sockets[0];
+      const url = new URL(socket.url);
+      expect(url.protocol).to.equal('ws:');
+      expect(url.pathname).to.equal('/app/VAADIN/push');
+      expect(url.searchParams.get('X-Vaadin-LastSeenServerSyncId')).to.equal('5');
+      expect(url.searchParams.get('X-atmo-protocol')).to.equal('true');
+
+      socket.open();
+      expect(log.pushOk).to.equal(0); // waits for the handshake
+      socket.receive(handshake('abc'));
+      expect(log.pushOk).to.equal(1);
+      expect(connection.getTransportType()).to.equal('websocket');
+
+      socket.receive('12|{"syncId":0}');
+      expect(log.handled).to.deep.equal([{ syncId: 0 }]);
+
+      await tick();
+      connection.push({ a: 1 });
+      expect(socket.sent).to.deep.equal(['7|{"a":1}']);
+    });
+
+    it('tells the server and does not reconnect when it closes the connection', async () => {
+      const { registry, log } = setupAtmosphere();
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      sockets[0].open();
+      sockets[0].receive(handshake('abc'));
+      await tick();
+
       connection.disconnect(() => {});
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
-      expect(log.disconnected).to.have.length(1);
-      expect(log.disconnected[0].startsWith('bar/')).to.be.true;
-      expect(log.disconnected[0]).to.equal(pushUri);
+      expect(beacons).to.deep.equal([
+        '/app/VAADIN/push?v-r=push&v-uiId=1&X-Atmosphere-Transport=close&X-Atmosphere-tracking-id=abc'
+      ]);
+      expect(sockets).to.have.length(1);
+      expect(log.pushClosed).to.equal(0);
+    });
+
+    it('closes the connection when the page is left', async () => {
+      const { registry } = setupAtmosphere();
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      sockets[0].open();
+      sockets[0].receive(handshake('left'));
+      await tick();
+
+      window.dispatchEvent(new Event('pagehide'));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Connections of the other cases are still listening as well
+      expect(
+        beacons.filter((url) => url.endsWith('&X-Atmosphere-Transport=close&X-Atmosphere-tracking-id=left'))
+      ).to.have.length(1);
+      expect(sockets).to.have.length(1);
+      // The page is going away, so the connection state is left as it is
+      expect(connection.isActive()).to.be.true;
     });
   });
 });
