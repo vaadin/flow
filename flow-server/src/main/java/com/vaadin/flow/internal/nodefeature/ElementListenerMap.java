@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -43,6 +44,8 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -66,6 +69,15 @@ public class ElementListenerMap extends NodeMap {
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
+
+    /**
+     * Placeholder stored in the map instead of the actual event settings. The
+     * settings JSON is derived on demand from the registered listeners when
+     * changes are collected, to avoid keeping it in memory. A new instance is
+     * used for every update so that the change is detected.
+     */
+    private static class EventSettingsMarker implements Serializable {
+    }
 
     private static class ExpressionSettings implements Serializable {
         private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
@@ -417,15 +429,30 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
+        put(eventType, new EventSettingsMarker());
+    }
+
+    private ConstantPoolKey createEventSettingsKey(String eventType) {
         Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
                 eventType);
         ObjectNode eventSettingsJson = JacksonUtils.createObject(eventSettings,
                 ExpressionSettings::toJson);
 
-        ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                eventSettingsJson);
+        return new ConstantPoolKey(eventSettingsJson);
+    }
 
-        put(eventType, constantPoolKey);
+    @Override
+    public void collectChanges(Consumer<NodeChange> collector) {
+        super.collectChanges(change -> {
+            if (change instanceof MapPutChange putChange
+                    && putChange.getValue() instanceof EventSettingsMarker) {
+                String eventType = putChange.getKey();
+                collector.accept(new MapPutChange(this, eventType,
+                        createEventSettingsKey(eventType)));
+            } else {
+                collector.accept(change);
+            }
+        });
     }
 
     private void removeListener(String eventType,
