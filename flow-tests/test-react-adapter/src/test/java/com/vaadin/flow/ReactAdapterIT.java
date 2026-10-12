@@ -142,6 +142,8 @@ public class ReactAdapterIT extends ChromeBrowserTest {
     private void assertOwnRootInputRenderedOnceAndBound(
             TestBenchElement adapter, String typedValue) {
         waitUntil(driver -> !adapter.$("input").all().isEmpty());
+        // Reports React's duplicate-root error, if any, for this reconnect
+        checkLogsForErrors();
         Assert.assertEquals(
                 "Reconnected adapter element must render exactly one "
                         + "React component",
@@ -156,9 +158,8 @@ public class ReactAdapterIT extends ChromeBrowserTest {
         Assert.assertEquals(typedValue, input.getPropertyString("value"));
 
         $(NativeButtonElement.class).id("setOwnRootValueButton").click();
-        Assert.assertEquals("Value set on the server must be rendered",
-                ReactAdapterView.OWN_ROOT_SERVER_VALUE,
-                input.getPropertyString("value"));
+        waitUntil(driver -> ReactAdapterView.OWN_ROOT_SERVER_VALUE
+                .equals(input.getPropertyString("value")));
     }
 
     private TestBenchElement getAdapterElement() {
