@@ -794,7 +794,7 @@ final class Launch {
      *
      * @return the argument, or nothing when there is no jar
      */
-    private List<String> buildExtension() {
+    List<String> buildExtension() {
         return agentJar().filter(Files::isRegularFile)
                 .map(jar -> List.of("-Dmaven.ext.class.path=" + jar))
                 .orElseGet(List::of);
@@ -808,7 +808,8 @@ final class Launch {
         return List.of(configured.trim().split("\\s+"));
     }
 
-    private record Attempt(boolean ok, String output) {
+    /** How one Maven run ended, and everything it printed. */
+    record Attempt(boolean ok, String output) {
     }
 
     private Attempt attempt(List<String> base, boolean offline)
@@ -817,7 +818,26 @@ final class Launch {
         // After the wrapper, before the goals: Maven accepts options anywhere,
         // and inserting here keeps the goals last where a reader expects them.
         command.addAll(1, offline ? List.of("-o") : List.of("-nsu"));
-        Path directory = reactor.root();
+        return runMavenCommand(command, reactor.root());
+    }
+
+    /**
+     * Runs one Maven command from the reactor root and waits for it.
+     * <p>
+     * Shared by the resolve and by the compile leg's Maven backend (see
+     * {@link MavenCompile}), which need the same process set-up for the same
+     * reasons.
+     *
+     * @param command
+     *            the command line, Maven itself first
+     * @param directory
+     *            the reactor root
+     * @return how the run ended, with its merged output
+     * @throws IOException
+     *             if Maven could not be started, or the wait was interrupted
+     */
+    static Attempt runMavenCommand(List<String> command, Path directory)
+            throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command)
                 .directory(directory.toFile()).redirectErrorStream(true);
         // The distribution's launcher derives maven.multiModuleProjectDirectory
@@ -835,7 +855,7 @@ final class Launch {
             return new Attempt(process.waitFor() == 0, output);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("classpath resolution interrupted", e);
+            throw new IOException("Maven run interrupted", e);
         }
     }
 
@@ -1039,7 +1059,7 @@ final class Launch {
      * the line after it is the one that names the artifact it could not
      * resolve.
      */
-    private static String failureReason(String output) {
+    static String failureReason(String output) {
         List<String> errors = output.lines().map(String::strip)
                 .filter(line -> line.startsWith("[ERROR]"))
                 .map(line -> line.substring("[ERROR]".length()).strip())
