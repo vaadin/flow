@@ -55,7 +55,7 @@ public final class ParameterDeserializer {
      * of a navigation target, cached since resolving them requires reflection
      * that is too slow to repeat for every link or navigation.
      */
-    static final ReflectionCache<Object, Set<Class<? extends Annotation>>> parameterAnnotationsCache = new ReflectionCache<>(
+    private static final ReflectionCache<Object, Set<Class<? extends Annotation>>> parameterAnnotationsCache = new ReflectionCache<>(
             ParameterDeserializer::collectParameterAnnotations);
 
     private ParameterDeserializer() {

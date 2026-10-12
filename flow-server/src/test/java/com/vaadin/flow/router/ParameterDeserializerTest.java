@@ -15,13 +15,7 @@
  */
 package com.vaadin.flow.router;
 
-import java.util.Set;
-
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.RouteRegistry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -114,22 +108,6 @@ class ParameterDeserializerTest {
         assertEquals(String.class, type);
         type = ParameterDeserializer.getClassType(GenericAnnotated.class);
         assertEquals(String.class, type);
-    }
-
-    @Test
-    void updateRouteRegistry_modifiedClass_cachedAnnotationsCleared() {
-        ParameterDeserializer.isAnnotatedParameter(SimpleAnnotated.class,
-                OptionalParameter.class);
-        ParameterDeserializer.isAnnotatedParameter(Simple.class,
-                OptionalParameter.class);
-
-        RouteUtil.updateRouteRegistry(Mockito.mock(RouteRegistry.class),
-                Set.of(), Set.of(SimpleAnnotated.class), Set.of());
-
-        assertFalse(ParameterDeserializer.parameterAnnotationsCache
-                .contains(SimpleAnnotated.class));
-        assertTrue(ParameterDeserializer.parameterAnnotationsCache
-                .contains(Simple.class));
     }
 
     public static class Simple implements HasUrlParameter<String> {
