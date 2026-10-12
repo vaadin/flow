@@ -1026,7 +1026,7 @@ jobs:
         with:
           ref: ${{env._HEAD_SHA}}
           fetch-depth: 0
-      # The base build and the apicmp build each run npm install in
+      # The base build and the PR build each run npm install in
       # flow-client, flow-polymer2lit and vaadin-dev-server. Without a warm
       # ~/.npm those six installs dominate the job and exhaust its timeout.
       - uses: ./.github/actions/setup-frontend-tools
@@ -1071,6 +1071,14 @@ jobs:
           baseVersion=$(mvn -N -q -DforceStdout help:evaluate -Dexpression='project.version')
           echo "Base API Version: ${baseVersion}"
           echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
+      - name: Determine reference version
+        # The latest stable, beta or rc release of the target branch, see
+        # scripts/apiDiff.js
+        id: reference-version
+        run: |
+          referenceVersion=$(node scripts/apiDiff.js reference-version --branch-version=${{ steps.base-version.outputs.BASE_API_VERSION }})
+          echo "Reference API Version: ${referenceVersion}"
+          echo "REFERENCE_API_VERSION=${referenceVersion}" >> $GITHUB_OUTPUT
       - name: Build base version locally
         working-directory: ../base-build
         run: |
@@ -1082,34 +1090,25 @@ jobs:
         run: |
           echo "Setting temporary version for PR branch"
           mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
+      - name: Build PR version
+        # Only the top-level modules that produce a jar and do not set
+        # flow.apicmp.skip are compared, see scripts/apiDiff.js.
+        run: |
+          MODULES=$(node scripts/apiDiff.js modules)
+          echo "Building $MODULES"
+          mvn clean install -B -ntp -e -V -pl="$MODULES" -am -DskipTests -Dtest.use.hub=true
       - name: Calculate API version difference
-        # Only the top-level modules that produce a jar are compared. They are
-        # the ones the next step collects reports from, and on 24.x the apicmp
-        # profile comes from vaadin-parent, which compares the file named
-        # after the packaging and so cannot handle the maven-plugin modules.
-        # flow-tests is left out too, as it builds with flow-maven-plugin.
+        # Compares both the merge base and the PR against the reference
+        # release, and counts only the changes found for the PR.
+        id: api-diff
         run: |
-          echo "Running in $(pwd)"
-          MODULES=$(sed -n 's|.*<module>\(.*\)</module>.*|\1|p' pom.xml | while read -r m; do
-            if [ -f "$m/pom.xml" ] && ! grep -q '<packaging>pom</packaging>' "$m/pom.xml"; then
-              echo "$m"
-            fi
-          done | paste -sd, -)
-          echo "Comparing $MODULES"
-          mvn clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
-      - name: Move API diff results
-        run: |
-          #!/bin/bash
-          set -e
-          mkdir -p apidiff
-          # Find all japicmp output directories and move them
-          for module_dir in */target/japicmp; do
-            if [ -d "$module_dir" ]; then
-              module_name=$(dirname $(dirname "$module_dir"))
-              echo "Moving API diff results for $module_name"
-              mv "$module_dir" "apidiff/$module_name"
-            fi
-          done
+          node scripts/apiDiff.js compare \
+            --reference=${{ steps.reference-version.outputs.REFERENCE_API_VERSION }} \
+            --base-dir=../base-build \
+            --base-version=${{ steps.base-version.outputs.BASE_API_VERSION }} \
+            --head-version=1111.3.2-SNAPSHOT \
+            --out=apidiff
+          cat apidiff/summary.md >> $GITHUB_STEP_SUMMARY
       - name: Upload API diff artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -1126,34 +1125,8 @@ jobs:
         run: |
           #!/bin/bash
 
-          echo "Running API version verification"
-          diff_files=$( find apidiff -name "*.html")
-
-          version_change="0.0.0"
-
-          summary=()
-          for file in ${diff_files}
-          do
-              echo "  Verifying file '${file}'..."
-              temp_version_change=$( grep -A 2 "id=\"semver-version\"" ${file} | grep -o [0-9]\.[0-9]\.[0-9] || echo "0.0.0")
-
-              if [[ "${version_change}" < "${temp_version_change}" ]]; then
-                  version_change=${temp_version_change}
-              fi
-          
-              if [[ "${temp_version_change}" > "0.0.1" ]]; then
-                summary+=("${file} :: ${temp_version_change}")
-              fi
-          done
-          
+          version_change="${{ steps.api-diff.outputs.level }}"
           echo "Discovered version change: ${version_change}"
-          
-          if [[ "${version_change}" > "0.0.1" ]]; then
-            echo "### Significant API changes summary" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            printf '%s\n' "${summary[@]}" >> $GITHUB_STEP_SUMMARY
-          fi
 
           # Get current labels
           current_labels=$(gh api repos/${{ github.repository }}/issues/${{ env._PR_NUMBER }}/labels --jq '.[].name')
