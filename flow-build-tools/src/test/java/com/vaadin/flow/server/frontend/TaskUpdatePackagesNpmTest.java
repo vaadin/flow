@@ -433,6 +433,30 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    void npmIsInUse_versionsJsonHasUrlVersion_urlVersionPinnedAndUpdated()
+            throws IOException {
+        final String overlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d";
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, overlayUrl);
+        createTask(createApplicationDependencies()).execute();
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
+                overlayUrl);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
+
+        final String newOverlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@3a1f0c9";
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION, newOverlayUrl);
+        createTask(createApplicationDependencies()).execute();
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
+                newOverlayUrl);
+
+        createBasicVaadinVersionsJson();
+        createTask(createApplicationDependencies()).execute();
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+    }
+
+    @Test
     void npmIsInUse_executionAfterDependencyRemoved_overlayIsCleanedOfDependency()
             throws IOException {
         createVaadinVersionsJson(PINNED_DIALOG_VERSION,
@@ -587,6 +611,22 @@ class TaskUpdatePackagesNpmTest {
         verifyVersions(PINNED_DIALOG_VERSION, "file:../foobar",
                 PINNED_OVERLAY_VERSION);
         verifyVersionPinningWithNpmOverrides(true, false, true);
+
+        // A package Vaadin pinned is then changed to a link by the user
+        final ObjectNode pinnedPackageJson = getOrCreatePackageJson();
+        assertEquals(PINNED_OVERLAY_VERSION,
+                pinnedPackageJson.get(VAADIN_DEP_KEY).get(DEPENDENCIES)
+                        .get(VAADIN_OVERLAY).asString());
+        ((ObjectNode) pinnedPackageJson.get(DEPENDENCIES)).put(VAADIN_OVERLAY,
+                "file:../overlay");
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                pinnedPackageJson.toPrettyString(), StandardCharsets.UTF_8);
+
+        createTask(createApplicationDependencies()).execute();
+
+        verifyVersions(PINNED_DIALOG_VERSION, "file:../foobar",
+                "file:../overlay");
+        verifyVersionPinningWithNpmOverrides(true, false, false);
     }
 
     @Test

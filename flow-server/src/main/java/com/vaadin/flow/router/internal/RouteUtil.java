@@ -45,6 +45,7 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.ParameterDeserializer;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -440,6 +441,10 @@ public class RouteUtil {
             addedClasses.removeIf(modifiedClasses::contains);
             deletedClasses.removeIf(modifiedClasses::contains);
         }
+
+        // Route templates of modified classes depend on their URL parameter
+        // annotations, which must be resolved again
+        modifiedClasses.forEach(ParameterDeserializer::clearCache);
 
         RouteConfiguration routeConf = RouteConfiguration.forRegistry(registry);
 

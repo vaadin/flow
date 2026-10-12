@@ -79,6 +79,7 @@ class HtmlComponentSmokeTest {
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
         testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
+        testValues.put(Media.Preload.class, Media.Preload.METADATA);
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
@@ -305,6 +306,18 @@ class HtmlComponentSmokeTest {
 
         if (method.getDeclaringClass() == Image.class
                 && method.getName().startsWith("setSrc")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Source.class
+                && method.getName().equals("setSrc")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Video.class
+                && method.getName().equals("setPoster")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
             return true;
         }
