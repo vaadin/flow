@@ -237,8 +237,9 @@ alone, after the loop's own flags:
 ```
 
 The daemon keeps them for every later restart, including one an `apply` escalates to, until
-the next `--jvm-args` (`--jvm-args ""` clears them). The `flags:` line `start` prints shows
-what the app got. Where only the environment can be set, `-Dvaadin.dev.jvmArgs=<flags>` in
+the next `--jvm-args` (`--jvm-args ""` clears them). The launch output shows what the app
+got: the `flags:` line, or for an embedded server (`jetty-ee10`, `jetty-ee11`) the
+`MAVEN_OPTS=` line under it. Where only the environment can be set, `-Dvaadin.dev.jvmArgs=<flags>` in
 `VAADIN_DEV_DAEMON_OPTS` does the same, but that variable is split on spaces, quotes or not,
 so join several with `|` and use the `=` form:
 `-Dvaadin.dev.jvmArgs=-Xmx2g|--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED`.
