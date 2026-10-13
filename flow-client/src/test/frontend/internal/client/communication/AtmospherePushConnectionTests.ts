@@ -28,6 +28,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     pushed: [] as string[],
     closed: 0,
     pushClientTimeout: 0,
+    pushScriptLoadErrors: [] as string[],
     lastSeenServerSyncId: 5,
     subscribeError: null as Error | null,
     // When set, subscribe() resolves only once this is called
@@ -79,7 +80,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
       pushReconnectPending: () => {},
       pushInvalidContent: (_c: unknown, message: string) => log.pushInvalidContent.push(message),
       pushNotConnected: () => log.pushNotConnected++,
-      pushScriptLoadError: () => {}
+      pushScriptLoadError: (url: string) => log.pushScriptLoadErrors.push(url)
     },
     ApplicationConfiguration: {
       getServiceUrl: () => serviceUrl,
@@ -129,6 +130,14 @@ describe('AtmospherePushConnection', () => {
     new AtmospherePushConnection(registry);
     await tick();
     expect(capture.request).to.equal(null);
+  });
+
+  it('reports a push script that cannot be loaded', async () => {
+    const { registry, log } = setupPush();
+    setAtmosphereModule(Promise.reject(new Error('Failed to fetch')));
+    new AtmospherePushConnection(registry);
+    await tick();
+    expect(log.pushScriptLoadErrors).to.deep.equal(['/app/VAADIN/static/push/vaadinPush.js']);
   });
 
   describe('FragmentedMessage', () => {

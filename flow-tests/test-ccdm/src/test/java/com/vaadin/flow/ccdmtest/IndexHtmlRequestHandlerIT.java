@@ -581,7 +581,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitUntil(driver -> (Boolean) executeScript(
                 """
                         return performance.getEntriesByType('resource')
-                            .some(entry => entry.name.includes('VAADIN/static/push/vaadinPush'));
+                            .some(entry => entry.name.includes('VAADIN/static/push/vaadinPush')
+                                && entry.responseStatus === 200);
                         """));
     }
 
