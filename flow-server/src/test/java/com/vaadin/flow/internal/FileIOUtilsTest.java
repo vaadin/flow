@@ -552,7 +552,7 @@ class FileIOUtilsTest {
     }
 
     @Test
-    void copyDirectory_internalRelativeLinkKept_otherLinksFollowed(
+    void copyDirectory_internalRelativeLinkKept_absoluteAndOutsideLinksFollowed(
             @TempDir File dir) throws Exception {
         assumeFalse(OSUtils.isWindows());
         Path source = dir.toPath().resolve("source");
@@ -565,6 +565,8 @@ class FileIOUtilsTest {
         Files.writeString(outside, "outside");
         Files.createSymbolicLink(source.resolve("bin/outside"),
                 Path.of("../../outside.txt"));
+        Files.createSymbolicLink(source.resolve("bin/absolute"),
+                source.resolve("lib/cli.js").toAbsolutePath());
         Path target = dir.toPath().resolve("target");
 
         FileIOUtils.copyDirectory(source.toFile(), target.toFile());
@@ -578,5 +580,9 @@ class FileIOUtilsTest {
         Path copiedOutside = target.resolve("bin/outside");
         assertFalse(Files.isSymbolicLink(copiedOutside));
         assertEquals("outside", Files.readString(copiedOutside));
+
+        Path copiedAbsolute = target.resolve("bin/absolute");
+        assertFalse(Files.isSymbolicLink(copiedAbsolute));
+        assertEquals("cli", Files.readString(copiedAbsolute));
     }
 }

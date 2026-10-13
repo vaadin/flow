@@ -165,14 +165,19 @@ class DefaultArchiveExtractorTest {
     }
 
     @Test
-    void extractTarGz_symbolicLinkOutsideTarget_ArchiveExtractionExceptionIsThrown()
+    void extractTarGz_absoluteOrOutsideSymbolicLink_ArchiveExtractionExceptionIsThrown()
             throws IOException {
-        File archiveFile = createTarGzWithSymbolicLink("bin/npm",
-                "../../outside.js");
-
         DefaultArchiveExtractor extractor = new DefaultArchiveExtractor();
+
+        File relativeLink = createTarGzWithSymbolicLink("bin/npm",
+                "../../outside.js");
         assertThrows(ArchiveExtractionException.class,
-                () -> extractor.extract(archiveFile, targetDir));
+                () -> extractor.extract(relativeLink, targetDir));
+
+        File absoluteLink = createTarGzWithSymbolicLink("bin/npm",
+                new File(targetDir, "lib/npm-cli.js").getAbsolutePath());
+        assertThrows(ArchiveExtractionException.class,
+                () -> extractor.extract(absoluteLink, targetDir));
     }
 
     private File createTarGzWithSymbolicLink(String linkName, String target)
