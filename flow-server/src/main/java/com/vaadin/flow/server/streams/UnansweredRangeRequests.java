@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,7 +30,7 @@ import com.vaadin.flow.server.VaadinService;
  * application. A media player cannot seek in a file served without ranges and
  * Safari does not play it, but nothing else tells the developer.
  */
-final class UnansweredRangeRequests {
+final class UnansweredRangeRequests implements Serializable {
 
     private final Set<Class<?>> warnedHandlerTypes = ConcurrentHashMap
             .newKeySet();
