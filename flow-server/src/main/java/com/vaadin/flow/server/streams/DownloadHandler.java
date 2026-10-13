@@ -131,8 +131,7 @@ public interface DownloadHandler extends ElementRequestHandler {
 
         handleDownloadRequest(downloadEvent);
         if (!isRangeRequestsEnabled() && request.getHeader("Range") != null) {
-            UnansweredRangeRequests.warnIfWholeContentSent(this, response,
-                    session);
+            UnansweredRangeRequests.warnOnce(this, session);
         }
     }
 

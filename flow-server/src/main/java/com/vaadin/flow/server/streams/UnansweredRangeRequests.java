@@ -15,22 +15,18 @@
  */
 package com.vaadin.flow.server.streams;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.Serializable;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Warns in development mode when a {@link DownloadHandler} answers a byte range
- * request with the whole content, once per kind of handler and application.
+ * Warns in development mode when a {@link DownloadHandler} that does not answer
+ * byte range requests receives one, once per kind of handler and application.
  * Media players need ranges to seek, and Safari to play video at all, but
  * nothing else tells the developer.
  */
@@ -49,27 +45,18 @@ final class UnansweredRangeRequests implements Serializable {
     }
 
     /**
-     * Logs a warning if the given handler answered a byte range request with
-     * the whole content, unless a handler of the same kind has already been
-     * warned about in this application or the application runs in production
-     * mode.
+     * Logs a warning that the given handler serves the whole file instead of
+     * the requested byte range, unless a handler of the same kind has already
+     * been warned about in this application or the application runs in
+     * production mode.
      *
      * @param handler
      *            the handler that has handled a request with a
      *            <code>Range</code> header
-     * @param response
-     *            the response that the handler has written
      * @param session
      *            the session that the request belongs to
      */
-    static void warnIfWholeContentSent(DownloadHandler handler,
-            VaadinResponse response, VaadinSession session) {
-        // A handler that failed, or answered the range itself, has not sent
-        // the whole content
-        if (!(response instanceof HttpServletResponse httpResponse)
-                || httpResponse.getStatus() != HttpStatusCode.OK.getCode()) {
-            return;
-        }
+    static void warnOnce(DownloadHandler handler, VaadinSession session) {
         VaadinService service = session.getService();
         if (service.getDeploymentConfiguration().isProductionMode()) {
             return;
@@ -91,7 +78,7 @@ final class UnansweredRangeRequests implements Serializable {
                     + (urlPostfix == null ? ""
                             : " serving '" + urlPostfix + "'");
             LoggerFactory.getLogger(UnansweredRangeRequests.class).warn(
-                    "{} answered a byte range request with the whole content. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per kind of handler, so other files served the same way are affected too. Serve a file with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or answer ranges in a handler class of your own and return true from isRangeRequestsEnabled().",
+                    "{} does not answer byte range requests, so it serves the whole file instead of the requested range. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per kind of handler, so other files served the same way are affected too. Serve a file with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or answer ranges in a handler class of your own and return true from isRangeRequestsEnabled().",
                     description);
         }
     }

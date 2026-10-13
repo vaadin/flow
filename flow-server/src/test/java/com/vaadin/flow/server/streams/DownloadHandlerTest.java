@@ -32,7 +32,6 @@ import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -189,15 +188,14 @@ class DownloadHandlerTest {
     }
 
     @Test
-    void handleRequest_wholeContentForRange_warnsOncePerHandlerClassInDevelopmentMode()
+    void handleRequest_rangeNotAnswered_warnsOncePerHandlerClassInDevelopmentMode()
             throws Throwable {
         VaadinService service = createService(false);
 
         List<String> warnings = captureWarnings(() -> {
-            request(new NamedHandler("lake.webm", false), service, "bytes=0-",
-                    200);
+            request(new NamedHandler("lake.webm", false), service, "bytes=0-");
             request(new NamedHandler("intro.webm", false), service,
-                    "bytes=4096-", 200);
+                    "bytes=4096-");
         });
 
         assertEquals(List.of("The download handler "
@@ -210,31 +208,25 @@ class DownloadHandlerTest {
             throws Throwable {
         VaadinService service = createService(false);
 
-        List<String> warnings = captureWarnings(
-                () -> request(Player.createHandler().allowDisabled(), service,
-                        "bytes=0-", 200));
+        List<String> warnings = captureWarnings(() -> request(
+                Player.createHandler().allowDisabled(), service, "bytes=0-"));
 
         assertEquals(List.of("A download handler declared as a lambda in "
                 + Player.class.getName()), warnings);
     }
 
     @Test
-    void handleRequest_rangeAnsweredFailedNotRequestedOrProductionMode_doesNotWarn()
+    void handleRequest_rangeAnsweredNotRequestedOrProductionMode_doesNotWarn()
             throws Throwable {
         VaadinService developmentMode = createService(false);
 
         List<String> warnings = captureWarnings(() -> {
             request(new NamedHandler("lake.webm", true), developmentMode,
-                    "bytes=0-", 200);
-            // answered the range without reporting that it does
+                    "bytes=0-");
             request(new NamedHandler("lake.webm", false), developmentMode,
-                    "bytes=0-", 206);
-            request(new NamedHandler("lake.webm", false), developmentMode,
-                    "bytes=0-", 404);
-            request(new NamedHandler("lake.webm", false), developmentMode, null,
-                    200);
+                    null);
             request(new NamedHandler("lake.webm", false), createService(true),
-                    "bytes=0-", 200);
+                    "bytes=0-");
         });
 
         assertEquals(List.of(), warnings);
@@ -251,14 +243,13 @@ class DownloadHandlerTest {
     }
 
     private static void request(DownloadHandler handler, VaadinService service,
-            String range, int status) throws Exception {
+            String range) throws Exception {
         VaadinRequest request = mock(VaadinRequest.class);
         when(request.getHeader("Range")).thenReturn(range);
         VaadinSession session = mock(VaadinSession.class);
         when(session.getService()).thenReturn(service);
-        VaadinServletResponse response = mock(VaadinServletResponse.class);
-        when(response.getStatus()).thenReturn(status);
-        handler.handleRequest(request, response, session, mock(Element.class));
+        handler.handleRequest(request, mock(VaadinResponse.class), session,
+                mock(Element.class));
     }
 
     /**
