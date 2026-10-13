@@ -176,13 +176,15 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     void transferContent(DownloadEvent downloadEvent, InputStream inputStream,
             OutputStream outputStream, long contentLength,
             SeekableContent content) throws IOException {
-        if (content == null) {
-            // Logged before the transfer, which a player that needs ranges
-            // usually cancels
-            UnansweredRangeRequests.warnIfRangeRequested(this, downloadEvent);
-        }
         if (content == null || contentLength < 0 || !(downloadEvent
                 .getResponse() instanceof HttpServletResponse response)) {
+            // Logged before the transfer, which a player that needs ranges
+            // usually cancels
+            UnansweredRangeRequests.warnIfRangeRequested(this, downloadEvent,
+                    content == null ? UnansweredRangeRequests.Cause.NOT_ENABLED
+                            : contentLength < 0
+                                    ? UnansweredRangeRequests.Cause.UNKNOWN_LENGTH
+                                    : UnansweredRangeRequests.Cause.NOT_HTTP);
             transferContent(downloadEvent, inputStream, outputStream,
                     contentLength);
             return;
