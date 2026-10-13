@@ -197,6 +197,9 @@ public class Source extends HtmlComponent {
      * Serves the media file through the given handler even when the source is
      * disabled, and warns in development mode the first time the browser
      * requests a byte range that the handler does not answer.
+     * <p>
+     * Delegates the same methods as the wrapper of
+     * {@link DownloadHandler#allowDisabled()}, so keep the two in sync.
      */
     private static final class MediaFileHandler implements DownloadHandler {
 
@@ -229,7 +232,7 @@ public class Source extends HtmlComponent {
             }
             if (handler.getClass().isHidden()) {
                 // The class of a lambda has a generated name, so it is named
-                // after the class that declares the lambda instead
+                // after the top-level class that declares the lambda instead
                 return "A media file served by a lambda in %s"
                         .formatted(handler.getClass().getNestHost().getName());
             }
