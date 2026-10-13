@@ -11,6 +11,7 @@ import {
   getUIDL,
   getVaadinVersion
 } from '../../../../../main/frontend/internal/client/bootstrap/JsoConfiguration';
+import { setAtmosphereModule } from '../../../../../main/frontend/internal/client/communication/AtmosphereLoader';
 
 function config(values: Record<string, unknown>) {
   return { getConfig: (name: string) => values[name] };
@@ -62,15 +63,15 @@ describe('JsoConfiguration', () => {
     expect(getAtmosphereVersion(config({}))).to.equal(null);
   });
 
-  it('getAtmosphereJSVersion reads the loaded push library, or null when it is absent', () => {
-    const win = window as unknown as { vaadinPush?: unknown };
-    const saved = win.vaadinPush;
+  it('getAtmosphereJSVersion reads the loaded push library, or null when it is absent', async () => {
     try {
       expect(getAtmosphereJSVersion()).to.equal(null);
-      win.vaadinPush = { atmosphere: { VERSION: '5.0.7' } };
+      const atmosphere = Promise.resolve({ VERSION: '5.0.7' });
+      setAtmosphereModule(atmosphere);
+      await atmosphere;
       expect(getAtmosphereJSVersion()).to.equal('5.0.7');
     } finally {
-      win.vaadinPush = saved;
+      setAtmosphereModule(null);
     }
   });
 

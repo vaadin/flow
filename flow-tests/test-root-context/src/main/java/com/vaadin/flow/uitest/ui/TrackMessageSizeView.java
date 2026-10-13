@@ -69,15 +69,9 @@ public class TrackMessageSizeView extends Div {
                     $0.innerHTML = 'All tests run';
                 }
             }
-            // vaadinPush.js is loaded on demand
-            (function waitForPush() {
-                var atmosphere = window.vaadinPush && window.vaadinPush.atmosphere;
-                if (atmosphere) {
-                    runTests(atmosphere);
-                } else {
-                    setTimeout(waitForPush, 50);
-                }
-            })();
+            // vaadinPush.js is the atmosphere.js ES module
+            import(new URL('VAADIN/static/push/vaadinPush.js', document.baseURI).href)
+                .then(runTests);
             """;
 
     public TrackMessageSizeView() {

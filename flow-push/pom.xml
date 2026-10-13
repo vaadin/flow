@@ -80,7 +80,6 @@
             <configuration>
               <target>
                 <property location="${project.build.directory}/atmosphere-js" name="javascript.unpack"/>
-                <property location="${project.build.sourceDirectory}/../templates" name="templates.dir"/>
                 <property location="${javascript.unpack}/atmosphere.js-${atmosphere.js.version}.tgz" name="atmosphere.js.tgz"/>
 
                 <!-- atmosphere.js 5 is published to npm only, so this needs
@@ -97,31 +96,19 @@
                 </fail>
                 <untar compression="gzip" dest="${javascript.unpack}" src="${atmosphere.js.tgz}">
                   <patternset>
-                    <include name="package/dist/atmosphere.global.js"/>
+                    <include name="package/dist/index.js"/>
+                    <include name="package/dist/index.js.map"/>
                   </patternset>
                 </untar>
 
-                <!-- The source map of the library does not match its position
-                     inside vaadinPush.js, so it is not shipped or referenced -->
-                <loadfile property="atmosphere.js.contents" srcfile="${javascript.unpack}/package/dist/atmosphere.global.js">
-                  <filterchain>
-                    <tokenfilter>
-                      <replaceregex flags="g" pattern="//# sourceMappingURL=\S*" replace=""/>
-                    </tokenfilter>
-                  </filterchain>
-                </loadfile>
-
-                <loadfile property="vaadinPush.js.contents" srcfile="${templates.dir}/vaadinPush.js.tpl">
-                  <filterchain>
-                    <replacetokens begintoken="@" endtoken="@">
-                      <token key="atmosphere.js" value="${atmosphere.js.contents}"/>
-                    </replacetokens>
-                  </filterchain>
-                </loadfile>
-                <echo file="${vaadinPush.js}">${vaadinPush.js.contents}</echo>
-                <!-- atmosphere.js ships minified, so both variants are the
-                     same file -->
-                <copy file="${vaadinPush.js}" tofile="${vaadinPush-min.js}"/>
+                <!-- vaadinPush.js is the self-contained ES module build of
+                     atmosphere.js as it is, which the client loads with
+                     import(). It ships minified, so both variants are the
+                     same file. The source map keeps its name, which is the
+                     one the module refers to. -->
+                <copy file="${javascript.unpack}/package/dist/index.js" tofile="${vaadinPush.js}"/>
+                <copy file="${javascript.unpack}/package/dist/index.js" tofile="${vaadinPush-min.js}"/>
+                <copy file="${javascript.unpack}/package/dist/index.js.map" todir="${pushDirectory}"/>
               </target>
             </configuration>
           </execution>

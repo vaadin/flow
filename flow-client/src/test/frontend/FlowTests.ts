@@ -10,6 +10,10 @@ import '../../main/frontend/FlowClient';
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import { type MockXhrServer, newServer } from 'mock-xmlhttprequest';
 import sinon from 'sinon';
+import {
+  getLoadedAtmosphere,
+  setAtmosphereModule
+} from '../../main/frontend/internal/client/communication/AtmosphereLoader';
 
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
@@ -132,6 +136,7 @@ describe('Flow', () => {
     // restore covers them all and keeps a case that throws mid-way from
     // leaking a replaced function (e.g. console.error) into later cases.
     sinon.restore();
+    setAtmosphereModule(null);
     server.remove();
     delete $wnd.Vaadin;
     delete flowRoot.$;
@@ -247,7 +252,7 @@ describe('Flow', () => {
       expect($wnd.Vaadin.Flow.clients.foobar.isActive()).to.be.false;
 
       // Check that pushScript is not initialized
-      expect($wnd.vaadinPush).to.be.undefined;
+      expect(getLoadedAtmosphere()).to.equal(null);
 
       // Assert that element was created amd put in flowRoot so as server can find it
       expect(flowRoot.$).not.to.be.undefined;
@@ -517,8 +522,7 @@ describe('Flow', () => {
     const route = flow.serverSideRoutes[0];
     await route.action({ pathname: 'Foo/Bar.baz' });
 
-    expect($wnd.vaadinPush).not.to.be.undefined;
-    expect($wnd.vaadinPush.isStub).to.be.true;
+    expect(getLoadedAtmosphere()).to.have.property('isStub', true);
   });
 
   it('should load pushScript on route action', async () => {
@@ -530,8 +534,7 @@ describe('Flow', () => {
     const route = flow.serverSideRoutes[0];
     await route.action({ pathname: 'Foo/Bar.baz', search: '' });
 
-    expect($wnd.vaadinPush).not.to.be.undefined;
-    expect($wnd.vaadinPush.isStub).to.be.true;
+    expect(getLoadedAtmosphere()).to.have.property('isStub', true);
   });
 
   it('should not throw error when response header content type has charset', async () => {

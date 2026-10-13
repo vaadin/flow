@@ -26,7 +26,7 @@ public class TrackMessageSizeIT extends ChromeBrowserTest {
     @Test
     public void runTests() {
         open();
-        // The cases run once vaadinPush.js has loaded
+        // The cases run once vaadinPush.js has been imported
         waitUntil(driver -> !findElement(By.id("logId")).getText().isEmpty());
         Assert.assertEquals("All tests run",
                 findElement(By.id("logId")).getText());

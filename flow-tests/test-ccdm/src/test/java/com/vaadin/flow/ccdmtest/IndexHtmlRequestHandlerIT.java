@@ -576,11 +576,13 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         findElement(By.id("button2")).click();
         waitForElementPresent(By.id("div2"));
 
-        Assert.assertEquals("Should have window.vaadinPush", "object",
-                executeScript("return typeof window.vaadinPush"));
-        Assert.assertEquals("Should have window.vaadinPush.atmosphere",
-                "object", executeScript(
-                        "return typeof window.vaadinPush" + ".atmosphere"));
+        // vaadinPush.js is imported as a module, so it shows up as a loaded
+        // resource rather than as a global
+        waitUntil(driver -> (Boolean) executeScript(
+                """
+                        return performance.getEntriesByType('resource')
+                            .some(entry => entry.name.includes('VAADIN/static/push/vaadinPush'));
+                        """));
     }
 
     @Test

@@ -14,8 +14,8 @@
  * the License.
  */
 
-// The push connection on top of atmosphere.js 5, which vaadinPush.js loads on
-// demand and exposes as window.vaadinPush.atmosphere.
+// The push connection on top of atmosphere.js 5, whose ES module build is
+// served as vaadinPush.js and loaded on demand.
 //
 // FragmentedMessage below is the TS port of the websocket
 // message-fragmentation helper from AtmospherePushConnection.java (pure logic).
@@ -28,7 +28,7 @@ import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
 import { parseJson } from './MessageHandler';
 import { sendBeacon } from './MessageSender';
-import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
+import { loadAtmosphere } from './AtmosphereLoader';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import type { Command } from '../Command';
 import type { PushConnection } from './PushConnection';
@@ -106,10 +106,7 @@ export class FragmentedMessage {
   }
 }
 
-/**
- * The atmosphere.js module, which vaadinPush.js exposes as
- * `window.vaadinPush.atmosphere` (the subset used here).
- */
+/** The atmosphere.js module, vaadinPush.js (the subset used here). */
 interface AtmosphereModule {
   Atmosphere: new (config: { logLevel?: unknown }) => AtmosphereClient;
 }
@@ -150,15 +147,6 @@ interface AtmosphereHandlers {
   reconnect: (request: AtmosphereRequest, response: AtmosphereResponse) => void;
   failureToReconnect: (request: AtmosphereRequest, response: AtmosphereResponse) => void;
   clientTimeout: (request: AtmosphereRequest) => void;
-}
-
-function atmosphere(): AtmosphereModule | undefined {
-  return (window as unknown as { vaadinPush?: { atmosphere?: AtmosphereModule } }).vaadinPush?.atmosphere;
-}
-
-/** Whether the Atmosphere push library is loaded. */
-function isAtmosphereLoaded(): boolean {
-  return !!atmosphere()?.Atmosphere;
 }
 
 /**
@@ -262,7 +250,7 @@ export class AtmospherePushConnection implements PushConnection {
 
     this.#url = this.#computePushUrl();
 
-    this.#runWhenAtmosphereLoaded(() => setTimeout(() => this.#connect(), 0));
+    this.#loadAtmosphere();
 
     // The server keeps the UI of a page that is left when it is preserved on
     // refresh, and its push connection would otherwise stay bound to a
@@ -278,7 +266,7 @@ export class AtmospherePushConnection implements PushConnection {
     return this.#registry.getConnectionStateHandler();
   }
 
-  #connect(): void {
+  #connect(atmosphere: AtmosphereModule): void {
     let pushUrl = this.#registry.getURIResolver().resolveVaadinUri(this.#url) ?? this.#url;
     pushUrl = addGetParameter(pushUrl, REQUEST_TYPE_PARAMETER, REQUEST_TYPE_PUSH);
     pushUrl = addGetParameter(pushUrl, UI_ID_PARAMETER, this.#registry.getApplicationConfiguration().getUIId());
@@ -293,7 +281,7 @@ export class AtmospherePushConnection implements PushConnection {
       this.#registry.getMessageHandler().getLastSeenServerSyncId()
     );
     this.#pushUri = pushUrl;
-    const client = new (atmosphere()!.Atmosphere)({ logLevel: this.#config.logLevel });
+    const client = new atmosphere.Atmosphere({ logLevel: this.#config.logLevel });
     const createTransport = client.createTransport.bind(client);
     // With a fallback, the last transport created is the one in use
     client.createTransport = (transportRequest, handlers) => {
@@ -592,32 +580,18 @@ export class AtmospherePushConnection implements PushConnection {
     };
   }
 
-  #runWhenAtmosphereLoaded(command: Command): void {
-    if (isAtmosphereLoaded()) {
-      command();
-      return;
-    }
+  #loadAtmosphere(): void {
     const pushJs = this.#registry.getApplicationConfiguration().isProductionMode()
       ? VAADIN_PUSH_JS
       : VAADIN_PUSH_DEBUG_JS;
     const pushScriptUrl = this.#registry.getApplicationConfiguration().getServiceUrl() + pushJs;
-    Console.debug(`Loading ${pushJs}`);
-    const listener: ResourceLoadListener = {
-      onLoad: (event: ResourceLoadEvent) => {
-        if (isAtmosphereLoaded()) {
-          Console.debug(`${pushJs} loaded`);
-          command();
-        } else {
-          // ResourceLoader assumes bootstrap's vaadinPush.js load succeeded even
-          // if it failed (#11673).
-          listener.onError(event);
-        }
-      },
-      onError: (event: ResourceLoadEvent) => {
-        this.#getConnectionStateHandler().pushScriptLoadError(event.getResourceData());
+    loadAtmosphere(pushScriptUrl).then(
+      (atmosphere) => this.#connect(atmosphere as AtmosphereModule),
+      (error: unknown) => {
+        Console.debug(`Loading ${pushScriptUrl} failed: ${String(error)}`);
+        this.#getConnectionStateHandler().pushScriptLoadError(pushScriptUrl);
       }
-    };
-    this.#registry.getResourceLoader().loadScript(pushScriptUrl, listener);
+    );
   }
 
   getTransportType(): string | null {

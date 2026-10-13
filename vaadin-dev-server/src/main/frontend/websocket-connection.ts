@@ -1,6 +1,7 @@
 import { Connection, ConnectionStatus } from './connection';
 
 const WEBSOCKET_FRAGMENT_SIZE = 16384; // This is PushConstants.WEBSOCKET_FRAGMENT_SIZE
+const VAADIN_PUSH_JS = 'VAADIN/static/push/vaadinPush.js'; // This is ApplicationConstants.VAADIN_PUSH_DEBUG_JS
 
 export class WebSocketConnection extends Connection {
   static HEARTBEAT_INTERVAL = 180000;
@@ -57,17 +58,15 @@ export class WebSocketConnection extends Connection {
       }
     };
 
-    waitForPush().then((atmosphere) => {
-      new atmosphere.Atmosphere().subscribe(request, handlers).then(
-        (subscription: any) => {
-          this.socket = subscription;
-        },
-        (error: any) => {
-          this.canSend = false;
-          this.handleError(error);
-        }
-      );
-    });
+    const onError = (error: any) => {
+      this.canSend = false;
+      this.handleError(error);
+    };
+    loadPush().then((atmosphere) => {
+      new atmosphere.Atmosphere().subscribe(request, handlers).then((subscription: any) => {
+        this.socket = subscription;
+      }, onError);
+    }, onError);
   }
 
   onReload(_strategy: string) {
@@ -142,9 +141,8 @@ function waitFor<T>(check: () => T | undefined, callback: (value: T) => void) {
   }
 }
 
-function waitForPush(): Promise<any> {
-  // Wait for vaadinPush.js to expose the atmosphere.js module and return it
-  return new Promise<any>((resolve, _reject) => {
-    waitFor(() => (window as any)?.vaadinPush?.atmosphere, resolve);
-  });
+function loadPush(): Promise<any> {
+  // vaadinPush.js is the atmosphere.js ES module. The path is relative to the
+  // servlet root, which the document base url points to.
+  return import(/* @vite-ignore */ new URL(VAADIN_PUSH_JS, document.baseURI).href);
 }

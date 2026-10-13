@@ -1,6 +1,7 @@
 import { expect } from '@open-wc/testing';
 import * as AtmosphereJS from 'atmosphere.js';
 import { testRegistry } from '../testRegistry';
+import { setAtmosphereModule } from '../../../../../main/frontend/internal/client/communication/AtmosphereLoader';
 import {
   AtmospherePushConnection,
   FragmentedMessage
@@ -40,8 +41,8 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     }
   };
   // Install a fake Atmosphere library.
-  (window as unknown as { vaadinPush?: unknown }).vaadinPush = {
-    atmosphere: {
+  setAtmosphereModule(
+    Promise.resolve({
       Atmosphere: class {
         createTransport() {
           return { uuid: '0' };
@@ -61,8 +62,8 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
           return fakeSubscription;
         }
       }
-    }
-  };
+    })
+  );
   const registry = testRegistry({
     UILifecycle: { addHandler: () => ({ remove: () => {} }) },
     PushConfiguration: {
@@ -116,21 +117,15 @@ function reassemble(fragments: string[]): string {
 }
 
 describe('AtmospherePushConnection', () => {
-  const win = window as unknown as { vaadinPush?: unknown };
-  let saved: unknown;
-  beforeEach(() => {
-    saved = win.vaadinPush;
-  });
   afterEach(() => {
-    win.vaadinPush = saved;
+    setAtmosphereModule(null);
   });
 
   it('does nothing until the atmosphere library is available', async () => {
     // Beyond the Java suite: GwtAtmospherePushConnectionTest sets the library up in every case, so the not-yet-loaded gate has no Java case.
-    // isAtmosphereLoaded gates the deferred connect: with no library installed,
-    // no subscription happens.
+    // The connect waits for the library: while it loads, no subscription happens.
     const { registry, capture } = setupPush();
-    win.vaadinPush = undefined;
+    setAtmosphereModule(new Promise(() => {}));
     new AtmospherePushConnection(registry);
     await tick();
     expect(capture.request).to.equal(null);
@@ -167,10 +162,6 @@ describe('AtmospherePushConnection', () => {
   });
 
   describe('class', () => {
-    afterEach(() => {
-      delete (window as { vaadinPush?: unknown }).vaadinPush;
-    });
-
     it('is active and not yet bidirectional before connecting', async () => {
       // Beyond the Java suite: No Java case covers the state before a transport is known.
       const { registry } = setupPush();
@@ -379,13 +370,12 @@ describe('AtmospherePushConnection', () => {
     afterEach(() => {
       window.WebSocket = NativeWebSocket;
       navigator.sendBeacon = nativeSendBeacon;
-      delete (window as { vaadinPush?: unknown }).vaadinPush;
     });
 
     // setupPush installs a fake library; replace it with the real one.
     function setupAtmosphere() {
       const setup = setupPush();
-      (window as unknown as { vaadinPush?: unknown }).vaadinPush = { atmosphere: AtmosphereJS };
+      setAtmosphereModule(Promise.resolve(AtmosphereJS));
       return setup;
     }
 
