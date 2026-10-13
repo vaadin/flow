@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +38,7 @@ import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.server.Command;
+import com.vaadin.tests.util.TestUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -432,6 +434,29 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         assertEquals("f", otherMap.get("bar"));
         assertEquals("g", otherMap.get("baz"));
         assertNull(otherMap.get("qux"));
+    }
+
+    @Test
+    void keySetNoLongerUsed_garbageCollected_deserializedValuesFollowNewOrder()
+            throws InterruptedException {
+        nodeMap.put("gcKeyA", "a");
+        nodeMap.put("gcKeyB", "b");
+        byte[] serialized = SerializationUtils.serialize(nodeMap);
+        WeakReference<Set<String>> keySetRef = new WeakReference<>(
+                nodeMap.keySet());
+
+        nodeMap.clear();
+        assertTrue(TestUtil.isGarbageCollected(keySetRef));
+
+        // Registers the same keys in the opposite order
+        ElementStylePropertyMap otherMap = createFeature();
+        otherMap.put("gcKeyB", "c");
+        otherMap.put("gcKeyA", "d");
+
+        NodeMap copy = SerializationUtils.deserialize(serialized);
+        assertSame(otherMap.keySet(), copy.keySet());
+        assertEquals("a", copy.get("gcKeyA"));
+        assertEquals("b", copy.get("gcKeyB"));
     }
 
     @Test
