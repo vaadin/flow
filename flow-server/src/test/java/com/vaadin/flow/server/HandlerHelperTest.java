@@ -208,6 +208,28 @@ public class HandlerHelperTest {
     }
 
     @Test
+    public void isFrameworkInternalRequest_dynamicResourceUrl_withoutPostfix() {
+        // Test for ElementRequestHandler requests without URL postfix
+        VaadinServletRequest request = createVaadinRequest(
+                "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/",
+                "", null);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_dynamicResourceUrl_withCustomPostfix() {
+        // Test for ElementRequestHandler requests with custom postfix
+        VaadinServletRequest request = createVaadinRequest(
+                "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/custom.pdf",
+                "", null);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
     public void isFrameworkInternalRequest_hillaPushUrl() {
         VaadinServletRequest request = createVaadinRequest("HILLA/push", "",
                 null);
