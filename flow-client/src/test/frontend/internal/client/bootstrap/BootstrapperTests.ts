@@ -92,8 +92,13 @@ describe('Bootstrapper', () => {
         loadingFailed() {}
       }
     };
+    // The engine module is imported lazily and esbuild compiles it on demand, so
+    // the first start can take seconds on a loaded runner. waitUntil gives up
+    // after 1 second by default; wait as long as the mocha case timeout instead.
     const started = async (appId: string): Promise<PublishedClient> => {
-      await waitUntil(() => clients[appId] !== undefined, `the application ${appId} was never started`);
+      await waitUntil(() => clients[appId] !== undefined, `the application ${appId} was never started`, {
+        timeout: 10000
+      });
       return clients[appId] as PublishedClient;
     };
     return { clients, lookedUp, started };

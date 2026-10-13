@@ -288,10 +288,12 @@ describe('ApplicationConnection', () => {
 
         // The widgetset callback runs immediately, but the application starts on a
         // deferred command and the engine module is imported asynchronously; the
-        // published client is the signal that it has started.
+        // published client is the signal that it has started. The first import
+        // can take seconds on a loaded runner, longer than waitUntil's 1-second
+        // default, so wait as long as the mocha case timeout instead.
         const clients = (window as unknown as { Vaadin: { Flow: { clients: Record<string, unknown> } } }).Vaadin.Flow
           .clients;
-        await waitUntil(() => clients.client !== undefined, 'the application was never started');
+        await waitUntil(() => clients.client !== undefined, 'the application was never started', { timeout: 10000 });
 
         // The engine's own window listener first: absent navigation events only
         // mean anything once the observer is known to have seen the application
