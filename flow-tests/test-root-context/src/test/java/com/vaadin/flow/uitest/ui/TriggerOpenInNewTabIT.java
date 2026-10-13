@@ -120,6 +120,7 @@ public class TriggerOpenInNewTabIT extends ChromeBrowserTest {
 
         Map<String, Object> recorded = waitForFirstOpen();
         Assert.assertEquals("_blank", recorded.get("target"));
+        Assert.assertEquals("noopener,noreferrer", recorded.get("features"));
         // Fetch the URL the new tab would load to check that the content is
         // served inline, which is what makes the browser show it in the tab.
         @SuppressWarnings("unchecked")
