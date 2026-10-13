@@ -57,12 +57,12 @@ final class UnansweredRangeRequests implements Serializable {
     }
 
     /**
-     * The names of the handler classes that have been warned about, each with
-     * the cause of the warning. Names rather than classes, so that the classes
-     * of an application that is reloaded in development mode are not kept in
+     * The names of the handler classes that have been warned about, each
+     * followed by the cause. Names rather than classes, so that the classes of
+     * an application that is reloaded in development mode are not kept in
      * memory.
      */
-    private final Set<String> warnedHandlerTypes = ConcurrentHashMap
+    private final Set<String> warnedHandlersAndCauses = ConcurrentHashMap
             .newKeySet();
 
     private UnansweredRangeRequests() {
@@ -97,10 +97,10 @@ final class UnansweredRangeRequests implements Serializable {
         UnansweredRangeRequests warnings = service.getContext().getAttribute(
                 UnansweredRangeRequests.class, UnansweredRangeRequests::new);
         String handlerType = handler.getClass().getName();
-        if (warnings.warnedHandlerTypes.add(handlerType + " " + cause)) {
+        if (warnings.warnedHandlersAndCauses.add(handlerType + " " + cause)) {
             String urlPostfix = handler.getUrlPostfix();
             LoggerFactory.getLogger(UnansweredRangeRequests.class).warn(
-                    "{} {}, so it serves the whole file instead of the requested range. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per handler class, so other files served the same way are affected too. {}",
+                    "{} {}, so it serves the whole file instead of the requested range. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per handler class and cause, so other files served the same way are affected too. {}",
                     "The download handler " + handlerType
                             + (urlPostfix == null ? ""
                                     : " serving '" + urlPostfix + "'"),
