@@ -1,0 +1,90 @@
+// Run with: node --test scripts/apiDiff.test.js
+const test = require('node:test');
+const assert = require('node:assert');
+const { findComparedModules, selectReferenceVersion, collectChanges, findPullRequestChanges } = require('./apiDiff');
+
+const PUBLISHED = [
+  '24.10.14',
+  '25.3.0-beta3',
+  '25.3.0-rc2',
+  '25.3.0',
+  '25.3.3',
+  '25.4.0-alpha2',
+  '25.4.0-beta1',
+  '25.4.0-rc1',
+  '25.5.0-alpha1'
+];
+
+test('maintenance branch compares against its latest patch release', () => {
+  assert.strictEqual(selectReferenceVersion('25.3-SNAPSHOT', PUBLISHED), '25.3.3');
+});
+
+test('branch under development compares against its latest beta or rc', () => {
+  assert.strictEqual(selectReferenceVersion('25.4-SNAPSHOT', PUBLISHED), '25.4.0-rc1');
+  assert.strictEqual(
+    selectReferenceVersion(
+      '25.4-SNAPSHOT',
+      PUBLISHED.filter((v) => !v.includes('rc'))
+    ),
+    '25.4.0-beta1'
+  );
+});
+
+test('branch with only alphas compares against the previous release', () => {
+  assert.strictEqual(selectReferenceVersion('25.5-SNAPSHOT', PUBLISHED.slice(0, 6)), '25.3.3');
+  assert.strictEqual(selectReferenceVersion('25.0-SNAPSHOT', PUBLISHED), '24.10.14');
+});
+
+test('modules without a jar or with flow.apicmp.skip are not compared', () => {
+  const poms = {
+    'pom.xml': '<modules><module>a</module><module>b</module><module>c</module><module>d</module></modules>',
+    'a/pom.xml': '<packaging>jar</packaging>',
+    'b/pom.xml': '<packaging>pom</packaging>',
+    'c/pom.xml': '<properties><flow.apicmp.skip>true</flow.apicmp.skip></properties>',
+    'd/pom.xml': '<artifactId>d</artifactId>'
+  };
+  assert.deepStrictEqual(
+    findComparedModules((file) => poms[file] ?? null),
+    ['a', 'd']
+  );
+});
+
+const report = (...methods) => `<?xml version="1.0"?>
+<japicmp>
+  <classes>
+    <class binaryCompatible="true" changeStatus="MODIFIED" fullyQualifiedName="com.example.Widget" sourceCompatible="true">
+      <compatibilityChanges/>
+      <fields/>
+      <methods>${methods.join('')}</methods>
+    </class>
+  </classes>
+</japicmp>`;
+const method = (name, status, change, compatible) => `
+        <method binaryCompatible="${compatible}" changeStatus="${status}" name="${name}" sourceCompatible="${compatible}">
+          <compatibilityChanges>
+            <compatibilityChange binaryCompatible="${compatible}" sourceCompatible="${compatible}" type="${change}"/>
+          </compatibilityChanges>
+          <parameters>
+            <parameter changeStatus="${status}" type="java.lang.String&lt;T&gt;"/>
+          </parameters>
+        </method>`;
+const added = (name) => method(name, 'NEW', 'METHOD_ADDED_TO_PUBLIC_CLASS', true);
+const removed = (name) => method(name, 'REMOVED', 'METHOD_REMOVED', false);
+
+test('removing a method added after the release is not a change', () => {
+  const base = collectChanges(report(added('unreleased')));
+  const head = collectChanges(report());
+  assert.deepStrictEqual([...findPullRequestChanges(base, head)], []);
+});
+
+test('only the changes the pull request adds on top of the merge base count', () => {
+  const base = collectChanges(report(added('merged')));
+  const head = collectChanges(report(added('merged'), added('added'), removed('released')));
+  assert.deepStrictEqual(
+    [...findPullRequestChanges(base, head)],
+    [
+      ['com.example.Widget#added(java.lang.String<T>): METHOD_ADDED_TO_PUBLIC_CLASS', '0.1.0'],
+      ['com.example.Widget#released(java.lang.String<T>): METHOD_REMOVED', '1.0.0']
+    ]
+  );
+});
