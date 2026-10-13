@@ -317,6 +317,20 @@ export const JsonConstants = {
   MAP_STATE_NODE_EVENT_DATA: ']',
 
   /**
+   * Token used as an event data expression to represent that, before the
+   * event is sent, the synchronized properties of the element that has focus
+   * should be sent with their current values, whichever DOM event they are
+   * normally synchronized on. Keyboard shortcuts use it so that a field which
+   * synchronizes its value on `change` sends what the user typed before the
+   * shortcut listener runs.
+   *
+   * The token is chosen to avoid collisions with regular event data
+   * expressions by using a character that cannot be the start of a valid JS
+   * expression.
+   */
+  SYNCHRONIZE_FOCUSED_ELEMENT_TOKEN: ')',
+
+  /**
    * RPC type value used for return channel messages.
    */
   RPC_TYPE_CHANNEL: 'channel',

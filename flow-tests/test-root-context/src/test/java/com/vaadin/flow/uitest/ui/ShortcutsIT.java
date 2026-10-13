@@ -187,7 +187,8 @@ public class ShortcutsIT extends ChromeBrowserTest {
         textField2.sendKeys("value 2");
         sendKeys(Keys.ENTER);
 
-        assertActualEquals("click: ");
+        // the focused input's value is sent before the shortcut fires
+        assertActualEquals("click: value 2");
     }
 
     @Test
@@ -226,7 +227,8 @@ public class ShortcutsIT extends ChromeBrowserTest {
         textField7.sendKeys("value 7");
         sendKeys(Keys.ENTER);
 
-        assertActualEquals("click5: ");
+        // the focused input's value is sent before the shortcut fires
+        assertActualEquals("click5: value 7");
     }
 
     @Test

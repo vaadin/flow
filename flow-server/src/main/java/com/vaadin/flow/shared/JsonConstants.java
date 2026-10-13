@@ -358,6 +358,20 @@ public class JsonConstants implements Serializable {
     public static final String MAP_STATE_NODE_EVENT_DATA = "]";
 
     /**
+     * Token used as an event data expression to represent that, before the
+     * event is sent, the synchronized properties of the element that has focus
+     * should be sent with their current values, whichever DOM event they are
+     * normally synchronized on. Keyboard shortcuts use it so that a field which
+     * synchronizes its value on {@code change} sends what the user typed before
+     * the shortcut listener runs.
+     * <p>
+     * The token is chosen to avoid collisions with regular event data
+     * expressions by using a character that cannot be the start of a valid JS
+     * expression.
+     */
+    public static final String SYNCHRONIZE_FOCUSED_ELEMENT_TOKEN = ")";
+
+    /**
      * RPC type value used for return channel messages.
      * 
      * @since 2.0

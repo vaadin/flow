@@ -31,15 +31,8 @@ public class ShadowRootShortcutsWithValueChangeModeIT
     private String text = "Some text";
 
     @Test
-    public void onChangeValueChange_shortcutExecution_valueNotSentToServer() {
-        assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_CHANGE,
-                false);
-        DivElement div = $(DivElement.class).id("test-element");
-
-        // trigger change event and check value
-        InputTextElement input = div.$(InputTextElement.class).id("input");
-        input.sendKeys(Keys.ENTER);
-        triggerShortcut(true);
+    public void onChangeValueChange_shortcutExecution_valueSentToServer() {
+        assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_CHANGE);
     }
 
     @Test
@@ -51,11 +44,10 @@ public class ShadowRootShortcutsWithValueChangeModeIT
         input.focus();
         input.sendKeys(text);
 
-        doTriggerShortcut(true, Keys.CONTROL, Keys.ENTER);
+        doTriggerShortcut(Keys.CONTROL, Keys.ENTER);
     }
 
-    private void assertValueCommittedOnShortcutExecution(ValueChangeMode mode,
-            boolean expectValue) {
+    private void assertValueCommittedOnShortcutExecution(ValueChangeMode mode) {
         open(mode.name());
 
         DivElement div = $(DivElement.class).id("test-element");
@@ -63,29 +55,23 @@ public class ShadowRootShortcutsWithValueChangeModeIT
         input.focus();
         input.sendKeys(text);
 
-        triggerShortcut(expectValue);
+        triggerShortcut();
     }
 
-    private void triggerShortcut(boolean expectValue) {
-        doTriggerShortcut(expectValue, Keys.CONTROL, Keys.ALT, "s");
+    private void triggerShortcut() {
+        doTriggerShortcut(Keys.CONTROL, Keys.ALT, "s");
     }
 
-    private void doTriggerShortcut(boolean expectValue, CharSequence... keys) {
+    private void doTriggerShortcut(CharSequence... keys) {
         ShortcutsWithValueChangeModeIT.sendKeys(driver, keys);
 
         DivElement div = $(DivElement.class).id("test-element");
         String paragraphText = div.$(ParagraphElement.class).id("value")
                 .getText();
 
-        if (expectValue) {
-            Assert.assertEquals(
-                    "Expecting input value to be in sync with server value",
-                    text, paragraphText);
-        } else {
-            Assert.assertEquals(
-                    "Expecting input value not to be synced with server", "",
-                    paragraphText);
-        }
+        Assert.assertEquals(
+                "Expecting input value to be in sync with server value", text,
+                paragraphText);
     }
 
 }

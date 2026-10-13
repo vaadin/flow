@@ -26,7 +26,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
-import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -41,27 +40,22 @@ public class ShortcutsWithValueChangeModeIT extends ChromeBrowserTest {
 
     @Test
     public void lazyValueChange_shortcutExecution_valueSentToServer() {
-        assertValueCommittedOnShortcutExecution(ValueChangeMode.LAZY, true);
+        assertValueCommittedOnShortcutExecution(ValueChangeMode.LAZY);
     }
 
     @Test
     public void timeoutValueChange_shortcutExecution_valueSentToServer() {
-        assertValueCommittedOnShortcutExecution(ValueChangeMode.TIMEOUT, true);
+        assertValueCommittedOnShortcutExecution(ValueChangeMode.TIMEOUT);
     }
 
     @Test
     public void eagerValueChange_shortcutExecution_valueSentToServer() {
-        assertValueCommittedOnShortcutExecution(ValueChangeMode.EAGER, true);
+        assertValueCommittedOnShortcutExecution(ValueChangeMode.EAGER);
     }
 
     @Test
-    public void onChangeValueChange_shortcutExecution_valueNotSentToServer() {
-        assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_CHANGE,
-                false);
-        // trigger change event and check value
-        InputTextElement input = $(InputTextElement.class).id("input");
-        input.sendKeys(Keys.ENTER);
-        triggerShortcut(true);
+    public void onChangeValueChange_shortcutExecution_valueSentToServer() {
+        assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_CHANGE);
     }
 
     @Test
@@ -72,47 +66,51 @@ public class ShortcutsWithValueChangeModeIT extends ChromeBrowserTest {
         input.focus();
         input.sendKeys(text);
 
-        doTriggerShortcut(true, Keys.CONTROL, Keys.ENTER);
+        doTriggerShortcut(Keys.CONTROL, Keys.ENTER);
     }
 
     @Test
-    public void onBlurValueChange_shortcutExecution_valueNotSentToServer() {
-        assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_BLUR, false);
-        // trigger blur event and check value
-        NativeButtonElement button = $(NativeButtonElement.class).id("button");
-        button.focus();
-        triggerShortcut(true);
+    public void onBlurValueChange_shortcutExecution_valueSentToServer() {
+        assertValueCommittedOnShortcutExecution(ValueChangeMode.ON_BLUR);
     }
 
-    private void assertValueCommittedOnShortcutExecution(ValueChangeMode mode,
-            boolean expectValue) {
+    @Test
+    public void onChangeValueChange_printableKeyShortcut_typedTextKeptAndSentToServer() {
+        open(ValueChangeMode.ON_CHANGE.name());
+
+        InputTextElement input = $(InputTextElement.class).id("input");
+        input.focus();
+        // q also clicks the button, and is typed into the input as well
+        input.sendKeys("aqbqc");
+
+        Assert.assertEquals("aqbqc", input.getValue());
+        // the second q is pressed when the input holds "aqb"
+        Assert.assertEquals("aqb",
+                $(ParagraphElement.class).id("value").getText());
+    }
+
+    private void assertValueCommittedOnShortcutExecution(ValueChangeMode mode) {
         open(mode.name());
 
         InputTextElement input = $(InputTextElement.class).id("input");
         input.focus();
         input.sendKeys(text);
 
-        triggerShortcut(expectValue);
+        triggerShortcut();
     }
 
-    private void triggerShortcut(boolean expectValue) {
-        doTriggerShortcut(expectValue, Keys.CONTROL, Keys.ALT, "s");
+    private void triggerShortcut() {
+        doTriggerShortcut(Keys.CONTROL, Keys.ALT, "s");
     }
 
-    private void doTriggerShortcut(boolean expectValue, CharSequence... keys) {
+    private void doTriggerShortcut(CharSequence... keys) {
         sendKeys(driver, keys);
 
         String paragraphText = $(ParagraphElement.class).id("value").getText();
 
-        if (expectValue) {
-            Assert.assertEquals(
-                    "Expecting input value to be in sync with server value",
-                    text, paragraphText);
-        } else {
-            Assert.assertEquals(
-                    "Expecting input value not to be synced with server", "",
-                    paragraphText);
-        }
+        Assert.assertEquals(
+                "Expecting input value to be in sync with server value", text,
+                paragraphText);
     }
 
     public static void sendKeys(WebDriver driver, CharSequence... keys) {
