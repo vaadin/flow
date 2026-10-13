@@ -173,4 +173,48 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         };
     }
 
+    /**
+     * Wraps the given {@code converter} with a converter that handles both null
+     * presentation and null model values:
+     * <ul>
+     * <li>If the model value is null, the converter returns null. Otherwise, it
+     * delegates to the wrapped converter.</li>
+     * <li>If the presentation value is null, the converter returns null.
+     * Otherwise, it delegates to the wrapped converter.</li>
+     * </ul>
+     * Example use:
+     * 
+     * <pre>
+     * {@code
+     * Converter<String, LocalDate> converter = Converter
+     *         .nullSafeConverter(Converter.from(LocalDate::parse,
+     *                 LocalDate::toString, Exception::getMessage));
+     * }
+     * </pre>
+     *
+     * @param <P>
+     *            the presentation type
+     * @param <M>
+     *            the model type
+     * @param converter
+     *            the converter to delegate to when the value being converted is
+     *            not null
+     * @return a converter that handles both null presentation and null model
+     *         values
+     */
+    static <P, M> Converter<P, M> nullSafeConverter(Converter<P, M> converter) {
+        return new Converter<P, M>() {
+            @Override
+            public Result<M> convertToModel(P value, ValueContext context) {
+                return value == null ? Result.ok(null)
+                        : converter.convertToModel(value, context);
+            }
+
+            @Override
+            public P convertToPresentation(M value, ValueContext context) {
+                return value == null ? null
+                        : converter.convertToPresentation(value, context);
+            }
+        };
+    }
 }
