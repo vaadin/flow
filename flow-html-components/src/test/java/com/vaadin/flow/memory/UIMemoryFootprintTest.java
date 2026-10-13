@@ -26,7 +26,6 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.openjdk.jol.info.GraphLayout;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -52,6 +51,9 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 /**
  * Measures the memory a UI uses, so that changes to it can be compared between
@@ -94,11 +96,9 @@ class UIMemoryFootprintTest {
         MockVaadinServletService service = new MockVaadinServletService(
                 deploymentConfiguration, false);
         service.getServlet().init(new MockServletConfig());
-        ApplicationConfiguration applicationConfiguration = Mockito.mock(
-                ApplicationConfiguration.class,
-                Mockito.withSettings().stubOnly());
-        Mockito.when(applicationConfiguration.isProductionMode())
-                .thenReturn(true);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class, withSettings().stubOnly());
+        when(applicationConfiguration.isProductionMode()).thenReturn(true);
         service.getContext().setAttribute(ApplicationConfiguration.class,
                 applicationConfiguration);
         service.getContext().setAttribute(Lookup.class, Lookup
@@ -208,8 +208,7 @@ class UIMemoryFootprintTest {
 
     private UI open(Consumer<UI> view) {
         MockUI ui = new MockUI(session);
-        ui.doInit(Mockito.mock(VaadinRequest.class), session.getNextUIid(),
-                "ROOT");
+        ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "ROOT");
         session.addUI(ui);
         view.accept(ui);
         respond(ui);

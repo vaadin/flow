@@ -6,35 +6,20 @@ name: Memory Footprint
 # posted once a change affects them. After that the comment is updated on every
 # push, also when the difference goes away again.
 #
-# The measurements of a commit only depend on the files in MEASURED_PATHS and
-# on the JDK, so they are cached under a key made of those, and a commit is
-# only measured when no commit with the same files was measured before. A pull
+# The measurements of a commit only depend on the JDK and on the files of the
+# modules the test is built with, which `scripts/memoryFootprint.js paths`
+# reads from the poms of the commit. They are cached under a key made of
+# those, and a commit is only measured when no commit with the same files was
+# measured before. The workflow runs for every push, since a commit that does
+# not change those files finds both measurements cached and ends early. A pull
 # request can only restore what its own runs or runs on its base branch cached,
 # so main is measured on every push as well: the base of a pull request is
 # then almost always cached, and only its head is measured.
 on:
   push:
     branches: [main]
-    paths:
-      - 'pom.xml'
-      - 'flow-push/**'
-      - 'flow-test-generic/**'
-      - 'flow-server/**'
-      - 'flow-data/**'
-      - 'flow-html-components/**'
-      - 'scripts/memoryFootprint.js'
-      - '.github/workflows/memory-footprint.yml'
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - 'pom.xml'
-      - 'flow-push/**'
-      - 'flow-test-generic/**'
-      - 'flow-server/**'
-      - 'flow-data/**'
-      - 'flow-html-components/**'
-      - 'scripts/memoryFootprint.js'
-      - '.github/workflows/memory-footprint.yml'
 
 permissions:
   contents: read
@@ -60,9 +45,6 @@ env:
     mvn package -B -ntp -pl flow-html-components -am
     -Dtest=UIMemoryFootprintTest -Dsurefire.failIfNoSpecifiedTests=false
     -Djacoco.skip
-  # The modules MEASURE builds, whose files are all that the measurements
-  # depend on besides the JDK. Keep in sync with the paths above.
-  MEASURED_PATHS: pom.xml flow-push flow-test-generic flow-server flow-data flow-html-components
   # Where a cached measurement is restored to and saved from. The path is part
   # of the cache version, so it has to be the same for the head and the base.
   CACHED: ${{ github.workspace }}/.memory-footprint
@@ -95,16 +77,22 @@ jobs:
         # sizes can differ between JDK versions.
         run: |
           runtime=$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p')
+          # Assigned before use, so that a failure to read the poms fails the
+          # step instead of hashing an empty list of paths
           key() {
-            for path in $MEASURED_PATHS; do
+            local paths
+            paths=$(node scripts/memoryFootprint.js paths "$1") || return 1
+            for path in $paths; do
               echo "$path $(git rev-parse "$1:$path")"
             done | sha256sum | cut -c1-40
           }
-          echo "head-key=memory-footprint-$runtime-$(key "$_HEAD_SHA")" >> "$GITHUB_OUTPUT"
+          head_key=$(key "$_HEAD_SHA")
+          echo "head-key=memory-footprint-$runtime-$head_key" >> "$GITHUB_OUTPUT"
           if [ -n "$_BASE_SHA" ]; then
             base=$(git merge-base "$_BASE_SHA" "$_HEAD_SHA")
+            base_key=$(key "$base")
             echo "base=$base" >> "$GITHUB_OUTPUT"
-            echo "base-key=memory-footprint-$runtime-$(key "$base")" >> "$GITHUB_OUTPUT"
+            echo "base-key=memory-footprint-$runtime-$base_key" >> "$GITHUB_OUTPUT"
           fi
       - name: Restore the head measurements
         id: head-cache
