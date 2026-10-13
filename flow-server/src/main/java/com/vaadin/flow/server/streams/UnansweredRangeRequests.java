@@ -57,7 +57,8 @@ final class UnansweredRangeRequests implements Serializable {
      */
     static void warnIfRangeRequested(DownloadHandler handler,
             DownloadEvent event) {
-        // An event that a test mocks may have no request or session
+        // Handlers that applications test with a mocked event, which has no
+        // request or session, must not fail because of the warning
         VaadinRequest request = event.getRequest();
         VaadinSession session = event.getSession();
         VaadinService service = session == null ? null : session.getService();
