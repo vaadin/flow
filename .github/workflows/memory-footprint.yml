@@ -1,0 +1,112 @@
+name: Memory Footprint
+
+# Measures the memory a UI uses, with UIMemoryFootprintTest, on the head of a
+# pull request and on the commit it branches from, and reports the difference
+# in a pull request comment. The measurements are exact, so a comment is only
+# posted once a change affects them. After that the comment is updated on every
+# push, also when the difference goes away again.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'flow-server/src/main/**'
+      - 'flow-data/src/main/**'
+      - 'flow-html-components/**'
+      - '**/pom.xml'
+      - 'scripts/memoryFootprint.js'
+      - '.github/workflows/memory-footprint.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  # Only the newest commit is worth measuring
+  group: ${{ github.workflow }}-${{ github.event.number }}
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  _BASE_SHA: ${{ github.event.pull_request.base.sha }}
+  _PR_NUMBER: ${{ github.event.number }}
+  # The same flags validation.yml sets, for the same reason: a 403 from Central
+  # is retried rather than failing the build outright. See the note there.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
+    -Daether.connector.http.connectionMaxTtl=25
+  # Builds only the modules the test needs, and runs only the test
+  MEASURE: >-
+    mvn package -B -ntp -pl flow-html-components -am
+    -Dtest=UIMemoryFootprintTest -Dsurefire.failIfNoSpecifiedTests=false
+    -Djacoco.skip
+
+jobs:
+  measure:
+    # Commenting needs a token that can write, which GitHub does not hand to
+    # pull requests from forks
+    if: ${{ !github.event.pull_request.head.repo.fork }}
+    timeout-minutes: 30
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{ env._HEAD_SHA }}
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-frontend-tools
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version-file: .tool-versions
+          distribution: 'temurin'
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Find the base commit
+        id: base
+        # The commit the pull request branches from, so that changes merged to
+        # the base branch since then are not attributed to the pull request
+        run: echo "sha=$(git merge-base "$_BASE_SHA" "$_HEAD_SHA")" >> "$GITHUB_OUTPUT"
+      - name: Measure the head
+        run: |
+          $MEASURE
+          mv flow-html-components/target/memory-footprint "$RUNNER_TEMP/memory-head"
+      - name: Measure the base
+        env:
+          BASE: ${{ steps.base.outputs.sha }}
+        # Before UIMemoryFootprintTest was added the base has nothing to
+        # measure, which the comment says instead of comparing
+        run: |
+          git worktree add "$RUNNER_TEMP/base" "$BASE"
+          cd "$RUNNER_TEMP/base"
+          if [ -f flow-html-components/src/test/java/com/vaadin/flow/memory/UIMemoryFootprintTest.java ]; then
+            $MEASURE
+            mv flow-html-components/target/memory-footprint "$RUNNER_TEMP/memory-base"
+          fi
+      - name: Compare
+        id: compare
+        run: |
+          node scripts/memoryFootprint.js "$RUNNER_TEMP/memory-base" "$RUNNER_TEMP/memory-head" \
+            "${{ steps.base.outputs.sha }}"
+          cat memory-comment.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Comment the difference on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGED: ${{ steps.compare.outputs.changed }}
+        run: |
+          marker='<!-- flow-memory-footprint -->'
+          existing=$(gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" --paginate \
+            --jq "[.[] | select(.body | startswith(\"$marker\")) | .id] | first // empty")
+          existing=${existing%%$'\n'*}
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@memory-comment.md
+          elif [ "$CHANGED" = "true" ]; then
+            gh api "repos/${{ github.repository }}/issues/$_PR_NUMBER/comments" -F body=@memory-comment.md
+          else
+            echo "No change in memory footprint, and no earlier comment to update"
+          fi

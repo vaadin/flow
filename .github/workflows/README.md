@@ -224,6 +224,32 @@ Configuration:
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
 
+## Memory footprint
+
+`memory-footprint.yml` reports how a pull request changes the memory a UI
+uses. It runs `UIMemoryFootprintTest` (in `flow-html-components`) on the head
+of the pull request and on the commit it branches from, and
+`scripts/memoryFootprint.js` compares the two. Each scenario of the test opens
+a view and measures:
+
+- the bytes a UI retains on the heap, as the size of the object graph that one
+  more identical UI adds to a session. Anything shared by all UIs is not
+  counted.
+- the size of the session serialized with one UI open, which is what is stored
+  when sessions are persisted or replicated.
+
+Both are exact rather than sampled from the heap, so the same build always
+measures the same, and any difference comes from the change. Comparing two
+numbers is only meaningful on the same JDK, which is why the base is measured
+in the same run instead of being stored. The comment also lists, per scenario,
+the classes whose retained instances or bytes changed.
+
+The comment is posted once a pull request changes a measurement and then
+updated on every push, also when the difference goes away again. Pull requests
+from forks are skipped, because GitHub gives them no token that can comment.
+The same JSON the comment is made from is written to
+`flow-html-components/target/memory-footprint` by running the test locally.
+
 ## Code review
 
 `code-review.yml` has Claude review a pull request and post the findings as
