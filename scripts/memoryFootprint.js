@@ -3,11 +3,20 @@
  * Compares the memory footprint measured on the base and the head of a pull
  * request, and writes the pull request comment that reports it.
  *
- * The measurements are the JSON files UIMemoryFootprintTest (in
- * flow-html-components) writes to target/memory-footprint, one per scenario:
- * the bytes a UI retains, the size of a serialized session with one UI and the
- * retained instances and bytes per class. They are exact, so any difference is
- * caused by the change and not by noise.
+ * The measurements are the JSON reports UIMemoryFootprintTest (in
+ * flow-html-components) writes to target/memory-footprint, one per scenario,
+ * named after the id of the scenario:
+ *
+ *   {
+ *     "title": "...", "description": "...",
+ *     "metrics": [{ "id": "...", "title": "...", "unit": "bytes", "value": 123,
+ *                   "breakdown": { "<class>": { "count": 1, "bytes": 16 } } }]
+ *   }
+ *
+ * The scenarios and metrics are defined by the test alone: this script
+ * matches them by id and reports whatever it finds. The breakdown is
+ * optional. The measurements are exact, so any difference is caused by the
+ * change and not by noise.
  *
  * Usage: node scripts/memoryFootprint.js <base dir> <head dir> <base commit>
  *
@@ -23,14 +32,9 @@ const path = require('path');
 // instead of adding another
 const COMMENT_MARKER = '<!-- flow-memory-footprint -->';
 
-// Caps the classes listed per scenario, which a large change could otherwise
+// Caps the classes listed per breakdown, which a large change could otherwise
 // grow past what anyone reads
 const MAX_CLASSES = 15;
-
-const METRICS = [
-  { key: 'retainedBytesPerUI', title: 'Retained per UI' },
-  { key: 'serializedSessionBytes', title: 'Serialized session' }
-];
 
 function readMeasurements(dir) {
   if (!fs.existsSync(dir)) {
@@ -43,24 +47,57 @@ function readMeasurements(dir) {
   return measurements;
 }
 
-function formatBytes(bytes) {
-  return `${bytes.toLocaleString('en-US')} B`;
+function formatValue(value, unit) {
+  const number = value.toLocaleString('en-US');
+  if (unit === 'bytes') {
+    return `${number} B`;
+  }
+  return unit ? `${number} ${unit}` : number;
 }
 
-function formatDifference(base, head) {
+function formatDifference(base, head, unit) {
   if (base === undefined) {
-    return formatBytes(head);
+    return formatValue(head, unit);
   }
   if (head === undefined) {
-    return `${formatBytes(base)} → removed`;
+    return `${formatValue(base, unit)} → removed`;
   }
   if (base === head) {
-    return `${formatBytes(head)} (no change)`;
+    return `${formatValue(head, unit)} (no change)`;
   }
   const difference = head - base;
   const sign = difference > 0 ? '+' : '−';
   const percent = ((Math.abs(difference) / base) * 100).toFixed(1);
-  return `${formatBytes(base)} → ${formatBytes(head)} (**${sign}${formatBytes(Math.abs(difference))}**, ${sign}${percent}%)`;
+  return `${formatValue(base, unit)} → ${formatValue(head, unit)} (**${sign}${formatValue(Math.abs(difference), unit)}**, ${sign}${percent}%)`;
+}
+
+function metricsById(report) {
+  return Object.fromEntries((report?.metrics || []).map((metric) => [metric.id, metric]));
+}
+
+/**
+ * The scenarios of the head followed by the ones only the base has, each with
+ * its metrics in the same order and the base and head value of each.
+ */
+function rows(base, head) {
+  const scenarios = [...new Set([...Object.keys(head), ...Object.keys(base)])];
+  return scenarios.map((id) => {
+    const baseMetrics = metricsById(base[id]);
+    const headMetrics = metricsById(head[id]);
+    const metricIds = [...new Set([...Object.keys(headMetrics), ...Object.keys(baseMetrics)])];
+    return {
+      id,
+      title: head[id]?.title || base[id]?.title || id,
+      description: head[id]?.description || base[id]?.description,
+      metrics: metricIds.map((metricId) => ({
+        id: metricId,
+        base: baseMetrics[metricId],
+        head: headMetrics[metricId],
+        title: headMetrics[metricId]?.title || baseMetrics[metricId]?.title || metricId,
+        unit: headMetrics[metricId]?.unit || baseMetrics[metricId]?.unit
+      }))
+    };
+  });
 }
 
 /**
@@ -85,18 +122,18 @@ function signed(number) {
 }
 
 function compare(base, head) {
-  const scenarios = [...new Set([...Object.keys(head), ...Object.keys(base)])];
   const hasBase = Object.keys(base).length > 0;
   const changed =
     !hasBase ||
-    scenarios.some((scenario) =>
-      METRICS.some(({ key }) => base[scenario]?.[key] !== head[scenario]?.[key])
+    rows(base, head).some((scenario) =>
+      scenario.metrics.some((metric) => metric.base?.value !== metric.head?.value)
     );
-  return { scenarios, hasBase, changed };
+  return { hasBase, changed };
 }
 
 function comment(base, head, baseCommit) {
-  const { scenarios, hasBase, changed } = compare(base, head);
+  const { hasBase, changed } = compare(base, head);
+  const scenarios = rows(base, head);
   const lines = [COMMENT_MARKER, '', '## Memory footprint', ''];
   if (!hasBase) {
     lines.push(`The base commit ${baseCommit} has no memory measurements to compare with.`, '');
@@ -105,36 +142,41 @@ function comment(base, head, baseCommit) {
   } else {
     lines.push(`Compared with the base commit ${baseCommit}.`, '');
   }
-  lines.push(`| Scenario | ${METRICS.map(({ title }) => title).join(' | ')} |`);
-  lines.push(`| --- |${' --- |'.repeat(METRICS.length)}`);
+  lines.push('| Scenario | Metric | Value |', '| --- | --- | --- |');
   for (const scenario of scenarios) {
-    const cells = METRICS.map(({ key }) =>
-      formatDifference(hasBase ? base[scenario]?.[key] : undefined, head[scenario]?.[key])
-    );
-    lines.push(`| \`${scenario}\` | ${cells.join(' | ')} |`);
+    for (const metric of scenario.metrics) {
+      const value = formatDifference(hasBase ? metric.base?.value : undefined, metric.head?.value, metric.unit);
+      lines.push(`| ${scenario.title} | ${metric.title} | ${value} |`);
+    }
   }
   if (hasBase) {
-    for (const scenario of scenarios.filter((name) => base[name] && head[name])) {
-      const differences = classDifferences(base[scenario].classes, head[scenario].classes);
-      if (differences.length === 0) {
-        continue;
+    for (const scenario of scenarios) {
+      for (const metric of scenario.metrics.filter((m) => m.base?.breakdown && m.head?.breakdown)) {
+        const differences = classDifferences(metric.base.breakdown, metric.head.breakdown);
+        if (differences.length === 0) {
+          continue;
+        }
+        lines.push('', `<details><summary>${scenario.title}: ${metric.title} by class</summary>`, '');
+        lines.push('| Class | Instances | Bytes |', '| --- | ---: | ---: |');
+        for (const { name, count, bytes } of differences.slice(0, MAX_CLASSES)) {
+          lines.push(`| \`${name}\` | ${signed(count)} | ${signed(bytes)} |`);
+        }
+        if (differences.length > MAX_CLASSES) {
+          lines.push(`| …and ${differences.length - MAX_CLASSES} more | | |`);
+        }
+        lines.push('', '</details>');
       }
-      lines.push('', `<details><summary>Retained per UI by class: <code>${scenario}</code></summary>`, '');
-      lines.push('| Class | Instances | Bytes |', '| --- | ---: | ---: |');
-      for (const { name, count, bytes } of differences.slice(0, MAX_CLASSES)) {
-        lines.push(`| \`${name}\` | ${signed(count)} | ${signed(bytes)} |`);
-      }
-      if (differences.length > MAX_CLASSES) {
-        lines.push(`| …and ${differences.length - MAX_CLASSES} more | | |`);
-      }
-      lines.push('', '</details>');
     }
+  }
+  lines.push('', '<details><summary>Scenarios</summary>', '');
+  for (const scenario of scenarios) {
+    lines.push(`- **${scenario.title}** (\`${scenario.id}\`)${scenario.description ? `: ${scenario.description}` : ''}`);
   }
   lines.push(
     '',
-    '_Measured by `UIMemoryFootprintTest`: the bytes a UI retains on the heap, ' +
-      'and the size of a serialized session with one UI open. The measurements are exact, ' +
-      'so any difference comes from the change._',
+    '</details>',
+    '',
+    '_Measured by `UIMemoryFootprintTest`. The measurements are exact, so any difference comes from the change._',
     ''
   );
   return lines.join('\n');

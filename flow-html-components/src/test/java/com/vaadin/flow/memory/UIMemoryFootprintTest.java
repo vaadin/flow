@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.openjdk.jol.info.GraphLayout;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
@@ -66,9 +67,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <li>the size of the session serialized with one UI open, which is what is
  * stored or replicated when sessions are persisted.</li>
  * </ul>
- * The results are written to {@code target/memory-footprint/<scenario>.json}
- * together with the retained instances and bytes per class, and
- * {@code scripts/memoryFootprint.js} compares two sets of them.
+ * Each scenario writes a report to {@code target/memory-footprint/<id>.json}
+ * with its title, its description and its metrics, each with an id, a title, a
+ * unit, a value and optionally a breakdown of the value per class.
+ * {@code scripts/memoryFootprint.js} compares two sets of reports without
+ * knowing the scenarios or the metrics, so a scenario or a metric is added here
+ * only.
  */
 class UIMemoryFootprintTest {
 
@@ -112,13 +116,19 @@ class UIMemoryFootprintTest {
 
     @Test
     void emptyUI() throws IOException {
-        measure("emptyUI", ui -> {
-        });
+        measure("empty-ui", "Empty UI",
+                "A UI with no components, which is the cost of every UI.",
+                ui -> {
+                });
     }
 
     @Test
-    void rowsView() throws IOException {
-        measure("rowsView", UIMemoryFootprintTest::addRows);
+    void uiWith200ComponentRows() throws IOException {
+        measure("ui-with-200-component-rows", "UI with 200 component rows",
+                "A UI with 200 rows, each a div with a class name and a style,"
+                        + " holding a span, an input with a value change"
+                        + " listener and a button with a click listener.",
+                UIMemoryFootprintTest::addRows);
     }
 
     private static void addRows(UI ui) {
@@ -139,8 +149,22 @@ class UIMemoryFootprintTest {
         ui.add(list);
     }
 
-    private void measure(String scenario, Consumer<UI> view)
-            throws IOException {
+    /**
+     * Opens UIs with the given view, measures them and writes the report of the
+     * scenario to {@code target/memory-footprint/<id>.json}.
+     *
+     * @param id
+     *            identifies the scenario between builds, so it should stay the
+     *            same as long as the scenario measures the same thing
+     * @param title
+     *            names the scenario in the pull request comment
+     * @param description
+     *            describes what the view of the scenario contains
+     * @param view
+     *            adds the content of the view to a UI
+     */
+    private void measure(String id, String title, String description,
+            Consumer<UI> view) throws IOException {
         UI first = open(view);
         long serializedSize = serializedSize(session);
         // Opening and serializing a UI fills caches shared by all UIs, such
@@ -163,14 +187,21 @@ class UIMemoryFootprintTest {
         assertTrue(retainedSize > 0, "A UI should retain some memory");
 
         ObjectNode report = JacksonUtils.createObjectNode();
-        report.put("retainedBytesPerUI", retainedSize);
-        report.put("serializedSessionBytes", serializedSize);
-        ObjectNode classes = report.putObject("classes");
+        report.put("title", title);
+        report.put("description", description);
+        ArrayNode metrics = report.putArray("metrics");
+        ObjectNode heap = metrics.addObject().put("id", "heap-retained-per-ui")
+                .put("title", "Heap retained per UI").put("unit", "bytes")
+                .put("value", retainedSize);
+        ObjectNode classes = heap.putObject("breakdown");
         classDifference(before, after).forEach((name, difference) -> classes
                 .putObject(name).put("count", difference[0])
                 .put("bytes", difference[1]));
+        metrics.addObject().put("id", "serialized-session-with-one-ui")
+                .put("title", "Serialized session with one UI")
+                .put("unit", "bytes").put("value", serializedSize);
 
-        Path file = Path.of("target", "memory-footprint", scenario + ".json");
+        Path file = Path.of("target", "memory-footprint", id + ".json");
         Files.createDirectories(file.getParent());
         Files.writeString(file, report.toPrettyString());
     }

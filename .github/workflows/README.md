@@ -256,8 +256,13 @@ unchanged.
 The comment is posted once a pull request changes a measurement and then
 updated on every push, also when the difference goes away again. Pull requests
 from forks are skipped, because GitHub gives them no token that can comment.
-The same JSON the comment is made from is written to
-`flow-html-components/target/memory-footprint` by running the test locally.
+The test writes one JSON report per scenario to
+`flow-html-components/target/memory-footprint`, also when run locally. A report
+names and describes its scenario and lists its metrics, each with an id, a
+title, a unit and a value. The script matches scenarios and metrics by id and
+reports whatever it finds, so adding or changing one only takes a change to the
+test. Keep an id as long as it measures the same thing, so that the base and
+the head can be compared.
 
 ## Code review
 
