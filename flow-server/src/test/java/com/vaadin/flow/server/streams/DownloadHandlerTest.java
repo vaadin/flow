@@ -16,36 +16,21 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.File;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 class DownloadHandlerTest {
 
@@ -65,40 +50,15 @@ class DownloadHandlerTest {
         AtomicReference<DownloadEvent> received = new AtomicReference<>();
         DownloadHandler delegate = received::set;
 
-        DownloadEvent event = new DownloadEvent(mock(VaadinRequest.class),
-                mock(VaadinResponse.class), mock(VaadinSession.class),
-                mock(Element.class));
+        DownloadEvent event = new DownloadEvent(
+                Mockito.mock(VaadinRequest.class),
+                Mockito.mock(VaadinResponse.class),
+                Mockito.mock(VaadinSession.class), Mockito.mock(Element.class));
 
         delegate.allowDisabled().handleDownloadRequest(event);
 
         assertSame(event, received.get(),
                 "Wrapped handler must forward the event to the delegate");
-    }
-
-    @Test
-    void allowDisabled_forwardsHandleRequestOverride() throws Exception {
-        AtomicReference<VaadinRequest> received = new AtomicReference<>();
-        DownloadHandler delegate = new DownloadHandler() {
-            @Override
-            public void handleRequest(VaadinRequest request,
-                    VaadinResponse response, VaadinSession session,
-                    Element owner) {
-                received.set(request);
-            }
-
-            @Override
-            public void handleDownloadRequest(DownloadEvent event) {
-                throw new AssertionError(
-                        "The override of handleRequest should handle the request");
-            }
-        };
-        VaadinRequest request = mock(VaadinRequest.class);
-
-        delegate.allowDisabled().handleRequest(request,
-                mock(VaadinResponse.class), mock(VaadinSession.class),
-                mock(Element.class));
-
-        assertSame(request, received.get());
     }
 
     @Test
@@ -185,124 +145,5 @@ class DownloadHandlerTest {
 
         assertSame(wrappedOnce, wrappedTwice,
                 "Wrapping a handler that is already ALWAYS must be a no-op");
-    }
-
-    @Test
-    void handleRequest_rangeNotAnswered_warnsOncePerHandlerClassInDevelopmentMode()
-            throws Throwable {
-        VaadinService service = createService(false);
-
-        List<String> warnings = captureWarnings(() -> {
-            request(new NamedHandler("lake.webm", false), service, "bytes=0-");
-            request(new NamedHandler("intro.webm", false), service,
-                    "bytes=4096-");
-        });
-
-        assertEquals(List.of("The download handler "
-                + NamedHandler.class.getName() + " serving 'lake.webm'"),
-                warnings);
-    }
-
-    @Test
-    void handleRequest_lambdaThroughAllowDisabled_warningNamesDeclaringClass()
-            throws Throwable {
-        VaadinService service = createService(false);
-
-        List<String> warnings = captureWarnings(() -> request(
-                Player.createHandler().allowDisabled(), service, "bytes=0-"));
-
-        assertEquals(List.of("A download handler declared as a lambda in "
-                + Player.class.getName()), warnings);
-    }
-
-    @Test
-    void handleRequest_rangeAnsweredNotRequestedOrProductionMode_doesNotWarn()
-            throws Throwable {
-        VaadinService developmentMode = createService(false);
-
-        List<String> warnings = captureWarnings(() -> {
-            request(new NamedHandler("lake.webm", true), developmentMode,
-                    "bytes=0-");
-            request(new NamedHandler("lake.webm", false), developmentMode,
-                    null);
-            request(new NamedHandler("lake.webm", false), createService(true),
-                    "bytes=0-");
-        });
-
-        assertEquals(List.of(), warnings);
-    }
-
-    private static VaadinService createService(boolean productionMode) {
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setProductionMode(productionMode);
-        MockVaadinContext context = new MockVaadinContext();
-        VaadinService service = mock(VaadinService.class);
-        when(service.getDeploymentConfiguration()).thenReturn(configuration);
-        when(service.getContext()).thenReturn(context);
-        return service;
-    }
-
-    private static void request(DownloadHandler handler, VaadinService service,
-            String range) throws Exception {
-        VaadinRequest request = mock(VaadinRequest.class);
-        when(request.getHeader("Range")).thenReturn(range);
-        VaadinSession session = mock(VaadinSession.class);
-        when(session.getService()).thenReturn(service);
-        handler.handleRequest(request, mock(VaadinResponse.class), session,
-                mock(Element.class));
-    }
-
-    /**
-     * Runs the action and returns how each warning that it logged names the
-     * handler.
-     */
-    private static List<String> captureWarnings(Executable action)
-            throws Throwable {
-        Logger logger = mock(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
-                LoggerFactory.class)) {
-            loggerFactory
-                    .when(() -> LoggerFactory
-                            .getLogger(UnansweredRangeRequests.class))
-                    .thenReturn(logger);
-            action.execute();
-        }
-        ArgumentCaptor<Object> handlers = ArgumentCaptor.forClass(Object.class);
-        verify(logger, atLeast(0)).warn(anyString(), handlers.capture());
-        verifyNoMoreInteractions(logger);
-        return handlers.getAllValues().stream().map(String::valueOf).toList();
-    }
-
-    private static class NamedHandler implements DownloadHandler {
-        private final String fileName;
-        private final boolean rangeRequestsEnabled;
-
-        private NamedHandler(String fileName, boolean rangeRequestsEnabled) {
-            this.fileName = fileName;
-            this.rangeRequestsEnabled = rangeRequestsEnabled;
-        }
-
-        @Override
-        public void handleDownloadRequest(DownloadEvent event) {
-            // the content does not matter, only how it is requested
-        }
-
-        @Override
-        public String getUrlPostfix() {
-            return fileName;
-        }
-
-        @Override
-        public boolean isRangeRequestsEnabled() {
-            return rangeRequestsEnabled;
-        }
-    }
-
-    private static class Player {
-        private static DownloadHandler createHandler() {
-            return event -> {
-                // the content does not matter, only how it is requested
-            };
-        }
     }
 }

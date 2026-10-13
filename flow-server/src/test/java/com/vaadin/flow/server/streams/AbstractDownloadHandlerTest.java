@@ -35,9 +35,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -47,12 +52,15 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -64,10 +72,12 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -541,5 +551,91 @@ class AbstractDownloadHandlerTest {
             assertEquals(expected, body);
             verify(servletResponse, never()).setStatus(anyInt());
         }
+    }
+
+    @Test
+    void transferContent_rangeNotAnswered_warnsOncePerClassBeforeTransfer()
+            throws Throwable {
+        VaadinService service = createService(false);
+        when(session.getService()).thenReturn(service);
+        when(request.getHeader("Range")).thenReturn("bytes=2-5");
+        OutputStream clientGone = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                throw new IOException("Client closed the connection");
+            }
+        };
+
+        List<String> transferFailed = captureWarnings(
+                () -> assertThrows(IOException.class,
+                        () -> handler.transferContent(downloadEvent,
+                                new ByteArrayInputStream(new byte[10]),
+                                clientGone, 10, null)));
+        List<String> requestedAgain = captureWarnings(
+                () -> handler.transferContent(downloadEvent,
+                        new ByteArrayInputStream(new byte[10]), outputStream,
+                        10, null));
+
+        assertEquals(
+                List.of("The download handler " + handler.getClass().getName()),
+                transferFailed);
+        assertEquals(List.of(), requestedAgain);
+    }
+
+    @Test
+    void transferContent_rangeAnsweredNotRequestedOrProductionMode_doesNotWarn()
+            throws Throwable {
+        VaadinService developmentMode = createService(false);
+        VaadinService productionMode = createService(true);
+
+        List<String> warnings = captureWarnings(() -> {
+            when(session.getService()).thenReturn(developmentMode);
+            when(request.getHeader("Range")).thenReturn("bytes=2-5");
+            handler.transferContent(downloadEvent,
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    new AbstractDownloadHandler.SeekableContent("content",
+                            "\"v1\"", null));
+            when(request.getHeader("Range")).thenReturn(null);
+            handler.transferContent(downloadEvent,
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    null);
+            when(session.getService()).thenReturn(productionMode);
+            when(request.getHeader("Range")).thenReturn("bytes=2-5");
+            handler.transferContent(downloadEvent,
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    null);
+        });
+
+        assertEquals(List.of(), warnings);
+    }
+
+    private static VaadinService createService(boolean productionMode) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(productionMode);
+        MockVaadinContext context = new MockVaadinContext();
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        when(service.getContext()).thenReturn(context);
+        return service;
+    }
+
+    /**
+     * Runs the action and returns how each warning that it logged names the
+     * handler.
+     */
+    private static List<String> captureWarnings(Executable action)
+            throws Throwable {
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(UnansweredRangeRequests.class))
+                    .thenReturn(logger);
+            action.execute();
+        }
+        ArgumentCaptor<Object> handlers = ArgumentCaptor.forClass(Object.class);
+        verify(logger, atLeast(0)).warn(anyString(), handlers.capture());
+        return handlers.getAllValues().stream().map(String::valueOf).toList();
     }
 }

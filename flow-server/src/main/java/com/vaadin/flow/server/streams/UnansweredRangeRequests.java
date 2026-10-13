@@ -21,22 +21,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Warns in development mode when a {@link DownloadHandler} that does not answer
- * byte range requests receives one, once per kind of handler and application.
- * Media players need ranges to seek, and Safari to play video at all, but
- * nothing else tells the developer.
+ * Warns in development mode when a built-in {@link DownloadHandler} that does
+ * not answer byte range requests receives one, once per handler class and
+ * application. Media players need ranges to seek, and Safari to play video at
+ * all, but nothing else tells the developer.
  */
 final class UnansweredRangeRequests implements Serializable {
 
     /**
-     * The kinds of handlers that have been warned about: the handler class, or
-     * for a lambda the class that declares it. Bounded by the classes of the
-     * application, and names rather than classes, so that the classes of an
-     * application that is reloaded in development mode are not kept in memory.
+     * The names of the handler classes that have been warned about. Names
+     * rather than classes, so that the classes of an application that is
+     * reloaded in development mode are not kept in memory.
      */
     private final Set<String> warnedHandlerTypes = ConcurrentHashMap
             .newKeySet();
@@ -46,40 +46,36 @@ final class UnansweredRangeRequests implements Serializable {
 
     /**
      * Logs a warning that the given handler serves the whole file instead of
-     * the requested byte range, unless a handler of the same kind has already
-     * been warned about in this application or the application runs in
-     * production mode.
+     * the requested byte range if the request has a <code>Range</code> header,
+     * unless a handler of the same class has already been warned about in this
+     * application or the application runs in production mode.
      *
      * @param handler
-     *            the handler that has handled a request with a
-     *            <code>Range</code> header
-     * @param session
-     *            the session that the request belongs to
+     *            the handler that is about to serve the whole file
+     * @param event
+     *            the download event of the request
      */
-    static void warnOnce(DownloadHandler handler, VaadinSession session) {
-        VaadinService service = session.getService();
-        if (service.getDeploymentConfiguration().isProductionMode()) {
+    static void warnIfRangeRequested(DownloadHandler handler,
+            DownloadEvent event) {
+        // An event that a test mocks may have no request or session
+        VaadinRequest request = event.getRequest();
+        VaadinSession session = event.getSession();
+        VaadinService service = session == null ? null : session.getService();
+        if (request == null || request.getHeader("Range") == null
+                || service == null
+                || service.getDeploymentConfiguration().isProductionMode()) {
             return;
         }
         UnansweredRangeRequests warnings = service.getContext().getAttribute(
                 UnansweredRangeRequests.class, UnansweredRangeRequests::new);
-        String className = handler.getClass().getName();
-        // The class of a lambda is named after the class that declares it,
-        // followed by a generated suffix
-        int lambdaSuffix = className.indexOf("$$Lambda");
-        boolean lambda = lambdaSuffix > 0;
-        String handlerType = lambda ? className.substring(0, lambdaSuffix)
-                : className;
+        String handlerType = handler.getClass().getName();
         if (warnings.warnedHandlerTypes.add(handlerType)) {
             String urlPostfix = handler.getUrlPostfix();
-            String description = (lambda
-                    ? "A download handler declared as a lambda in "
-                    : "The download handler ") + handlerType
-                    + (urlPostfix == null ? ""
-                            : " serving '" + urlPostfix + "'");
             LoggerFactory.getLogger(UnansweredRangeRequests.class).warn(
-                    "{} does not answer byte range requests, so it serves the whole file instead of the requested range. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per kind of handler, so other files served the same way are affected too. Serve a file with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or answer ranges in a handler class of your own and return true from isRangeRequestsEnabled().",
-                    description);
+                    "{} does not answer byte range requests, so it serves the whole file instead of the requested range. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per handler class, so other files served the same way are affected too. Serve a file with DownloadHandler.forFile(...), or call enableRangeRequests() on a class resource, servlet resource or input stream handler.",
+                    "The download handler " + handlerType
+                            + (urlPostfix == null ? ""
+                                    : " serving '" + urlPostfix + "'"));
         }
     }
 }

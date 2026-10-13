@@ -130,9 +130,6 @@ public interface DownloadHandler extends ElementRequestHandler {
                 session, owner);
 
         handleDownloadRequest(downloadEvent);
-        if (!isRangeRequestsEnabled() && request.getHeader("Range") != null) {
-            UnansweredRangeRequests.warnOnce(this, session);
-        }
     }
 
     /**
@@ -145,11 +142,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      * particular response, for example when the length of its content is not
      * known. The default implementation returns {@code false}.
      * <p>
-     * In development mode, a warning is logged the first time that a handler of
-     * a kind that does not answer them responds to a byte range request with
-     * the whole content, unless the handler overrides
-     * {@link #handleRequest(VaadinRequest, VaadinResponse, VaadinSession, Element)}
-     * and so handles the request itself.
+     * In development mode, the built-in handlers log a warning the first time
+     * that one of a kind that does not answer them receives a byte range
+     * request.
      *
      * @return {@code true} if the handler is configured to answer byte range
      *         requests
@@ -172,7 +167,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * the browser fetches passively as part of rendering, such as the
      * {@code src} of an icon or image inside a disabled container.
      * <p>
-     * This method returns a wrapper that delegates {@link #handleRequest},
+     * This method returns a wrapper that delegates
      * {@link #handleDownloadRequest}, {@link #getUrlPostfix()},
      * {@link #isAllowInert()} and {@link #isRangeRequestsEnabled()} to this
      * handler and overrides {@link #getDisabledUpdateMode()} to return
@@ -190,13 +185,6 @@ public interface DownloadHandler extends ElementRequestHandler {
         }
         DownloadHandler delegate = this;
         return new DownloadHandler() {
-            @Override
-            public void handleRequest(VaadinRequest request,
-                    VaadinResponse response, VaadinSession session,
-                    Element owner) throws IOException {
-                delegate.handleRequest(request, response, session, owner);
-            }
-
             @Override
             public void handleDownloadRequest(DownloadEvent event)
                     throws IOException {
