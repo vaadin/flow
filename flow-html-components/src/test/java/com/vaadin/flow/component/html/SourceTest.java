@@ -15,28 +15,25 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.io.File;
 import java.util.List;
 
-import org.junit.jupiter.api.AfterEach;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
-import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -49,14 +46,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 class SourceTest extends ComponentTest {
-
-    @AfterEach
-    void tearDown() {
-        CurrentInstance.clearAll();
-        Source.clearWarnedMediaFiles();
-    }
 
     @Override
     protected void addProperties() {
@@ -100,8 +92,7 @@ class SourceTest extends ComponentTest {
             }
         }
         InputStreamDownloadHandler handler = DownloadHandler
-                .fromInputStream(event -> DownloadResponse.error(500))
-                .enableRangeRequests();
+                .fromInputStream(event -> DownloadResponse.error(500));
         assertFalse(handler.isInline());
 
         new TestSource().setSrc(handler);
@@ -117,96 +108,98 @@ class SourceTest extends ComponentTest {
     }
 
     @Test
-    void setSrc_handlerWithoutRanges_warnsOncePerMediaFileInDevelopmentMode() {
-        UI ui = createUi(false);
+    void setSrc_rangeRequestedFromHandlerWithoutRanges_warnsOnceInDevelopmentMode()
+            throws Throwable {
+        DownloadHandler served = serveFrom(new NamedHandler(false));
 
         List<String> warnings = captureWarnings(() -> {
-            for (int i = 0; i < 2; i++) {
-                ui.add(new Source(DownloadHandler.fromInputStream(
-                        event -> DownloadResponse.error(500), "lake.webm"),
-                        "video/webm"));
-            }
-            ui.add(new Source(
-                    DownloadHandler.fromInputStream(
-                            event -> DownloadResponse.error(500),
-                            "harbour.webm").enableRangeRequests(),
-                    "video/webm"));
-            ui.add(new Source(DownloadHandler.forFile(new File("forest.mp4")),
-                    "video/mp4"));
-            ui.add(new Source(event -> event.getResponse().setStatus(500),
-                    "video/mp4"));
-            ui.add(new Source(new FailingHandler(), "video/mp4"));
+            served.handleDownloadRequest(createEvent("bytes=0-", false));
+            served.handleDownloadRequest(createEvent("bytes=4096-", false));
         });
 
-        // Only the handlers without ranges are warned about, each only once,
-        // named after the file, the class declaring the lambda, or the class
-        assertEquals(List.of("The media file 'lake.webm'",
+        assertEquals(List.of("The media file 'lake.webm'"), warnings);
+    }
+
+    @Test
+    void setSrc_handlerWithoutName_warningNamesTheClass() throws Throwable {
+        DownloadHandler lambda = serveFrom(event -> {
+        });
+        DownloadHandler unnamed = serveFrom(new UnnamedHandler());
+
+        List<String> warnings = captureWarnings(() -> {
+            lambda.handleDownloadRequest(createEvent("bytes=0-", false));
+            unnamed.handleDownloadRequest(createEvent("bytes=0-", false));
+        });
+
+        assertEquals(List.of(
                 "A media file served by a lambda in "
                         + SourceTest.class.getName(),
-                "A media file served by " + FailingHandler.class.getName()),
+                "A media file served by " + UnnamedHandler.class.getName()),
                 warnings);
     }
 
     @Test
-    void setSrc_manyMediaFilesWithoutRanges_warnsAboutTheFirstHundred() {
-        UI ui = createUi(false);
+    void setSrc_rangeAnsweredNotRequestedOrProductionMode_doesNotWarn()
+            throws Throwable {
+        NamedHandler enabledAfterSetSrc = new NamedHandler(false);
+        DownloadHandler rangesEnabledLater = serveFrom(enabledAfterSetSrc);
+        enabledAfterSetSrc.rangeRequestsEnabled = true;
+        DownloadHandler withoutRanges = serveFrom(new NamedHandler(false));
 
         List<String> warnings = captureWarnings(() -> {
-            for (int i = 0; i < 101; i++) {
-                ui.add(new Source(DownloadHandler.fromInputStream(
-                        event -> DownloadResponse.error(500), "clip" + i),
-                        "video/webm"));
-            }
+            rangesEnabledLater
+                    .handleDownloadRequest(createEvent("bytes=0-", false));
+            withoutRanges.handleDownloadRequest(createEvent(null, false));
+            withoutRanges.handleDownloadRequest(createEvent("bytes=0-", true));
         });
 
-        assertEquals(100, warnings.size());
-        assertEquals("The media file 'clip99'", warnings.get(99));
-    }
-
-    @Test
-    void setSrc_handlerWithoutRangesReplacedBeforeAttach_doesNotWarn() {
-        UI ui = createUi(false);
-        Source replacedByHandler = new Source(
-                DownloadHandler.fromInputStream(
-                        event -> DownloadResponse.error(500), "dune.webm"),
-                "video/webm");
-        replacedByHandler
-                .setSrc(DownloadHandler.forFile(new File("dune.webm")));
-        Source replacedByUrl = new Source(
-                DownloadHandler.fromInputStream(
-                        event -> DownloadResponse.error(500), "reef.webm"),
-                "video/webm");
-        replacedByUrl.setSrc("/reef.webm");
-
-        List<String> warnings = captureWarnings(
-                () -> ui.add(replacedByHandler, replacedByUrl));
-
         assertEquals(List.of(), warnings);
     }
 
-    @Test
-    void setSrc_handlerWithoutRanges_productionMode_doesNotWarn() {
-        UI ui = createUi(true);
+    /**
+     * Sets the handler as the source of a media file and returns the handler
+     * that the browser is served by.
+     */
+    private static DownloadHandler serveFrom(DownloadHandler handler) {
+        Element element = mock(Element.class);
+        new Source() {
+            @Override
+            public Element getElement() {
+                return element;
+            }
+        }.setSrc(handler);
+        ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
+                .forClass(DownloadHandler.class);
+        verify(element).setAttribute(eq("src"), captor.capture());
+        return captor.getValue();
+    }
 
-        List<String> warnings = captureWarnings(() -> ui.add(new Source(
-                DownloadHandler.fromInputStream(
-                        event -> DownloadResponse.error(500), "meadow.ogg"),
-                "audio/ogg")));
-
-        assertEquals(List.of(), warnings);
+    private static DownloadEvent createEvent(@Nullable String range,
+            boolean productionMode) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(productionMode);
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getHeader("Range")).thenReturn(range);
+        when(request.getService()).thenReturn(service);
+        DownloadEvent event = mock(DownloadEvent.class);
+        when(event.getRequest()).thenReturn(request);
+        return event;
     }
 
     /**
      * Runs the action and returns how each warning that it logged names the
      * media file.
      */
-    private static List<String> captureWarnings(Runnable action) {
+    private static List<String> captureWarnings(Executable action)
+            throws Throwable {
         Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
                 LoggerFactory.class)) {
             loggerFactory.when(() -> LoggerFactory.getLogger(Source.class))
                     .thenReturn(logger);
-            action.run();
+            action.execute();
         }
         ArgumentCaptor<Object> mediaFiles = ArgumentCaptor
                 .forClass(Object.class);
@@ -215,17 +208,33 @@ class SourceTest extends ComponentTest {
         return mediaFiles.getAllValues().stream().map(String::valueOf).toList();
     }
 
-    private static class FailingHandler implements DownloadHandler {
+    private static class NamedHandler implements DownloadHandler {
+        private boolean rangeRequestsEnabled;
+
+        private NamedHandler(boolean rangeRequestsEnabled) {
+            this.rangeRequestsEnabled = rangeRequestsEnabled;
+        }
+
         @Override
         public void handleDownloadRequest(DownloadEvent event) {
-            event.getResponse().setStatus(500);
+            // the content does not matter, only how it is requested
+        }
+
+        @Override
+        public String getUrlPostfix() {
+            return "lake.webm";
+        }
+
+        @Override
+        public boolean isRangeRequestsEnabled() {
+            return rangeRequestsEnabled;
         }
     }
 
-    private static UI createUi(boolean productionMode) {
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        configuration.setProductionMode(productionMode);
-        return new MockUI(new AlwaysLockedVaadinSession(
-                new MockVaadinServletService(configuration)));
+    private static class UnnamedHandler implements DownloadHandler {
+        @Override
+        public void handleDownloadRequest(DownloadEvent event) {
+            // the content does not matter, only how it is requested
+        }
     }
 }

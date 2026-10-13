@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -24,8 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -50,23 +51,6 @@ public class Source extends HtmlComponent {
 
     private static final String SRC_ATTRIBUTE = "src";
     private static final String TYPE_ATTRIBUTE = "type";
-
-    /**
-     * Names of the media files that {@link #setSrc(DownloadHandler)} has
-     * already warned about, so that a view that is opened again does not repeat
-     * the warning. Bounded so that generated names cannot make this grow
-     * without limit; once the bound is reached the warning is simply not logged
-     * again.
-     */
-    private static final Set<String> warnedMediaFiles = ConcurrentHashMap
-            .newKeySet();
-    private static final int WARNED_MEDIA_FILES_LIMIT = 100;
-
-    /**
-     * The handler without byte ranges that is warned about once this source is
-     * attached, unless the source is given another one first.
-     */
-    private @Nullable DownloadHandler handlerWithoutRanges;
 
     /**
      * Creates a new source without a URL.
@@ -124,7 +108,6 @@ public class Source extends HtmlComponent {
      *            URL
      */
     public void setSrc(@Nullable String src) {
-        handlerWithoutRanges = null;
         if (src == null) {
             getElement().removeAttribute(SRC_ATTRIBUTE);
         } else {
@@ -141,15 +124,16 @@ public class Source extends HtmlComponent {
      * {@link DownloadHandler}, as well as for other
      * {@link AbstractDownloadHandler} implementations.
      * <p>
-     * The handler is wrapped with {@link DownloadHandler#allowDisabled()} so
-     * that the media file is still served when the media component, or one of
-     * its ancestors, is disabled. The browser fetches it as part of rendering
-     * rather than as a user action, so blocking the request on the disabled
-     * state would leave the player empty.
+     * The media file is served even when the media component, or one of its
+     * ancestors, is disabled, as with {@link DownloadHandler#allowDisabled()}.
+     * The browser fetches it as part of rendering rather than as a user action,
+     * so blocking the request on the disabled state would leave the player
+     * empty.
      * <p>
      * A player seeks by requesting byte ranges of the media file, and Safari
      * does not play audio or video without them. In development mode a warning
-     * is logged when the handler does not answer them, as reported by
+     * is logged the first time the browser requests a range from a handler that
+     * does not answer them, as reported by
      * {@link DownloadHandler#isRangeRequestsEnabled()}.
      *
      * @param downloadHandler
@@ -164,51 +148,7 @@ public class Source extends HtmlComponent {
             handler.inline();
         }
         getElement().setAttribute(SRC_ATTRIBUTE,
-                downloadHandler.allowDisabled());
-        if (downloadHandler.isRangeRequestsEnabled()) {
-            handlerWithoutRanges = null;
-        } else {
-            handlerWithoutRanges = downloadHandler;
-            getElement().getNode().runWhenAttached(ui -> {
-                if (handlerWithoutRanges == downloadHandler) {
-                    warnAboutMissingRangeRequests(ui, downloadHandler);
-                }
-            });
-        }
-    }
-
-    /**
-     * Forgets which media files have already been warned about, so that tests
-     * do not depend on the ones that ran before them.
-     */
-    static void clearWarnedMediaFiles() {
-        warnedMediaFiles.clear();
-    }
-
-    private static void warnAboutMissingRangeRequests(UI ui,
-            DownloadHandler downloadHandler) {
-        if (ui.getInternals().getDeploymentConfiguration().isProductionMode()) {
-            return;
-        }
-        String urlPostfix = downloadHandler.getUrlPostfix();
-        String mediaFile;
-        if (urlPostfix != null) {
-            mediaFile = "The media file '%s'".formatted(urlPostfix);
-        } else if (downloadHandler.getClass().isHidden()) {
-            // The class of a lambda has a generated name, so it is named after
-            // the class that declares the lambda instead
-            mediaFile = "A media file served by a lambda in %s".formatted(
-                    downloadHandler.getClass().getNestHost().getName());
-        } else {
-            mediaFile = "A media file served by %s"
-                    .formatted(downloadHandler.getClass().getName());
-        }
-        if (warnedMediaFiles.size() < WARNED_MEDIA_FILES_LIMIT
-                && warnedMediaFiles.add(mediaFile)) {
-            LoggerFactory.getLogger(Source.class).warn(
-                    "{} does not answer byte range requests, so the player cannot seek in it and Safari does not play it. Serve it with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or return true from isRangeRequestsEnabled() in a handler class of your own that answers them.",
-                    mediaFile);
-        }
+                new MediaFileHandler(downloadHandler));
     }
 
     /**
@@ -251,5 +191,72 @@ public class Source extends HtmlComponent {
      */
     public @Nullable String getType() {
         return getElement().getAttribute(TYPE_ATTRIBUTE);
+    }
+
+    /**
+     * Serves the media file through the given handler even when the source is
+     * disabled, and warns in development mode the first time the browser
+     * requests a byte range that the handler does not answer.
+     */
+    private static final class MediaFileHandler implements DownloadHandler {
+
+        private final DownloadHandler handler;
+        private final AtomicBoolean warned = new AtomicBoolean();
+
+        private MediaFileHandler(DownloadHandler handler) {
+            this.handler = handler;
+        }
+
+        @Override
+        public void handleDownloadRequest(DownloadEvent event)
+                throws IOException {
+            if (event.getRequest().getHeader("Range") != null
+                    && !handler.isRangeRequestsEnabled()
+                    && !event.getRequest().getService()
+                            .getDeploymentConfiguration().isProductionMode()
+                    && warned.compareAndSet(false, true)) {
+                LoggerFactory.getLogger(Source.class).warn(
+                        "{} does not answer byte range requests, so the player cannot seek in it and Safari does not play it. Serve it with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or return true from isRangeRequestsEnabled() in a handler class of your own that answers them.",
+                        describeMediaFile());
+            }
+            handler.handleDownloadRequest(event);
+        }
+
+        private String describeMediaFile() {
+            String urlPostfix = handler.getUrlPostfix();
+            if (urlPostfix != null) {
+                return "The media file '%s'".formatted(urlPostfix);
+            }
+            if (handler.getClass().isHidden()) {
+                // The class of a lambda has a generated name, so it is named
+                // after the class that declares the lambda instead
+                return "A media file served by a lambda in %s"
+                        .formatted(handler.getClass().getNestHost().getName());
+            }
+            return "A media file served by %s"
+                    .formatted(handler.getClass().getName());
+        }
+
+        @Override
+        public String getUrlPostfix() {
+            return handler.getUrlPostfix();
+        }
+
+        @Override
+        public boolean isAllowInert() {
+            return handler.isAllowInert();
+        }
+
+        @Override
+        public boolean isRangeRequestsEnabled() {
+            return handler.isRangeRequestsEnabled();
+        }
+
+        @Override
+        public DisabledUpdateMode getDisabledUpdateMode() {
+            // The browser fetches the media file as part of rendering rather
+            // than as a user action
+            return DisabledUpdateMode.ALWAYS;
+        }
     }
 }
