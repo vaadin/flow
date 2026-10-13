@@ -143,6 +143,13 @@
                     <contains string="${atmosphere.js.contents}" substring="&quot;unload&quot;"/>
                   </condition>
                 </fail>
+                <fail message="atmosphere.js does not register the pagehide listener, update the pagehide replacement in flow-push/pom.xml">
+                  <condition>
+                    <not>
+                      <contains string="${atmosphere.js.contents}" substring="atmosphere.util.on(window, &quot;pagehide&quot;, atmosphere.callbacks.unload)"/>
+                    </not>
+                  </condition>
+                </fail>
 
                 <loadfile property="vaadinPush.js.contents" srcfile="${templates.dir}/vaadinPush.js.tpl">
                   <filterchain>
