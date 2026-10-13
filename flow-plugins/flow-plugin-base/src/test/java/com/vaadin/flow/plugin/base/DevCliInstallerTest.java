@@ -145,6 +145,26 @@ public class DevCliInstallerTest {
     }
 
     @Test
+    public void report_namesWhatWasWrittenAndCountsWhatWasLeftAlone()
+            throws IOException {
+        Path root = temporaryFolder.getRoot().toPath();
+        DevCliInstaller.report(DevCliInstaller.install(root), root, info::add);
+
+        // Paths relative to the install directory, as the developer would
+        // type them when committing.
+        Assert.assertTrue(info.contains("Installed .vaadin/vaadin-dev"));
+        Assert.assertTrue("a fresh install should say what to commit",
+                info.stream().anyMatch(line -> line.startsWith("Commit ")));
+
+        info.clear();
+        DevCliInstaller.report(DevCliInstaller.install(root), root, info::add);
+
+        Assert.assertEquals(
+                List.of(INSTALLED.size() + " file(s) already up to date"),
+                info);
+    }
+
+    @Test
     public void install_replacesAnEditedFile() throws IOException {
         Path root = temporaryFolder.getRoot().toPath();
         DevCliInstaller.install(root);
