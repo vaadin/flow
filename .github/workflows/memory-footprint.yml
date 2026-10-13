@@ -65,7 +65,7 @@ env:
   MEASURED_PATHS: pom.xml flow-push flow-test-generic flow-server flow-data flow-html-components
   # Where a cached measurement is restored to and saved from. The path is part
   # of the cache version, so it has to be the same for the head and the base.
-  CACHED: ${{ github.workspace }}/../memory-footprint
+  CACHED: ${{ github.workspace }}/.memory-footprint
 
 jobs:
   measure:
