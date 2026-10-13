@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -153,7 +154,12 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
                             + canonicalDestinationDirectory);
                 }
 
-                copyTarFileContents(tarIn, tarEntry, destPath);
+                if (tarEntry.isSymbolicLink()) {
+                    createSymbolicLink(tarEntry, destPath,
+                            canonicalDestinationDirectory);
+                } else {
+                    copyTarFileContents(tarIn, tarEntry, destPath);
+                }
                 tarEntry = tarIn.getNextTarEntry();
             }
         }
@@ -184,6 +190,37 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
         try (FileOutputStream out = new FileOutputStream(destinationFile)) {
             IOUtils.copy(tarIn, out);
         }
+    }
+
+    /**
+     * Create a symbolic link for a TarArchiveEntry. Only links that resolve to
+     * a location inside the destination directory are allowed.
+     *
+     * @param tarEntry
+     *            symbolic link tar archive entry
+     * @param destinationFile
+     *            location of the link
+     * @param canonicalDestinationDirectory
+     *            canonical path of the extraction directory
+     * @throws IOException
+     *             thrown if the link points outside of the destination
+     *             directory or creating the link fails
+     */
+    private void createSymbolicLink(TarArchiveEntry tarEntry,
+            File destinationFile, String canonicalDestinationDirectory)
+            throws IOException {
+        Path linkPath = destinationFile.toPath();
+        Path linkTarget = Paths.get(tarEntry.getLinkName());
+        File resolvedTarget = linkPath.getParent().resolve(linkTarget).toFile();
+        if (linkTarget.isAbsolute()
+                || !startsWithPath(resolvedTarget.getCanonicalPath(),
+                        canonicalDestinationDirectory)) {
+            throw new IOException("Symbolic link " + tarEntry.getName() + " -> "
+                    + tarEntry.getLinkName() + " would point outside of "
+                    + canonicalDestinationDirectory);
+        }
+        Files.deleteIfExists(linkPath);
+        Files.createSymbolicLink(linkPath, linkTarget);
     }
 
     private void prepDestination(File path, boolean directory)

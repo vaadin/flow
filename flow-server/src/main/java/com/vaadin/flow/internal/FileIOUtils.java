@@ -131,6 +131,10 @@ public class FileIOUtils {
 
     /**
      * Copies a directory recursively.
+     * <p>
+     * Relative symbolic links that point to a location inside the source
+     * directory are copied as links, so they keep working in the copy. Other
+     * symbolic links are followed and the content they point to is copied.
      *
      * @param source
      *            the source directory
@@ -145,7 +149,8 @@ public class FileIOUtils {
     }
 
     /**
-     * Copies a directory recursively with a file filter.
+     * Copies a directory recursively with a file filter. Symbolic links are
+     * handled as in {@link #copyDirectory(File, File)}.
      *
      * @param source
      *            the source directory
@@ -179,12 +184,26 @@ public class FileIOUtils {
             public FileVisitResult visitFile(Path file,
                     BasicFileAttributes attrs) throws IOException {
                 if (filter == null || filter.accept(file.toFile())) {
-                    Files.copy(file, target.resolve(source.relativize(file)),
-                            StandardCopyOption.REPLACE_EXISTING);
+                    Path targetFile = target.resolve(source.relativize(file));
+                    if (attrs.isSymbolicLink()
+                            && isRelativeLinkWithin(file, source)) {
+                        Files.copy(file, targetFile, LinkOption.NOFOLLOW_LINKS,
+                                StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        Files.copy(file, targetFile,
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
                 }
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    private static boolean isRelativeLinkWithin(Path link, Path directory)
+            throws IOException {
+        Path linkTarget = Files.readSymbolicLink(link);
+        return !linkTarget.isAbsolute() && link.getParent().resolve(linkTarget)
+                .normalize().startsWith(directory.normalize());
     }
 
     /**

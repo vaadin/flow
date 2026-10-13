@@ -550,4 +550,33 @@ class FileIOUtilsTest {
         assertFalse(FileIOUtils.deleteQuietly((File) null));
         assertFalse(FileIOUtils.deleteQuietly((Path) null));
     }
+
+    @Test
+    void copyDirectory_internalRelativeLinkKept_otherLinksFollowed(
+            @TempDir File dir) throws Exception {
+        assumeFalse(OSUtils.isWindows());
+        Path source = dir.toPath().resolve("source");
+        Files.createDirectories(source.resolve("bin"));
+        Files.createDirectories(source.resolve("lib"));
+        Files.writeString(source.resolve("lib/cli.js"), "cli");
+        Files.createSymbolicLink(source.resolve("bin/cli"),
+                Path.of("../lib/cli.js"));
+        Path outside = dir.toPath().resolve("outside.txt");
+        Files.writeString(outside, "outside");
+        Files.createSymbolicLink(source.resolve("bin/outside"),
+                Path.of("../../outside.txt"));
+        Path target = dir.toPath().resolve("target");
+
+        FileIOUtils.copyDirectory(source.toFile(), target.toFile());
+
+        Path copiedLink = target.resolve("bin/cli");
+        assertTrue(Files.isSymbolicLink(copiedLink));
+        assertEquals(Path.of("../lib/cli.js"),
+                Files.readSymbolicLink(copiedLink));
+        assertEquals("cli", Files.readString(copiedLink));
+
+        Path copiedOutside = target.resolve("bin/outside");
+        assertFalse(Files.isSymbolicLink(copiedOutside));
+        assertEquals("outside", Files.readString(copiedOutside));
+    }
 }

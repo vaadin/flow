@@ -24,15 +24,19 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.internal.FrontendUtils;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 class DefaultArchiveExtractorTest {
 
@@ -143,4 +147,52 @@ class DefaultArchiveExtractorTest {
                 archiveExtractionException.getCause().getMessage());
     }
 
+    @Test
+    void extractTarGz_symbolicLinkIsExtractedAsLink()
+            throws IOException, ArchiveExtractionException {
+        assumeFalse(FrontendUtils.isWindows());
+        File archiveFile = createTarGzWithSymbolicLink("bin/npm",
+                "../lib/npm-cli.js");
+
+        new DefaultArchiveExtractor().extract(archiveFile, targetDir);
+
+        Path link = targetDir.toPath().resolve("bin/npm");
+        assertTrue(Files.isSymbolicLink(link),
+                "Symbolic link was not extracted as a link");
+        assertEquals(Path.of("../lib/npm-cli.js"),
+                Files.readSymbolicLink(link));
+        assertEquals("cli", Files.readString(link));
+    }
+
+    @Test
+    void extractTarGz_symbolicLinkOutsideTarget_ArchiveExtractionExceptionIsThrown()
+            throws IOException {
+        File archiveFile = createTarGzWithSymbolicLink("bin/npm",
+                "../../outside.js");
+
+        DefaultArchiveExtractor extractor = new DefaultArchiveExtractor();
+        assertThrows(ArchiveExtractionException.class,
+                () -> extractor.extract(archiveFile, targetDir));
+    }
+
+    private File createTarGzWithSymbolicLink(String linkName, String target)
+            throws IOException {
+        File archiveFile = new File(baseDir, "archive.tar.gz");
+        byte[] content = "cli".getBytes();
+        try (OutputStream fo = Files.newOutputStream(archiveFile.toPath());
+                OutputStream gzo = new GzipCompressorOutputStream(fo);
+                TarArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+            TarArchiveEntry file = new TarArchiveEntry("lib/npm-cli.js");
+            file.setSize(content.length);
+            o.putArchiveEntry(file);
+            o.write(content);
+            o.closeArchiveEntry();
+            TarArchiveEntry link = new TarArchiveEntry(linkName,
+                    TarArchiveEntry.LF_SYMLINK);
+            link.setLinkName(target);
+            o.putArchiveEntry(link);
+            o.closeArchiveEntry();
+        }
+        return archiveFile;
+    }
 }
