@@ -242,7 +242,7 @@ public abstract class AbstractNavigationStateRenderer
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
-        cleanModalComponents(event);
+        removeOverlayComponents(event);
 
         // Change the UI according to the navigation Component chain.
         ui.getInternals().showRouteTarget(event.getLocation(),
@@ -370,27 +370,17 @@ public abstract class AbstractNavigationStateRenderer
 
     /**
      * If a route refresh has been requested, remove all components with
-     * modality, that is both strictly and visually modal components. This is
-     * necessary because maintaining the correct modality cardinality and order
-     * is not feasible without knowing who opened them and when.
-     * <p>
-     * Components with modality, such as dialogs, are usually attached to the UI
-     * instead of the route they are opened from, so they would otherwise
-     * survive the refresh and keep showing outdated contents.
+     * modality and overlays attached to the UI. This is necessary because they
+     * would otherwise stay open with content from the previous route instance,
+     * and maintaining the correct modality cardinality and order is not
+     * feasible without knowing who opened them and when.
      *
      * @param event
      *            navigation event
      */
-    private static void cleanModalComponents(NavigationEvent event) {
+    private static void removeOverlayComponents(NavigationEvent event) {
         if (event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
-            List<Component> modalityComponents = event.getUI().getInternals()
-                    .getModalityComponents();
-            // Components with modality nested inside another one go away
-            // together with it, and must stay in their parent. The rest are
-            // removed most recently set first.
-            modalityComponents.stream().filter(component -> component
-                    .findAncestor(modalityComponents::contains).isEmpty())
-                    .forEachOrdered(Component::removeFromParent);
+            event.getUI().getInternals().removeOverlayComponents();
         }
     }
 

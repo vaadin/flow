@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -367,6 +368,8 @@ public class UIInternals implements Serializable {
      * components are the entries with ModalityMode.STRICT.
      */
     private ArrayDeque<ModalityEntry> modalityStack;
+
+    private LinkedHashSet<Component> overlayComponents;
 
     private Element wrapperElement;
 
@@ -1631,10 +1634,11 @@ public class UIInternals implements Serializable {
      * component, and optionally all layouts in the route chain.
      * <p>
      *
-     * If components with modality are currently defined for the UI, the whole
-     * route chain will be refreshed regardless the {@code refreshRouteChain}
-     * parameter, because otherwise it would not be possible to preserve the
-     * correct modality cardinality and order.
+     * If components with modality or overlays are currently attached to the UI,
+     * they are removed and the whole route chain will be refreshed regardless
+     * the {@code refreshRouteChain} parameter, because otherwise it would not
+     * be possible to preserve the correct modality cardinality and order, and
+     * any route target or layout may have opened them.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
@@ -1648,7 +1652,7 @@ public class UIInternals implements Serializable {
         } else {
             getRouter().navigate(ui, locationForRefresh,
                     NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, true,
-                    refreshRouteChain || hasModalityComponent());
+                    refreshRouteChain || hasOverlayComponent());
         }
     }
 
@@ -2327,6 +2331,81 @@ public class UIInternals implements Serializable {
         }
         if ((previousActiveModal == null) != (activeModal == null)) {
             ElementUtil.setInert(ui.getElement(), activeModal != null);
+        }
+    }
+
+    /**
+     * Registers a direct child of the UI as an overlay, such as a dialog or a
+     * notification that added itself to the UI when it opened. The UI does not
+     * know who opened an overlay, so a route refresh removes it instead of
+     * leaving it open with content from the previous route instance. The
+     * registration ends automatically when the component is detached.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param child
+     *            the direct UI child to register as an overlay
+     */
+    public void setChildOverlay(Component child) {
+        if (overlayComponents == null) {
+            overlayComponents = new LinkedHashSet<>();
+        }
+        if (overlayComponents.add(child)) {
+            AtomicReference<Registration> detachRegistration = new AtomicReference<>();
+            detachRegistration.set(child.getElement().addDetachListener(e -> {
+                overlayComponents.remove(child);
+                detachRegistration.get().remove();
+            }));
+        }
+    }
+
+    /**
+     * Checks if the UI has an overlay or a component with modality attached.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return {@code true} if an overlay or a component with modality is
+     *         attached
+     * @see #setChildOverlay(Component)
+     * @see #hasModalityComponent()
+     */
+    public boolean hasOverlayComponent() {
+        return hasModalityComponent()
+                || (overlayComponents != null && !overlayComponents.isEmpty());
+    }
+
+    /**
+     * Removes all overlays and components with modality from the UI, and marks
+     * those that have an {@code opened} property as closed.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @see #setChildOverlay(Component)
+     * @see #getModalityComponents()
+     */
+    public void removeOverlayComponents() {
+        List<Component> modalityComponents = getModalityComponents();
+        // Components with modality nested inside another one go away
+        // together with it, and must stay in their parent. The rest are
+        // removed most recently set first.
+        modalityComponents.stream()
+                .filter(component -> component
+                        .findAncestor(modalityComponents::contains).isEmpty())
+                .forEachOrdered(UIInternals::removeAndClose);
+        if (overlayComponents != null) {
+            List.copyOf(overlayComponents).forEach(UIInternals::removeAndClose);
+        }
+    }
+
+    private static void removeAndClose(Component component) {
+        component.removeFromParent();
+        // An instance that outlives the route, such as a UI scoped bean,
+        // would otherwise still be opened on the server, and opening it again
+        // would do nothing. The element is already detached, so nothing is
+        // sent to the browser.
+        Element element = component.getElement();
+        if (element.hasProperty("opened")) {
+            element.setProperty("opened", false);
         }
     }
 

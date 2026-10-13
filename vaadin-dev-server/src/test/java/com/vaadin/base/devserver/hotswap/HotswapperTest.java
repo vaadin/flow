@@ -868,6 +868,40 @@ class HotswapperTest {
     }
 
     @Test
+    void onHotswap_pushEnabled_modelessOverlayClassChanged_activeChainRefreshed()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session,
+                MyRouteWithOverlay.class);
+        ui.enablePush();
+
+        hotswapper.onHotswap(new String[] { MyOverlay.class.getName() }, true);
+
+        ui.assertChainRefreshed();
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+    }
+
+    @Test
+    void onHotswap_pushEnabled_modelessOverlayOpen_classUnrelatedToUIChanged_UINotRefreshed()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session,
+                MyRouteWithOverlay.class);
+        ui.enablePush();
+
+        hotswapper.onHotswap(new String[] { String.class.getName() }, true);
+
+        ui.assertNotRefreshed();
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
+    }
+
+    @Test
     void onHotswap_pushEnabled_routeLayoutClassChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
@@ -1580,6 +1614,27 @@ class HotswapperTest {
             MyComponent overlay = new MyComponent();
             ui.add(overlay);
             ui.setChildComponentModal(overlay, ModalityMode.VISUAL);
+        }
+
+    }
+
+    @Tag("my-overlay")
+    public static class MyOverlay extends Component {
+
+    }
+
+    // Simulates a modeless overlay, such as a Notification, that is attached
+    // to the UI without modality
+    @Tag("my-route-with-overlay")
+    public static class MyRouteWithOverlay extends Component
+            implements AfterNavigationObserver {
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            UI ui = event.getLocationChangeEvent().getUI();
+            MyOverlay overlay = new MyOverlay();
+            ui.add(overlay);
+            ui.setChildComponentModal(overlay, ModalityMode.MODELESS);
         }
 
     }
