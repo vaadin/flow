@@ -79,7 +79,10 @@ class DefaultInstantiatorI18NTest {
         createTranslationFiles(translations);
 
         // A JVM default locale that has a bundle must not be used as a
-        // fallback for a locale without one.
+        // fallback for a locale without one. The default is set
+        // unconditionally, so the original default of the JVM running the
+        // test does not matter; "de" has a bundle and differs from the
+        // "en_GB" locale asserted to get the base bundle.
         Locale defaultLocale = Locale.getDefault();
         Locale.setDefault(new Locale("de"));
         try {
