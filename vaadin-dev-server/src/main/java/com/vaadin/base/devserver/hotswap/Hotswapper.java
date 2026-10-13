@@ -532,8 +532,9 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     // and computes the UI refresh strategy:
     // - if an affected component is child of current route, request for a route
     // refresh, but continue to check potential layouts
-    // - if an affected component is child of a layout immediately stop search
-    // and request a target chain refresh
+    // - if an affected component is child of a layout, or attached to the UI
+    // outside the route chain, immediately stop search and request a target
+    // chain refresh
     private static UIRefreshStrategy computeRefreshStrategyForUITree(UI ui,
             Set<Class<?>> changedClasses, List<HasElement> targetsChain,
             HasElement route) {
@@ -546,7 +547,15 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     clazz -> clazz.isAssignableFrom(child.getClass()))) {
                 Component parent = child.getParent().orElse(null);
                 while (parent != null) {
-                    if (!targetsChain.contains(parent)) {
+                    if (parent == ui) {
+                        // Not owned by the route chain, e.g. an open dialog
+                        // that added itself to the UI. Any route target or
+                        // layout may have opened it, and the refresh removes
+                        // it, so refresh the whole chain.
+                        refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+                        parent = null;
+                        stack.clear();
+                    } else if (!targetsChain.contains(parent)) {
                         parent = parent.getParent().orElse(null);
                     } else if (parent == route) {
                         refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_ROUTE;

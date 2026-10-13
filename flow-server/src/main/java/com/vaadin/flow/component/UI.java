@@ -1600,6 +1600,10 @@ public class UI extends Component
      * In development mode, local signal field values are automatically
      * transferred from the old component instance to the new one, preserving UI
      * state across refreshes.
+     * <p>
+     * Overlays that were added to the UI when they opened, such as dialogs and
+     * notifications, and modal components are removed. In that case the whole
+     * route chain is refreshed, regardless of {@code refreshRouteChain}.
      *
      * @param refreshRouteChain
      *            {@code true} to refresh all layouts in the route chain,
@@ -1989,6 +1993,12 @@ public class UI extends Component
             getInternals().setChildModal(childComponent);
         } else {
             getInternals().setChildModeless(childComponent);
+        }
+        // Overlays such as Dialog and Notification add themselves to the UI
+        // and set their modality when they open, in any mode. A component
+        // inside a route target or a layout is refreshed with it instead.
+        if (childComponent.getParent().orElse(null) == this) {
+            getInternals().setChildOverlay(childComponent);
         }
     }
 

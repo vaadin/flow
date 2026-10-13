@@ -43,6 +43,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -993,7 +994,7 @@ class NavigationStateRendererTest {
     }
 
     @Test
-    void handle_refreshRoute_modalComponentsDetached() {
+    void handle_refreshRoute_modalComponentsAndOverlaysDetached() {
         beforeEnterCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -1030,8 +1031,13 @@ class NavigationStateRendererTest {
         }
 
         ModalComponent modalComponent = new ModalComponent();
+        ModalComponent overlay = new ModalComponent();
+        ModalComponent uiChild = new ModalComponent();
         MockUI ui = new MockUI(session);
         ui.addModal(modalComponent);
+        ui.add(overlay, uiChild);
+        ui.setChildComponentModal(overlay, ModalityMode.VISUAL);
+        overlay.getElement().setProperty("opened", true);
 
         renderer.handle(new NavigationEvent(router, new Location(""), ui,
                 NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, false,
@@ -1039,6 +1045,11 @@ class NavigationStateRendererTest {
 
         assertEquals(1, modalComponent.attachCount);
         assertEquals(1, modalComponent.detachCount);
+        assertEquals(1, overlay.detachCount);
+        assertFalse(overlay.getElement().getProperty("opened", true),
+                "A removed overlay should be closed, so that it can be opened again");
+        assertEquals(0, uiChild.detachCount,
+                "A UI child that is not an overlay should stay attached");
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {

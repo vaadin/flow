@@ -242,7 +242,7 @@ public abstract class AbstractNavigationStateRenderer
         List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
                 .subList(1, chain.size());
 
-        cleanModalComponents(event);
+        removeOverlayComponents(event);
 
         // Change the UI according to the navigation Component chain.
         ui.getInternals().showRouteTarget(event.getLocation(),
@@ -369,21 +369,18 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
-     * If a route refresh has been requested, remove all modal components. This
-     * is necessary because maintaining the correct modality cardinality and
-     * order is not feasible without knowing who opened them and when.
+     * If a route refresh has been requested, remove all modal components and
+     * overlays attached to the UI. This is necessary because they would
+     * otherwise stay open with content from the previous route instance, and
+     * maintaining the correct modality cardinality and order is not feasible
+     * without knowing who opened them and when.
      *
      * @param event
      *            navigation event
      */
-    private static void cleanModalComponents(NavigationEvent event) {
-        if (event.getUI().hasModalComponent()
-                && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
-            Component modalComponent;
-            while ((modalComponent = event.getUI().getInternals()
-                    .getActiveModalComponent()) != null) {
-                modalComponent.removeFromParent();
-            }
+    private static void removeOverlayComponents(NavigationEvent event) {
+        if (event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
+            event.getUI().getInternals().removeOverlayComponents();
         }
     }
 
