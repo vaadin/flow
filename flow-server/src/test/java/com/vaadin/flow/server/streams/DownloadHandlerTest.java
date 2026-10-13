@@ -77,6 +77,32 @@ class DownloadHandlerTest {
     }
 
     @Test
+    void allowDisabled_forwardsHandleRequestOverride() throws Exception {
+        AtomicReference<VaadinRequest> received = new AtomicReference<>();
+        DownloadHandler delegate = new DownloadHandler() {
+            @Override
+            public void handleRequest(VaadinRequest request,
+                    VaadinResponse response, VaadinSession session,
+                    Element owner) {
+                received.set(request);
+            }
+
+            @Override
+            public void handleDownloadRequest(DownloadEvent event) {
+                throw new AssertionError(
+                        "The override of handleRequest should handle the request");
+            }
+        };
+        VaadinRequest request = mock(VaadinRequest.class);
+
+        delegate.allowDisabled().handleRequest(request,
+                mock(VaadinResponse.class), mock(VaadinSession.class),
+                mock(Element.class));
+
+        assertSame(request, received.get());
+    }
+
+    @Test
     void allowDisabled_forwardsUrlPostfixAllowInertAndRangeRequests() {
         DownloadHandler delegate = new DownloadHandler() {
             @Override
