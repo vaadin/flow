@@ -126,6 +126,9 @@ public interface DownloadHandler extends ElementRequestHandler {
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owner) throws IOException {
+        if (!isRangeRequestsEnabled() && request.getHeader("Range") != null) {
+            UnansweredRangeRequests.warnOnce(this, request);
+        }
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, owner);
 
@@ -141,6 +144,9 @@ public interface DownloadHandler extends ElementRequestHandler {
      * request. A handler that does may still send the whole content for a
      * particular response, for example when the length of its content is not
      * known. The default implementation returns {@code false}.
+     * <p>
+     * In development mode, a warning is logged the first time that a handler of
+     * a class that does not answer them receives a byte range request.
      *
      * @return {@code true} if the handler is configured to answer byte range
      *         requests
@@ -163,7 +169,7 @@ public interface DownloadHandler extends ElementRequestHandler {
      * the browser fetches passively as part of rendering, such as the
      * {@code src} of an icon or image inside a disabled container.
      * <p>
-     * This method returns a wrapper that delegates
+     * This method returns a wrapper that delegates {@link #handleRequest},
      * {@link #handleDownloadRequest}, {@link #getUrlPostfix()},
      * {@link #isAllowInert()} and {@link #isRangeRequestsEnabled()} to this
      * handler and overrides {@link #getDisabledUpdateMode()} to return
@@ -181,6 +187,13 @@ public interface DownloadHandler extends ElementRequestHandler {
         }
         DownloadHandler delegate = this;
         return new DownloadHandler() {
+            @Override
+            public void handleRequest(VaadinRequest request,
+                    VaadinResponse response, VaadinSession session,
+                    Element owner) throws IOException {
+                delegate.handleRequest(request, response, session, owner);
+            }
+
             @Override
             public void handleDownloadRequest(DownloadEvent event)
                     throws IOException {
