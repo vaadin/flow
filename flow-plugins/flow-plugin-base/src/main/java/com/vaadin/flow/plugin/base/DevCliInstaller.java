@@ -218,8 +218,10 @@ public final class DevCliInstaller {
      *
      * @param daemonJar
      *            the {@code flow-devloop-daemon} jar the project resolves
-     * @param adapter
-     *            the plugin adapter to report through
+     * @param info
+     *            where progress and the outcome are reported
+     * @param warn
+     *            where a warning is reported when the daemon cannot provision
      * @return the provisioned jar, or empty when that daemon is too old to
      *         carry the provisioning code - in which case a warning has been
      *         reported and the first {@code start} downloads as before
@@ -228,7 +230,7 @@ public final class DevCliInstaller {
      *             found in the cache nor downloaded
      */
     public static Optional<Path> provisionHotswapAgent(Path daemonJar,
-            PluginAdapterBase adapter) throws IOException {
+            Consumer<String> info, Consumer<String> warn) throws IOException {
         try (URLClassLoader loader = new URLClassLoader(
                 new URL[] { daemonJar.toUri().toURL() },
                 ClassLoader.getPlatformClassLoader())) {
@@ -237,19 +239,18 @@ public final class DevCliInstaller {
                 provisioner = loader.loadClass(PROVISIONER);
             } catch (ClassNotFoundException e) {
                 LOGGER.debug("No {} in {}", PROVISIONER, daemonJar, e);
-                adapter.logWarn("The dev-loop daemon in " + daemonJar
+                warn.accept("The dev-loop daemon in " + daemonJar
                         + " is older than this plugin and cannot provision "
                         + "HotswapAgent, so the first `vaadin-dev start` will "
                         + "download it and will need network access to do so");
                 return Optional.empty();
             }
+            String version = (String) provisioner.getField("VERSION").get(null);
             // Parameter and return type both come from java.base, so the two
             // class loaders agree on them with nothing to adapt between them.
-            Consumer<String> progress = adapter::logInfo;
-            String version = (String) provisioner.getField("VERSION").get(null);
             Path jar = (Path) provisioner.getMethod("provision", Consumer.class)
-                    .invoke(null, progress);
-            adapter.logInfo("HotswapAgent " + version + " is ready at " + jar
+                    .invoke(null, info);
+            info.accept("HotswapAgent " + version + " is ready at " + jar
                     + " - the dev loop needs no network for it");
             return Optional.of(jar);
         } catch (InvocationTargetException e) {
@@ -375,27 +376,26 @@ public final class DevCliInstaller {
      * Reports what an installation did, in the order a reader wants it: what
      * changed, then what was left alone and why.
      * <p>
-     * Through the plugin adapter rather than a logger of its own, so the output
-     * lands in the build log the developer is already reading - the same route
-     * {@code BuildFrontendUtil} uses.
+     * Through the caller's build log rather than a logger of its own, so the
+     * output lands where the developer is already reading.
      *
      * @param result
      *            the installation result
      * @param targetDirectory
      *            the directory installed into, for relative reporting
-     * @param adapter
-     *            the plugin adapter to report through
+     * @param info
+     *            where the report is written
      */
     public static void report(Result result, Path targetDirectory,
-            PluginAdapterBase adapter) {
-        result.written().forEach(path -> adapter
-                .logInfo("Installed " + relative(targetDirectory, path)));
+            Consumer<String> info) {
+        result.written().forEach(path -> info
+                .accept("Installed " + relative(targetDirectory, path)));
         if (!result.unchanged().isEmpty()) {
-            adapter.logInfo(
+            info.accept(
                     result.unchanged().size() + " file(s) already up to date");
         }
         if (!result.written().isEmpty()) {
-            adapter.logInfo(
+            info.accept(
                     "Commit .vaadin/, .agents/skills/ and .claude/skills/ - they are project tooling, like mvnw");
         }
     }

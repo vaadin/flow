@@ -22,10 +22,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
+import org.apache.maven.project.MavenProject;
 
 import com.vaadin.flow.plugin.base.DevCliInstaller;
 
@@ -65,10 +67,18 @@ import com.vaadin.flow.plugin.base.DevCliInstaller;
  * application module: in a reactor that means {@code -pl :app}, which is also
  * where the CLI's own {@code .vaadin/vaadin-dev} invocations are rooted.
  * <p>
+ * A plain mojo rather than a {@link FlowModeAbstractMojo}: it reads no project
+ * classes, so it has no use for the isolated class loader and the class
+ * scanning that one sets up, which on a large classpath would dominate the time
+ * the goal takes.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 @Mojo(name = "install-dev-cli", requiresDependencyResolution = ResolutionScope.TEST)
-public class InstallDevCliMojo extends FlowModeAbstractMojo {
+public class InstallDevCliMojo extends AbstractMojo {
+
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    MavenProject project;
 
     /**
      * Where to install. Defaults to the module the goal runs on, which is what
@@ -91,11 +101,11 @@ public class InstallDevCliMojo extends FlowModeAbstractMojo {
     private boolean skipHotswapAgent;
 
     @Override
-    protected void executeInternal() throws MojoFailureException {
+    public void execute() throws MojoFailureException {
         Path target = targetDirectory.toPath();
         try {
             DevCliInstaller.report(DevCliInstaller.install(target), target,
-                    this);
+                    getLog()::info);
         } catch (IOException e) {
             throw new MojoFailureException(
                     "Could not install the vaadin-dev CLI into " + target, e);
@@ -104,8 +114,9 @@ public class InstallDevCliMojo extends FlowModeAbstractMojo {
         // for a reason outside the machine, so an unreachable GitHub still
         // leaves a project with a working CLI to report the problem from.
         if (skipHotswapAgent) {
-            logInfo("Skipping HotswapAgent; the first `vaadin-dev start` will "
-                    + "download it, and will need network access to do so");
+            getLog().info(
+                    "Skipping HotswapAgent; the first `vaadin-dev start` will "
+                            + "download it, and will need network access to do so");
             return;
         }
         Optional<Path> daemon = daemonJar();
@@ -113,14 +124,16 @@ public class InstallDevCliMojo extends FlowModeAbstractMojo {
             // Not a failure: the scripts are installed and correct, and the
             // CLI itself reports this with the same remedy the moment it is
             // run. Saying it now saves finding out then.
-            logWarn("This project does not depend on the dev-loop daemon, so "
-                    + "there was no HotswapAgent to provision - and "
-                    + "`vaadin-dev` cannot run either until it does. Add "
-                    + "com.vaadin:vaadin-dev (optional) to the project.");
+            getLog().warn(
+                    "This project does not depend on the dev-loop daemon, so "
+                            + "there was no HotswapAgent to provision - and "
+                            + "`vaadin-dev` cannot run either until it does. Add "
+                            + "com.vaadin:vaadin-dev (optional) to the project.");
             return;
         }
         try {
-            DevCliInstaller.provisionHotswapAgent(daemon.get(), this);
+            DevCliInstaller.provisionHotswapAgent(daemon.get(), getLog()::info,
+                    getLog()::warn);
         } catch (IOException e) {
             throw new MojoFailureException(
                     "Could not provision HotswapAgent, so the dev loop would "
