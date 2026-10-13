@@ -142,9 +142,10 @@ public interface DownloadHandler extends ElementRequestHandler {
      * particular response, for example when the length of its content is not
      * known. The default implementation returns {@code false}.
      * <p>
-     * In development mode, a built-in handler that does not answer byte range
-     * requests logs a warning the first time a handler of its class receives
-     * one.
+     * In development mode, a built-in handler logs a warning the first time
+     * that a handler of its class serves the whole content for a byte range
+     * request, for example because ranges are not enabled or the length of the
+     * content is unknown.
      *
      * @return {@code true} if the handler is configured to answer byte range
      *         requests
