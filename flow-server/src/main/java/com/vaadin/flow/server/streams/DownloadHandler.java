@@ -127,7 +127,7 @@ public interface DownloadHandler extends ElementRequestHandler {
     default void handleRequest(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owner) throws IOException {
         if (!isRangeRequestsEnabled() && request.getHeader("Range") != null) {
-            UnansweredRangeRequests.warnOnce(this, request);
+            UnansweredRangeRequests.warnOnce(this, session);
         }
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, owner);
@@ -145,8 +145,11 @@ public interface DownloadHandler extends ElementRequestHandler {
      * particular response, for example when the length of its content is not
      * known. The default implementation returns {@code false}.
      * <p>
-     * In development mode, a warning is logged the first time that a handler of
-     * a class that does not answer them receives a byte range request.
+     * In development mode, a warning is logged the first time that a handler
+     * that does not answer them receives a byte range request for a particular
+     * file, unless the handler overrides
+     * {@link #handleRequest(VaadinRequest, VaadinResponse, VaadinSession, Element)}
+     * and so handles the request itself.
      *
      * @return {@code true} if the handler is configured to answer byte range
      *         requests

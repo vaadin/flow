@@ -162,17 +162,22 @@ class DownloadHandlerTest {
     }
 
     @Test
-    void handleRequest_rangeNotAnswered_warnsOncePerHandlerClassInDevelopmentMode()
+    void handleRequest_rangeNotAnswered_warnsOncePerMediaFileInDevelopmentMode()
             throws Throwable {
         VaadinService service = createService(false);
 
         List<String> warnings = captureWarnings(() -> {
-            request(new NamedHandler(false), service, "bytes=0-");
-            request(new NamedHandler(false), service, "bytes=4096-");
+            request(new NamedHandler("lake.webm", false), service, "bytes=0-");
+            request(new NamedHandler("lake.webm", false), service,
+                    "bytes=4096-");
+            request(new NamedHandler("intro.webm", false), service, "bytes=0-");
         });
 
-        assertEquals(List.of("The download handler "
-                + NamedHandler.class.getName() + " of 'lake.webm'"), warnings);
+        String handlerClass = NamedHandler.class.getName();
+        assertEquals(List.of(
+                "The download handler " + handlerClass + " of 'lake.webm'",
+                "The download handler " + handlerClass + " of 'intro.webm'"),
+                warnings);
     }
 
     @Test
@@ -193,9 +198,12 @@ class DownloadHandlerTest {
         VaadinService developmentMode = createService(false);
 
         List<String> warnings = captureWarnings(() -> {
-            request(new NamedHandler(true), developmentMode, "bytes=0-");
-            request(new NamedHandler(false), developmentMode, null);
-            request(new NamedHandler(false), createService(true), "bytes=0-");
+            request(new NamedHandler("lake.webm", true), developmentMode,
+                    "bytes=0-");
+            request(new NamedHandler("lake.webm", false), developmentMode,
+                    null);
+            request(new NamedHandler("lake.webm", false), createService(true),
+                    "bytes=0-");
         });
 
         assertEquals(List.of(), warnings);
@@ -215,9 +223,10 @@ class DownloadHandlerTest {
             String range) throws Exception {
         VaadinRequest request = mock(VaadinRequest.class);
         when(request.getHeader("Range")).thenReturn(range);
-        when(request.getService()).thenReturn(service);
-        handler.handleRequest(request, mock(VaadinResponse.class),
-                mock(VaadinSession.class), mock(Element.class));
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
+        handler.handleRequest(request, mock(VaadinResponse.class), session,
+                mock(Element.class));
     }
 
     /**
@@ -242,9 +251,11 @@ class DownloadHandlerTest {
     }
 
     private static class NamedHandler implements DownloadHandler {
+        private final String fileName;
         private final boolean rangeRequestsEnabled;
 
-        private NamedHandler(boolean rangeRequestsEnabled) {
+        private NamedHandler(String fileName, boolean rangeRequestsEnabled) {
+            this.fileName = fileName;
             this.rangeRequestsEnabled = rangeRequestsEnabled;
         }
 
@@ -255,7 +266,7 @@ class DownloadHandlerTest {
 
         @Override
         public String getUrlPostfix() {
-            return "lake.webm";
+            return fileName;
         }
 
         @Override

@@ -21,45 +21,51 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Warns in development mode about a byte range request that a
- * {@link DownloadHandler} does not answer, once per handler class and
- * application. A media player cannot seek in a file served without ranges and
- * Safari does not play it, but nothing else tells the developer.
+ * {@link DownloadHandler} does not answer, once per media file, or per class
+ * for a handler without a file name, and application. A media player cannot
+ * seek in a file served without ranges and Safari does not play it, but nothing
+ * else tells the developer.
  */
 final class UnansweredRangeRequests implements Serializable {
 
-    private final Set<Class<?>> warnedHandlerTypes = ConcurrentHashMap
-            .newKeySet();
+    /**
+     * How the handlers that have been warned about are described in the
+     * warning. Strings rather than classes, so that the classes of an
+     * application that is reloaded in development mode are not kept in memory.
+     */
+    private final Set<String> warnedHandlers = ConcurrentHashMap.newKeySet();
 
     private UnansweredRangeRequests() {
     }
 
     /**
      * Logs a warning about the given handler not answering the byte range that
-     * the request asks for, unless a handler of the same class has already been
-     * warned about in this application or the application runs in production
-     * mode.
+     * the request asks for, unless it has already been warned about in this
+     * application or the application runs in production mode.
      *
      * @param handler
-     *            the handler that received the request
-     * @param request
-     *            the request with a <code>Range</code> header
+     *            the handler that received a request with a <code>Range</code>
+     *            header
+     * @param session
+     *            the session that the request belongs to
      */
-    static void warnOnce(DownloadHandler handler, VaadinRequest request) {
-        VaadinService service = request.getService();
+    static void warnOnce(DownloadHandler handler, VaadinSession session) {
+        VaadinService service = session.getService();
         if (service.getDeploymentConfiguration().isProductionMode()) {
             return;
         }
         UnansweredRangeRequests warnings = service.getContext().getAttribute(
                 UnansweredRangeRequests.class, UnansweredRangeRequests::new);
-        if (warnings.warnedHandlerTypes.add(handler.getClass())) {
+        String description = describe(handler);
+        if (warnings.warnedHandlers.add(description)) {
             LoggerFactory.getLogger(UnansweredRangeRequests.class).warn(
                     "{} does not answer byte range requests, so it sent the whole content for one. A media player cannot seek in such a file, Safari does not play it, and a download cannot resume. Serve a file with DownloadHandler.forFile(...), call enableRangeRequests() on a class resource, servlet resource or input stream handler, or answer ranges in a handler class of your own and return true from isRangeRequestsEnabled().",
-                    describe(handler));
+                    description);
         }
     }
 
