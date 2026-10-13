@@ -109,13 +109,15 @@ test('finds the modules the test module is built with', () => {
     'pom.xml':
       '<project><artifactId>root</artifactId>' +
       '<modules><module>server</module><module>data</module><module>html</module><module>client</module>' +
-      '<module>plugins</module></modules>' +
+      '<module>plugins</module><!-- <module>tests</module> --></modules>' +
       '<profiles><profile><modules><module>tests</module></modules></profile></profiles></project>',
     'server/pom.xml': pom(
       'server',
       `<dependencies>${dependency('jackson', '<exclusions><exclusion><artifactId>client</artifactId></exclusion></exclusions>')}</dependencies>`
     ),
-    'data/pom.xml': pom('data', `<dependencies>${dependency('server')}</dependencies>`),
+    'data/pom.xml':
+      '<project><!-- <artifactId>commented</artifactId> -->' +
+      `<artifactId>data</artifactId><dependencies>${dependency('server')}<!-- ${dependency('client')} --></dependencies></project>`,
     'html/pom.xml': pom(
       'html',
       `<dependencies>${dependency('data')}${dependency('test-utils', '<scope>test</scope>')}</dependencies>` +

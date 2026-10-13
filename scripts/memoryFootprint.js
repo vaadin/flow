@@ -98,10 +98,13 @@ function firstArtifactId(xml) {
  * outside of profiles.
  */
 function reactorModules(readFile, dir = '', modules = {}) {
-  const pom = readFile(dir ? `${dir}/pom.xml` : 'pom.xml');
-  if (pom === null) {
+  const source = readFile(dir ? `${dir}/pom.xml` : 'pom.xml');
+  if (source === null) {
     return modules;
   }
+  // Commented-out modules, dependencies and artifact ids are not part of the
+  // build
+  const pom = source.replace(/<!--[\s\S]*?-->/g, '');
   const own = withoutBlocks(pom, 'parent', 'dependencyManagement', 'dependencies', 'build', 'profiles', 'modules');
   modules[firstArtifactId(own)] = { dir, pom };
   const moduleList = withoutBlocks(pom, 'profiles');
