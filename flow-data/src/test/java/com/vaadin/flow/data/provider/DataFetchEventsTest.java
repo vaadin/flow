@@ -330,6 +330,28 @@ class DataFetchEventsTest {
                 "loading completed despite a throwing listener");
     }
 
+    @Test
+    void serviceWithoutEventBus_runsQueriesUnreported() {
+        // A mocked service, as unit tests commonly use, has no event bus
+        VaadinService mockService = mock(VaadinService.class);
+        ui = new MockUI(new AlwaysLockedVaadinSession(mockService));
+        component = new TestComponent();
+        ui.add(component);
+
+        AtomicBoolean fetched = new AtomicBoolean();
+        DataCommunicator<String> communicator = flatCommunicator();
+        communicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            fetched.set(true);
+            return items(10).stream().skip(query.getOffset())
+                    .limit(query.getLimit());
+        }, query -> 10), null);
+        communicator.setViewportRange(0, 10);
+        flush();
+
+        assertEquals(10, communicator.getItemCount(), "count query ran");
+        assertTrue(fetched.get(), "fetch query ran");
+    }
+
     // ---------- hierarchical ----------
 
     @Test

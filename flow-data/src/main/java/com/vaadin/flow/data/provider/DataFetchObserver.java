@@ -59,8 +59,8 @@ public final class DataFetchObserver implements Serializable {
 
     /**
      * Resolves the event bus to report on, or {@code null} when there is
-     * nothing to report to: no live UI, or no listener for any of the given
-     * event types, in which case the query runs without being timed.
+     * nothing to report to: no live UI, no event bus, or no listener for any of
+     * the given event types, in which case the query runs without being timed.
      */
     @SafeVarargs
     private static VaadinServiceEventBus getEventBus(UI ui,
@@ -77,6 +77,9 @@ public final class DataFetchObserver implements Serializable {
             return null;
         }
         VaadinServiceEventBus eventBus = service.getEventBus();
+        if (eventBus == null) {
+            return null;
+        }
         for (Class<? extends EventObject> eventType : eventTypes) {
             if (eventBus.hasListener(eventType)) {
                 return eventBus;
