@@ -170,7 +170,8 @@ public class ElementListenerMap extends NodeMap {
 
         private void addEventData(String[] expressions) {
             if (eventDataExpressions == null) {
-                eventDataExpressions = expressions;
+                // Shared on purpose, the array is never modified
+                eventDataExpressions = expressions; // NOSONAR
             } else {
                 for (String expression : expressions) {
                     appendEventData(expression);

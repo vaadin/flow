@@ -58,6 +58,25 @@ public class ComponentEventBusUtil {
             dataExpressions = findEventDataExpressions(eventConstructor);
             listenerEventData = toListenerEventData(dataExpressions);
         }
+
+        private static String[] toListenerEventData(
+                LinkedHashMap<String, Class<?>> dataExpressions) {
+            LinkedHashSet<String> eventData = new LinkedHashSet<>();
+            dataExpressions.forEach((expression, type) -> {
+                if (Component.class.isAssignableFrom(type)
+                        || type == Element.class) {
+                    // Same mapping as
+                    // DomListenerRegistration.addEventDataElement
+                    eventData.add("event.target".equals(expression)
+                            ? JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                            : (JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                                    + expression));
+                } else {
+                    eventData.add(expression);
+                }
+            });
+            return eventData.toArray(String[]::new);
+        }
     }
 
     private ComponentEventBusUtil() {
@@ -97,23 +116,6 @@ public class ComponentEventBusUtil {
     static String[] getListenerEventData(
             Class<? extends ComponentEvent<?>> eventType) {
         return cache.get(eventType).listenerEventData;
-    }
-
-    private static String[] toListenerEventData(
-            LinkedHashMap<String, Class<?>> dataExpressions) {
-        LinkedHashSet<String> eventData = new LinkedHashSet<>();
-        dataExpressions.forEach((expression, type) -> {
-            if (Component.class.isAssignableFrom(type)
-                    || type == Element.class) {
-                // Same mapping as DomListenerRegistration.addEventDataElement
-                eventData.add("event.target".equals(expression)
-                        ? JsonConstants.MAP_STATE_NODE_EVENT_DATA
-                        : JsonConstants.MAP_STATE_NODE_EVENT_DATA + expression);
-            } else {
-                eventData.add(expression);
-            }
-        });
-        return eventData.toArray(String[]::new);
     }
 
     /**
