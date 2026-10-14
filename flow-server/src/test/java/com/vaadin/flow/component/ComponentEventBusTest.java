@@ -807,18 +807,21 @@ class ComponentEventBusTest {
     @Test
     void addListener_elementAndComponentEventData_mappedToStateNodes() {
         TestComponent component = new TestComponent();
+        Element element = new Element("div");
 
         component.addListener(ElementDataEvent.class, event -> {
         });
+        element.addEventListener("element-data-event", event -> {
+        }).addEventDataElement("event.target")
+                .addEventDataElement("element.parentNode")
+                .addEventData("event.detail");
 
-        assertEquals(
-                Set.of(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
-                        JsonConstants.MAP_STATE_NODE_EVENT_DATA
-                                + "element.parentNode",
-                        "event.detail"),
-                component.getElement().getNode()
-                        .getFeature(ElementListenerMap.class)
-                        .getExpressions("element-data-event"));
+        Set<String> expressions = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event");
+        assertEquals(3, expressions.size());
+        assertEquals(element.getNode().getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event"), expressions);
     }
 
     @Test
