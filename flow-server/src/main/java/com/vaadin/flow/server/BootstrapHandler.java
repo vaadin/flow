@@ -130,7 +130,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * comments — they would swallow the rest of the line if the inline script
      * is collapsed to one line by HTML processing.
      */
-    public static final String WHEN_READY_JS = readResource("whenReady.js");
+    public static final String READY_JS = readResource("ready.js");
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
 
     private static final String CAPTION = "caption";
@@ -1158,7 +1158,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 result = result.replace("{{GWT_STAT_EVENTS}}", "");
             }
 
-            result = result.replace("{{WHEN_READY}}", WHEN_READY_JS);
+            result = result.replace("{{READY}}", READY_JS);
             result = result.replace("{{APP_ID}}", context.getAppId());
             result = result.replace("{{CONFIG_JSON}}", appConfigString);
             // {{INITIAL_UIDL}} should be the last replaced so that it may have

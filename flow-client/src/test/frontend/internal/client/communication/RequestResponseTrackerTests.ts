@@ -4,6 +4,7 @@ import { testRegistry } from '../testRegistry';
 import { expect } from '@open-wc/testing';
 import { RequestResponseTracker } from '../../../../../main/frontend/internal/client/communication/RequestResponseTracker';
 import { ResynchronizationState } from '../../../../../main/frontend/internal/client/communication/MessageSender';
+import { ACTIVITY_CHANGED_EVENT } from '../../../../../main/frontend/internal/client/ActivityNotifier';
 
 function makeRegistry(
   opts: {
@@ -59,6 +60,23 @@ describe('RequestResponseTracker', () => {
     expect(tracker.hasActiveRequest()).to.be.false;
     expect(webkitClears()).to.equal(1);
     expect(sends()).to.equal(0);
+  });
+
+  it('endRequest notifies that the client activity may have changed', async () => {
+    const { registry } = makeRegistry();
+    const tracker = new RequestResponseTracker(registry);
+    let notifications = 0;
+    const listener = () => notifications++;
+    window.addEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    try {
+      tracker.startRequest();
+      tracker.endRequest();
+      expect(notifications).to.equal(0); // dispatched after the current task
+      await Promise.resolve();
+      expect(notifications).to.equal(1);
+    } finally {
+      window.removeEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    }
   });
 
   it('endRequest sends pending invocations when a flush is pending', () => {

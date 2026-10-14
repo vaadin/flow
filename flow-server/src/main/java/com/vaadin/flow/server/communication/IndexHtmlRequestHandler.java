@@ -625,7 +625,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};"
                 + "window.Vaadin.Flow = window.Vaadin.Flow || {};"
-                + BootstrapHandler.WHEN_READY_JS + "window.Vaadin.TypeScript= "
+                + BootstrapHandler.READY_JS + "window.Vaadin.TypeScript= "
                 + initialJson.toString() + ";"));
         indexDocument.head().insertChildren(0, elm);
     }

@@ -42,8 +42,8 @@
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
 
-  if (!window.Vaadin.Flow.whenReady) {
-    {{WHEN_READY}}
+  if (!window.Vaadin.Flow.ready) {
+    {{READY}}
   }
 
   /**
