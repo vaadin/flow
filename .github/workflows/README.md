@@ -260,6 +260,8 @@ unchanged.
 The comment is posted once a pull request changes a measurement and then
 updated on every push, also when the difference goes away again. Pull requests
 from forks are skipped, because GitHub gives them no token that can comment.
+Runs that Dependabot triggers get a read-only token too; they still measure,
+but only write the comparison to the job summary.
 The test writes one JSON report per scenario to
 `flow-html-components/target/memory-footprint`, also when run locally. A report
 names and describes its scenario and lists its metrics, each with an id, a

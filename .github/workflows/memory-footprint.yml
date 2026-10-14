@@ -175,7 +175,9 @@ jobs:
             "${{ steps.commits.outputs.base }}"
           cat memory-comment.md >> "$GITHUB_STEP_SUMMARY"
       - name: Comment the difference on the pull request
-        if: github.event_name == 'pull_request'
+        # GitHub hands runs that Dependabot triggers a read-only token, so
+        # those measure and leave the comparison in the job summary only
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CHANGED: ${{ steps.compare.outputs.changed }}
