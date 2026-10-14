@@ -43,34 +43,14 @@ function readMeasurements(dir) {
   const measurements = {};
   for (const file of fs.readdirSync(dir).filter((name) => name.endsWith('.json')).sort()) {
     const report = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
-    validateReport(file, report);
+    // A change to what the test writes has to fail here, rather than make
+    // every metric look unchanged
+    if (!report.metrics?.length || !report.metrics.every((m) => typeof m.id === 'string' && Number.isFinite(m.value))) {
+      throw new Error(`${file} has no metrics with an id and a numeric value`);
+    }
     measurements[path.basename(file, '.json')] = report;
   }
   return measurements;
-}
-
-/**
- * Throws when a report does not have the shape described above, so that a
- * change to what the test writes fails the comparison instead of making every
- * metric look unchanged.
- */
-function validateReport(name, report) {
-  const problems = [];
-  if (typeof report?.title !== 'string') {
-    problems.push('no title');
-  }
-  if (!Array.isArray(report?.metrics) || report.metrics.length === 0) {
-    problems.push('no metrics');
-  } else {
-    report.metrics.forEach((metric, index) => {
-      if (typeof metric?.id !== 'string' || typeof metric.title !== 'string' || !Number.isFinite(metric.value)) {
-        problems.push(`metric ${index} needs a string id and title and a numeric value`);
-      }
-    });
-  }
-  if (problems.length > 0) {
-    throw new Error(`Invalid memory footprint report ${name}: ${problems.join(', ')}`);
-  }
 }
 
 function formatValue(value, unit) {
@@ -97,33 +77,26 @@ function formatDifference(base, head, unit) {
   return `${formatValue(base, unit)} → ${formatValue(head, unit)} (**${sign}${formatValue(Math.abs(difference), unit)}**, ${sign}${percent}%)`;
 }
 
-function metricsById(report) {
-  return Object.fromEntries((report?.metrics || []).map((metric) => [metric.id, metric]));
-}
-
 /**
- * The scenarios of the head followed by the ones only the base has, each with
- * its metrics in the same order and the base and head value of each.
+ * One row per metric of each scenario, with the metric as measured on the base
+ * and on the head. The scenarios and metrics of the head come first, then the
+ * ones only the base has.
  */
 function rows(base, head) {
-  const scenarios = [...new Set([...Object.keys(head), ...Object.keys(base)])];
-  return scenarios.map((id) => {
-    const baseMetrics = metricsById(base[id]);
-    const headMetrics = metricsById(head[id]);
-    const metricIds = [...new Set([...Object.keys(headMetrics), ...Object.keys(baseMetrics)])];
-    return {
-      id,
-      title: head[id]?.title || base[id]?.title || id,
-      description: head[id]?.description || base[id]?.description,
-      metrics: metricIds.map((metricId) => ({
-        id: metricId,
-        base: baseMetrics[metricId],
-        head: headMetrics[metricId],
-        title: headMetrics[metricId]?.title || baseMetrics[metricId]?.title || metricId,
-        unit: headMetrics[metricId]?.unit || baseMetrics[metricId]?.unit
-      }))
-    };
-  });
+  const result = [];
+  for (const id of new Set([...Object.keys(head), ...Object.keys(base)])) {
+    const metrics = new Map();
+    for (const [side, report] of [['head', head[id]], ['base', base[id]]]) {
+      for (const metric of report?.metrics || []) {
+        metrics.set(metric.id, { ...metrics.get(metric.id), [side]: metric });
+      }
+    }
+    for (const { base: before, head: after } of metrics.values()) {
+      const metric = after || before;
+      result.push({ scenario: head[id] || base[id], title: metric.title, unit: metric.unit, base: before, head: after });
+    }
+  }
+  return result;
 }
 
 /**
@@ -149,17 +122,12 @@ function signed(number) {
 
 function compare(base, head) {
   const hasBase = Object.keys(base).length > 0;
-  const changed =
-    !hasBase ||
-    rows(base, head).some((scenario) =>
-      scenario.metrics.some((metric) => metric.base?.value !== metric.head?.value)
-    );
+  const changed = !hasBase || rows(base, head).some((row) => row.base?.value !== row.head?.value);
   return { hasBase, changed };
 }
 
 function comment(base, head, baseCommit) {
   const { hasBase, changed } = compare(base, head);
-  const scenarios = rows(base, head);
   const lines = [COMMENT_MARKER, '', '## Memory footprint', ''];
   if (!hasBase) {
     lines.push(`The base commit ${baseCommit} has no memory measurements to compare with.`, '');
@@ -169,34 +137,29 @@ function comment(base, head, baseCommit) {
     lines.push(`Compared with the base commit ${baseCommit}.`, '');
   }
   lines.push('| Scenario | Metric | Value |', '| --- | --- | --- |');
-  for (const scenario of scenarios) {
-    for (const metric of scenario.metrics) {
-      const value = formatDifference(hasBase ? metric.base?.value : undefined, metric.head?.value, metric.unit);
-      lines.push(`| ${scenario.title} | ${metric.title} | ${value} |`);
-    }
+  for (const row of rows(base, head)) {
+    const value = formatDifference(hasBase ? row.base?.value : undefined, row.head?.value, row.unit);
+    lines.push(`| ${row.scenario.title} | ${row.title} | ${value} |`);
   }
-  if (hasBase) {
-    for (const scenario of scenarios) {
-      for (const metric of scenario.metrics.filter((m) => m.base?.breakdown && m.head?.breakdown)) {
-        const differences = classDifferences(metric.base.breakdown, metric.head.breakdown);
-        if (differences.length === 0) {
-          continue;
-        }
-        lines.push('', `<details><summary>${scenario.title}: ${metric.title} by class</summary>`, '');
-        lines.push('| Class | Instances | Bytes |', '| --- | ---: | ---: |');
-        for (const { name, count, bytes } of differences.slice(0, MAX_CLASSES)) {
-          lines.push(`| \`${name}\` | ${signed(count)} | ${signed(bytes)} |`);
-        }
-        if (differences.length > MAX_CLASSES) {
-          lines.push(`| …and ${differences.length - MAX_CLASSES} more | | |`);
-        }
-        lines.push('', '</details>');
-      }
+  for (const row of rows(base, head).filter((r) => r.base?.breakdown && r.head?.breakdown)) {
+    const differences = classDifferences(row.base.breakdown, row.head.breakdown);
+    if (differences.length === 0) {
+      continue;
     }
+    lines.push('', `<details><summary>${row.scenario.title}: ${row.title} by class</summary>`, '');
+    lines.push('| Class | Instances | Bytes |', '| --- | ---: | ---: |');
+    for (const { name, count, bytes } of differences.slice(0, MAX_CLASSES)) {
+      lines.push(`| \`${name}\` | ${signed(count)} | ${signed(bytes)} |`);
+    }
+    if (differences.length > MAX_CLASSES) {
+      lines.push(`| …and ${differences.length - MAX_CLASSES} more | | |`);
+    }
+    lines.push('', '</details>');
   }
   lines.push('', '<details><summary>Scenarios</summary>', '');
-  for (const scenario of scenarios) {
-    lines.push(`- **${scenario.title}** (\`${scenario.id}\`)${scenario.description ? `: ${scenario.description}` : ''}`);
+  for (const id of new Set([...Object.keys(head), ...Object.keys(base)])) {
+    const scenario = head[id] || base[id];
+    lines.push(`- **${scenario.title}** (\`${id}\`)${scenario.description ? `: ${scenario.description}` : ''}`);
   }
   lines.push(
     '',
@@ -233,4 +196,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { compare, comment, classDifferences, validateReport };
+module.exports = { compare, comment, classDifferences, readMeasurements };

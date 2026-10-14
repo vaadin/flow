@@ -1,7 +1,10 @@
 // Run with: node --test scripts/memoryFootprint.test.js
 const test = require('node:test');
 const assert = require('node:assert');
-const { compare, comment, classDifferences, validateReport } = require('./memoryFootprint');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { compare, comment, classDifferences, readMeasurements } = require('./memoryFootprint');
 
 function report(title, heap, serialized, breakdown = {}) {
   return {
@@ -92,11 +95,14 @@ test('lists at most 15 classes per breakdown', () => {
   assert.match(body, /\| …and 2 more \| \| \|/);
 });
 
-test('rejects a report that does not have the expected shape', () => {
-  validateReport('rows-ui.json', BASE['rows-ui']);
-  assert.throws(() => validateReport('rows-ui.json', { title: 'Rows UI', results: [] }), /rows-ui\.json: no metrics/);
-  assert.throws(
-    () => validateReport('rows-ui.json', { title: 'Rows UI', metrics: [{ id: 'heap', title: 'Heap', value: '1' }] }),
-    /metric 0 needs a string id and title and a numeric value/
-  );
+test('rejects a report that does not have the expected shape', (t) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'memory-footprint-'));
+  t.after(() => fs.rmSync(dir, { recursive: true }));
+  fs.writeFileSync(path.join(dir, 'rows-ui.json'), JSON.stringify(BASE['rows-ui']));
+  assert.deepStrictEqual(readMeasurements(dir), { 'rows-ui': BASE['rows-ui'] });
+
+  fs.writeFileSync(path.join(dir, 'rows-ui.json'), JSON.stringify({ title: 'Rows UI', results: [] }));
+  assert.throws(() => readMeasurements(dir), /rows-ui\.json has no metrics/);
+  fs.writeFileSync(path.join(dir, 'rows-ui.json'), JSON.stringify({ title: 'Rows UI', metrics: [{ id: 'heap', value: '1' }] }));
+  assert.throws(() => readMeasurements(dir), /rows-ui\.json has no metrics/);
 });

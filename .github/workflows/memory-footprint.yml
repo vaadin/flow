@@ -6,11 +6,10 @@ name: Memory Footprint
 # posted once a change affects them. After that the comment is updated on every
 # push, also when the difference goes away again.
 #
-# The measurements of a commit are cached under a key made of the commit and
-# the JDK, so a commit is measured once. A pull request can only restore what
-# its own runs or runs on its base branch cached, so main is measured on every
-# push as well: the base of a pull request is then almost always cached, and
-# only its head is measured.
+# Every push to main is measured too, and the measurements of each base commit
+# are cached under a key made of the commit and the JDK. A pull request can
+# read what runs on its base branch cached, so its base is usually restored
+# and only its head is measured.
 on:
   push:
     branches: [main]
@@ -41,9 +40,6 @@ env:
     mvn package -B -ntp -pl flow-html-components -am
     -Dtest=UIMemoryFootprintTest -Dsurefire.failIfNoSpecifiedTests=false
     -Djacoco.skip
-  # Where a cached measurement is restored to and saved from. The path is part
-  # of the cache version, so it has to be the same for the head and the base.
-  CACHED: ${{ github.workspace }}/.memory-footprint
 
 jobs:
   measure:
@@ -65,99 +61,59 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
-      - name: Find the commits to measure
-        id: commits
-        # The base is the commit the pull request branches from, so that
-        # changes merged to the base branch since then are not attributed to
-        # the pull request. The keys hold the exact JDK version, as object
-        # sizes can differ between JDK versions.
+      - name: Find the base commit
+        id: base
+        # For a pull request, the commit it branches from, so that changes
+        # merged to the base branch since then are not attributed to it. A
+        # push to main measures the pushed commit, as the base of the pull
+        # requests that branch from it. The key holds the exact JDK version, as
+        # object sizes can differ between JDK versions.
         run: |
-          runtime=$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p')
-          echo "head-key=memory-footprint-$runtime-$_HEAD_SHA" >> "$GITHUB_OUTPUT"
           if [ -n "$_BASE_SHA" ]; then
             base=$(git merge-base "$_BASE_SHA" "$_HEAD_SHA")
-            echo "base=$base" >> "$GITHUB_OUTPUT"
-            echo "base-key=memory-footprint-$runtime-$base" >> "$GITHUB_OUTPUT"
+          else
+            base=$_HEAD_SHA
           fi
-      - name: Restore the head measurements
-        id: head-cache
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ${{ env.CACHED }}
-          key: ${{ steps.commits.outputs.head-key }}
-      - name: Move the head measurements aside
-        if: steps.head-cache.outputs.cache-hit == 'true'
-        run: mv "$CACHED" "$RUNNER_TEMP/memory-head"
+          runtime=$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p')
+          echo "sha=$base" >> "$GITHUB_OUTPUT"
+          echo "key=memory-footprint-$runtime-$base" >> "$GITHUB_OUTPUT"
       - name: Restore the base measurements
-        id: base-cache
-        if: steps.commits.outputs.base
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        id: cache
+        # Saved at the end of the job when it was not found
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: ${{ env.CACHED }}
-          key: ${{ steps.commits.outputs.base-key }}
-      - name: Move the base measurements aside
-        if: steps.base-cache.outputs.cache-hit == 'true'
-        run: mv "$CACHED" "$RUNNER_TEMP/memory-base"
-      - name: Check what is left to measure
-        id: todo
-        env:
-          HEAD_CACHED: ${{ steps.head-cache.outputs.cache-hit }}
-          BASE: ${{ steps.commits.outputs.base }}
-          BASE_CACHED: ${{ steps.base-cache.outputs.cache-hit }}
-        # Before UIMemoryFootprintTest was added the base has nothing to
-        # measure, which the comment says instead of comparing
-        run: |
-          [ "$HEAD_CACHED" = "true" ] || echo "head=true" >> "$GITHUB_OUTPUT"
-          if [ -n "$BASE" ] && [ "$BASE_CACHED" != "true" ] \
-            && git cat-file -e "$BASE:flow-html-components/src/test/java/com/vaadin/flow/memory/UIMemoryFootprintTest.java" 2>/dev/null; then
-            echo "base=true" >> "$GITHUB_OUTPUT"
-          fi
+          path: memory-footprint-base
+          key: ${{ steps.base.outputs.key }}
       - uses: ./.github/actions/setup-frontend-tools
-        if: steps.todo.outputs.head || steps.todo.outputs.base
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        if: steps.todo.outputs.head || steps.todo.outputs.base
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Measure the head
-        if: steps.todo.outputs.head
+        if: github.event_name == 'pull_request'
         run: |
           $MEASURE
-          mv flow-html-components/target/memory-footprint "$CACHED"
-      - name: Cache the head measurements
-        if: steps.todo.outputs.head
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ${{ env.CACHED }}
-          key: ${{ steps.commits.outputs.head-key }}
-      - name: Move the head measurements aside
-        if: steps.todo.outputs.head
-        run: mv "$CACHED" "$RUNNER_TEMP/memory-head"
+          mv flow-html-components/target/memory-footprint memory-footprint-head
       - name: Measure the base
-        if: steps.todo.outputs.base
+        if: steps.cache.outputs.cache-hit != 'true'
         env:
-          BASE: ${{ steps.commits.outputs.base }}
+          BASE: ${{ steps.base.outputs.sha }}
+        # Before UIMemoryFootprintTest was added the base has nothing to
+        # measure, which the comment says instead of comparing
         run: |
+          mkdir memory-footprint-base
           git worktree add "$RUNNER_TEMP/base" "$BASE"
           cd "$RUNNER_TEMP/base"
-          $MEASURE
-          mv flow-html-components/target/memory-footprint "$CACHED"
-      - name: Cache the base measurements
-        if: steps.todo.outputs.base
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ${{ env.CACHED }}
-          key: ${{ steps.commits.outputs.base-key }}
-      - name: Move the base measurements aside
-        if: steps.todo.outputs.base
-        run: mv "$CACHED" "$RUNNER_TEMP/memory-base"
+          if [ -f flow-html-components/src/test/java/com/vaadin/flow/memory/UIMemoryFootprintTest.java ]; then
+            $MEASURE
+            mv flow-html-components/target/memory-footprint/* "$GITHUB_WORKSPACE/memory-footprint-base/"
+          fi
       - name: Compare
         id: compare
         if: github.event_name == 'pull_request'
         run: |
-          node scripts/memoryFootprint.js "$RUNNER_TEMP/memory-base" "$RUNNER_TEMP/memory-head" \
-            "${{ steps.commits.outputs.base }}"
+          node scripts/memoryFootprint.js memory-footprint-base memory-footprint-head "${{ steps.base.outputs.sha }}"
           cat memory-comment.md >> "$GITHUB_STEP_SUMMARY"
       - name: Comment the difference on the pull request
         # GitHub hands runs that Dependabot triggers a read-only token, so

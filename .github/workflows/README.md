@@ -244,11 +244,10 @@ numbers is only meaningful on the same JDK, which is why the base is measured
 in the same run unless it is cached for that JDK. The comment also lists, per
 scenario, the classes whose retained instances or bytes changed.
 
-The measurements are cached under a key made of the exact JDK version and the
-commit, so a commit is measured once. A pull request can only restore what its
-own runs or the runs on its base branch cached, so the workflow measures `main`
-on every push too. The base of a pull request is then cached, and most runs only
-measure the head.
+The workflow also measures `main` on every push, and caches the measurements
+of each base commit under a key made of the commit and the exact JDK version. A
+pull request can read what runs on its base branch cached, so its base is
+usually restored and only its head is measured.
 
 The comment is posted once a pull request changes a measurement and then
 updated on every push, also when the difference goes away again. Pull requests
