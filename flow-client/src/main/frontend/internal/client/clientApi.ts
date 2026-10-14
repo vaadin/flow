@@ -14,6 +14,7 @@
  * the License.
  */
 
+import type { ClientEvents } from './ClientEvents';
 import type { publishClient } from './publishClient';
 import type { ValueMap } from './ValueMap';
 
@@ -55,5 +56,6 @@ export interface ApplicationConnection {
   isHiddenByServer(nodeId: number): boolean;
   getElementStyleProperties(nodeId: number): Record<string, unknown>;
   getProfilingData(): number[];
+  getClientEvents(): ClientEvents;
   start(initialUidl: ValueMap | null): void;
 }

@@ -6,7 +6,7 @@ import { ConnectionMessageType } from '../../../../../main/frontend/internal/cli
 import { ReconnectStateMachine } from '../../../../../main/frontend/internal/client/communication/ReconnectStateMachine';
 
 function makeRegistry(reconnectAttempts = 3) {
-  const log = { endRequests: 0, stopLoadings: 0, heartbeatIntervals: [] as number[] };
+  const log = { endRequests: 0, stopLoadings: 0, heartbeatIntervals: [] as number[], discards: 0 };
   let activeRequest = true;
   return {
     log,
@@ -18,7 +18,8 @@ function makeRegistry(reconnectAttempts = 3) {
       ReconnectConfiguration: { getReconnectAttempts: () => reconnectAttempts },
       RequestResponseTracker: { hasActiveRequest: () => activeRequest, endRequest: () => log.endRequests++ },
       LoadingIndicatorStateHandler: { stopLoading: () => log.stopLoadings++ },
-      Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
+      Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) },
+      MessageSender: { discardSentRequests: () => log.discards++ }
     })
   };
 }
@@ -64,6 +65,8 @@ describe('ReconnectStateMachine', () => {
     expect(scheduled).to.have.length(1);
     expect(registry.log.heartbeatIntervals).to.deep.equal([0]); // heartbeats paused (resumable)
     expect(registry.log.endRequests).to.equal(1);
+    // The requests sent but not confirmed end as discarded.
+    expect(registry.log.discards).to.equal(1);
   });
 
   it('resolves a temporary error only for the active cause', () => {

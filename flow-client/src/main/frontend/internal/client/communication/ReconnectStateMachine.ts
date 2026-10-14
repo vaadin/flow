@@ -158,6 +158,7 @@ export class ReconnectStateMachine {
     if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
       this.#registry.getRequestResponseTracker().endRequest();
     }
+    this.#registry.getMessageSender().discardSentRequests();
     setState(CONNECTION_LOST);
     // pauseHeartbeats: 0 pauses but stays resumable (-1 means terminated).
     this.#registry.getHeartbeat().setInterval(0);
