@@ -35,7 +35,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -85,6 +84,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class MenuRegistryTest {
@@ -113,25 +118,23 @@ class MenuRegistryTest {
 
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
-        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
-        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
-        Mockito.when(vaadinService.getRouter())
-                .thenReturn(new Router(registry));
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        when(vaadinService.getContext()).thenReturn(vaadinContext);
+        when(vaadinService.getRouter()).thenReturn(new Router(registry));
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
 
-        Mockito.when(vaadinService.getDeploymentConfiguration())
+        when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
 
-        Mockito.when(deploymentConfiguration.getFrontendFolder())
+        when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.toFile());
-        Mockito.when(deploymentConfiguration.getProjectFolder())
+        when(deploymentConfiguration.getProjectFolder())
                 .thenReturn(tmpDir.toFile());
-        Mockito.when(deploymentConfiguration.getBuildFolder())
-                .thenReturn("build");
+        when(deploymentConfiguration.getBuildFolder()).thenReturn("build");
 
-        frontendUtils = Mockito.mockStatic(FrontendUtils.class);
-        frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+        frontendUtils = mockStatic(FrontendUtils.class);
+        frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                 .thenReturn(true);
 
         VaadinService.setCurrent(vaadinService);
@@ -145,7 +148,7 @@ class MenuRegistryTest {
 
         VaadinSession.setCurrent(session);
 
-        Mockito.when(request.getService()).thenReturn(vaadinService);
+        when(request.getService()).thenReturn(vaadinService);
         CurrentInstance.set(VaadinRequest.class, request);
     }
 
@@ -196,7 +199,7 @@ class MenuRegistryTest {
         PageTitleGenerator defaultGenerator = context -> "default:"
                 + context.navigationTarget().getSimpleName() + ":"
                 + context.value();
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService) {
                     @Override
                     public PageTitleGenerator getPageTitleGenerator() {
@@ -298,8 +301,7 @@ class MenuRegistryTest {
     @Test
     void productionMode_getMenuItemsContainsExpectedClientPaths()
             throws IOException {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(true);
+        when(deploymentConfiguration.isProductionMode()).thenReturn(true);
         // Clear any production mode execution route contents
         MenuRegistry.clearFileRoutesCache();
 
@@ -308,11 +310,11 @@ class MenuRegistryTest {
                 FILE_ROUTES_JSON_PROD_PATH);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        ClassLoader mockClassLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
+        ClassLoader mockClassLoader = mock(ClassLoader.class);
+        when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
                 .thenReturn(clientFiles.toURI().toURL());
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class, CALLS_REAL_METHODS)) {
             menuRegistry.when(() -> MenuRegistry.getClassLoader())
                     .thenReturn(mockClassLoader);
 
@@ -386,10 +388,8 @@ class MenuRegistryTest {
 
     @Test
     void testWithLoggedInUser_userHasRoles() throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(true);
+        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(request.isUserInRole(anyString())).thenReturn(true);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -415,10 +415,8 @@ class MenuRegistryTest {
 
     @Test
     void testWithLoggedInUser_noMatchingRoles() throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(false);
+        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(request.isUserInRole(anyString())).thenReturn(false);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -492,16 +490,17 @@ class MenuRegistryTest {
 
         // Dashboard's children in @Menu order: Reports then Settings.
         assertEquals(List.of("/reports", "/settings"),
-                routesOf(dashboard.children()));
+                collectRoutes(dashboard.children()));
 
         // Reports -> Sales.
         AvailableViewInfo reports = dashboard.children().get(0);
-        assertEquals(List.of("/reports/sales"), routesOf(reports.children()));
+        assertEquals(List.of("/reports/sales"),
+                collectRoutes(reports.children()));
 
         // The showcase: Billing lives at /billing but @RouteParent nests it
         // under Settings - URL-prefix walking would have made it a root.
         AvailableViewInfo settings = dashboard.children().get(1);
-        assertEquals(List.of("/billing"), routesOf(settings.children()));
+        assertEquals(List.of("/billing"), collectRoutes(settings.children()));
     }
 
     @Test
@@ -517,10 +516,12 @@ class MenuRegistryTest {
         // About has no @RouteParent: the URL-derived parent would be the root
         // route, which is a sibling in the menu instead. Settings declares the
         // root route as its @RouteParent explicitly and stays nested.
-        assertEquals(List.of("/", "/about"), routesOf(tree));
-        assertEquals(List.of("/settings"), routesOf(tree.get(0).children()));
+        assertEquals(List.of("/", "/about"), collectRoutes(tree));
+        assertEquals(List.of("/settings"),
+                collectRoutes(tree.get(0).children()));
         // URL-derived parents other than the root route still nest.
-        assertEquals(List.of("/about/team"), routesOf(tree.get(1).children()));
+        assertEquals(List.of("/about/team"),
+                collectRoutes(tree.get(1).children()));
     }
 
     @Test
@@ -537,7 +538,8 @@ class MenuRegistryTest {
         assertEquals(1, tree.size());
         AvailableViewInfo dashboard = tree.get(0);
         assertEquals("/", dashboard.route());
-        assertEquals(List.of("/hidden/audit"), routesOf(dashboard.children()));
+        assertEquals(List.of("/hidden/audit"),
+                collectRoutes(dashboard.children()));
     }
 
     @Test
@@ -550,7 +552,7 @@ class MenuRegistryTest {
         List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
 
         // Without Dashboard none of Audit's ancestors is in the menu.
-        assertEquals(List.of("/hidden/audit"), routesOf(tree));
+        assertEquals(List.of("/hidden/audit"), collectRoutes(tree));
         assertNull(tree.get(0).children());
     }
 
@@ -566,8 +568,9 @@ class MenuRegistryTest {
 
         // The resolver needs a parameter the menu cannot provide: the view
         // becomes a root and the rest of the menu is still built.
-        assertEquals(List.of("/", "/projects"), routesOf(tree));
-        assertEquals(List.of("/settings"), routesOf(tree.get(0).children()));
+        assertEquals(List.of("/", "/projects"), collectRoutes(tree));
+        assertEquals(List.of("/settings"),
+                collectRoutes(tree.get(0).children()));
     }
 
     @Test
@@ -582,9 +585,9 @@ class MenuRegistryTest {
         // TreeMoved is a route child of Dashboard, but @Menu(parent) puts it
         // under Settings in the menu.
         AvailableViewInfo dashboard = tree.get(0);
-        assertEquals(List.of("/settings"), routesOf(dashboard.children()));
+        assertEquals(List.of("/settings"), collectRoutes(dashboard.children()));
         AvailableViewInfo settings = dashboard.children().get(0);
-        assertEquals(List.of("/moved"), routesOf(settings.children()));
+        assertEquals(List.of("/moved"), collectRoutes(settings.children()));
     }
 
     @Test
@@ -599,7 +602,8 @@ class MenuRegistryTest {
         // TreeAttached names TreeHidden as its menu parent, which has no @Menu
         // of its own, so the walk continues to Hidden's parent Dashboard.
         assertEquals(1, tree.size());
-        assertEquals(List.of("/attached"), routesOf(tree.get(0).children()));
+        assertEquals(List.of("/attached"),
+                collectRoutes(tree.get(0).children()));
     }
 
     @Test
@@ -613,17 +617,17 @@ class MenuRegistryTest {
 
         // Two views naming each other as menu parent: the cycle is broken at
         // the entry that would close it, and no entry is dropped.
-        assertEquals(List.of("/cycle_b"), routesOf(tree));
-        assertEquals(List.of("/cycle_a"), routesOf(tree.get(0).children()));
+        assertEquals(List.of("/cycle_b"), collectRoutes(tree));
+        assertEquals(List.of("/cycle_a"),
+                collectRoutes(tree.get(0).children()));
     }
 
     @Test
     void collectMenuItemsTree_clientViews_areRootsWithoutChildren()
             throws IOException {
-        Principal principal = Mockito.mock(Principal.class);
-        Mockito.when(request.getUserPrincipal()).thenReturn(principal);
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(true);
+        Principal principal = mock(Principal.class);
+        when(request.getUserPrincipal()).thenReturn(principal);
+        when(request.isUserInRole(anyString())).thenReturn(true);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -635,15 +639,17 @@ class MenuRegistryTest {
         // Client views have no server-side route hierarchy: /hilla/sub is a
         // root of its own instead of a child of /hilla, and no client entry
         // keeps the children it has in file-routes.json.
-        assertTrue(routesOf(tree).containsAll(List.of("/hilla", "/hilla/sub")),
+        assertTrue(
+                collectRoutes(tree)
+                        .containsAll(List.of("/hilla", "/hilla/sub")),
                 "Both client views are expected as roots, got "
-                        + routesOf(tree));
+                        + collectRoutes(tree));
         tree.forEach(view -> assertNull(view.children(),
                 "Client view " + view.route() + " is not expected to have "
                         + "children in the tree"));
     }
 
-    private static List<String> routesOf(List<AvailableViewInfo> infos) {
+    private static List<String> collectRoutes(List<AvailableViewInfo> infos) {
         return infos.stream().map(AvailableViewInfo::route).toList();
     }
 

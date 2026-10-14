@@ -134,7 +134,7 @@ public class MenuRegistry {
     public static List<AvailableViewInfo> collectMenuItemsList() {
         // en-US is used by default here to match with Hilla's
         // createMenuItems.ts sorting algorithm.
-        return collectMenuItemsList(Locale.US);
+        return collectMenuItemsList(Locale.forLanguageTag("en-US"));
     }
 
     /**
@@ -169,12 +169,11 @@ public class MenuRegistry {
      * {@link #collectMenuItemsList()}.
      *
      * @return ordered root view infos, each with its nested children populated
-     * @since 25.4
      */
     public static List<AvailableViewInfo> collectMenuItemsTree() {
         // en-US is used by default here to match with Hilla's
         // createMenuItems.ts sorting algorithm.
-        return collectMenuItemsTree(Locale.US);
+        return collectMenuItemsTree(Locale.forLanguageTag("en-US"));
     }
 
     /**
@@ -217,7 +216,6 @@ public class MenuRegistry {
      * @param locale
      *            locale to use for ordering. null for default locale.
      * @return ordered root view infos, each with its nested children populated
-     * @since 25.4
      */
     public static List<AvailableViewInfo> collectMenuItemsTree(Locale locale) {
         RouteConfiguration routeConfiguration = RouteConfiguration
@@ -304,8 +302,8 @@ public class MenuRegistry {
         visited.add(menuClass);
         Class<? extends Component> current = menuClass;
         while (true) {
-            Optional<Class<? extends Component>> parent = menuParentOf(current,
-                    routeConfiguration);
+            Optional<Class<? extends Component>> parent = resolveMenuParent(
+                    current, routeConfiguration);
             if (parent.isEmpty() || !visited.add(parent.get())) {
                 return Optional.empty();
             }
@@ -321,7 +319,7 @@ public class MenuRegistry {
      * declared {@code @Menu(parent)} if any, the logical route parent
      * otherwise.
      */
-    private static Optional<Class<? extends Component>> menuParentOf(
+    private static Optional<Class<? extends Component>> resolveMenuParent(
             Class<? extends Component> navigationTarget,
             RouteConfiguration routeConfiguration) {
         Optional<Class<? extends Component>> declaredParent = AnnotationReader
@@ -385,10 +383,10 @@ public class MenuRegistry {
                 : children.stream()
                         .map(child -> attachChildren(child, childrenByParent))
                         .toList();
-        return withChildren(view, nested);
+        return copyWithChildren(view, nested);
     }
 
-    private static AvailableViewInfo withChildren(AvailableViewInfo source,
+    private static AvailableViewInfo copyWithChildren(AvailableViewInfo source,
             List<AvailableViewInfo> children) {
         return new AvailableViewInfo(source.title(), source.rolesAllowed(),
                 source.loginRequired(), source.route(), source.lazy(),
