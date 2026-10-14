@@ -16,7 +16,6 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
-import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.AbstractSet;
@@ -204,7 +203,7 @@ public abstract class NodeMap extends NodeFeature {
         private SharedKeySet(String[] keys) {
             this.keys = keys;
             if (keys.length > INDEX_MAP_THRESHOLD) {
-                indices = new HashMap<>(keys.length * 2);
+                indices = HashMap.newHashMap(keys.length);
                 for (int i = 0; i < keys.length; i++) {
                     indices.put(keys[i], i);
                 }
@@ -250,9 +249,9 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         private static void removeStaleReferences() {
-            Reference<? extends SharedKeySet> stale;
-            while ((stale = staleReferences.poll()) != null) {
-                RegistryReference reference = (RegistryReference) stale;
+            RegistryReference reference;
+            while ((reference = (RegistryReference) staleReferences
+                    .poll()) != null) {
                 registry.remove(reference.registryKey, reference);
             }
         }
@@ -277,7 +276,11 @@ public abstract class NodeMap extends NodeFeature {
         }
 
         private SharedKeySet withoutKey(int index) {
-            return of(removeIndex(keys, new String[keys.length - 1], index));
+            String[] newKeys = new String[keys.length - 1];
+            System.arraycopy(keys, 0, newKeys, 0, index);
+            System.arraycopy(keys, index + 1, newKeys, index,
+                    keys.length - index - 1);
+            return of(newKeys);
         }
 
         @Override
@@ -305,7 +308,7 @@ public abstract class NodeMap extends NodeFeature {
 
         private final SharedKeySet keySet;
 
-        private SharedKeySetValues(SharedKeySet keySet) {
+        protected SharedKeySetValues(SharedKeySet keySet) {
             this.keySet = keySet;
         }
 
@@ -398,7 +401,7 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    private static class TwoValues extends SharedKeySetValues {
+    private static final class TwoValues extends SharedKeySetValues {
         private Serializable value0;
         private Serializable value1;
 
@@ -425,7 +428,7 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    private static class ThreeValues extends SharedKeySetValues {
+    private static final class ThreeValues extends SharedKeySetValues {
         private Serializable value0;
         private Serializable value1;
         private Serializable value2;
@@ -455,7 +458,7 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    private static class FourValues extends SharedKeySetValues {
+    private static final class FourValues extends SharedKeySetValues {
         private Serializable value0;
         private Serializable value1;
         private Serializable value2;
@@ -488,7 +491,7 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    private static class FiveValues extends SharedKeySetValues {
+    private static final class FiveValues extends SharedKeySetValues {
         private Serializable value0;
         private Serializable value1;
         private Serializable value2;
@@ -528,7 +531,7 @@ public abstract class NodeMap extends NodeFeature {
      * Stores values in an exactly sized array. Used for key sets that are too
      * large for the specialized classes with one field per value.
      */
-    private static class ArrayValues extends SharedKeySetValues {
+    private static final class ArrayValues extends SharedKeySetValues {
         private final Serializable[] values;
 
         private ArrayValues(SharedKeySet keySet) {
@@ -550,13 +553,6 @@ public abstract class NodeMap extends NodeFeature {
         public Stream<Serializable> streamValues() {
             return Arrays.stream(values);
         }
-    }
-
-    private static <T> T[] removeIndex(T[] source, T[] target, int index) {
-        System.arraycopy(source, 0, target, 0, index);
-        System.arraycopy(source, index + 1, target, index,
-                source.length - index - 1);
-        return target;
     }
 
     /**
