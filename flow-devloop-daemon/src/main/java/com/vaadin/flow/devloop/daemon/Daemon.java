@@ -352,7 +352,8 @@ public final class Daemon {
                 out.println("EXIT " + tx.outcome.exitCode);
             }
             case "start" -> {
-                AppProcess.Startup startup = app.start(log, "start");
+                AppProcess.Startup startup = app.start(log, "start",
+                        parseJvmArgsOption(args).orElse(null));
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -362,7 +363,8 @@ public final class Daemon {
             }
             case "restart" -> {
                 app.stop();
-                AppProcess.Startup startup = app.start(log, "restart");
+                AppProcess.Startup startup = app.start(log, "restart",
+                        parseJvmArgsOption(args).orElse(null));
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -385,6 +387,32 @@ public final class Daemon {
             log.line("error: " + e);
             out.println("EXIT 70");
         }
+    }
+
+    /**
+     * The JVM flags a {@code start} or {@code restart} request carries.
+     * <p>
+     * The request line is split on whitespace, so the CLI splits
+     * {@code --jvm-args} on whitespace itself and sends a bare
+     * {@code --jvm-args} followed by one {@code --jvm-arg=<flag>} word per
+     * flag, in order. A flag arrives exactly as given, {@code |} and all,
+     * because nothing is joined that would have to be split again. The bare
+     * word is what says the flags were given: with no {@code --jvm-arg=} after
+     * it, it clears them.
+     *
+     * @param args
+     *            the request's words after the verb
+     * @return the flags, empty when the request has no {@code --jvm-args} -
+     *         which is not the same as an empty list, the answer that clears
+     *         them
+     */
+    static Optional<List<String>> parseJvmArgsOption(List<String> args) {
+        if (!args.contains("--jvm-args")) {
+            return Optional.empty();
+        }
+        String prefix = "--jvm-arg=";
+        return Optional.of(args.stream().filter(arg -> arg.startsWith(prefix))
+                .map(arg -> arg.substring(prefix.length())).toList());
     }
 
     private List<String> statusText() {
