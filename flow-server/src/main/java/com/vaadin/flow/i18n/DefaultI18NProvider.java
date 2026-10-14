@@ -34,9 +34,6 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultI18NProvider implements I18NProvider {
 
-    final List<Locale> providedLocales;
-    private final ClassLoader classLoader;
-
     public static final String BUNDLE_FOLDER = "vaadin-i18n";
     public static final String BUNDLE_FILENAME = "translations";
     // Get bundles named `translations` from `vaadin-i18n` folder.
@@ -47,6 +44,9 @@ public class DefaultI18NProvider implements I18NProvider {
     // instead of the bundle for the JVM default locale.
     private static final ResourceBundle.Control BUNDLE_CONTROL = ResourceBundle.Control
             .getNoFallbackControl(ResourceBundle.Control.FORMAT_PROPERTIES);
+
+    final List<Locale> providedLocales;
+    private final ClassLoader classLoader;
 
     /**
      * Construct {@link DefaultI18NProvider} for a list of locales that we have
