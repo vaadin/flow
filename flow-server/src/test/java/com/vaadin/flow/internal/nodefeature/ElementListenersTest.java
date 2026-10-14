@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -133,6 +134,25 @@ public class ElementListenersTest
         assertTrue(expressions.contains("data2"));
         // due to fix to #5090, data3 won't be present after removal
         assertFalse(expressions.contains("data3"));
+    }
+
+    @Test
+    void addSharedEventData_moreDataAddedToOneListener_otherListenersAndArrayUnchanged() {
+        String[] shared = { "data1", "data2" };
+        ElementListenerMap other = createFeature();
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+        ElementListenerMap.addEventData(registration, shared);
+        ElementListenerMap.addEventData(other.add("eventType", noOp), shared);
+
+        registration.addEventData("data3");
+        ElementListenerMap.addEventData(registration,
+                new String[] { "data1", "data4" });
+
+        assertEquals(Set.of("data1", "data2", "data3", "data4"),
+                getExpressions("eventType"));
+        assertEquals(Set.of("data1", "data2"),
+                getExpressions(other, "eventType"));
+        assertArrayEquals(new String[] { "data1", "data2" }, shared);
     }
 
     @Test

@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -791,6 +792,33 @@ class ComponentEventBusTest {
             });
             util.verifyNoInteractions();
         }
+    }
+
+    @DomEvent("element-data-event")
+    public static class ElementDataEvent extends ComponentEvent<Component> {
+        public ElementDataEvent(Component source, boolean fromClient,
+                @EventData("event.target") Element target,
+                @EventData("element.parentNode") Component parent,
+                @EventData("event.detail") int detail) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void addListener_elementAndComponentEventData_mappedToStateNodes() {
+        TestComponent component = new TestComponent();
+
+        component.addListener(ElementDataEvent.class, event -> {
+        });
+
+        assertEquals(
+                Set.of(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
+                        JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                                + "element.parentNode",
+                        "event.detail"),
+                component.getElement().getNode()
+                        .getFeature(ElementListenerMap.class)
+                        .getExpressions("element-data-event"));
     }
 
     @Test

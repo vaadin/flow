@@ -38,6 +38,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -308,17 +309,8 @@ public class ComponentEventBus implements Serializable {
 
         registration.setDisabledUpdateMode(mode);
 
-        LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
-                .getEventDataExpressions(eventType);
-
-        eventDataExpressions.forEach((expression, type) -> {
-            if (Component.class.isAssignableFrom(type)
-                    || type == Element.class) {
-                registration.addEventDataElement(expression);
-            } else {
-                registration.addEventData(expression);
-            }
-        });
+        ElementListenerMap.addEventData(registration,
+                ComponentEventBusUtil.getListenerEventData(eventType));
 
         if (!"".equals(filter)) {
             registration.setFilter(filter);
