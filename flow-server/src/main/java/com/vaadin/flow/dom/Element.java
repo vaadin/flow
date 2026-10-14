@@ -332,6 +332,12 @@ public class Element extends Node<Element> {
      * Note that attribute changes made on the server are sent to the client but
      * attribute changes made on the client side are not reflected back to the
      * server.
+     * <p>
+     * Passing a <code>null</code> value removes the attribute. A bare
+     * <code>null</code> literal is ambiguous between the
+     * <code>setAttribute</code> overloads and needs a cast, e.g.
+     * <code>setAttribute(name, (String) null)</code>; prefer
+     * {@link #removeAttribute(String)} in that case.
      *
      * @param attribute
      *            the name of the attribute
