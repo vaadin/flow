@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
@@ -109,11 +110,29 @@ public class CompressUtilTest {
 
     @Test
     public void deflateString_inflateString_returnsOriginal() {
-        String text = "{\"syncId\":3,\"title\":\"Ä € 日本\"}".repeat(50);
+        assertRoundTrip("{\"syncId\":3,\"title\":\"Ä € 日本\"}".repeat(50));
+    }
 
+    @Test
+    public void deflateString_compressedLargerThanBuffer_inflateStringReturnsOriginal() {
+        // Random characters barely compress, so the compressed form is larger
+        // than the buffer used for deflating and takes several rounds
+        Random random = new Random(42);
+        String text = random
+                .ints(40_000, 'a', 'z' + 1).collect(StringBuilder::new,
+                        StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
+
+        byte[] compressed = assertRoundTrip(text);
+
+        Assert.assertTrue(compressed.length > 3 * 4096);
+    }
+
+    private static byte[] assertRoundTrip(String text) {
         byte[] compressed = CompressUtil.deflateString(text);
 
         Assert.assertTrue(compressed.length < text.length());
         Assert.assertEquals(text, CompressUtil.inflateString(compressed));
+        return compressed;
     }
 }
