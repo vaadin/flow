@@ -17,11 +17,11 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -109,7 +109,12 @@ public class ElementListenerMap extends NodeMap {
         private final ElementListenerMap listenerMap;
 
         private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
-        private Set<String> eventDataExpressions;
+        /*
+         * Exactly sized array rather than a set: listeners hold a handful of
+         * expressions and every component event listener has its own copy, so a
+         * hash set would cost several times more memory for each one.
+         */
+        private String[] eventDataExpressions;
         private String filter;
 
         private int debounceTimeout = 0;
@@ -155,16 +160,12 @@ public class ElementListenerMap extends NodeMap {
             }
 
             if (eventDataExpressions == null) {
-                eventDataExpressions = Collections.singleton(eventData);
-            } else {
-                if (eventDataExpressions.size() == 1) {
-                    Set<String> oldExpressions = eventDataExpressions;
-                    // Don't use no-args or Collection constructors that
-                    // allocate for 16 entries
-                    eventDataExpressions = new HashSet<>(4);
-                    eventDataExpressions.addAll(oldExpressions);
-                }
-                eventDataExpressions.add(eventData);
+                eventDataExpressions = new String[] { eventData };
+            } else if (!hasEventData(eventData)) {
+                int size = eventDataExpressions.length;
+                eventDataExpressions = Arrays.copyOf(eventDataExpressions,
+                        size + 1);
+                eventDataExpressions[size] = eventData;
             }
 
             listenerMap.updateEventSettings(type);
@@ -263,9 +264,19 @@ public class ElementListenerMap extends NodeMap {
         }
 
         private boolean isPropertySynchronized(String propertyName) {
-            return eventDataExpressions != null && eventDataExpressions
-                    .contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                            + propertyName);
+            return hasEventData(
+                    JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
+        }
+
+        private boolean hasEventData(String expression) {
+            if (eventDataExpressions != null) {
+                for (String existing : eventDataExpressions) {
+                    if (existing.equals(expression)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         @Override
