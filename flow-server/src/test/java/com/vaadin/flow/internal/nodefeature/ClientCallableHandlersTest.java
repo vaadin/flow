@@ -53,7 +53,8 @@ class ClientCallableHandlersTest {
 
         @ClientCallable(DisabledUpdateMode.ALWAYS)
         public void publishedMethod2() {
-
+            // Only the handler registration is tested, the method is never
+            // invoked
         }
     }
 
