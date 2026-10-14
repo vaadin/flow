@@ -35,6 +35,8 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -184,9 +186,10 @@ class NodeInstallerTest {
         }
     }
 
-    @Test
-    void installDefaultVersionFromMirror_archiveNotMatchingShippedChecksum_installFails()
-            throws IOException {
+    @ParameterizedTest(name = "archive left over from earlier run: {0}")
+    @ValueSource(booleans = { false, true })
+    void installDefaultVersionFromMirror_archiveNotMatchingShippedChecksum_installFails(
+            boolean archiveLeftOver) throws IOException {
         Platform platform = Platform.guess();
         String prefix = nodeArchivePrefix(platform);
         File archive = createDownloadableNodeArchive(platform, prefix);
@@ -195,6 +198,12 @@ class NodeInstallerTest {
         writeShaSums(FrontendTools.DEFAULT_NODE_VERSION, archive);
         File targetDir = new File(baseDir, "installation");
         List<URI> downloads = new ArrayList<>();
+        if (archiveLeftOver) {
+            // e.g. from an interrupted run, so it is downloaded again
+            targetDir.mkdirs();
+            Files.copy(archive.toPath(),
+                    new File(targetDir, archive.getName()).toPath());
+        }
 
         NodeInstaller nodeInstaller = mirrorInstaller(platform, targetDir,
                 downloads).setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION);
