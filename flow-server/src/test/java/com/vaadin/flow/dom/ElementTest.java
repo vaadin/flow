@@ -263,11 +263,17 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void setNullAttribute() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Element e = ElementFactory.createDiv();
-            e.setAttribute("foo", (String) null);
-        });
+    void setNullAttribute_attributeRemoved() {
+        Element e = ElementFactory.createDiv();
+        e.setAttribute("foo", "bar");
+        e.setAttribute("class", "baz");
+
+        e.setAttribute("foo", (String) null);
+        e.setAttribute("class", (String) null);
+
+        assertFalse(e.hasAttribute("foo"));
+        assertFalse(e.hasAttribute("class"));
+        assertTrue(e.getClassList().isEmpty());
     }
 
     @Test
@@ -1596,11 +1602,14 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    void setResourceAttribute_nullValue() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Element element = ElementFactory.createDiv();
-            element.setAttribute("foo", (StreamResource) null);
-        });
+    void setResourceAttribute_nullValue_attributeRemoved() {
+        UI.setCurrent(createUI());
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", createEmptyResource("resource"));
+
+        element.setAttribute("foo", (StreamResource) null);
+
+        assertFalse(element.hasAttribute("foo"));
     }
 
     @Test
