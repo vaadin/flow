@@ -40,7 +40,10 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
      * Handlers of a component class, cached since every component instance
      * needs them and finding them scans the methods of the whole class
      * hierarchy. They only depend on the class, so they are found with a
-     * throwaway instance on a node of its own.
+     * throwaway instance on a node of its own. The cache is kept here rather
+     * than in {@link AbstractServerHandlers} since other subclasses may
+     * register state on their own node while scanning, which a shared result
+     * would skip.
      */
     private static final ReflectionCache<Component, Map<String, DisabledUpdateMode>> handlersCache = new ReflectionCache<>(
             type -> new ClientCallableHandlers(new StateNode())
