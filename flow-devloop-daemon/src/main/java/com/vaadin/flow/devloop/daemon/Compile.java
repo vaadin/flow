@@ -708,7 +708,7 @@ final class Compile {
      * the population this exists for - measured in this repository, {@code tsc}
      * rewrites nine byte-identical {@code .d.ts} files on every build - so the
      * "settle an unchanged resource on its stamp alone" that
-     * {@link #seedResources()} promises has to hold after the first
+     * {@link #seedResources(Map)} promises has to hold after the first
      * regenerating build, not only before it.
      * <p>
      * Both questions are settled because both drive the next answer. The stamp
@@ -781,10 +781,11 @@ final class Compile {
      * <p>
      * Only ever called for {@link ResourceKind#LIVE} files. A startup-only
      * resource goes live when the application restarts, and
-     * {@link #seedFromDisk()} is what records that.
+     * {@link #seedFrom(Snapshot)}, from the stamps that launch took, is what
+     * records that.
      * <p>
      * A file whose bytes cannot be read is still recorded, with no digest, for
-     * the reason {@link #seedResources()} gives: the key is the inventory a
+     * the reason {@link #seedResources(Map)} gives: the key is the inventory a
      * deletion is reported from. It reports changed until the bytes can be
      * read, which is the safe way round.
      */
@@ -802,34 +803,11 @@ final class Compile {
      * reason {@link #markResourcesNotified} is: the classpath is what a live
      * resource is read from, so removing the copy is the whole of the change. A
      * startup-only deletion stays in the inventory until the application
-     * restarts and {@link #seedResources()} clears it, because until then the
-     * running JVM is still holding what the file used to say.
+     * restarts and {@link #seedFrom(Snapshot)} clears it, because until then
+     * the running JVM is still holding what the file used to say.
      */
     void forgetResources(List<Path> resources) {
         resources.forEach(notified::remove);
-    }
-
-    /**
-     * Seeds the fingerprints, so an untouched project reports no changes.
-     * <p>
-     * Reads every tracked resource, which is what a content fingerprint costs.
-     * It is paid once per application start, on a tree the walk has just
-     * brought into the page cache - and it is what lets every apply after it
-     * settle an unchanged resource on its stamp alone.
-     * <p>
-     * A resource whose bytes cannot be read - a lock, a scanner, a build
-     * rewriting it - is recorded anyway, with no digest. The key is what
-     * matters: {@code notified.keySet()} is also the inventory
-     * {@link #staleResources()} reports deletions from, so a resource left out
-     * of it could be deleted and never reported, and its copy under
-     * {@code target/classes} would go on being served until the next full Maven
-     * build.
-     */
-    void seedResources() {
-        Map<Path, Stamp> onDisk = new java.util.HashMap<>();
-        forEachResource(modules,
-                (module, source, stamp) -> onDisk.put(source, stamp));
-        seedResources(onDisk);
     }
 
     /**
@@ -850,6 +828,18 @@ final class Compile {
      * unreadable one is: its key is the inventory a deletion is reported from,
      * so an edit deleted again before the next apply is still reported - and so
      * is a resource deleted before this baseline was taken.
+     * <p>
+     * Reading the bytes is what a content fingerprint costs. It is paid once
+     * per application start, on a tree the launch has just brought into the
+     * page cache - and it is what lets every apply after it settle an unchanged
+     * resource on its stamp alone.
+     * <p>
+     * A resource whose bytes cannot be read - a lock, a scanner, a build
+     * rewriting it - is recorded with no digest too. The key is what matters:
+     * {@code notified.keySet()} is also the inventory {@link #staleResources()}
+     * reports deletions from, so a resource left out of it could be deleted and
+     * never reported, and its copy under {@code target/classes} would go on
+     * being served until the next full Maven build.
      *
      * @param launched
      *            the resources the application was launched with, and their
@@ -859,13 +849,20 @@ final class Compile {
         notified.clear();
         launched.forEach((source, stamp) -> {
             if (resourceOwner(source).isPresent()) {
-                notified.put(source,
-                        new Content(stamp,
-                                stampOf(source).filter(stamp::equals)
-                                        .flatMap(same -> digestOf(source))
-                                        .orElse(null)));
+                // Asked on both sides of the read: an edit landing while the
+                // file is digested would otherwise pair the launched stamp
+                // with bytes the application never read, and the next apply
+                // would settle that edit instead of reporting it.
+                String digest = hasStamp(source, stamp) ? digestOf(source)
+                        .filter(read -> hasStamp(source, stamp)).orElse(null)
+                        : null;
+                notified.put(source, new Content(stamp, digest));
             }
         });
+    }
+
+    private static boolean hasStamp(Path file, Stamp stamp) {
+        return stampOf(file).filter(stamp::equals).isPresent();
     }
 
     /**
@@ -1216,7 +1213,7 @@ final class Compile {
      * this differs from a live resource and matches a startup-only one: a class
      * the JVM has loaded stays loaded whatever happens to the file, so the
      * deletion goes on being reported until the application restarts and
-     * {@link #seedFromDisk()} re-reads what is actually there. The inventory
+     * {@link #seedFrom(Snapshot)} records what that launch found. The inventory
      * also bounds this - a source created and deleted without a restart in
      * between was never seeded, so its artifact is left for the next build.
      */
@@ -1491,8 +1488,10 @@ final class Compile {
             walk.filter(Files::isRegularFile).filter(accept)
                     .forEach(file -> stampOf(file).ifPresent(
                             stamp -> action.accept(module, file, stamp)));
-        } catch (IOException ignored) {
-            // An unreadable tree yields an empty change-set, not a failure.
+        } catch (IOException | java.io.UncheckedIOException ignored) {
+            // An unreadable tree yields an empty change-set, not a failure -
+            // and so does one that changes under the walk, which reports a
+            // directory gone mid-iteration unchecked.
         }
     }
 

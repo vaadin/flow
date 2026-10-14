@@ -421,13 +421,20 @@ final class AppProcess {
             // built - a fresh clone, or anything after a mvn clean - and fail
             // with "cannot tell how to start this application". Asked after,
             // the answer is the one composing already settled on.
-            AppRuntime.Invocation invocation = launch.invocation(
-                    Daemon.currentPort(), Daemon.currentToken(), launchKind,
-                    log);
+            Launch.Composed composed = launch.invocation(Daemon.currentPort(),
+                    Daemon.currentToken(), launchKind, log);
+            AppRuntime.Invocation invocation = composed.invocation();
             AppRuntime runtime = launch.runtime();
             List<String> command = invocation.command();
             Path appLog = Launch.workDir(root).resolve("app.log");
             Files.createDirectories(appLog.getParent());
+            // As close to the spawn as it can be while still ahead of
+            // markStarting, so that a walk which fails leaves no launch open
+            // behind it. An edit made after this is one the launch may or may
+            // not read, and reporting it as a change is the safe way round:
+            // the worst it costs is one apply more than was needed - and for
+            // a bundled frontend file, whose change escalates, one restart.
+            Compile.Snapshot snapshot = Compile.Snapshot.of(composed.project());
 
             markStarting();
 
@@ -445,12 +452,6 @@ final class AppProcess {
                     .redirectOutput(
                             ProcessBuilder.Redirect.to(appLog.toFile()));
             builder.environment().putAll(invocation.environment());
-            // Immediately before the spawn, and not a moment earlier: an edit
-            // made after this is one the launch may or may not read, and
-            // reporting it as a change is the safe way round - the worst it
-            // costs is one apply that finds nothing new to do.
-            Compile.Snapshot snapshot = Compile.Snapshot
-                    .of(launch.launchedProject().orElseThrow());
             Process started = builder.start();
             Run current = beginRun(started, appLog, snapshot);
             log.line("app pid " + started.pid() + ", log " + appLog);

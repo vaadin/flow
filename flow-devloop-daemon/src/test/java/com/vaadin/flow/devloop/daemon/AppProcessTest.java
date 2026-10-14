@@ -42,6 +42,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class AppProcessTest {
 
+    /** What a run spawned from an empty project was launched with. */
+    private static final Compile.Snapshot NOTHING = new Compile.Snapshot(
+            Map.of(), Map.of(), Map.of());
+
     @TempDir
     Path root;
 
@@ -60,7 +64,7 @@ class AppProcessTest {
     @Test
     void exitOfCurrentProcess_reportsCrash() throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run current = app.beginRun(exited(), log(), null);
+        AppProcess.Run current = app.beginRun(exited(), log(), NOTHING);
 
         app.handleExit(current);
 
@@ -73,7 +77,7 @@ class AppProcessTest {
     @Test
     void exitOfExpectedStop_reportsStopped() throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run current = app.beginRun(exited(), log(), null);
+        AppProcess.Run current = app.beginRun(exited(), log(), NOTHING);
         current.stopExpected.set(true);
 
         app.handleExit(current);
@@ -85,9 +89,9 @@ class AppProcessTest {
     @Test
     void exitOfSupersededProcess_leavesRestartedAppAlone() throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run previous = app.beginRun(exited(), log(), null);
+        AppProcess.Run previous = app.beginRun(exited(), log(), NOTHING);
         // The restart: a new process takes over before the old callback runs.
-        AppProcess.Run restarted = app.beginRun(exited(), log(), null);
+        AppProcess.Run restarted = app.beginRun(exited(), log(), NOTHING);
         AppProcess.State before = app.state();
 
         app.handleExit(previous);
@@ -104,8 +108,8 @@ class AppProcessTest {
     @Test
     void registrationFromSupersededProcess_isRefused() throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run previous = app.beginRun(exited(), log(), null);
-        app.beginRun(exited(), log(), null);
+        AppProcess.Run previous = app.beginRun(exited(), log(), NOTHING);
+        app.beginRun(exited(), log(), NOTHING);
 
         assertTrue(
                 app.onRegistered("dev", OptionalLong.of(previous.process.pid()))
@@ -119,9 +123,9 @@ class AppProcessTest {
     void closeOfSupersededRegistration_keepsNewAppRegistered()
             throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run previous = app.beginRun(exited(), log(), null);
+        AppProcess.Run previous = app.beginRun(exited(), log(), NOTHING);
         app.onRegistered("dev", OptionalLong.of(previous.process.pid()));
-        AppProcess.Run restarted = app.beginRun(exited(), log(), null);
+        AppProcess.Run restarted = app.beginRun(exited(), log(), NOTHING);
         app.onRegistered("dev", OptionalLong.of(restarted.process.pid()));
 
         // The predecessor's socket closes only now, after the restart is up.
@@ -177,7 +181,7 @@ class AppProcessTest {
     void launchSnapshot_belongsToTheRunningProcess() throws Exception {
         AppProcess app = new AppProcess(root, null);
         assertTrue(app.launchSnapshot().isEmpty());
-        app.beginRun(exited(), log(), null);
+        app.beginRun(exited(), log(), NOTHING);
         Compile.Snapshot snapshot = new Compile.Snapshot(Map.of(), Map.of(),
                 Map.of());
         Process alive = alive();
@@ -198,7 +202,7 @@ class AppProcessTest {
         Process alive = alive();
         // Where start() waits for the connector, reached the way it reaches it.
         app.markStarting();
-        AppProcess.Run current = app.beginRun(alive, log(), null);
+        AppProcess.Run current = app.beginRun(alive, log(), NOTHING);
         assertTrue(app.alreadyLaunching(), "precondition: the launch is open");
 
         // The registration timeout: the JVM is still up, it just never called

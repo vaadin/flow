@@ -1167,12 +1167,13 @@ final class Launch {
      *            or {@code apply}. The three produce a process that is
      *            otherwise identical, so the app can only tell them apart if
      *            the daemon says which it is.
-     * @return the invocation, ready for a {@link ProcessBuilder}
+     * @return the invocation, ready for a {@link ProcessBuilder}, and the
+     *         resolved build it runs
      * @throws IOException
      *             if the launch cannot be composed
      */
-    AppRuntime.Invocation invocation(int daemonPort, String token,
-            String launchKind, Log progress) throws IOException {
+    Composed invocation(int daemonPort, String token, String launchKind,
+            Log progress) throws IOException {
         // Teed, for the same reason project(Log) is: every warning below is
         // one only the developer can act on - a pom setting the daemon cannot
         // override, a path it cannot unbreak, a missing agent jar - and a
@@ -1209,17 +1210,19 @@ final class Launch {
         // because the question it answers - is the running app still the app
         // the poms describe? - is the same either way.
         launchedProject.set(resolved);
-        return invocation;
+        return new Composed(invocation, resolved);
     }
 
     /**
-     * The resolved build the last composed launch runs, which is the module set
-     * whose files {@link Compile.Snapshot} stamps as the launch is spawned.
+     * A composed launch: what to spawn, and the resolved build it runs - the
+     * module set whose files {@link Compile.Snapshot} stamps as it is spawned.
      *
-     * @return the project, or empty when no launch has been composed
+     * @param invocation
+     *            the invocation, ready for a {@link ProcessBuilder}
+     * @param project
+     *            the resolved build the invocation runs
      */
-    Optional<Project> launchedProject() {
-        return Optional.ofNullable(launchedProject.get());
+    record Composed(AppRuntime.Invocation invocation, Project project) {
     }
 
     /**

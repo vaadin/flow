@@ -561,16 +561,20 @@ class CompileTest {
     }
 
     @Test
-    void staleFrontend_seedingKeepsAnEditMadeSinceTheAppStarted()
+    void staleFrontend_seedingKeepsChangesMadeSinceTheAppStarted()
             throws IOException {
         // The "start, edit, first apply" sequence. A frontend file has no
         // artifact to be newer than, so a baseline taken while the app is
         // already running would otherwise swallow the edit and answer "no
-        // changes" to the very change it was asked about.
-        Compile compile = withFrontend("views/main.ts", "views/settled.ts");
+        // changes" to the very change it was asked about - and would not know
+        // a file deleted in the meantime existed at all.
+        Compile compile = withFrontend("views/main.ts", "views/settled.ts",
+                "views/removed.ts");
         Compile.Snapshot launched = Compile.Snapshot
                 .of(project(Reactor.Module.of(repo.resolve("app"), "app")));
         touch("app/src/main/frontend/views/main.ts");
+        Path removed = repo.resolve("app/src/main/frontend/views/removed.ts");
+        Files.delete(removed);
 
         compile.seedFrom(launched);
 
@@ -578,6 +582,7 @@ class CompileTest {
         assertEquals(
                 List.of(repo.resolve("app/src/main/frontend/views/main.ts")),
                 changes.modified());
+        assertEquals(List.of(removed), changes.deleted());
     }
 
     @Test
@@ -651,7 +656,7 @@ class CompileTest {
                 "server.port=8080");
         Compile compile = new Compile(project(app));
         compile.copyResources(compile.staleResources().copies());
-        compile.seedResources();
+        compile.seedFromDisk();
 
         // What a regenerating build does: same bytes, new modification time.
         Files.writeString(served, "body{}");
@@ -679,7 +684,7 @@ class CompileTest {
                 "app/src/main/resources/META-INF/resources/site.css", "body{}");
         Compile compile = new Compile(project(app));
         compile.copyResources(compile.staleResources().copies());
-        compile.seedResources();
+        compile.seedFromDisk();
         Path copy = app.classesDir().resolve("META-INF/resources/site.css");
 
         // What a regenerating build does: same bytes, later modification time.
@@ -711,7 +716,7 @@ class CompileTest {
                 "app/src/main/resources/META-INF/resources/site.css", "body{}");
         Compile compile = new Compile(project(app));
         compile.copyResources(compile.staleResources().copies());
-        compile.seedResources();
+        compile.seedFromDisk();
 
         Files.writeString(served, "body{margin:0}");
 
@@ -738,7 +743,7 @@ class CompileTest {
                 "server.port=8080");
         Compile compile = new Compile(project(app));
         compile.copyResources(compile.staleResources().copies());
-        compile.seedResources();
+        compile.seedFromDisk();
 
         // The edit, and the copy something other than the apply made of it.
         Files.writeString(config, "server.port=9090");
@@ -760,7 +765,7 @@ class CompileTest {
                 "app/src/main/resources/META-INF/resources/site.css", "body{}");
         Compile compile = new Compile(project(app));
         compile.copyResources(compile.staleResources().copies());
-        compile.seedResources();
+        compile.seedFromDisk();
 
         Files.writeString(served, "body{margin:0}");
         compile.copyResources(List.of(served));
@@ -789,7 +794,7 @@ class CompileTest {
         Path served = write(
                 "app/src/main/resources/META-INF/resources/site.css", "body{}");
         Compile compile = new Compile(project(app));
-        compile.seedResources();
+        compile.seedFromDisk();
 
         assertEquals(List.of(served),
                 compile.staleResources().live().modified());
@@ -1070,7 +1075,7 @@ class CompileTest {
                 "server.port=8080");
         Compile compile = new Compile(project(app));
         compile.copyResources(compile.staleResources().copies());
-        compile.seedResources();
+        compile.seedFromDisk();
         Files.delete(served);
         Files.delete(config);
 
@@ -1094,7 +1099,7 @@ class CompileTest {
         compile.copyResources(List.of(served));
         Path copy = app.classesDir().resolve("META-INF/resources/site.css");
         assertTrue(Files.isRegularFile(copy));
-        compile.seedResources();
+        compile.seedFromDisk();
         Files.delete(served);
 
         assertEquals(List.of(copy),

@@ -1336,7 +1336,9 @@ final class TransactionEngine {
         // with, which is not what is on disk now: this is handled a moment
         // after the command that waited for the registration returned, and a
         // file written in that moment is not something the application
-        // started with.
+        // started with. That holds for the frontend too: an edit made while
+        // the app was starting is reported, at the price of one restart more
+        // when a bundle had already folded it in.
         app.launchSnapshot().ifPresentOrElse(current::seedFrom,
                 current::seedFromDisk);
     }
