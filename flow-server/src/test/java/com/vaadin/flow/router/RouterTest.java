@@ -4954,6 +4954,53 @@ public class RouterTest extends RoutingTestBase {
                 ((NavigationEndedEvent) events.get(3)).getOutcome());
     }
 
+    @Test
+    public void proceedIntoPostponeAgain_firesPostponedOutcome() {
+        setNavigationTargets(RootNavigationTarget.class,
+                FooNavigationTarget.class);
+        navigate("");
+        List<ContinueNavigationAction> postpones = new ArrayList<>();
+        // Resuming runs the leave observers after the one that postponed, so
+        // the second one postpones the resumed navigation again
+        for (int i = 0; i < 2; i++) {
+            ui.addBeforeLeaveListener(event -> {
+                if (postpones.size() < 2) {
+                    postpones.add(event.postpone());
+                }
+            });
+        }
+        navigate("foo");
+        List<EventObject> events = recordNavigationEvents();
+
+        postpones.get(0).proceed();
+
+        assertEquals(2, postpones.size());
+        assertEquals(RootNavigationTarget.class, getUIComponentClass());
+        assertEquals(2, events.size());
+        assertEquals(new NavigationEndedEvent.Postponed(),
+                ((NavigationEndedEvent) events.get(1)).getOutcome());
+    }
+
+    @Test
+    public void proceedIntoThrowingView_firesFailedOutcomeAndPropagates() {
+        setNavigationTargets(PostponingOnceNavigationTarget.class,
+                ThrowingExceptionTarget.class);
+        PostponingOnceNavigationTarget.postpone = null;
+        navigate("postpone-once");
+        navigate("throwing-exception");
+        List<EventObject> events = recordNavigationEvents();
+
+        // Unlike a regular navigation, no error view is rendered for an
+        // exception thrown while resuming
+        assertThrows(IllegalStateException.class,
+                () -> PostponingOnceNavigationTarget.postpone.proceed());
+
+        assertEquals(2, events.size());
+        assertInstanceOf(IllegalStateException.class,
+                ((NavigationEndedEvent.Failed) ((NavigationEndedEvent) events
+                        .get(1)).getOutcome()).error());
+    }
+
     @Route("postpone-once")
     @Tag(Tag.DIV)
     public static class PostponingOnceNavigationTarget extends Component
@@ -4966,6 +5013,16 @@ public class RouterTest extends RoutingTestBase {
             if (postpone == null) {
                 postpone = event.postpone();
             }
+        }
+    }
+
+    @Route("throwing-exception")
+    @Tag(Tag.DIV)
+    public static class ThrowingExceptionTarget extends Component
+            implements BeforeEnterObserver {
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            throw new IllegalStateException();
         }
     }
 
