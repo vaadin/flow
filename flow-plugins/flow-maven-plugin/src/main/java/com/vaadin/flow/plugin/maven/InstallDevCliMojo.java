@@ -100,8 +100,19 @@ public class InstallDevCliMojo extends AbstractMojo {
     @Parameter(property = "vaadin.devcli.skipHotswapAgent", defaultValue = "false")
     private boolean skipHotswapAgent;
 
+    /**
+     * Skip the execution of this goal, under the same property that skips the
+     * rest of the Vaadin plugin's goals.
+     */
+    @Parameter(property = "vaadin.skip", defaultValue = "false")
+    private boolean skip;
+
     @Override
     public void execute() throws MojoFailureException {
+        if (skip) {
+            getLog().info("Skipping the vaadin-dev CLI installation");
+            return;
+        }
         Path target = targetDirectory.toPath();
         try {
             DevCliInstaller.report(DevCliInstaller.install(target), target,

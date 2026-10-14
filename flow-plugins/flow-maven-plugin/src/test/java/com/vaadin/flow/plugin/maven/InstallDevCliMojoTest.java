@@ -28,26 +28,31 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class InstallDevCliMojoTest {
 
     @TempDir
     File projectBase;
 
-    private final MavenProject project = Mockito.mock(MavenProject.class);
+    private final MavenProject project = mock(MavenProject.class);
 
-    private final Log log = Mockito.mock(Log.class);
+    private final Log log = mock(Log.class);
 
     @Test
     void execute_installsWithoutTheFlowBuildMachinery() throws Exception {
         // Only the project and the goal's own parameters are set: no
         // MojoExecution, no plugin context, nothing a Reflector or class
         // scanning could be built from. Installing the CLI must not need any.
-        Mockito.when(project.getArtifacts()).thenReturn(Set.of());
+        when(project.getArtifacts()).thenReturn(Set.of());
 
         mojo(false).execute();
 
@@ -62,12 +67,21 @@ class InstallDevCliMojoTest {
 
         assertTrue(Files.isRegularFile(
                 projectBase.toPath().resolve(".vaadin/vaadin-dev")));
-        Mockito.verify(log)
-                .info(ArgumentMatchers.<CharSequence> argThat(message -> message
-                        .toString().contains("Skipping HotswapAgent")));
-        Mockito.verify(project, Mockito.never()).getArtifacts();
-        Mockito.verify(log, Mockito.never())
-                .warn(ArgumentMatchers.any(CharSequence.class));
+        verify(log).info(argThat((CharSequence message) -> message.toString()
+                .contains("Skipping HotswapAgent")));
+        verify(project, never()).getArtifacts();
+        verify(log, never()).warn(any(CharSequence.class));
+    }
+
+    @Test
+    void execute_skip_writesNothing() throws Exception {
+        InstallDevCliMojo mojo = mojo(false);
+        ReflectionUtils.setVariableValueInObject(mojo, "skip", true);
+
+        mojo.execute();
+
+        assertFalse(Files.exists(projectBase.toPath().resolve(".vaadin")));
+        verify(project, never()).getArtifacts();
     }
 
     @Test
@@ -80,11 +94,11 @@ class InstallDevCliMojoTest {
                 Files.newOutputStream(jar))) {
             // empty
         }
-        Artifact daemon = Mockito.mock(Artifact.class);
-        Mockito.when(daemon.getGroupId()).thenReturn("com.vaadin");
-        Mockito.when(daemon.getArtifactId()).thenReturn("flow-devloop-daemon");
-        Mockito.when(daemon.getFile()).thenReturn(jar.toFile());
-        Mockito.when(project.getArtifacts()).thenReturn(Set.of(daemon));
+        Artifact daemon = mock(Artifact.class);
+        when(daemon.getGroupId()).thenReturn("com.vaadin");
+        when(daemon.getArtifactId()).thenReturn("flow-devloop-daemon");
+        when(daemon.getFile()).thenReturn(jar.toFile());
+        when(project.getArtifacts()).thenReturn(Set.of(daemon));
 
         mojo(false).execute();
 
@@ -103,7 +117,7 @@ class InstallDevCliMojoTest {
     }
 
     private void verifyWarned(String fragment) {
-        Mockito.verify(log).warn(ArgumentMatchers.<CharSequence> argThat(
-                message -> message.toString().contains(fragment)));
+        verify(log).warn(argThat((CharSequence message) -> message.toString()
+                .contains(fragment)));
     }
 }
