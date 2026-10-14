@@ -18,9 +18,9 @@
  * other clickable components.
  * <p>
  * Use
- * {@link com.vaadin.flow.component.newtab.NewTab#onClick(com.vaadin.flow.component.Component, com.vaadin.flow.server.streams.DownloadHandler)
- * NewTab.onClick(component, handler)} to make a click show the content of a
- * {@link com.vaadin.flow.server.streams.DownloadHandler DownloadHandler} or a
+ * {@link com.vaadin.flow.component.newtab.OpenInNewTab#onClick(com.vaadin.flow.component.Component, com.vaadin.flow.server.streams.DownloadHandler)
+ * OpenInNewTab.onClick(component, handler)} to make a click show the content of
+ * a {@link com.vaadin.flow.server.streams.DownloadHandler DownloadHandler} or a
  * URL in a new tab.
  * <p>
  * New tabs are opened through {@code onClick} rather than an ordinary

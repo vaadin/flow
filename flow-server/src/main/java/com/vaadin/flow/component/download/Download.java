@@ -55,7 +55,7 @@ import com.vaadin.flow.shared.Registration;
  * not report whether the user actually saved the file.
  * <p>
  * To show content in a new browser tab instead of saving it, use
- * {@link com.vaadin.flow.component.newtab.NewTab NewTab}.
+ * {@link com.vaadin.flow.component.newtab.OpenInNewTab OpenInNewTab}.
  * 
  * @since 25.4
  */

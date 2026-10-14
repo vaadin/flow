@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-class NewTabTest {
+class OpenInNewTabTest {
 
     @Tag("test-button")
     static final class TestButton extends Component
@@ -68,7 +68,7 @@ class NewTabTest {
         FileDownloadHandler handler = DownloadHandler
                 .forFile(new File("invoice.pdf"));
 
-        NewTab.onClick(button, handler);
+        OpenInNewTab.onClick(button, handler);
 
         assertTrue(handler.isInline(),
                 "A built-in handler should serve its content inline");
@@ -84,7 +84,7 @@ class NewTabTest {
 
     @Test
     void openUrl_clickOpensGivenUrl() {
-        NewTab.onClick(button, "/files/terms.html");
+        OpenInNewTab.onClick(button, "/files/terms.html");
 
         JsFunction action = actionOf(singleInstallFn());
         assertTrue(action.getBody().contains("window.open(u, \"_blank\""),
@@ -94,7 +94,7 @@ class NewTabTest {
 
     @Test
     void removeRegistration_handlerNoLongerServed() {
-        Registration registration = NewTab.onClick(button,
+        Registration registration = OpenInNewTab.onClick(button,
                 event -> event.getOutputStream().write(1));
         URI uri = URI.create((String) urlCapture(actionOf(singleInstallFn())));
         assertTrue(registry.getResource(uri).isPresent());

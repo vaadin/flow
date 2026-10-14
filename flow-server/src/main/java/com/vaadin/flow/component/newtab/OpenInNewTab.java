@@ -33,7 +33,7 @@ import com.vaadin.flow.shared.Registration;
  *
  * <pre>{@code
  * Button view = new Button("View invoice");
- * NewTab.onClick(view, DownloadHandler.fromInputStream(event -> {
+ * OpenInNewTab.onClick(view, DownloadHandler.fromInputStream(event -> {
  *     byte[] pdf = invoiceService.createPdf();
  *     return new DownloadResponse(new ByteArrayInputStream(pdf), "invoice.pdf",
  *             "application/pdf", pdf.length);
@@ -52,9 +52,9 @@ import com.vaadin.flow.shared.Registration;
  * To save content as a file instead of showing it, use
  * {@link com.vaadin.flow.component.download.Download Download}.
  */
-public final class NewTab implements Serializable {
+public final class OpenInNewTab implements Serializable {
 
-    private NewTab() {
+    private OpenInNewTab() {
         // utility class
     }
 
