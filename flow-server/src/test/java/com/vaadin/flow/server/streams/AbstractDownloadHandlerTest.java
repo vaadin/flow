@@ -542,4 +542,19 @@ class AbstractDownloadHandlerTest {
             verify(servletResponse, never()).setStatus(anyInt());
         }
     }
+
+    @Test
+    void withContentType_blankRejected_setValueReadBack() {
+        assertNull(handler.getContentType());
+        assertThrows(IllegalArgumentException.class,
+                () -> handler.withContentType(""));
+        assertThrows(IllegalArgumentException.class,
+                () -> handler.withContentType(" "));
+
+        handler.withContentType("text/vtt");
+
+        assertEquals("text/vtt", handler.getContentType());
+        assertEquals("text/vtt",
+                handler.resolveContentType("captions.bin", response));
+    }
 }

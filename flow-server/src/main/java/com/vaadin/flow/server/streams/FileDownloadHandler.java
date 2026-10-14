@@ -86,7 +86,7 @@ public class FileDownloadHandler
                 downloadEvent.setFileName(resourceName);
             }
             downloadEvent
-                    .setContentType(getContentType(resourceName, response));
+                    .setContentType(resolveContentType(resourceName, response));
             transferContent(downloadEvent, inputStream, outputStream,
                     file.length(), SeekableContent.ofFile(file));
         } catch (RangeRequestException e) {
