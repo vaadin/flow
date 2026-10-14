@@ -81,12 +81,35 @@ public class ComponentUtil {
      * @param componentClass
      *            The component class to be registered with the given tag.
      * @since 24.5
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static void registerComponentClass(String tag,
             Class<? extends Component> componentClass) {
         tagToComponentsMap
                 .computeIfAbsent(tag, k -> ConcurrentHashMap.newKeySet())
                 .add(componentClass);
+    }
+
+    /**
+     * Removes all component classes from the mapping of HTML tags to component
+     * classes.
+     * <p>
+     * The mapping is static, so it outlives the application that registered the
+     * classes. Clear it when the application stops, so that the mapping does
+     * not keep the classes, and through them their class loader, reachable
+     * after the application has been reloaded in a new class loader.
+     *
+     * @see #registerComponentClass(String, Class)
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
+     */
+    @Deprecated(since = "25.4", forRemoval = true)
+    public static void unregisterAllComponentClasses() {
+        tagToComponentsMap.clear();
     }
 
     /**
@@ -103,7 +126,11 @@ public class ComponentUtil {
      *         tag. Returns an empty set if no classes are associated with the
      *         tag or if running in production mode.
      * @since 24.5
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static Set<Class<? extends Component>> getComponentsByTag(
             String tag) {
         return tagToComponentsMap.getOrDefault(tag, Collections.emptySet());
@@ -119,7 +146,11 @@ public class ComponentUtil {
      *         This map is only populated in development mode and will be empty
      *         in production mode.
      * @since 24.5
+     * @deprecated the mapping was added for internal use by development tools,
+     *             which no longer need it, and it is never filled in Spring
+     *             Boot applications. It will be removed without a replacement.
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static Map<String, Set<Class<? extends Component>>> getAllTagMappings() {
         return Collections.unmodifiableMap(tagToComponentsMap);
     }
