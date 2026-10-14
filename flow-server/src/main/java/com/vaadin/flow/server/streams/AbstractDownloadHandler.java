@@ -27,6 +27,7 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +57,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     // Content-Disposition: attachment by default
     private boolean inline = false;
 
+    private String contentType;
+
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
@@ -64,9 +67,84 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 transferEvent.getContentLength(), transferEvent.getException());
     }
 
+    /**
+     * Gets the MIME type that the servlet container maps to the given file
+     * name, or <code>application/octet-stream</code> when it maps none.
+     * <p>
+     * Unlike {@link #getContentType()}, this ignores the type set with
+     * {@link #withContentType(String)}. Override it to change how the type is
+     * derived from the file name; to serve the content with the configured type
+     * when there is one, call
+     * {@link #resolveContentType(String, VaadinResponse)} instead.
+     *
+     * @param fileName
+     *            the name of the file to look up the type for
+     * @param response
+     *            the response, which gives access to the servlet container
+     * @return the MIME type for the file name, not <code>null</code>
+     */
     protected String getContentType(String fileName, VaadinResponse response) {
         return Optional.ofNullable(response.getService().getMimeType(fileName))
                 .orElse("application/octet-stream");
+    }
+
+    /**
+     * Sets the MIME type that the content is served with, such as
+     * <code>text/vtt</code>, instead of the one that the servlet container maps
+     * to the file name, or <code>application/octet-stream</code> when it maps
+     * none.
+     * <p>
+     * A content type that a {@link DownloadResponse} gives for a particular
+     * download still takes precedence over this one.
+     *
+     * @param contentType
+     *            the MIME type of the content, not <code>null</code> or blank
+     * @return this instance for method chaining
+     * @throws IllegalArgumentException
+     *             if the content type is blank
+     */
+    public R withContentType(String contentType) {
+        Objects.requireNonNull(contentType, "Content type cannot be null");
+        if (contentType.isBlank()) {
+            throw new IllegalArgumentException("Content type cannot be blank");
+        }
+        this.contentType = contentType;
+        return (R) this;
+    }
+
+    /**
+     * Gets the MIME type set with {@link #withContentType(String)}.
+     * <p>
+     * Unlike {@link #getContentType(String, VaadinResponse)}, this does not
+     * look up a type for the file name. Use
+     * {@link #resolveContentType(String, VaadinResponse)} for the type that the
+     * content is served with.
+     *
+     * @return the MIME type that the content is served with, or
+     *         <code>null</code> if it is taken from the file name
+     */
+    public String getContentType() {
+        return contentType;
+    }
+
+    /**
+     * Resolves the MIME type that the content is served with: the one set with
+     * {@link #withContentType(String)}, or else the one that
+     * {@link #getContentType(String, VaadinResponse)} gives for the file name.
+     * The built-in handlers serve their content with this type, and a subclass
+     * that sets the content type of its own response should do the same.
+     *
+     * @param fileName
+     *            the name of the file to look up the type for when none is set
+     * @param response
+     *            the response, which gives access to the servlet container
+     * @return the MIME type that the content is served with, not
+     *         <code>null</code>
+     */
+    protected final String resolveContentType(String fileName,
+            VaadinResponse response) {
+        return contentType != null ? contentType
+                : getContentType(fileName, response);
     }
 
     /**
@@ -229,7 +307,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                     contentLength);
             return;
         }
-        String contentType = response.getContentType();
+        String responseContentType = response.getContentType();
         ClientOutputStream clientOutput = new ClientOutputStream(outputStream);
         boolean wholeContent = ranges.size() == 1
                 && ranges.get(0).getFirst() == 0
@@ -273,7 +351,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 response.setHeader("Content-Range", null);
                 response.setHeader("Transfer-Encoding", null);
                 response.setHeader("ETag", null);
-                response.setContentType(contentType);
+                response.setContentType(responseContentType);
                 response.setContentLengthLong(0);
             }
             // Listeners only see a range that covers the whole content

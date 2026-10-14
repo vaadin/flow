@@ -27,7 +27,7 @@ const BASE = {
 
 test('reports the metrics and classes that changed', () => {
   const head = {
-    'empty-ui': BASE['empty-ui'],
+    'empty-ui': report('Empty UI', 9880, 22160, BASE['empty-ui'].metrics[0].breakdown),
     'rows-ui': report('Rows UI', 927048, 519703, {
       'java.util.HashMap': { count: 15, bytes: 720 },
       '[Ljava.lang.String;': { count: 1000, bytes: 32000 }
@@ -38,9 +38,13 @@ test('reports the metrics and classes that changed', () => {
   const body = comment(BASE, head, 'abc1234');
   assert.match(body, /^<!-- flow-memory-footprint -->/);
   assert.match(body, /Compared with the base commit abc1234/);
-  assert.match(body, /\| Rows UI \| Heap retained per UI \| 1,010,240 B → 927,048 B \(\*\*−83,192 B\*\*, −8\.2%\) \|/);
-  assert.match(body, /\| Rows UI \| Serialized session \| 519,703 B \(no change\) \|/);
-  assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B \(no change\) \|/);
+  assert.match(body, /\| Scenario \| Metric \| Base \| Head \| Change \|/);
+  assert.ok(
+    body.includes('| Rows UI | Heap retained per UI | 1,010,240 B | 927,048 B | $\\color{green}\\textbf{−83,192 B}$ (−8.2%) |')
+  );
+  assert.match(body, /\| Rows UI \| Serialized session \| 519,703 B \| 519,703 B \| no change \|/);
+  assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B \| 9,880 B \| no change \|/);
+  assert.ok(body.includes('| Empty UI | Serialized session | 22,153 B | 22,160 B | $\\color{red}\\textbf{+7 B}$ (+0.0%) |'));
   assert.match(body, /<summary>Rows UI: Heap retained per UI by class<\/summary>/);
   assert.doesNotMatch(body, /<summary>Empty UI:/);
   assert.match(body, /- \*\*Rows UI\*\* \(`rows-ui`\): Rows UI description/);
@@ -62,7 +66,7 @@ test('reports the head metrics when the base has none', () => {
   assert.strictEqual(compare({}, BASE).changed, true);
   const body = comment({}, BASE, 'abc1234');
   assert.match(body, /The base commit abc1234 has no memory measurements/);
-  assert.match(body, /\| Rows UI \| Heap retained per UI \| 1,010,240 B \|/);
+  assert.match(body, /\| Rows UI \| Heap retained per UI \| — \| 1,010,240 B \| — \|/);
 });
 
 test('reports scenarios and metrics that only the base or the head has', () => {
@@ -72,10 +76,10 @@ test('reports scenarios and metrics that only the base or the head has', () => {
 
   assert.strictEqual(compare(BASE, head).changed, true);
   const body = comment(BASE, head, 'abc1234');
-  assert.match(body, /\| Form UI \| Heap retained per UI \| 50,000 B \|/);
-  assert.match(body, /\| Rows UI \| Requests \| 3 \|/);
-  assert.match(body, /\| Rows UI \| Serialized session \| 519,703 B → removed \|/);
-  assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B → removed \|/);
+  assert.match(body, /\| Form UI \| Heap retained per UI \| — \| 50,000 B \| new \|/);
+  assert.match(body, /\| Rows UI \| Requests \| — \| 3 \| new \|/);
+  assert.match(body, /\| Rows UI \| Serialized session \| 519,703 B \| — \| removed \|/);
+  assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B \| — \| removed \|/);
   assert.doesNotMatch(body, /by class/);
 });
 
