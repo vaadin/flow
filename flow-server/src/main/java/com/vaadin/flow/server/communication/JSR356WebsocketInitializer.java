@@ -178,7 +178,11 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      * Initializes Atmosphere for use with the given Vaadin servlet
      * <p>
      * For JSR 356 websockets to work properly, the initialization must be done
-     * in the servlet context initialization phase.
+     * in the servlet context initialization phase, unless an integration that
+     * set the {@link #SKIP_INITIALIZATION_ATTRIBUTE} attribute registers the
+     * push WebSocket endpoints itself. Such an integration calls this method
+     * later, before the Vaadin servlet is initialized, so that the servlet uses
+     * the Atmosphere instance created here.
      *
      * @param servletRegistration
      *            The servlet registration info for the servlet
