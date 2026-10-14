@@ -101,8 +101,8 @@ public class ServletResourceDownloadHandler
             try (OutputStream outputStream = downloadEvent.getOutputStream();
                     InputStream inputStream = connection.getInputStream()) {
                 String resourceName = getUrlPostfix();
-                downloadEvent
-                        .setContentType(getContentType(resourceName, response));
+                downloadEvent.setContentType(
+                        resolveContentType(resourceName, response));
                 if (isInline()) {
                     downloadEvent.inline(resourceName);
                 } else {

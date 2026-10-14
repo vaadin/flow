@@ -22,11 +22,15 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +39,8 @@ import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
@@ -51,6 +57,8 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     // Content-Disposition: attachment by default
     private boolean inline = false;
 
+    private String contentType;
+
     @Override
     protected TransferContext getTransferContext(DownloadEvent transferEvent) {
         return new TransferContext(transferEvent.getRequest(),
@@ -59,9 +67,84 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 transferEvent.getContentLength(), transferEvent.getException());
     }
 
+    /**
+     * Gets the MIME type that the servlet container maps to the given file
+     * name, or <code>application/octet-stream</code> when it maps none.
+     * <p>
+     * Unlike {@link #getContentType()}, this ignores the type set with
+     * {@link #withContentType(String)}. Override it to change how the type is
+     * derived from the file name; to serve the content with the configured type
+     * when there is one, call
+     * {@link #resolveContentType(String, VaadinResponse)} instead.
+     *
+     * @param fileName
+     *            the name of the file to look up the type for
+     * @param response
+     *            the response, which gives access to the servlet container
+     * @return the MIME type for the file name, not <code>null</code>
+     */
     protected String getContentType(String fileName, VaadinResponse response) {
         return Optional.ofNullable(response.getService().getMimeType(fileName))
                 .orElse("application/octet-stream");
+    }
+
+    /**
+     * Sets the MIME type that the content is served with, such as
+     * <code>text/vtt</code>, instead of the one that the servlet container maps
+     * to the file name, or <code>application/octet-stream</code> when it maps
+     * none.
+     * <p>
+     * A content type that a {@link DownloadResponse} gives for a particular
+     * download still takes precedence over this one.
+     *
+     * @param contentType
+     *            the MIME type of the content, not <code>null</code> or blank
+     * @return this instance for method chaining
+     * @throws IllegalArgumentException
+     *             if the content type is blank
+     */
+    public R withContentType(String contentType) {
+        Objects.requireNonNull(contentType, "Content type cannot be null");
+        if (contentType.isBlank()) {
+            throw new IllegalArgumentException("Content type cannot be blank");
+        }
+        this.contentType = contentType;
+        return (R) this;
+    }
+
+    /**
+     * Gets the MIME type set with {@link #withContentType(String)}.
+     * <p>
+     * Unlike {@link #getContentType(String, VaadinResponse)}, this does not
+     * look up a type for the file name. Use
+     * {@link #resolveContentType(String, VaadinResponse)} for the type that the
+     * content is served with.
+     *
+     * @return the MIME type that the content is served with, or
+     *         <code>null</code> if it is taken from the file name
+     */
+    public String getContentType() {
+        return contentType;
+    }
+
+    /**
+     * Resolves the MIME type that the content is served with: the one set with
+     * {@link #withContentType(String)}, or else the one that
+     * {@link #getContentType(String, VaadinResponse)} gives for the file name.
+     * The built-in handlers serve their content with this type, and a subclass
+     * that sets the content type of its own response should do the same.
+     *
+     * @param fileName
+     *            the name of the file to look up the type for when none is set
+     * @param response
+     *            the response, which gives access to the servlet container
+     * @return the MIME type that the content is served with, not
+     *         <code>null</code>
+     */
+    protected final String resolveContentType(String fileName,
+            VaadinResponse response) {
+        return contentType != null ? contentType
+                : getContentType(fileName, response);
     }
 
     /**
@@ -176,8 +259,25 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     void transferContent(DownloadEvent downloadEvent, InputStream inputStream,
             OutputStream outputStream, long contentLength,
             SeekableContent content) throws IOException {
-        if (content == null || contentLength < 0 || !(downloadEvent
-                .getResponse() instanceof HttpServletResponse response)) {
+        HttpServletResponse response = downloadEvent
+                .getResponse() instanceof HttpServletResponse servletResponse
+                        ? servletResponse
+                        : null;
+        UnansweredRangeRequests.Cause unanswerable;
+        if (content == null) {
+            unanswerable = UnansweredRangeRequests.Cause.NOT_ENABLED;
+        } else if (contentLength < 0) {
+            unanswerable = UnansweredRangeRequests.Cause.UNKNOWN_LENGTH;
+        } else if (response == null) {
+            unanswerable = UnansweredRangeRequests.Cause.NOT_HTTP;
+        } else {
+            unanswerable = null;
+        }
+        if (unanswerable != null) {
+            // Logged before the transfer, which a player that needs ranges
+            // usually cancels
+            UnansweredRangeRequests.warnIfRangeRequested(this, downloadEvent,
+                    unanswerable);
             transferContent(downloadEvent, inputStream, outputStream,
                     contentLength);
             return;
@@ -207,7 +307,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                     contentLength);
             return;
         }
-        String contentType = response.getContentType();
+        String responseContentType = response.getContentType();
         ClientOutputStream clientOutput = new ClientOutputStream(outputStream);
         boolean wholeContent = ranges.size() == 1
                 && ranges.get(0).getFirst() == 0
@@ -251,7 +351,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 response.setHeader("Content-Range", null);
                 response.setHeader("Transfer-Encoding", null);
                 response.setHeader("ETag", null);
-                response.setContentType(contentType);
+                response.setContentType(responseContentType);
                 response.setContentLengthLong(0);
             }
             // Listeners only see a range that covers the whole content
@@ -389,6 +489,92 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
             } catch (IOException e) {
                 failed = true;
                 throw e;
+            }
+        }
+    }
+
+    /**
+     * Warns in development mode when a built-in {@link DownloadHandler} cannot
+     * answer a byte range request that it receives, once per handler class,
+     * cause and application. Media players need ranges to seek, and Safari to
+     * play video at all, but nothing else tells the developer.
+     */
+    static final class UnansweredRangeRequests implements Serializable {
+
+        /**
+         * Why a handler serves the whole file instead of the requested range,
+         * and what the developer can do about it.
+         */
+        enum Cause {
+            NOT_ENABLED("does not answer byte range requests",
+                    "Serve a file with DownloadHandler.forFile(...), or call enableRangeRequests() on a class resource, servlet resource or input stream handler."),
+            UNKNOWN_LENGTH(
+                    "cannot answer byte range requests because the length of the content is unknown",
+                    "Give the content length in the DownloadResponse, or serve a file with DownloadHandler.forFile(...)."),
+            NOT_HTTP(
+                    "cannot answer byte range requests because the response is not an HTTP servlet response",
+                    "Ranges are only answered through a servlet.");
+
+            private final String problem;
+            private final String remedy;
+
+            Cause(String problem, String remedy) {
+                this.problem = problem;
+                this.remedy = remedy;
+            }
+        }
+
+        /**
+         * The names of the handler classes that have been warned about, each
+         * followed by the cause. Names rather than classes, so that the classes
+         * of an application that is reloaded in development mode are not kept
+         * in memory.
+         */
+        private final Set<String> warnedHandlersAndCauses = ConcurrentHashMap
+                .newKeySet();
+
+        private UnansweredRangeRequests() {
+        }
+
+        /**
+         * Logs a warning that the given handler serves the whole file instead
+         * of the requested byte range if the request has a <code>Range</code>
+         * header, unless a handler of the same class has already been warned
+         * about for the same cause in this application or the application runs
+         * in production mode.
+         *
+         * @param handler
+         *            the handler that is about to serve the whole file
+         * @param event
+         *            the download event of the request
+         * @param cause
+         *            why the handler cannot answer the range
+         */
+        static void warnIfRangeRequested(DownloadHandler handler,
+                DownloadEvent event, Cause cause) {
+            // Handlers that applications test with a mocked event, which has no
+            // request or session, must not fail because of the warning
+            VaadinRequest request = event.getRequest();
+            VaadinSession session = event.getSession();
+            VaadinService service = session == null ? null
+                    : session.getService();
+            if (request == null || request.getHeader("Range") == null
+                    || service == null || service.getDeploymentConfiguration()
+                            .isProductionMode()) {
+                return;
+            }
+            UnansweredRangeRequests warnings = service.getContext()
+                    .getAttribute(UnansweredRangeRequests.class,
+                            UnansweredRangeRequests::new);
+            String handlerType = handler.getClass().getName();
+            if (warnings.warnedHandlersAndCauses
+                    .add(handlerType + " " + cause)) {
+                String urlPostfix = handler.getUrlPostfix();
+                String served = urlPostfix == null ? ""
+                        : (" serving '" + urlPostfix + "'");
+                LoggerFactory.getLogger(UnansweredRangeRequests.class).warn(
+                        "The download handler {}{} {}, so it serves the whole file instead of the requested range. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per handler class and cause, so other files served the same way are affected too. {}",
+                        handlerType, served, cause.problem, cause.remedy);
             }
         }
     }
