@@ -240,6 +240,46 @@ class NodeInstallerTest {
                 .exists(), "node should have been installed");
     }
 
+    @Test
+    void installDefaultVersionForMusl_archiveMatchesDownloadedChecksum_nodeIsInstalled()
+            throws IOException, InstallationException {
+        // Musl builds come from unofficial-builds and differ from any musl
+        // archive with the same name listed in the official checksums
+        Platform platform = guessAlpineX64Platform();
+        File archive = createDownloadableNodeArchive(platform,
+                nodeArchivePrefix(platform));
+        writeShaSums(FrontendTools.DEFAULT_NODE_VERSION, archive);
+        File targetDir = new File(baseDir, "installation");
+
+        mirrorInstaller(platform, targetDir, new ArrayList<>())
+                .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION).install();
+
+        assertTrue(
+                new File(targetDir,
+                        "node-" + FrontendTools.DEFAULT_NODE_VERSION
+                                + "/bin/node")
+                        .exists(),
+                "node should have been installed");
+    }
+
+    private static Platform guessAlpineX64Platform() {
+        String arch = System.getProperty("os.arch");
+        Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
+        try (MockedStatic<Platform.OS> os = Mockito
+                .mockStatic(Platform.OS.class);
+                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+            os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
+            files.when(() -> Files.exists(alpineReleaseFilePath))
+                    .thenReturn(true);
+            System.setProperty("os.arch", "amd64");
+            Platform platform = Platform.guess();
+            assertTrue(platform.isNodeSupportExperimental());
+            return platform;
+        } finally {
+            System.setProperty("os.arch", arch);
+        }
+    }
+
     /**
      * Writes a {@value NodeInstaller#SHA_SUMS_FILE} next to the archive. The
      * entry for a longer file name ending with the archive name comes first, so

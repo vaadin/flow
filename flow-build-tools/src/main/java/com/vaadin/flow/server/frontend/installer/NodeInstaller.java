@@ -502,9 +502,12 @@ public class NodeInstaller {
             }
 
             // Checksums shipped with Flow are trusted over the ones served by
-            // the download root, so a mirror can't swap the default version
-            String archiveTargetSHA256 = DefaultNodeChecksums.CHECKSUMS
-                    .get(archive.getName());
+            // the download root, so a mirror can't swap the default version.
+            // They are the official nodejs.org ones, so they don't apply to
+            // the musl builds downloaded from unofficial-builds.
+            String archiveTargetSHA256 = platform.isNodeSupportExperimental()
+                    ? null
+                    : DefaultNodeChecksums.CHECKSUMS.get(archive.getName());
             boolean shippedChecksum = archiveTargetSHA256 != null;
             if (!shippedChecksum) {
                 archiveTargetSHA256 = downloadChecksum(shaSumsURL, archive);
