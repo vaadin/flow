@@ -351,7 +351,9 @@ class AbstractDownloadHandlerTest {
         try (InputStream inputStream = Files.newInputStream(file)) {
             handler.transferContent(
                     new DownloadEvent(request, servletResponse, session, owner),
-                    inputStream, servletOutput, 10, file.toFile());
+                    inputStream, servletOutput, 10,
+                    AbstractDownloadHandler.SeekableContent
+                            .ofFile(file.toFile()));
         }
 
         assertEquals(body,
@@ -397,7 +399,8 @@ class AbstractDownloadHandlerTest {
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
                             inputStream, outputStream, declaredLength,
-                            file.toFile()));
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
             assertFalse(failure.isCancelled());
             assertTrue(failure.getCause() instanceof EOFException);
         }
@@ -443,7 +446,9 @@ class AbstractDownloadHandlerTest {
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
-                            inputStream, outputStream, 100000, file.toFile()));
+                            inputStream, outputStream, 100000,
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
             // propagated as a failure, not mistaken for a cancel
             assertFalse(failure.isCancelled());
         }
@@ -484,7 +489,9 @@ class AbstractDownloadHandlerTest {
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
-                            inputStream, servletOutput, 100000, file.toFile()));
+                            inputStream, servletOutput, 100000,
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
         }
 
         verify(listener, never()).onComplete(any(), anyLong());
@@ -499,18 +506,55 @@ class AbstractDownloadHandlerTest {
         verify(servletResponse, never()).setStatus(500);
     }
 
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', nullValues = "null", value = {
+            "false | bytes=2-5     | abcdefghij",
+            "true  | bytes=1-2,6-7 | bc;gh",
+            "true  | bytes=6-7,1-2 | abcdefghij" })
+    void transferContent_streamWithoutUrl_rangesNeedingNoRereadAnswered(
+            boolean seekable, String range, String expected)
+            throws IOException {
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(request.getHeader("Range")).thenReturn(range);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                "abcdefghij".getBytes(StandardCharsets.UTF_8));
+
+        handler.transferContent(
+                new DownloadEvent(request, servletResponse, session, owner),
+                inputStream, servletOutput, 10, seekable
+                        ? new AbstractDownloadHandler.SeekableContent("content",
+                                "\"v1\"", null)
+                        : null);
+
+        String body = new String(servletOutput.getOutput(),
+                StandardCharsets.UTF_8);
+        if (expected.contains(";")) {
+            verify(servletResponse).setStatus(206);
+            // each part follows its headers and precedes the next boundary
+            for (String part : expected.split(";")) {
+                assertTrue(body.contains("\r\n\r\n" + part + "\r\n"), body);
+            }
+        } else {
+            assertEquals(expected, body);
+            verify(servletResponse, never()).setStatus(anyInt());
+        }
+    }
+
     @Test
-    void transferContent_notAFile_rangeIgnored() throws IOException {
-        when(request.getHeader("Range")).thenReturn("bytes=2-5");
+    void withContentType_blankRejected_setValueReadBack() {
+        assertNull(handler.getContentType());
+        assertThrows(IllegalArgumentException.class,
+                () -> handler.withContentType(""));
+        assertThrows(IllegalArgumentException.class,
+                () -> handler.withContentType(" "));
 
-        handler.transferContent(downloadEvent,
-                new ByteArrayInputStream(
-                        "abcdefghij".getBytes(StandardCharsets.UTF_8)),
-                outputStream, 10, null);
+        handler.withContentType("text/vtt");
 
-        assertEquals("abcdefghij",
-                outputStream.toString(StandardCharsets.UTF_8));
-        verify(response, never()).setHeader(eq("Accept-Ranges"), anyString());
-        verify(response, never()).setStatus(anyInt());
+        assertEquals("text/vtt", handler.getContentType());
+        assertEquals("text/vtt",
+                handler.resolveContentType("captions.bin", response));
     }
 }

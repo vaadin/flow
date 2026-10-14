@@ -83,9 +83,21 @@
         <artifactId>flow-maven-plugin</artifactId>
         <version>${project.version}</version>
         <executions>
+          <!-- prepare-frontend, inherited from flow-tests, is disabled, and
+               build-frontend prepares the frontend itself. prepare-frontend
+               runs in process-resources, before compile, and loads the
+               feature flag providers. TestFeatureFlagProvider is a class of
+               this module, listed in META-INF/services, so it can only be
+               loaded once it has been compiled: an earlier run fails the
+               build with "Provider ... not found". build-frontend runs in
+               prepare-package, after compile. -->
           <execution>
+            <id>default</id>
+            <phase>none</phase>
+          </execution>
+          <execution>
+            <id>build-frontend</id>
             <goals>
-              <goal>prepare-frontend</goal>
               <goal>build-frontend</goal>
             </goals>
           </execution>
