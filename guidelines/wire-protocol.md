@@ -65,8 +65,9 @@ short id, and everything that uses it carries only the id.
   `MapPutChange` is replaced by its id when the `NodeChange` encoders
   call `JacksonCodec.encodeWithConstantPool`; every other node value is
   encoded inline. The key usually sits in the state node, but a feature
-  can also create it only while changes are collected. And `UidlWriter` registers what each `executeJs`
-  invocation runs directly with the pool while encoding it —
+  can also create it only while changes are collected. And `UidlWriter`
+  registers what each `executeJs` invocation runs directly with the pool
+  while encoding it —
   `UidlRequestHandler` does the same for a reload script it adds to a
   response that is already written, which is why it patches `constants`
   in place.
@@ -78,8 +79,8 @@ listener. `ElementListenerMap` sends one constant per event type on an
 element. It stores only a marker in the node and builds the key from the
 registered listeners in `collectChanges`, so the JSON is not kept in
 memory between responses. `PolymerEventListenerMap` stores the event data
-expressions of a Polymer template listener. The third kind is what an `executeJs` invocation
-runs, covered [below](#wire-shape).
+expressions of a Polymer template listener. The third kind is what an
+`executeJs` invocation runs, covered [below](#wire-shape).
 
 An `ElementListenerMap` value is an object keyed by the JavaScript
 expressions the client evaluates when the event fires. The value of each
