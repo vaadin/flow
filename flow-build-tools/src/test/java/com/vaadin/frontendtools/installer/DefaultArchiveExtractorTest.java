@@ -174,6 +174,11 @@ class DefaultArchiveExtractorTest {
         assertThrows(ArchiveExtractionException.class,
                 () -> extractor.extract(relativeLink, targetDir));
 
+        File siblingLink = createTarGzWithSymbolicLink("bin/npm",
+                "../../" + targetDir.getName() + "-sibling/outside.js");
+        assertThrows(ArchiveExtractionException.class,
+                () -> extractor.extract(siblingLink, targetDir));
+
         File absoluteLink = createTarGzWithSymbolicLink("bin/npm",
                 new File(targetDir, "lib/npm-cli.js").getAbsolutePath());
         assertThrows(ArchiveExtractionException.class,

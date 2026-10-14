@@ -135,8 +135,8 @@ public class FileIOUtils {
      * Relative symbolic links that point to a location inside the source
      * directory are copied as links, so they keep working in the copy. Other
      * symbolic links to files are followed and the file content is copied.
-     * Other symbolic links to directories are not traversed: an empty
-     * directory is created in their place.
+     * Other symbolic links to directories are not traversed: an empty directory
+     * is created in their place.
      *
      * @param source
      *            the source directory

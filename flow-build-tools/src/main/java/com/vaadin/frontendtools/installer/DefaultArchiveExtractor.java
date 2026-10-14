@@ -211,10 +211,10 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
             throws IOException {
         Path linkPath = destinationFile.toPath();
         Path linkTarget = Paths.get(tarEntry.getLinkName());
-        File resolvedTarget = linkPath.getParent().resolve(linkTarget).toFile();
-        if (linkTarget.isAbsolute()
-                || !startsWithPath(resolvedTarget.getCanonicalPath(),
-                        canonicalDestinationDirectory)) {
+        Path resolvedTarget = linkPath.getParent().resolve(linkTarget).toFile()
+                .getCanonicalFile().toPath();
+        if (linkTarget.isAbsolute() || !resolvedTarget
+                .startsWith(Paths.get(canonicalDestinationDirectory))) {
             throw new IOException("Symbolic link " + tarEntry.getName() + " -> "
                     + tarEntry.getLinkName() + " would point outside of "
                     + canonicalDestinationDirectory);
