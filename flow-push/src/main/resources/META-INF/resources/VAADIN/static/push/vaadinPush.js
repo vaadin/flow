@@ -3434,9 +3434,19 @@ window.vaadinPush = window.vaadinPush|| {};
         }
     })();
 
-    atmosphere.util.on(window, "unload", function (event) {
+    // Patched from "unload": Chromium blocks unload listeners by default via
+    // the unload permissions policy, so listen to pagehide instead
+    atmosphere.util.on(window, "pagehide", function (event) {
         atmosphere.util.debug(new Date() + " Atmosphere: " + "unload event");
         atmosphere.unsubscribe();
+    });
+
+    // pagehide also fires when the page enters the back/forward cache, so
+    // reload a restored page instead of resuming it without a push connection
+    atmosphere.util.on(window, "pageshow", function (event) {
+        if (event.persisted) {
+            window.location.reload();
+        }
     });
 
     atmosphere.util.on(window, "beforeunload", function (event) {
