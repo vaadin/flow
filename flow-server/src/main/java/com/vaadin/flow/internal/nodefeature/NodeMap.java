@@ -157,7 +157,9 @@ public abstract class NodeMap extends NodeFeature {
 
         @Override
         public @Nullable Values remove(String key) {
-            assert containsKey(key);
+            if (!containsKey(key)) {
+                throw new IllegalArgumentException("No value for " + key);
+            }
             return null;
         }
     }
@@ -172,6 +174,8 @@ public abstract class NodeMap extends NodeFeature {
      * of how many maps use it. The registry only holds weak references so that
      * key sets that are no longer used by any map can be garbage collected.
      */
+    // The equals and hashCode of AbstractSet already compare the keys as a set
+    @SuppressWarnings("java:S2160")
     private static final class SharedKeySet extends AbstractSet<String>
             implements Serializable {
 
@@ -312,6 +316,9 @@ public abstract class NodeMap extends NodeFeature {
 
         private final SharedKeySet keySet;
 
+        // Key sets are immutable and shared, so copying would defeat the
+        // purpose
+        @SuppressWarnings("java:S2384")
         protected SharedKeySetValues(SharedKeySet keySet) {
             this.keySet = keySet;
         }
@@ -341,6 +348,9 @@ public abstract class NodeMap extends NodeFeature {
             return index < 0 ? null : getValue(index);
         }
 
+        // Key sets are immutable and shared, so copying would defeat the
+        // purpose
+        @SuppressWarnings("java:S2384")
         @Override
         public Set<String> keySet() {
             return keySet;
@@ -372,7 +382,9 @@ public abstract class NodeMap extends NodeFeature {
         @Override
         public Values remove(String key) {
             int index = keySet.indexOf(key);
-            assert index >= 0;
+            if (index < 0) {
+                throw new IllegalArgumentException("No value for " + key);
+            }
 
             if (size() == 2) {
                 int remaining = 1 - index;
