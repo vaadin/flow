@@ -225,7 +225,8 @@ public class CompressUtil {
     public static byte[] deflateString(String text) {
         byte[] input = text.getBytes(StandardCharsets.UTF_8);
         Deflater deflater = new Deflater(Deflater.BEST_SPEED, true);
-        try {
+        // Deflater is AutoCloseable only from Java 25
+        try { // NOSONAR
             deflater.setInput(input);
             deflater.finish();
             ByteArrayOutputStream output = new ByteArrayOutputStream(
