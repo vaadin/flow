@@ -16,6 +16,8 @@
 package com.vaadin.quarkus.graal;
 
 import jakarta.servlet.ServletRegistration;
+import jakarta.websocket.HandshakeResponse;
+import jakarta.websocket.server.HandshakeRequest;
 import jakarta.websocket.server.ServerContainer;
 import jakarta.websocket.server.ServerEndpointConfig;
 
@@ -25,10 +27,14 @@ import java.util.Map;
 import io.undertow.servlet.api.DeploymentManager;
 import io.undertow.servlet.spec.ServletContextImpl;
 import org.atmosphere.container.JSR356Endpoint;
+import org.atmosphere.cpr.AtmosphereFramework;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -38,7 +44,7 @@ import static org.mockito.Mockito.when;
 class AtmosphereRecorderTest {
 
     @Test
-    void registerPushEndpoints_endpointAtPushPathOfServlet_waitsForAtmosphere()
+    void registerPushEndpoints_endpointAtPushPathOfServlet_connectsToAtmosphereInitializedLater()
             throws Exception {
         ServletRegistration registration = mock(ServletRegistration.class);
         when(registration.getName()).thenReturn("app");
@@ -66,7 +72,25 @@ class AtmosphereRecorderTest {
                 endpoint.getValue().getEndpointClass());
         // Atmosphere of the servlet is initialized after the endpoint is
         // registered, and looked up when a WebSocket connects
-        assertThrows(IllegalStateException.class, () -> endpoint.getValue()
-                .getConfigurator().getEndpointInstance(JSR356Endpoint.class));
+        ServerEndpointConfig.Configurator configurator = endpoint.getValue()
+                .getConfigurator();
+        assertThrows(IllegalStateException.class,
+                () -> configurator.getEndpointInstance(JSR356Endpoint.class));
+
+        AtmosphereFramework atmosphere = new AtmosphereFramework(false, false);
+        when(context.getAttribute(
+                JSR356WebsocketInitializer.getAttributeName("app")))
+                .thenReturn(atmosphere);
+        try {
+            // The handshake and the endpoint created for it are paired by the
+            // same Atmosphere configurator
+            configurator.modifyHandshake(endpoint.getValue(),
+                    mock(HandshakeRequest.class),
+                    mock(HandshakeResponse.class));
+            assertInstanceOf(JSR356Endpoint.class,
+                    configurator.getEndpointInstance(JSR356Endpoint.class));
+        } finally {
+            atmosphere.destroy();
+        }
     }
 }
