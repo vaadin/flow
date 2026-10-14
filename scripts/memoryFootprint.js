@@ -45,8 +45,9 @@ function readMeasurements(dir) {
     const report = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
     // A change to what the test writes has to fail here, rather than make
     // every metric look unchanged
-    if (!report.metrics?.length || !report.metrics.every((m) => typeof m.id === 'string' && Number.isFinite(m.value))) {
-      throw new Error(`${file} has no metrics with an id and a numeric value`);
+    const validMetric = (m) => typeof m.id === 'string' && typeof m.title === 'string' && Number.isFinite(m.value);
+    if (typeof report.title !== 'string' || !report.metrics?.length || !report.metrics.every(validMetric)) {
+      throw new Error(`${file} needs a title and metrics with an id, a title and a numeric value`);
     }
     measurements[path.basename(file, '.json')] = report;
   }
@@ -82,9 +83,13 @@ function formatDifference(base, head, unit) {
  * and on the head. The scenarios and metrics of the head come first, then the
  * ones only the base has.
  */
+function scenarioIds(base, head) {
+  return [...new Set([...Object.keys(head), ...Object.keys(base)])];
+}
+
 function rows(base, head) {
   const result = [];
-  for (const id of new Set([...Object.keys(head), ...Object.keys(base)])) {
+  for (const id of scenarioIds(base, head)) {
     const metrics = new Map();
     for (const [side, report] of [['head', head[id]], ['base', base[id]]]) {
       for (const metric of report?.metrics || []) {
@@ -120,14 +125,15 @@ function signed(number) {
   return (number > 0 ? '+' : number < 0 ? '−' : '') + Math.abs(number).toLocaleString('en-US');
 }
 
-function compare(base, head) {
+function compare(base, head, allRows = rows(base, head)) {
   const hasBase = Object.keys(base).length > 0;
-  const changed = !hasBase || rows(base, head).some((row) => row.base?.value !== row.head?.value);
+  const changed = !hasBase || allRows.some((row) => row.base?.value !== row.head?.value);
   return { hasBase, changed };
 }
 
 function comment(base, head, baseCommit) {
-  const { hasBase, changed } = compare(base, head);
+  const allRows = rows(base, head);
+  const { hasBase, changed } = compare(base, head, allRows);
   const lines = [COMMENT_MARKER, '', '## Memory footprint', ''];
   if (!hasBase) {
     lines.push(`The base commit ${baseCommit} has no memory measurements to compare with.`, '');
@@ -137,11 +143,11 @@ function comment(base, head, baseCommit) {
     lines.push(`Compared with the base commit ${baseCommit}.`, '');
   }
   lines.push('| Scenario | Metric | Value |', '| --- | --- | --- |');
-  for (const row of rows(base, head)) {
+  for (const row of allRows) {
     const value = formatDifference(hasBase ? row.base?.value : undefined, row.head?.value, row.unit);
     lines.push(`| ${row.scenario.title} | ${row.title} | ${value} |`);
   }
-  for (const row of rows(base, head).filter((r) => r.base?.breakdown && r.head?.breakdown)) {
+  for (const row of allRows.filter((r) => r.base?.breakdown && r.head?.breakdown)) {
     const differences = classDifferences(row.base.breakdown, row.head.breakdown);
     if (differences.length === 0) {
       continue;
@@ -157,7 +163,7 @@ function comment(base, head, baseCommit) {
     lines.push('', '</details>');
   }
   lines.push('', '<details><summary>Scenarios</summary>', '');
-  for (const id of new Set([...Object.keys(head), ...Object.keys(base)])) {
+  for (const id of scenarioIds(base, head)) {
     const scenario = head[id] || base[id];
     lines.push(`- **${scenario.title}** (\`${id}\`)${scenario.description ? `: ${scenario.description}` : ''}`);
   }

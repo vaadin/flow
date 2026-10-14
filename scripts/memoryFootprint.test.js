@@ -102,7 +102,12 @@ test('rejects a report that does not have the expected shape', (t) => {
   assert.deepStrictEqual(readMeasurements(dir), { 'rows-ui': BASE['rows-ui'] });
 
   fs.writeFileSync(path.join(dir, 'rows-ui.json'), JSON.stringify({ title: 'Rows UI', results: [] }));
-  assert.throws(() => readMeasurements(dir), /rows-ui\.json has no metrics/);
-  fs.writeFileSync(path.join(dir, 'rows-ui.json'), JSON.stringify({ title: 'Rows UI', metrics: [{ id: 'heap', value: '1' }] }));
-  assert.throws(() => readMeasurements(dir), /rows-ui\.json has no metrics/);
+  assert.throws(() => readMeasurements(dir), /rows-ui\.json needs a title and metrics/);
+  fs.writeFileSync(path.join(dir, 'rows-ui.json'), JSON.stringify({ title: 'Rows UI', metrics: [{ id: 'heap', title: 'Heap', value: '1' }] }));
+  assert.throws(() => readMeasurements(dir), /rows-ui\.json needs a title and metrics/);
+  fs.writeFileSync(path.join(dir, 'rows-ui.json'), JSON.stringify({ name: 'Rows UI', metrics: BASE['rows-ui'].metrics }));
+  assert.throws(() => readMeasurements(dir), /rows-ui\.json needs a title and metrics/);
+  const untitled = { ...BASE['rows-ui'], metrics: [{ id: 'heap', value: 1 }] };
+  fs.writeFileSync(path.join(dir, 'rows-ui.json'), JSON.stringify(untitled));
+  assert.throws(() => readMeasurements(dir), /rows-ui\.json needs a title and metrics/);
 });
