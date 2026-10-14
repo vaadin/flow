@@ -4913,7 +4913,7 @@ public class RouterTest extends RoutingTestBase {
         PostponingOnceNavigationTarget.postpone = null;
         navigate("postpone-once");
         // Postponed in beforeLeave
-        navigate("foo");
+        router.navigate(ui, new Location("foo"), NavigationTrigger.ROUTER_LINK);
         List<EventObject> events = recordNavigationEvents();
 
         PostponingOnceNavigationTarget.postpone.proceed();
@@ -4921,6 +4921,7 @@ public class RouterTest extends RoutingTestBase {
         assertEquals(2, events.size());
         NavigationStartedEvent started = (NavigationStartedEvent) events.get(0);
         assertEquals("foo", started.getLocation().getPath());
+        assertEquals(NavigationTrigger.ROUTER_LINK, started.getTrigger());
         NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
         assertEquals("foo", ended.getLocation().getPath());
         assertEquals(
