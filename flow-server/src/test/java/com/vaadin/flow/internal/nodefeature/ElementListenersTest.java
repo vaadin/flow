@@ -243,6 +243,14 @@ public class ElementListenersTest
         assertEquals(Set.of("eventType", "otherType"),
                 changes.stream().map(change -> ((MapPutChange) change).getKey())
                         .collect(Collectors.toSet()));
+        ObjectNode settings = changes.stream()
+                .map(change -> (MapPutChange) change)
+                .filter(change -> "eventType".equals(change.getKey()))
+                .map(ElementListenersTest::exportSettings).findFirst()
+                .orElseThrow();
+        assertTrue(settings.has("data1"));
+        assertTrue(settings.has("data2"));
+        assertEquals(100, settings.get("filter").get(0).get(0).intValue());
 
         assertEquals(List.of(), collectChanges(ns));
 
@@ -1040,7 +1048,10 @@ public class ElementListenersTest
         assertEquals(1, changes.size());
         MapPutChange change = (MapPutChange) changes.get(0);
         assertEquals(eventType, change.getKey());
+        return exportSettings(change);
+    }
 
+    private static ObjectNode exportSettings(MapPutChange change) {
         ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
         ((ConstantPoolKey) change.getValue()).export(constantPoolUpdate);
         List<String> keys = JacksonUtils.getKeys(constantPoolUpdate);
