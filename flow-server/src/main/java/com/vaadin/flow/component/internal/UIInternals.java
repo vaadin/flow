@@ -49,6 +49,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
@@ -65,6 +66,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -1023,6 +1025,7 @@ public class UIInternals implements Serializable {
      *            the name of the called method, not <code>null</code>
      * @return <code>true</code> if such a call is pending, <code>false</code>
      *         otherwise
+     * @since 25.4
      */
     public boolean containsPendingJsCall(Class<?> definitionType,
             String methodName) {
@@ -1402,7 +1405,9 @@ public class UIInternals implements Serializable {
             String resolved = FrontendDependencyUrlResolver
                     .resolveToContextRoot(styleSheet.value());
             if (resolved != null) {
-                page.addStyleSheet(resolved, styleSheet.loadMode());
+                page.addStyleSheet(resolved, styleSheet.loadMode(),
+                        styleSheet.layer().isEmpty() ? null
+                                : styleSheet.layer());
             }
         });
 
@@ -1433,25 +1438,41 @@ public class UIInternals implements Serializable {
             Class<? extends Component> componentClass) {
         boolean isProductionMode = ui.getSession() != null
                 && ui.getSession().getConfiguration().isProductionMode();
-        List<String> chunkIds = new ArrayList<>();
-        chunkIds.add(BundleUtils.getChunkId(componentClass));
+        Set<String> chunkIds = new LinkedHashSet<>();
         if (isProductionMode) {
-            // When using the default production bundle, the chunk for a
-            // specific
-            // Flow component subclass may not be present (e.g. MyChart < Chart)
-            // However, the required imports are in the bundle, associated with
-            // the chunk id of the parent class.
-            // Force loading of potential chunks for all parent classes in the
-            // component hierarchy. DependencyList takes care to prevent loading
-            // the same chunk multiple times.
-            Class<?> clazz = componentClass.getSuperclass();
-            while (clazz != Component.class) {
-                chunkIds.add(BundleUtils.getChunkId(clazz.getName()));
-                clazz = clazz.getSuperclass();
-            }
+            collectProductionChunkIds(componentClass, chunkIds,
+                    new HashSet<>());
+        } else {
+            chunkIds.add(BundleUtils.getChunkId(componentClass));
         }
         chunkIds.forEach(chunkId -> ui.getPage().addDynamicImport(
                 "return window.Vaadin.Flow.loadOnDemand('" + chunkId + "');"));
+    }
+
+    private static void collectProductionChunkIds(
+            Class<? extends Component> componentClass, Set<String> chunkIds,
+            Set<Class<?>> visited) {
+        if (!visited.add(componentClass)) {
+            return;
+        }
+        // When using the default production bundle, the chunk for a specific
+        // Flow component subclass may not be present (e.g. MyChart < Chart)
+        // However, the required imports are in the bundle, associated with
+        // the chunk id of the parent class.
+        // Force loading of potential chunks for all parent classes in the
+        // component hierarchy. DependencyList takes care to prevent loading
+        // the same chunk multiple times.
+        Class<?> clazz = componentClass;
+        while (clazz != Component.class) {
+            chunkIds.add(BundleUtils.getChunkId(clazz.getName()));
+            clazz = clazz.getSuperclass();
+        }
+        // The default production bundle has a chunk per component class, so
+        // the imports of a @Uses target are only loaded through its own chunk
+        for (Uses uses : AnnotationReader.getAnnotationsFor(componentClass,
+                Uses.class)) {
+            collectProductionChunkIds(uses.value(), chunkIds, visited);
+        }
     }
 
     private void warnForUnavailableBundledDependencies(
@@ -1680,6 +1701,7 @@ public class UIInternals implements Serializable {
      * @return {@code true} if this is the outermost navigation, {@code false}
      *         if it is nested inside a navigation that is already being
      *         handled, such as a forward, a reroute or an error view
+     * @since 25.4
      */
     public boolean enterNavigation() {
         boolean outermost = navigationDepth++ == 0;
@@ -1694,6 +1716,8 @@ public class UIInternals implements Serializable {
     /**
      * Marks that the router has finished handling a navigation started with
      * {@link #enterNavigation()}. For framework use only.
+     * 
+     * @since 25.4
      */
     public void exitNavigation() {
         navigationDepth--;
@@ -1711,6 +1735,7 @@ public class UIInternals implements Serializable {
      *
      * @param exception
      *            the exception the error view is rendered for, not {@code null}
+     * @since 25.4
      */
     public void recordNavigationFailure(Exception exception) {
         if (navigationDepth > 0 && navigationFailure == null) {
@@ -1724,6 +1749,7 @@ public class UIInternals implements Serializable {
      *
      * @return the exception, or {@code null} if no error view has been rendered
      *         during the ongoing navigation
+     * @since 25.4
      */
     public @Nullable Exception getNavigationFailure() {
         return navigationFailure;

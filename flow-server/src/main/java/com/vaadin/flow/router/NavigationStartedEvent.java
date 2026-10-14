@@ -48,6 +48,7 @@ import com.vaadin.flow.server.VaadinService;
  * forward or reroute.
  *
  * @see NavigationEndedEvent
+ * @since 25.4
  */
 public class NavigationStartedEvent extends EventObject {
 

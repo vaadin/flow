@@ -4830,7 +4830,8 @@ public class RouterTest extends RoutingTestBase {
         NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
         assertEquals("foo", ended.getLocation().getPath());
         assertEquals(
-                new NavigationEndedEvent.Completed(FooNavigationTarget.class),
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class,
+                        RouteParameters.empty()),
                 ended.getOutcome());
         assertEquals(200, ended.getStatusCode());
     }
@@ -4845,8 +4846,23 @@ public class RouterTest extends RoutingTestBase {
         assertEquals(2, events.size());
         NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
         assertEquals("security/document", ended.getLocation().getPath());
-        assertEquals(new NavigationEndedEvent.Completed(SecurityLogin.class),
-                ended.getOutcome());
+        assertEquals(new NavigationEndedEvent.Completed(SecurityLogin.class,
+                RouteParameters.empty()), ended.getOutcome());
+    }
+
+    @Test
+    public void navigate_rerouteWithParameter_completedHasFinalParameters() {
+        setNavigationTargets(RouteWithParameter.class,
+                RerouteToRouteWithParam.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("redirect/to/param");
+
+        assertEquals(2, events.size());
+        assertEquals(
+                new NavigationEndedEvent.Completed(RouteWithParameter.class,
+                        HasUrlParameterFormat.getParameters("hello")),
+                ((NavigationEndedEvent) events.get(1)).getOutcome());
     }
 
     @Test
@@ -4925,7 +4941,8 @@ public class RouterTest extends RoutingTestBase {
 
         assertEquals(2, events.size());
         assertEquals(
-                new NavigationEndedEvent.Completed(FooNavigationTarget.class),
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class,
+                        RouteParameters.empty()),
                 ((NavigationEndedEvent) events.get(1)).getOutcome());
     }
 

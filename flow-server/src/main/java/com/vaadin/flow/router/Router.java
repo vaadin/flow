@@ -615,6 +615,7 @@ public class Router implements Serializable {
      * @param navigation
      *            handles the navigation and returns its HTTP status code
      * @return the HTTP status code of the navigation
+     * @since 25.4
      */
     public static int observeNavigation(UI ui, Location location,
             NavigationTrigger trigger, IntSupplier navigation) {
@@ -675,7 +676,8 @@ public class Router implements Serializable {
             // view that the browser renders
             return UI.ClientViewPlaceholder.class.isAssignableFrom(target)
                     ? new NavigationEndedEvent.NotShown()
-                    : new NavigationEndedEvent.Completed(target);
+                    : new NavigationEndedEvent.Completed(target,
+                            stateAfter.routeParameters());
         }
         return new NavigationEndedEvent.NotShown();
     }

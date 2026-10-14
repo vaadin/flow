@@ -448,6 +448,7 @@ public abstract class Component
      * @throws IllegalStateException
      *             if this component is not attached to a UI
      * @see #getUI()
+     * @since 25.4
      */
     public UI getUIOrThrow() {
         return getUI().orElseThrow(() -> new IllegalStateException("Component "
@@ -1024,6 +1025,7 @@ public abstract class Component
      *            {@code null}
      * @return the first ancestor that satisfies the predicate, or an empty
      *         optional if no ancestor satisfies it
+     * @since 25.4
      */
     public Optional<Component> findAncestor(
             SerializablePredicate<Component> predicate) {

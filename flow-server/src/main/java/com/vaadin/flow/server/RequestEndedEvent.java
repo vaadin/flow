@@ -37,6 +37,7 @@ import java.util.Optional;
  * itself mean a push message.
  *
  * @see RequestStartedEvent
+ * @since 25.4
  */
 public class RequestEndedEvent extends EventObject {
 

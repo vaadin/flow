@@ -65,6 +65,22 @@ From the repository root, after one `mvn install -DskipTests`:
 mvn -o -pl flow-tests/test-devloop/test-devloop-spring/devloop-app,flow-tests/test-devloop/test-devloop-jetty/devloop-app,flow-tests/test-devloop/test-devloop-cargo/devloop-app,flow-tests/test-devloop/test-devloop-tomee/devloop-app,flow-tests/test-devloop/test-devloop-jbosseap/devloop-app,flow-tests/test-devloop/test-devloop-liberty/devloop-app,flow-tests/test-devloop/test-devloop-payara/devloop-app,flow-tests/test-devloop/test-devloop-payara-micro/devloop-app verify
 ```
 
+Each fixture runs its ITs twice. The default failsafe execution runs every IT
+with the daemon compiling applies by javac, its default; a second execution,
+`maven-compile`, runs the ITs that exercise the compile leg (`DevLoopApplyIT`,
+`DevLoopMultiModuleIT`, `DevLoopDeletionIT`) with `-Dvaadin.dev.compiler=maven`.
+Each IT checks through `status` that the daemon really runs the compiler the
+execution asked for. To run the whole suite with Maven compiling, and nothing
+with javac:
+
+```bash
+mvn -o -pl flow-tests/test-devloop/test-devloop-jetty/devloop-app -Pdevloop-maven-compile verify
+# a subset: add "-Ddevloop.maven-compile.its=**/DevLoopApplyIT.java, **/DevLoopCssIT.java"
+```
+
+`-Dit.test=` narrows both executions, so the named ITs run once with each
+compiler.
+
 Each fixture's README has the rest: what it pins and why, how to drive the loop
 by hand, and the patch-and-revert rule the ITs follow so that a failed run never
 leaves the working tree dirty.

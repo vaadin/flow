@@ -60,6 +60,7 @@ import com.vaadin.flow.server.VaadinService;
  * </pre>
  *
  * @see NavigationStartedEvent
+ * @since 25.4
  */
 public class NavigationEndedEvent extends EventObject {
 
@@ -73,25 +74,36 @@ public class NavigationEndedEvent extends EventObject {
     /**
      * The navigation showed a view.
      * <p>
-     * The navigation target is the view that is shown after all forwards and
-     * reroutes, so it can differ from the view the requested location resolves
-     * to.
+     * The navigation target and the route parameters are those of the view that
+     * is shown after all forwards and reroutes, so they can differ from what
+     * the requested location resolves to. A forward or reroute to the same view
+     * with other parameters, such as from {@code orders/17} to
+     * {@code orders/42}, is told apart from a plain navigation by the
+     * parameters.
      *
      * @param navigationTarget
      *            the class of the view that is shown, not {@code null}
+     * @param parameters
+     *            the route parameters the view is shown with, not {@code null},
+     *            {@link RouteParameters#empty()} if there are none
      */
-    public record Completed(
-            Class<? extends Component> navigationTarget) implements Outcome {
+    public record Completed(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) implements Outcome {
 
         /**
          * Creates a new outcome.
          *
          * @param navigationTarget
          *            the class of the view that is shown, not {@code null}
+         * @param parameters
+         *            the route parameters the view is shown with, not
+         *            {@code null}, {@link RouteParameters#empty()} if there are
+         *            none
          */
         public Completed {
             Objects.requireNonNull(navigationTarget,
                     "navigationTarget cannot be null");
+            Objects.requireNonNull(parameters, "parameters cannot be null");
         }
     }
 
