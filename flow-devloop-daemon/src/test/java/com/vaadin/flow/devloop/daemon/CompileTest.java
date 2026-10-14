@@ -745,6 +745,8 @@ class CompileTest {
         Files.writeString(config, "server.port=9090");
         touch("app/src/main/resources/application.properties");
         compile.copyResources(List.of(config));
+        // A copy at least as new as its source, as the IDE leaves it.
+        touch("app/target/classes/application.properties");
 
         assertEquals(List.of(config),
                 compile.staleResources().startup().modified());
