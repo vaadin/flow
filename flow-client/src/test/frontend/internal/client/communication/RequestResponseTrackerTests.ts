@@ -71,8 +71,9 @@ describe('RequestResponseTracker', () => {
     try {
       tracker.startRequest();
       tracker.endRequest();
-      expect(notifications).to.equal(0); // dispatched after the current task
       await Promise.resolve();
+      expect(notifications).to.equal(0); // dispatched in a later task
+      await new Promise((resolve) => setTimeout(resolve, 0));
       expect(notifications).to.equal(1);
     } finally {
       window.removeEventListener(ACTIVITY_CHANGED_EVENT, listener);

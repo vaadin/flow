@@ -30,17 +30,19 @@ let notificationPending = false;
  * Notifies listeners that the result of a client's isActive() may have
  * changed.
  *
- * Calls made during the same task are coalesced into a single event, which is
- * dispatched in a microtask so that listeners see the state after the current
- * task has finished updating it.
+ * Calls made before the event is dispatched are coalesced into a single event.
+ * The event is dispatched in a separate task, not a microtask, so that
+ * listeners see the state between tasks: the client can be momentarily idle in
+ * the middle of a promise chain that goes on to start more work, e.g. between
+ * initializing Flow and navigating to the first route.
  */
 export function notifyActivityChanged(): void {
   if (notificationPending) {
     return;
   }
   notificationPending = true;
-  queueMicrotask(() => {
+  setTimeout(() => {
     notificationPending = false;
     window.dispatchEvent(new Event(ACTIVITY_CHANGED_EVENT));
-  });
+  }, 0);
 }

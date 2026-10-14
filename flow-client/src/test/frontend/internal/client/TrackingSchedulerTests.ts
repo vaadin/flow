@@ -47,6 +47,7 @@ describe('TrackingScheduler', () => {
       scheduler.scheduleDeferred(() => {});
 
       await settle();
+      await settle();
       expect(queuedWhenNotified).to.deep.equal([false]);
     } finally {
       window.removeEventListener(ACTIVITY_CHANGED_EVENT, listener);
