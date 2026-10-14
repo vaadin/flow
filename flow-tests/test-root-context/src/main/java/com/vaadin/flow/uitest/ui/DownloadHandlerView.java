@@ -130,6 +130,24 @@ public class DownloadHandlerView extends Div {
         inputStreamCallbackError
                 .setId("download-handler-input-stream-callback-error");
 
+        Anchor contentTypeDownload = new Anchor("",
+                "File DownloadHandler with content type");
+        contentTypeDownload.setHref(DownloadHandler
+                .forFile(jsonFile, "captions.vtt").withContentType("text/vtt"));
+        contentTypeDownload.setId("download-handler-content-type");
+
+        Anchor responseContentTypeDownload = new Anchor("",
+                "InputStream DownloadHandler with content type of its own");
+        responseContentTypeDownload.setHref(DownloadHandler
+                .fromInputStream(downloadEvent -> new DownloadResponse(
+                        new ByteArrayInputStream(
+                                "foo".getBytes(StandardCharsets.UTF_8)),
+                        "table.csv", "text/plain",
+                        "foo".getBytes(StandardCharsets.UTF_8).length))
+                .withContentType("text/csv"));
+        responseContentTypeDownload
+                .setId("download-handler-response-content-type");
+
         DownloadHandler percentDownloadHandler = new DownloadHandler() {
             @Override
             public void handleDownloadRequest(DownloadEvent event) {
@@ -150,6 +168,7 @@ public class DownloadHandlerView extends Div {
                 fileDownloadUnicodeNameWithQuote, classDownload,
                 servletDownload, inputStreamDownload, inputStreamErrorDownload,
                 inputStreamExceptionDownload, inputStreamCallbackError,
+                contentTypeDownload, responseContentTypeDownload,
                 percentDownload);
 
         NativeButton reattach = new NativeButton("Remove and add back",
