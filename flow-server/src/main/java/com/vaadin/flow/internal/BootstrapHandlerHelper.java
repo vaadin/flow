@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
@@ -210,5 +211,32 @@ public final class BootstrapHandlerHelper implements Serializable {
                         && !mapping.equals("/vaadinServlet/*"))
                 .sorted().findFirst().orElse("/");
         return firstMapping.replace("/*", "/");
+    }
+
+    /**
+     * Gets the path that the push WebSocket endpoint of the given servlet is
+     * registered at.
+     * <p>
+     * The path is the push servlet mapping init parameter of the servlet, or
+     * the first URL mapping of the servlet if the parameter is not set,
+     * followed by {@link Constants#PUSH_MAPPING}.
+     *
+     * @param servletConfig
+     *            the configuration of the servlet
+     * @return the path of the push WebSocket endpoint, or {@code null} if the
+     *         servlet has neither the init parameter nor a registration to read
+     *         the URL mapping from
+     */
+    public static String getPushEndpointPath(ServletConfig servletConfig) {
+        String pushServletMapping = getCleanedPushServletMapping(
+                servletConfig.getInitParameter(
+                        InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING));
+        if (pushServletMapping == null) {
+            pushServletMapping = getServletRegistration(servletConfig)
+                    .map(BootstrapHandlerHelper::findFirstUrlMapping)
+                    .orElse(null);
+        }
+        return pushServletMapping == null ? null
+                : pushServletMapping + Constants.PUSH_MAPPING;
     }
 }

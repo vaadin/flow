@@ -70,6 +70,7 @@ import io.quarkus.vertx.http.deployment.FilterBuildItem;
 import io.quarkus.websockets.client.deployment.ServerWebSocketContainerBuildItem;
 import io.quarkus.websockets.client.deployment.WebSocketDeploymentInfoBuildItem;
 import io.quarkus.websockets.client.deployment.WebsocketConfig;
+import org.atmosphere.cpr.ApplicationConfig;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.AnnotationInstance;
@@ -101,6 +102,7 @@ import com.vaadin.quarkus.context.VaadinServiceScopedContext;
 import com.vaadin.quarkus.context.VaadinSessionScopedContext;
 import com.vaadin.quarkus.deployment.vaadinplugin.VaadinBuildTimeConfig;
 import com.vaadin.quarkus.deployment.vaadinplugin.VaadinPlugin;
+import com.vaadin.quarkus.graal.QuarkusJSR356AsyncSupport;
 import com.vaadin.quarkus.push.PushDispatchRecorder;
 
 class VaadinQuarkusProcessor {
@@ -331,13 +333,17 @@ class VaadinQuarkusProcessor {
             final BuildProducer<VaadinServletBuildItem> vaadinServletProducer) {
         // In a native image, STATIC_INIT runs while the image is built, so the
         // Vaadin servlets are not loaded on startup by the servlet container
-        // but initialized at RUNTIME_INIT, see VaadinQuarkusNativeProcessor
+        // but initialized at RUNTIME_INIT, and so is their Atmosphere
+        // instance, which leaves the push endpoints to the extension, see
+        // VaadinQuarkusNativeProcessor
         final BiConsumer<ServletBuildItem.Builder, Integer> loadOnStartupSetter = nativeConfig
-                .enabled()
-                        ? (builder, order) -> vaadinServletProducer.produce(
-                                new VaadinServletBuildItem(builder.getName(),
-                                        order))
-                        : ServletBuildItem.Builder::setLoadOnStartup;
+                .enabled() ? (builder, order) -> {
+                    builder.addInitParam(
+                            ApplicationConfig.PROPERTY_COMET_SUPPORT,
+                            QuarkusJSR356AsyncSupport.class.getName());
+                    vaadinServletProducer.produce(new VaadinServletBuildItem(
+                            builder.getName(), order));
+                } : ServletBuildItem.Builder::setLoadOnStartup;
         final IndexView indexView = beanArchiveIndex.getIndex();
 
         // Collect all VaadinServlet instances and remove QuarkusVaadinServlet

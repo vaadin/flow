@@ -59,6 +59,7 @@ import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.maven.dependency.ResolvedDependency;
 import io.quarkus.paths.PathTree;
+import io.quarkus.undertow.deployment.ServletContextAttributeBuildItem;
 import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
 import io.quarkus.vertx.http.deployment.DefaultRouteBuildItem;
 import org.atmosphere.cache.UUIDBroadcasterCache;
@@ -118,14 +119,15 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.auth.AccessDeniedErrorRouter;
+import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.quarkus.VaadinServletStartupRecorder;
 import com.vaadin.quarkus.deployment.nativebuild.AtmospherePatches;
-import com.vaadin.quarkus.graal.AtmosphereDeferredInitializerRecorder;
-import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
+import com.vaadin.quarkus.graal.AtmosphereRecorder;
+import com.vaadin.quarkus.graal.QuarkusJSR356AsyncSupport;
 
 /**
  * A processor that applies necessary steps to build a native image for a Vaadin
@@ -133,8 +135,8 @@ import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
  * <p>
  * <ul>
  * <li>Patches Atmosphere
- * <li>Initializes the Vaadin servlets at RUNTIME_INIT
- * <li>Defers Atmosphere initialization at RUNTIME_INIT
+ * <li>Registers the push WebSocket endpoints at STATIC_INIT
+ * <li>Initializes Atmosphere and the Vaadin servlets at RUNTIME_INIT
  * <li>Generates stub classes for DAU integration if license checker is not
  * present at runtime
  * <li>Registers classes for reflection
@@ -174,28 +176,50 @@ public class VaadinQuarkusNativeProcessor {
     }
 
     /*
+     * Atmosphere starts thread pools when it is initialized, which the image
+     * build does not allow, so JSR356WebsocketInitializer must not initialize
+     * it while the servlet container is deployed at STATIC_INIT.
+     */
+    @BuildStep(onlyIf = IsNativeBuild.class)
+    ServletContextAttributeBuildItem skipAtmosphereInitializationOnDeploy() {
+        return new ServletContextAttributeBuildItem(
+                JSR356WebsocketInitializer.SKIP_INITIALIZATION_ATTRIBUTE,
+                Boolean.TRUE);
+    }
+
+    @BuildStep(onlyIf = IsNativeBuild.class)
+    @Record(ExecutionTime.STATIC_INIT)
+    void registerPushEndpoints(AtmosphereRecorder recorder,
+            ServletDeploymentManagerBuildItem deploymentManager,
+            List<VaadinServletBuildItem> vaadinServlets) {
+        recorder.registerPushEndpoints(deploymentManager.getDeploymentManager(),
+                vaadinServlets.stream()
+                        .map(VaadinServletBuildItem::getServletName).toList());
+    }
+
+    /*
      * STATIC_INIT runs while the native image is built, so the Vaadin servlets
      * are initialized here instead, to create their configuration from the
-     * runtime configuration. They register their Atmosphere instances while
-     * they are initialized, so the deferred Atmosphere initialization runs
-     * after them. Producing DefaultRouteBuildItem makes this run before the
-     * HTTP router serves requests.
+     * runtime configuration. Atmosphere is initialized first, so that the
+     * servlets use the instances the push endpoints look up. Producing
+     * DefaultRouteBuildItem makes this run before the HTTP router serves
+     * requests.
      */
     @BuildStep(onlyIf = IsNativeBuild.class)
     @Record(ExecutionTime.RUNTIME_INIT)
     @Produce(DefaultRouteBuildItem.class)
-    void initVaadinServletsAndAtmosphere(
+    void initAtmosphereAndVaadinServlets(AtmosphereRecorder atmosphereRecorder,
             VaadinServletStartupRecorder servletRecorder,
-            AtmosphereDeferredInitializerRecorder atmosphereRecorder,
             ServletDeploymentManagerBuildItem deploymentManager,
             List<VaadinServletBuildItem> vaadinServlets) {
+        List<String> servletNames = vaadinServlets.stream()
+                .sorted(Comparator
+                        .comparingInt(VaadinServletBuildItem::getLoadOnStartup))
+                .map(VaadinServletBuildItem::getServletName).toList();
+        atmosphereRecorder.initAtmosphere(
+                deploymentManager.getDeploymentManager(), servletNames);
         servletRecorder.initServlets(deploymentManager.getDeploymentManager(),
-                vaadinServlets.stream()
-                        .sorted(Comparator.comparingInt(
-                                VaadinServletBuildItem::getLoadOnStartup))
-                        .map(VaadinServletBuildItem::getServletName).toList());
-        atmosphereRecorder
-                .initAtmosphere(deploymentManager.getDeploymentManager());
+                servletNames);
     }
 
     /**
@@ -710,7 +734,7 @@ public class VaadinQuarkusNativeProcessor {
                 .constructors().methods().build());
 
         reflectiveClass.produce(ReflectiveClassBuildItem
-                .builder(DelayedSchedulerExecutorsFactory.class).constructors()
+                .builder(QuarkusJSR356AsyncSupport.class).constructors()
                 .build());
     }
 
