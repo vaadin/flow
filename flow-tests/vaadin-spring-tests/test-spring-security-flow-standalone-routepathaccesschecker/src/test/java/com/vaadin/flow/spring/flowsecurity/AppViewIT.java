@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,10 +27,9 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.By;
 
-import com.vaadin.flow.component.button.testbench.ButtonElement;
-import com.vaadin.flow.component.upload.testbench.UploadElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.spring.flowsecurity.views.PublicView;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -42,7 +40,7 @@ public class AppViewIT extends AbstractIT {
     private static final String ADMIN_FULLNAME = "Emma the Admin";
 
     private void logout() {
-        if (!$(ButtonElement.class).attribute("id", "logout").exists()) {
+        if (!$(NativeButtonElement.class).attribute("id", "logout").exists()) {
             open("");
             assertRootPageShown();
         }
@@ -51,7 +49,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     private void clickLogout() {
-        getMainView().$(ButtonElement.class).id("logout").click();
+        getMainView().$(NativeButtonElement.class).id("logout").click();
     }
 
     @Test
@@ -250,15 +248,16 @@ public class AppViewIT extends AbstractIT {
     public void upload_file_in_private_view() throws IOException {
         open("private");
         loginUser();
-        UploadElement upload = $(UploadElement.class).first();
         File tmpFile = File.createTempFile("security-flow-image", ".png");
-        InputStream imageStream = getClass().getClassLoader()
-                .getResourceAsStream("image.png");
-        IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
+        try (InputStream imageStream = getClass().getClassLoader()
+                .getResourceAsStream("image.png")) {
+            IOUtils.copyLarge(imageStream, new FileOutputStream(tmpFile));
+        }
         tmpFile.deleteOnExit();
-        upload.upload(tmpFile, 0);
-        waitForUploads(upload, 60);
 
+        uploadFileToNativeInput("uploadInput", tmpFile);
+
+        waitForElementPresent(By.id("uploadText"));
         TestBenchElement text = $("p").id("uploadText");
         TestBenchElement img = $("img").id("uploadImage");
 
@@ -271,7 +270,8 @@ public class AppViewIT extends AbstractIT {
     @Test
     public void navigate_in_thread_without_access() {
         open("");
-        $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
+        $(NativeButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID)
+                .click();
 
         // This waits for longer than the delay in the UI so we do not need a
         // separate
@@ -283,7 +283,8 @@ public class AppViewIT extends AbstractIT {
     public void navigate_in_thread_with_access() {
         open(LOGIN_PATH);
         loginAdmin();
-        $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
+        $(NativeButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID)
+                .click();
 
         // This waits for longer than the delay in the UI so we do not need a
         // separate
@@ -387,8 +388,8 @@ public class AppViewIT extends AbstractIT {
     }
 
     private List<MenuItem> getMenuItems() {
-        List<TestBenchElement> anchors = getMainView().$("vaadin-tabs").first()
-                .$("a").all();
+        List<TestBenchElement> anchors = getMainView().$("*").id("tabs").$("a")
+                .all();
 
         return anchors.stream().map(anchor -> {
             String href = (String) anchor.callFunction("getAttribute", "href");
@@ -400,27 +401,6 @@ public class AppViewIT extends AbstractIT {
             }
             return new MenuItem(href, text, available);
         }).collect(Collectors.toList());
-    }
-
-    // Workaround for https://github.com/vaadin/flow-components/issues/3646
-    // The issue causes the upload test to be flaky
-    private void waitForUploads(UploadElement element, int maxSeconds) {
-        WebDriver.Timeouts timeouts = getDriver().manage().timeouts();
-        timeouts.scriptTimeout(Duration.ofSeconds(maxSeconds));
-
-        String script = """
-                var callback = arguments[arguments.length - 1];
-                var upload = arguments[0];
-                let intervalId;
-                intervalId = window.setInterval(function() {
-                  var inProgress = upload.files.filter(function(file) { return file.uploading;}).length >0;
-                  if (!inProgress) {
-                    window.clearInterval(intervalId);
-                    callback();
-                  }
-                }, 500);
-                """;
-        getCommandExecutor().getDriver().executeAsyncScript(script, element);
     }
 
 }

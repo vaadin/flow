@@ -25,11 +25,20 @@ import com.vaadin.flow.server.Constants;
 /**
  * Sets Spring Boot dev tools to run on a free random port if the default port
  * is in use.
+ * 
+ * @since 24.0
  */
 public class SpringDevToolsPortHandler implements EnvironmentPostProcessor {
 
     private static final String SPRING_DEVTOOLS_LIVERELOAD_PORT = "spring.devtools.livereload.port";
     private static final String SPRING_DEVTOOLS_LIVERELOAD_ENABLED = "spring.devtools.livereload.enabled";
+
+    /**
+     * Creates the post processor. Spring Boot instantiates it.
+     */
+    public SpringDevToolsPortHandler() {
+        // Default constructor
+    }
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment,

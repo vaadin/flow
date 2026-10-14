@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -24,7 +24,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @PageTitle("Logout")
 @Route(value = "logout", layout = MainView.class)
 @AnonymousAllowed
-public class LogoutView extends VerticalLayout {
+public class LogoutView extends Div {
 
     public LogoutView() {
         Paragraph p = new Paragraph(
@@ -32,10 +32,10 @@ public class LogoutView extends VerticalLayout {
         p.setId("logout-message");
         add(p);
 
-        setSizeFull();
-        setJustifyContentMode(JustifyContentMode.CENTER);
-        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        getStyle().set("text-align", "center");
+        getStyle().set("display", "flex").set("flex-direction", "column")
+                .set("justify-content", "center").set("align-items", "center")
+                .set("width", "100%").set("height", "100%")
+                .set("text-align", "center");
     }
 
 }

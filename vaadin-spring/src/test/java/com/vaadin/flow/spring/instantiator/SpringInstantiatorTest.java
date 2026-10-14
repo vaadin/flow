@@ -51,6 +51,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.router.PageTitleContext;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
@@ -143,6 +145,16 @@ public class SpringInstantiatorTest {
 
     }
 
+    @Component
+    public static class TestPageTitleGenerator implements PageTitleGenerator {
+
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "spring:" + context.value();
+        }
+
+    }
+
     @Test
     void createRouteTarget_pojo_instanceIsCreated() throws ServletException {
         Instantiator instantiator = getInstantiator(context);
@@ -191,6 +203,16 @@ public class SpringInstantiatorTest {
         assertNotNull(instantiator.getI18NProvider());
         assertEquals(I18NTestProvider.class,
                 instantiator.getI18NProvider().getClass());
+    }
+
+    @Test
+    void getPageTitleGenerator_generatorIsABean_generatorIsAvailable()
+            throws ServletException {
+        Instantiator instantiator = getInstantiator(context);
+
+        assertNotNull(instantiator.getPageTitleGenerator());
+        assertEquals(TestPageTitleGenerator.class,
+                instantiator.getPageTitleGenerator().getClass());
     }
 
     @Test

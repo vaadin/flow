@@ -17,8 +17,6 @@ package com.vaadin.flow.spring.flowsecurity.views;
 
 import jakarta.annotation.security.PermitAll;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.concurrent.Executor;
 
@@ -27,25 +25,20 @@ import org.springframework.security.concurrent.DelegatingSecurityContextExecutor
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.service.BankService;
+import com.vaadin.flow.spring.test.LoanApplicationUpload;
 
 @Route(value = "private", layout = MainView.class)
 @PageTitle("Private View")
 @PermitAll
-public class PrivateView extends VerticalLayout {
+public class PrivateView extends Div {
 
     private BankService bankService;
     private Span balanceSpan = new Span();
@@ -59,43 +52,29 @@ public class PrivateView extends VerticalLayout {
         this.utils = utils;
         this.executor = new DelegatingSecurityContextExecutor(executor);
 
+        getStyle().set("display", "flex").set("flex-direction", "column");
+
         updateBalanceText();
         balanceSpan.setId("balanceText");
         add(balanceSpan);
 
-        Button applyForLoan = new Button("Apply for a loan",
+        NativeButton applyForLoan = new NativeButton("Apply for a loan",
                 this::applyForLoan);
         applyForLoan.setId("applyForLoan");
         add(applyForLoan);
 
-        Button applyForHugeLoan = new Button("Apply for a huge loan",
-                this::applyForHugeLoanUsingExecutor);
+        NativeButton applyForHugeLoan = new NativeButton(
+                "Apply for a huge loan", this::applyForHugeLoanUsingExecutor);
         applyForHugeLoan.setId("applyForHugeLoan");
         add(applyForHugeLoan);
 
-        Button globalRefresh = new Button("Send global refresh event",
-                e -> Broadcaster.sendMessage());
+        NativeButton globalRefresh = new NativeButton(
+                "Send global refresh event", e -> Broadcaster.sendMessage());
         globalRefresh.setId("sendRefresh");
         add(globalRefresh);
 
-        Upload upload = new Upload();
-        ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
-        upload.setReceiver((filename, mimeType) -> {
-            return imageStream;
-        });
-        upload.addSucceededListener(e -> {
-            Paragraph p = new Paragraph("Loan application uploaded by "
-                    + utils.getAuthenticatedUserInfo().getFullName());
-            p.setId("uploadText");
-            add(p);
-            Image image = new Image(new StreamResource("image.png",
-                    () -> new ByteArrayInputStream(imageStream.toByteArray())),
-                    "image");
-            image.setId("uploadImage");
-            add(image);
-        });
-        add(new H4("Upload your loan application"));
-        add(upload);
+        LoanApplicationUpload.addTo(this,
+                () -> utils.getAuthenticatedUserInfo().getFullName());
     }
 
     @Override
@@ -121,25 +100,29 @@ public class PrivateView extends VerticalLayout {
                 "Hello %s, your bank account balance is $%s.", name, balance));
     }
 
-    private void applyForLoan(ClickEvent<Button> e) {
+    private void applyForLoan(ClickEvent<NativeButton> e) {
         try {
             bankService.applyForLoan();
             updateBalanceText();
         } catch (Exception ex) {
-            getUI().get().access(() -> {
-                Notification.show("Application failed: " + ex.getMessage());
-            });
+            getUI().get().access(() -> showNotification(
+                    "Application failed: " + ex.getMessage()));
         }
     }
 
-    private void applyForHugeLoanUsingExecutor(ClickEvent<Button> e) {
+    private void applyForHugeLoanUsingExecutor(ClickEvent<NativeButton> e) {
         try {
             bankService.applyForHugeLoan();
             updateBalanceText();
         } catch (Exception ex) {
-            getUI().get().access(() -> {
-                Notification.show("Application failed: " + ex.getMessage());
-            });
+            getUI().get().access(() -> showNotification(
+                    "Application failed: " + ex.getMessage()));
         }
+    }
+
+    private void showNotification(String text) {
+        Div notification = new Div(text);
+        notification.addClassName("notification");
+        add(notification);
     }
 }

@@ -21,9 +21,9 @@ import java.time.Instant;
  * A successful location reading: the coordinates the browser reported and the
  * moment in time they were taken.
  * <p>
- * This is one of the three possible values of a
- * {@link GeolocationTracker#valueSignal()} signal, and one of the two values a
- * {@link Geolocation#get} callback can receive.
+ * Delivered to the success consumer of
+ * {@link Geolocation#getPosition(com.vaadin.flow.function.SerializableConsumer, com.vaadin.flow.function.SerializableConsumer)}
+ * and held by the {@link GeolocationWatcher#positionSignal()} signal.
  *
  * @param coords
  *            the latitude/longitude and related fields; see
@@ -32,6 +32,7 @@ import java.time.Instant;
  *            the moment the reading was taken, as milliseconds since the Unix
  *            epoch (1970-01-01T00:00:00Z). Use {@link #timestampAsInstant()}
  *            for an {@link Instant}
+ * @since 25.2
  */
 public record GeolocationPosition(GeolocationCoordinates coords,
         long timestamp) implements GeolocationOutcome {

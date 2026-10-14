@@ -43,9 +43,9 @@ import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.THEMED_COMP
 @NotThreadSafe
 public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
-    private static final String BORDER_RADIUS = "3px";
-    private static final String OTHER_BORDER_RADIUS = "6px";
-    private static final String PARENT_BORDER_RADIUS = "9px";
+    private static final String BORDER_RADIUS = "11px";
+    private static final String OTHER_BORDER_RADIUS = "17px";
+    private static final String PARENT_BORDER_RADIUS = "23px";
 
     private static final String THEMES_FOLDER = FrontendUtils.DEFAULT_FRONTEND_DIR
             + "/themes/";
@@ -57,7 +57,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             + PARENT_THEME + "/";
     private static final String THEME_GENERATED_PATTERN = FrontendUtils.DEFAULT_FRONTEND_DIR
             + "/generated/theme-%s.generated.js";
-    private static final String COMPONENT_STYLE_SHEET = "components/vaadin-text-field.css";
+    private static final String COMPONENT_STYLE_SHEET = "components/faux-text-field.css";
 
     private File currentThemeComponentCSSFile;
     private File currentThemeGeneratedFile;
@@ -174,9 +174,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             TestBenchElement themedTextField = $(TestBenchElement.class)
                     .id(THEMED_COMPONENT_ID);
             TestBenchElement input = themedTextField.$(DivElement.class)
-                    .attribute("class", "vaadin-field-container").first()
-                    .$("vaadin-input-container")
-                    .attribute("part", "input-field").first();
+                    .attribute("class", "field-container").first()
+                    .$(DivElement.class).attribute("part", "input-field")
+                    .first();
             return borderRadius.equals(input.getCssValue("border-radius"));
         } catch (StaleElementReferenceException e) {
             return false;

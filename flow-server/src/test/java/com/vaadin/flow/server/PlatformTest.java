@@ -73,8 +73,8 @@ class PlatformTest {
         if (vaadinVersion != null) {
             final Path vaadinJar = Files.createTempDirectory(temporary, "temp")
                     .toFile().toPath();
-            final Path pomProperties = vaadinJar.resolve(
-                    "META-INF/maven/com.vaadin/vaadin-core/pom.properties");
+            final Path pomProperties = vaadinJar
+                    .resolve(Platform.VAADIN_CORE_POM_PROPERTIES);
             Files.createDirectories(pomProperties.getParent());
             Files.writeString(pomProperties, "version=" + vaadinVersion);
             classPath.add(vaadinJar.toUri().toURL());

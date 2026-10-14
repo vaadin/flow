@@ -75,7 +75,7 @@ public class InitialExtendedClientDetailsIT extends ChromeBrowserTest {
                 isParseableAsInteger());
         Assert.assertThat(findElement(By.id("DSTInEffect")).getText(),
                 isOneOf("true", "false"));
-        Assert.assertThat(findElement(By.id("currentDate")).getText(),
+        Assert.assertThat(findElement(By.id("browserTime")).getText(),
                 not(isEmptyString()));
         Assert.assertThat(findElement(By.id("touchDevice")).getText(),
                 isOneOf("true", "false"));

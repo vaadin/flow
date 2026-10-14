@@ -19,10 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class TaskUpdateThemeImportTest {
 
     private static final String CUSTOM_THEME_NAME = "custom-theme";
@@ -468,5 +468,55 @@ class TaskUpdateThemeImportTest {
                 CUSTOM_THEME_NAME,
                 FeatureFlags.COMPONENT_STYLE_INJECTION.getId(),
                 "vaadin-button.css");
+    }
+
+    @Test
+    void runTaskWithTheme_featureFlagSet_noWarningLogged() throws Exception {
+
+        File themesDir = new File(frontendDirectory, APPLICATION_THEME_ROOT);
+        File aCustomThemeDir = new File(themesDir, CUSTOM_THEME_NAME);
+        File components = new File(aCustomThemeDir, "components");
+
+        assertTrue(components.mkdirs(), String.format(
+                "%s directory should be created at '%s%s/%s' but failed.",
+                CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
+                CUSTOM_THEME_NAME));
+
+        Files.writeString(new File(components, "vaadin-button.css").toPath(),
+                "{ .button-style: 2px; }");
+
+        File flagFolder = new File(temporaryFolder, "flag");
+        assertTrue(flagFolder.mkdirs());
+        Files.writeString(
+                new File(flagFolder, FeatureFlags.PROPERTIES_FILENAME).toPath(),
+                "com.vaadin.experimental."
+                        + FeatureFlags.COMPONENT_STYLE_INJECTION.getId()
+                        + "=true\n");
+        FeatureFlags featureFlags = new FeatureFlags(
+                Mockito.mock(Lookup.class));
+        featureFlags.setPropertiesLocation(flagFolder);
+        assertTrue(
+                featureFlags.isEnabled(FeatureFlags.COMPONENT_STYLE_INJECTION));
+
+        Options optionsWithFlag = new Options(Mockito.mock(Lookup.class),
+                npmFolder).withFrontendDirectory(frontendDirectory)
+                .withFeatureFlags(featureFlags);
+        TaskUpdateThemeImport task = new TaskUpdateThemeImport(customTheme,
+                optionsWithFlag) {
+            @Override
+            Logger getLogger() {
+                return logger;
+            }
+        };
+
+        task.execute();
+
+        Mockito.verify(logger, Mockito.never()).warn(Mockito.eq(
+                "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be applied for\n{}"),
+                Mockito.eq(CUSTOM_THEME_NAME),
+                Mockito.eq(FeatureFlags.COMPONENT_STYLE_INJECTION.getId()),
+                Mockito.eq("vaadin-button.css"));
+        assertTrue(themeImportFile.exists(), String
+                .format(SHOULD_EXIST_AFTER_EXECUTION, THEME_IMPORTS_NAME));
     }
 }

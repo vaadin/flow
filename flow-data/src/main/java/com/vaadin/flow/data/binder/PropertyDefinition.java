@@ -60,6 +60,7 @@ public interface PropertyDefinition<T, V> extends Serializable {
      *
      * @return {@code true} if the type of this property references a generic
      *         type, {@code false} otherwise
+     * @since 24.1.1
      */
     boolean isGenericType();
 

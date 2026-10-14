@@ -22,6 +22,7 @@ import java.util.concurrent.Executor;
  * An {@link Executor} that is also {@link Serializable}.
  *
  * @author Vaadin Ltd
+ * @since 25.1
  */
 @FunctionalInterface
 public interface SerializableExecutor extends Executor, Serializable {

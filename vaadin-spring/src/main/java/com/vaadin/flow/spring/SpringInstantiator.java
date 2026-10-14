@@ -33,6 +33,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.auth.MenuAccessControl;
@@ -42,10 +43,14 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
  * registered. This implementation uses Spring beans.
  *
  * @author Vaadin Ltd
+ * @since 10.0
  */
 public class SpringInstantiator extends DefaultInstantiator {
 
+    /** The application context the beans are looked up from. */
     private ApplicationContext context;
+
+    /** Guards the one-time log message about the instantiator in use. */
     private AtomicBoolean loggingEnabled = new AtomicBoolean(true);
 
     /**
@@ -124,6 +129,17 @@ public class SpringInstantiator extends DefaultInstantiator {
                                         MenuAccessControl.class).length);
             }
             return super.getMenuAccessControl();
+        }
+    }
+
+    @Override
+    public PageTitleGenerator getPageTitleGenerator() {
+        try {
+            return context.getBean(PageTitleGenerator.class);
+        } catch (NoSuchBeanDefinitionException ignored) {
+            // No unique PageTitleGenerator bean: fall back to the
+            // init-parameter based default (or none).
+            return super.getPageTitleGenerator();
         }
     }
 

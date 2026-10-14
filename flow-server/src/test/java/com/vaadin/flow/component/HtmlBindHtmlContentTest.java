@@ -15,13 +15,16 @@
  */
 package com.vaadin.flow.component;
 
+import org.jsoup.safety.Safelist;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.signals.BindingActiveException;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -135,16 +138,16 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
-        // sending null will cause NPE in setHtmlContent inside effect function;
-        // state should not change, and an error should be captured by
-        // SignalsUnitTest error handler
+        // sending null is rejected with an IllegalArgumentException inside the
+        // effect function; state should not change, and an error should be
+        // captured by the SignalsUnitTest error handler
         signal.set(null);
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
         // one error captured
         assertEquals(1, events.size());
-        assertEquals(NullPointerException.class,
+        assertEquals(IllegalArgumentException.class,
                 events.getFirst().getThrowable().getClass());
         // clear events for next verification in SignalsUnitTest.after
         events.clear();
@@ -174,5 +177,67 @@ class HtmlBindHtmlContentTest extends SignalsUnitTest {
         // state unchanged
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
+    }
+
+    @Test
+    void signalConstructorWithSafelist_initialAndUpdatesSanitized() {
+        ValueSignal<String> signal = new ValueSignal<>(
+                "<div onclick='evil()'>v1<script>x()</script></div>");
+        Html html = new Html(signal, () -> new Safelist().addTags("div"));
+        UI.getCurrent().add(html);
+
+        // initial value sanitized
+        assertEquals("div", html.getElement().getTag());
+        assertNull(html.getElement().getAttribute("onclick"));
+        assertEquals("v1", html.getInnerHtml());
+
+        // updates are sanitized too
+        signal.set("<div onmouseover='evil()'>v2<script>y()</script></div>");
+        assertNull(html.getElement().getAttribute("onmouseover"));
+        assertEquals("v2", html.getInnerHtml());
+    }
+
+    @Test
+    void signalConstructorWithSafelist_nullSupplier_throws() {
+        assertThrows(NullPointerException.class,
+                () -> new Html(new ValueSignal<>("<div>x</div>"),
+                        (SerializableSupplier<Safelist>) null));
+    }
+
+    @Test
+    void bindWithSafelist_withNullValue_recordsErrorAndDoesNotChange() {
+        ValueSignal<String> signal = new ValueSignal<>("<div>after</div>");
+        Html html = new Html(signal, () -> new Safelist().addTags("div"));
+        UI.getCurrent().add(html);
+
+        // A null value is rejected with a clear IllegalArgumentException
+        // instead of reaching Jsoup; state does not change.
+        signal.set(null);
+
+        assertEquals("after", html.getInnerHtml());
+        assertEquals(1, events.size());
+        assertEquals(IllegalArgumentException.class,
+                events.getFirst().getThrowable().getClass());
+        events.clear();
+    }
+
+    @Test
+    void bindWithSafelist_valueBecomesInvalidAfterClean_recordsErrorAndDoesNotChange() {
+        ValueSignal<String> signal = new ValueSignal<>("<div>ok</div>");
+        Html html = new Html(signal, () -> new Safelist().addTags("div"));
+        UI.getCurrent().add(html);
+
+        assertEquals("ok", html.getInnerHtml());
+
+        // The safelist strips <script> entirely, so the cleaned value has no
+        // top-level element. Applying it throws inside the effect; the error is
+        // captured and the previous content is kept.
+        signal.set("<script>evil()</script>");
+
+        assertEquals("ok", html.getInnerHtml());
+        assertEquals(1, events.size());
+        assertEquals(IllegalArgumentException.class,
+                events.getFirst().getThrowable().getClass());
+        events.clear();
     }
 }

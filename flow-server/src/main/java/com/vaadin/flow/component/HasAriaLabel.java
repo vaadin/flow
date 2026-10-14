@@ -50,6 +50,7 @@ import com.vaadin.flow.dom.ElementConstants;
  * details.
  *
  * @author Vaadin Ltd
+ * @since 9.0
  */
 public interface HasAriaLabel extends HasElement {
     /**
@@ -96,6 +97,7 @@ public interface HasAriaLabel extends HasElement {
      * @param ariaLabelledBy
      *            the string with the id of the element that will be used as
      *            label or {@code null} to clear
+     * @since 24.1
      */
     default void setAriaLabelledBy(String ariaLabelledBy) {
         if (ariaLabelledBy != null) {
@@ -109,10 +111,49 @@ public interface HasAriaLabel extends HasElement {
     }
 
     /**
+     * Set the aria-labelledby of the component to reference the given label
+     * component. If {@code labelComponent} does not have an id, one is
+     * generated automatically.
+     * <p>
+     * The aria-labelledby value is available right away, but a generated id is
+     * only assigned to the label component before the next client response
+     * after this component is attached, so the label component's id can be set
+     * after calling this method, in which case that id is referenced instead.
+     * For that reason the value read with {@link #getAriaLabelledBy()} should
+     * not be cached within the same request.
+     * <p>
+     * Calling {@link #setAriaLabelledBy(String)}, also with {@code null} to
+     * clear the value, or referencing another component cancels a pending
+     * resolution, leaving the previously referenced component's id untouched.
+     * <p>
+     * The label component <b>must</b> be in the same DOM scope as this
+     * component, otherwise screen readers may fail to announce the label
+     * content properly.
+     * <p>
+     * This method should not be used if {@link #setAriaLabel(String)} is also
+     * used. If both attributes are present, aria-labelledby will take
+     * precedence over aria-label.
+     *
+     * @param labelComponent
+     *            the component to use as the label, not {@code null}
+     * @since 25.2
+     */
+    default void setAriaLabelledBy(Component labelComponent) {
+        if (labelComponent == null) {
+            throw new IllegalArgumentException(
+                    "The provided component cannot be null");
+        }
+        ComponentUtil.resolveOrGenerateIdLater(getElement(), labelComponent,
+                "arialabelledby-", this::getAriaLabelledBy,
+                this::setAriaLabelledBy);
+    }
+
+    /**
      * Gets the aria-labelledby of the component
      *
      * @return an optional aria-labelledby of the component if no
      *         aria-labelledby has been set
+     * @since 24.1
      */
     default Optional<String> getAriaLabelledBy() {
         return Optional.ofNullable(getElement()

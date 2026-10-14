@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.spring.flowsecurity.views;
 
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -24,25 +23,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.applayout.DrawerToggle;
-import com.vaadin.flow.component.avatar.Avatar;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.component.tabs.TabsVariant;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
@@ -52,9 +43,11 @@ import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
 @AnonymousAllowed
-public class MainView extends AppLayout implements AfterNavigationObserver {
+public class MainView extends Div
+        implements RouterLayout, AfterNavigationObserver {
 
-    private final Tabs menu;
+    private final Div tabs;
+    private final Div content = new Div();
     private H1 viewTitle;
     private SecurityUtils securityUtils;
     private UserInfo userInfo;
@@ -67,41 +60,57 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         this.accessChecker = accessChecker;
         userInfo = securityUtils.getAuthenticatedUserInfo();
 
-        setPrimarySection(Section.DRAWER);
-        addToNavbar(true, createHeaderContent());
-        menu = createMenu();
-        addToDrawer(createDrawerContent(menu));
+        getStyle().set("display", "flex").set("flex-direction", "column")
+                .set("min-height", "100vh");
+
+        Div navbar = createHeaderContent();
+        tabs = createMenu();
+        Div drawer = createDrawerContent(tabs);
+
+        Div body = new Div(drawer, content);
+        body.getStyle().set("display", "flex").set("flex", "1");
+        content.getStyle().set("flex", "1");
+
+        add(navbar, body);
     }
 
-    private Component createHeaderContent() {
-        HorizontalLayout layout = new HorizontalLayout();
+    private Div createHeaderContent() {
+        Div layout = new Div();
         layout.addClassName("header");
-        layout.getThemeList().set("dark", true);
-        layout.setWidthFull();
-        layout.setSpacing(false);
-        layout.setAlignItems(FlexComponent.Alignment.CENTER);
-        layout.add(new DrawerToggle());
+        layout.getElement().getThemeList().add("dark");
+        layout.getStyle().set("display", "flex").set("width", "100%")
+                .set("align-items", "center");
+
+        NativeButton drawerToggle = new NativeButton("☰");
+        drawerToggle.setId("drawer-toggle");
+        layout.add(drawerToggle);
+
         viewTitle = new H1();
         layout.add(viewTitle);
-        Avatar avatar = new Avatar();
+
+        Div avatar = new Div();
+        avatar.addClassName("avatar");
         if (userInfo != null) {
-            avatar.setName(userInfo.getFullName());
-            avatar.setImage(userInfo.getImageUrl());
+            String image = userInfo.getImageUrl();
+            if (image != null) {
+                avatar.add(new Image(image, userInfo.getFullName()));
+            } else {
+                avatar.setText(userInfo.getFullName());
+            }
         }
         layout.add(avatar);
         return layout;
     }
 
-    private Component createDrawerContent(Tabs menu) {
-        VerticalLayout layout = new VerticalLayout();
-        layout.setSizeFull();
-        layout.setPadding(false);
-        layout.setSpacing(false);
-        layout.getThemeList().set("spacing-s", true);
-        layout.setAlignItems(FlexComponent.Alignment.STRETCH);
-        HorizontalLayout logoLayout = new HorizontalLayout();
+    private Div createDrawerContent(Div menu) {
+        Div layout = new Div();
+        layout.getStyle().set("display", "flex").set("flex-direction", "column")
+                .set("padding", "0.5rem");
+
+        Div logoLayout = new Div();
         logoLayout.addClassName("logo");
-        logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        logoLayout.getStyle().set("display", "flex").set("align-items",
+                "center");
         logoLayout
                 .add(new Image("public/images/logo.jpg", "Bank of Flow logo"));
         logoLayout.add(new H1("Bank of Flow"));
@@ -120,7 +129,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
 
         layout.add(logoLayout, info, menu);
         if (userInfo == null) {
-            Button login = new Button("Log in");
+            NativeButton login = new NativeButton("Log in");
             login.setId("login");
             login.addClickListener(e -> {
                 e.getSource().getUI().get().navigate(LoginView.class);
@@ -129,7 +138,7 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         } else {
             if (securityUtils.getAuthenticatedUserInfo().getRoles()
                     .contains(ROLE_ADMIN)) {
-                Button impersonate = new Button("Impersonate John",
+                NativeButton impersonate = new NativeButton("Impersonate John",
                         e -> getUI().ifPresent(ui -> ui.getPage()
                                 .setLocation("impersonate?username=john")));
                 impersonate.setId("impersonate");
@@ -138,20 +147,21 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
                     .getAuthorities().stream().anyMatch(
                             auth -> SwitchUserFilter.ROLE_PREVIOUS_ADMINISTRATOR
                                     .equals(auth.getAuthority()))) {
-                Button impersonate = new Button("Exit impersonation",
-                        e -> getUI().ifPresent(ui -> ui.getPage()
-                                .setLocation("impersonate/exit")));
+                NativeButton impersonate = new NativeButton(
+                        "Exit impersonation", e -> getUI().ifPresent(ui -> ui
+                                .getPage().setLocation("impersonate/exit")));
                 impersonate.setId("exit-impersonate");
                 layout.add(impersonate);
             }
-            Button logout = new Button("Logout");
+            NativeButton logout = new NativeButton("Logout");
             logout.setId("logout");
             logout.addClickListener(e -> {
                 securityUtils.logout();
             });
             layout.add(logout);
 
-            Button logoutFromServer = new Button("Logout from server");
+            NativeButton logoutFromServer = new NativeButton(
+                    "Logout from server");
             logoutFromServer.setId("logout-server");
             logoutFromServer.addClickListener(e -> {
                 UI ui = UI.getCurrent();
@@ -171,56 +181,63 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         return layout;
     }
 
-    private Tabs createMenu() {
-        final Tabs tabs = new Tabs();
-        tabs.setOrientation(Tabs.Orientation.VERTICAL);
-        tabs.addThemeVariants(TabsVariant.LUMO_MINIMAL);
-        tabs.setId("tabs");
-        tabs.add(createMenuItems());
-        return tabs;
-    }
-
-    private Component[] createMenuItems() {
-        Tab[] tabs = new Tab[3];
-        tabs[0] = createTab("Public", PublicView.class);
+    private Div createMenu() {
+        Div nav = new Div();
+        nav.setId("tabs");
+        nav.getStyle().set("display", "flex").set("flex-direction", "column");
+        nav.add(menuItem("Public", PublicView.class));
         if (accessChecker.hasAccess(PrivateView.class)) {
-            tabs[1] = createTab("Private", PrivateView.class);
+            nav.add(menuItem("Private", PrivateView.class));
         } else {
-            tabs[1] = createTab("Private (hidden)", PrivateView.class);
+            nav.add(menuItem("Private (hidden)", PrivateView.class));
         }
         if (accessChecker.hasAccess(AdminView.class)) {
-            tabs[2] = createTab("Admin", AdminView.class);
+            nav.add(menuItem("Admin", AdminView.class));
         } else {
-            tabs[2] = createTab("Admin (hidden)", AdminView.class);
+            nav.add(menuItem("Admin (hidden)", AdminView.class));
         }
-
-        return tabs;
+        return nav;
     }
 
-    private static Tab createTab(String text,
+    private static RouterLink menuItem(String text,
             Class<? extends Component> navigationTarget) {
-        final Tab tab = new Tab();
-        tab.add(new RouterLink(text, navigationTarget));
-        ComponentUtil.setData(tab, Class.class, navigationTarget);
-        return tab;
+        RouterLink link = new RouterLink(text, navigationTarget);
+        link.getElement().setAttribute("data-target",
+                navigationTarget.getName());
+        return link;
+    }
+
+    @Override
+    public void showRouterLayoutContent(HasElement contentElement) {
+        content.removeAll();
+        if (contentElement != null) {
+            content.getElement().appendChild(contentElement.getElement());
+        }
     }
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        getTabForComponent(getContent()).ifPresent(menu::setSelectedTab);
-        viewTitle.setText(getCurrentPageTitle());
+        Component current = currentContent();
+        if (current == null) {
+            viewTitle.setText("");
+            return;
+        }
+        String targetName = current.getClass().getName();
+        tabs.getChildren().forEach(child -> {
+            boolean selected = targetName
+                    .equals(child.getElement().getAttribute("data-target"));
+            child.getElement().setAttribute("aria-current",
+                    selected ? "page" : "false");
+        });
+        viewTitle.setText(pageTitle(current));
     }
 
-    private Optional<Tab> getTabForComponent(Component component) {
-        return menu.getChildren()
-                .filter(tab -> ComponentUtil.getData(tab, Class.class)
-                        .equals(component.getClass()))
-                .findFirst().map(Tab.class::cast);
+    private Component currentContent() {
+        return content.getChildren().findFirst().orElse(null);
     }
 
-    private String getCurrentPageTitle() {
-        PageTitle title = getContent().getClass()
-                .getAnnotation(PageTitle.class);
+    private static String pageTitle(Component current) {
+        PageTitle title = current.getClass().getAnnotation(PageTitle.class);
         return title == null ? "" : title.value();
     }
 }

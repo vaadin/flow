@@ -17,7 +17,11 @@ package com.vaadin.flow.component.html;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.UI;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NativeLabelTest extends ComponentTest {
 
@@ -29,12 +33,100 @@ class NativeLabelTest extends ComponentTest {
     }
 
     @Test
-    void setForComponent() {
+    void setForComponent_withExistingId() {
+        UI ui = new UI();
         NativeLabel otherComponent = new NativeLabel();
         otherComponent.setId("otherC");
         NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, otherComponent);
         l.setFor(otherComponent);
-        assertEquals(otherComponent.getId().get(), l.getFor().get());
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("otherC", l.getFor().orElse(null));
+    }
+
+    @Test
+    void setForComponent_withoutId_generatesId() {
+        UI ui = new UI();
+        NativeLabel otherComponent = new NativeLabel();
+        assertFalse(otherComponent.getId().isPresent());
+
+        NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, otherComponent);
+        l.setFor(otherComponent);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertTrue(otherComponent.getId().isPresent());
+        assertTrue(otherComponent.getId().get().startsWith("nativelabel-"));
+        assertEquals(otherComponent.getId().get(), l.getFor().orElse(null));
+    }
+
+    @Test
+    void setForComponent_explicitIdSetLater_explicitIdWins() {
+        UI ui = new UI();
+        NativeLabel otherComponent = new NativeLabel();
+        NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, otherComponent);
+        l.setFor(otherComponent);
+
+        l.setFor("another-input");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("another-input", l.getFor().orElse(null));
+        assertFalse(otherComponent.getId().isPresent());
+    }
+
+    @Test
+    void setForComponent_clearedLater_forIsCleared() {
+        UI ui = new UI();
+        NativeLabel otherComponent = new NativeLabel();
+        NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, otherComponent);
+        l.setFor(otherComponent);
+
+        l.setFor("");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertFalse(l.getFor().isPresent());
+        assertFalse(otherComponent.getId().isPresent());
+    }
+
+    @Test
+    void setForComponent_calledTwice_lastComponentWins() {
+        UI ui = new UI();
+        NativeLabel firstTarget = new NativeLabel();
+        NativeLabel secondTarget = new NativeLabel();
+        NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, firstTarget, secondTarget);
+
+        l.setFor(firstTarget);
+        l.setFor(secondTarget);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertFalse(firstTarget.getId().isPresent(),
+                "The superseded target should keep its original id");
+        assertEquals(secondTarget.getId().orElse(null),
+                l.getFor().orElse(null));
+    }
+
+    @Test
+    void setForComponent_idSetLater() {
+        UI ui = new UI();
+        NativeLabel otherComponent = new NativeLabel();
+        NativeLabel l = (NativeLabel) getComponent();
+        ui.add(l, otherComponent);
+        l.setFor(otherComponent);
+
+        otherComponent.setId("manually-set-id");
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals("manually-set-id", l.getFor().orElse(null));
     }
 
 }

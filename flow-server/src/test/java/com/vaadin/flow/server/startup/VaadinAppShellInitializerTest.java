@@ -29,12 +29,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.ILoggerFactory;
@@ -78,7 +78,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 public class VaadinAppShellInitializerTest {
 
     public interface InterfaceAppShellWithoutAnnotations
@@ -446,8 +446,30 @@ public class VaadinAppShellInitializerTest {
         assertTrue(thrown.getMessage()
                 .contains("Found app shell configuration annotations in non"));
         assertTrue(thrown.getMessage().contains(
-                "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
-                        + " from"));
+                "Annotation @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
+                        + " which was encountered on class"));
+        assertTrue(thrown.getMessage()
+                .contains("Please move the annotations to the class "
+                        + MyAppShellWithoutAnnotations.class.getName()
+                        + " which already implements `AppShellConfigurator`"));
+    }
+
+    @Test
+    public void should_throw_when_offendingClass_and_noAppShell()
+            throws Exception {
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class, () -> {
+                    classes.add(OffendingClass.class);
+                    initializer.process(classes, servletContext);
+                });
+        assertTrue(thrown.getMessage()
+                .contains("Found app shell configuration annotations in non"));
+        assertTrue(thrown.getMessage().contains(
+                "Annotation @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
+                        + " which was encountered on class"));
+        assertTrue(thrown.getMessage()
+                .contains("Please make " + OffendingClass.class.getName()
+                        + " implement `AppShellConfigurator`"));
     }
 
     @Test
@@ -502,7 +524,7 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(2, links.size());
-        assertEquals("/my-styles.css", links.get(0).attr("href"));
+        assertEquals("./my-styles.css", links.get(0).attr("href"));
         assertEquals("https://cdn.example.com/ui.css",
                 links.get(1).attr("href"));
     }
@@ -517,7 +539,7 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(1, links.size());
-        assertEquals("/theme-base.css", links.get(0).attr("href"));
+        assertEquals("./theme-base.css", links.get(0).attr("href"));
     }
 
     @Test
@@ -579,9 +601,9 @@ public class VaadinAppShellInitializerTest {
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(4, links.size());
         assertEquals("/trimmed.css", links.get(0).attr("href"));
-        assertEquals("/ctx/foo/bar.css", links.get(1).attr("href"));
+        assertEquals("./foo/bar.css", links.get(1).attr("href"));
         assertEquals("HTTP://cdn.Example.com/u.css", links.get(2).attr("href"));
-        assertEquals("/ctx/assets/site.css", links.get(3).attr("href"));
+        assertEquals("./assets/site.css", links.get(3).attr("href"));
     }
 
     @Test
@@ -594,7 +616,7 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(1, links.size());
-        assertEquals("/ctx/local.css", links.get(0).attr("href"));
+        assertEquals("./local.css", links.get(0).attr("href"));
     }
 
     @Test

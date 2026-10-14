@@ -37,6 +37,8 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 /**
  * Utility class for use with ErrorHandler to show HasErrorParameter view when
  * an exception happens during a RPC call outside of navigation.
+ * 
+ * @since 24.3
  */
 public final class ErrorHandlerUtil {
 

@@ -59,11 +59,11 @@ import java.util.stream.IntStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -87,7 +87,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-@NotThreadSafe
+@Isolated
 class StaticFileServerTest implements Serializable {
 
     private OverrideableStaticFileServer fileServer;

@@ -34,6 +34,7 @@ import com.vaadin.flow.signals.impl.UsageTracker.Usage;
  *
  * @param <T>
  *            the signal value type
+ * @since 25.1
  */
 public abstract class AbstractLocalSignal<T extends @Nullable Object>
         implements Signal<T> {

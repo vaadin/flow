@@ -26,6 +26,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @param <T>
  *            the transaction return value type
+ * @since 25.1
  */
 public class TransactionOperation<T extends @Nullable Object>
         extends SignalOperation<Void> {
