@@ -1826,21 +1826,22 @@ public class UI extends Component
     }
 
     /**
-     * Add component as child to modal component if one is active. Else it will
-     * be added to the UI normally.
+     * Add component as child to the most recently set component with modality,
+     * either {@link ModalityMode#STRICT} or {@link ModalityMode#VISUAL}, if
+     * there is one. Else it will be added to the UI normally.
      * <p>
      * This is meant to be used with components that are not added as part of a
-     * layout, like dialog, so that they are interactive when a modal component
-     * opens up an overlay component.
+     * layout, like dialog, so that they are interactive when a component with
+     * modality opens up an overlay component.
      *
      * @param component
      *            component to add to modal component
      * @since 23.0
      */
     public void addToModalComponent(Component component) {
-        if (hasModalComponent()) {
-            final Component activeModalComponent = getInternals()
-                    .getActiveModalComponent();
+        final Component activeModalComponent = getInternals()
+                .getActiveModalityComponent();
+        if (activeModalComponent != null) {
             if (activeModalComponent instanceof HasComponents) {
                 ((HasComponents) activeModalComponent).add(component);
             } else {

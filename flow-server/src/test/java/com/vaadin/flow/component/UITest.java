@@ -1360,6 +1360,40 @@ public class UITest {
     }
 
     @Test
+    public void addToModalComponent_strictAndVisualModalityInterleaved_addedToMostRecentlySet() {
+        final TestFixture fixture = new TestFixture();
+        Component visualComponent = new AttachableComponent();
+        fixture.ui.addToModalComponent(visualComponent);
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.VISUAL);
+
+        Component overlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(overlay);
+
+        assertEquals(Optional.of(visualComponent), overlay.getParent(),
+                "Component should have been added to the VISUAL component opened on top of the STRICT one");
+
+        Component strictComponent = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictComponent);
+        fixture.ui.setChildComponentModal(strictComponent, ModalityMode.STRICT);
+        Component strictOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictOverlay);
+        fixture.collectUiChanges();
+
+        assertEquals(Optional.of(visualComponent), strictComponent.getParent(),
+                "STRICT component should have been added to the VISUAL component");
+        assertEquals(Optional.of(strictComponent), strictOverlay.getParent(),
+                "Component should have been added to the STRICT component opened on top of the VISUAL one");
+        verifyInert(strictOverlay, false);
+
+        strictComponent.removeFromParent();
+        Component nextOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(nextOverlay);
+
+        assertEquals(Optional.of(visualComponent), nextOverlay.getParent(),
+                "Component should have been added to the VISUAL component once the STRICT one is removed");
+    }
+
+    @Test
     public void routingComponentVisible_modalComponentAdded_routingComponentInert() {
         final TestFixture fixture = new TestFixture();
 
