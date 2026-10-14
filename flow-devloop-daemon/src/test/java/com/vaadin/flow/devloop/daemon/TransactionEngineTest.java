@@ -18,6 +18,7 @@ package com.vaadin.flow.devloop.daemon;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,10 @@ class TransactionEngineTest {
     private static final String VITE_ERROR = "14.32.37 [vite] Internal server"
             + " error: Transform failed with 1 error:";
 
+    /** What a run spawned from an empty project was launched with. */
+    private static final Compile.Snapshot NOTHING = new Compile.Snapshot(
+            Map.of(), Map.of(), Map.of(), null);
+
     @Test
     void onConnectorClosed_willNotClearAConnectorARestartReplaced() {
         // The predecessor's socket closes on its own schedule, which can be
@@ -49,8 +54,8 @@ class TransactionEngineTest {
                 new PrintWriter(Writer.nullWriter()));
         Connector restarted = new Connector(
                 new PrintWriter(Writer.nullWriter()));
-        engine.onConnector(previous);
-        engine.onConnector(restarted);
+        engine.onConnector(previous, NOTHING);
+        engine.onConnector(restarted, NOTHING);
 
         engine.onConnectorClosed(previous);
 

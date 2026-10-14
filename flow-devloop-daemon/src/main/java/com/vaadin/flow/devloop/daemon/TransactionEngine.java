@@ -273,6 +273,20 @@ final class TransactionEngine {
      * than carrying stamps that describe a different build.
      */
     private Compile compileFor(Launch.Project project, Launch.Log log) {
+        return compileFor(project, log, app.launchSnapshot());
+    }
+
+    /**
+     * The compile leg for the current module set, as
+     * {@link #compileFor(Launch.Project, Launch.Log)}, with a new one seeded
+     * from the given launch snapshot rather than from the running process's.
+     *
+     * @param launched
+     *            the snapshot of the launch whose application is running, or
+     *            empty when none is
+     */
+    private Compile compileFor(Launch.Project project, Launch.Log log,
+            Optional<Compile.Snapshot> launched) {
         Compile current = compile;
         if (current != null && current.modules().equals(project.modules())) {
             return current;
@@ -293,8 +307,7 @@ final class TransactionEngine {
         // launch stamped, not from the disk as it is now. With no app running
         // there is nothing to be behind: starting it re-seeds through
         // onConnector.
-        app.launchSnapshot().ifPresentOrElse(fresh::seedFrom,
-                fresh::seedFromDisk);
+        launched.ifPresentOrElse(fresh::seedFromDisk, fresh::seedFromDisk);
         // Said once per baseline rather than per apply: "why did apply not see
         // my edit?" is answerable from daemon.log only if the folder the daemon
         // decided on is written down somewhere.
@@ -1303,7 +1316,17 @@ final class TransactionEngine {
         return true;
     }
 
-    void onConnector(Connector connector) {
+    /**
+     * Called when the in-app connector of a launch has registered.
+     *
+     * @param connector
+     *            the registered connector, or {@code null} to clear it
+     * @param launched
+     *            what the registering launch was spawned with - taken from its
+     *            own run, since the current one can already be gone or replaced
+     *            by the time this is handled
+     */
+    void onConnector(Connector connector, Compile.Snapshot launched) {
         this.connector = connector;
         if (connector == null) {
             return;
@@ -1327,8 +1350,9 @@ final class TransactionEngine {
             // Seeded by compileFor as it is built, from the same launch
             // snapshot the seed below would use.
             if (launch != null) {
-                launch.projectIfResolved().ifPresent(
-                        project -> compileFor(project, launch.log()));
+                launch.projectIfResolved()
+                        .ifPresent(project -> compileFor(project, launch.log(),
+                                Optional.of(launched)));
             }
             return;
         }
@@ -1339,8 +1363,7 @@ final class TransactionEngine {
         // started with. That holds for the frontend too: an edit made while
         // the app was starting is reported, at the price of one restart more
         // when a bundle had already folded it in.
-        app.launchSnapshot().ifPresentOrElse(current::seedFrom,
-                current::seedFromDisk);
+        current.seedFromDisk(launched);
     }
 
     /**

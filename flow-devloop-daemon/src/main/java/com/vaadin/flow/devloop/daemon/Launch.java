@@ -137,7 +137,7 @@ final class Launch {
     private volatile boolean classpathUnusable;
 
     /**
-     * The resolved build the running app was actually launched with.
+     * The classpath the running app was actually launched with.
      * <p>
      * A JVM's class path is fixed for its lifetime, so this is the only way to
      * answer "is the running app still the app the poms describe?". Editing a
@@ -146,7 +146,7 @@ final class Launch {
      * scan finds nothing and the apply used to report "no changes" over an app
      * running a classpath that no longer exists on paper.
      */
-    private final AtomicReference<Project> launchedProject = new AtomicReference<>();
+    private volatile String launchedClasspath;
 
     /** How many times Maven has actually been run, so a caller can tell. */
     private final AtomicLong resolutions = new AtomicLong();
@@ -418,11 +418,10 @@ final class Launch {
      * indistinguishable from the daemon deciding to restart on a whim.
      */
     Optional<String> classpathDrift() {
-        Project launchedWith = launchedProject.get();
-        if (launchedWith == null) {
+        String launched = launchedClasspath;
+        if (launched == null) {
             return Optional.empty();
         }
-        String launched = launchedWith.appClasspath();
         String current = project().appClasspath();
         Set<String> before = new LinkedHashSet<>(split(launched));
         Set<String> after = new LinkedHashSet<>(split(current));
@@ -1209,7 +1208,7 @@ final class Launch {
         // recorded even for a runtime that is never handed a classpath,
         // because the question it answers - is the running app still the app
         // the poms describe? - is the same either way.
-        launchedProject.set(resolved);
+        launchedClasspath = resolved.appClasspath();
         return new Composed(invocation, resolved);
     }
 

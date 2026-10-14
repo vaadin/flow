@@ -250,9 +250,12 @@ final class Compile {
      *            the tracked resources, by path
      * @param frontend
      *            the tracked frontend files, by path
+     * @param frontendRoot
+     *            the frontend folder those were walked under, or {@code null}
+     *            when the launch found none
      */
     record Snapshot(Map<Path, Stamp> sources, Map<Path, Stamp> resources,
-            Map<Path, Stamp> frontend) {
+            Map<Path, Stamp> frontend, Path frontendRoot) {
 
         /**
          * Stamps the files a launch of this project reads.
@@ -274,10 +277,12 @@ final class Compile {
             forEachResource(modules,
                     (module, file, stamp) -> resources.put(file, stamp));
             Map<Path, Stamp> frontendFiles = new java.util.HashMap<>();
-            frontend.root().ifPresent(root -> forEachFrontendFile(frontend,
-                    root, frontendFiles::put));
+            Path frontendRoot = frontend.root().orElse(null);
+            if (frontendRoot != null) {
+                forEachFrontendFile(frontend, frontendRoot, frontendFiles::put);
+            }
             return new Snapshot(Map.copyOf(sources), Map.copyOf(resources),
-                    Map.copyOf(frontendFiles));
+                    Map.copyOf(frontendFiles), frontendRoot);
         }
     }
 
@@ -659,8 +664,9 @@ final class Compile {
      * behind and the file goes on being served, and the config goes on being
      * loaded, until the next full Maven build.
      * <p>
-     * The fingerprint map is seeded at daemon start, so a first apply with
-     * nothing edited is still quiet.
+     * The fingerprint map is seeded from what each launch stamped, so a first
+     * apply with nothing edited since is still quiet - and one with a resource
+     * edited after the launch, however soon after, reports it.
      */
     ResourceChanges staleResources() {
         List<Path> live = new ArrayList<>();
@@ -781,8 +787,8 @@ final class Compile {
      * <p>
      * Only ever called for {@link ResourceKind#LIVE} files. A startup-only
      * resource goes live when the application restarts, and
-     * {@link #seedFrom(Snapshot)}, from the stamps that launch took, is what
-     * records that.
+     * {@link #seedFromDisk(Snapshot)}, from the stamps that launch took, is
+     * what records that.
      * <p>
      * A file whose bytes cannot be read is still recorded, with no digest, for
      * the reason {@link #seedResources(Map)} gives: the key is the inventory a
@@ -803,8 +809,8 @@ final class Compile {
      * reason {@link #markResourcesNotified} is: the classpath is what a live
      * resource is read from, so removing the copy is the whole of the change. A
      * startup-only deletion stays in the inventory until the application
-     * restarts and {@link #seedFrom(Snapshot)} clears it, because until then
-     * the running JVM is still holding what the file used to say.
+     * restarts and {@link #seedFromDisk(Snapshot)} clears it, because until
+     * then the running JVM is still holding what the file used to say.
      */
     void forgetResources(List<Path> resources) {
         resources.forEach(notified::remove);
@@ -814,7 +820,7 @@ final class Compile {
      * Seeds the fingerprints of the resources the running application was
      * launched with.
      * <p>
-     * The same bound {@link #seedFrom(Snapshot)} puts on sources, and for a
+     * The same bound {@link #seedFromDisk(Snapshot)} puts on sources, and for a
      * sharper reason: a startup-only resource has no other way back into a
      * change-set. The re-resolve that rebuilds the baseline after a pom edit
      * has also copied the file onto the classpath, so its copy is current, and
@@ -913,18 +919,28 @@ final class Compile {
      * is built would swallow an edit made since the launch, and the very first
      * apply after a cold daemon would answer "no changes" to the change it was
      * asked about.
+     * <p>
+     * That holds only for a launch that walked the folder this baseline
+     * watches. The two resolve it separately, and this one caches its answer:
+     * built before a first build wrote {@code flow-build-info.json}, it can
+     * have settled on the convention folder where the launch found a configured
+     * one. Its files are then none of the launch's, and every one of them would
+     * be reported - a bundled one by restarting the app. Such a baseline is
+     * taken from the disk instead, which is no worse than it was before
+     * launches were stamped at all.
      *
      * @param launched
-     *            the frontend files the application was launched with, and
-     *            their stamps then
+     *            what the application was launched with
      */
-    private void seedFrontend(Map<Path, Stamp> launched) {
+    private void seedFrontend(Snapshot launched) {
         frontendNotified.clear();
-        frontend.root().ifPresent(root -> launched.forEach((file, stamp) -> {
-            if (file.startsWith(root)) {
-                frontendNotified.put(file, stamp);
+        frontend.root().ifPresent(root -> {
+            if (root.equals(launched.frontendRoot())) {
+                frontendNotified.putAll(launched.frontend());
+            } else {
+                forEachFrontendFile(frontend, root, frontendNotified::put);
             }
-        }));
+        });
     }
 
     /**
@@ -1213,9 +1229,10 @@ final class Compile {
      * this differs from a live resource and matches a startup-only one: a class
      * the JVM has loaded stays loaded whatever happens to the file, so the
      * deletion goes on being reported until the application restarts and
-     * {@link #seedFrom(Snapshot)} records what that launch found. The inventory
-     * also bounds this - a source created and deleted without a restart in
-     * between was never seeded, so its artifact is left for the next build.
+     * {@link #seedFromDisk(Snapshot)} records what that launch found. The
+     * inventory also bounds this - a source created and deleted without a
+     * restart in between was never seeded, so its artifact is left for the next
+     * build.
      */
     Changes stale() {
         List<Path> modified = new ArrayList<>();
@@ -1408,14 +1425,17 @@ final class Compile {
     /**
      * Declares everything on disk to be live, which is true of an application
      * launched from the disk as it is now - and the right baseline when none is
-     * running, as the launch that starts one seeds its own.
+     * running, as the launch that starts one seeds its own. Use
+     * {@link #seedFromDisk(Snapshot)} for one that is running.
      */
     void seedFromDisk() {
-        seedFrom(Snapshot.of(modules, frontend));
+        seedFromDisk(Snapshot.of(modules, frontend));
     }
 
     /**
-     * Declares what the application was launched with to be live.
+     * Declares what the application was launched with to be live: the disk as
+     * it was when the launch stamped it, where {@link #seedFromDisk()} takes it
+     * as it is now.
      * <p>
      * Only that, whenever this baseline happens to be taken - and it can be
      * taken late: the compile leg is built lazily, and a registration is
@@ -1433,7 +1453,7 @@ final class Compile {
      * @param launched
      *            the stamps taken when the application was launched
      */
-    void seedFrom(Snapshot launched) {
+    void seedFromDisk(Snapshot launched) {
         seedClasses();
         applied.clear();
         launched.sources().forEach((source, stamp) -> {
@@ -1447,7 +1467,7 @@ final class Compile {
         // this runs again. Without it the same file would be offered after the
         // restart that already folded it into the bundle, and would restart the
         // app for ever.
-        seedFrontend(launched.frontend());
+        seedFrontend(launched);
     }
 
     /**

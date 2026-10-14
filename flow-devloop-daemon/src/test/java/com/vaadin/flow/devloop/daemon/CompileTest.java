@@ -576,13 +576,40 @@ class CompileTest {
         Path removed = repo.resolve("app/src/main/frontend/views/removed.ts");
         Files.delete(removed);
 
-        compile.seedFrom(launched);
+        compile.seedFromDisk(launched);
 
         Compile.FrontendChanges changes = compile.staleFrontend();
         assertEquals(
                 List.of(repo.resolve("app/src/main/frontend/views/main.ts")),
                 changes.modified());
         assertEquals(List.of(removed), changes.deleted());
+    }
+
+    @Test
+    void staleFrontend_launchUnderAnotherFolder_seedsFromDisk()
+            throws IOException {
+        // The baseline settled on the convention folder before a build wrote
+        // the build-info token; the launch then walked the folder the token
+        // names. None of the launch's files are this baseline's, and taking
+        // its stamps would report every file here - restarting the app for a
+        // bundled one.
+        Compile compile = withFrontend("views/main.ts");
+        assertEquals(repo.resolve("app/src/main/frontend"),
+                compile.frontend().root().orElseThrow());
+        Path custom = repo.resolve("app/custom-frontend");
+        write("app/custom-frontend/views/other.ts", "export {};");
+        Path config = repo.resolve("app/target/classes/META-INF/VAADIN/config");
+        Files.createDirectories(config);
+        Files.writeString(config.resolve("flow-build-info.json"),
+                "{ \"frontendFolder\" : \"" + Json.escape(custom.toString())
+                        + "\" }");
+        Compile.Snapshot launched = Compile.Snapshot
+                .of(project(Reactor.Module.of(repo.resolve("app"), "app")));
+        assertEquals(custom, launched.frontendRoot());
+
+        compile.seedFromDisk(launched);
+
+        assertTrue(compile.staleFrontend().isEmpty());
     }
 
     @Test
@@ -826,7 +853,7 @@ class CompileTest {
         compile.copyResources(List.of(config));
         touch("app/target/classes/application.properties");
 
-        compile.seedFrom(launched);
+        compile.seedFromDisk(launched);
 
         Compile.ResourceChanges changes = compile.staleResources();
         assertEquals(List.of(config), changes.startup().modified());
@@ -854,7 +881,7 @@ class CompileTest {
         Files.setLastModifiedTime(config, FileTime
                 .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
 
-        compile.seedFrom(Compile.Snapshot.of(project));
+        compile.seedFromDisk(Compile.Snapshot.of(project));
 
         assertTrue(compile.staleResources().startup().isEmpty());
     }
@@ -877,7 +904,7 @@ class CompileTest {
                 FileTime.fromMillis(System.currentTimeMillis() + 30_000L));
         compile.copyResources(List.of(config));
 
-        compile.seedFrom(Compile.Snapshot.of(project));
+        compile.seedFromDisk(Compile.Snapshot.of(project));
 
         assertTrue(compile.staleResources().startup().isEmpty());
     }
@@ -897,7 +924,7 @@ class CompileTest {
         compile.compile(List.of(main), project);
         Files.setLastModifiedTime(main, FileTime
                 .fromMillis(System.currentTimeMillis() + 5 * 3_600_000L));
-        compile.seedFrom(Compile.Snapshot.of(project));
+        compile.seedFromDisk(Compile.Snapshot.of(project));
 
         assertTrue(compile.stale().isEmpty());
 
@@ -925,7 +952,7 @@ class CompileTest {
         compile.compile(List.of(main), project);
         long dated = System.currentTimeMillis() + 60_500;
         Files.setLastModifiedTime(main, FileTime.fromMillis(dated));
-        compile.seedFrom(Compile.Snapshot.of(project));
+        compile.seedFromDisk(Compile.Snapshot.of(project));
         long withinSkew = dated - 60_000;
         assumeTrue(System.currentTimeMillis() < withinSkew,
                 "seeded while the source was still capped");
@@ -958,7 +985,7 @@ class CompileTest {
                 """);
         compile.compile(List.of(main), project);
 
-        compile.seedFrom(launched);
+        compile.seedFromDisk(launched);
 
         assertEquals(List.of(main), compile.stale().modified());
     }
@@ -978,7 +1005,7 @@ class CompileTest {
         Compile.Snapshot launched = Compile.Snapshot.of(project);
         Files.delete(main);
 
-        compile.seedFrom(launched);
+        compile.seedFromDisk(launched);
 
         assertEquals(List.of(main), compile.stale().deleted());
     }
@@ -1002,7 +1029,7 @@ class CompileTest {
         Compile.Snapshot launched = Compile.Snapshot.of(withLib);
         Compile compile = new Compile(project(app));
 
-        compile.seedFrom(launched);
+        compile.seedFromDisk(launched);
 
         assertTrue(compile.stale().isEmpty());
     }
@@ -1055,7 +1082,7 @@ class CompileTest {
         touch("app/src/main/resources/application.properties");
         compile.copyResources(List.of(config));
 
-        compile.seedFrom(launched);
+        compile.seedFromDisk(launched);
         Files.delete(config);
 
         assertEquals(List.of(config),
