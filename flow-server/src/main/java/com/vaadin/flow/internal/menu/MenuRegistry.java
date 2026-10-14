@@ -102,7 +102,9 @@ public class MenuRegistry {
         }
     }
 
-    private static final Set<Class<?>> unresolvableRouteParents = ConcurrentHashMap
+    // Class names rather than classes, so that a reloaded application does not
+    // keep its class loader reachable from here
+    private static final Set<String> unresolvableRouteParents = ConcurrentHashMap
             .newKeySet();
 
     private static final ObjectMapper mapper = JsonMapper.builder()
@@ -346,7 +348,7 @@ public class MenuRegistry {
             // failing the whole menu. The failure can just as well be a bug in
             // the resolver, so warn about it, but only once per target as the
             // menu is built over and over again.
-            if (unresolvableRouteParents.add(navigationTarget)) {
+            if (unresolvableRouteParents.add(navigationTarget.getName())) {
                 LoggerFactory.getLogger(MenuRegistry.class).warn(
                         "Failed to resolve the route parent of {} without "
                                 + "route parameters, showing it as a root "
