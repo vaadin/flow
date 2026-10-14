@@ -131,6 +131,18 @@ class UIMemoryFootprintTest {
                 UIMemoryFootprintTest::addRows);
     }
 
+    @Test
+    void uiWith200ComponentRowsAddedInLatestRoundTrip() throws IOException {
+        measure("ui-with-200-component-rows-added-in-latest-round-trip",
+                "UI with 200 component rows added in the latest round trip",
+                "The UI with 200 component rows, with the rows added in the"
+                        + " latest round trip, as when navigating to a view,"
+                        + " so that the response kept for resending holds"
+                        + " all of them.",
+                ui -> {
+                }, UIMemoryFootprintTest::addRows);
+    }
+
     private static void addRows(UI ui) {
         Div list = new Div();
         for (int i = 0; i < 200; i++) {
@@ -165,12 +177,28 @@ class UIMemoryFootprintTest {
      */
     private void measure(String id, String title, String description,
             Consumer<UI> view) throws IOException {
-        UI first = open(view);
+        // The response kept for resending is the one of the latest round
+        // trip, which is usually a small update rather than the first render
+        measure(id, title, description, view,
+                ui -> ui.getElement().setAttribute("data-round-trip", "1"));
+    }
+
+    /**
+     * Like {@link #measure(String, String, String, Consumer)}, with the given
+     * change to the UI in the latest round trip.
+     *
+     * @param update
+     *            changes the UI in the latest round trip, whose response is the
+     *            one kept for resending
+     */
+    private void measure(String id, String title, String description,
+            Consumer<UI> view, Consumer<UI> update) throws IOException {
+        UI first = open(view, update);
         long serializedSize = serializedSize(session);
         // Opening and serializing a UI fills caches shared by all UIs, such
         // as the reflection data of classes, so they are filled before
         // measuring the UI opened after this one
-        UI second = open(view);
+        UI second = open(view, update);
         serializedSize(session);
         // Walking the graph fills the reflection data of the classes it
         // walks, so the graph is walked once before measuring it
@@ -179,7 +207,7 @@ class UIMemoryFootprintTest {
         // address and would be thrown off by a garbage collection in between
         GraphLayout before = GraphLayout.parseInstance(session, first, second);
 
-        UI third = open(view);
+        UI third = open(view, update);
         GraphLayout after = GraphLayout.parseInstance(session, first, second,
                 third);
 
@@ -206,15 +234,13 @@ class UIMemoryFootprintTest {
         Files.writeString(file, report.toPrettyString());
     }
 
-    private UI open(Consumer<UI> view) {
+    private UI open(Consumer<UI> view, Consumer<UI> update) {
         MockUI ui = new MockUI(session);
         ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "ROOT");
         session.addUI(ui);
         view.accept(ui);
         respond(ui);
-        // The response kept for resending is the one of the latest round
-        // trip, which is usually a small update rather than the first render
-        ui.getElement().setAttribute("data-round-trip", "1");
+        update.accept(ui);
         respond(ui);
         return ui;
     }
