@@ -388,7 +388,8 @@ class MenuRegistryTest {
 
     @Test
     void testWithLoggedInUser_userHasRoles() throws IOException {
-        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        Principal principal = mock(Principal.class);
+        when(request.getUserPrincipal()).thenReturn(principal);
         when(request.isUserInRole(anyString())).thenReturn(true);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
@@ -415,7 +416,8 @@ class MenuRegistryTest {
 
     @Test
     void testWithLoggedInUser_noMatchingRoles() throws IOException {
-        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        Principal principal = mock(Principal.class);
+        when(request.getUserPrincipal()).thenReturn(principal);
         when(request.isUserInRole(anyString())).thenReturn(false);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
