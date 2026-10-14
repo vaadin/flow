@@ -740,7 +740,10 @@ class CompileTest {
         compile.seedResources();
 
         // The edit, and the copy something other than the apply made of it.
+        // The edit keeps the length, so the stamp only sees it once the
+        // modification time has moved.
         Files.writeString(config, "server.port=9090");
+        touch("app/src/main/resources/application.properties");
         compile.copyResources(List.of(config));
 
         assertEquals(List.of(config),
