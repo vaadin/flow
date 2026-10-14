@@ -285,7 +285,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                     contentLength);
             return;
         }
-        String contentType = response.getContentType();
+        String responseContentType = response.getContentType();
         ClientOutputStream clientOutput = new ClientOutputStream(outputStream);
         boolean wholeContent = ranges.size() == 1
                 && ranges.get(0).getFirst() == 0
@@ -329,7 +329,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 response.setHeader("Content-Range", null);
                 response.setHeader("Transfer-Encoding", null);
                 response.setHeader("ETag", null);
-                response.setContentType(contentType);
+                response.setContentType(responseContentType);
                 response.setContentLengthLong(0);
             }
             // Listeners only see a range that covers the whole content
