@@ -1711,13 +1711,7 @@ public class UIInternals implements Serializable {
      * @since 25.4
      */
     public boolean enterNavigation() {
-        boolean outermost = navigationDepth++ == 0;
-        if (outermost) {
-            // A failure recorded outside a tracked navigation, such as when a
-            // postponed navigation proceeds, must not leak into this one
-            navigationFailure = null;
-        }
-        return outermost;
+        return navigationDepth++ == 0;
     }
 
     /**
