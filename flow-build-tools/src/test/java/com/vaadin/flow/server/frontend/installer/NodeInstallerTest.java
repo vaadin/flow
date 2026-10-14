@@ -34,6 +34,8 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -191,10 +193,11 @@ class NodeInstallerTest {
         });
     }
 
-    @Test
-    void installDefaultVersionFromMirror_archiveNotMatchingShippedChecksum_installFails()
-            throws IOException {
-        Platform platform = Platform.guess();
+    @ParameterizedTest(name = "musl: {0}")
+    @ValueSource(booleans = { false, true })
+    void installDefaultVersionFromMirror_archiveNotMatchingShippedChecksum_installFails(
+            boolean musl) throws IOException {
+        Platform platform = musl ? guessMuslPlatform() : Platform.guess();
         File archive = createDownloadableNodeArchive(platform,
                 nodeArchivePrefix(platform));
         URI mirror = URI.create("https://mirror.example/dist/");
@@ -217,6 +220,18 @@ class NodeInstallerTest {
                 InstallationException.class, nodeInstaller::install);
         assertTrue(exception.getMessage().contains("vaadin.node.folder"),
                 exception.getMessage());
+    }
+
+    private static Platform guessMuslPlatform() {
+        Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
+        try (MockedStatic<Platform.OS> os = Mockito
+                .mockStatic(Platform.OS.class);
+                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+            os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
+            files.when(() -> Files.exists(alpineReleaseFilePath))
+                    .thenReturn(true);
+            return Platform.guess();
+        }
     }
 
     private static String nodeArchivePrefix(Platform platform) {

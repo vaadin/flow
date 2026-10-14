@@ -522,7 +522,7 @@ public class NodeInstaller {
             if (shippedChecksum && !archiveSHA256.equals(archiveTargetSHA256)) {
                 throw new InstallationException(String.format(
                         "The Node.js archive downloaded from %s does not match the checksum shipped with Vaadin for %s: expected SHA256 [%s], got [%s]. "
-                                + "Only the official Node.js archives are installed. To use a custom Node.js build, install it separately and point to its folder with the '%s' property.",
+                                + "Only the Node.js archives published by nodejs.org and its unofficial-builds are installed. To use a custom Node.js build, install it separately and point to its folder with the '%s' property.",
                         nodeDownloadRoot, archive.getName(),
                         archiveTargetSHA256, archiveSHA256,
                         Constants.VAADIN_PREFIX + InitParameters.NODE_FOLDER));
