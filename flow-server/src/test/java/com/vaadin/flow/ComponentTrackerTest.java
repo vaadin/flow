@@ -1,17 +1,10 @@
 /*
- * Copyright 2000-2024 Vaadin Ltd.
+ * Copyright (C) 2000-2026 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow;
 
@@ -70,11 +63,11 @@ public class ComponentTrackerTest {
         c2 = new Component1();
 
         ComponentTracker.Location c1Location = ComponentTracker.findCreate(c1);
-        Assert.assertEquals(68, c1Location.lineNumber());
+        Assert.assertEquals(61, c1Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c1Location.className());
 
         ComponentTracker.Location c2Location = ComponentTracker.findCreate(c2);
-        Assert.assertEquals(70, c2Location.lineNumber());
+        Assert.assertEquals(63, c2Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c2Location.className());
     }
 
@@ -87,13 +80,13 @@ public class ComponentTrackerTest {
         Layout layout = new Layout(c1);
 
         ComponentTracker.Location c1Location = ComponentTracker.findAttach(c1);
-        Assert.assertEquals(87, c1Location.lineNumber());
+        Assert.assertEquals(80, c1Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c1Location.className());
 
         layout.add(c2);
 
         ComponentTracker.Location c2Location = ComponentTracker.findAttach(c2);
-        Assert.assertEquals(93, c2Location.lineNumber());
+        Assert.assertEquals(86, c2Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c2Location.className());
 
         // Last attach is tracked
@@ -102,7 +95,7 @@ public class ComponentTrackerTest {
         layout.add(c3);
 
         ComponentTracker.Location c3Location = ComponentTracker.findAttach(c3);
-        Assert.assertEquals(102, c3Location.lineNumber());
+        Assert.assertEquals(95, c3Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c3Location.className());
     }
 
@@ -113,19 +106,19 @@ public class ComponentTrackerTest {
         Component c3 = new Component1();
 
         ComponentTracker.Location c1Location = ComponentTracker.findCreate(c1);
-        Assert.assertEquals(111, c1Location.lineNumber());
+        Assert.assertEquals(104, c1Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c1Location.className());
 
         ComponentTracker.refreshLocation(c1Location, 3);
 
         ComponentTracker.Location c2Location = ComponentTracker.findCreate(c2);
-        Assert.assertEquals(112 + 3, c2Location.lineNumber());
+        Assert.assertEquals(105 + 3, c2Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c2Location.className());
 
         ComponentTracker.refreshLocation(c2Location, 1);
 
         ComponentTracker.Location c3Location = ComponentTracker.findCreate(c3);
-        Assert.assertEquals(113 + 3 + 1, c3Location.lineNumber());
+        Assert.assertEquals(106 + 3 + 1, c3Location.lineNumber());
         Assert.assertEquals(getClass().getName(), c3Location.className());
     }
 
