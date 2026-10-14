@@ -51,6 +51,9 @@ class VaadinQuarkusProcessorTest {
         // silently fall back to long polling
         assertEquals(QuarkusJSR356AsyncSupport.class.getName(), servlet
                 .getInitParams().get(ApplicationConfig.PROPERTY_COMET_SUPPORT));
+        // Not loaded on startup by the servlet container, but by the
+        // extension once Atmosphere is initialized
+        assertEquals(0, servlet.getLoadOnStartup());
         assertEquals(1, vaadinServlets.size());
         assertEquals(servlet.getName(), vaadinServlets.get(0).getServletName());
         assertEquals(1, vaadinServlets.get(0).getLoadOnStartup());
