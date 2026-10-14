@@ -41,6 +41,8 @@ import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.Platform;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.frontendtools.installer.ArchiveExtractionException;
 import com.vaadin.frontendtools.installer.ArchiveExtractor;
 import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
@@ -67,13 +69,6 @@ public class NodeInstaller {
 
     private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
     public static final String ACCEPT_MISSING_SHA = "vaadin.node.download.acceptMissingSHA";
-    /**
-     * System property that makes the default Node.js version be verified
-     * against the {@value #SHA_SUMS_FILE} served by the download root instead
-     * of the checksums shipped with Flow, for download roots serving their own
-     * builds of the default version.
-     */
-    public static final String USE_DOWNLOAD_ROOT_SHA = "vaadin.node.download.useDownloadRootSHA";
     public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
     public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
 
@@ -508,10 +503,8 @@ public class NodeInstaller {
 
             // Checksums shipped with Flow are trusted over the ones served by
             // the download root, so a mirror can't swap the default version
-            String archiveTargetSHA256 = Boolean
-                    .getBoolean(USE_DOWNLOAD_ROOT_SHA) ? null
-                            : DefaultNodeChecksums.CHECKSUMS
-                                    .get(archive.getName());
+            String archiveTargetSHA256 = DefaultNodeChecksums.CHECKSUMS
+                    .get(archive.getName());
             boolean shippedChecksum = archiveTargetSHA256 != null;
             if (!shippedChecksum) {
                 archiveTargetSHA256 = downloadChecksum(shaSumsURL, archive);
@@ -526,10 +519,10 @@ public class NodeInstaller {
             if (shippedChecksum && !archiveSHA256.equals(archiveTargetSHA256)) {
                 throw new InstallationException(String.format(
                         "The Node.js archive downloaded from %s does not match the checksum shipped with Vaadin for %s: expected SHA256 [%s], got [%s]. "
-                                + "If the download root intentionally serves its own build of this version, set the system property '%s' to verify it against the %s of the download root instead.",
+                                + "Only the official Node.js archives are installed. To use a custom Node.js build, install it separately and point to its folder with the '%s' property.",
                         nodeDownloadRoot, archive.getName(),
                         archiveTargetSHA256, archiveSHA256,
-                        USE_DOWNLOAD_ROOT_SHA, SHA_SUMS_FILE));
+                        Constants.VAADIN_PREFIX + InitParameters.NODE_FOLDER));
             }
             if (!archiveSHA256.equals(archiveTargetSHA256)) {
                 getLogger().error(
