@@ -96,7 +96,11 @@ class ClientCallableHandlersTest {
     }
 
     @Test
-    void componentsOfSameClass_eachHaveHandlerWithUpdateMode() {
+    void secondComponentOfSameClass_getsCachedHandlerWithUpdateMode() {
+        // The handlers are cached per component class: the first component
+        // fills the cache and the second one is served from it. Both must get
+        // the handler and its update mode. ALWAYS is used since the default
+        // ONLY_WHEN_ENABLED would pass even if the mode was not cached.
         UI ui = new UI();
         ComponentWithEventHandlerEnabledWhenDisabled first = new ComponentWithEventHandlerEnabledWhenDisabled();
         ComponentWithEventHandlerEnabledWhenDisabled second = new ComponentWithEventHandlerEnabledWhenDisabled();
