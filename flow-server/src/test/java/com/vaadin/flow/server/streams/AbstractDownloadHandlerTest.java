@@ -554,5 +554,7 @@ class AbstractDownloadHandlerTest {
         handler.withContentType("text/vtt");
 
         assertEquals("text/vtt", handler.getContentType());
+        assertEquals("text/vtt",
+                handler.resolveContentType("captions.bin", response));
     }
 }

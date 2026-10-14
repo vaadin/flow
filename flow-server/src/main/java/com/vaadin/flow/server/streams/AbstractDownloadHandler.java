@@ -62,6 +62,22 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
                 transferEvent.getContentLength(), transferEvent.getException());
     }
 
+    /**
+     * Gets the MIME type that the servlet container maps to the given file
+     * name, or <code>application/octet-stream</code> when it maps none.
+     * <p>
+     * Unlike {@link #getContentType()}, this ignores the type set with
+     * {@link #withContentType(String)}. Override it to change how the type is
+     * derived from the file name; to serve the content with the configured type
+     * when there is one, call
+     * {@link #resolveContentType(String, VaadinResponse)} instead.
+     *
+     * @param fileName
+     *            the name of the file to look up the type for
+     * @param response
+     *            the response, which gives access to the servlet container
+     * @return the MIME type for the file name, not <code>null</code>
+     */
     protected String getContentType(String fileName, VaadinResponse response) {
         return Optional.ofNullable(response.getService().getMimeType(fileName))
                 .orElse("application/octet-stream");
@@ -93,6 +109,11 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
 
     /**
      * Gets the MIME type set with {@link #withContentType(String)}.
+     * <p>
+     * Unlike {@link #getContentType(String, VaadinResponse)}, this does not
+     * look up a type for the file name. Use
+     * {@link #resolveContentType(String, VaadinResponse)} for the type that the
+     * content is served with.
      *
      * @return the MIME type that the content is served with, or
      *         <code>null</code> if it is taken from the file name
@@ -105,8 +126,18 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * Resolves the MIME type that the content is served with: the one set with
      * {@link #withContentType(String)}, or else the one that
      * {@link #getContentType(String, VaadinResponse)} gives for the file name.
+     * The built-in handlers serve their content with this type, and a subclass
+     * that sets the content type of its own response should do the same.
+     *
+     * @param fileName
+     *            the name of the file to look up the type for when none is set
+     * @param response
+     *            the response, which gives access to the servlet container
+     * @return the MIME type that the content is served with, not
+     *         <code>null</code>
      */
-    final String resolveContentType(String fileName, VaadinResponse response) {
+    protected final String resolveContentType(String fileName,
+            VaadinResponse response) {
         return contentType != null ? contentType
                 : getContentType(fileName, response);
     }
