@@ -11,9 +11,13 @@ package com.vaadin.flow.server.frontend.installer;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -138,5 +142,72 @@ public class NodeInstallerTest {
         Assert.assertFalse(
                 "old style node_modules files should have been removed",
                 oldGarbage.exists());
+    }
+
+    @Test
+    public void defaultNodeChecksums_coverDefaultVersionOnSupportedPlatforms() {
+        String version = FrontendTools.DEFAULT_NODE_VERSION;
+        Map<String, Map<String, String>> archives = Map.of(
+                "darwin-arm64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "darwin-x64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-arm64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-x64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS, "win-arm64.zip",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS, "win-x64.zip",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-arm64-musl.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.UNOFFICIAL_CHECKSUMS,
+                "linux-x64-musl.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.UNOFFICIAL_CHECKSUMS);
+        archives.forEach((archive, checksums) -> {
+            String name = "node-" + version + "-" + archive;
+            Assert.assertTrue("No checksum for " + name
+                    + ". Run scripts/updateNodeChecksums.sh after changing DEFAULT_NODE_VERSION",
+                    checksums.containsKey(name));
+        });
+    }
+
+    @Test
+    public void installDefaultVersionFromMirror_archiveNotMatchingShippedChecksum_installFails()
+            throws IOException {
+        assertInstallFromMirrorFails(Platform.guess());
+    }
+
+    @Test
+    public void installDefaultVersionFromMirrorOnMusl_archiveNotMatchingShippedChecksum_installFails()
+            throws IOException {
+        assertInstallFromMirrorFails(
+                new Platform(NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT,
+                        Platform.OS.LINUX, Platform.Architecture.X64, "musl"));
+    }
+
+    private void assertInstallFromMirrorFails(Platform platform)
+            throws IOException {
+        File archive = tmpDir.newFile("modified-node-archive");
+        Files.write(archive.toPath(),
+                "not the official archive".getBytes(StandardCharsets.UTF_8));
+        URI mirror = URI.create("https://mirror.example/dist/");
+        FileDownloader downloader = (uri, destination, userName, password,
+                progressListener) -> {
+            try {
+                Files.copy(archive.toPath(), destination.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new DownloadException("Could not download " + uri, e);
+            }
+        };
+        NodeInstaller nodeInstaller = new NodeInstaller(
+                new File(baseDir, "installation"), platform,
+                new DefaultArchiveExtractor(), downloader)
+                .setNodeDownloadRoot(mirror)
+                .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION);
+
+        InstallationException exception = Assert.assertThrows(
+                InstallationException.class, nodeInstaller::install);
+        Assert.assertTrue(exception.getMessage(), exception.getMessage()
+                .contains("does not match the checksum shipped with Vaadin"));
     }
 }
