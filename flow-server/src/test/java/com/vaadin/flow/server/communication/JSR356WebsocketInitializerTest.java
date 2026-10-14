@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.server.VaadinServlet;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -49,6 +49,14 @@ class JSR356WebsocketInitializerTest {
 
         new JSR356WebsocketInitializer().init(context);
 
-        verify(context, never()).setAttribute(anyString(), any());
+        // Initializing Atmosphere for a Vaadin servlet stores the created
+        // AtmosphereFramework in this context attribute, and
+        // PushRequestHandler picks it up from there instead of creating its
+        // own. The attribute never being set is therefore the observable sign
+        // that the listener left Atmosphere uninitialized, so that the
+        // integration that set the skip attribute can initialize it later.
+        verify(context, never()).setAttribute(
+                eq(JSR356WebsocketInitializer.getAttributeName("vaadin")),
+                any());
     }
 }
