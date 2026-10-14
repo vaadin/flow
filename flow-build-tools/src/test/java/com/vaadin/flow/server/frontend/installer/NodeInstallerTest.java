@@ -199,14 +199,48 @@ class NodeInstallerTest {
         NodeInstaller nodeInstaller = mirrorInstaller(platform, targetDir,
                 downloads).setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION);
 
-        assertThrows(InstallationException.class, nodeInstaller::install);
+        InstallationException exception = assertThrows(
+                InstallationException.class, nodeInstaller::install);
+        assertTrue(
+                exception.getMessage()
+                        .contains(NodeInstaller.USE_DOWNLOAD_ROOT_SHA),
+                "The failure should point to the opt-out property: "
+                        + exception.getMessage());
         assertFalse(new File(targetDir, archive.getName()).exists(),
                 "The rejected archive should have been removed");
+        assertEquals(
+                List.of(URI.create("https://mirror.example/dist/"
+                        + FrontendTools.DEFAULT_NODE_VERSION + "/"
+                        + archive.getName())),
+                downloads,
+                "The archive should be downloaded once without retries and the checksums of the default version should not be downloaded");
+    }
+
+    @Test
+    void installDefaultVersionFromMirror_useDownloadRootSha_archiveMatchesDownloadedChecksum_nodeIsInstalled()
+            throws IOException, InstallationException {
+        Platform platform = Platform.guess();
+        File archive = createDownloadableNodeArchive(platform,
+                nodeArchivePrefix(platform));
+        writeShaSums(FrontendTools.DEFAULT_NODE_VERSION, archive);
+        File targetDir = new File(baseDir, "installation");
+
+        System.setProperty(NodeInstaller.USE_DOWNLOAD_ROOT_SHA, "true");
+        try {
+            mirrorInstaller(platform, targetDir, new ArrayList<>())
+                    .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                    .install();
+        } finally {
+            System.clearProperty(NodeInstaller.USE_DOWNLOAD_ROOT_SHA);
+        }
+
+        String nodeExec = platform.isWindows() ? "node.exe" : "bin/node";
         assertTrue(
-                downloads.stream()
-                        .noneMatch(uri -> uri.getPath()
-                                .endsWith(NodeInstaller.SHA_SUMS_FILE)),
-                "Checksums of the default version should not be downloaded");
+                new File(targetDir,
+                        "node-" + FrontendTools.DEFAULT_NODE_VERSION + "/"
+                                + nodeExec)
+                        .exists(),
+                "node should have been installed");
     }
 
     @Test

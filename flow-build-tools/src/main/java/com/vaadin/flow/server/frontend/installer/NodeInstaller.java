@@ -67,6 +67,13 @@ public class NodeInstaller {
 
     private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
     public static final String ACCEPT_MISSING_SHA = "vaadin.node.download.acceptMissingSHA";
+    /**
+     * System property that makes the default Node.js version be verified
+     * against the {@value #SHA_SUMS_FILE} served by the download root instead
+     * of the checksums shipped with Flow, for download roots serving their own
+     * builds of the default version.
+     */
+    public static final String USE_DOWNLOAD_ROOT_SHA = "vaadin.node.download.useDownloadRootSHA";
     public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
     public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
 
@@ -436,7 +443,8 @@ public class NodeInstaller {
     }
 
     private void downloadFileIfMissing(URI downloadUrl, File destination,
-            String userName, String password) throws DownloadException {
+            String userName, String password)
+            throws DownloadException, InstallationException {
         if (!destination.exists()) {
             getLogger().info("Downloading {} to {}", downloadUrl, destination);
             for (int i = 0; i < MAX_DOWNLOAD_ATTEMPS; i++) {
@@ -446,6 +454,11 @@ public class NodeInstaller {
 
                     verifyArchive(destination);
                     return;
+                } catch (InstallationException e) {
+                    // A different archive of the default version is served,
+                    // so downloading it again won't help
+                    removeArchiveFile(destination);
+                    throw e;
                 } catch (DownloadException e) {
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
                         removeArchiveFile(destination);
@@ -474,7 +487,8 @@ public class NodeInstaller {
         } else {
             try {
                 verifyArchive(destination);
-            } catch (VerificationException de) {
+            } catch (VerificationException | InstallationException e) {
+                // Possibly left over from an interrupted download
                 removeArchiveFile(destination);
                 downloadFileIfMissing(downloadUrl, destination, userName,
                         password);
@@ -482,8 +496,8 @@ public class NodeInstaller {
         }
     }
 
-    private void verifyArchive(File archive)
-            throws DownloadException, VerificationException {
+    private void verifyArchive(File archive) throws DownloadException,
+            VerificationException, InstallationException {
         try {
             URI shaSumsURL = nodeDownloadRoot
                     .resolve(nodeVersion + "/" + SHA_SUMS_FILE);
@@ -494,9 +508,12 @@ public class NodeInstaller {
 
             // Checksums shipped with Flow are trusted over the ones served by
             // the download root, so a mirror can't swap the default version
-            String archiveTargetSHA256 = DefaultNodeChecksums.CHECKSUMS
-                    .get(archive.getName());
-            if (archiveTargetSHA256 == null) {
+            String archiveTargetSHA256 = Boolean
+                    .getBoolean(USE_DOWNLOAD_ROOT_SHA) ? null
+                            : DefaultNodeChecksums.CHECKSUMS
+                                    .get(archive.getName());
+            boolean shippedChecksum = archiveTargetSHA256 != null;
+            if (!shippedChecksum) {
                 archiveTargetSHA256 = downloadChecksum(shaSumsURL, archive);
                 if (archiveTargetSHA256 == null) {
                     return;
@@ -506,6 +523,14 @@ public class NodeInstaller {
             String archiveSHA256 = MessageDigestUtil
                     .sha256Hex(Files.readAllBytes(archive.toPath()));
 
+            if (shippedChecksum && !archiveSHA256.equals(archiveTargetSHA256)) {
+                throw new InstallationException(String.format(
+                        "The Node.js archive downloaded from %s does not match the checksum shipped with Vaadin for %s: expected SHA256 [%s], got [%s]. "
+                                + "If the download root intentionally serves its own build of this version, set the system property '%s' to verify it against the %s of the download root instead.",
+                        nodeDownloadRoot, archive.getName(),
+                        archiveTargetSHA256, archiveSHA256,
+                        USE_DOWNLOAD_ROOT_SHA, SHA_SUMS_FILE));
+            }
             if (!archiveSHA256.equals(archiveTargetSHA256)) {
                 getLogger().error(
                         "Expected SHA256 [{}] for downloaded node archive, got [{}]",
