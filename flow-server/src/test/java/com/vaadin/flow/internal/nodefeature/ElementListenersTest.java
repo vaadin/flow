@@ -243,8 +243,7 @@ public class ElementListenersTest
         assertEquals(Set.of("eventType", "otherType"),
                 changes.stream().map(change -> ((MapPutChange) change).getKey())
                         .collect(Collectors.toSet()));
-        ObjectNode settings = changes.stream()
-                .map(change -> (MapPutChange) change)
+        ObjectNode settings = changes.stream().map(MapPutChange.class::cast)
                 .filter(change -> "eventType".equals(change.getKey()))
                 .map(ElementListenersTest::exportSettings).findFirst()
                 .orElseThrow();
