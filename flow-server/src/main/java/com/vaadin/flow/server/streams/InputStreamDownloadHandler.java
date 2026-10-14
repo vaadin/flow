@@ -126,7 +126,7 @@ public class InputStreamDownloadHandler
 
         String downloadName = download.getFileName();
         String contentType = download.getContentType() == null
-                ? getContentType(downloadName, response)
+                ? resolveContentType(downloadName, response)
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
 
