@@ -1,7 +1,7 @@
 // Run with: node --test scripts/memoryFootprint.test.js
 const test = require('node:test');
 const assert = require('node:assert');
-const { compare, comment, classDifferences, validateReport, measuredPaths } = require('./memoryFootprint');
+const { compare, comment, classDifferences, validateReport } = require('./memoryFootprint');
 
 function report(title, heap, serialized, breakdown = {}) {
   return {
@@ -99,42 +99,4 @@ test('rejects a report that does not have the expected shape', () => {
     () => validateReport('rows-ui.json', { title: 'Rows UI', metrics: [{ id: 'heap', title: 'Heap', value: '1' }] }),
     /metric 0 needs a string id and title and a numeric value/
   );
-});
-
-test('finds the modules the test module is built with', () => {
-  const pom = (artifactId, body = '') =>
-    `<project><parent><artifactId>root</artifactId></parent><artifactId>${artifactId}</artifactId>${body}</project>`;
-  const dependency = (artifactId, extra = '') => `<dependency><artifactId>${artifactId}</artifactId>${extra}</dependency>`;
-  const POMS = {
-    'pom.xml':
-      '<project><artifactId>root</artifactId>' +
-      '<modules><module>server</module><module>data</module><module>html</module><module>client</module>' +
-      '<module>plugins</module><!-- <module>tests</module> --></modules>' +
-      '<profiles><profile><modules><module>tests</module></modules></profile></profiles></project>',
-    'server/pom.xml': pom(
-      'server',
-      `<dependencies>${dependency('jackson', '<exclusions><exclusion><artifactId>client</artifactId></exclusion></exclusions>')}</dependencies>`
-    ),
-    'data/pom.xml':
-      '<project><!-- <artifactId>commented</artifactId> -->' +
-      `<artifactId>data</artifactId><dependencies>${dependency('server')}<!-- ${dependency('client')} --></dependencies></project>`,
-    'html/pom.xml': pom(
-      'html',
-      `<dependencies>${dependency('data')}${dependency('test-utils', '<scope>test</scope>')}</dependencies>` +
-        `<build><plugins><plugin><dependencies>${dependency('client')}</dependencies></plugin></plugins></build>`
-    ),
-    'client/pom.xml': pom('client'),
-    'plugins/pom.xml': pom('plugins', '<modules><module>test-utils</module></modules>'),
-    'plugins/test-utils/pom.xml': pom('test-utils'),
-    'tests/pom.xml': pom('tests')
-  };
-
-  assert.deepStrictEqual(measuredPaths((file) => POMS[file] ?? null, 'html'), [
-    'data',
-    'html',
-    'plugins/test-utils',
-    'pom.xml',
-    'server'
-  ]);
-  assert.throws(() => measuredPaths((file) => POMS[file] ?? null, 'missing'), /No module missing/);
 });

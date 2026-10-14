@@ -245,17 +245,10 @@ in the same run unless it is cached for that JDK. The comment also lists, per
 scenario, the classes whose retained instances or bytes changed.
 
 The measurements are cached under a key made of the exact JDK version and the
-files of the modules the test builds, so a commit is only measured when no
-commit with the same files was. Those modules are the ones `mvn -am` builds
-for `flow-html-components`, which `node scripts/memoryFootprint.js paths
-<commit>` reads from the poms of the commit, so no list of modules has to be
-kept up to date. The workflow runs on every pull request for the same reason,
-and ends after restoring both measurements when a push leaves those modules
-unchanged. A pull request can only restore what
-its own runs or the runs on its base branch cached, so the workflow measures
-`main` on every push too. The base of a pull request is then cached, and most
-runs only measure the head, or nothing when a push leaves the measured modules
-unchanged.
+commit, so a commit is measured once. A pull request can only restore what its
+own runs or the runs on its base branch cached, so the workflow measures `main`
+on every push too. The base of a pull request is then cached, and most runs only
+measure the head.
 
 The comment is posted once a pull request changes a measurement and then
 updated on every push, also when the difference goes away again. Pull requests

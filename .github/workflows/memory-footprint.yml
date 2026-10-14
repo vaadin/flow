@@ -6,15 +6,11 @@ name: Memory Footprint
 # posted once a change affects them. After that the comment is updated on every
 # push, also when the difference goes away again.
 #
-# The measurements of a commit only depend on the JDK and on the files of the
-# modules the test is built with, which `scripts/memoryFootprint.js paths`
-# reads from the poms of the commit. They are cached under a key made of
-# those, and a commit is only measured when no commit with the same files was
-# measured before. The workflow runs for every push, since a commit that does
-# not change those files finds both measurements cached and ends early. A pull
-# request can only restore what its own runs or runs on its base branch cached,
-# so main is measured on every push as well: the base of a pull request is
-# then almost always cached, and only its head is measured.
+# The measurements of a commit are cached under a key made of the commit and
+# the JDK, so a commit is measured once. A pull request can only restore what
+# its own runs or runs on its base branch cached, so main is measured on every
+# push as well: the base of a pull request is then almost always cached, and
+# only its head is measured.
 on:
   push:
     branches: [main]
@@ -77,22 +73,11 @@ jobs:
         # sizes can differ between JDK versions.
         run: |
           runtime=$(java -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.runtime.version = //p')
-          # Assigned before use, so that a failure to read the poms fails the
-          # step instead of hashing an empty list of paths
-          key() {
-            local paths
-            paths=$(node scripts/memoryFootprint.js paths "$1") || return 1
-            for path in $paths; do
-              echo "$path $(git rev-parse "$1:$path")"
-            done | sha256sum | cut -c1-40
-          }
-          head_key=$(key "$_HEAD_SHA")
-          echo "head-key=memory-footprint-$runtime-$head_key" >> "$GITHUB_OUTPUT"
+          echo "head-key=memory-footprint-$runtime-$_HEAD_SHA" >> "$GITHUB_OUTPUT"
           if [ -n "$_BASE_SHA" ]; then
             base=$(git merge-base "$_BASE_SHA" "$_HEAD_SHA")
-            base_key=$(key "$base")
             echo "base=$base" >> "$GITHUB_OUTPUT"
-            echo "base-key=memory-footprint-$runtime-$base_key" >> "$GITHUB_OUTPUT"
+            echo "base-key=memory-footprint-$runtime-$base" >> "$GITHUB_OUTPUT"
           fi
       - name: Restore the head measurements
         id: head-cache

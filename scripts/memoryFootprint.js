@@ -19,29 +19,18 @@
  * change and not by noise.
  *
  * Usage: node scripts/memoryFootprint.js <base dir> <head dir> <base commit>
- *        node scripts/memoryFootprint.js paths <commit>
- *
- * The second form prints the paths the measurements of a commit depend on:
- * the root pom and the modules the test module is built with by `mvn -am`,
- * read from the poms of that commit. The workflow caches measurements under a
- * hash of what these paths hold, so it has no list of modules to keep up to
- * date.
  *
  * Outputs:
  * - `changed=true|false` appended to $GITHUB_OUTPUT (printed if not set):
  *   whether any measurement differs, or the base has none to compare with
  * - memory-comment.md: the sticky pull request comment body
  */
-const { execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
 // Starts the pull request comment, so that each run updates the one comment
 // instead of adding another
 const COMMENT_MARKER = '<!-- flow-memory-footprint -->';
-
-// The module UIMemoryFootprintTest is in
-const TEST_MODULE = 'flow-html-components';
 
 // Caps the classes listed per breakdown, which a large change could otherwise
 // grow past what anyone reads
@@ -82,74 +71,6 @@ function validateReport(name, report) {
   if (problems.length > 0) {
     throw new Error(`Invalid memory footprint report ${name}: ${problems.join(', ')}`);
   }
-}
-
-function withoutBlocks(xml, ...tags) {
-  return tags.reduce((result, tag) => result.replace(new RegExp(`<${tag}>[\\s\\S]*?</${tag}>`, 'g'), ''), xml);
-}
-
-function firstArtifactId(xml) {
-  return /<artifactId>\s*([^<\s]+)\s*<\/artifactId>/.exec(xml)?.[1];
-}
-
-/**
- * The modules of the reactor, keyed by artifact id, read from the pom in the
- * given directory and, recursively, from the poms of the modules it lists
- * outside of profiles.
- */
-function reactorModules(readFile, dir = '', modules = {}) {
-  const source = readFile(dir ? `${dir}/pom.xml` : 'pom.xml');
-  if (source === null) {
-    return modules;
-  }
-  // Commented-out modules, dependencies and artifact ids are not part of the
-  // build
-  const pom = source.replace(/<!--[\s\S]*?-->/g, '');
-  const own = withoutBlocks(pom, 'parent', 'dependencyManagement', 'dependencies', 'build', 'profiles', 'modules');
-  modules[firstArtifactId(own)] = { dir, pom };
-  const moduleList = withoutBlocks(pom, 'profiles');
-  for (const [, module] of moduleList.matchAll(/<module>\s*([^<\s]+)\s*<\/module>/g)) {
-    reactorModules(readFile, dir ? `${dir}/${module}` : module, modules);
-  }
-  return modules;
-}
-
-/**
- * The artifact ids a pom depends on, its parent included, leaving out
- * plugins, profiles and managed versions, which do not add a module to the
- * build.
- */
-function dependencies(pom) {
-  const parent = /<parent>([\s\S]*?)<\/parent>/.exec(pom);
-  const ids = parent ? [firstArtifactId(parent[1])] : [];
-  const declared = withoutBlocks(pom, 'exclusions', 'dependencyManagement', 'build', 'profiles');
-  for (const [, dependency] of declared.matchAll(/<dependency>([\s\S]*?)<\/dependency>/g)) {
-    ids.push(firstArtifactId(dependency));
-  }
-  return ids;
-}
-
-/**
- * The paths the measurements depend on: the root pom and the directory of
- * every module `mvn -pl <test module> -am` builds.
- */
-function measuredPaths(readFile, testModule = TEST_MODULE) {
-  const modules = reactorModules(readFile);
-  const byDir = Object.fromEntries(Object.entries(modules).map(([id, module]) => [module.dir, id]));
-  const reached = new Set();
-  const pending = [byDir[testModule]];
-  while (pending.length > 0) {
-    const id = pending.pop();
-    if (id === undefined || reached.has(id) || !modules[id]) {
-      continue;
-    }
-    reached.add(id);
-    pending.push(...dependencies(modules[id].pom));
-  }
-  if (reached.size === 0) {
-    throw new Error(`No module ${testModule} in the reactor`);
-  }
-  return [...reached].map((id) => modules[id].dir || 'pom.xml').sort();
 }
 
 function formatValue(value, unit) {
@@ -288,18 +209,6 @@ function comment(base, head, baseCommit) {
 }
 
 function main() {
-  if (process.argv[2] === 'paths') {
-    const commit = process.argv[3];
-    const readFile = (file) => {
-      try {
-        return execFileSync('git', ['show', `${commit}:${file}`], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-      } catch {
-        return null;
-      }
-    };
-    process.stdout.write(measuredPaths(readFile).join('\n') + '\n');
-    return;
-  }
   const [baseDir, headDir, baseCommit] = process.argv.slice(2);
   if (!baseDir || !headDir || !baseCommit) {
     console.error('Usage: node scripts/memoryFootprint.js <base dir> <head dir> <base commit>');
@@ -324,4 +233,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { compare, comment, classDifferences, validateReport, measuredPaths };
+module.exports = { compare, comment, classDifferences, validateReport };
