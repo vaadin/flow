@@ -177,14 +177,14 @@ class UIMemoryFootprintTest {
 
     @Test
     void uiWith200FormRowsAddedInLatestRoundTrip() throws IOException {
-        measure("ui-with-200-form-rows-added-in-latest-round-trip",
+        measureForLatestRoundTrip(
+                "ui-with-200-form-rows-added-in-latest-round-trip",
                 "UI with 200 form rows added in the latest round trip",
                 "The UI with 200 form rows, with the rows added in the latest"
                         + " round trip, as when navigating to a view, so that"
                         + " the response kept for resending holds all of"
                         + " them.",
-                ui -> {
-                }, UIMemoryFootprintTest::addFormRows);
+                UIMemoryFootprintTest::addFormRows);
     }
 
     private static void addFormRows(UI ui) {
@@ -233,26 +233,40 @@ class UIMemoryFootprintTest {
             Consumer<UI> view) throws IOException {
         // The response kept for resending is the one of the latest round
         // trip, which is usually a small update rather than the first render
-        measure(id, title, description, view,
+        measureRoundTrips(id, title, description, view,
                 ui -> ui.getElement().setAttribute("data-round-trip", "1"));
     }
 
     /**
-     * Like {@link #measure(String, String, String, Consumer)}, with the given
-     * change to the UI in the latest round trip.
+     * Like {@link #measure(String, String, String, Consumer)}, but adds the
+     * content of the view in the latest round trip, as when navigating to a
+     * view, so that the response kept for resending holds the whole view.
+     */
+    private void measureForLatestRoundTrip(String id, String title,
+            String description, Consumer<UI> view) throws IOException {
+        measureRoundTrips(id, title, description, ui -> {
+        }, view);
+    }
+
+    /**
+     * Measures UIs that are opened in two round trips and writes the report of
+     * the scenario.
      *
-     * @param update
+     * @param firstRoundTrip
+     *            changes the UI in the first round trip
+     * @param latestRoundTrip
      *            changes the UI in the latest round trip, whose response is the
      *            one kept for resending
      */
-    private void measure(String id, String title, String description,
-            Consumer<UI> view, Consumer<UI> update) throws IOException {
-        UI first = open(view, update);
+    private void measureRoundTrips(String id, String title, String description,
+            Consumer<UI> firstRoundTrip, Consumer<UI> latestRoundTrip)
+            throws IOException {
+        UI first = open(firstRoundTrip, latestRoundTrip);
         long serializedSize = serializedSize(session);
         // Opening and serializing a UI fills caches shared by all UIs, such
         // as the reflection data of classes, so they are filled before
         // measuring the UI opened after this one
-        UI second = open(view, update);
+        UI second = open(firstRoundTrip, latestRoundTrip);
         serializedSize(session);
         // Walking the graph fills the reflection data of the classes it
         // walks, so the graph is walked once before measuring it
@@ -261,7 +275,7 @@ class UIMemoryFootprintTest {
         // address and would be thrown off by a garbage collection in between
         GraphLayout before = GraphLayout.parseInstance(session, first, second);
 
-        UI third = open(view, update);
+        UI third = open(firstRoundTrip, latestRoundTrip);
         GraphLayout after = GraphLayout.parseInstance(session, first, second,
                 third);
 
@@ -288,13 +302,13 @@ class UIMemoryFootprintTest {
         Files.writeString(file, report.toPrettyString());
     }
 
-    private UI open(Consumer<UI> view, Consumer<UI> update) {
+    private UI open(Consumer<UI> firstRoundTrip, Consumer<UI> latestRoundTrip) {
         MockUI ui = new MockUI(session);
         ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "ROOT");
         session.addUI(ui);
-        view.accept(ui);
+        firstRoundTrip.accept(ui);
         respond(ui);
-        update.accept(ui);
+        latestRoundTrip.accept(ui);
         respond(ui);
         return ui;
     }
