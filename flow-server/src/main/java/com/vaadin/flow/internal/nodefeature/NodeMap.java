@@ -297,6 +297,10 @@ public abstract class NodeMap extends NodeFeature {
         public int size() {
             return keys.length;
         }
+
+        private Object readResolve() {
+            return of(keys);
+        }
     }
 
     /**
@@ -394,10 +398,36 @@ public abstract class NodeMap extends NodeFeature {
             return result;
         }
 
-        protected Object readResolve() {
-            // The registry may define a different key order for the same keys
-            // than the one that was serialized
-            return copyTo(SharedKeySet.of(keySet.keys));
+        protected Object writeReplace() {
+            Serializable[] values = new Serializable[size()];
+            for (int i = 0; i < values.length; i++) {
+                values[i] = getValue(i);
+            }
+            return new SerializedValues(keySet.keys, values);
+        }
+    }
+
+    /**
+     * Serialized form of {@link SharedKeySetValues}. The key set is not
+     * serialized as such since the registry of the deserializing JVM may define
+     * a different key order for the same keys.
+     */
+    private static final class SerializedValues implements Serializable {
+        private final String[] keys;
+        private final Serializable[] values;
+
+        private SerializedValues(String[] keys, Serializable[] values) {
+            this.keys = keys;
+            this.values = values;
+        }
+
+        private Object readResolve() {
+            SharedKeySet keySet = SharedKeySet.of(keys);
+            SharedKeySetValues result = SharedKeySetValues.create(keySet);
+            for (int i = 0; i < keys.length; i++) {
+                result.setValue(keySet.indexOf(keys[i]), values[i]);
+            }
+            return result;
         }
     }
 
