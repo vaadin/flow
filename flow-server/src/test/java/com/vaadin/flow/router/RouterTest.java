@@ -4984,19 +4984,19 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void proceedIntoThrowingView_firesFailedOutcomeAndPropagates() {
         setNavigationTargets(PostponingOnceNavigationTarget.class,
-                ThrowingExceptionTarget.class);
+                FailOnException.class);
         PostponingOnceNavigationTarget.postpone = null;
         navigate("postpone-once");
-        navigate("throwing-exception");
+        navigate("exception");
         List<EventObject> events = recordNavigationEvents();
 
         // Unlike a regular navigation, no error view is rendered for an
         // exception thrown while resuming
-        assertThrows(IllegalStateException.class,
+        assertThrows(RuntimeException.class,
                 () -> PostponingOnceNavigationTarget.postpone.proceed());
 
         assertEquals(2, events.size());
-        assertInstanceOf(IllegalStateException.class,
+        assertInstanceOf(RuntimeException.class,
                 ((NavigationEndedEvent.Failed) ((NavigationEndedEvent) events
                         .get(1)).getOutcome()).error());
     }
@@ -5013,16 +5013,6 @@ public class RouterTest extends RoutingTestBase {
             if (postpone == null) {
                 postpone = event.postpone();
             }
-        }
-    }
-
-    @Route("throwing-exception")
-    @Tag(Tag.DIV)
-    public static class ThrowingExceptionTarget extends Component
-            implements BeforeEnterObserver {
-        @Override
-        public void beforeEnter(BeforeEnterEvent event) {
-            throw new IllegalStateException();
         }
     }
 
