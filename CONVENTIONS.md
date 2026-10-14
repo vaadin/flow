@@ -267,9 +267,13 @@ Within a file you are changing, convert the rest of its calls too rather than
 leaving two styles behind.
 
 Add an integration test only when the behavior needs a browser and a server
-round trip; client-only logic belongs in the `flow-client` tests. Before adding
-an integration test view or class, look for an existing one that exercises the
-same area and extend it. Exercise both the happy path and the error branch.
+round trip; client-only logic belongs in the client-side tests in
+`flow-client/src/test/frontend/` (run with `npm test` in `flow-client`). Before
+adding an integration test view or class, look for an existing one that
+exercises the same area and extend it. Put a new one in the module
+[flow-tests/README.md](flow-tests/README.md) selects — `flow-tests/test-default/`
+for the default configuration. Exercise both the happy path and the error
+branch.
 
 Debug a failing integration test with Playwright before guessing. Look at what
 the browser is actually doing.

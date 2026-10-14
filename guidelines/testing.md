@@ -39,10 +39,10 @@ TypeScript tests run with Web Test Runner in a headless browser; run them with
   or class that exercises the same area and extend it.
 - For browser-facing features that need an IT, put the view in the
   module [flow-tests/README.md](../flow-tests/README.md) selects — for the
-  default configuration that is `flow-tests/test-default/`. Mock the relevant browser API and exercise both happy-path and error
-  branches. Use an option
-  value to trigger errors deterministically (for geolocation,
-  `maximumAge === -1` works). If the API streams updates (e.g.
+  default configuration that is `flow-tests/test-default/`. Mock the
+  relevant browser API and exercise both happy-path and error branches.
+  Use an option value to trigger errors deterministically (for
+  geolocation, `maximumAge === -1` works). If the API streams updates (e.g.
   `watchPosition`), use `setInterval` to simulate them and verify
   that the matching cancel call (e.g. `clearWatch`) actually stops
   them.
