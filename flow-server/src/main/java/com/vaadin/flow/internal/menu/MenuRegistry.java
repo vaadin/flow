@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -230,12 +231,11 @@ public class MenuRegistry {
 
         // Index each server view by its @Menu class so route-hierarchy
         // ancestors can be resolved directly to the including menu entry.
-        Map<Class<?>, AvailableViewInfo> includedByClass = new HashMap<>();
-        for (AvailableViewInfo view : menuItems) {
-            if (isServerMenuView(view)) {
-                includedByClass.put(view.menu().menuClass(), view);
-            }
-        }
+        // Built up front because a parent can sort after its children.
+        Map<Class<?>, AvailableViewInfo> includedByClass = menuItems.stream()
+                .filter(MenuRegistry::isServerMenuView)
+                .collect(Collectors.toMap(view -> view.menu().menuClass(),
+                        Function.identity(), (first, second) -> second));
 
         // Resolve each view's menu parent and group children under it.
         // Iterating the already-sorted list keeps each child list in sibling

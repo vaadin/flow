@@ -620,8 +620,8 @@ class MenuRegistryTest {
     @Test
     void collectMenuItemsTree_clientViews_areRootsWithoutChildren()
             throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
+        Principal principal = Mockito.mock(Principal.class);
+        Mockito.when(request.getUserPrincipal()).thenReturn(principal);
         Mockito.when(request.isUserInRole(Mockito.anyString()))
                 .thenReturn(true);
 
