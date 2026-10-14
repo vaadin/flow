@@ -1,34 +1,39 @@
 #!/bin/bash
 #
-# Downloads the official SHA-256 checksums that Flow verifies a downloaded
-# Node.js archive against when it installs FrontendTools.DEFAULT_NODE_VERSION.
+# Downloads the SHA-256 checksums that Flow verifies a downloaded Node.js
+# archive against when it installs FrontendTools.DEFAULT_NODE_VERSION.
 #
 # Run this whenever DEFAULT_NODE_VERSION changes:
 #
 #   scripts/updateNodeChecksums.sh
 #
-# SHASUMS256.txt is stored exactly as published on nodejs.org, and only after
-# its GPG signature verifies against the Node.js release keys, so the shipped
-# file can be checked by comparing it with the published one.
+# Both SHASUMS256.txt files are stored exactly as published, so the shipped
+# files can be checked by comparing them with the published ones. The one from
+# nodejs.org is only stored after its GPG signature verifies against the
+# Node.js release keys. The one from unofficial-builds, used for the musl
+# builds, is not signed, so it is fetched over HTTPS only.
 
 set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
-target="$root/flow-build-tools/src/main/resources/com/vaadin/flow/server/frontend/installer/default-node-SHASUMS256.txt"
+resources="$root/flow-build-tools/src/main/resources/com/vaadin/flow/server/frontend/installer"
 
 version="v$("$root/scripts/frontendToolVersions.sh" | sed -n 's/^node-version=//p')"
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-dist="https://nodejs.org/dist/$version"
+official="https://nodejs.org/dist/$version"
+unofficial="https://unofficial-builds.nodejs.org/download/release/$version"
 
-curl -sSf -o "$work/SHASUMS256.txt" "$dist/SHASUMS256.txt"
-curl -sSf -o "$work/SHASUMS256.txt.sig" "$dist/SHASUMS256.txt.sig"
+curl -sSf -o "$work/SHASUMS256.txt" "$official/SHASUMS256.txt"
+curl -sSf -o "$work/SHASUMS256.txt.sig" "$official/SHASUMS256.txt.sig"
 curl -sSfL -o "$work/pubring.kbx" \
   https://github.com/nodejs/release-keys/raw/HEAD/gpg-only-active-keys/pubring.kbx
 gpgv --keyring "$work/pubring.kbx" "$work/SHASUMS256.txt.sig" "$work/SHASUMS256.txt"
+curl -sSf -o "$work/unofficial-SHASUMS256.txt" "$unofficial/SHASUMS256.txt"
 
-cp "$work/SHASUMS256.txt" "$target"
+cp "$work/SHASUMS256.txt" "$resources/default-node-SHASUMS256.txt"
+cp "$work/unofficial-SHASUMS256.txt" "$resources/default-node-unofficial-SHASUMS256.txt"
 
-echo "Wrote the Node.js $version checksums from $dist/SHASUMS256.txt to $target"
+echo "Wrote the Node.js $version checksums from $official and $unofficial to $resources"

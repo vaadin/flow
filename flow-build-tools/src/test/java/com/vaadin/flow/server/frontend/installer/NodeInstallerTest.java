@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -169,16 +169,26 @@ class NodeInstallerTest {
     @Test
     void defaultNodeChecksums_coverDefaultVersionOnSupportedPlatforms() {
         String version = FrontendTools.DEFAULT_NODE_VERSION;
-        for (String archive : List.of("darwin-arm64.tar.gz",
-                "darwin-x64.tar.gz", "linux-arm64.tar.gz", "linux-x64.tar.gz",
-                "win-arm64.zip", "win-x64.zip")) {
+        Map<String, Map<String, String>> archives = Map.of(
+                "darwin-arm64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "darwin-x64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-arm64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-x64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS, "win-arm64.zip",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS, "win-x64.zip",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-arm64-musl.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.UNOFFICIAL_CHECKSUMS,
+                "linux-x64-musl.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.UNOFFICIAL_CHECKSUMS);
+        archives.forEach((archive, checksums) -> {
             String name = "node-" + version + "-" + archive;
-            assertTrue(
-                    NodeInstaller.DefaultNodeChecksums.CHECKSUMS
-                            .containsKey(name),
-                    "No checksum for " + name
-                            + ". Run scripts/updateNodeChecksums.sh after changing DEFAULT_NODE_VERSION");
-        }
+            assertTrue(checksums.containsKey(name), "No checksum for " + name
+                    + ". Run scripts/updateNodeChecksums.sh after changing DEFAULT_NODE_VERSION");
+        });
     }
 
     @Test
