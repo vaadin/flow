@@ -1,15 +1,15 @@
 #!/bin/bash
 #
-# Regenerates the SHA-256 checksums that Flow verifies a downloaded Node.js
-# archive against when it installs FrontendTools.DEFAULT_NODE_VERSION.
+# Downloads the official SHA-256 checksums that Flow verifies a downloaded
+# Node.js archive against when it installs FrontendTools.DEFAULT_NODE_VERSION.
 #
 # Run this whenever DEFAULT_NODE_VERSION changes:
 #
 #   scripts/updateNodeChecksums.sh
 #
-# The official SHASUMS256.txt is only accepted if its GPG signature verifies
-# against the Node.js release keys. Musl builds come from unofficial-builds,
-# which publishes no signature, so those are fetched over HTTPS only.
+# SHASUMS256.txt is stored exactly as published on nodejs.org, and only after
+# its GPG signature verifies against the Node.js release keys, so the shipped
+# file can be checked by comparing it with the published one.
 
 set -euo pipefail
 
@@ -21,22 +21,14 @@ version="v$("$root/scripts/frontendToolVersions.sh" | sed -n 's/^node-version=//
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-official="https://nodejs.org/dist/$version"
-unofficial="https://unofficial-builds.nodejs.org/download/release/$version"
+dist="https://nodejs.org/dist/$version"
 
-curl -sSf -o "$work/official.txt" "$official/SHASUMS256.txt"
-curl -sSf -o "$work/official.txt.sig" "$official/SHASUMS256.txt.sig"
+curl -sSf -o "$work/SHASUMS256.txt" "$dist/SHASUMS256.txt"
+curl -sSf -o "$work/SHASUMS256.txt.sig" "$dist/SHASUMS256.txt.sig"
 curl -sSfL -o "$work/pubring.kbx" \
   https://github.com/nodejs/release-keys/raw/HEAD/gpg-only-active-keys/pubring.kbx
-gpgv --keyring "$work/pubring.kbx" "$work/official.txt.sig" "$work/official.txt"
+gpgv --keyring "$work/pubring.kbx" "$work/SHASUMS256.txt.sig" "$work/SHASUMS256.txt"
 
-curl -sSf -o "$work/unofficial.txt" "$unofficial/SHASUMS256.txt"
+cp "$work/SHASUMS256.txt" "$target"
 
-# Keep only the platform archives Flow downloads: node-<v>-<os>-<arch>.tar.gz
-# or .zip from nodejs.org, and the -musl ones from unofficial-builds.
-{
-  grep -E "  node-$version-(darwin|linux|win)-[a-z0-9]+\.(tar\.gz|zip)$" "$work/official.txt"
-  grep -E "  node-$version-linux-[a-z0-9]+-musl\.tar\.gz$" "$work/unofficial.txt"
-} | sort -k2 > "$target"
-
-echo "Wrote $(wc -l < "$target") checksums for Node.js $version to $target"
+echo "Wrote the Node.js $version checksums from $dist/SHASUMS256.txt to $target"

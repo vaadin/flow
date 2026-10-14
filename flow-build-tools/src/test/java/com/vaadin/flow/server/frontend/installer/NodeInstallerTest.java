@@ -175,7 +175,6 @@ class NodeInstallerTest {
         String version = FrontendTools.DEFAULT_NODE_VERSION;
         for (String archive : List.of("darwin-arm64.tar.gz",
                 "darwin-x64.tar.gz", "linux-arm64.tar.gz", "linux-x64.tar.gz",
-                "linux-arm64-musl.tar.gz", "linux-x64-musl.tar.gz",
                 "win-arm64.zip", "win-x64.zip")) {
             String name = "node-" + version + "-" + archive;
             assertTrue(
