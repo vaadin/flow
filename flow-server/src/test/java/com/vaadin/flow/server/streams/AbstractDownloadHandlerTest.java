@@ -694,9 +694,8 @@ class AbstractDownloadHandlerTest {
         }).when(logger).warn(anyString(), any(Object[].class));
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
                 LoggerFactory.class)) {
-            loggerFactory
-                    .when(() -> LoggerFactory
-                            .getLogger(UnansweredRangeRequests.class))
+            loggerFactory.when(() -> LoggerFactory.getLogger(
+                    AbstractDownloadHandler.UnansweredRangeRequests.class))
                     .thenReturn(logger);
             action.execute();
         }
