@@ -391,10 +391,14 @@ class UIMemoryFootprintTest {
 
         @ClientCallable
         private void setRequestedRange(int start, int length, String filter) {
+            // Only declared for the handlers it adds to the component, the
+            // scenario never calls it
         }
 
         @ClientCallable
         private void resetDataCommunicator() {
+            // Only declared for the handlers it adds to the component, the
+            // scenario never calls it
         }
     }
 
