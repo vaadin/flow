@@ -236,7 +236,9 @@ public final class BootstrapHandlerHelper implements Serializable {
                     .map(BootstrapHandlerHelper::findFirstUrlMapping)
                     .orElse(null);
         }
-        return pushServletMapping == null ? null
-                : pushServletMapping + Constants.PUSH_MAPPING;
+        if (pushServletMapping == null) {
+            return null;
+        }
+        return pushServletMapping + Constants.PUSH_MAPPING;
     }
 }

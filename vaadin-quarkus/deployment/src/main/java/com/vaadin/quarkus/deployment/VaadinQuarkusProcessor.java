@@ -336,14 +336,17 @@ class VaadinQuarkusProcessor {
         // but initialized at RUNTIME_INIT, and so is their Atmosphere
         // instance, which leaves the push endpoints to the extension, see
         // VaadinQuarkusNativeProcessor
-        final BiConsumer<ServletBuildItem.Builder, Integer> loadOnStartupSetter = nativeConfig
-                .enabled() ? (builder, order) -> {
-                    builder.addInitParam(
-                            ApplicationConfig.PROPERTY_COMET_SUPPORT,
-                            QuarkusJSR356AsyncSupport.class.getName());
-                    vaadinServletProducer.produce(new VaadinServletBuildItem(
-                            builder.getName(), order));
-                } : ServletBuildItem.Builder::setLoadOnStartup;
+        final BiConsumer<ServletBuildItem.Builder, Integer> loadOnStartupSetter;
+        if (nativeConfig.enabled()) {
+            loadOnStartupSetter = (builder, order) -> {
+                builder.addInitParam(ApplicationConfig.PROPERTY_COMET_SUPPORT,
+                        QuarkusJSR356AsyncSupport.class.getName());
+                vaadinServletProducer.produce(
+                        new VaadinServletBuildItem(builder.getName(), order));
+            };
+        } else {
+            loadOnStartupSetter = ServletBuildItem.Builder::setLoadOnStartup;
+        }
         final IndexView indexView = beanArchiveIndex.getIndex();
 
         // Collect all VaadinServlet instances and remove QuarkusVaadinServlet
