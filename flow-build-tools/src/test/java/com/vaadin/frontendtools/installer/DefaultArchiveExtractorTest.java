@@ -34,6 +34,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.flow.internal.FrontendUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -183,6 +184,25 @@ class DefaultArchiveExtractorTest {
                 new File(targetDir, "lib/npm-cli.js").getAbsolutePath());
         assertThrows(ArchiveExtractionException.class,
                 () -> extractor.extract(absoluteLink, targetDir));
+    }
+
+    @Test
+    void extractTarGz_entryInSiblingDirectory_ArchiveExtractionExceptionIsThrown()
+            throws IOException {
+        File archiveFile = new File(baseDir, "archive.tar.gz");
+        try (OutputStream fo = Files.newOutputStream(archiveFile.toPath());
+                OutputStream gzo = new GzipCompressorOutputStream(fo);
+                TarArchiveOutputStream o = new TarArchiveOutputStream(gzo)) {
+            o.putArchiveEntry(new TarArchiveEntry(
+                    "../" + targetDir.getName() + "-sibling/outside.js"));
+            o.closeArchiveEntry();
+        }
+
+        assertThrows(ArchiveExtractionException.class,
+                () -> new DefaultArchiveExtractor().extract(archiveFile,
+                        targetDir));
+        assertFalse(
+                new File(baseDir, targetDir.getName() + "-sibling").exists());
     }
 
     private File createTarGzWithSymbolicLink(String linkName, String target)

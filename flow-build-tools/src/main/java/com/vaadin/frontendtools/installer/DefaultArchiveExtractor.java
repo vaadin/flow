@@ -145,14 +145,13 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
                 // Create a file for this tarEntry
                 final File destPath = new File(destinationDirectory
                         + File.separator + tarEntry.getName());
-                prepDestination(destPath, tarEntry.isDirectory());
-
                 if (!startsWithPath(destPath.getCanonicalPath(),
                         canonicalDestinationDirectory)) {
                     throw new IOException("Expanding " + tarEntry.getName()
                             + " would create file outside of "
                             + canonicalDestinationDirectory);
                 }
+                prepDestination(destPath, tarEntry.isDirectory());
 
                 if (tarEntry.isSymbolicLink()) {
                     createSymbolicLink(tarEntry, destPath,
@@ -211,10 +210,10 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
             throws IOException {
         Path linkPath = destinationFile.toPath();
         Path linkTarget = Paths.get(tarEntry.getLinkName());
-        Path resolvedTarget = linkPath.getParent().resolve(linkTarget).toFile()
-                .getCanonicalFile().toPath();
-        if (linkTarget.isAbsolute() || !resolvedTarget
-                .startsWith(Paths.get(canonicalDestinationDirectory))) {
+        File resolvedTarget = linkPath.getParent().resolve(linkTarget).toFile();
+        if (linkTarget.isAbsolute()
+                || !startsWithPath(resolvedTarget.getCanonicalPath(),
+                        canonicalDestinationDirectory)) {
             throw new IOException("Symbolic link " + tarEntry.getName() + " -> "
                     + tarEntry.getLinkName() + " would point outside of "
                     + canonicalDestinationDirectory);
@@ -247,9 +246,16 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
      *            destination path
      * @param destDir
      *            destination directory
-     * @return true is destination path starts with destination directory
+     * @return true if destination path is the destination directory or a path
+     *         inside it
      */
     private boolean startsWithPath(String destPath, String destDir) {
+        if (destPath.equals(destDir)) {
+            return true;
+        }
+        if (!destDir.endsWith(File.separator)) {
+            destDir += File.separator;
+        }
         if (destPath.startsWith(destDir)) {
             return true;
         } else if (destDir.length() > destPath.length()) {
