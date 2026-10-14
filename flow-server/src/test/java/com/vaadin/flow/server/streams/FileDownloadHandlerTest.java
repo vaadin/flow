@@ -330,16 +330,25 @@ class FileDownloadHandlerTest {
     }
 
     @Test
-    void withContentType_replacesContentTypeOfServletContainer()
+    void withContentType_replacesContentTypeOfServletContainerAndOverride()
             throws IOException, URISyntaxException {
         URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
-        DownloadHandler handler = DownloadHandler
-                .forFile(new File(resource.toURI()), "captions.vtt")
+        File file = new File(resource.toURI());
+        DownloadHandler handler = DownloadHandler.forFile(file, "captions.vtt")
                 .withContentType("text/vtt");
+        DownloadHandler overriding = new FileDownloadHandler(file,
+                "captions.vtt") {
+            @Override
+            protected String getContentType(String fileName,
+                    VaadinResponse response) {
+                return "text/plain";
+            }
+        }.withContentType("text/vtt");
 
         handler.handleDownloadRequest(downloadEvent);
+        overriding.handleDownloadRequest(downloadEvent);
 
-        verify(response).setContentType("text/vtt");
+        verify(response, times(2)).setContentType("text/vtt");
     }
 
     @Test

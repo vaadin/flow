@@ -63,9 +63,6 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
     }
 
     protected String getContentType(String fileName, VaadinResponse response) {
-        if (contentType != null) {
-            return contentType;
-        }
         return Optional.ofNullable(response.getService().getMimeType(fileName))
                 .orElse("application/octet-stream");
     }
@@ -80,13 +77,38 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
      * download still takes precedence over this one.
      *
      * @param contentType
-     *            the MIME type of the content, not <code>null</code>
+     *            the MIME type of the content, not <code>null</code> or blank
      * @return this instance for method chaining
+     * @throws IllegalArgumentException
+     *             if the content type is blank
      */
     public R withContentType(String contentType) {
-        this.contentType = Objects.requireNonNull(contentType,
-                "Content type cannot be null");
+        Objects.requireNonNull(contentType, "Content type cannot be null");
+        if (contentType.isBlank()) {
+            throw new IllegalArgumentException("Content type cannot be blank");
+        }
+        this.contentType = contentType;
         return (R) this;
+    }
+
+    /**
+     * Gets the MIME type set with {@link #withContentType(String)}.
+     *
+     * @return the MIME type that the content is served with, or
+     *         <code>null</code> if it is taken from the file name
+     */
+    public String getContentType() {
+        return contentType;
+    }
+
+    /**
+     * Resolves the MIME type that the content is served with: the one set with
+     * {@link #withContentType(String)}, or else the one that
+     * {@link #getContentType(String, VaadinResponse)} gives for the file name.
+     */
+    final String resolveContentType(String fileName, VaadinResponse response) {
+        return contentType != null ? contentType
+                : getContentType(fileName, response);
     }
 
     /**
