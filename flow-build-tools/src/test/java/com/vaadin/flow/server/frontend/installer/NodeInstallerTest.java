@@ -18,10 +18,14 @@ package com.vaadin.flow.server.frontend.installer;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -35,12 +39,15 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
 
 import static com.vaadin.flow.internal.Platform.ALPINE_RELEASE_FILE_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NodeInstallerTest {
@@ -161,10 +168,111 @@ class NodeInstallerTest {
                 "The downloaded archive should have been removed after it was unpacked");
     }
 
+    @Test
+    void defaultNodeChecksums_coverDefaultVersionOnSupportedPlatforms() {
+        String version = FrontendTools.DEFAULT_NODE_VERSION;
+        for (String archive : List.of("darwin-arm64.tar.gz",
+                "darwin-x64.tar.gz", "linux-arm64.tar.gz", "linux-x64.tar.gz",
+                "linux-arm64-musl.tar.gz", "linux-x64-musl.tar.gz",
+                "win-arm64.zip", "win-x64.zip")) {
+            String name = "node-" + version + "-" + archive;
+            assertTrue(
+                    NodeInstaller.DefaultNodeChecksums.CHECKSUMS
+                            .containsKey(name),
+                    "No checksum for " + name
+                            + ". Run scripts/updateNodeChecksums.sh after changing DEFAULT_NODE_VERSION");
+        }
+    }
+
+    @Test
+    void installDefaultVersionFromMirror_archiveNotMatchingShippedChecksum_installFails()
+            throws IOException {
+        Platform platform = Platform.guess();
+        String prefix = nodeArchivePrefix(platform);
+        File archive = createDownloadableNodeArchive(platform, prefix);
+        // A mirror serving a different archive can also serve a checksum
+        // file that matches it
+        writeShaSums(FrontendTools.DEFAULT_NODE_VERSION, archive);
+        File targetDir = new File(baseDir, "installation");
+        List<URI> downloads = new ArrayList<>();
+
+        NodeInstaller nodeInstaller = mirrorInstaller(platform, targetDir,
+                downloads).setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION);
+
+        assertThrows(InstallationException.class, nodeInstaller::install);
+        assertFalse(new File(targetDir, archive.getName()).exists(),
+                "The rejected archive should have been removed");
+        assertTrue(
+                downloads.stream()
+                        .noneMatch(uri -> uri.getPath()
+                                .endsWith(NodeInstaller.SHA_SUMS_FILE)),
+                "Checksums of the default version should not be downloaded");
+    }
+
+    @Test
+    void installOtherVersionFromMirror_archiveMatchesDownloadedChecksum_nodeIsInstalled()
+            throws IOException, InstallationException {
+        String version = "v26.0.0";
+        Platform platform = Platform.guess();
+        File archive = createDownloadableNodeArchive(platform,
+                nodeArchivePrefix(platform, version), version);
+        writeShaSums(version, archive);
+        File targetDir = new File(baseDir, "installation");
+
+        mirrorInstaller(platform, targetDir, new ArrayList<>())
+                .setNodeVersion(version).install();
+
+        String nodeExec = platform.isWindows() ? "node.exe" : "bin/node";
+        assertTrue(new File(targetDir, "node-" + version + "/" + nodeExec)
+                .exists(), "node should have been installed");
+    }
+
+    /**
+     * Writes a {@value NodeInstaller#SHA_SUMS_FILE} next to the archive. The
+     * entry for a longer file name ending with the archive name comes first, so
+     * only an exact file name match finds the right checksum.
+     */
+    private void writeShaSums(String version, File archive) throws IOException {
+        String sha = MessageDigestUtil
+                .sha256Hex(Files.readAllBytes(archive.toPath()));
+        Files.write(
+                new File(tmpDir, version + "/" + NodeInstaller.SHA_SUMS_FILE)
+                        .toPath(),
+                List.of("0".repeat(64) + "  other-" + archive.getName(),
+                        sha + "  " + archive.getName()));
+    }
+
+    /**
+     * Creates an installer downloading from a remote mirror that serves the
+     * files written under the temporary directory.
+     */
+    private NodeInstaller mirrorInstaller(Platform platform, File targetDir,
+            List<URI> downloads) {
+        URI mirror = URI.create("https://mirror.example/dist/");
+        FileDownloader downloader = (uri, destination, userName, password,
+                progressListener) -> {
+            downloads.add(uri);
+            Path source = tmpDir.toPath()
+                    .resolve(mirror.relativize(uri).getPath());
+            try {
+                Files.copy(source, destination.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new DownloadException("Could not download " + uri, e);
+            }
+        };
+        return new NodeInstaller(targetDir, platform,
+                new DefaultArchiveExtractor(), downloader)
+                .setNodeDownloadRoot(mirror);
+    }
+
     private static String nodeArchivePrefix(Platform platform) {
-        return String.format("node-%s-%s", FrontendTools.DEFAULT_NODE_VERSION,
-                platform.getNodeClassifier(new FrontendVersion(
-                        FrontendTools.DEFAULT_NODE_VERSION)));
+        return nodeArchivePrefix(platform, FrontendTools.DEFAULT_NODE_VERSION);
+    }
+
+    private static String nodeArchivePrefix(Platform platform, String version) {
+        return String.format("node-%s-%s", version,
+                platform.getNodeClassifier(new FrontendVersion(version)));
     }
 
     /**
@@ -175,8 +283,14 @@ class NodeInstallerTest {
      */
     private File createDownloadableNodeArchive(Platform platform, String prefix)
             throws IOException {
+        return createDownloadableNodeArchive(platform, prefix,
+                FrontendTools.DEFAULT_NODE_VERSION);
+    }
+
+    private File createDownloadableNodeArchive(Platform platform, String prefix,
+            String version) throws IOException {
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
-        File downloadDir = new File(tmpDir, FrontendTools.DEFAULT_NODE_VERSION);
+        File downloadDir = new File(tmpDir, version);
         downloadDir.mkdirs();
         File archiveFile = new File(downloadDir,
                 prefix + "." + platform.getArchiveExtension());
