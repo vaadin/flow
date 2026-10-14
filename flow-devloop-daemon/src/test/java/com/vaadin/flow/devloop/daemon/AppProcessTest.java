@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -164,6 +166,28 @@ class AppProcessTest {
 
         wait.markRegistered(pastBoth);
         assertTrue(wait.isOver(pastBoth));
+    }
+
+    /**
+     * What a registration seeds the change baseline from has to be what the
+     * process now running was spawned with - not a predecessor's, and nothing
+     * once it is gone, when a baseline from the disk is the only one left.
+     */
+    @Test
+    void launchSnapshot_belongsToTheRunningProcess() throws Exception {
+        AppProcess app = new AppProcess(root, null);
+        assertTrue(app.launchSnapshot().isEmpty());
+        app.beginRun(exited(), log(), null);
+        Compile.Snapshot snapshot = new Compile.Snapshot(Map.of(), Map.of(),
+                Map.of());
+        Process alive = alive();
+        app.beginRun(alive, log(), snapshot);
+
+        assertSame(snapshot, app.launchSnapshot().orElseThrow());
+
+        alive.destroy();
+        assertTrue(alive.waitFor(10, TimeUnit.SECONDS));
+        assertTrue(app.launchSnapshot().isEmpty());
     }
 
     @Test

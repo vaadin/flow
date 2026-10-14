@@ -146,7 +146,7 @@ final class Launch {
      * scan finds nothing and the apply used to report "no changes" over an app
      * running a classpath that no longer exists on paper.
      */
-    private volatile Project launchedProject;
+    private final AtomicReference<Project> launchedProject = new AtomicReference<>();
 
     /** How many times Maven has actually been run, so a caller can tell. */
     private final AtomicLong resolutions = new AtomicLong();
@@ -418,7 +418,7 @@ final class Launch {
      * indistinguishable from the daemon deciding to restart on a whim.
      */
     Optional<String> classpathDrift() {
-        Project launchedWith = launchedProject;
+        Project launchedWith = launchedProject.get();
         if (launchedWith == null) {
             return Optional.empty();
         }
@@ -1208,7 +1208,7 @@ final class Launch {
         // recorded even for a runtime that is never handed a classpath,
         // because the question it answers - is the running app still the app
         // the poms describe? - is the same either way.
-        launchedProject = resolved;
+        launchedProject.set(resolved);
         return invocation;
     }
 
@@ -1219,7 +1219,7 @@ final class Launch {
      * @return the project, or empty when no launch has been composed
      */
     Optional<Project> launchedProject() {
-        return Optional.ofNullable(launchedProject);
+        return Optional.ofNullable(launchedProject.get());
     }
 
     /**

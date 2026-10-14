@@ -163,6 +163,10 @@ class LaunchTest {
         });
 
         assertTrue(launch.projectIfResolved().isEmpty());
+        // Nor is anything launched, which leaves a classpath nothing can have
+        // drifted from - answered without resolving either.
+        assertTrue(launch.launchedProject().isEmpty());
+        assertTrue(launch.classpathDrift().isEmpty());
     }
 
     /**
