@@ -7,7 +7,13 @@ heavy use of Mockito, and they focus on the behavior of individual classes.
 
 **Integration tests** live in `flow-tests/`. They use TestBench for browser
 automation, exercise the full client-server interaction, and require a running
-application server (the Maven build starts and stops it).
+application server (the Maven build starts and stops it). See
+[flow-tests/README.md](../flow-tests/README.md) for which module a new IT
+belongs in.
+
+**Client-side tests** live in `flow-client/src/test/frontend/`. They are
+TypeScript tests run with Web Test Runner in a headless browser; run them with
+`npm test` in `flow-client`.
 
 ## Writing tests
 
@@ -27,12 +33,13 @@ application server (the Maven build starts and stops it).
   explicitly, or choose a value that differs from the default, so the
   test cannot pass without exercising the code.
 - Only add an IT when the behavior needs a browser and a server round
-  trip. Client-only logic belongs in `flow-client` tests.
+  trip. Client-only logic belongs in the client-side tests in
+  `flow-client/src/test/frontend/`.
 - Before adding a new IT view or test class, look for an existing view
   or class that exercises the same area and extend it.
-- For browser-facing features that need an IT, put the view under
-  `flow-tests/test-root-context/` (or extend an existing one there).
-  Mock the relevant browser API and exercise both happy-path and error
+- For browser-facing features that need an IT, put the view in the
+  module [flow-tests/README.md](../flow-tests/README.md) selects — for the
+  default configuration that is `flow-tests/test-default/`. Mock the relevant browser API and exercise both happy-path and error
   branches. Use an option
   value to trigger errors deterministically (for geolocation,
   `maximumAge === -1` works). If the API streams updates (e.g.
