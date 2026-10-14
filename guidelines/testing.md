@@ -16,9 +16,24 @@ application server (the Maven build starts and stops it).
   the tests to match a broken implementation.
 - Keep the unit test count minimal — only the essential cases. More tests
   are not better; focused tests are.
-- For browser-facing features, add an IT view under
-  `flow-tests/test-root-context/` that mocks the relevant browser API
-  and exercises both happy-path and error branches. Use an option
+- Assert the observable outcome — DOM state, response, emitted event,
+  public API result — not how it is produced. A test must fail when the
+  behavior breaks and keep passing through a refactor that preserves it.
+- Test the code under change, not framework behavior that is already
+  covered elsewhere.
+- When changing an existing test's setup — swapping a mock, a fixture or
+  a helper — keep every case it already covered.
+- Don't depend on JVM defaults (locale, time zone, charset). Set them
+  explicitly, or choose a value that differs from the default, so the
+  test cannot pass without exercising the code.
+- Only add an IT when the behavior needs a browser and a server round
+  trip. Client-only logic belongs in `flow-client` tests.
+- Before adding a new IT view or test class, look for an existing view
+  or class that exercises the same area and extend it.
+- For browser-facing features that need an IT, put the view under
+  `flow-tests/test-root-context/` (or extend an existing one there).
+  Mock the relevant browser API and exercise both happy-path and error
+  branches. Use an option
   value to trigger errors deterministically (for geolocation,
   `maximumAge === -1` works). If the API streams updates (e.g.
   `watchPosition`), use `setInterval` to simulate them and verify

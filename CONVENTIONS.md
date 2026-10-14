@@ -249,6 +249,13 @@ Assert concrete outputs, not just "not null". Verify JSON structure and content
 for serialization, and cover the edge cases that the change actually
 introduces.
 
+Assert the observable outcome — DOM state, response, emitted event, public API
+result — not how it is produced. A test must fail when the behavior breaks and
+keep passing through a refactor that preserves it.
+
+Test the logic of the code under change, not framework behavior that is already
+covered elsewhere.
+
 Static-import the test helpers and call them unqualified —
 `assertEquals(…)`, not `Assertions.assertEquals(…)`, and `mock(…)`, not
 `Mockito.mock(…)`. This covers the JUnit assertions, Hamcrest `assertThat`
@@ -259,8 +266,10 @@ unrelated file, and leave the remaining JUnit 4 tests until they are migrated.
 Within a file you are changing, convert the rest of its calls too rather than
 leaving two styles behind.
 
-Add an integration test view under `flow-tests/test-root-context/` for
-browser-facing features, and exercise both the happy path and the error branch.
+Add an integration test only when the behavior needs a browser and a server
+round trip; client-only logic belongs in the `flow-client` tests. Before adding
+an integration test view or class, look for an existing one that exercises the
+same area and extend it. Exercise both the happy path and the error branch.
 
 Debug a failing integration test with Playwright before guessing. Look at what
 the browser is actually doing.
@@ -279,6 +288,14 @@ what a collaborator does, the case belongs in that collaborator's test class.
 
 Make a value that only has to differ look arbitrary. A byte-exact copy of real
 data reads as a contract that the code does not have.
+
+When changing the setup of an existing test, keep every case it already
+covered. Replacing a mock or a fixture must not drop assertions that still
+apply.
+
+Do not depend on JVM defaults such as locale, time zone or charset. Set them
+explicitly, or pick a value that differs from the default, so the case cannot
+pass without exercising the code.
 
 Build the state a case needs directly. Setup that writes a file, deletes it and
 writes it again through another path hides what the case is about.
