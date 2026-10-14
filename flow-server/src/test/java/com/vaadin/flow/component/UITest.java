@@ -1391,6 +1391,14 @@ public class UITest {
 
         assertEquals(Optional.of(visualComponent), nextOverlay.getParent(),
                 "Component should have been added to the VISUAL component once the STRICT one is removed");
+
+        visualComponent.removeFromParent();
+        fixture.modalComponent.removeFromParent();
+        Component uiOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(uiOverlay);
+
+        assertEquals(Optional.of(fixture.ui), uiOverlay.getParent(),
+                "Component should have been added to the UI once no component with modality is left");
     }
 
     @Test
