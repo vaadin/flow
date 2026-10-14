@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -226,6 +227,29 @@ public class ElementListenersTest
         assertTrue(settings.has(ElementListenerMap.ALWAYS_TRUE_FILTER));
         assertEquals(100, settings.get(ElementListenerMap.ALWAYS_TRUE_FILTER)
                 .get(0).get(0).intValue());
+    }
+
+    @Test
+    void collectChanges_settingsSentOncePerRoundtripAndOnlyForChangedType() {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+        ns.add("otherType", noOp);
+        registration.addEventData("data1");
+        registration.addEventData("data2");
+        registration.setFilter("filter");
+        registration.debounce(100);
+
+        List<NodeChange> changes = collectChanges(ns);
+        assertEquals(2, changes.size());
+        assertEquals(Set.of("eventType", "otherType"),
+                changes.stream().map(change -> ((MapPutChange) change).getKey())
+                        .collect(Collectors.toSet()));
+
+        assertEquals(List.of(), collectChanges(ns));
+
+        registration.addEventData("data3");
+        assertTrue(collectEventSettings("eventType").has("data3"));
+
+        assertEquals(List.of(), collectChanges(ns));
     }
 
     @Test
