@@ -797,8 +797,8 @@ class ComponentEventBusTest {
     @DomEvent("element-data-event")
     public static class ElementDataEvent extends ComponentEvent<Component> {
         // Only the event data annotations of the parameters are used
-        public ElementDataEvent(Component source, boolean fromClient, // NOSONAR
-                @EventData("event.target") Element target,
+        public ElementDataEvent(Component source, boolean fromClient,
+                @EventData("event.target") Element target, // NOSONAR
                 @EventData("element.parentNode") Component parent,
                 @EventData("event.detail") int detail) {
             super(source, fromClient);
