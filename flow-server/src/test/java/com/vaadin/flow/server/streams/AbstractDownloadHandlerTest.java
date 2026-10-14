@@ -568,6 +568,7 @@ class AbstractDownloadHandlerTest {
         AbstractDownloadHandler<?> otherHandler = new AbstractDownloadHandler<>() {
             @Override
             public void handleDownloadRequest(DownloadEvent event) {
+                // Not called: the test only needs a second handler class
             }
         };
 

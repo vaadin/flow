@@ -99,12 +99,11 @@ final class UnansweredRangeRequests implements Serializable {
         String handlerType = handler.getClass().getName();
         if (warnings.warnedHandlersAndCauses.add(handlerType + " " + cause)) {
             String urlPostfix = handler.getUrlPostfix();
+            String served = urlPostfix == null ? ""
+                    : (" serving '" + urlPostfix + "'");
             LoggerFactory.getLogger(UnansweredRangeRequests.class).warn(
-                    "{} {}, so it serves the whole file instead of the requested range. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per handler class and cause, so other files served the same way are affected too. {}",
-                    "The download handler " + handlerType
-                            + (urlPostfix == null ? ""
-                                    : " serving '" + urlPostfix + "'"),
-                    cause.problem, cause.remedy);
+                    "The download handler {}{} {}, so it serves the whole file instead of the requested range. Media players need ranges to seek, and Safari to play video at all; download managers use them to resume. This is logged once per handler class and cause, so other files served the same way are affected too. {}",
+                    handlerType, served, cause.problem, cause.remedy);
         }
     }
 }
