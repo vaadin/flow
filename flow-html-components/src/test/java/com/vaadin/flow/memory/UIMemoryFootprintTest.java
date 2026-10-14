@@ -18,6 +18,7 @@ package com.vaadin.flow.memory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.TreeMap;
@@ -30,11 +31,22 @@ import org.openjdk.jol.info.GraphLayout;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.component.AbstractSinglePropertyField;
+import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.ClientCallable;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasLabel;
+import com.vaadin.flow.component.HasPlaceholder;
+import com.vaadin.flow.component.HasText;
+import com.vaadin.flow.component.HasTheme;
+import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -149,6 +161,60 @@ class UIMemoryFootprintTest {
         ui.add(list);
     }
 
+    @Test
+    void uiWith200FormRows() throws IOException {
+        measure("ui-with-200-form-rows", "UI with 200 form rows",
+                "A UI with 200 rows, each a layout with a theme and several"
+                        + " styles, holding a text field and a combo box"
+                        + " bound to a bean with a binder and a button with"
+                        + " a click listener. The fields are web components"
+                        + " with several properties and a synchronized"
+                        + " value, and the combo box has client callable"
+                        + " methods, as Vaadin components that load data"
+                        + " do.",
+                UIMemoryFootprintTest::addFormRows);
+    }
+
+    @Test
+    void uiWith200FormRowsAddedInLatestRoundTrip() throws IOException {
+        measureForLatestRoundTrip(
+                "ui-with-200-form-rows-added-in-latest-round-trip",
+                "UI with 200 form rows added in the latest round trip",
+                "The UI with 200 form rows, with the rows added in the latest"
+                        + " round trip, as when navigating to a view, so that"
+                        + " the response kept for resending holds all of"
+                        + " them.",
+                UIMemoryFootprintTest::addFormRows);
+    }
+
+    private static void addFormRows(UI ui) {
+        Div list = new Div();
+        for (int i = 0; i < 200; i++) {
+            Div row = new Div();
+            row.getElement().setAttribute("theme", "spacing padding");
+            row.getStyle().set("display", "flex").set("gap", "1em")
+                    .set("align-items", "baseline");
+            TextField name = new TextField();
+            name.setLabel("Name");
+            name.setPlaceholder("First and last name");
+            name.addThemeName("small");
+            ComboBox role = new ComboBox();
+            role.setLabel("Role");
+            role.setPlaceholder("Select a role");
+            Binder<Person> binder = new Binder<>();
+            binder.forField(name).asRequired("Name is required")
+                    .bind(Person::getName, Person::setName);
+            binder.forField(role).bind(Person::getRole, Person::setRole);
+            binder.setBean(new Person("Person " + i, "User"));
+            Button save = new Button("Save");
+            save.addThemeName("primary");
+            save.addClickListener(event -> binder.validate());
+            row.add(name, role, save);
+            list.add(row);
+        }
+        ui.add(list);
+    }
+
     /**
      * Opens UIs with the given view, measures them and writes the report of the
      * scenario to {@code target/memory-footprint/<id>.json}.
@@ -165,12 +231,42 @@ class UIMemoryFootprintTest {
      */
     private void measure(String id, String title, String description,
             Consumer<UI> view) throws IOException {
-        UI first = open(view);
+        // The response kept for resending is the one of the latest round
+        // trip, which is usually a small update rather than the first render
+        measureRoundTrips(id, title, description, view,
+                ui -> ui.getElement().setAttribute("data-round-trip", "1"));
+    }
+
+    /**
+     * Like {@link #measure(String, String, String, Consumer)}, but adds the
+     * content of the view in the latest round trip, as when navigating to a
+     * view, so that the response kept for resending holds the whole view.
+     */
+    private void measureForLatestRoundTrip(String id, String title,
+            String description, Consumer<UI> view) throws IOException {
+        measureRoundTrips(id, title, description, ui -> {
+        }, view);
+    }
+
+    /**
+     * Measures UIs that are opened in two round trips and writes the report of
+     * the scenario.
+     *
+     * @param firstRoundTrip
+     *            changes the UI in the first round trip
+     * @param latestRoundTrip
+     *            changes the UI in the latest round trip, whose response is the
+     *            one kept for resending
+     */
+    private void measureRoundTrips(String id, String title, String description,
+            Consumer<UI> firstRoundTrip, Consumer<UI> latestRoundTrip)
+            throws IOException {
+        UI first = open(firstRoundTrip, latestRoundTrip);
         long serializedSize = serializedSize(session);
         // Opening and serializing a UI fills caches shared by all UIs, such
         // as the reflection data of classes, so they are filled before
         // measuring the UI opened after this one
-        UI second = open(view);
+        UI second = open(firstRoundTrip, latestRoundTrip);
         serializedSize(session);
         // Walking the graph fills the reflection data of the classes it
         // walks, so the graph is walked once before measuring it
@@ -179,7 +275,7 @@ class UIMemoryFootprintTest {
         // address and would be thrown off by a garbage collection in between
         GraphLayout before = GraphLayout.parseInstance(session, first, second);
 
-        UI third = open(view);
+        UI third = open(firstRoundTrip, latestRoundTrip);
         GraphLayout after = GraphLayout.parseInstance(session, first, second,
                 third);
 
@@ -206,15 +302,13 @@ class UIMemoryFootprintTest {
         Files.writeString(file, report.toPrettyString());
     }
 
-    private UI open(Consumer<UI> view) {
+    private UI open(Consumer<UI> firstRoundTrip, Consumer<UI> latestRoundTrip) {
         MockUI ui = new MockUI(session);
         ui.doInit(mock(VaadinRequest.class), session.getNextUIid(), "ROOT");
         session.addUI(ui);
-        view.accept(ui);
+        firstRoundTrip.accept(ui);
         respond(ui);
-        // The response kept for resending is the one of the latest round
-        // trip, which is usually a small update rather than the first render
-        ui.getElement().setAttribute("data-round-trip", "1");
+        latestRoundTrip.accept(ui);
         respond(ui);
         return ui;
     }
@@ -257,5 +351,104 @@ class UIMemoryFootprintTest {
             }
         }
         return difference;
+    }
+
+    /**
+     * A field like the Vaadin text field, which keeps its value and its other
+     * state in properties of a web component.
+     */
+    @Tag("vaadin-text-field")
+    private static class TextField
+            extends AbstractSinglePropertyField<TextField, String>
+            implements HasLabel, HasPlaceholder, HasTheme, HasValidation {
+
+        TextField() {
+            super("value", "", false);
+            getElement().setProperty("clearButtonVisible", true);
+            getElement().setProperty("autoselect", false);
+            setManualValidation(true);
+        }
+
+        @Override
+        public void setErrorMessage(String errorMessage) {
+            getElement().setProperty("errorMessage", errorMessage);
+        }
+
+        @Override
+        public String getErrorMessage() {
+            return getElement().getProperty("errorMessage");
+        }
+
+        @Override
+        public void setInvalid(boolean invalid) {
+            getElement().setProperty("invalid", invalid);
+        }
+
+        @Override
+        public boolean isInvalid() {
+            return getElement().getProperty("invalid", false);
+        }
+    }
+
+    /**
+     * A field like the Vaadin combo box, which fetches its items through client
+     * callable methods.
+     */
+    @Tag("vaadin-combo-box")
+    private static class ComboBox extends TextField {
+
+        ComboBox() {
+            getElement().setProperty("pageSize", 50);
+            getElement().setProperty("itemLabelPath", "label");
+            getElement().setProperty("itemValuePath", "key");
+        }
+
+        @ClientCallable
+        private void setRequestedRange(int start, int length, String filter) {
+            // Only declared for the handlers it adds to the component, the
+            // scenario never calls it
+        }
+
+        @ClientCallable
+        private void resetDataCommunicator() {
+            // Only declared for the handlers it adds to the component, the
+            // scenario never calls it
+        }
+    }
+
+    @Tag("vaadin-button")
+    private static class Button extends Component
+            implements ClickNotifier<Button>, HasText, HasTheme {
+
+        Button(String text) {
+            setText(text);
+            getElement().setAttribute("tabindex", "0");
+        }
+    }
+
+    private static class Person implements Serializable {
+        private String name;
+        private String role;
+
+        Person(String name, String role) {
+            this.name = name;
+            this.role = role;
+        }
+
+        String getName() {
+            return name;
+        }
+
+        void setName(String name) {
+            this.name = name;
+        }
+
+        String getRole() {
+            return role;
+        }
+
+        void setRole(String role) {
+            this.role = role;
+        }
     }
 }

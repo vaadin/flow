@@ -172,6 +172,18 @@ class ServletResourceDownloadHandlerTest {
     }
 
     @Test
+    void withContentType_replacesContentTypeOfServletContainer()
+            throws IOException {
+        DownloadHandler handler = DownloadHandler
+                .forServletResource(PATH_TO_FILE, "captions.vtt")
+                .withContentType("text/vtt");
+
+        handler.handleDownloadRequest(downloadEvent);
+
+        verify(response).setContentType("text/vtt");
+    }
+
+    @Test
     void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
             throws URISyntaxException, IOException {
         DownloadEvent downloadEvent = mock(DownloadEvent.class);
