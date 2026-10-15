@@ -58,6 +58,33 @@ public class NavigationIT extends AbstractDefaultIT {
     }
 
     @BrowserTest
+    public void testRouterLinkWithBlankTarget_opensRouteInNewTab() {
+        open();
+        String firstWindow = getDriver().getWindowHandle();
+        String url = getDriver().getCurrentUrl();
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_NEW_TAB_ID)
+                .click();
+
+        waitUntil(driver -> driver.getWindowHandles().size() == 2);
+        Assertions.assertEquals(url, getDriver().getCurrentUrl(),
+                "First tab should not have navigated");
+        Assertions.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        String secondWindow = getDriver().getWindowHandles().stream()
+                .filter(handle -> !handle.equals(firstWindow)).findFirst()
+                .get();
+        getDriver().switchTo().window(secondWindow);
+        waitUntil(driver -> $(SpanElement.class).exists()
+                && "RouterView".equals($(SpanElement.class).first().getText()));
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl()
+                        .endsWith("com.vaadin.flow.RouterView"),
+                "Url of the new tab was : " + getDriver().getCurrentUrl());
+    }
+
+    @BrowserTest
     public void testNavigationPostpone_anchor() {
         open();
 
