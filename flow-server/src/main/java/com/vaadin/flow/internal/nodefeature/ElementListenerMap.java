@@ -159,7 +159,7 @@ public class ElementListenerMap extends NodeMap {
                         "The event data expression must not be null");
             }
 
-            appendEventData(eventData);
+            appendEventData(List.of(eventData));
 
             listenerMap.updateEventSettings(type);
 
@@ -179,27 +179,22 @@ public class ElementListenerMap extends NodeMap {
                 }
             }
 
-            if (eventDataExpressions == null) {
-                // Keeps the given list if it is already unmodifiable
-                eventDataExpressions = List.copyOf(eventData);
-            } else {
-                eventData.forEach(this::appendEventData);
-            }
+            appendEventData(eventData);
 
             listenerMap.updateEventSettings(type);
 
             return this;
         }
 
-        private void appendEventData(String eventData) {
+        private void appendEventData(List<String> eventData) {
             if (eventDataExpressions == null) {
-                eventDataExpressions = List.of(eventData);
-            } else if (!hasEventData(eventData)) {
-                int size = eventDataExpressions.size();
-                String[] expressions = eventDataExpressions
-                        .toArray(new String[size + 1]);
-                expressions[size] = eventData;
-                eventDataExpressions = List.of(expressions);
+                // Keeps the given list if it is already unmodifiable
+                eventDataExpressions = List.copyOf(eventData);
+            } else if (!eventDataExpressions.containsAll(eventData)) {
+                eventDataExpressions = Stream
+                        .concat(eventDataExpressions.stream(),
+                                eventData.stream())
+                        .distinct().toList();
             }
         }
 

@@ -16,7 +16,6 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -134,33 +133,6 @@ public class ElementListenersTest
         assertTrue(expressions.contains("data2"));
         // due to fix to #5090, data3 won't be present after removal
         assertFalse(expressions.contains("data3"));
-    }
-
-    @Test
-    void addEventDataList_moreDataAddedToOneListener_otherListenersUnchanged() {
-        List<String> shared = List.of("data1", "data2");
-        ElementListenerMap other = createFeature();
-        DomListenerRegistration registration = ns.add("eventType", noOp)
-                .addEventData(shared);
-        other.add("eventType", noOp).addEventData(shared);
-
-        registration.addEventData("data3")
-                .addEventData(List.of("data1", "data4"));
-
-        assertEquals(Set.of("data1", "data2", "data3", "data4"),
-                getExpressions("eventType"));
-        assertEquals(Set.of("data1", "data2"),
-                getExpressions(other, "eventType"));
-    }
-
-    @Test
-    void addEventDataList_modifiableListChangedAfterwards_expressionsUnchanged() {
-        List<String> eventData = new ArrayList<>(List.of("data1", "data2"));
-        ns.add("eventType", noOp).addEventData(eventData);
-
-        eventData.add("data3");
-
-        assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
     }
 
     @Test

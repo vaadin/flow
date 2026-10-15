@@ -70,11 +70,6 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Adds JavaScript expressions for extracting event data, like calling
      * {@link #addEventData(String)} for each of them.
-     * <p>
-     * When given an unmodifiable list, such as one created with
-     * {@link List#of(Object...)} or {@link List#copyOf(java.util.Collection)},
-     * the registration may keep a reference to it instead of a copy of its own,
-     * so that listeners that use the same expressions can share one list.
      *
      * @param eventData
      *            definitions for data that should be passed back to the server
@@ -384,6 +379,8 @@ public interface DomListenerRegistration extends Registration {
      */
     default DomListenerRegistration addEventDataElement(String eventData) {
         Objects.requireNonNull(eventData);
+        // ComponentEventBusUtil has a copy of this mapping for component event
+        // data, update it as well when changing the mapping here
         // optimizing this case as it is quite trivial
         if (Objects.equals(eventData, "event.target")) {
             return mapEventTargetElement();

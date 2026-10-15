@@ -806,7 +806,7 @@ class ComponentEventBusTest {
     }
 
     @Test
-    void addListener_elementAndComponentEventData_mappedToStateNodes() {
+    void addListener_elementAndComponentEventData_sameExpressionsAsAddEventDataElement() {
         TestComponent component = new TestComponent();
         Element element = new Element("div");
 
