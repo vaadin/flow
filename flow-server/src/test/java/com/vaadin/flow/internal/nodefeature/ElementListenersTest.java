@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,8 +39,11 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
@@ -225,6 +229,62 @@ public class ElementListenersTest
         expressions = getExpressions("eventType");
         assertFalse(expressions.contains("data1"));
         assertFalse(expressions.contains("data2"));
+    }
+
+    @Test
+    void collectChanges_settingsChangedAfterEarlierSend_updatedSettingsSent() {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+        assertFalse(collectEventSettings("eventType").has("data1"));
+
+        registration.addEventData("data1");
+        registration.debounce(100);
+
+        ObjectNode settings = collectEventSettings("eventType");
+
+        assertTrue(settings.has("data1"));
+        assertTrue(settings.has(ElementListenerMap.ALWAYS_TRUE_FILTER));
+        assertEquals(100, settings.get(ElementListenerMap.ALWAYS_TRUE_FILTER)
+                .get(0).get(0).intValue());
+    }
+
+    @Test
+    void collectChanges_settingsSentOncePerRoundtripAndOnlyForChangedType() {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+        ns.add("otherType", noOp);
+        registration.addEventData("data1");
+        registration.addEventData("data2");
+        registration.setFilter("filter");
+        registration.debounce(100);
+
+        List<NodeChange> changes = collectChanges(ns);
+        assertEquals(2, changes.size());
+        assertEquals(Set.of("eventType", "otherType"),
+                changes.stream().map(change -> ((MapPutChange) change).getKey())
+                        .collect(Collectors.toSet()));
+        ObjectNode settings = changes.stream().map(MapPutChange.class::cast)
+                .filter(change -> "eventType".equals(change.getKey()))
+                .map(ElementListenersTest::exportSettings).findFirst()
+                .orElseThrow();
+        assertTrue(settings.has("data1"));
+        assertTrue(settings.has("data2"));
+        assertEquals(100, settings.get("filter").get(0).get(0).intValue());
+
+        assertEquals(List.of(), collectChanges(ns));
+
+        registration.addEventData("data3");
+        assertTrue(collectEventSettings("eventType").has("data3"));
+
+        assertEquals(List.of(), collectChanges(ns));
+    }
+
+    @Test
+    void generateChangesFromEmpty_settingsSentAgain() {
+        ns.add("eventType", noOp).addEventData("data1");
+        ObjectNode initialSettings = collectEventSettings("eventType");
+
+        ns.generateChangesFromEmpty();
+
+        assertEquals(initialSettings, collectEventSettings("eventType"));
     }
 
     @Test
@@ -998,6 +1058,22 @@ public class ElementListenersTest
 
     private Set<String> getExpressions(String name) {
         return getExpressions(ns, name);
+    }
+
+    private ObjectNode collectEventSettings(String eventType) {
+        List<NodeChange> changes = collectChanges(ns);
+        assertEquals(1, changes.size());
+        MapPutChange change = (MapPutChange) changes.get(0);
+        assertEquals(eventType, change.getKey());
+        return exportSettings(change);
+    }
+
+    private static ObjectNode exportSettings(MapPutChange change) {
+        ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
+        ((ConstantPoolKey) change.getValue()).export(constantPoolUpdate);
+        List<String> keys = JacksonUtils.getKeys(constantPoolUpdate);
+        assertEquals(1, keys.size());
+        return (ObjectNode) constantPoolUpdate.get(keys.get(0));
     }
 
     private static DomEvent createEvent(String type) {
