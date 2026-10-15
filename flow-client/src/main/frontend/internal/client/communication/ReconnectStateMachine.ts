@@ -25,7 +25,7 @@
 
 import type { Registry } from '../Registry';
 import type { Command } from '../Command';
-import { CONNECTED, CONNECTION_LOST, RECONNECTING, setState } from '../ConnectionIndicator';
+import { CONNECTED, CONNECTION_LOST, LOADING, RECONNECTING, getState, setState } from '../ConnectionIndicator';
 import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
 import { Console } from '../Console';
 
@@ -141,9 +141,12 @@ export class ReconnectStateMachine {
     this.#reconnectAttempt = 0;
     this.#cancelScheduledReconnect();
     if (type === ConnectionMessageType.HEARTBEAT) {
-      // Heartbeat never has loading indication, it is safe to assume that no
-      // other requests are in progress and set the `CONNECTED` state directly.
-      setState(CONNECTED);
+      // Heartbeat never has loading indication. Show connected unless another
+      // party (Flow router, Hilla requests) started loading during the
+      // reconnect, as setting the state would drop its loading.
+      if (getState() !== LOADING) {
+        setState(CONNECTED);
+      }
     } else {
       // Let the loading indicator state handler leave the reconnecting state,
       // showing a request still in progress without dropping the loading of

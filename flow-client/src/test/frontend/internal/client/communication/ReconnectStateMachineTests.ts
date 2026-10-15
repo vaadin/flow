@@ -174,16 +174,31 @@ describe('ReconnectStateMachine', () => {
       ]);
     });
 
-    it('keeps loading started by another party during the reconnect', async () => {
+    for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT]) {
+      it(`keeps loading started by another party during a ${type} reconnect`, async () => {
+        const { machine, connectionState } = makeMachine();
+        machine.handleRecoverableError(type, null);
+        // E.g. a Hilla endpoint call starts while Flow is reconnecting.
+        connectionState.loadingStarted();
+
+        machine.resolveTemporaryError(type);
+        await afterDeferred();
+        expect(getState()).to.equal(ConnectionState.LOADING);
+        connectionState.loadingFinished();
+        expect(getState()).to.equal(ConnectionState.CONNECTED);
+      });
+    }
+
+    it('shows connected after a reconnect during which another party lost the connection', async () => {
       const { machine, connectionState } = makeMachine();
       machine.handleRecoverableError(ConnectionMessageType.XHR, { rpc: 1 });
-      // E.g. a Hilla endpoint call starts while Flow is reconnecting.
+      // E.g. a Hilla endpoint call starts and fails while Flow is reconnecting.
       connectionState.loadingStarted();
+      connectionState.loadingFailed();
+      expect(getState()).to.equal(ConnectionState.CONNECTION_LOST);
 
       machine.resolveTemporaryError(ConnectionMessageType.XHR);
       await afterDeferred();
-      expect(getState()).to.equal(ConnectionState.LOADING);
-      connectionState.loadingFinished();
       expect(getState()).to.equal(ConnectionState.CONNECTED);
     });
   });
