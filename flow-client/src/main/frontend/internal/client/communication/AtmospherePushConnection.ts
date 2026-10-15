@@ -27,7 +27,6 @@ import type { Registry } from '../Registry';
 import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
 import { parseJson } from './MessageHandler';
-import { sendBeacon } from './MessageSender';
 import { loadAtmosphere } from './AtmosphereLoader';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import type { Command } from '../Command';
@@ -113,13 +112,6 @@ interface AtmosphereModule {
 
 interface AtmosphereClient {
   subscribe: (request: AtmosphereRequest, handlers: AtmosphereHandlers) => Promise<AtmosphereSubscription>;
-  // Not public API of atmosphere.js, which keeps the transport to itself: it
-  // is the only way to the tracking id that the close message has to carry.
-  createTransport: (request: AtmosphereRequest, handlers: AtmosphereHandlers) => AtmosphereTransport;
-}
-
-interface AtmosphereTransport {
-  readonly uuid: string;
 }
 
 interface AtmosphereSubscription {
@@ -127,15 +119,8 @@ interface AtmosphereSubscription {
   close: () => Promise<void>;
 }
 
-/**
- * The request atmosphere.js connects with. The transports read `reconnect` and
- * `closed` from the live request object, which atmosphere.js hands back in the
- * responses.
- */
-interface AtmosphereRequest extends Record<string, unknown> {
-  reconnect?: boolean;
-  closed?: boolean;
-}
+/** The request atmosphere.js connects with. */
+type AtmosphereRequest = Record<string, unknown>;
 
 interface AtmosphereHandlers {
   open: (response: AtmosphereResponse) => void;
@@ -151,9 +136,9 @@ interface AtmosphereHandlers {
 
 /**
  * Creates the request atmosphere.js subscribes with from the connection url
- * and the Atmosphere config. atmosphere.js sends headers as query parameters
- * and reads them anew for every request it makes, so the last seen sync id is
- * an enumerable getter rather than a value fixed when the connection was made.
+ * and the Atmosphere config. atmosphere.js calls a header function for every
+ * request it makes, so the last seen sync id is read anew rather than fixed
+ * when the connection was made.
  */
 function createRequest(
   uri: string,
@@ -165,10 +150,11 @@ function createRequest(
     url: uri,
     // atmosphere.js only reconnects a lost connection when asked to
     reconnect: true,
+    // Retry every reconnectInterval, instead of the exponential backoff
+    // atmosphere.js applies by default
+    retryStrategy: { strategy: 'custom', customCalculate: () => Number(config.reconnectInterval) },
     headers: {
-      get 'X-Vaadin-LastSeenServerSyncId'(): string {
-        return String(getLastSeenServerSyncId());
-      }
+      'X-Vaadin-LastSeenServerSyncId': () => String(getLastSeenServerSyncId())
     }
   };
 }
@@ -206,15 +192,7 @@ export class AtmospherePushConnection implements PushConnection {
 
   readonly #config: Record<string, unknown>;
 
-  #subscription: Promise<AtmosphereSubscription> | null = null;
-
   #socket: AtmosphereSubscription | null = null;
-
-  #request: AtmosphereRequest | null = null;
-
-  #atmosphereTransport: AtmosphereTransport | null = null;
-
-  #pushUri: string | null = null;
 
   #transport: string | null = null;
 
@@ -251,15 +229,6 @@ export class AtmospherePushConnection implements PushConnection {
     this.#url = this.#computePushUrl();
 
     this.#loadAtmosphere();
-
-    // The server keeps the UI of a page that is left when it is preserved on
-    // refresh, and its push connection would otherwise stay bound to a
-    // request the browser has dropped.
-    window.addEventListener('pagehide', () => {
-      if (this.#subscription && this.isActive()) {
-        this.#close();
-      }
-    });
   }
 
   #getConnectionStateHandler(): ConnectionStateHandler {
@@ -280,53 +249,35 @@ export class AtmospherePushConnection implements PushConnection {
     const request = createRequest(pushUrl, this.#config, () =>
       this.#registry.getMessageHandler().getLastSeenServerSyncId()
     );
-    this.#pushUri = pushUrl;
     const client = new atmosphere.Atmosphere({ logLevel: this.#config.logLevel });
-    const createTransport = client.createTransport.bind(client);
-    // With a fallback, the last transport created is the one in use
-    client.createTransport = (transportRequest, handlers) => {
-      this.#atmosphereTransport = createTransport(transportRequest, handlers);
-      return this.#atmosphereTransport;
-    };
-    this.#subscription = client.subscribe(request, {
-      open: (response) => this.onOpen(response),
-      reopen: (response) => this.onReopen(response),
-      message: (response) => this.onMessage(response),
-      // atmosphere.js reports every failed attempt here and goes on to reconnect
-      // or fall back, so only a connection that is given up on is an error.
-      error: (error) => Console.debug(`Push connection error: ${error.message}`),
-      transportFailure: () => this.onTransportFailure(),
-      close: (response) => this.onClose(response),
-      reconnect: (req, response) => this.onReconnect(req, response),
-      failureToReconnect: (_req, response) => this.onError(response),
-      clientTimeout: (req) => this.onClientTimeout({ transport: String(req.transport), responseBody: '', request: req })
-    });
-    this.#subscription.then(
-      (subscription) => {
-        this.#socket = subscription;
-      },
-      (error: unknown) => {
-        Console.debug(`Push connection could not be established: ${String(error)}`);
-        // Neither the transport nor the fallback could connect
-        this.onError({ transport: String(this.#config.fallbackTransport ?? this.#config.transport), responseBody: '' });
-      }
-    );
-  }
-
-  /**
-   * Sends the messages over the subscription, which atmosphere.js may report
-   * open before it hands the subscription out.
-   */
-  #send(messages: string[]): void {
-    if (this.#socket) {
-      messages.forEach((message) => this.#socket!.push(message));
-    } else {
-      this.#subscription!.then((subscription) => messages.forEach((message) => subscription.push(message))).catch(
-        () => {
-          // A subscription that failed is reported through onError
+    client
+      .subscribe(request, {
+        open: (response) => this.onOpen(response),
+        reopen: (response) => this.onReopen(response),
+        message: (response) => this.onMessage(response),
+        // atmosphere.js reports every failed attempt here and goes on to reconnect
+        // or fall back, so only a connection that is given up on is an error.
+        error: (error) => Console.debug(`Push connection error: ${error.message}`),
+        transportFailure: () => this.onTransportFailure(),
+        close: (response) => this.onClose(response),
+        reconnect: (req, response) => this.onReconnect(req, response),
+        failureToReconnect: (_req, response) => this.onError(response),
+        clientTimeout: (req) =>
+          this.onClientTimeout({ transport: String(req.transport), responseBody: '', request: req })
+      })
+      .then(
+        (subscription) => {
+          this.#socket = subscription;
+        },
+        (error: unknown) => {
+          Console.debug(`Push connection could not be established: ${String(error)}`);
+          // Neither the transport nor the fallback could connect
+          this.onError({
+            transport: String(this.#config.fallbackTransport ?? this.#config.transport),
+            responseBody: ''
+          });
         }
       );
-    }
   }
 
   #computePushUrl(): string {
@@ -385,13 +336,11 @@ export class AtmospherePushConnection implements PushConnection {
       Console.debug(`Sending push (${this.#transport}) message to server: ${messageJson}`);
       if (this.#transport === 'websocket') {
         const fragmented = new FragmentedMessage(messageJson);
-        const fragments: string[] = [];
         while (fragmented.hasNextFragment()) {
-          fragments.push(fragmented.getNextFragment());
+          this.#socket!.push(fragmented.getNextFragment());
         }
-        this.#send(fragments);
       } else {
-        this.#send([messageJson]);
+        this.#socket!.push(messageJson);
       }
       return;
     }
@@ -423,7 +372,6 @@ export class AtmospherePushConnection implements PushConnection {
    */
   protected onConnect(response: AtmosphereResponse): void {
     this.#transport = response.transport;
-    this.#request = response.request ?? null;
     switch (this.#state) {
       case State.CONNECT_PENDING:
         this.#state = State.CONNECTED;
@@ -455,35 +403,17 @@ export class AtmospherePushConnection implements PushConnection {
       case State.CONNECTED:
         // Normal disconnect
         Console.debug('Closing push connection');
-        this.#close();
+        // Also sends Atmosphere's close message, so the server releases a
+        // long-polling request instead of pushing into it
+        this.#socket!.close().catch(() => {
+          // The connection is gone either way
+        });
         this.#state = State.DISCONNECTED;
         command();
         break;
       default:
         throw new Error('Can not disconnect more than once');
     }
-  }
-
-  #close(): void {
-    // atmosphere.js reacts to the close event of the socket it closed itself as
-    // to a lost connection, unless the request says it is closed.
-    if (this.#request) {
-      this.#request.closed = true;
-      this.#request.reconnect = false;
-    }
-    // atmosphere.js only drops its own end of the connection. The server does
-    // not notice a long-polling request that the browser abandons, so tell it,
-    // as Atmosphere's close message does. A beacon still goes out while the page
-    // is being unloaded.
-    const uuid = this.#atmosphereTransport?.uuid;
-    if (uuid && uuid !== '0') {
-      let closeUri = addGetParameter(this.#pushUri!, 'X-Atmosphere-Transport', 'close');
-      closeUri = addGetParameter(closeUri, 'X-Atmosphere-tracking-id', uuid);
-      sendBeacon(closeUri, '');
-    }
-    this.#subscription!.then((subscription) => subscription.close()).catch(() => {
-      // The connection is gone either way
-    });
   }
 
   /**

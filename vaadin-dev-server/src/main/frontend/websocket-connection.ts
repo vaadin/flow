@@ -20,7 +20,9 @@ export class WebSocketConnection extends Connection {
       url,
       contentType: 'application/json; charset=UTF-8',
       reconnect: true,
-      reconnectInterval: 5000,
+      // Retry every 5 s, instead of the exponential backoff atmosphere.js
+      // applies by default
+      retryStrategy: { strategy: 'custom', customCalculate: () => 5000 },
       timeout: -1,
       maxReconnectOnClose: 10000000,
       trackMessageLength: true,
