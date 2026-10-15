@@ -1948,6 +1948,10 @@ public class UI extends Component
      * curtain or change the visible state of the components in the UI - that
      * should be handled by the component separately. Thus, this is purely a
      * server side feature.
+     * <p>
+     * Passing {@code false} also removes {@link ModalityMode#VISUAL} from a
+     * component. Components that use visual modality should use
+     * {@link #setChildComponentModal(Component, ModalityMode)} instead.
      *
      * @param childComponent
      *            the child component to change state for
