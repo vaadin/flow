@@ -399,7 +399,7 @@ class ReflectorTest {
                 "com.vaadin-flow-archive-extractor-1.0.jar",
                 "com.vaadin-ui-tests-1.0.jar",
                 "com.vaadin.external-gentyref-1.0.jar",
-                "com.vaadin.external.atmosphere-atmosphere-runtime-1.0.jar");
+                "org.atmosphere-atmosphere-runtime-1.0.jar");
     }
 
     private void assertThatIsolatedClassLoaderHasFilteredScanUrls(
