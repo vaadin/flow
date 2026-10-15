@@ -171,6 +171,7 @@ class NodeInstallerTest {
     @Test
     void defaultNodeChecksums_coverDefaultVersionOnSupportedPlatforms() {
         String version = FrontendTools.DEFAULT_NODE_VERSION;
+        // Keep in sync with the archives scripts/updateNodeChecksums.sh checks
         Map<String, Map<String, String>> archives = Map.of(
                 "darwin-arm64.tar.gz",
                 NodeInstaller.DefaultNodeChecksums.CHECKSUMS,

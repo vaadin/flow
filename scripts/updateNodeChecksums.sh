@@ -35,7 +35,8 @@ curl -sSf -o "$work/unofficial-SHASUMS256.txt" "$unofficial/SHASUMS256.txt"
 
 # unofficial-builds publishes SHASUMS256.txt before every build has finished
 # and appends to it as builds complete, so refuse to store a file that lacks
-# an archive Flow downloads.
+# an archive Flow downloads. Keep this list in sync with
+# NodeInstallerTest.defaultNodeChecksums_coverDefaultVersionOnSupportedPlatforms.
 missing=()
 for archive in darwin-arm64.tar.gz darwin-x64.tar.gz linux-arm64.tar.gz \
   linux-x64.tar.gz win-arm64.zip win-x64.zip; do
