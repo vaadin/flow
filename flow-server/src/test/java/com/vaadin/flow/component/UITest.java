@@ -155,6 +155,10 @@ public class UITest {
         }
     }
 
+    private static class ContainerComponent extends AttachableComponent
+            implements HasComponents {
+    }
+
     private static class AttachedElementStateProvider
             extends AbstractTextElementStateProvider {
 
@@ -1586,6 +1590,18 @@ public class UITest {
         assertEquals(fixture.ui.getInternals().getActiveModalComponent(),
                 testComponentParent.get(),
                 "test component should have been attached to modalComponent");
+    }
+
+    @Test
+    public void addToModalComponent_hasComponentsModal_addedToModal() {
+        final TestFixture fixture = new TestFixture();
+        ContainerComponent modal = new ContainerComponent();
+        fixture.ui.addModal(modal);
+        Component test = new AttachableComponent();
+        fixture.ui.addToModalComponent(test);
+
+        assertEquals(Optional.of(modal), test.getParent(),
+                "test component should have been added to the modal container");
     }
 
     @Test
