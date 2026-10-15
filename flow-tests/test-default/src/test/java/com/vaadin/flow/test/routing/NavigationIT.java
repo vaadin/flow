@@ -85,6 +85,27 @@ public class NavigationIT extends AbstractDefaultIT {
     }
 
     @BrowserTest
+    public void testRouterLinkWithSelfTarget_navigatesInPlace() {
+        open();
+        executeScript("window.noReload = true;");
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_SELF_TARGET_ID)
+                .click();
+
+        Assertions.assertEquals("RouterView",
+                $(SpanElement.class).first().getText());
+        Assertions.assertEquals(1, getDriver().getWindowHandles().size());
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl()
+                        .endsWith("com.vaadin.flow.RouterView"),
+                "Url should have updated to RouterView was : "
+                        + getDriver().getCurrentUrl());
+        Assertions.assertEquals(Boolean.TRUE,
+                executeScript("return window.noReload;"),
+                "Navigation should not have reloaded the page");
+    }
+
+    @BrowserTest
     public void testNavigationPostpone_anchor() {
         open();
 
