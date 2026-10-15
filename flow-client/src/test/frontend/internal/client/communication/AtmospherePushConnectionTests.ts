@@ -30,7 +30,8 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', pushParameters = 
     pushClientTimeout: 0,
     pushScriptLoadErrors: [] as string[],
     lastSeenServerSyncId: 5,
-    subscribeError: null as Error | null
+    subscribeError: null as Error | null,
+    onPushOk: () => {}
   };
   const capture: AtmosphereCapture = { request: null, handlers: null };
   const fakeSubscription = {
@@ -62,7 +63,10 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', pushParameters = 
       isAlwaysXhrToServer: () => false
     },
     ConnectionStateHandler: {
-      pushOk: () => log.pushOk++,
+      pushOk: () => {
+        log.pushOk++;
+        log.onPushOk();
+      },
       pushError: () => log.pushError++,
       pushClosed: () => log.pushClosed++,
       pushClientTimeout: () => log.pushClientTimeout++,
@@ -187,18 +191,6 @@ describe('AtmospherePushConnection', () => {
       // A constant delay, as the reconnectInterval of 5 s used to be
       const { customCalculate } = request.retryStrategy as { customCalculate: (attempt: number) => number };
       expect([1, 2, 10].map(customCalculate)).to.deep.equal([5000, 5000, 5000]);
-    });
-
-    it('reads the last seen sync id anew for every request', async () => {
-      // Ported from the header-supplier case: atmosphere.js reads the headers for each request it makes.
-      const { registry, log, capture } = setupPush();
-      new AtmospherePushConnection(registry);
-      await tick();
-      const headers = capture.request!.headers as Record<string, () => string>;
-      expect(headers['X-Vaadin-LastSeenServerSyncId']()).to.equal('5');
-
-      log.lastSeenServerSyncId = 8;
-      expect(headers['X-Vaadin-LastSeenServerSyncId']()).to.equal('8');
     });
 
     it('reports an error when neither transport can connect', async () => {
@@ -371,6 +363,9 @@ describe('AtmospherePushConnection', () => {
       expect(url.searchParams.get('X-Vaadin-LastSeenServerSyncId')).to.equal('5');
       expect(url.searchParams.get('X-atmo-protocol')).to.equal('true');
 
+      // Messages queued while connecting are sent as soon as the connection
+      // is reported open, which needs the subscription to be there already
+      log.onPushOk = () => connection.push({ a: 1 });
       socket.open();
       expect(log.pushOk).to.equal(0); // waits for the handshake
       socket.receive(handshake('abc'));
@@ -379,12 +374,10 @@ describe('AtmospherePushConnection', () => {
       await tick();
       expect(log.pushOk).to.equal(1);
       expect(connection.getTransportType()).to.equal('websocket');
+      expect(socket.sent).to.deep.equal(['7|{"a":1}']);
 
       socket.receive('12|{"syncId":0}');
       expect(log.handled).to.deep.equal([{ syncId: 0 }]);
-
-      connection.push({ a: 1 });
-      expect(socket.sent).to.deep.equal(['7|{"a":1}']);
     });
 
     it('does not reconnect when it closes the connection', async () => {
@@ -411,16 +404,92 @@ describe('AtmospherePushConnection', () => {
       sockets[0].receive(handshake('abc'));
       await tick();
 
+      log.lastSeenServerSyncId = 8;
       sockets[0].drop();
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(sockets).to.have.length(2);
-      expect(new URL(sockets[1].url).searchParams.get('X-Atmosphere-tracking-id')).to.equal('abc');
+      const reconnectUrl = new URL(sockets[1].url);
+      expect(reconnectUrl.searchParams.get('X-Atmosphere-tracking-id')).to.equal('abc');
+      // atmosphere.js reads the headers anew for every request
+      expect(reconnectUrl.searchParams.get('X-Vaadin-LastSeenServerSyncId')).to.equal('8');
       sockets[1].open();
       const message = '{"a":"x|y|z|"}';
       sockets[1].receive(`${message.length}|${message}`);
 
       expect(log.handled).to.deep.equal([{ a: 'x|y|z|' }]);
       expect(connection.isActive()).to.be.true;
+    });
+
+    describe('over long-polling', () => {
+      const nativeFetch = window.fetch;
+      const nativeSendBeacon = navigator.sendBeacon;
+      let requests: Array<{ url: string; method: string }>;
+      let beacons: string[];
+
+      beforeEach(() => {
+        requests = [];
+        beacons = [];
+        // The first poll answers with the handshake, the next ones hang until
+        // they are aborted, and anything else, as the close message, succeeds.
+        window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+          const url = String(input);
+          const method = init?.method ?? 'GET';
+          requests.push({ url, method });
+          if (method !== 'GET') {
+            return new Response('');
+          }
+          if (requests.filter((request) => request.method === 'GET').length === 1) {
+            return new Response(handshake('lp'));
+          }
+          return new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+          });
+        };
+        navigator.sendBeacon = (url: string | URL) => {
+          beacons.push(String(url));
+          return true;
+        };
+      });
+      afterEach(() => {
+        window.fetch = nativeFetch;
+        navigator.sendBeacon = nativeSendBeacon;
+      });
+
+      async function openLongPolling() {
+        const setup = setupAtmosphere(new Map([['transport', 'long-polling']]));
+        const connection = new AtmospherePushConnection(setup.registry);
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        expect(setup.log.pushOk).to.equal(1);
+        expect(connection.getTransportType()).to.equal('long-polling');
+        return connection;
+      }
+
+      const isCloseMessage = (url: string): boolean => {
+        const params = new URL(url, document.baseURI).searchParams;
+        return params.get('X-Atmosphere-Transport') === 'close' && params.get('X-Atmosphere-tracking-id') === 'lp';
+      };
+
+      it('tells the server when it closes the connection', async () => {
+        const connection = await openLongPolling();
+
+        connection.disconnect(() => {});
+        await tick();
+
+        const closeMessages = requests.filter((request) => isCloseMessage(request.url));
+        expect(closeMessages).to.have.length(1);
+        expect(new URL(closeMessages[0].url, document.baseURI).pathname).to.equal('/app/VAADIN/push');
+      });
+
+      it('tells the server when the page is left', async () => {
+        const connection = await openLongPolling();
+
+        window.dispatchEvent(new Event('pagehide'));
+
+        expect(beacons.filter(isCloseMessage)).to.have.length(1);
+        // The page is going away, so the connection state is left as it is
+        expect(connection.isActive()).to.be.true;
+        connection.disconnect(() => {});
+      });
     });
   });
 });
