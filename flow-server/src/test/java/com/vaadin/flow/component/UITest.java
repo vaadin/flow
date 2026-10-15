@@ -1479,6 +1479,11 @@ public class UITest {
         assertEquals(List.of(fixture.modalComponent),
                 fixture.ui.getInternals().getModalityComponents(),
                 "VISUAL component should be reported only once");
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+
+        assertFalse(fixture.ui.getInternals().hasModalityComponent(),
+                "Setting modal to false should remove VISUAL modality");
     }
 
     @Test
