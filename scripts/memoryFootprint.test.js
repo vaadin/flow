@@ -27,7 +27,7 @@ const BASE = {
 
 test('reports the metrics and classes that changed', () => {
   const head = {
-    'empty-ui': report('Empty UI', 9880, 22160, BASE['empty-ui'].metrics[0].breakdown),
+    'empty-ui': report('Empty UI', 9876, 22160, BASE['empty-ui'].metrics[0].breakdown),
     'rows-ui': report('Rows UI', 927048, 519703, {
       'java.util.HashMap': { count: 15, bytes: 720 },
       '[Ljava.lang.String;': { count: 1000, bytes: 32000 }
@@ -43,7 +43,7 @@ test('reports the metrics and classes that changed', () => {
     body.includes('| Rows UI | Heap retained per UI | 1,010,240 B | 927,048 B | $\\color{green}\\textbf{−83,192 B}$ (−8.2%) |')
   );
   assert.match(body, /\| Rows UI \| Serialized session \| 519,703 B \| 519,703 B \| no change \|/);
-  assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B \| 9,880 B \| no change \|/);
+  assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B \| 9,876 B \| −4 B \(ignored\) \|/);
   assert.ok(body.includes('| Empty UI | Serialized session | 22,153 B | 22,160 B | $\\color{red}\\textbf{+7 B}$ (+0.0%) |'));
   assert.match(body, /<summary>Rows UI: Heap retained per UI by class<\/summary>/);
   assert.doesNotMatch(body, /<summary>Empty UI:/);
@@ -55,11 +55,18 @@ test('reports the metrics and classes that changed', () => {
   ]);
 });
 
-test('reports no change when every metric is the same', () => {
-  assert.strictEqual(compare(BASE, BASE).changed, false);
-  const body = comment(BASE, BASE, 'abc1234');
-  assert.match(body, /No change compared with the base commit abc1234/);
-  assert.doesNotMatch(body, /by class/);
+test('reports no change without a table when every metric differs by less than 5 bytes', () => {
+  const almostSame = {
+    'empty-ui': report('Empty UI', 9876, 22154, BASE['empty-ui'].metrics[0].breakdown),
+    'rows-ui': report('Rows UI', 1010240, 519703, BASE['rows-ui'].metrics[0].breakdown)
+  };
+  for (const head of [BASE, almostSame]) {
+    assert.strictEqual(compare(BASE, head).changed, false);
+    const body = comment(BASE, head, 'abc1234');
+    assert.match(body, /No change compared with the base commit abc1234/);
+    assert.doesNotMatch(body, /\| Scenario \|/);
+    assert.doesNotMatch(body, /by class/);
+  }
 });
 
 test('reports the head metrics when the base has none', () => {
@@ -90,7 +97,7 @@ test('lists at most 15 classes per breakdown', () => {
   }
   const head = {
     ...BASE,
-    'rows-ui': report('Rows UI', 1010240, 519703, { ...BASE['rows-ui'].metrics[0].breakdown, ...classes })
+    'rows-ui': report('Rows UI', 1011770, 519703, { ...BASE['rows-ui'].metrics[0].breakdown, ...classes })
   };
 
   const body = comment(BASE, head, 'abc1234');

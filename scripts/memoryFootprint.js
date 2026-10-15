@@ -15,14 +15,14 @@
  *
  * The scenarios and metrics are defined by the test alone: this script
  * matches them by id and reports whatever it finds. The breakdown is
- * optional. The measurements are exact, so any difference is caused by the
- * change and not by noise.
+ * optional. Differences smaller than MIN_CHANGE are not counted as changes.
  *
  * Usage: node scripts/memoryFootprint.js <base dir> <head dir> <base commit>
  *
  * Outputs:
  * - `changed=true|false` appended to $GITHUB_OUTPUT (printed if not set):
- *   whether any measurement differs, or the base has none to compare with
+ *   whether any measurement differs by at least MIN_CHANGE, or the base has
+ *   none to compare with
  * - memory-comment.md: the sticky pull request comment body
  */
 const fs = require('fs');
@@ -35,6 +35,22 @@ const COMMENT_MARKER = '<!-- flow-memory-footprint -->';
 // Caps the classes listed per breakdown, which a large change could otherwise
 // grow past what anyone reads
 const MAX_CLASSES = 15;
+
+// The response kept for resending is stored compressed, and the order of its
+// constants can differ between runs, so the serialized size can vary by a
+// byte or so without any change
+const MIN_CHANGE = 5;
+
+/**
+ * Whether a metric changed from base to head by at least MIN_CHANGE, or is
+ * there on only one side.
+ */
+function isChange(base, head) {
+  if (base === undefined || head === undefined) {
+    return base !== head;
+  }
+  return Math.abs(head - base) >= MIN_CHANGE;
+}
 
 function readMeasurements(dir) {
   if (!fs.existsSync(dir)) {
@@ -81,6 +97,9 @@ function formatChange(hasBase, base, head, unit) {
   }
   const difference = head - base;
   const sign = difference > 0 ? '+' : '−';
+  if (!isChange(base, head)) {
+    return `${sign}${formatValue(Math.abs(difference), unit)} (ignored)`;
+  }
   const percent = ((Math.abs(difference) / base) * 100).toFixed(1);
   const color = difference > 0 ? 'red' : 'green';
   // GitHub colors text only in math, where \textbf keeps the spaces. The
@@ -137,7 +156,7 @@ function signed(number) {
 
 function compare(base, head, allRows = rows(base, head)) {
   const hasBase = Object.keys(base).length > 0;
-  const changed = !hasBase || allRows.some((row) => row.base?.value !== row.head?.value);
+  const changed = !hasBase || allRows.some((row) => isChange(row.base?.value, row.head?.value));
   return { hasBase, changed };
 }
 
@@ -149,6 +168,7 @@ function comment(base, head, baseCommit) {
     lines.push(`The base commit ${baseCommit} has no memory measurements to compare with.`, '');
   } else if (!changed) {
     lines.push(`No change compared with the base commit ${baseCommit}.`, '');
+    return lines.join('\n');
   } else {
     lines.push(`Compared with the base commit ${baseCommit}.`, '');
   }
@@ -185,7 +205,7 @@ function comment(base, head, baseCommit) {
     '',
     '</details>',
     '',
-    '_Measured by `UIMemoryFootprintTest`. The measurements are exact, so any difference comes from the change._',
+    `_Measured by \`UIMemoryFootprintTest\`. Differences under ${MIN_CHANGE} B are ignored._`,
     ''
   );
   return lines.join('\n');
