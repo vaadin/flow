@@ -1077,8 +1077,13 @@ class NavigationStateRendererTest {
             }
         }
 
+        // a strict modal component opened below the one under test, so that
+        // removal of several components with modality is covered
+        ModalComponent strictComponent = new ModalComponent();
         ModalComponent modalComponent = new ModalComponent();
         MockUI ui = new MockUI(session);
+        ui.add(strictComponent);
+        ui.setChildComponentModal(strictComponent, ModalityMode.STRICT);
         ui.add(modalComponent);
         ui.setChildComponentModal(modalComponent, modalityMode);
 
@@ -1093,6 +1098,8 @@ class NavigationStateRendererTest {
         int expectedDetachCount = modalityMode == ModalityMode.MODELESS ? 0 : 1;
         assertEquals(1, modalComponent.attachCount);
         assertEquals(expectedDetachCount, modalComponent.detachCount);
+        assertEquals(1, strictComponent.attachCount);
+        assertEquals(1, strictComponent.detachCount);
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {

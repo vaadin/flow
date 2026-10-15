@@ -1518,6 +1518,17 @@ public class UITest {
                 "Detached component should not be tracked as a component with modality");
         assertTrue(fixture.ui.getInternals().getModalityComponents().isEmpty(),
                 "Detached component should not be reported as a component with modality");
+
+        // Re-attaching and setting modality again tracks the component anew
+        fixture.ui.add(fixture.modalComponent);
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+        assertTrue(fixture.ui.getInternals().hasModalityComponent(),
+                "Re-attached component should be tracked as a component with modality");
+
+        fixture.modalComponent.removeFromParent();
+        assertFalse(fixture.ui.getInternals().hasModalityComponent(),
+                "Component detached again should not be tracked as a component with modality");
     }
 
     @Test
