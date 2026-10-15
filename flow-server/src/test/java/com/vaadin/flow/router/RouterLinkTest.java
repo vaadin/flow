@@ -488,7 +488,7 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    void setTarget_emptyRemovesAttribute() {
+    void setTarget_nullOrEmptyRemovesAttribute() {
         RouterLink link = new RouterLink(router, FooNavigationTarget.class);
 
         link.setTarget("_top");
@@ -499,6 +499,15 @@ class RouterLinkTest extends HasCurrentService {
         link.setTarget("");
         assertFalse(link.getElement().hasAttribute("target"));
         assertNull(link.getTarget());
+
+        link.setTarget("_top");
+        link.setTarget(null);
+        assertFalse(link.getElement().hasAttribute("target"));
+        assertNull(link.getTarget());
+
+        link.setTarget("_top");
+        link.setOpenInNewBrowserTab(false);
+        assertFalse(link.getElement().hasAttribute("target"));
     }
 
     @Route("foo")
