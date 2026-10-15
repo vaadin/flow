@@ -39,7 +39,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -840,6 +842,40 @@ class HotswapperTest {
     }
 
     @Test
+    void onHotswap_pushEnabled_overlayClassChanged_activeChainRefreshed()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session,
+                MyRouteWithOverlay.class);
+        ui.enablePush();
+
+        hotswapper.onHotswap(new String[] { MyOverlay.class.getName() }, true);
+
+        ui.assertChainRefreshed();
+        Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+    }
+
+    @Test
+    void onHotswap_pushEnabled_overlayOpen_classUnrelatedToUIChanged_UINotRefreshed()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session,
+                MyRouteWithOverlay.class);
+        ui.enablePush();
+
+        hotswapper.onHotswap(new String[] { String.class.getName() }, true);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+    }
+
+    @Test
     void onHotswap_pushEnabled_routeLayoutClassChanged_activeChainRefreshed()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
@@ -1543,6 +1579,25 @@ class HotswapperTest {
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
             event.getLocationChangeEvent().getUI().addModal(new MyComponent());
+        }
+
+    }
+
+    @Tag("my-overlay")
+    public static class MyOverlay extends Component {
+
+    }
+
+    @Tag("my-route-with-overlay")
+    public static class MyRouteWithOverlay extends Component
+            implements AfterNavigationObserver {
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            UI ui = event.getLocationChangeEvent().getUI();
+            MyOverlay overlay = new MyOverlay();
+            ui.add(overlay);
+            ui.setChildComponentModal(overlay, ModalityMode.VISUAL);
         }
 
     }
