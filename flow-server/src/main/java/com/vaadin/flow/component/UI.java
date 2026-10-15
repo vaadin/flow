@@ -2026,8 +2026,8 @@ public class UI extends Component
                 .getActiveModalComponent();
         if (activeModalComponent == null) {
             add(component);
-        } else if (activeModalComponent instanceof HasComponents) {
-            ((HasComponents) activeModalComponent).add(component);
+        } else if (activeModalComponent instanceof HasComponents hasComponents) {
+            hasComponents.add(component);
         } else {
             activeModalComponent.getElement()
                     .appendChild(component.getElement());
