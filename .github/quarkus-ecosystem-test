@@ -18,8 +18,10 @@ $MVN -N versions:set-property -Dproperty=quarkus.version -DnewVersion=${QUARKUS_
 # Quarkus main removed QuarkusUnitTest; QuarkusExtensionTest replaces it with
 # the same API, but only exists from Quarkus 3.35. Rename it here until the
 # pinned quarkus.version has QuarkusExtensionTest and the tests can use it.
-grep -rlw QuarkusUnitTest vaadin-quarkus --include=*.java \
-  | xargs -r sed -i 's/\bQuarkusUnitTest\b/QuarkusExtensionTest/g'
+if grep -rqw QuarkusUnitTest vaadin-quarkus --include=*.java; then
+  grep -rlw QuarkusUnitTest vaadin-quarkus --include=*.java \
+    | xargs sed -i 's/\bQuarkusUnitTest\b/QuarkusExtensionTest/g'
+fi
 
 # The groupId:artifactId of each module that Maven selects for the given -pl,
 # -am and -amd options. The quarkus-tests profile adds the test suite, which is
