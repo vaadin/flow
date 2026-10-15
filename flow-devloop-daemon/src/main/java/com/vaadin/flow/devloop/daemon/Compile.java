@@ -270,12 +270,26 @@ final class Compile {
 
         private static Snapshot of(List<Reactor.Module> modules,
                 Frontend frontend) {
+            // A tree that changes under the walk - a directory removed
+            // mid-iteration - fails it unchecked, part way through. Caught
+            // here rather than in walk: a partial snapshot only leaves files
+            // out, which reports them changed - the safe way round - while a
+            // partial walk in stale() would report every file it did not
+            // reach as deleted, and delete its artifacts.
             Map<Path, Stamp> sources = new java.util.HashMap<>();
-            forEachSource(modules,
-                    (module, file, stamp) -> sources.put(file, stamp));
+            try {
+                forEachSource(modules,
+                        (module, file, stamp) -> sources.put(file, stamp));
+            } catch (java.io.UncheckedIOException partial) {
+                // Keep what was stamped; see above.
+            }
             Map<Path, Stamp> resources = new java.util.HashMap<>();
-            forEachResource(modules,
-                    (module, file, stamp) -> resources.put(file, stamp));
+            try {
+                forEachResource(modules,
+                        (module, file, stamp) -> resources.put(file, stamp));
+            } catch (java.io.UncheckedIOException partial) {
+                // Keep what was stamped; see above.
+            }
             Map<Path, Stamp> frontendFiles = new java.util.HashMap<>();
             Path frontendRoot = frontend.root().orElse(null);
             if (frontendRoot != null) {
@@ -926,8 +940,12 @@ final class Compile {
      * have settled on the convention folder where the launch found a configured
      * one. Its files are then none of the launch's, and every one of them would
      * be reported - a bundled one by restarting the app. Such a baseline is
-     * taken from the disk instead, which is no worse than it was before
-     * launches were stamped at all.
+     * taken from the disk as it is now instead. That is a loss: an edit made
+     * between the launch and this seed is taken as live, where the start-time
+     * cutoff used before launches were stamped would still have reported it.
+     * Missing one edit costs less than reporting every file, and it takes a
+     * baseline that settled on its folder before the build named another to get
+     * here at all.
      *
      * @param launched
      *            what the application was launched with
@@ -1508,10 +1526,8 @@ final class Compile {
             walk.filter(Files::isRegularFile).filter(accept)
                     .forEach(file -> stampOf(file).ifPresent(
                             stamp -> action.accept(module, file, stamp)));
-        } catch (IOException | java.io.UncheckedIOException ignored) {
-            // An unreadable tree yields an empty change-set, not a failure -
-            // and so does one that changes under the walk, which reports a
-            // directory gone mid-iteration unchecked.
+        } catch (IOException ignored) {
+            // An unreadable tree yields an empty change-set, not a failure.
         }
     }
 

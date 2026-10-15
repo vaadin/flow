@@ -15,19 +15,26 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * The engine itself needs a running app, so what is unit-tested here are the
@@ -43,6 +50,52 @@ class TransactionEngineTest {
     /** What a run spawned from an empty project was launched with. */
     private static final Compile.Snapshot NOTHING = new Compile.Snapshot(
             Map.of(), Map.of(), Map.of(), null);
+
+    @TempDir
+    Path root;
+
+    @Test
+    void onConnector_seedsFromTheRegisteringRunsSnapshot() throws Exception {
+        // A registration can be handled after a restart has already replaced
+        // the current run. Seeding from the current run's snapshot would then
+        // take the successor's files as the ones the registering app loaded,
+        // and an edit it never read would answer "no changes".
+        Path app = Files.createDirectories(root.resolve("app"));
+        Files.createDirectories(app.resolve("target/classes"));
+        Path view = app.resolve("src/main/frontend/views/main.ts");
+        Files.createDirectories(view.getParent());
+        Files.writeString(view, "export {};");
+        Reactor.Module module = Reactor.Module.of(app, "app");
+        String classpath = module.classesDir().toString();
+        Launch.Project project = new Launch.Project(List.of(module), classpath,
+                Map.of("app", classpath), OptionalInt.empty());
+        Compile.Snapshot registering = Compile.Snapshot.of(project);
+        Files.writeString(view, "export const edited = true;");
+        Compile.Snapshot current = Compile.Snapshot.of(project);
+
+        Launch launch = mock(Launch.class);
+        when(launch.projectIfResolved()).thenReturn(Optional.of(project));
+        when(launch.log()).thenReturn(line -> {
+        });
+        AppProcess process = new AppProcess(root, null);
+        Process alive = alive();
+        try {
+            process.beginRun(alive, root.resolve("app.log"), current);
+            TransactionEngine engine = new TransactionEngine(launch, process);
+
+            // The first registration builds the baseline, the next one
+            // re-seeds it; both have to take the registering run's stamps.
+            engine.onConnector(connector(), registering);
+            assertEquals(List.of(view),
+                    engine.compile().staleFrontend().modified());
+
+            engine.onConnector(connector(), registering);
+            assertEquals(List.of(view),
+                    engine.compile().staleFrontend().modified());
+        } finally {
+            alive.destroy();
+        }
+    }
 
     @Test
     void onConnectorClosed_willNotClearAConnectorARestartReplaced() {
@@ -483,4 +536,23 @@ class TransactionEngineTest {
         return tx;
     }
 
+    private static Connector connector() {
+        return new Connector(new PrintWriter(Writer.nullWriter()));
+    }
+
+    /** A real, still-running child, so the current run is a live one. */
+    private Process alive() throws IOException {
+        Path source = root.resolve("Sleeper.java");
+        Files.writeString(source, """
+                public class Sleeper {
+                    public static void main(String[] args) throws Exception {
+                        Thread.sleep(600_000);
+                    }
+                }
+                """);
+        Path java = Path.of(System.getProperty("java.home"), "bin", "java");
+        return new ProcessBuilder(java.toString(), source.toString())
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD).start();
+    }
 }

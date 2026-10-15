@@ -1385,6 +1385,10 @@ final class TransactionEngine {
         return connector;
     }
 
+    Compile compile() {
+        return compile;
+    }
+
     /**
      * What the app logged while the change was going live, and whether any of
      * it means the change is not. The redefine is reported by the JVM and the
