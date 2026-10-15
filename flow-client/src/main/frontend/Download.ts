@@ -50,8 +50,8 @@ function startDownload(event: Event | undefined, url: string, filename?: string)
   // anchors.
   a.style.display = 'none';
   // The synthesised click is an implementation detail: keep it from bubbling
-  // to the trigger element (which would start the download again) or to
-  // application listeners.
+  // to the trigger element's ancestors, where application listeners would
+  // otherwise see an extra click.
   a.addEventListener('click', (e) => e.stopPropagation());
   const origin = event?.currentTarget;
   if (origin instanceof Element && origin.parentNode) {
