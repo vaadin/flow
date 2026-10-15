@@ -51,6 +51,7 @@ public class SessionLockAcquiredEvent extends AbstractSessionLockEvent {
      *            is not known
      * @param waitTime
      *            how long the thread waited for the lock, not {@code null}
+     * @since 25.4
      */
     public SessionLockAcquiredEvent(VaadinService service,
             VaadinSession session, Duration waitTime) {
@@ -65,6 +66,7 @@ public class SessionLockAcquiredEvent extends AbstractSessionLockEvent {
      * {@link SessionLockRequestedEvent} is not.
      *
      * @return the wait time, not {@code null}
+     * @since 25.4
      */
     public Duration getWaitTime() {
         return waitTime;

@@ -44,8 +44,11 @@ public interface DetachNotifier extends Serializable {
                         try {
                             listener.onComponentEvent(event);
                         } catch (RuntimeException e) {
-                            VaadinSession.getCurrent().getErrorHandler()
-                                    .error(new ErrorEvent(e));
+                            VaadinSession session = VaadinSession.getCurrent();
+                            if (session == null) {
+                                throw e;
+                            }
+                            session.getErrorHandler().error(new ErrorEvent(e));
                         }
                     });
         } else {

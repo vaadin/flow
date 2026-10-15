@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -35,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.BaseJsonNode;
 
@@ -52,6 +52,8 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -95,6 +97,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class NavigationStateRendererTest {
@@ -127,6 +135,22 @@ class NavigationStateRendererTest {
         public void afterNavigation(AfterNavigationEvent event) {
             refreshAfterNavigation = event.isRefreshEvent();
 
+        }
+    }
+
+    @Route(value = "preserved")
+    @PreserveOnRefresh
+    private static class PreservedLocaleView extends Text
+            implements LocaleChangeObserver {
+        private Locale lastLocale;
+
+        PreservedLocaleView() {
+            super("");
+        }
+
+        @Override
+        public void localeChange(LocaleChangeEvent event) {
+            lastLocale = event.getLocale();
         }
     }
 
@@ -272,8 +296,8 @@ class NavigationStateRendererTest {
                     return (T) ReflectTools.createInstance(routeProxyClass);
                 }
             });
-            DeploymentConfiguration configuration = Mockito
-                    .mock(DeploymentConfiguration.class);
+            DeploymentConfiguration configuration = mock(
+                    DeploymentConfiguration.class);
             AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                     service) {
                 @Override
@@ -281,7 +305,7 @@ class NavigationStateRendererTest {
                     return configuration;
                 }
             };
-            Mockito.when(configuration.isReactEnabled()).thenReturn(true);
+            when(configuration.isReactEnabled()).thenReturn(true);
             MockUI ui = new MockUI(session);
 
             NavigationEvent event = new NavigationEvent(
@@ -404,8 +428,8 @@ class NavigationStateRendererTest {
 
         // given the session has a cache of something at this location
         AbstractNavigationStateRenderer.setPreservedChain(session, "",
-                new Location("preserved"), new ArrayList<>(Collections
-                        .singletonList(Mockito.mock(Component.class))));
+                new Location("preserved"), new ArrayList<>(
+                        Collections.singletonList(mock(Component.class))));
 
         // given a UI that contain no window name with an instrumented Page
         // that records JS invocations
@@ -451,9 +475,8 @@ class NavigationStateRendererTest {
 
         // given a UI that contain a window name ROOT.123
         MockUI ui1 = new MockUI(session);
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
         ui1.getInternals().setExtendedClientDetails(details);
 
         // given a NavigationStateRenderer mapping to PreservedView
@@ -522,9 +545,8 @@ class NavigationStateRendererTest {
 
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
         ui.getInternals().setExtendedClientDetails(details);
 
         // given a NavigationStateRenderer mapping to PreservedEventView
@@ -589,9 +611,8 @@ class NavigationStateRendererTest {
 
         // given a new UI after a refresh with the same window name
         MockUI ui1 = new MockUI(session);
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
         ui1.getInternals().setExtendedClientDetails(details);
 
         // when a navigation event reaches the renderer
@@ -607,6 +628,39 @@ class NavigationStateRendererTest {
                 "Component element expected transferred");
         assertTrue(uiChildren.contains(otherElement),
                 "Extra element expected transferred");
+    }
+
+    @Test
+    void handle_preserveOnRefresh_localeOfPreviousUIIsKept() {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(PreservedLocaleView.class));
+
+        final PreservedLocaleView view = new PreservedLocaleView();
+        AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
+                new Location("preserved"), new ArrayList<>(List.of(view)));
+
+        // given an old UI where the locale has been changed from the default
+        MockUI ui0 = new MockUI(session);
+        ui0.add(view);
+        ui0.setLocale(Locale.CHINA);
+
+        // given a new UI after a refresh with the same window name
+        MockUI ui1 = new MockUI(session);
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
+        ui1.getInternals().setExtendedClientDetails(details);
+        assertNotEquals(Locale.CHINA, ui1.getLocale());
+        view.lastLocale = null;
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("preserved"), ui1, NavigationTrigger.PAGE_LOAD));
+
+        assertEquals(Locale.CHINA, ui1.getLocale());
+        assertEquals(Locale.CHINA, view.lastLocale,
+                "Preserved view should be attached with the kept locale");
     }
 
     @Test
@@ -639,9 +693,8 @@ class NavigationStateRendererTest {
 
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
         ui.getInternals().setExtendedClientDetails(details);
 
         // when a navigation event reaches the renderer
@@ -687,9 +740,8 @@ class NavigationStateRendererTest {
                                 Collections.emptyList()))),
                 new ArrayList<>(List.of(view)));
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
         ui.getInternals().setExtendedClientDetails(details);
 
         AtomicInteger count = new AtomicInteger();
@@ -737,9 +789,8 @@ class NavigationStateRendererTest {
 
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
-        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
         ui.getInternals().setExtendedClientDetails(details);
 
         // when a navigation event reaches the renderer
@@ -922,8 +973,8 @@ class NavigationStateRendererTest {
 
         ui.getInternals().clearLastHandledNavigation();
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class, CALLS_REAL_METHODS)) {
 
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
                     .thenReturn(Collections.singletonMap("/client-route",
@@ -1119,8 +1170,8 @@ class NavigationStateRendererTest {
     @Test
     void purgeInactiveUIPreservedChainCache_inactiveUI_clearsCache() {
         MockVaadinServletService service = createMockServiceWithInstantiator();
-        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
-        Mockito.when(wrappedSession.getId()).thenReturn("A-SESSION-ID");
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        when(wrappedSession.getId()).thenReturn("A-SESSION-ID");
         MockVaadinSession session = new AlwaysLockedVaadinSession(service) {
             @Override
             public WrappedSession getSession() {
@@ -1163,8 +1214,8 @@ class NavigationStateRendererTest {
 
     @Test
     void getRouteTarget_usageStatistics() {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         MockVaadinServletService service = new MockVaadinServletService();
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 service) {
@@ -1173,7 +1224,7 @@ class NavigationStateRendererTest {
                 return configuration;
             }
         };
-        Mockito.when(configuration.isReactEnabled()).thenReturn(true);
+        when(configuration.isReactEnabled()).thenReturn(true);
 
         MockUI ui = new MockUI(session);
         NavigationEvent event = new NavigationEvent(
@@ -1214,8 +1265,8 @@ class NavigationStateRendererTest {
     private void testClientNavigationTitle(String expectedDocumentTitle,
             boolean clientRouteHasFlowLayout) {
         UI ui = createTestClientNavigationTitleUIForTitleTests();
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class, CALLS_REAL_METHODS)) {
 
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(true))
                     .thenReturn(Collections.singletonMap("/client-route",
@@ -1236,17 +1287,16 @@ class NavigationStateRendererTest {
 
             assertNotNull(ui.getPage());
             if (expectedDocumentTitle == null) {
-                Mockito.verify(ui.getPage(), Mockito.never())
-                        .setTitle("Client");
+                verify(ui.getPage(), never()).setTitle("Client");
             } else {
-                Mockito.verify(ui.getPage()).setTitle(expectedDocumentTitle);
+                verify(ui.getPage()).setTitle(expectedDocumentTitle);
             }
         }
     }
 
     private UI createTestClientNavigationTitleUIForTitleTests() {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         MockVaadinServletService service = new MockVaadinServletService(
                 configuration);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
@@ -1256,9 +1306,9 @@ class NavigationStateRendererTest {
                 return configuration;
             }
         };
-        Mockito.when(configuration.isReactEnabled()).thenReturn(false);
-        Page page = Mockito.mock(Page.class);
-        Mockito.when(page.getHistory()).thenReturn(Mockito.mock(History.class));
+        when(configuration.isReactEnabled()).thenReturn(false);
+        Page page = mock(Page.class);
+        when(page.getHistory()).thenReturn(mock(History.class));
         return new MockUI(session) {
             @Override
             public Page getPage() {

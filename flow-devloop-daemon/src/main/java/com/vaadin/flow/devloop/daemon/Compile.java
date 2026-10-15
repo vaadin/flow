@@ -55,6 +55,8 @@ import java.util.stream.Stream;
  * It skips a JVM start per apply, and its {@link Diagnostic} objects already
  * carry file, line, column, code and message — so the agent-facing
  * {@code diagnostics[]} contract needs no parsing of compiler text output.
+ * Compiling through Maven instead is an opt-in, {@code vaadin.dev.compiler};
+ * see {@link Compiler} and {@link MavenCompile}.
  * <p>
  * One instance covers all modules rather than one instance per module: the two
  * fingerprint maps are keyed by absolute source path, which stays unique across
@@ -85,8 +87,133 @@ final class Compile {
         }
     }
 
+    /**
+     * How a compile ended.
+     *
+     * @param success
+     *            whether it compiled
+     * @param errors
+     *            what it reported when it did not
+     * @param writtenClasses
+     *            the classes the running application has to be given, by binary
+     *            name
+     * @param millis
+     *            how long it took
+     * @param classFiles
+     *            the class files behind {@code writtenClasses}, with the stamp
+     *            each had when it was reported - what a redefine of them hands
+     *            the application, for a backend that keeps its own baseline of
+     *            it; empty from javac, which keeps none
+     * @param removedClasses
+     *            classes the running application holds whose class files the
+     *            compile took away, by binary name - only a restart applies
+     *            that; empty from javac, which removes none
+     */
     record Result(boolean success, List<Message> errors,
-            List<String> writtenClasses, long millis) {
+            List<String> writtenClasses, long millis,
+            Map<Path, Stamp> classFiles, List<String> removedClasses) {
+
+        Result(boolean success, List<Message> errors,
+                List<String> writtenClasses, long millis) {
+            this(success, errors, writtenClasses, millis, Map.of(), List.of());
+        }
+    }
+
+    /**
+     * What turns a change-set into class files: javac in-process, or Maven.
+     * <p>
+     * Everything else in an apply - change detection, deletions, the classpath
+     * forcing a pom edit causes, the redefine - is the same whichever compiles,
+     * which is why only this is swapped.
+     */
+    interface Backend {
+
+        /**
+         * Compiles a change-set.
+         *
+         * @param sources
+         *            the sources that changed, across every module in the loop
+         * @param project
+         *            the resolved build
+         * @return the outcome, naming the classes the running application has
+         *         to be given
+         */
+        Result compile(List<Path> sources, Launch.Project project);
+
+        /**
+         * The class file a source was last compiled to, which says whether the
+         * source has to be compiled again.
+         *
+         * @param module
+         *            the module that owns the source
+         * @param source
+         *            the source
+         * @return its class file
+         */
+        default Path artifactFor(Reactor.Module module, Path source) {
+            return module.artifactFor(source);
+        }
+
+        /**
+         * Records the class files the running application was launched with.
+         *
+         * @param classes
+         *            every class file in the loop, with its stamp
+         */
+        default void seed(Map<Path, Stamp> classes) {
+        }
+
+        /**
+         * Records that the classes a compile reported are now live in the
+         * running application.
+         *
+         * @param applied
+         *            the compile whose classes a redefine took
+         */
+        default void markApplied(Result applied) {
+        }
+    }
+
+    /**
+     * Which {@link Backend} compiles, from {@code vaadin.dev.compiler}.
+     * <p>
+     * javac by default: it costs no JVM start per apply. Maven is the opt-in
+     * for a project javac-in-process gets wrong - annotation processors,
+     * compiler-plugin configuration, unedited callers of a changed signature.
+     */
+    enum Compiler {
+        JAVAC, MAVEN;
+
+        static final String PROPERTY = "vaadin.dev.compiler";
+
+        /**
+         * The configured compiler, javac when the property is unset or names
+         * none of them.
+         *
+         * @param log
+         *            where an unrecognised value is reported
+         * @return the compiler
+         */
+        static Compiler configured(Launch.Log log) {
+            String value = System.getProperty(PROPERTY);
+            if (value == null || value.isBlank()) {
+                return JAVAC;
+            }
+            for (Compiler compiler : values()) {
+                if (compiler.label().equals(
+                        value.trim().toLowerCase(java.util.Locale.ROOT))) {
+                    return compiler;
+                }
+            }
+            log.line("WARNING: " + PROPERTY + "=" + value
+                    + " is not one of javac, maven; compiling with javac");
+            return JAVAC;
+        }
+
+        /** How the compiler is named in the property and in output. */
+        String label() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
     }
 
     /**
@@ -94,6 +221,13 @@ final class Compile {
      * millisecond rewrite of a different length is otherwise invisible.
      */
     record Stamp(long modified, long size) {
+    }
+
+    /**
+     * A source's stamp as of the last time it went live, and whether that stamp
+     * was dated ahead of the clock when it was recorded; see {@link #isStale}.
+     */
+    private record Applied(Stamp stamp, boolean futureDated) {
     }
 
     /**
@@ -227,6 +361,12 @@ final class Compile {
             .of("META-INF/resources/", "static/", "public/", "resources/");
 
     /**
+     * How far ahead of this clock a modification time may be and still be taken
+     * at face value; see {@link #predates}.
+     */
+    private static final long FUTURE_SKEW_MILLIS = 60_000;
+
+    /**
      * What makes a file a Java source, and what a type's name is its file name
      * minus.
      */
@@ -243,7 +383,7 @@ final class Compile {
     }
 
     /** Fingerprints of Java sources as of the last time they went live. */
-    private final Map<Path, Stamp> applied = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Map<Path, Applied> applied = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * The binary names of the class files the running application was launched
@@ -304,8 +444,48 @@ final class Compile {
      */
     private final Map<String, String> compiledAgainst = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** What compiles the change-sets this instance finds. */
+    private final Compiler compiler;
+
+    private final Backend backend;
+
     Compile(Launch.Project project) {
         this(project, null);
+    }
+
+    /**
+     * A baseline that compiles with javac in-process.
+     *
+     * @param project
+     *            the resolved build the new baseline describes
+     * @param previous
+     *            the baseline this instance replaces, or {@code null} for a
+     *            project's first one
+     */
+    Compile(Launch.Project project, Compile previous) {
+        this(project, previous, Compiler.JAVAC, compile -> compile::javac);
+    }
+
+    /**
+     * A baseline that compiles with the compiler {@code vaadin.dev.compiler}
+     * selects; see {@link Compiler}.
+     *
+     * @param project
+     *            the resolved build the new baseline describes
+     * @param previous
+     *            the baseline this instance replaces, or {@code null} for a
+     *            project's first one
+     * @param launch
+     *            what runs Maven, for the Maven backend
+     * @return the baseline
+     */
+    static Compile configured(Launch.Project project, Compile previous,
+            Launch launch) {
+        return switch (Compiler.configured(launch.log())) {
+        case JAVAC -> new Compile(project, previous);
+        case MAVEN -> new Compile(project, previous, Compiler.MAVEN,
+                compile -> new MavenCompile(compile, launch));
+        };
     }
 
     /**
@@ -329,8 +509,13 @@ final class Compile {
      * @param previous
      *            the baseline this instance replaces, or {@code null} for a
      *            project's first one
+     * @param compiler
+     *            which compiler the backend is
+     * @param backend
+     *            builds the backend for this instance
      */
-    Compile(Launch.Project project, Compile previous) {
+    private Compile(Launch.Project project, Compile previous, Compiler compiler,
+            java.util.function.Function<Compile, Backend> backend) {
         this.modules = List.copyOf(project.modules());
         this.frontend = Frontend.of(project.app());
         for (Reactor.Module module : modules) {
@@ -339,10 +524,17 @@ final class Compile {
             compiledAgainst.put(module.artifactId(), carried != null ? carried
                     : Launch.membership(project.compileClasspath(module)));
         }
+        this.compiler = compiler;
+        this.backend = backend.apply(this);
     }
 
     List<Reactor.Module> modules() {
         return modules;
+    }
+
+    /** Which compiler this baseline compiles with, for the log and status. */
+    Compiler compiler() {
+        return compiler;
     }
 
     /**
@@ -609,7 +801,7 @@ final class Compile {
                 (module, source,
                         stamp) -> notified
                                 .put(source,
-                                        stamp.modified() <= startedAtMillis
+                                        predates(stamp, startedAtMillis)
                                                 ? new Content(stamp,
                                                         digestOf(source)
                                                                 .orElse(null))
@@ -673,10 +865,46 @@ final class Compile {
         frontendNotified.clear();
         frontend.root()
                 .ifPresent(root -> forEachFrontendFile(root, (file, stamp) -> {
-                    if (stamp.modified() <= cutoffMillis) {
+                    if (predates(stamp, cutoffMillis)) {
                         frontendNotified.put(file, stamp);
                     }
                 }));
+    }
+
+    /**
+     * Whether a file was written no later than the cutoff, with a modification
+     * time in the future capped at the cutoff.
+     * <p>
+     * A save stamps a file with the current time, so a time well ahead of the
+     * clock was not set by an edit made since the application started: it came
+     * with the file. An archive extracted in a time zone behind the one it was
+     * packed in dates every file hours ahead, and taken at face value such a
+     * file stays newer than every start for those hours - a startup-only
+     * resource would restart the application on every apply, each restart
+     * leaving it as unseen as before.
+     * <p>
+     * Only a time more than {@link #FUTURE_SKEW_MILLIS} ahead is capped. A file
+     * system on another host - a network share, a container or VM mount - can
+     * stamp a real edit with a clock a few seconds ahead of this one, and such
+     * an edit must still count as made after the start.
+     *
+     * @param stamp
+     *            the file's stamp
+     * @param cutoffMillis
+     *            the newest modification time to accept
+     * @return {@code true} when the file counts as written by the cutoff
+     */
+    private static boolean predates(Stamp stamp, long cutoffMillis) {
+        return stamp.modified() <= cutoffMillis
+                || isFutureDated(stamp.modified());
+    }
+
+    /**
+     * Whether a modification time is too far ahead of the clock to have been
+     * set by an edit; see {@link #predates}.
+     */
+    private static boolean isFutureDated(long modifiedMillis) {
+        return modifiedMillis > System.currentTimeMillis() + FUTURE_SKEW_MILLIS;
     }
 
     /** A frontend file and its fingerprint; there is no owning module. */
@@ -788,7 +1016,7 @@ final class Compile {
         }
     }
 
-    private Optional<Stamp> stampOf(Path file) {
+    static Optional<Stamp> stampOf(Path file) {
         try {
             BasicFileAttributes attrs = Files.readAttributes(file,
                     BasicFileAttributes.class);
@@ -814,7 +1042,7 @@ final class Compile {
      * do.
      */
     @SuppressWarnings("java:S1166")
-    private Optional<String> digestOf(Path file) {
+    static Optional<String> digestOf(Path file) {
         try (InputStream in = Files.newInputStream(file)) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] buffer = new byte[8192];
@@ -962,7 +1190,9 @@ final class Compile {
             // save
             // makes the .class newer than the .java, and a pure artifact check
             // then reports "no changes" for an edit the JVM has never loaded.
-            if (isStale(module, source) || !stamp.equals(applied.get(source))) {
+            Applied live = applied.get(source);
+            if (live == null || !stamp.equals(live.stamp())
+                    || isStale(module, source, live.futureDated())) {
                 modified.add(source);
             }
         });
@@ -1117,11 +1347,24 @@ final class Compile {
                 .replace(File.separatorChar, '.');
     }
 
-    /** Records that these sources are now live in the running JVM. */
-    void markSourcesApplied(List<Path> sources) {
+    /**
+     * Records that these sources are now live in the running JVM.
+     *
+     * @param sources
+     *            the sources the apply compiled
+     * @param compiled
+     *            the compile that turned them into the classes now live
+     */
+    void markSourcesApplied(List<Path> sources, Result compiled) {
         for (Path source : sources) {
-            stampOf(source).ifPresent(stamp -> applied.put(source, stamp));
+            stampOf(source).ifPresent(stamp -> markApplied(source, stamp));
         }
+        backend.markApplied(compiled);
+    }
+
+    private void markApplied(Path source, Stamp stamp) {
+        applied.put(source,
+                new Applied(stamp, isFutureDated(stamp.modified())));
     }
 
     /**
@@ -1153,8 +1396,8 @@ final class Compile {
             // windows a developer's next keystroke fits into, and a baseline
             // that walks "whatever is on disk now" claims those edits as the
             // application's own.
-            if (stamp.modified() <= startedAtMillis) {
-                applied.put(source, stamp);
+            if (predates(stamp, startedAtMillis)) {
+                markApplied(source, stamp);
             }
         });
         seedResources(startedAtMillis);
@@ -1175,12 +1418,16 @@ final class Compile {
      */
     private void seedClasses() {
         launchedWith.clear();
+        Map<Path, Stamp> classes = new java.util.HashMap<>();
         for (Reactor.Module module : modules) {
             walk(module, module.classesDir(),
                     path -> path.toString().endsWith(CLASS_SUFFIX),
-                    (owner, file, stamp) -> launchedWith
-                            .add(binaryNameOf(owner, file)));
+                    (owner, file, stamp) -> {
+                        launchedWith.add(binaryNameOf(owner, file));
+                        classes.put(file, stamp);
+                    });
         }
+        backend.seed(classes);
     }
 
     private void forEachSource(Visitor action) {
@@ -1204,17 +1451,50 @@ final class Compile {
         }
     }
 
-    private boolean isStale(Reactor.Module module, Path source) {
+    private boolean isStale(Reactor.Module module, Path source,
+            boolean futureDated) {
         try {
-            Path artifact = module.artifactFor(source);
+            Path artifact = backend.artifactFor(module, source);
             if (!Files.isRegularFile(artifact)) {
                 return true;
+            }
+            if (futureDated) {
+                // Dated ahead of the clock, the source stays newer than every
+                // artifact compiled from it until the clock catches up, so its
+                // time cannot answer this - not even once it is less than the
+                // skew ahead. An edit changes its stamp, which the baseline in
+                // stale() catches.
+                return false;
             }
             return Files.getLastModifiedTime(source)
                     .compareTo(Files.getLastModifiedTime(artifact)) > 0;
         } catch (IOException e) {
             return true;
         }
+    }
+
+    /**
+     * Compiles a change-set with this baseline's {@link Backend}.
+     *
+     * @param sources
+     *            the sources that changed
+     * @param project
+     *            the resolved build
+     * @return the outcome
+     */
+    Result compile(List<Path> sources, Launch.Project project) {
+        return backend.compile(sources, project);
+    }
+
+    /**
+     * Records that a module now compiles against its current classpath, which
+     * is what clears {@link #classpathForced} for it. Only after a successful
+     * compile: a failed one has to stay forced, or the next apply would report
+     * the broken module as having no changes.
+     */
+    void recordCompiledAgainst(Reactor.Module module, Launch.Project project) {
+        compiledAgainst.put(module.artifactId(),
+                Launch.membership(project.compileClasspath(module)));
     }
 
     /**
@@ -1233,7 +1513,7 @@ final class Compile {
      * downstream module's errors after an upstream failure are consequences,
      * and reporting them would bury the one line that has to be fixed.
      */
-    Result compile(List<Path> sources, Launch.Project project) {
+    private Result javac(List<Path> sources, Launch.Project project) {
         long started = System.nanoTime();
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
@@ -1436,11 +1716,7 @@ final class Compile {
             List<String> classes = ok ? written.stream().sorted().toList()
                     : List.of();
             if (ok) {
-                // Only on success: a failed compile has to stay forced, or the
-                // next apply would report the broken module as having no
-                // changes.
-                compiledAgainst.put(module.artifactId(),
-                        Launch.membership(project.compileClasspath(module)));
+                recordCompiledAgainst(module, project);
             }
             return new Result(ok, errors, classes, millis);
         } catch (IOException e) {
@@ -1451,26 +1727,28 @@ final class Compile {
         }
     }
 
-    /**
-     * The file a diagnostic points at. Bare file name for the application,
-     * whose output shape is documented, and prefixed with the module directory
-     * for anything else — "Task.java:12" in a project with five modules is not
-     * enough to open the file with.
-     */
     private Message toMessage(Diagnostic<? extends JavaFileObject> d) {
-        String file = "-";
-        if (d.getSource() != null) {
-            Path path = Path.of(d.getSource().getName());
-            Path name = path.getFileName();
-            file = name == null ? path.toString() : name.toString();
-            Optional<Reactor.Module> owner = moduleOf(path);
-            if (owner.isPresent() && !owner.get().equals(app())) {
-                file = owner.get().name() + "/" + file;
-            }
-        }
+        String file = d.getSource() == null ? "-"
+                : diagnosticFileOf(Path.of(d.getSource().getName()));
         String text = tidy(d.getMessage(null));
         return new Message(file, d.getLineNumber(), d.getColumnNumber(),
                 String.valueOf(d.getCode()), text, hintFor(d.getCode(), text));
+    }
+
+    /**
+     * How a diagnostic names the file it points at, whichever backend reported
+     * it. Bare file name for the application, whose output shape is documented,
+     * and prefixed with the module directory for anything else — "Task.java:12"
+     * in a project with five modules is not enough to open the file with.
+     */
+    String diagnosticFileOf(Path path) {
+        Path name = path.getFileName();
+        String file = name == null ? path.toString() : name.toString();
+        Optional<Reactor.Module> owner = moduleOf(path);
+        if (owner.isPresent() && !owner.get().equals(app())) {
+            file = owner.get().name() + "/" + file;
+        }
+        return file;
     }
 
     /**

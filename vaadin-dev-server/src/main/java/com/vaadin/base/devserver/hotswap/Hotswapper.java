@@ -47,6 +47,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -283,6 +284,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     "Hotswap event ignored because Hotswapper has been called without changes to apply.");
             return;
         }
+
+        // Caches needed up to date by hotswappers must be cleared before they
+        // run; all other reflection caches are cleared by
+        // ReflectionCacheHotswapper after them
+        classes.forEach(ReflectionCache::clearBeforeHotswap);
 
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 redefined);
@@ -628,7 +634,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     @Override
     public void uiInit(UIInitEvent event) {
         UI ui = event.getUI();
-        sessions.add(ui.getSession());
+        sessions.add(ui.getSessionOrThrow());
     }
 
     /**

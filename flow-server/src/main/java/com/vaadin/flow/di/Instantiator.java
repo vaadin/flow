@@ -29,7 +29,6 @@ import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.UidlWriter;
@@ -197,10 +196,7 @@ public interface Instantiator extends Serializable {
     static Instantiator get(UI ui) {
         assert ui != null;
 
-        VaadinSession session = ui.getSession();
-        assert session != null;
-
-        return session.getService().getInstantiator();
+        return ui.getSessionOrThrow().getService().getInstantiator();
     }
 
     /**

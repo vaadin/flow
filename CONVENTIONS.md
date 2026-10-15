@@ -108,9 +108,18 @@ difference between the overloads in the Javadoc of both. See
 Apply `@NullMarked` (JSpecify) at the package level and annotate only what
 genuinely may be null with `@Nullable`.
 
-Prefer a sentinel value over a nullable return in the public API. Jackson wire
-records are the legitimate exception, because the wire format permits
-omissions — keep the wire record private and translate to a non-null public
+Return an empty collection, array, map or stream — never `null` — when there
+are no values.
+
+Return `@Nullable T`, not `Optional<T>`, from a getter whose value may be
+unset, such as `getLabel()` or `getPlaceholder()`. Do not use a stand-in value
+such as `""` or `-1` to mean "not set". See `guidelines/design.md`.
+
+Model a "no data yet" state of a signal or a sealed result type as a named
+value (`UNKNOWN`, `Pending`), not as `null`.
+
+Jackson wire records may have `@Nullable` fields, because the wire format
+permits omissions. Keep the wire record private and translate it to the public
 shape at the boundary.
 
 Put `@Nullable` on the declared type (`ValueSignal<@Nullable X>`). NullAway
@@ -240,6 +249,13 @@ Assert concrete outputs, not just "not null". Verify JSON structure and content
 for serialization, and cover the edge cases that the change actually
 introduces.
 
+Assert the observable outcome — DOM state, response, emitted event, public API
+result — not how it is produced. A test must fail when the behavior breaks and
+keep passing through a refactor that preserves it.
+
+Test the logic of the code under change, not framework behavior that is already
+covered elsewhere.
+
 Static-import the test helpers and call them unqualified —
 `assertEquals(…)`, not `Assertions.assertEquals(…)`, and `mock(…)`, not
 `Mockito.mock(…)`. This covers the JUnit assertions, Hamcrest `assertThat`
@@ -250,8 +266,14 @@ unrelated file, and leave the remaining JUnit 4 tests until they are migrated.
 Within a file you are changing, convert the rest of its calls too rather than
 leaving two styles behind.
 
-Add an integration test view under `flow-tests/test-root-context/` for
-browser-facing features, and exercise both the happy path and the error branch.
+Add an integration test only when the behavior needs a browser and a server
+round trip; client-only logic belongs in the client-side tests in
+`flow-client/src/test/frontend/` (run with `npm test` in `flow-client`). Before
+adding an integration test view or class, look for an existing one that
+exercises the same area and extend it. Put a new one in the module
+[flow-tests/README.md](flow-tests/README.md) selects — `flow-tests/test-default/`
+for the default configuration. Exercise both the happy path and the error
+branch.
 
 Debug a failing integration test with Playwright before guessing. Look at what
 the browser is actually doing.
@@ -270,6 +292,14 @@ what a collaborator does, the case belongs in that collaborator's test class.
 
 Make a value that only has to differ look arbitrary. A byte-exact copy of real
 data reads as a contract that the code does not have.
+
+When changing the setup of an existing test, keep every case it already
+covered. Replacing a mock or a fixture must not drop assertions that still
+apply.
+
+Do not depend on JVM defaults such as locale, time zone or charset. Set them
+explicitly, or pick a value that differs from the default, so the case cannot
+pass without exercising the code.
 
 Build the state a case needs directly. Setup that writes a file, deletes it and
 writes it again through another path hides what the case is about.

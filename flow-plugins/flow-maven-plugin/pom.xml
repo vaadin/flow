@@ -63,6 +63,21 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-build-api</artifactId>
       <version>1.2.0</version>
+      <exclusions>
+        <!-- declared below instead, so there is one path to it and the build converges -->
+        <exclusion>
+          <groupId>org.codehaus.plexus</groupId>
+          <artifactId>plexus-utils</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- plexus-build-api 1.2.0 brings 4.0.0, and that is the only copy a consumer of this plugin
+         resolves, since maven-core is provided. The 4.x line dropped the xml classes maven-core
+         still calls, so the current 3.x is what works on both sides. -->
+    <dependency>
+      <groupId>org.codehaus.plexus</groupId>
+      <artifactId>plexus-utils</artifactId>
+      <version>3.6.2</version>
     </dependency>
 
     <dependency>

@@ -118,7 +118,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
         return (generationContext, beanFactoryInitializationCode) -> {
             var hints = generationContext.getRuntimeHints();
-            for (var pkg : getPackages(beanFactory)) {
+            for (var pkg : AotScanPackages.getPackagesToScan(beanFactory)) {
                 /*
                  * This aims to register most types in the project that are
                  * needed for Flow to function properly. Examples are @Route
@@ -262,6 +262,10 @@ public class VaadinBeanFactoryInitializationAotProcessor
         return Set.of();
     }
 
+    // Leaves out vaadin.allowed-packages on purpose: at runtime,
+    // VaadinServletContextInitializer looks for routes only in its default
+    // packages, not in the allowed packages, so a route that is only in an
+    // allowed package is not registered and needs no bean.
     private static List<String> getPackagesWithRoutes(BeanFactory beanFactory) {
         List<String> packages = new ArrayList<String>();
         packages.add("com.vaadin");
@@ -389,13 +393,6 @@ public class VaadinBeanFactoryInitializationAotProcessor
         // VaadinServletContextInitializer to discover classes at runtime
         // in native builds (GraalVM)
         registerResources(hints, c);
-    }
-
-    private static List<String> getPackages(BeanFactory beanFactory) {
-        var listOf = new ArrayList<String>();
-        listOf.add("com.vaadin");
-        listOf.addAll(AutoConfigurationPackages.get(beanFactory));
-        return listOf;
     }
 
     // List taken from AwtProcessor in Quarkus AWT extension
@@ -542,15 +539,22 @@ public class VaadinBeanFactoryInitializationAotProcessor
     /**
      * Loads the classes a scan of the given package found, leaving out what the
      * class loader can not load.
+     * <p>
+     * The classes are not initialized, so that a static initializer of an
+     * application or add-on class does not run during the AOT build. A class
+     * that still fails to load, for example because an optional dependency of
+     * an add-on is missing, is skipped instead of failing the build.
      */
     private Set<Class<?>> loadCandidates(
             ClassPathScanningCandidateComponentProvider scanner,
             String basePackage) {
+        ClassLoader classLoader = scanner.getResourceLoader().getClassLoader();
         Set<Class<?>> result = new HashSet<>();
         for (BeanDefinition bd : scanner.findCandidateComponents(basePackage)) {
             try {
-                result.add(Class.forName(bd.getBeanClassName()));
-            } catch (ClassNotFoundException e) {
+                result.add(Class.forName(bd.getBeanClassName(), false,
+                        classLoader));
+            } catch (ClassNotFoundException | LinkageError e) {
                 logger.warn("Could not load class {}", bd.getBeanClassName(),
                         e);
             }

@@ -315,6 +315,7 @@ public class ExtendedClientDetails implements Serializable {
      *         {@link ZoneOffset} of {@link #getTimezoneOffset()} if the browser
      *         reported no zone ID or one the JVM does not know; never
      *         {@code null}
+     * @since 25.4
      */
     public ZoneId getZoneId() {
         if (timeZoneId != null) {
@@ -404,6 +405,7 @@ public class ExtendedClientDetails implements Serializable {
      *
      * @return the current date and time of the browser, not {@code null}
      * @see #getZoneId()
+     * @since 25.4
      */
     public ZonedDateTime getBrowserDateTime() {
         return getBrowserTime().atZone(getZoneId());

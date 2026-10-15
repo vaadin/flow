@@ -98,6 +98,7 @@ public class DataFetchEndedEvent extends AbstractDataFetchEvent {
      *            the time from just before the started event was fired until
      *            the returned items were consumed or the fetch threw, not
      *            {@code null}
+     * @since 25.4
      */
     public DataFetchEndedEvent(UI ui, Component component, int offset,
             int limit, boolean filtered, int rowsReturned, Duration duration) {
@@ -126,6 +127,7 @@ public class DataFetchEndedEvent extends AbstractDataFetchEvent {
      * started and failed events took, but not the time spent on this event.
      *
      * @return the duration, never negative
+     * @since 25.4
      */
     public Duration getDuration() {
         return duration;

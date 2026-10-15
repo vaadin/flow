@@ -30,7 +30,7 @@ public class TransferProgressListenerIT extends AbstractStreamResourceIT {
         waitForStatus(TransferProgressListenerView.WHEN_START_ID,
                 "File download whenStart status: started");
         waitForStatus(TransferProgressListenerView.ON_PROGRESS_ID,
-                "File download onProgress status: 294/-1");
+                "File download onProgress status: 294/294");
         waitForStatus(TransferProgressListenerView.ON_COMPLETE_ID,
                 "File download whenComplete status: completed");
         waitForStatus(TransferProgressListenerView.ON_ERROR_ID,

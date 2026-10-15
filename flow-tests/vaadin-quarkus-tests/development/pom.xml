@@ -34,6 +34,10 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
+      <artifactId>flow-lit-template</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
       <artifactId>flow-dnd</artifactId>
     </dependency>
     <dependency>
@@ -107,18 +111,6 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
-        <groupId>com.vaadin</groupId>
-        <artifactId>flow-maven-plugin</artifactId>
-        <version>${project.version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>prepare-frontend</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>io.quarkus</groupId>
         <artifactId>quarkus-maven-plugin</artifactId>

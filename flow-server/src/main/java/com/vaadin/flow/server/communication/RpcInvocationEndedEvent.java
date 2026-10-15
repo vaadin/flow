@@ -83,6 +83,7 @@ public class RpcInvocationEndedEvent extends AbstractRpcInvocationEvent {
      * @param error
      *            the throwable raised by the invocation handler, or
      *            {@code null} if it completed normally
+     * @since 25.4
      */
     public RpcInvocationEndedEvent(UI ui, String type, int nodeId, String name,
             Duration duration, Throwable error) {
@@ -98,6 +99,7 @@ public class RpcInvocationEndedEvent extends AbstractRpcInvocationEvent {
      * events took, but not the time spent on this event.
      *
      * @return the duration, never negative
+     * @since 25.4
      */
     public Duration getDuration() {
         return duration;
@@ -110,6 +112,7 @@ public class RpcInvocationEndedEvent extends AbstractRpcInvocationEvent {
      *
      * @return the throwable, or an empty optional if the invocation did not
      *         throw
+     * @since 25.4
      */
     public Optional<Throwable> getError() {
         return Optional.ofNullable(error);

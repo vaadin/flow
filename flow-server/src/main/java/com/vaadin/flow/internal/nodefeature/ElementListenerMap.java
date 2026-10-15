@@ -17,15 +17,16 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -43,6 +44,8 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -66,6 +69,15 @@ public class ElementListenerMap extends NodeMap {
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
+
+    /**
+     * Placeholder stored in the map instead of the actual event settings. The
+     * settings JSON is derived on demand from the registered listeners when
+     * changes are collected, to avoid keeping it in memory.
+     */
+    private enum EventSettingsMarker {
+        INSTANCE
+    }
 
     private static class ExpressionSettings implements Serializable {
         private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
@@ -109,7 +121,12 @@ public class ElementListenerMap extends NodeMap {
         private final ElementListenerMap listenerMap;
 
         private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
-        private Set<String> eventDataExpressions;
+        /*
+         * Exactly sized array rather than a set: listeners hold a handful of
+         * expressions and every component event listener has its own copy, so a
+         * hash set would cost several times more memory for each one.
+         */
+        private String[] eventDataExpressions;
         private String filter;
 
         private int debounceTimeout = 0;
@@ -155,16 +172,12 @@ public class ElementListenerMap extends NodeMap {
             }
 
             if (eventDataExpressions == null) {
-                eventDataExpressions = Collections.singleton(eventData);
-            } else {
-                if (eventDataExpressions.size() == 1) {
-                    Set<String> oldExpressions = eventDataExpressions;
-                    // Don't use no-args or Collection constructors that
-                    // allocate for 16 entries
-                    eventDataExpressions = new HashSet<>(4);
-                    eventDataExpressions.addAll(oldExpressions);
-                }
-                eventDataExpressions.add(eventData);
+                eventDataExpressions = new String[] { eventData };
+            } else if (!hasEventData(eventData)) {
+                int size = eventDataExpressions.length;
+                eventDataExpressions = Arrays.copyOf(eventDataExpressions,
+                        size + 1);
+                eventDataExpressions[size] = eventData;
             }
 
             listenerMap.updateEventSettings(type);
@@ -263,9 +276,19 @@ public class ElementListenerMap extends NodeMap {
         }
 
         private boolean isPropertySynchronized(String propertyName) {
-            return eventDataExpressions != null && eventDataExpressions
-                    .contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                            + propertyName);
+            return hasEventData(
+                    JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
+        }
+
+        private boolean hasEventData(String expression) {
+            if (eventDataExpressions != null) {
+                for (String existing : eventDataExpressions) {
+                    if (existing.equals(expression)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         @Override
@@ -417,15 +440,38 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
+        put(eventType, EventSettingsMarker.INSTANCE);
+    }
+
+    @Override
+    protected boolean producePutChange(String key, boolean hadValueEarlier,
+            Serializable newValue) {
+        // The stored marker never changes even though the settings derived
+        // from it do, so every update needs to be sent
+        return true;
+    }
+
+    private ConstantPoolKey createEventSettingsKey(String eventType) {
         Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
                 eventType);
         ObjectNode eventSettingsJson = JacksonUtils.createObject(eventSettings,
                 ExpressionSettings::toJson);
 
-        ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                eventSettingsJson);
+        return new ConstantPoolKey(eventSettingsJson);
+    }
 
-        put(eventType, constantPoolKey);
+    @Override
+    public void collectChanges(Consumer<NodeChange> collector) {
+        super.collectChanges(change -> {
+            if (change instanceof MapPutChange putChange
+                    && putChange.getValue() instanceof EventSettingsMarker) {
+                String eventType = putChange.getKey();
+                collector.accept(new MapPutChange(this, eventType,
+                        createEventSettingsKey(eventType)));
+            } else {
+                collector.accept(change);
+            }
+        });
     }
 
     private void removeListener(String eventType,

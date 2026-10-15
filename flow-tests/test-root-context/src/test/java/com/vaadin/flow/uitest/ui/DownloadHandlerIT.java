@@ -21,12 +21,14 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -120,6 +122,40 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
         }
         // Special characters in the file name in URL are encoded.
         Assert.assertEquals("download-%22.json", FilenameUtils.getName(url));
+    }
+
+    @Test
+    public void getDynamicDownloadHandlerFileResource_rangeRequested_partialContentReceived() {
+        open();
+
+        String url = findElement(By.id("download-handler-file"))
+                .getAttribute("href");
+        Map<?, ?> response = (Map<?, ?>) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(
+                        """
+                                const done = arguments[arguments.length - 1];
+                                fetch(arguments[0], { headers: { Range: 'bytes=4-13' } })
+                                  .then(response => response.text().then(body => done({
+                                    status: response.status,
+                                    contentRange: response.headers.get('Content-Range'),
+                                    body
+                                  })));
+                                """,
+                        url);
+
+        Assert.assertEquals(206L, response.get("status"));
+        Assert.assertEquals("bytes 4-13/22", response.get("contentRange"));
+        Assert.assertEquals("\"download\"", response.get("body"));
+    }
+
+    @Test
+    public void withContentType_servedWithItUnlessDownloadResponseHasOne() {
+        open();
+
+        Assert.assertEquals("text/vtt",
+                fetchContentType("download-handler-content-type"));
+        Assert.assertEquals("text/plain",
+                fetchContentType("download-handler-response-content-type"));
     }
 
     @Test
@@ -237,6 +273,23 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
         findElement(By.id("detach-attach")).click();
 
         assertDownloadedContent("download-handler-text", "file%2B.jpg");
+    }
+
+    /**
+     * Fetches the download of the given link and returns its media type,
+     * without parameters such as a charset that the container may add.
+     */
+    private String fetchContentType(String downloadId) {
+        String url = findElement(By.id(downloadId)).getAttribute("href");
+        String contentType = (String) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(
+                        """
+                                const done = arguments[arguments.length - 1];
+                                fetch(arguments[0])
+                                  .then(response => done(response.headers.get('Content-Type')));
+                                """,
+                        url);
+        return contentType.split(";")[0].trim();
     }
 
     private void assertDownloadedContent(String downloadId, String filename)

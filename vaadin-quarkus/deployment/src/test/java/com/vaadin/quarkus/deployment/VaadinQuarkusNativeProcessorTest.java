@@ -16,33 +16,49 @@
 package com.vaadin.quarkus.deployment;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
+import io.quarkus.paths.PathTree;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.EventData;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.router.RouterLayout;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -277,6 +293,33 @@ class VaadinQuarkusNativeProcessorTest {
                 "Feature flags properties should be included in the image");
     }
 
+    @ParameterizedTest
+    @ValueSource(classes = { UrlParameterTarget.class,
+            ErrorParameterTarget.class, LayoutTarget.class,
+            ConverterTarget.class })
+    void testVaadinNativeSupport_registersInterfaceImplementationsForReflection(
+            Class<?> implementation) throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(implementation);
+        Index implementationIndex = indexer.complete();
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+
+        processor.vaadinNativeSupport(new CombinedIndexBuildItem(
+                implementationIndex, implementationIndex), item -> {
+                }, item -> {
+                }, reflective::add, item -> {
+                });
+
+        // The class implements the interface without extending Component,
+        // so only a lookup of the interface implementations finds it
+        assertTrue(
+                reflective.stream()
+                        .flatMap(item -> item.getClassNames().stream())
+                        .anyMatch(implementation.getName()::equals),
+                implementation.getSimpleName()
+                        + " should be registered for reflection");
+    }
+
     @Test
     void testVaadinNativeSupport_registersErrorParameterTypesForReflection()
             throws IOException {
@@ -370,13 +413,18 @@ class VaadinQuarkusNativeProcessorTest {
                         + "reflection registration either");
     }
 
+    // Matches against the globs instead of the produced item: the item has no
+    // getter that exists in every supported Quarkus version, since newer
+    // versions replaced getIncludePatterns() with getIncludeGlobs()
     private static boolean isIncluded(
             List<NativeImageResourcePatternsBuildItem> resources,
             String resource) {
-        return resources.stream()
-                .flatMap(item -> item.getIncludePatterns().stream())
-                .anyMatch(pattern -> Pattern.compile(pattern).matcher(resource)
-                        .matches());
+        assertEquals(1, resources.size(),
+                "The resource globs should be registered as one item");
+        return VaadinQuarkusNativeProcessor.NATIVE_RESOURCE_GLOBS.stream()
+                .anyMatch(glob -> FileSystems.getDefault()
+                        .getPathMatcher("glob:" + glob)
+                        .matches(Path.of(resource)));
     }
 
     // Only an interface can be implemented by the JDK proxy the definitions
@@ -424,6 +472,47 @@ class VaadinQuarkusNativeProcessorTest {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<IllegalStateException> parameter) {
             return 500;
+        }
+    }
+
+    // The fixtures below implement a Vaadin interface without extending
+    // Component
+
+    public static class UrlParameterTarget implements HasUrlParameter<String> {
+        @Override
+        public void setParameter(BeforeEvent event, String parameter) {
+            // Intentionally empty: the test only checks that the class is
+            // registered for reflection, this method is never called
+        }
+    }
+
+    public static class ErrorParameterTarget
+            implements HasErrorParameter<NotFoundException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<NotFoundException> parameter) {
+            return 404;
+        }
+    }
+
+    public static class LayoutTarget implements RouterLayout {
+        @Override
+        public Element getElement() {
+            return null;
+        }
+    }
+
+    public static class ConverterTarget implements Converter<String, Integer> {
+        @Override
+        public Result<Integer> convertToModel(String value,
+                ValueContext context) {
+            return Result.ok(Integer.valueOf(value));
+        }
+
+        @Override
+        public String convertToPresentation(Integer value,
+                ValueContext context) {
+            return String.valueOf(value);
         }
     }
 
@@ -558,5 +647,38 @@ class VaadinQuarkusNativeProcessorTest {
         public List<NestedDto> getExtendedData() {
             return null;
         }
+    }
+
+    @Test
+    void findVaadinServiceInterfaces_onlyVaadinInterfacesOfAllArchives(
+            @TempDir Path tempDir) throws IOException {
+        Path application = tempDir.resolve("application");
+        writeServiceFile(application, "com.vaadin.flow.server.SomeService");
+        writeServiceFile(application, "org.example.OtherService");
+        writeServiceFile(application, "nested/com.vaadin.NestedService");
+        Path addon = tempDir.resolve("addon.jar");
+        try (JarOutputStream jar = new JarOutputStream(
+                Files.newOutputStream(addon))) {
+            jar.putNextEntry(new JarEntry(
+                    "META-INF/services/com.vaadin.addon.AddonService"));
+            jar.write("com.example.Provider\n".getBytes());
+        }
+        // A dependency can also be a single file that is not an archive
+        Path plainFile = Files.writeString(tempDir.resolve("notes.txt"), "");
+
+        assertEquals(
+                Set.of("com.vaadin.addon.AddonService",
+                        "com.vaadin.flow.server.SomeService"),
+                VaadinQuarkusNativeProcessor.findVaadinServiceInterfaces(
+                        Stream.of(PathTree.ofDirectoryOrArchive(application),
+                                PathTree.ofDirectoryOrArchive(addon),
+                                PathTree.ofDirectoryOrFile(plainFile))));
+    }
+
+    private static void writeServiceFile(Path root, String name)
+            throws IOException {
+        Path file = root.resolve("META-INF/services").resolve(name);
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, "com.example.Provider\n");
     }
 }
