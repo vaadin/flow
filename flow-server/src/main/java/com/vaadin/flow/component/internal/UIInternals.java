@@ -1871,7 +1871,7 @@ public class UIInternals implements Serializable {
      * without making the UI inert.
      *
      * @return {@code true} if a component with modality is defined
-     * @since 25.3
+     * @since 25.4
      */
     public boolean hasModalityComponent() {
         return modalityComponentStack != null
@@ -1884,7 +1884,7 @@ public class UIInternals implements Serializable {
      * set first.
      *
      * @return the components with modality, never {@code null}
-     * @since 25.3
+     * @since 25.4
      */
     public List<Component> getModalityComponents() {
         if (!hasModalityComponent()) {
@@ -1955,7 +1955,7 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to make visually modal
-     * @since 25.3
+     * @since 25.4
      */
     public void setChildVisuallyModal(Component child) {
         // strict and visual modality are mutually exclusive
