@@ -16,6 +16,7 @@
 package com.vaadin.quarkus.deployment;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,6 +34,8 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageProxyDefinitionBui
 import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.paths.PathTree;
+import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
+import io.undertow.servlet.api.DeploymentManager;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.Indexer;
@@ -42,6 +44,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InOrder;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -59,11 +62,15 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.quarkus.VaadinServletStartupRecorder;
+import com.vaadin.quarkus.graal.AtmosphereRecorder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 
 class VaadinQuarkusNativeProcessorTest {
 
@@ -413,13 +420,18 @@ class VaadinQuarkusNativeProcessorTest {
                         + "reflection registration either");
     }
 
+    // Matches against the globs instead of the produced item: the item has no
+    // getter that exists in every supported Quarkus version, since newer
+    // versions replaced getIncludePatterns() with getIncludeGlobs()
     private static boolean isIncluded(
             List<NativeImageResourcePatternsBuildItem> resources,
             String resource) {
-        return resources.stream()
-                .flatMap(item -> item.getIncludePatterns().stream())
-                .anyMatch(pattern -> Pattern.compile(pattern).matcher(resource)
-                        .matches());
+        assertEquals(1, resources.size(),
+                "The resource globs should be registered as one item");
+        return VaadinQuarkusNativeProcessor.NATIVE_RESOURCE_GLOBS.stream()
+                .anyMatch(glob -> FileSystems.getDefault()
+                        .getPathMatcher("glob:" + glob)
+                        .matches(Path.of(resource)));
     }
 
     // Only an interface can be implemented by the JDK proxy the definitions
@@ -668,6 +680,30 @@ class VaadinQuarkusNativeProcessorTest {
                         Stream.of(PathTree.ofDirectoryOrArchive(application),
                                 PathTree.ofDirectoryOrArchive(addon),
                                 PathTree.ofDirectoryOrFile(plainFile))));
+    }
+
+    @Test
+    void initAtmosphereAndVaadinServlets_atmosphereInitializedBeforeServletsInLoadOnStartupOrder() {
+        AtmosphereRecorder atmosphereRecorder = mock(AtmosphereRecorder.class);
+        VaadinServletStartupRecorder servletRecorder = mock(
+                VaadinServletStartupRecorder.class);
+        DeploymentManager deploymentManager = mock(DeploymentManager.class);
+
+        processor.initAtmosphereAndVaadinServlets(atmosphereRecorder,
+                servletRecorder,
+                new ServletDeploymentManagerBuildItem(deploymentManager),
+                List.of(new VaadinServletBuildItem("second", 2),
+                        new VaadinServletBuildItem("first", 1)));
+
+        // A servlet only creates its own Atmosphere instance when none is
+        // stored for it yet, so Atmosphere has to be initialized first for
+        // the servlet to use the instance the push endpoint looks up
+        List<String> servletNames = List.of("first", "second");
+        InOrder inOrder = inOrder(atmosphereRecorder, servletRecorder);
+        inOrder.verify(atmosphereRecorder).initAtmosphere(deploymentManager,
+                servletNames);
+        inOrder.verify(servletRecorder).initServlets(deploymentManager,
+                servletNames);
     }
 
     private static void writeServiceFile(Path root, String name)

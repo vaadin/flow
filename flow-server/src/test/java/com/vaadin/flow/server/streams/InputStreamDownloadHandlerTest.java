@@ -474,6 +474,25 @@ class InputStreamDownloadHandlerTest {
         verify(response).setContentType(contentType);
     }
 
+    @ParameterizedTest
+    @CsvSource(value = { "NULL, text/csv",
+            "application/pdf, application/pdf" }, nullValues = "NULL")
+    void withContentType_usedUnlessDownloadResponseHasContentType(
+            String responseContentType, String expectedContentType)
+            throws IOException {
+        InputStream stream = mock(InputStream.class);
+        when(stream.read(any(), anyInt(), anyInt())).thenReturn(-1);
+        DownloadHandler handler = DownloadHandler
+                .fromInputStream(event -> new DownloadResponse(stream,
+                        "report.bin", responseContentType, 0))
+                .withContentType("text/csv");
+
+        handler.handleDownloadRequest(new DownloadEvent(request, response,
+                session, new Element("div")));
+
+        verify(response).setContentType(expectedContentType);
+    }
+
     @Test
     void handleSetToInline_contentDispositionIsInlineWithFilename()
             throws IOException {
