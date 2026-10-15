@@ -21,6 +21,7 @@
 // tracking decrement is scheduled right after the command so it runs once the
 // command has executed (FIFO timer order).
 
+import { notifyActivityChanged } from './ActivityNotifier';
 import type { Command } from './Command';
 
 /**
@@ -37,6 +38,9 @@ export class TrackingScheduler {
     setTimeout(command, 0);
     setTimeout(() => {
       this.#deferredCommandTrackers--;
+      if (this.#deferredCommandTrackers === 0) {
+        notifyActivityChanged();
+      }
     }, 0);
   }
 
