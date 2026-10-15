@@ -17,6 +17,7 @@ package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -791,6 +792,37 @@ class ComponentEventBusTest {
             });
             util.verifyNoInteractions();
         }
+    }
+
+    @DomEvent("element-data-event")
+    public static class ElementDataEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public ElementDataEvent(Component source, boolean fromClient,
+                @EventData("event.target") Element target, // NOSONAR
+                @EventData("element.parentNode") Component parent,
+                @EventData("event.detail") int detail) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void addListener_elementAndComponentEventData_sameExpressionsAsAddEventDataElement() {
+        TestComponent component = new TestComponent();
+        Element element = new Element("div");
+
+        component.addListener(ElementDataEvent.class, event -> {
+        });
+        element.addEventListener("element-data-event", event -> {
+        }).addEventDataElement("event.target")
+                .addEventDataElement("element.parentNode")
+                .addEventData("event.detail");
+
+        Set<String> expressions = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event");
+        assertEquals(3, expressions.size());
+        assertEquals(element.getNode().getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event"), expressions);
     }
 
     @Test
