@@ -53,7 +53,7 @@ describe('download.start', () => {
 
   it('clicks the anchor next to the element that fired the event', () => {
     button.addEventListener('click', (e) => {
-      $wnd.Vaadin.Flow.download.start(e, '/files/a.bin', 'b.bin');
+      $wnd.Vaadin.Flow.download.start('/files/a.bin', 'b.bin', e);
     });
 
     button.click();
@@ -72,8 +72,14 @@ describe('download.start', () => {
   const withoutAttachedElement: Array<[string, () => Event | undefined]> = [
     ['no event', () => undefined],
     ['a non-element current target', () => eventWithCurrentTarget(window)],
-    ['a detached current target', () => eventWithCurrentTarget(document.createElement('button'))]
+    ['a current target in a detached subtree', () => eventWithCurrentTarget(detachedButton())]
   ];
+
+  // Has a parent node but is not in the document.
+  function detachedButton(): Element {
+    const parent = document.createElement('div');
+    return parent.appendChild(document.createElement('button'));
+  }
 
   function eventWithCurrentTarget(currentTarget: EventTarget): Event {
     const event = new Event('click');
@@ -83,7 +89,7 @@ describe('download.start', () => {
 
   withoutAttachedElement.forEach(([description, createEvent]) => {
     it(`falls back to the document body with ${description}`, () => {
-      $wnd.Vaadin.Flow.download.start(createEvent(), '/files/a.bin');
+      $wnd.Vaadin.Flow.download.start('/files/a.bin', undefined, createEvent());
 
       expect(clickedAnchor).to.exist;
       expect(clickedAnchor!.download).to.equal('');

@@ -123,7 +123,7 @@ public class TriggerDownloadIT extends ChromeBrowserTest {
         ((JavascriptExecutor) getDriver())
                 .executeScript("window.__downloads = [];"
                         + "window.Vaadin.Flow.download.start = "
-                        + "  (event, url, filename) => window.__downloads.push("
+                        + "  (url, filename) => window.__downloads.push("
                         + "    {url: url, filename: filename ?? null});");
     }
 

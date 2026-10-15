@@ -30,9 +30,10 @@
  * When the triggering event has an element as its current target, the anchor
  * is inserted next to that element instead of at the end of the body. An
  * overlay the element is in (a modal dialog, a popover, a menu) then sees the
- * synthesised click as an inside click and stays open.
+ * synthesised click as an inside click and stays open. The event is the last
+ * argument so callers that only pass a URL keep working.
  */
-function startDownload(event: Event | undefined, url: string, filename?: string): void {
+function startDownload(url: string, filename?: string, event?: Event): void {
   const a = document.createElement('a');
   a.href = url;
   // Always set `download` so the browser saves the response rather than
@@ -54,7 +55,7 @@ function startDownload(event: Event | undefined, url: string, filename?: string)
   // otherwise see an extra click.
   a.addEventListener('click', (e) => e.stopPropagation());
   const origin = event?.currentTarget;
-  if (origin instanceof Element && origin.parentNode) {
+  if (origin instanceof Element && origin.isConnected) {
     origin.after(a);
   } else {
     document.body.appendChild(a);
