@@ -17,13 +17,19 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -125,6 +131,40 @@ class FrontendDependenciesTest {
                 classFinder, false, null, true);
 
         DepsTests.assertImports(dependencies.getScripts(), "bundled.js");
+    }
+
+    @Test
+    void jsModuleWithRuntimePrefix_stillBundled() {
+        // Runtime prefixes only change the meaning of @JavaScript values,
+        // @JsModule values are always bundled
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "/abs-module.js");
+    }
+
+    @Test
+    void bundledJavaScript_warnedAboutOnceAsDeprecated() {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+        Logger logger = Mockito.spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactoryMocked.when(
+                    () -> LoggerFactory.getLogger(FrontendDependencies.class))
+                    .thenReturn(logger);
+
+            new FrontendDependencies(classFinder, false, null, true);
+        }
+
+        ArgumentCaptor<Object> values = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger, Mockito.atLeastOnce()).warn(
+                ArgumentMatchers.contains("deprecated bundled interpretation"),
+                ArgumentMatchers.any(), values.capture());
+        assertEquals(List.of("bundled.js"), values.getAllValues());
     }
 
     @Test
