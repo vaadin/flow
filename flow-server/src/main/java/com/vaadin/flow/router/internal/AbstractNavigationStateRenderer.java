@@ -386,23 +386,12 @@ public abstract class AbstractNavigationStateRenderer
             List<Component> modalityComponents = event.getUI().getInternals()
                     .getModalityComponents();
             // Components with modality nested inside another one go away
-            // together with it, and must stay in their parent
-            modalityComponents.stream().filter(
-                    component -> !isNestedIn(component, modalityComponents))
-                    .forEach(Component::removeFromParent);
+            // together with it, and must stay in their parent. The rest are
+            // removed most recently set first.
+            modalityComponents.stream().filter(component -> component
+                    .findAncestor(modalityComponents::contains).isEmpty())
+                    .forEachOrdered(Component::removeFromParent);
         }
-    }
-
-    private static boolean isNestedIn(Component component,
-            List<Component> candidateAncestors) {
-        Optional<Component> parent = component.getParent();
-        while (parent.isPresent()) {
-            if (candidateAncestors.contains(parent.get())) {
-                return true;
-            }
-            parent = parent.get().getParent();
-        }
-        return false;
     }
 
     /**
