@@ -1488,6 +1488,12 @@ public class UITest {
         assertEquals(List.of(visualComponent, fixture.modalComponent),
                 fixture.ui.getInternals().getModalityComponents(),
                 "Components with modality should be reported most recently set first");
+        fixture.collectUiChanges();
+        assertEquals(fixture.modalComponent,
+                fixture.ui.getInternals().getActiveModalComponent(),
+                "STRICT component below a VISUAL one should stay the active modal component");
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
 
         fixture.ui.setChildComponentModal(visualComponent, ModalityMode.STRICT);
 
@@ -1497,6 +1503,9 @@ public class UITest {
         assertEquals(visualComponent,
                 fixture.ui.getInternals().getActiveModalComponent(),
                 "Component should have become the active modal component");
+        fixture.collectUiChanges();
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(visualComponent, false);
 
         fixture.ui.setChildComponentModal(visualComponent,
                 ModalityMode.MODELESS);
@@ -1519,16 +1528,21 @@ public class UITest {
         assertTrue(fixture.ui.getInternals().getModalityComponents().isEmpty(),
                 "Detached component should not be reported as a component with modality");
 
-        // Re-attaching and setting modality again tracks the component anew
+        // Re-attaching and setting modality again tracks the component anew,
+        // also when switching the mode before detaching
         fixture.ui.add(fixture.modalComponent);
         fixture.ui.setChildComponentModal(fixture.modalComponent,
                 ModalityMode.VISUAL);
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.STRICT);
         assertTrue(fixture.ui.getInternals().hasModalityComponent(),
                 "Re-attached component should be tracked as a component with modality");
 
         fixture.modalComponent.removeFromParent();
+        fixture.collectUiChanges();
         assertFalse(fixture.ui.getInternals().hasModalityComponent(),
                 "Component detached again should not be tracked as a component with modality");
+        verifyInert(fixture.routingComponent, false);
     }
 
     @Test
@@ -1828,6 +1842,32 @@ public class UITest {
         verifyInert(fixture.routingComponent, true);
         verifyInert(fixture.modalComponent, false);
         verifyInert(secondModal, true);
+    }
+
+    @Test
+    public void twoModalComponents_topComponentVisual_lowerComponentActive() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        fixture.ui.setChildComponentModal(secondModal, ModalityMode.VISUAL);
+        fixture.collectUiChanges();
+
+        assertEquals(fixture.modalComponent,
+                fixture.ui.getInternals().getActiveModalComponent());
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+        verifyInert(secondModal, true);
+
+        fixture.ui.remove(secondModal);
+        fixture.collectUiChanges();
+
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents());
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
     }
 
     @Test
