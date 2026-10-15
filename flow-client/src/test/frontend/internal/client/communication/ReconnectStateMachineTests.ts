@@ -178,7 +178,7 @@ describe('ReconnectStateMachine', () => {
     }
 
     it('shows connected after a request started during a heartbeat reconnect', async () => {
-      const { machine, connectionState, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+      const { machine, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
       machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
       // A heartbeat failure does not hold back requests, so the user's next
       // action is sent and shows loading while the heartbeat reconnects.
@@ -195,10 +195,6 @@ describe('ReconnectStateMachine', () => {
       loadingIndicatorStateHandler.stopLoading();
       await afterDeferred();
       expect(getState()).to.equal(ConnectionState.CONNECTED);
-      // Loading by another party is not finished by this request either.
-      connectionState.loadingStarted();
-      connectionState.loadingFinished();
-      expect(getState()).to.equal(ConnectionState.CONNECTED);
     });
 
     for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT]) {
@@ -213,6 +209,29 @@ describe('ReconnectStateMachine', () => {
         expect(getState()).to.equal(ConnectionState.LOADING);
         connectionState.loadingFinished();
         expect(getState()).to.equal(ConnectionState.CONNECTED);
+      });
+    }
+
+    // A request finishing after a reconnect, or giving up (e.g. going offline),
+    // dropped its loading must not finish the loading of another party.
+    for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT, 'give-up'] as const) {
+      it(`keeps loading started by another party when a request finishes after ${type}`, async () => {
+        const { machine, connectionState, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+        loadingIndicatorStateHandler.processMessage(null, null);
+        loadingIndicatorStateHandler.startLoading();
+        setActiveRequest(true);
+        await afterDeferred();
+        if (type === 'give-up') {
+          machine.giveUp();
+        } else {
+          machine.handleRecoverableError(type, null);
+        }
+        connectionState.loadingStarted();
+
+        setActiveRequest(false);
+        loadingIndicatorStateHandler.stopLoading();
+        await afterDeferred();
+        expect(getState()).to.equal(ConnectionState.LOADING);
       });
     }
 

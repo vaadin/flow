@@ -97,7 +97,8 @@ export class LoadingIndicatorStateHandler {
   /**
    * Notes that a connection state change (e.g. to reconnecting) dropped the
    * loading indication, so that {@link restoreLoading} re-announces an ongoing
-   * one and a later stop does not finish the loading of another party.
+   * one and a later stop does not finish the loading another party started
+   * after the change.
    */
   loadingDropped(): void {
     this.#announced = false;
@@ -115,7 +116,9 @@ export class LoadingIndicatorStateHandler {
    */
   restoreLoading(): void {
     if (this.#loading) {
-      if (!this.#announced) {
+      // Also re-announce when not loading, as a state change by another party
+      // (e.g. going offline) drops the loading without notice.
+      if (!this.#announced || getState() !== LOADING) {
         this.#announce();
       }
     } else if (getState() !== LOADING) {
