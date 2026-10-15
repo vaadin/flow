@@ -13,6 +13,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -62,6 +64,32 @@ public class ProjectHelpersTest {
         File userKeyFile = new File(vaadinHome, "userKey");
         Assert.assertTrue("userKey should be created automatically",
                 userKeyFile.exists());
+    }
+
+    @Test
+    public void aiAgent() {
+        assertEquals(Optional.empty(),
+                ProjectHelpers.getAiAgent(Map.of("PATH", "/usr/bin")));
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CLAUDE),
+                ProjectHelpers.getAiAgent(Map.of("CLAUDECODE", "1")));
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CODEX),
+                ProjectHelpers.getAiAgent(Map.of("CODEX_THREAD_ID", "t-42")));
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_GEMINI),
+                ProjectHelpers.getAiAgent(Map.of("GEMINI_CLI", "1")));
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CURSOR),
+                ProjectHelpers.getAiAgent(Map.of("CURSOR_AGENT", "1")));
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_OPENCODE),
+                ProjectHelpers.getAiAgent(Map.of("OPENCODE", "1")));
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_OTHER),
+                ProjectHelpers.getAiAgent(Map.of("AI_AGENT", "some-agent")));
+        // Another agent that also sets CLAUDECODE is reported as itself
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CURSOR),
+                ProjectHelpers.getAiAgent(
+                        Map.of("CURSOR_AGENT", "1", "CLAUDECODE", "1")));
+        // Claude Code also sets the generic AI_AGENT variable
+        assertEquals(Optional.of(StatisticsConstants.AI_AGENT_CLAUDE),
+                ProjectHelpers.getAiAgent(
+                        Map.of("CLAUDECODE", "1", "AI_AGENT", "claude-code")));
     }
 
     private File createTempDir() throws IOException {

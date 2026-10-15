@@ -17,6 +17,7 @@ import com.vaadin.flow.testutil.TestUtils;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import elemental.json.Json;
@@ -237,6 +238,28 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         Assert.assertEquals("The live reload event must be recorded", 1,
                 projectData
                         .getValueAsInt(StatisticsConstants.EVENT_LIVE_RELOAD));
+    }
+
+    @Test
+    public void aiAgentIsKeptOverStartWithoutAgent() {
+        Assume.assumeTrue(
+                "Requires a test run that is not started by an AI agent",
+                ProjectHelpers.getAiAgent(System.getenv()).isEmpty());
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+        Assert.assertFalse(new StatisticsContainer(storage.readProject())
+                .containsField(StatisticsConstants.FIELD_AI_AGENT));
+
+        // An earlier start in the same report interval was made by an agent
+        storage.update((global, project) -> project.setValue(
+                StatisticsConstants.FIELD_AI_AGENT,
+                StatisticsConstants.AI_AGENT_CODEX));
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        Assert.assertEquals(StatisticsConstants.AI_AGENT_CODEX,
+                storage.readProject().get(StatisticsConstants.FIELD_AI_AGENT)
+                        .asText());
     }
 
     @Test
