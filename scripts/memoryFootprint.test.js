@@ -27,7 +27,7 @@ const BASE = {
 
 test('reports the metrics and classes that changed', () => {
   const head = {
-    'empty-ui': report('Empty UI', 9876, 22160, BASE['empty-ui'].metrics[0].breakdown),
+    'empty-ui': report('Empty UI', 9876, 22158, { 'java.util.HashMap': { count: 15, bytes: 716 } }),
     'rows-ui': report('Rows UI', 927048, 519703, {
       'java.util.HashMap': { count: 15, bytes: 720 },
       '[Ljava.lang.String;': { count: 1000, bytes: 32000 }
@@ -44,7 +44,7 @@ test('reports the metrics and classes that changed', () => {
   );
   assert.match(body, /\| Rows UI \| Serialized session \| 519,703 B \| 519,703 B \| no change \|/);
   assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B \| 9,876 B \| −4 B \(ignored\) \|/);
-  assert.ok(body.includes('| Empty UI | Serialized session | 22,153 B | 22,160 B | $\\color{red}\\textbf{+7 B}$ (+0.0%) |'));
+  assert.ok(body.includes('| Empty UI | Serialized session | 22,153 B | 22,158 B | $\\color{red}\\textbf{+5 B}$ (+0.0%) |'));
   assert.match(body, /<summary>Rows UI: Heap retained per UI by class<\/summary>/);
   assert.doesNotMatch(body, /<summary>Empty UI:/);
   assert.match(body, /- \*\*Rows UI\*\* \(`rows-ui`\): Rows UI description/);
@@ -67,6 +67,11 @@ test('reports no change without a table when every metric differs by less than 5
     assert.doesNotMatch(body, /\| Scenario \|/);
     assert.doesNotMatch(body, /by class/);
   }
+  // Only metrics in bytes have the threshold
+  const withRequests = (requests) => ({
+    'rows-ui': { ...BASE['rows-ui'], metrics: [{ id: 'requests', title: 'Requests', value: requests }] }
+  });
+  assert.strictEqual(compare(withRequests(3), withRequests(4)).changed, true);
 });
 
 test('reports the head metrics when the base has none', () => {
