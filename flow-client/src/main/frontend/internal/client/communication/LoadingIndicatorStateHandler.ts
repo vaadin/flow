@@ -21,7 +21,7 @@
 
 import type { Registry } from '../Registry';
 import { getScheduler } from '../TrackingScheduler';
-import { loadingFinished, loadingStarted } from '../ConnectionIndicator';
+import { CONNECTED, RECONNECTING, getState, loadingFinished, loadingStarted, setState } from '../ConnectionIndicator';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 // High-frequency events whose RPC requests should not trigger loading
@@ -91,14 +91,19 @@ export class LoadingIndicatorStateHandler {
   }
 
   /**
-   * Restores the loading indication after the connection state was reset, e.g.
-   * by a reconnect, which drops the loading count of the connection state.
-   * Re-announces an ongoing loading indication and stops it if no request
+   * Restores the loading indication after a reconnect, which replaced it with
+   * the reconnecting state. Re-announces an ongoing loading indication, moving
+   * the state from reconnecting to loading in one transition, or adding to the
+   * loading started by another party (Flow router, Hilla requests) during the
+   * reconnect. Otherwise goes back from reconnecting to connected, keeping the
+   * loading of another party. Then stops the loading indication if no request
    * remains active.
    */
   restoreLoading(): void {
     if (this.#loading) {
       loadingStarted();
+    } else if (getState() === RECONNECTING) {
+      setState(CONNECTED);
     }
     this.stopLoading();
   }

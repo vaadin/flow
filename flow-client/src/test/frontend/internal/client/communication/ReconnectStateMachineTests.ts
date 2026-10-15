@@ -111,9 +111,10 @@ describe('ReconnectStateMachine', () => {
     // The real store the connection indicator renders, and the real loading
     // handler resolving a PUSH or XHR failure goes through.
     function makeMachine() {
-      (window as { Vaadin?: unknown }).Vaadin = {
-        connectionState: new ConnectionStateStore(ConnectionState.CONNECTED)
-      };
+      const connectionState = new ConnectionStateStore(ConnectionState.CONNECTED);
+      (window as { Vaadin?: unknown }).Vaadin = { connectionState };
+      const transitions: string[] = [];
+      connectionState.addStateChangeListener((_, state) => transitions.push(state));
       let activeRequest = false;
       const registry = testRegistry({
         UILifecycle: { isRunning: () => true },
@@ -125,6 +126,8 @@ describe('ReconnectStateMachine', () => {
       registry.register('LoadingIndicatorStateHandler', loadingIndicatorStateHandler);
       return {
         machine: new ReconnectStateMachine(registry, () => {}),
+        connectionState,
+        transitions,
         loadingIndicatorStateHandler,
         setActiveRequest: (v: boolean) => {
           activeRequest = v;
@@ -146,10 +149,11 @@ describe('ReconnectStateMachine', () => {
     });
 
     it('shows connected after a request that was loading is re-sent successfully', async () => {
-      const { machine, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+      const { machine, transitions, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
       loadingIndicatorStateHandler.processMessage(null, null);
       loadingIndicatorStateHandler.startLoading();
       setActiveRequest(true);
+      await afterDeferred();
       machine.handleRecoverableError(ConnectionMessageType.XHR, { rpc: 1 });
       expect(getState()).to.equal(ConnectionState.RECONNECTING);
 
@@ -160,6 +164,26 @@ describe('ReconnectStateMachine', () => {
       setActiveRequest(false);
       loadingIndicatorStateHandler.stopLoading();
       await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.CONNECTED);
+      // Straight from reconnecting to loading, never connected in between.
+      expect(transitions).to.deep.equal([
+        ConnectionState.LOADING,
+        ConnectionState.RECONNECTING,
+        ConnectionState.LOADING,
+        ConnectionState.CONNECTED
+      ]);
+    });
+
+    it('keeps loading started by another party during the reconnect', async () => {
+      const { machine, connectionState } = makeMachine();
+      machine.handleRecoverableError(ConnectionMessageType.XHR, { rpc: 1 });
+      // E.g. a Hilla endpoint call starts while Flow is reconnecting.
+      connectionState.loadingStarted();
+
+      machine.resolveTemporaryError(ConnectionMessageType.XHR);
+      await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.LOADING);
+      connectionState.loadingFinished();
       expect(getState()).to.equal(ConnectionState.CONNECTED);
     });
   });
