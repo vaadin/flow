@@ -39,8 +39,9 @@ const MAX_CLASSES = 15;
 
 // The response kept for resending is stored compressed, and the order of its
 // constants can differ between runs, so the serialized size can vary by a
-// byte or so without any change. Metrics in other units count every change.
-const MIN_CHANGE = 5;
+// byte or so, and the heap size by an 8 byte step, without any change.
+// Metrics in other units count every change.
+const MIN_CHANGE = 10;
 
 /**
  * Whether a metric changed from base to head, by at least MIN_CHANGE for a

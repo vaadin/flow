@@ -27,7 +27,7 @@ const BASE = {
 
 test('reports the metrics and classes that changed', () => {
   const head = {
-    'empty-ui': report('Empty UI', 9876, 22158, { 'java.util.HashMap': { count: 15, bytes: 716 } }),
+    'empty-ui': report('Empty UI', 9872, 22163, { 'java.util.HashMap': { count: 15, bytes: 712 } }),
     'rows-ui': report('Rows UI', 927048, 519703, {
       'java.util.HashMap': { count: 15, bytes: 720 },
       '[Ljava.lang.String;': { count: 1000, bytes: 32000 }
@@ -43,8 +43,8 @@ test('reports the metrics and classes that changed', () => {
     body.includes('| Rows UI | Heap retained per UI | 1,010,240 B | 927,048 B | $\\color{green}\\textbf{−83,192 B}$ (−8.2%) |')
   );
   assert.match(body, /\| Rows UI \| Serialized session \| 519,703 B \| 519,703 B \| no change \|/);
-  assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B \| 9,876 B \| −4 B \(ignored\) \|/);
-  assert.ok(body.includes('| Empty UI | Serialized session | 22,153 B | 22,158 B | $\\color{red}\\textbf{+5 B}$ (+0.0%) |'));
+  assert.match(body, /\| Empty UI \| Heap retained per UI \| 9,880 B \| 9,872 B \| −8 B \(ignored\) \|/);
+  assert.ok(body.includes('| Empty UI | Serialized session | 22,153 B | 22,163 B | $\\color{red}\\textbf{+10 B}$ (+0.0%) |'));
   assert.match(body, /<summary>Rows UI: Heap retained per UI by class<\/summary>/);
   assert.doesNotMatch(body, /<summary>Empty UI:/);
   assert.match(body, /- \*\*Rows UI\*\* \(`rows-ui`\): Rows UI description/);
@@ -55,9 +55,9 @@ test('reports the metrics and classes that changed', () => {
   ]);
 });
 
-test('reports no change without a table when every metric differs by less than 5 bytes', () => {
+test('reports no change without a table when every metric differs by less than 10 bytes', () => {
   const almostSame = {
-    'empty-ui': report('Empty UI', 9876, 22154, BASE['empty-ui'].metrics[0].breakdown),
+    'empty-ui': report('Empty UI', 9872, 22154, BASE['empty-ui'].metrics[0].breakdown),
     'rows-ui': report('Rows UI', 1010240, 519703, BASE['rows-ui'].metrics[0].breakdown)
   };
   for (const head of [BASE, almostSame]) {
