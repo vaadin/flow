@@ -33,8 +33,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * A link that handles navigation internally using {@link Router} instead of
- * loading a new page in the browser. {@link #setTarget(String)} opens the route
- * in another browsing context, such as a new browser tab, instead.
+ * loading a new page in the browser. {@link #setOpenInNewBrowserTab(boolean)}
+ * opens the route in a new browser tab instead.
  * <p>
  * The <code>href</code> attribute of {@link #getElement()} will only be
  * up-to-date when the component is attached to a UI.
@@ -49,8 +49,9 @@ public class RouterLink extends Component implements HasText, HasComponents,
     private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors
             .attributeWithDefault("href", "", false);
 
-    private static final PropertyDescriptor<String, Optional<String>> TARGET = PropertyDescriptors
-            .optionalAttributeWithDefault("target", "");
+    private static final String TARGET = "target";
+
+    private static final String BLANK = "_blank";
 
     private HighlightCondition<RouterLink> highlightCondition = HighlightConditions
             .locationPrefix();
@@ -457,41 +458,64 @@ public class RouterLink extends Component implements HasText, HasComponents,
     }
 
     /**
-     * Sets the target window, tab or frame for this link. The target is either
-     * the <code>window.name</code> of a specific target, or one of these
-     * special values:
-     * <ul>
-     * <li><code>_self</code>: Open the link in the current context. This is the
-     * default behavior.
-     * <li><code>_blank</code>: Opens the link in a new unnamed context, such as
-     * a new browser tab.
-     * <li><code>_parent</code>: Opens the link in the parent context, or the
-     * current context if there is no parent context.
-     * <li><code>_top</code>: Opens the link in the top most grandparent
-     * context, or the current context if there is no parent context.
-     * </ul>
-     * Any target other than <code>_self</code> leaves the click to the browser:
-     * the route opens in that context through a regular page load, with a UI of
-     * its own, and the current UI does not navigate.
+     * Sets the browsing context the link opens in, as the {@code target}
+     * attribute of the {@code <a>} element. Any target other than {@code _self}
+     * leaves the click to the browser: the route opens in that context through
+     * a regular page load, with a UI of its own, and the current UI does not
+     * navigate.
+     *
+     * <pre>{@code
+     * RouterLink link = new RouterLink("Report", ReportView.class);
+     * link.setTarget("_blank"); // same as setOpenInNewBrowserTab(true)
+     * }</pre>
      *
      * @param target
-     *            the target value, or <code>""</code> to remove the target
-     *            value
+     *            a {@code window.name} or one of {@code _self}, {@code _blank},
+     *            {@code _parent}, {@code _top}; {@code null} or {@code ""}
+     *            removes the attribute, which opens the link in the current
+     *            context
+     * @see #setOpenInNewBrowserTab(boolean)
      */
     public void setTarget(String target) {
-        set(TARGET, target);
+        if (target == null || target.isEmpty()) {
+            getElement().removeAttribute(TARGET);
+        } else {
+            getElement().setAttribute(TARGET, target);
+        }
     }
 
     /**
-     * Gets the target window, tab or frame name for this link.
+     * Gets the browsing context the link opens in.
      *
+     * @return the {@code target} attribute, or {@code null} if none is set
      * @see #setTarget(String)
-     *
-     * @return an optional target, or an empty optional if no target has been
-     *         set
      */
-    public Optional<String> getTarget() {
-        return get(TARGET);
+    public String getTarget() {
+        return getElement().getAttribute(TARGET);
+    }
+
+    /**
+     * Sets whether the link opens its route in a new browser tab, through the
+     * {@code _blank} target. Turning it off removes the target, whatever it
+     * was.
+     *
+     * @param openInNewBrowserTab
+     *            {@code true} to open the route in a new tab, {@code false} to
+     *            navigate in the current one
+     * @see #setTarget(String)
+     */
+    public void setOpenInNewBrowserTab(boolean openInNewBrowserTab) {
+        setTarget(openInNewBrowserTab ? BLANK : null);
+    }
+
+    /**
+     * Gets whether the link opens its route in a new browser tab.
+     *
+     * @return {@code true} if the target is {@code _blank}
+     * @see #setOpenInNewBrowserTab(boolean)
+     */
+    public boolean isOpenInNewBrowserTab() {
+        return BLANK.equals(getTarget());
     }
 
     /**

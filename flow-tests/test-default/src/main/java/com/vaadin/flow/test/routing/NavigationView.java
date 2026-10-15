@@ -55,7 +55,7 @@ public class NavigationView extends Div {
         link.setId(ROUTER_LINK_ID);
         RouterLink newTabLink = new RouterLink("RouterView in new tab",
                 RouterView.class);
-        newTabLink.setTarget("_blank");
+        newTabLink.setOpenInNewBrowserTab(true);
         newTabLink.setId(ROUTER_LINK_NEW_TAB_ID);
         RouterLink selfTargetLink = new RouterLink("RouterView in this tab",
                 RouterView.class);
