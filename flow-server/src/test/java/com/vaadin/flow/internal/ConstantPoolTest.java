@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -76,6 +79,18 @@ class ConstantPoolTest {
 
         assertNotEquals(constantId, otherId);
         assertTrue(constantPool.hasNewConstants());
+    }
+
+    @Test
+    void newConstants_dumpedInRegistrationOrder() {
+        List<String> ids = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            ids.add(constantPool.getConstantId(new ConstantPoolKey(
+                    JacksonUtils.createObjectNode().put("value", i))));
+        }
+
+        assertEquals(ids,
+                JacksonUtils.getKeys(constantPool.dumpConstants()));
     }
 
     @Test
