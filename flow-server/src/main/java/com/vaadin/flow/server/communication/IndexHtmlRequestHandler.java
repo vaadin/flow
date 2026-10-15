@@ -508,11 +508,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request) {
         SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
                 indexDocument.head(), request);
+        // The < symbol is escaped so that values in the JSON (e.g. a
+        // </script> or <!-- coming from the request) cannot break out of the
+        // inline script element. In valid JSON < can only appear inside string
+        // literals, where \x3C is an equivalent JavaScript escape.
+        String json = JsonUtil.stringify(initialJson).replace("<", "\\x3C");
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.TypeScript= " + JsonUtil.stringify(initialJson)
-                + ";"));
+                "window.Vaadin.TypeScript= " + json + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 
