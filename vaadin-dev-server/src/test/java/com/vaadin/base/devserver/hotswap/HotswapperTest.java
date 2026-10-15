@@ -90,6 +90,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HotswapperTest {
@@ -856,8 +857,8 @@ class HotswapperTest {
                 true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test

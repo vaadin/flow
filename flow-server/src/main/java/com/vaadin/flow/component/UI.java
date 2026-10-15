@@ -1985,12 +1985,10 @@ public class UI extends Component
                             + "Add it first as a child of the UI so it is "
                             + "attached or just use addModal(component) when using ModalityMode.STRICT.");
         }
-        if (mode == ModalityMode.STRICT) {
-            getInternals().setChildModal(childComponent);
-        } else if (mode == ModalityMode.VISUAL) {
-            getInternals().setChildVisuallyModal(childComponent);
-        } else {
-            getInternals().setChildModeless(childComponent);
+        switch (mode) {
+        case STRICT -> getInternals().setChildModal(childComponent);
+        case VISUAL -> getInternals().setChildVisuallyModal(childComponent);
+        case MODELESS -> getInternals().setChildModeless(childComponent);
         }
     }
 
