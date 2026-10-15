@@ -24,7 +24,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;code&gt;</code> element.
+ * <p>
+ * A short fragment of computer code. Whitespace is not preserved; use Pre when
+ * layout must stay intact.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/code">MDN:
+ *      &lt;code&gt;</a>
  * @author Vaadin Ltd
  * @since 24.9
  */

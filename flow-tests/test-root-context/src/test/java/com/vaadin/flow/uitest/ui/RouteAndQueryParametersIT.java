@@ -41,4 +41,15 @@ public class RouteAndQueryParametersIT extends ChromeBrowserTest {
 
     }
 
+    @Test
+    public void navigateWithQueryStringInLocation_queryStringIsUsed() {
+        open();
+
+        findElement(By.id("querystring")).click();
+
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains("route parameter: 7, query string:foo=baz"));
+        Assert.assertTrue(getDriver().getCurrentUrl().endsWith("/7?foo=baz"));
+    }
+
 }

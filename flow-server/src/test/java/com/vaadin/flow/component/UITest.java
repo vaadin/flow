@@ -94,6 +94,7 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -310,6 +311,150 @@ public class UITest {
     }
 
     @Test
+    public void navigateWithQueryStringAndFragmentInLocation_bothAreParsed()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate("foo/bar?t=abc&t=def#total");
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals(List.of("abc", "def"),
+                location.getQueryParameters().getParameters().get("t"));
+        assertEquals("foo/bar?t=abc&t=def#total",
+                location.getPathWithQueryParameters());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateWithQuestionMarkInFragment_fragmentKeptIntact()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        // '?' is a legal fragment character and does not start a query string
+        ui.navigate("foo/bar#a?b");
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals(Collections.emptyMap(),
+                location.getQueryParameters().getParameters());
+        assertEquals("foo/bar#a?b", location.getPathWithQueryParameters());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToFragmentOnly_leftToClientRouter()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        ui.navigate("foo/bar");
+        dumpClientNavigations(ui);
+
+        // A fragment must not be resolved to the "" route
+        ui.navigate("#total");
+
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertEquals("foo/bar", ui.getInternals().getActiveViewLocation()
+                .getPathWithQueryParameters());
+        assertEquals(List.of("#total"), dumpClientNavigations(ui),
+                "The fragment should have been handed to the client router");
+    }
+
+    @Test
+    public void navigateToQueryStringWithFragment_resolvedToRootRoute()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        ui.navigate("foo/bar");
+        dumpClientNavigations(ui);
+
+        // A query string identifies the "" route just like it does without a
+        // fragment, so only the fragment is left for the client
+        ui.navigate("?tab=items#total");
+
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(RootNavigationTarget.class));
+        assertEquals("?tab=items#total", ui.getInternals()
+                .getActiveViewLocation().getPathWithQueryParameters());
+        assertEquals(List.of(), dumpClientNavigations(ui));
+    }
+
+    private static List<String> dumpClientNavigations(UI ui) {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(PendingJavaScriptInvocation::getInvocation)
+                .filter(invocation -> UI.CLIENT_NAVIGATE_TO
+                        .equals(invocation.getExpression()))
+                .map(invocation -> (String) invocation.getParameters().get(0))
+                .toList();
+    }
+
+    @Test
+    public void navigateWithSeparateQueryParameters_parametersAreApplied()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate("foo/bar", QueryParameters.of("t", "abc"));
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("t=abc", location.getQueryParameters().getQueryString());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToClassWithQueryParameters_parametersAreApplied()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        assertEquals(
+                FooBarNavigationTarget.class, ui
+                        .navigate(FooBarNavigationTarget.class,
+                                QueryParameters.of("t", "abc"))
+                        .get().getClass());
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("t=abc", location.getQueryParameters().getQueryString());
+
+        assertEquals(
+                Parameterized.class, ui
+                        .navigate(Parameterized.class, "baz",
+                                QueryParameters.of("t", "def"))
+                        .get().getClass());
+
+        location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo-bar/baz", location.getPath());
+        assertEquals("t=def", location.getQueryParameters().getQueryString());
+    }
+
+    @Test
+    public void navigateWithQueryStringOrFragmentAndQueryParameters_throws()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        QueryParameters parameters = QueryParameters.of("t", "def");
+        for (String locationString : List.of("foo/bar?t=abc", "foo/bar#total",
+                "foo/bar#a?b")) {
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> ui.navigate(locationString, parameters));
+            assertTrue(exception.getMessage().contains("navigate(String)"),
+                    "The message should name the overload to use instead: "
+                            + exception.getMessage());
+        }
+    }
+
+    @Test
     public void locationAfterServerNavigation()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
@@ -325,6 +470,29 @@ public class UITest {
         Component currentRoute = ui.getCurrentView();
         MatcherAssert.assertThat(currentRoute,
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToShownView_notReinstantiated_shownInstanceReturned()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        FooBarNavigationTarget shownView = ui
+                .navigate(FooBarNavigationTarget.class).orElseThrow();
+
+        // Navigating to the location that is already shown does nothing, so
+        // the returned Optional holds the view that is already shown
+        FooBarNavigationTarget sameView = ui
+                .navigate(FooBarNavigationTarget.class).orElseThrow();
+
+        assertSame(shownView, sameView,
+                "Navigating to the shown view should not re-instantiate it");
+
+        ui.refreshCurrentRoute(false);
+
+        assertNotSame(shownView, ui.getCurrentView(),
+                "refreshCurrentRoute should re-instantiate the shown view");
     }
 
     @Test
@@ -1017,6 +1185,23 @@ public class UITest {
     }
 
     @Test
+    public void navigate_navigationNotSupported_throws() {
+        UI ui = new UI() {
+            @Override
+            public boolean isNavigationSupported() {
+                return false;
+            }
+        };
+        RouteParameters parameters = RouteParameters.empty();
+
+        NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> ui.navigate(FooBarNavigationTarget.class, parameters));
+        assertEquals("Navigation is not supported by this UI",
+                exception.getMessage());
+    }
+
+    @Test
     public void accessLaterRunnable_detachedUi_detachHandlerCalled() {
         AtomicInteger runCount = new AtomicInteger();
 
@@ -1062,6 +1247,17 @@ public class UITest {
             assertTrue(e.getMessage().contains("UI.access()"),
                     "Exception message should mention UI.access()");
         }
+    }
+
+    @Test
+    public void getSessionOrThrow_withSession_returnsSession_withoutSession_throws() {
+        MockUI ui = createAccessableTestUI();
+        assertSame(ui.getSession(), ui.getSessionOrThrow());
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, new UI()::getSessionOrThrow);
+        assertTrue(exception.getMessage()
+                .startsWith("UI is not attached to a VaadinSession"));
     }
 
     @Test

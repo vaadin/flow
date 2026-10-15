@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,6 +54,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -177,6 +179,9 @@ class NodeUpdaterTest {
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        // the transform injects imports from the signals runtime into the
+        // application sources, so the runtime must be declared too
+        expectedDependencies.add("@preact/signals-react");
         expectedDependencies.add("magic-string");
         expectedDependencies.add("@types/node");
 
@@ -187,6 +192,9 @@ class NodeUpdaterTest {
 
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
+        // Native TypeScript for Flow's checker and classic TypeScript for
+        // tooling that needs the compiler API.
+        expectedDependencies.add("@typescript/native");
         expectedDependencies.add("typescript");
         return expectedDependencies;
     }
@@ -241,12 +249,12 @@ class NodeUpdaterTest {
                 JacksonUtils.createObjectNode());
         packageJson.set(NodeUpdater.DEV_DEPENDENCIES,
                 JacksonUtils.createObjectNode());
-        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES))
-                .put("typescript", "1.0.0");
+        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES)).put("vite",
+                "1.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         assertNotEquals("1.0.0", packageJson.get(NodeUpdater.DEV_DEPENDENCIES)
-                .get("typescript").stringValue());
+                .get("vite").stringValue());
     }
 
     @Test // #6907 test when user has set newer versions
@@ -332,6 +340,37 @@ class NodeUpdaterTest {
         assertEquals(existingVersion,
                 packageJson.get(NodeUpdater.DEPENDENCIES).get(pkg).textValue());
 
+    }
+
+    @Test
+    void managedNpmAlias_isUpdatedAndRetainsTarget() throws IOException {
+        ObjectNode json = nodeUpdater.getPackageJson();
+        String oldVersion = "npm:@typescript/typescript6@6.0.2";
+        String newVersion = "npm:@typescript/typescript6@6.0.3";
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", oldVersion);
+
+        assertEquals(1, nodeUpdater.addDependency(json,
+                NodeUpdater.DEV_DEPENDENCIES, "compiler", newVersion));
+        assertEquals(newVersion, json.get(NodeUpdater.DEV_DEPENDENCIES)
+                .get("compiler").asString());
+        assertEquals(0, nodeUpdater.addDependency(json,
+                NodeUpdater.DEV_DEPENDENCIES, "compiler", newVersion));
+    }
+
+    @Test
+    void managedNpmAlias_userChangesTarget_sameVersionIsPreserved()
+            throws IOException {
+        ObjectNode json = nodeUpdater.getPackageJson();
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", "npm:@typescript/typescript6@6.0.2");
+        ((ObjectNode) json.get(NodeUpdater.DEV_DEPENDENCIES)).put("compiler",
+                "npm:custom-compiler@6.0.2");
+
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", "npm:@typescript/typescript6@6.0.3");
+        assertEquals("npm:custom-compiler@6.0.2", json
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("compiler").asString());
     }
 
     @Test
@@ -424,6 +463,19 @@ class NodeUpdaterTest {
     }
 
     @Test
+    void testGetPinnedNpmVersions_versionsFilesAreReadOnceForTheBuild()
+            throws IOException {
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
+
+        assertSame(options.getPinnedNpmVersions(),
+                nodeUpdater.getPinnedNpmVersions(),
+                "The updater should take the versions the build has read");
+        Mockito.verify(finder, Mockito.times(1))
+                .getResources(Constants.PINNED_NPM_VERSIONS_FOLDER);
+    }
+
+    @Test
     void testGetPinnedNpmDependencies_noVersionsFileIsPresent_outputIsEmptyJson()
             throws IOException {
         Logger logger = Mockito.spy(Logger.class);
@@ -434,40 +486,36 @@ class NodeUpdaterTest {
                     .thenReturn(logger);
 
             Mockito.when(
-                    finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                    .thenReturn(null);
-            Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                    .thenReturn(null);
+                    finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                    .thenReturn(List.of());
 
             ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
             assertEquals(0, JacksonUtils.getKeys(pinnedVersions).size());
 
-            Mockito.verify(logger, Mockito.times(1))
-                    .info("Couldn't find {} or {} to pin dependency versions."
+            Mockito.verify(logger, Mockito.times(1)).info(
+                    "Couldn't find any versions file in {} to pin npm dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                            Constants.VAADIN_CORE_VERSIONS_JSON,
-                            Constants.VAADIN_VERSIONS_JSON);
+                    Constants.PINNED_NPM_VERSIONS_FOLDER);
         }
     }
 
     @Test
-    void testGetPinnedNpmDependencies_onlyVaadinCoreVersionIsPresent_outputContainsOnlyCoreVersions()
+    void testGetPinnedNpmDependencies_oneVersionsFileIsPresent_outputContainsItsVersions()
             throws IOException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+        File coreVersionsFile = File.createTempFile("core-components-versions",
                 ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        ObjectNode mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
-        assertTrue(mockedVaadinCoreJson.has("core"));
-        assertTrue(mockedVaadinCoreJson.get("core").has("button"));
-        assertFalse(mockedVaadinCoreJson.has("vaadin"));
+        ObjectNode mockedCoreJson = getMockCoreVersionsJson();
+        assertTrue(mockedCoreJson.has("core"));
+        assertTrue(mockedCoreJson.get("core").has("button"));
+        assertFalse(mockedCoreJson.has("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
+        FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List
+                        .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
         ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
@@ -479,11 +527,11 @@ class NodeUpdaterTest {
     @Test
     void testGetPinnedNpmDependencies_reactNotAvailable_noReactComponents()
             throws IOException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+        File coreVersionsFile = File.createTempFile("core-components-versions",
                 ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        ObjectNode mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+        ObjectNode mockedCoreJson = getMockCoreVersionsJson();
 
         ObjectNode reactComponents = JacksonUtils.createObjectNode();
         ObjectNode reactData = JacksonUtils.createObjectNode();
@@ -492,18 +540,17 @@ class NodeUpdaterTest {
 
         reactComponents.set("react-components", reactData);
 
-        mockedVaadinCoreJson.set("react", reactComponents);
+        mockedCoreJson.set("react", reactComponents);
 
-        assertTrue(mockedVaadinCoreJson.has("core"));
-        assertTrue(mockedVaadinCoreJson.get("core").has("button"));
-        assertFalse(mockedVaadinCoreJson.has("vaadin"));
+        assertTrue(mockedCoreJson.has("core"));
+        assertTrue(mockedCoreJson.get("core").has("button"));
+        assertFalse(mockedCoreJson.has("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
+        FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List
+                        .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
         ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
@@ -554,15 +601,15 @@ class NodeUpdaterTest {
 
     private void generateTestDataForReactComponents()
             throws IOException, ClassNotFoundException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+        File coreVersionsFile = File.createTempFile("core-components-versions",
                 ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
-                ".json",
+        File commercialVersionsFile = File.createTempFile(
+                "commercial-components-versions", ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        ObjectNode mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+        ObjectNode mockedCoreJson = getMockCoreVersionsJson();
 
         ObjectNode reactComponents = JacksonUtils.createObjectNode();
         ObjectNode reactData = JacksonUtils.createObjectNode();
@@ -572,13 +619,13 @@ class NodeUpdaterTest {
 
         reactComponents.set("react-components", reactData);
 
-        mockedVaadinCoreJson.set("react", reactComponents);
+        mockedCoreJson.set("react", reactComponents);
 
-        assertTrue(mockedVaadinCoreJson.has("core"));
-        assertTrue(mockedVaadinCoreJson.get("core").has("button"));
-        assertFalse(mockedVaadinCoreJson.has("vaadin"));
+        assertTrue(mockedCoreJson.has("core"));
+        assertTrue(mockedCoreJson.get("core").has("button"));
+        assertFalse(mockedCoreJson.has("vaadin"));
 
-        ObjectNode mockedVaadinJson = getMockVaadinVersionsJson();
+        ObjectNode mockedCommercialJson = getMockCommercialVersionsJson();
 
         reactComponents = JacksonUtils.createObjectNode();
         reactData = JacksonUtils.createObjectNode();
@@ -588,52 +635,54 @@ class NodeUpdaterTest {
 
         reactComponents.set("react-components-pro", reactData);
 
-        mockedVaadinJson.set("react", reactComponents);
+        mockedCommercialJson.set("react", reactComponents);
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
+        FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toString(),
+        FileUtils.write(commercialVersionsFile, mockedCommercialJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(
+                        coreVersionsFile.getParentFile().toURI().toURL(),
+                        commercialVersionsFile.getParentFile().toURI()
+                                .toURL()));
         Class clazz = FeatureFlags.class; // actual class doesn't matter
         Mockito.doReturn(clazz).when(finder).loadClass(
                 "com.vaadin.flow.component.react.ReactAdapterComponent");
     }
 
     @Test
-    void testGetPinnedNpmDependencies_VaadinAndVaadinCoreVersionsArePresent_outputContainsBothCoreAndCommercialVersions()
+    void testGetPinnedNpmDependencies_severalVersionsFilesArePresent_outputContainsTheVersionsOfEach()
             throws IOException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+        File coreVersionsFile = File.createTempFile("core-components-versions",
                 ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        JsonNode mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
-        assertTrue(mockedVaadinCoreJson.has("core"));
-        assertTrue(mockedVaadinCoreJson.get("core").has("button"));
-        assertFalse(mockedVaadinCoreJson.has("vaadin"));
+        JsonNode mockedCoreJson = getMockCoreVersionsJson();
+        assertTrue(mockedCoreJson.has("core"));
+        assertTrue(mockedCoreJson.get("core").has("button"));
+        assertFalse(mockedCoreJson.has("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
+        FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
 
-        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
-                ".json",
+        File commercialVersionsFile = File.createTempFile(
+                "commercial-components-versions", ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        JsonNode mockedVaadinJson = getMockVaadinVersionsJson();
-        assertFalse(mockedVaadinJson.has("core"));
-        assertTrue(mockedVaadinJson.has("vaadin"));
-        assertTrue(mockedVaadinJson.get("vaadin").has("grid-pro"));
-        assertTrue(mockedVaadinJson.get("vaadin").has("vaadin-grid-pro"));
+        JsonNode mockedCommercialJson = getMockCommercialVersionsJson();
+        assertFalse(mockedCommercialJson.has("core"));
+        assertTrue(mockedCommercialJson.has("vaadin"));
+        assertTrue(mockedCommercialJson.get("vaadin").has("grid-pro"));
+        assertTrue(mockedCommercialJson.get("vaadin").has("vaadin-grid-pro"));
 
-        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toString(),
+        FileUtils.write(commercialVersionsFile, mockedCommercialJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(
+                        coreVersionsFile.getParentFile().toURI().toURL(),
+                        commercialVersionsFile.getParentFile().toURI()
+                                .toURL()));
 
         ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
@@ -975,9 +1024,9 @@ class NodeUpdaterTest {
         }
     }
 
-    private ObjectNode getMockVaadinCoreVersionsJson() {
+    private ObjectNode getMockCoreVersionsJson() {
         // @formatter:off
-        return (ObjectNode) JacksonUtils.readTree(
+        return JacksonUtils.readTree(
                 """
                 {
                     "core": {
@@ -1013,9 +1062,9 @@ class NodeUpdaterTest {
         // @formatter:on
     }
 
-    private ObjectNode getMockVaadinVersionsJson() {
+    private ObjectNode getMockCommercialVersionsJson() {
         // @formatter:off
-        return (ObjectNode) JacksonUtils.readTree(
+        return JacksonUtils.readTree(
                 """
                 {
                     "vaadin": {

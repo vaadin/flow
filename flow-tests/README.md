@@ -34,7 +34,7 @@ copying the test. Never add the same test in two places.
 
 1. Needs a non-Spring-Boot container? → plain `VaadinServlet` / custom servlet
    service: **test-plain-servlet**; Spring MVC without Boot: **test-plain-spring**;
-   CDI: **test-cdi**.
+   CDI: **vaadin-cdi-tests**.
 2. Needs Spring Security? → **test-spring-security** (its url-mapping /
    context-path / method-security / route-path variants live here as profiles).
 3. Needs a specific theme setting? → custom application theme: **test-themes**;
@@ -73,12 +73,15 @@ copying the test. Never add the same test in two places.
 | **test-spring-security** | Spring Security (auth, url-mapping, method / route-path checks) |
 | **test-livereload** | live reload |
 | **test-redeployment** | Spring DevTools restart |
-| **test-cdi** (future) | the CDI container |
+| **vaadin-cdi-tests** | the CDI container (deploys to a real application server, so it runs only under a container profile) |
 
 Some tests need irreducible special infrastructure and keep their own modules:
 `servlet-containers` (non-Jetty containers), `test-multi-war`,
-`test-commercial-banner`, the proxy-based fault-tolerance tests, and
-`test-npm-performance-regression`.
+`test-commercial-banner`, the proxy-based fault-tolerance tests,
+`test-npm-performance-regression`, and `test-devloop` (one multi-module Maven
+reactor per shape of application, and the dev-loop daemon owns the application
+process instead of a Maven plugin — see
+[test-devloop/README.md](test-devloop/README.md)).
 
 ---
 
@@ -117,9 +120,11 @@ Active when `-DskipTests` is **not** set (the default).
 
 | Module | Description |
 |--------|-------------|
-| **test-dev-mode** | Tests for development-mode-specific behavior: dependency loading order, debug window/error overlay, dev tools plugins, Vite communication channel, stream resources, exported JS functions, and Vite websocket logout handling. |
+| **test-default** | Home for ITs that need only the default configuration (Spring Boot, React, dev hotdeploy, root context, npm), on JUnit 6. Holds the routing suite and the dev-mode ITs (dependency loading order, Vite communication, browser logging, dev-mode URL validation, exported JS functions, stream resources, Vite websocket logout handling) — see [test-default/README.md](test-default/README.md). |
+| **test-push-startup** | Tests that a push connection arriving while the Vaadin service is still initializing is held and then served, instead of being dropped. Uses a deliberately slow service init listener, so it needs its own module. |
+| **test-devloop** | End-to-end tests for the `vaadin-dev` CLI and the dev-loop daemon: apply/restart/deletion, frontend and CSS changes, POM edits, multi-module projects and daemon survival. |
 | **test-servlet** | Tests that the Flow servlet registers and deploys correctly, verifying a basic navigation target is accessible and renders content via the standard servlet mechanism. |
-| **test-misc** | Catch-all module for miscellaneous integration tests: compressed resource serving, exception logging, i18n/translation, `@PreserveOnRefresh`, production-mode config, partial route matching, and themed component rendering. |
+| **test-misc** | Catch-all module for miscellaneous integration tests in **production mode** (it runs `build-frontend`, which sets `productionMode=true`): compressed resource serving, exception logging, i18n/translation, `@PreserveOnRefresh`, production-mode config, partial route matching, and themed component rendering. |
 | **test-eager-bootstrap** | Tests the "eager bootstrap" (eager server load) feature where the initial UIDL is embedded in the first HTTP response, verifying the page includes the UIDL payload and basic view rendering works. |
 | **test-custom-route-registry** | Tests using a custom `RouteRegistry` implementation in place of the default `ApplicationRouteRegistry`, verifying custom routes, error handling, and not-found views resolve through the user-provided registry. |
 | **test-client-queue** | Tests the client-side message queue under adverse server conditions: slow responses, missing responses, and re-sync loops. Verifies the client queues requests correctly and avoids duplicate processing. |
@@ -130,7 +135,6 @@ Active when `-DskipTests` is **not** set (the default).
 | Module | Description |
 |--------|-------------|
 | **test-vaadin-router** | Integration tests for client-side routing using `vaadin-router`: navigation lifecycle events, forwarding/redirecting, history manipulation, query parameters, back-navigation, and postponed navigation. Also has a production-mode build variant. |
-| **test-react-router** | Same routing test suite as `test-vaadin-router` but executed against a React Router-based setup, ensuring parity between the two routing strategies. Also has a production-mode build variant. |
 | **test-react-adapter** | Tests the `flow-react` adapter bridging server-side Flow components with client-side React components: bidirectional state synchronization and embedding Flow server views inside React component trees. Also has a production-mode build variant. |
 | **test-router-custom-context** | Tests that the Flow Router and dependency injection work correctly when deployed under a non-root servlet context path (`/custom-context-router`). Also tests encoded URL parameters and offline behavior. |
 | **test-router-custom-context-encoded** | Same tests as `test-router-custom-context` but deployed under a context path with URL-encodable and regex-special characters (spaces, `$`, `{`, `}`), verifying correct location computation in dev mode. |
@@ -176,6 +180,7 @@ Active when `-DskipTests` is **not** set (the default).
 | Module | Description |
 |--------|-------------|
 | **servlet-containers** | Aggregator that runs integration tests on servlet containers other than the default Jetty. Contains a `tomcat10` submodule deploying the root-context WAR onto Apache Tomcat 10 via the Cargo plugin. |
+| **vaadin-cdi-tests** | Arquillian suite for the `vaadin-cdi` integration, deploying to TomEE, WildFly, Payara, Open Liberty and Tomcat+Weld: CDI scopes and contexts, the instantiator, push, i18n, templates and deployment validation. Every test needs an application server, so its tests are skipped unless one of the container profiles is active — see [vaadin-cdi-tests/README.md](vaadin-cdi-tests/README.md). |
 
 ## Nightly Profile
 

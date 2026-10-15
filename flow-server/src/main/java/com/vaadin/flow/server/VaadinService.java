@@ -27,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +41,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -70,11 +73,8 @@ import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
-import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.communication.AbstractRpcInvocationEvent;
@@ -147,6 +147,12 @@ public abstract class VaadinService implements Serializable {
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
 
+    private static final String REQUEST_HANDLER_ATTRIBUTE = VaadinService.class
+            .getName() + ".requestHandler";
+
+    private static final String REQUEST_FAILURE_ATTRIBUTE = VaadinService.class
+            .getName() + ".requestFailure";
+
     /**
      * Should never be used directly, always use
      * {@link #getDeploymentConfiguration()}.
@@ -188,8 +194,36 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Set to true when {@link #init()} has been run.
+     * <p>
+     * Volatile because it is written by the thread that starts the application,
+     * but read by threads serving connections that can be established before
+     * the application has been started, such as push connections.
      */
-    private boolean initialized = false;
+    private volatile boolean initialized = false;
+
+    /**
+     * Completed when {@link #init()} has finished, normally when it succeeded
+     * and exceptionally when it failed, so that connections arriving while the
+     * service is starting can be handled once it is ready instead of being
+     * rejected.
+     * <p>
+     * Transient because it cannot be serialized, and not restored when reading
+     * a service back, as a service is not meant to be serialized in the first
+     * place.
+     */
+    private final transient CompletableFuture<Void> initCompleted = new CompletableFuture<>();
+
+    /**
+     * How long the actions registered for when initialization has finished wait
+     * before the first of them runs. Short enough not to be noticed by a client
+     * that has already been waiting for the service to start, long enough to
+     * give the work a deployment does after initializing the service a head
+     * start.
+     * <p>
+     * A head start only: the delay is not synchronized with that work, which
+     * can take longer than this on a loaded machine.
+     */
+    private static final long INIT_NOTIFICATION_DELAY_MS = 50;
 
     private Router router;
 
@@ -234,6 +268,18 @@ public abstract class VaadinService implements Serializable {
      *             if a problem occurs when creating the service
      */
     public void init() throws ServiceException {
+        try {
+            doInit();
+        } catch (Throwable e) {
+            // Reported also on failure, so that connections waiting for the
+            // service to become ready are not left hanging
+            initCompleted.completeExceptionally(e);
+            throw e;
+        }
+        initCompleted.complete(null);
+    }
+
+    private void doInit() throws ServiceException {
         JacksonUtils.checkJacksonCompatibility();
         doSetClassLoader();
         instantiator = createInstantiator();
@@ -330,21 +376,11 @@ public abstract class VaadinService implements Serializable {
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
             logger.debug("The application has the following routes: ");
-            List<RouteData> routeDataList = getRouteRegistry()
-                    .getRegisteredRoutes();
-            if (!routeDataList.isEmpty()) {
-                addRouterUsageStatistics();
-            }
-            routeDataList.stream().map(Object::toString).forEach(logger::debug);
-            addAutoLayoutUsageStatistics();
+            getRouteRegistry().getRegisteredRoutes().stream()
+                    .map(Object::toString).forEach(logger::debug);
             DevToolsToken.init(this);
         }
-        if (getDeploymentConfiguration().isPnpmEnabled()) {
-            UsageStatistics.markAsUsed("flow/pnpm", null);
-        }
-        if (getDeploymentConfiguration().isBunEnabled()) {
-            UsageStatistics.markAsUsed("flow/bun", null);
-        }
+        UsageStatisticsCollector.collect(this);
 
         if (getDeploymentConfiguration().isProductionMode()) {
             // Postpone the check until dev-server is fully initialized and
@@ -354,6 +390,126 @@ public abstract class VaadinService implements Serializable {
         }
 
         initialized = true;
+    }
+
+    /**
+     * Checks whether {@link #init()} has completed and this service is
+     * therefore able to process requests.
+     * <p>
+     * Endpoints that can be reached before the servlet has been fully started,
+     * such as the push endpoint registered during servlet context
+     * initialization, can use this to handle incoming traffic gracefully
+     * instead of failing.
+     *
+     * @return {@code true} if this service can process requests, {@code false}
+     *         otherwise
+     * @see #whenInitialized(Consumer)
+     * @since 25.4
+     */
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    /**
+     * Runs the given action once {@link #init()} has finished, or as soon as
+     * possible if it already has.
+     * <p>
+     * The action is given whether the service ended up being able to process
+     * requests; when it was not, initialization failed and the service never
+     * will be. Actions run shortly after initialization has finished, on the
+     * service executor and independently of each other, with this service as
+     * the current one. They do not run on the thread that was initializing, so
+     * that a slow action does not hold up the application starting, unless no
+     * executor could be given out. A failure in an action is logged and does
+     * not affect the other actions.
+     * <p>
+     * This lets an endpoint that can be reached before the servlet has been
+     * fully started, such as the push endpoint registered during servlet
+     * context initialization, hold on to a request instead of rejecting it,
+     * without tying up the thread that is serving the connection.
+     * <p>
+     * Actions should be short. They run on the executor that the application
+     * uses for its own tasks, at the moment the application is starting, so a
+     * slow action delays the requests the application is about to serve. If
+     * there is a lot of work to do, start it from the action instead of doing
+     * it there.
+     * <p>
+     * Actions run once {@link #init()} has completed, so everything it does,
+     * including running the {@link VaadinServiceInitListener}s, has been done
+     * by the time they do. A service that initializes further things of its own
+     * after that, as the Spring one does when it registers its listener beans,
+     * may still be finishing: actions get a short head start over that work
+     * rather than waiting for it, so an action should only depend on this
+     * service being ready.
+     *
+     * @param action
+     *            the action to run, given whether the service was initialized
+     *            successfully
+     * @see #isInitialized()
+     * @since 25.4
+     */
+    public void whenInitialized(Consumer<Boolean> action) {
+        // handle() absorbs an initialization failure into the action itself, so
+        // that the action still runs and can react to the service not being
+        // usable. The delay gives the work a deployment does after initializing
+        // the service, such as a Spring application registering its listener
+        // beans, a head start, without waiting for it: init() completing is the
+        // last point this class knows about.
+        initCompleted.handle((ignored, initFailure) -> null).thenRunAsync(
+                () -> runInitializedAction(action),
+                CompletableFuture.delayedExecutor(INIT_NOTIFICATION_DELAY_MS,
+                        TimeUnit.MILLISECONDS, this::runOnExecutor));
+    }
+
+    /**
+     * Runs one action registered through {@link #whenInitialized(Consumer)},
+     * keeping a failure in it to itself.
+     *
+     * @param action
+     *            the action to run
+     */
+    private void runInitializedAction(Consumer<Boolean> action) {
+        try {
+            runWithServiceContext(() -> action.accept(initialized));
+        } catch (Throwable e) {
+            // Caught rather than let out, as it would otherwise only end up in
+            // the future this action runs from, which nothing reads
+            getLogger().error(
+                    "Error running an action registered to run once the service has been initialized",
+                    e);
+        }
+    }
+
+    /**
+     * Runs the given command on the service executor, so that the actions
+     * registered for when initialization has finished do not run on the thread
+     * that is still starting the application.
+     *
+     * @param command
+     *            the command to run
+     */
+    private void runOnExecutor(Runnable command) {
+        try {
+            Executor executor = getExecutor();
+            if (executor != null) {
+                executor.execute(command);
+                return;
+            }
+            // Initialization did not get as far as creating the executor
+        } catch (RuntimeException e) {
+            // The executor turning the command down, or a service that cannot
+            // give one out at all, must not stop the action: the connections
+            // waiting for the service would be left hanging
+            getLogger().debug(
+                    "Could not run an action registered to run once the service has been initialized on the service executor",
+                    e);
+        }
+        // Not run here: this method is called from the thread shared by
+        // everything that schedules a delayed task in this JVM, which must not
+        // be held up by application code. A shared pool rather than a thread of
+        // its own, as an initialization that failed leaves every held
+        // connection to come through here.
+        CompletableFuture.runAsync(command);
     }
 
     private void initSignalsEnvironment() {
@@ -420,40 +576,6 @@ public abstract class VaadinService implements Serializable {
             unregister.run();
             Transaction.setTransactionFallback(null);
         });
-    }
-
-    private void addRouterUsageStatistics() {
-        if (UsageStatistics.getEntries().anyMatch(
-                e -> Constants.STATISTIC_ROUTING_CLIENT.equals(e.getName()))) {
-            UsageStatistics.removeEntry(Constants.STATISTIC_ROUTING_CLIENT);
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_HYBRID,
-                    Version.getFullVersion());
-        } else if (UsageStatistics.getEntries()
-                .noneMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
-                        .equals(e.getName()))) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_ROUTING_SERVER,
-                    Version.getFullVersion());
-        }
-        UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_FLOW_ROUTE, null);
-    }
-
-    private void addAutoLayoutUsageStatistics() {
-        if (getRouteRegistry() instanceof AbstractRouteRegistry registry
-                && RouteUtil.hasAutoLayout(registry)) {
-            UsageStatistics.markAsUsed(Constants.STATISTIC_HAS_AUTO_LAYOUT,
-                    null);
-            if (RouteUtil.hasClientRouteWithAutoLayout(
-                    getDeploymentConfiguration())) {
-                UsageStatistics.markAsUsed(
-                        Constants.STATISTIC_HAS_CLIENT_ROUTE_WITH_AUTO_LAYOUT,
-                        null);
-            }
-            if (RouteUtil.hasServerRouteWithAutoLayout(registry)) {
-                UsageStatistics.markAsUsed(
-                        Constants.STATISTIC_HAS_SERVER_ROUTE_WITH_AUTO_LAYOUT,
-                        null);
-            }
-        }
     }
 
     /**
@@ -999,6 +1121,7 @@ public abstract class VaadinService implements Serializable {
             List<UI> uis = new ArrayList<>(session.getUIs());
             for (final UI ui : uis) {
                 try {
+                    ui.getInternals().terminateActiveTransfers();
                     ui.accessSynchronously(() -> {
                         /*
                          * close() called here for consistency so that it is
@@ -1435,6 +1558,30 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Gets the currently used Vaadin service, throwing an exception if none is
+     * available. Use this method when the code must run within an active
+     * service context.
+     * <p>
+     * If the code can work without a service, use {@link #getCurrent()} instead
+     * and check for null.
+     *
+     * @return the current Vaadin service instance, never <code>null</code>
+     * @throws IllegalStateException
+     *             if no service is bound to the current thread
+     * @see #getCurrent()
+     * @since 25.4
+     */
+    public static VaadinService getCurrentOrThrow() {
+        VaadinService service = getCurrent();
+        if (service == null) {
+            throw new IllegalStateException(
+                    "No currently active VaadinService found. This code must be run while a request is handled "
+                            + "or within UI.access() or VaadinSession.access().");
+        }
+        return service;
+    }
+
+    /**
      * Sets the this Vaadin service as the current service and also sets the
      * current Vaadin request and Vaadin response. This method is used by the
      * framework to set the current instances when a request related to the
@@ -1550,7 +1697,12 @@ public abstract class VaadinService implements Serializable {
      * @param request
      *            The Vaadin request for which the session should be
      *            reinitialized
+     * @deprecated use
+     *             {@link jakarta.servlet.http.HttpServletRequest#changeSessionId()}
+     *             instead, which changes the session id in place without
+     *             copying the session attributes
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static void reinitializeSession(VaadinRequest request) {
         WrappedSession oldSession = request.getWrappedSession();
 
@@ -1685,6 +1837,18 @@ public abstract class VaadinService implements Serializable {
         List<UI> uis = new ArrayList<>(session.getUIs());
         for (final UI ui : uis) {
             if (ui.isClosing()) {
+                if (ui.getInternals().hasActiveTransfers()) {
+                    /*
+                     * Keep the UI attached so that listeners and callbacks
+                     * bound to it are still effective for the ongoing upload or
+                     * download. The request that serves the last transfer
+                     * detaches the UI through its own cleanup.
+                     */
+                    getLogger().debug(
+                            "Not removing closed UI {} since it has ongoing transfers",
+                            ui.getUIId());
+                    continue;
+                }
                 ui.accessSynchronously(() -> {
                     getLogger().debug("Removing closed UI {}", ui.getUIId());
                     session.removeUI(ui);
@@ -1771,7 +1935,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         // Check for long running tasks
-        Lock lockInstance = ui.getSession().getLockInstance();
+        Lock lockInstance = ui.getSessionOrThrow().getLockInstance();
         if (lockInstance instanceof ReentrantLock
                 && ((ReentrantLock) lockInstance).hasQueuedThreads()) {
             /*
@@ -1835,6 +1999,35 @@ public abstract class VaadinService implements Serializable {
         vaadinRequestInterceptors
                 .forEach(requestInterceptor -> requestInterceptor
                         .requestStart(request, response));
+        if (eventBus.hasListener(RequestStartedEvent.class)) {
+            eventBus.fireEvent(
+                    new RequestStartedEvent(this, request, response));
+        }
+    }
+
+    /**
+     * Records the exception that made handling a request fail, so that the
+     * {@link RequestEndedEvent} of the request reports it.
+     * <p>
+     * Failures in {@link #handleRequest(VaadinRequest, VaadinResponse)} are
+     * recorded automatically. Code that handles a request between its own calls
+     * to {@link #requestStart(VaadinRequest, VaadinResponse)} and
+     * {@link #requestEnd(VaadinRequest, VaadinResponse, VaadinSession)}, such
+     * as the handling of push messages, calls this method when it catches an
+     * exception, typically next to passing it to the session
+     * {@link ErrorHandler}.
+     *
+     * @param request
+     *            the request that failed, not {@code null}
+     * @param failure
+     *            the exception that made handling the request fail, not
+     *            {@code null}
+     * @since 25.4
+     */
+    public void recordRequestFailure(VaadinRequest request, Exception failure) {
+        if (eventBus.hasListener(RequestEndedEvent.class)) {
+            request.setAttribute(REQUEST_FAILURE_ATTRIBUTE, failure);
+        }
     }
 
     /**
@@ -1851,6 +2044,17 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
+        if (eventBus.hasListener(RequestEndedEvent.class)) {
+            Duration duration = Duration
+                    .ofNanos(System.nanoTime() - (Long) request
+                            .getAttribute(REQUEST_START_TIME_ATTRIBUTE));
+            eventBus.fireEventInReverseOrder(new RequestEndedEvent(this,
+                    request, response, session,
+                    (RequestHandler) request
+                            .getAttribute(REQUEST_HANDLER_ATTRIBUTE),
+                    (Exception) request.getAttribute(REQUEST_FAILURE_ATTRIBUTE),
+                    duration));
+        }
         vaadinRequestInterceptors.forEach(requestInterceptor -> {
             try {
                 requestInterceptor.requestEnd(request, response, session);
@@ -1946,10 +2150,19 @@ public abstract class VaadinService implements Serializable {
                 return;
             }
 
+            // The handler is recorded before it runs, so that a request
+            // ended event names the handler that threw if handling fails
+            boolean observed = eventBus.hasListener(RequestEndedEvent.class);
             for (RequestHandler handler : getRequestHandlers()) {
+                if (observed) {
+                    request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, handler);
+                }
                 if (handler.handleRequest(vaadinSession, request, response)) {
                     return;
                 }
+            }
+            if (observed) {
+                request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, null);
             }
 
             // Request not handled by any RequestHandler
@@ -1959,6 +2172,7 @@ public abstract class VaadinService implements Serializable {
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
         } catch (final Exception e) {
+            recordRequestFailure(request, e);
             handleExceptionDuringRequest(request, response, vaadinSession, e);
         } finally {
             requestEnd(request, response, vaadinSession);
@@ -2357,7 +2571,7 @@ public abstract class VaadinService implements Serializable {
      */
     public static boolean isCsrfTokenValid(UI ui, String requestToken) {
 
-        if (ui.getSession().getService().getDeploymentConfiguration()
+        if (ui.getSessionOrThrow().getService().getDeploymentConfiguration()
                 .isXsrfProtectionEnabled()) {
             String uiToken = ui.getCsrfToken();
 

@@ -32,6 +32,7 @@ import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
@@ -123,6 +124,19 @@ class RouteRegistryHotswapperTest {
                 appRouteRegistryTracker.added.stream()
                         .map(RouteBaseData::getNavigationTarget)
                         .collect(Collectors.toSet()));
+    }
+
+    @Test
+    void onClassLoadEvent_applicationRegistry_otherReflectionCachesNotCleared() {
+        ReflectionCache<Object, String> cache = new ReflectionCache<>(
+                Class::getName);
+        cache.get(MyRouteB.class);
+
+        updater.onClassesChange(new HotswapClassEvent(vaadinService,
+                Set.of(MyRouteB.class), true));
+
+        assertTrue(cache.contains(MyRouteB.class),
+                "Reflection caches must only be cleared after all hotswappers have run");
     }
 
     @Test

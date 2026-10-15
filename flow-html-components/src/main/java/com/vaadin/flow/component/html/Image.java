@@ -34,7 +34,13 @@ import com.vaadin.flow.server.streams.DownloadResponse;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
+ * <p>
+ * Embeds an image. Always set alternative text so the content is available when
+ * the image cannot be shown.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img">MDN:
+ *      &lt;img&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -259,12 +265,8 @@ public class Image extends HtmlComponent
      *            the alternate text
      */
     public void setAlt(String alt) {
-        if (alt == null) {
-            getElement().removeAttribute(ALT_ATTRIBUTE);
-        } else {
-            // Also an empty string should be set as alt
-            getElement().setAttribute(ALT_ATTRIBUTE, alt);
-        }
+        // Also an empty string should be set as alt
+        getElement().setAttribute(ALT_ATTRIBUTE, alt);
     }
 
     /**

@@ -23,11 +23,21 @@ import com.vaadin.flow.component.Tag;
 
 /**
  * Component representing a <code>&lt;aside&gt;</code> element.
+ * <p>
+ * Content that is only indirectly related to the surrounding page, typically a
+ * sidebar or call-out.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/aside">MDN:
+ *      &lt;aside&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Tag(Tag.ASIDE)
+// The deprecated HasOrderedComponents is declared until its removal in 26,
+// so that applications typing this component as HasOrderedComponents keep
+// compiling
+@SuppressWarnings("removal")
 public class Aside extends HtmlContainer
         implements ClickNotifier<Aside>, HasOrderedComponents {
 

@@ -119,6 +119,7 @@ class ComponentUtilTest {
     }
 
     @Test
+    @SuppressWarnings("removal")
     void registerComponentClass_and_getComponentsByTag_shouldReturnCorrectComponent() {
         Class<? extends Component> testComponentClass = TestDiv.class;
         String testTag = "test-div";
@@ -135,6 +136,18 @@ class ComponentUtilTest {
     }
 
     @Test
+    @SuppressWarnings("removal")
+    void unregisterAllComponentClasses_removesAllTagMappings() {
+        ComponentUtil.registerComponentClass("first-tag", TestDiv.class);
+        ComponentUtil.registerComponentClass("second-tag", TestComponent.class);
+
+        ComponentUtil.unregisterAllComponentClasses();
+
+        assertTrue(ComponentUtil.getAllTagMappings().isEmpty());
+    }
+
+    @Test
+    @SuppressWarnings("removal")
     void getComponentsByTag_withUnregisteredTag_shouldReturnEmptySet() {
         String unregisteredTag = "unregistered-tag";
 
@@ -143,6 +156,36 @@ class ComponentUtilTest {
 
         assertTrue(retrievedClasses.isEmpty(),
                 "The retrieved classes should be empty for an unregistered tag");
+    }
+
+    @Test
+    void getChildrenOfType_returnsMatchingChildrenInOrder() {
+        // parent
+        // ├── div1 (TestDiv)
+        // ├── span (TestComponent)
+        // └── div2 (TestDiv)
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        TestDiv div1 = new TestDiv();
+        TestComponent span = new TestComponent(ElementFactory.createSpan());
+        TestDiv div2 = new TestDiv();
+        parent.getElement().appendChild(div1.getElement(), span.getElement(),
+                div2.getElement());
+
+        assertEquals(List.of(div1, div2),
+                ComponentUtil.getChildrenOfType(parent, TestDiv.class).toList(),
+                "Only the children of the given type must be returned, in child order");
+        assertEquals(Optional.of(div1),
+                ComponentUtil.getFirstChildOfType(parent, TestDiv.class));
+    }
+
+    @Test
+    void getFirstChildOfType_withNoMatchingChild_returnsEmpty() {
+        TestComponent parent = new TestComponent(ElementFactory.createDiv());
+        parent.getElement().appendChild(
+                new TestComponent(ElementFactory.createSpan()).getElement());
+
+        assertEquals(Optional.empty(),
+                ComponentUtil.getFirstChildOfType(parent, TestDiv.class));
     }
 
     @Test

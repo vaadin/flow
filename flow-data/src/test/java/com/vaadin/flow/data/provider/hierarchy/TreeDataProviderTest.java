@@ -74,6 +74,20 @@ class TreeDataProviderTest
     }
 
     @Test
+    void toString_containsIdentityAndBackendRootItemCount() {
+        TreeDataProvider<StrBean> dataProvider = getDataProvider();
+        String identity = dataProvider.getClass().getName() + "@"
+                + Integer.toHexString(dataProvider.hashCode());
+
+        assertEquals(identity + "(10 backend root items)",
+                dataProvider.toString());
+
+        dataProvider.setFilter(bean -> false);
+        assertEquals(identity + "(10 backend root items, filtered)",
+                dataProvider.toString());
+    }
+
+    @Test
     void treeData_add_item_parent_not_in_hierarchy_throws() {
         assertThrows(IllegalArgumentException.class, () -> new TreeData<>()
                 .addItem(new StrBean("", 0, 0), new StrBean("", 0, 0)));

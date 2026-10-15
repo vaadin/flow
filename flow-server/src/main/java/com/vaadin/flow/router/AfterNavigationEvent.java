@@ -57,6 +57,7 @@ public class AfterNavigationEvent extends EventObject {
         super(event.getSource());
         this.event = event;
         this.routeParameters = routeParameters;
+        event.markNavigationCommitted();
     }
 
     /**
@@ -70,6 +71,12 @@ public class AfterNavigationEvent extends EventObject {
 
     /**
      * Get the {@link LocationChangeEvent}.
+     * <p>
+     * The navigation is already committed when this event fires, so the
+     * mutators of the returned event have no effect:
+     * {@link LocationChangeEvent#setStatusCode(int)} is read before this event
+     * and {@link LocationChangeEvent#rerouteTo(NavigationHandler)} is never
+     * read at all. Both log a warning when called from here.
      *
      * @return the {@link LocationChangeEvent}, not {@code null}
      * @since 4.0

@@ -46,6 +46,7 @@ import com.vaadin.flow.server.VaadinService;
  * @since 25.0
  */
 abstract class HotswapEvent {
+    /** The service the event was fired for. */
     protected final VaadinService vaadinService;
     private final Map<UI, UIUpdateStrategy> uiUpdateStrategies = new IdentityHashMap<>();
     private final List<ClientCommand> clientCommands = new ArrayList<>();

@@ -129,7 +129,8 @@ public class PwaHandler implements RequestHandler {
                 (session, request, response) -> {
                     response.setContentType("application/javascript");
                     try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getRuntimeServiceWorkerJs());
+                        writer.write(
+                                pwaRegistry.getRuntimeServiceWorkerJs(request));
                     }
                     return true;
                 });

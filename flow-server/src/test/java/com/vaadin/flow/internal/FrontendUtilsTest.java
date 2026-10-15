@@ -16,16 +16,20 @@
 package com.vaadin.flow.internal;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.internal.FrontendUtils.AnsiColor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FrontendUtilsTest {
 
@@ -82,5 +86,67 @@ class FrontendUtilsTest {
 
         assertEquals(firstIndex, lastIndex);
         assertEquals(output.length() - "[0m".length(), firstIndex);
+    }
+
+    @Test
+    void getFrontendFolder_noLegacyFolder_frontendDirNotProbed(
+            @TempDir File projectRoot) {
+        // Regression test for the Gradle configuration cache: probing
+        // src/main/frontend while configuring records a file-system-entry
+        // input on a path the build itself creates, which discards the entry on
+        // the next build. With no legacy frontend folder the answer is
+        // frontendDir either way, so the probe must not happen at all.
+        AtomicInteger probes = new AtomicInteger();
+        File frontendDir = probeCountingFile(
+                new File(projectRoot, "src/main/frontend").getPath(), probes);
+
+        assertEquals(frontendDir,
+                FrontendUtils.getFrontendFolder(projectRoot, frontendDir));
+        assertEquals(0, probes.get(),
+                "getFrontendFolder must not probe the build-created frontend folder when the project has no legacy frontend folder");
+    }
+
+    @Test
+    void getFrontendFolder_legacyFolderAndNoFrontendDir_legacyReturned(
+            @TempDir File projectRoot) {
+        File legacy = new File(projectRoot, FrontendUtils.LEGACY_FRONTEND_DIR);
+        assertTrue(legacy.mkdirs());
+        File frontendDir = new File(projectRoot, "src/main/frontend");
+
+        assertEquals(legacy,
+                FrontendUtils.getFrontendFolder(projectRoot, frontendDir));
+    }
+
+    @Test
+    void getFrontendFolder_legacyFolderAndExistingFrontendDir_frontendDirReturned(
+            @TempDir File projectRoot) {
+        assertTrue(new File(projectRoot, FrontendUtils.LEGACY_FRONTEND_DIR)
+                .mkdirs());
+        File frontendDir = new File(projectRoot, "src/main/frontend");
+        assertTrue(frontendDir.mkdirs());
+
+        assertEquals(frontendDir,
+                FrontendUtils.getFrontendFolder(projectRoot, frontendDir));
+    }
+
+    @Test
+    void getFrontendFolder_legacyFolderAndCustomFrontendDir_customDirReturned(
+            @TempDir File projectRoot) {
+        assertTrue(new File(projectRoot, FrontendUtils.LEGACY_FRONTEND_DIR)
+                .mkdirs());
+        File customFrontendDir = new File(projectRoot, "my-frontend");
+
+        assertEquals(customFrontendDir, FrontendUtils
+                .getFrontendFolder(projectRoot, customFrontendDir));
+    }
+
+    private static File probeCountingFile(String path, AtomicInteger probes) {
+        return new File(path) {
+            @Override
+            public boolean exists() {
+                probes.incrementAndGet();
+                return super.exists();
+            }
+        };
     }
 }

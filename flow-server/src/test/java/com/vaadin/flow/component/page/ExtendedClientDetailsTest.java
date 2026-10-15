@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.component.page;
 
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,6 +27,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ExtendedClientDetailsTest {
+
+    /**
+     * Slack for the time that passes between constructing the details and
+     * reading the time back.
+     */
+    private static final long TIME_TOLERANCE_MS = 1000L;
 
     @Test
     void initializeWithClientValues_gettersReturnExpectedValues() {
@@ -90,6 +100,57 @@ class ExtendedClientDetailsTest {
 
         detailsBuilder.setNavigatorPlatform("iPad");
         assertTrue(detailsBuilder.buildDetails().isIOS(), "an iPad is iOS");
+    }
+
+    @Test
+    void clientClockAheadOfServer_getBrowserTimeReturnsClientTime() {
+        long clientTime = System.currentTimeMillis() + 60_000;
+        final ExtendedClientDetails details = new ExtendBuilder()
+                .setClientServerTimeDelta(Long.toString(clientTime))
+                .buildDetails();
+
+        long browserTime = details.getBrowserTime().toEpochMilli();
+        assertTrue(Math.abs(clientTime - browserTime) < TIME_TOLERANCE_MS,
+                "getBrowserTime() should follow the clock of the browser, but was off by "
+                        + (browserTime - clientTime) + " ms");
+    }
+
+    @Test
+    void clientClockAheadOfServer_getBrowserDateTimeReturnsClientTimeInClientZone() {
+        long clientTime = System.currentTimeMillis() + 60_000;
+        final ExtendedClientDetails details = new ExtendBuilder()
+                .setClientServerTimeDelta(Long.toString(clientTime))
+                .buildDetails();
+
+        ZonedDateTime browserDateTime = details.getBrowserDateTime();
+        assertEquals(ZoneId.of("Asia/Tehran"), browserDateTime.getZone());
+        long browserTime = browserDateTime.toInstant().toEpochMilli();
+        assertTrue(Math.abs(clientTime - browserTime) < TIME_TOLERANCE_MS,
+                "getBrowserDateTime() should follow the clock of the browser, but was off by "
+                        + (browserTime - clientTime) + " ms");
+    }
+
+    @Test
+    void timeZoneIdReported_getZoneIdReturnsRegionZone() {
+        assertEquals(ZoneId.of("Asia/Tehran"),
+                new ExtendBuilder().buildDetails().getZoneId());
+    }
+
+    @Test
+    void timeZoneIdMissingOrUnknown_getZoneIdFallsBackToOffset() {
+        ExtendBuilder detailsBuilder = new ExtendBuilder()
+                .setTimezoneOffset("-330");
+
+        detailsBuilder.setTimeZoneId(null);
+        assertEquals(ZoneOffset.ofHoursMinutes(5, 30),
+                detailsBuilder.buildDetails().getZoneId());
+
+        detailsBuilder.setTimeZoneId("Nowhere/Atlantis");
+        assertEquals(ZoneOffset.ofHoursMinutes(5, 30),
+                detailsBuilder.buildDetails().getZoneId());
+
+        detailsBuilder.setTimezoneOffset("-1500");
+        assertEquals(ZoneOffset.UTC, detailsBuilder.buildDetails().getZoneId());
     }
 
     @Test

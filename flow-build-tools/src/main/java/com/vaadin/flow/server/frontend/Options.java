@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
@@ -48,6 +49,8 @@ public class Options implements Serializable {
     private String buildDirectoryName;
 
     private ClassFinder classFinder;
+
+    private transient PinnedNpmVersions pinnedNpmVersions;
 
     private File frontendDirectory;
 
@@ -840,6 +843,24 @@ public class Options implements Serializable {
         return classFinder;
     }
 
+    /**
+     * Gets the npm packages whose versions the classpath pins, reading the
+     * versions files the first time they are asked for.
+     * <p>
+     * Everything the build does shares the same versions, so the files are read
+     * once and whatever is wrong with them is said once.
+     *
+     * @return the pinned npm versions of the classpath
+     * @throws IOException
+     *             if the versions folders cannot be looked up
+     */
+    PinnedNpmVersions getPinnedNpmVersions() throws IOException {
+        if (pinnedNpmVersions == null) {
+            pinnedNpmVersions = new PinnedNpmVersions(classFinder);
+        }
+        return pinnedNpmVersions;
+    }
+
     public File getNodeModulesFolder() {
         return new File(getNpmFolder(), FrontendUtils.NODE_MODULES);
     }
@@ -1197,6 +1218,13 @@ public class Options implements Serializable {
      * {@link TaskRunNpmInstall#DEFAULT_MINIMUM_FRONTEND_PACKAGE_AGE_DAYS} is
      * used. The configuration of bun cannot be read, so the default always
      * applies for it.
+     * <p>
+     * The packages Vaadin publishes itself ({@code @vaadin/*}) are exempt from
+     * the check, so that a project can be built right after a Vaadin release.
+     * Excluding them requires npm &ge; 11.17.0, which Node.js &ge; 26.4.0 ships
+     * with, or pnpm &ge; 10.17.0; bun cannot exclude packages on the command
+     * line, so with bun an installation may fail during the first day after a
+     * Vaadin release.
      *
      * @param minimumFrontendPackageAgeDays
      *            minimum allowed age in days, {@code 0} to disable the check,
@@ -1204,7 +1232,7 @@ public class Options implements Serializable {
      * @return this builder
      * @throws IllegalArgumentException
      *             if {@code minimumFrontendPackageAgeDays} is negative
-     * @since 25.1.6
+     * @since 25.2.8
      */
     public Options withMinimumFrontendPackageAgeDays(
             @Nullable Integer minimumFrontendPackageAgeDays) {
@@ -1246,7 +1274,8 @@ public class Options implements Serializable {
             frontendDependenciesScanner = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!isUseByteCodeScanner(), getClassFinder(),
                             isGenerateEmbeddableWebComponents(),
-                            getFeatureFlags(), reactEnabled);
+                            getFeatureFlags(), reactEnabled,
+                            isProductionMode());
         }
         return frontendDependenciesScanner;
     }

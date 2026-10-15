@@ -24,7 +24,11 @@ import com.vaadin.flow.component.Tag;
  * Component representing a <code>&lt;tfoot&gt;</code> element.
  *
  * @since 24.5
+ * @deprecated since 25.3, scheduled for removal in Vaadin 26. Use
+ *             {@code TableFoot} instead, which cannot be given children the
+ *             HTML specification does not allow inside this element.
  */
+@Deprecated(since = "25.3", forRemoval = true)
 @Tag(Tag.TFOOT)
 public class NativeTableFooter extends HtmlContainer
         implements NativeTableRowContainer, ClickNotifier<NativeTableFooter> {

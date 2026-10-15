@@ -241,6 +241,7 @@ class WebComponentWrapperTest {
             Element wrapperElement) {
         WebComponentUI ui = mock(WebComponentUI.class);
         when(ui.getUI()).thenReturn(Optional.of(ui));
+        when(ui.getUIOrThrow()).thenCallRealMethod();
         Element body = new Element("body");
         when(ui.getElement()).thenReturn(body);
 
@@ -257,6 +258,7 @@ class WebComponentWrapperTest {
                 DeploymentConfiguration.class);
 
         when(ui.getSession()).thenReturn(session);
+        when(ui.getSessionOrThrow()).thenCallRealMethod();
         when(session.getConfiguration()).thenReturn(configuration);
         when(configuration.getWebComponentDisconnect()).thenReturn(1);
 

@@ -37,7 +37,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
+ * <p>
+ * A hyperlink to another URL, a download, or a location in the page.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/a">MDN:
+ *      &lt;a&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -55,6 +60,12 @@ public class Anchor extends HtmlContainer
                     AnchorTarget.DEFAULT.getValue());
 
     private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
+    /**
+     * The href as it was set: either a {@link String} or an
+     * {@code AbstractStreamResource}. A disabled anchor has no {@code href}
+     * attribute, so the value is kept here and written back when the anchor is
+     * enabled again.
+     */
     private Serializable href;
 
     /**

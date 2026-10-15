@@ -39,6 +39,12 @@ import com.vaadin.testbench.DriverSupplier;
  * ({@link #open()}, {@link #getRootURL()}, {@link #getTestPath()}) that
  * contributors expect. Tests annotate methods with
  * {@link com.vaadin.testbench.BrowserTest @BrowserTest}.
+ * <p>
+ * The tests call the JUnit assertions unqualified, through a static import, as
+ * the conventions ask. {@code assertEquals} is the exception: TestBench's base
+ * class declares {@code assertEquals(WebElement, WebElement)}, and an inherited
+ * method shadows every static import of the same name, so those calls stay
+ * written as {@code Assertions.assertEquals(...)}.
  */
 public abstract class AbstractDefaultIT extends BrowserTestBase
         implements DriverSupplier {
@@ -134,7 +140,24 @@ public abstract class AbstractDefaultIT extends BrowserTestBase
      * server to be ready.
      */
     protected void open() {
-        getDriver().get(getTestURL());
+        open(getTestPath());
+    }
+
+    /**
+     * Opens the given path on the test server and waits for the dev server to
+     * be ready.
+     * <p>
+     * Waiting is required because in dev mode requests made while the frontend
+     * bundle is still being built are answered with a placeholder page. That
+     * page carries neither the view contents nor a Flow client, so navigating
+     * without waiting makes element lookups and server side navigation, such as
+     * forwarding, fail.
+     *
+     * @param path
+     *            the path to open, starting with a "/"
+     */
+    protected void open(String path) {
+        getDriver().get(getRootURL() + path);
         waitForDevServer();
     }
 

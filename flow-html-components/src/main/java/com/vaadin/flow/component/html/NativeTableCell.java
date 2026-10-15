@@ -27,12 +27,19 @@ import com.vaadin.flow.signals.Signal;
  * Component representing a <code>&lt;td&gt;</code> element.
  *
  * @since 24.5
+ * @deprecated since 25.3, scheduled for removal in Vaadin 26. Use
+ *             {@code TableDataCell} instead, the equivalent in the
+ *             {@code Table} component family.
  */
+@Deprecated(since = "25.3", forRemoval = true)
 @Tag(Tag.TD)
 public class NativeTableCell extends HtmlContainer
         implements ClickNotifier<NativeTableCell> {
 
+    /** Name of the attribute that spans a cell over several columns. */
     final String ATTRIBUTE_COLSPAN = "colspan";
+
+    /** Name of the attribute that spans a cell over several rows. */
     final String ATTRIBUTE_ROWSPAN = "rowspan";
 
     /**

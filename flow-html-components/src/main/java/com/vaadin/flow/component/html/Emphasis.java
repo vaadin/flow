@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;em&gt;</code> element.
+ * <p>
+ * Text that should be stressed. Screen readers typically change pronunciation
+ * for this element.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/em">MDN:
+ *      &lt;em&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */

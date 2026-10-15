@@ -28,6 +28,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -35,6 +37,7 @@ import com.vaadin.open.OSUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -63,6 +66,67 @@ class FileIOUtilsTest {
                 "file:/Users/John%20Doe/Downloads/my-app%20(21)/my-app/target/classes/");
         assertEquals(new File("/Users/John Doe/Downloads/my-app (21)/my-app"),
                 FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void projectFolderForGradleClassesFolder(@TempDir File projectFolder)
+            throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle").toPath());
+        URL url = gradleOutputFolder(projectFolder, "build/classes/java/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void projectFolderForGradleResourcesFolderInCustomBuildFolder(
+            @TempDir File projectFolder) throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle.kts").toPath());
+        URL url = gradleOutputFolder(projectFolder, "out/resources/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void projectFolderForGradleResourcesFolderInBuildFolderNamedClasses(
+            @TempDir File projectFolder) throws Exception {
+        Files.createFile(new File(projectFolder, "build.gradle").toPath());
+        // Both layouts match this one, and the classes layout would climb one
+        // level too far
+        URL url = gradleOutputFolder(projectFolder, "classes/resources/main/");
+
+        assertEquals(projectFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "settings.gradle", "settings.gradle.kts" })
+    void projectFolderForGradleModuleWithoutBuildScript(String settingsScript,
+            @TempDir File rootFolder) throws Exception {
+        // A subproject that the root project configures has no build script of
+        // its own, only the root has a settings script
+        Files.createFile(new File(rootFolder, settingsScript).toPath());
+        File moduleFolder = new File(rootFolder, "web");
+        URL url = gradleOutputFolder(moduleFolder, "build/classes/java/main/");
+
+        assertEquals(moduleFolder,
+                FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    @Test
+    void noProjectFolderForClassesFolderOutsideGradleBuild(@TempDir File folder)
+            throws Exception {
+        URL url = gradleOutputFolder(folder, "build/classes/java/main/");
+
+        assertNull(FileIOUtils.getProjectFolderFromClasspath(url));
+    }
+
+    private static URL gradleOutputFolder(File projectFolder,
+            String relativePath) throws Exception {
+        File outputFolder = new File(projectFolder, relativePath);
+        Files.createDirectories(outputFolder.toPath());
+        return outputFolder.toURI().toURL();
     }
 
     @Test
@@ -485,5 +549,40 @@ class FileIOUtilsTest {
 
         assertFalse(FileIOUtils.deleteQuietly((File) null));
         assertFalse(FileIOUtils.deleteQuietly((Path) null));
+    }
+
+    @Test
+    void copyDirectory_internalRelativeLinkKept_absoluteAndOutsideLinksFollowed(
+            @TempDir File dir) throws Exception {
+        assumeFalse(OSUtils.isWindows());
+        Path source = dir.toPath().resolve("source");
+        Files.createDirectories(source.resolve("bin"));
+        Files.createDirectories(source.resolve("lib"));
+        Files.writeString(source.resolve("lib/cli.js"), "cli");
+        Files.createSymbolicLink(source.resolve("bin/cli"),
+                Path.of("../lib/cli.js"));
+        Path outside = dir.toPath().resolve("outside.txt");
+        Files.writeString(outside, "outside");
+        Files.createSymbolicLink(source.resolve("bin/outside"),
+                Path.of("../../outside.txt"));
+        Files.createSymbolicLink(source.resolve("bin/absolute"),
+                source.resolve("lib/cli.js").toAbsolutePath());
+        Path target = dir.toPath().resolve("target");
+
+        FileIOUtils.copyDirectory(source.toFile(), target.toFile());
+
+        Path copiedLink = target.resolve("bin/cli");
+        assertTrue(Files.isSymbolicLink(copiedLink));
+        assertEquals(Path.of("../lib/cli.js"),
+                Files.readSymbolicLink(copiedLink));
+        assertEquals("cli", Files.readString(copiedLink));
+
+        Path copiedOutside = target.resolve("bin/outside");
+        assertFalse(Files.isSymbolicLink(copiedOutside));
+        assertEquals("outside", Files.readString(copiedOutside));
+
+        Path copiedAbsolute = target.resolve("bin/absolute");
+        assertFalse(Files.isSymbolicLink(copiedAbsolute));
+        assertEquals("cli", Files.readString(copiedAbsolute));
     }
 }
