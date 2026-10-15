@@ -33,6 +33,26 @@ curl -sSfL -o "$work/pubring.kbx" \
 gpgv --keyring "$work/pubring.kbx" "$work/SHASUMS256.txt.sig" "$work/SHASUMS256.txt"
 curl -sSf -o "$work/unofficial-SHASUMS256.txt" "$unofficial/SHASUMS256.txt"
 
+# unofficial-builds publishes SHASUMS256.txt before every build has finished
+# and appends to it as builds complete, so refuse to store a file that lacks
+# an archive Flow downloads.
+missing=()
+for archive in darwin-arm64.tar.gz darwin-x64.tar.gz linux-arm64.tar.gz \
+  linux-x64.tar.gz win-arm64.zip win-x64.zip; do
+  grep -q "  node-$version-$archive\$" "$work/SHASUMS256.txt" \
+    || missing+=("$official/node-$version-$archive")
+done
+for archive in linux-arm64-musl.tar.gz linux-x64-musl.tar.gz; do
+  grep -q "  node-$version-$archive\$" "$work/unofficial-SHASUMS256.txt" \
+    || missing+=("$unofficial/node-$version-$archive")
+done
+if [ ${#missing[@]} -gt 0 ]; then
+  echo "Not all Node.js $version builds are published yet. Missing checksums for:" >&2
+  printf '  %s\n' "${missing[@]}" >&2
+  echo "Track the unofficial builds at https://unofficial-builds.nodejs.org/ and rerun this script when they are done." >&2
+  exit 1
+fi
+
 cp "$work/SHASUMS256.txt" "$resources/default-node-SHASUMS256.txt"
 cp "$work/unofficial-SHASUMS256.txt" "$resources/default-node-unofficial-SHASUMS256.txt"
 
