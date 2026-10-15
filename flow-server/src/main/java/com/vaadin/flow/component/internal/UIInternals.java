@@ -30,7 +30,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -362,11 +361,11 @@ public class UIInternals implements Serializable {
 
     private boolean screenOrientationListenerInstalled;
 
-    private ArrayDeque<Component> modalComponentStack;
-
-    private ArrayDeque<Component> modalityComponentStack;
-
-    private Map<Component, Registration> modalityRemovalRegistrations;
+    /*
+     * Components with modality, most recently set first. Strict modal
+     * components are the entries with ModalityMode.STRICT.
+     */
+    private ArrayDeque<ModalityEntry> modalityStack;
 
     private Element wrapperElement;
 
@@ -2152,7 +2151,7 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public boolean hasModalComponent() {
-        return modalComponentStack != null && !modalComponentStack.isEmpty();
+        return getActiveModalComponent() != null;
     }
 
     /**
@@ -2168,8 +2167,7 @@ public class UIInternals implements Serializable {
      * @since 25.4
      */
     public boolean hasModalityComponent() {
-        return modalityComponentStack != null
-                && !modalityComponentStack.isEmpty();
+        return modalityStack != null && !modalityStack.isEmpty();
     }
 
     /**
@@ -2184,7 +2182,7 @@ public class UIInternals implements Serializable {
         if (!hasModalityComponent()) {
             return Collections.emptyList();
         }
-        return List.copyOf(modalityComponentStack);
+        return modalityStack.stream().map(ModalityEntry::component).toList();
     }
 
     /**
@@ -2194,10 +2192,12 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public Component getActiveModalComponent() {
-        if (hasModalComponent()) {
-            return modalComponentStack.peek();
+        if (modalityStack == null) {
+            return null;
         }
-        return null;
+        return modalityStack.stream()
+                .filter(entry -> entry.mode() == ModalityMode.STRICT)
+                .map(ModalityEntry::component).findFirst().orElse(null);
     }
 
     /**
@@ -2216,25 +2216,7 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public void setChildModal(Component child) {
-        if (modalComponentStack == null) {
-            modalComponentStack = new ArrayDeque<>();
-        } else if (isTopMostModal(child)) {
-            return;
-        }
-        ElementUtil.setIgnoreParentInert(child.getElement(), true);
-
-        if (modalComponentStack.isEmpty()) {
-            ElementUtil.setInert(ui.getElement(), true);
-        } else {
-            // disable previous top most modal component
-            ElementUtil.setIgnoreParentInert(
-                    modalComponentStack.peek().getElement(), false);
-        }
-
-        modalComponentStack.remove(child);
-        modalComponentStack.push(child);
-
-        trackModality(child);
+        setModality(child, ModalityMode.STRICT);
     }
 
     /**
@@ -2252,43 +2234,7 @@ public class UIInternals implements Serializable {
      * @since 25.4
      */
     public void setChildVisuallyModal(Component child) {
-        // strict and visual modality are mutually exclusive
-        removeStrictModality(child);
-        trackModality(child);
-    }
-
-    private void trackModality(Component child) {
-        if (modalityComponentStack == null) {
-            modalityComponentStack = new ArrayDeque<>();
-        }
-        modalityComponentStack.remove(child);
-        modalityComponentStack.push(child);
-        registerModalityRemoval(child);
-    }
-
-    /*
-     * Handle removal automatically on element level always due to possible
-     * component.getElement().removeFromParent() usage. Does nothing if the
-     * child is already registered, so that repeatedly changing the modality of
-     * a component does not pile up detach listeners.
-     */
-    private void registerModalityRemoval(Component child) {
-        if (modalityRemovalRegistrations == null) {
-            modalityRemovalRegistrations = new IdentityHashMap<>();
-        } else if (modalityRemovalRegistrations.containsKey(child)) {
-            return;
-        }
-        AtomicReference<Registration> registrationCombination = new AtomicReference<>();
-        final Registration componentRemoval = () -> {
-            modalityRemovalRegistrations.remove(child);
-            setChildModeless(child);
-        };
-        final Registration listenerRegistration = child.getElement()
-                .addDetachListener(
-                        event -> registrationCombination.get().remove());
-        registrationCombination.set(
-                Registration.combine(componentRemoval, listenerRegistration));
-        modalityRemovalRegistrations.put(child, registrationCombination.get());
+        setModality(child, ModalityMode.VISUAL);
     }
 
     /**
@@ -2301,35 +2247,61 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public void setChildModeless(Component child) {
-        if (modalityComponentStack != null) {
-            modalityComponentStack.remove(child);
-        }
-        removeStrictModality(child);
+        setModality(child, ModalityMode.MODELESS);
     }
 
-    private void removeStrictModality(Component child) {
-        if (modalComponentStack == null) {
+    private void setModality(Component child, ModalityMode mode) {
+        Component previousActiveModal = getActiveModalComponent();
+
+        ModalityEntry previousEntry = null;
+        if (modalityStack != null) {
+            previousEntry = modalityStack.stream()
+                    .filter(entry -> entry.component() == child).findFirst()
+                    .orElse(null);
+            modalityStack.remove(previousEntry);
+        }
+        if (mode != ModalityMode.MODELESS) {
+            if (modalityStack == null) {
+                modalityStack = new ArrayDeque<>();
+            }
+            /*
+             * Handle removal automatically on element level always due to
+             * possible component.getElement().removeFromParent() usage. The
+             * listener is registered only once, so that repeatedly changing the
+             * modality of a component does not pile up detach listeners.
+             */
+            Registration detachRegistration = previousEntry != null
+                    ? previousEntry.detachRegistration()
+                    : child.getElement().addDetachListener(
+                            event -> setChildModeless(child));
+            modalityStack
+                    .push(new ModalityEntry(child, mode, detachRegistration));
+        } else if (previousEntry != null) {
+            previousEntry.detachRegistration().remove();
+        }
+
+        updateInert(previousActiveModal, getActiveModalComponent());
+    }
+
+    private void updateInert(Component previousActiveModal,
+            Component activeModal) {
+        if (previousActiveModal == activeModal) {
             return;
         }
-        boolean isTopmostModal = isTopMostModal(child);
-        if (modalComponentStack.remove(child)) {
-            if (isTopmostModal) {
-                // reset ignoring inert
-                ElementUtil.setIgnoreParentInert(child.getElement(), false);
-                if (modalComponentStack.isEmpty()) { // make UI active
-                    ElementUtil.setInert(ui.getElement(), false);
-                } else { // make top most modal component ignore inert
-                    ElementUtil.setIgnoreParentInert(
-                            modalComponentStack.peek().getElement(), true);
-                }
-            }
+        if (previousActiveModal != null) {
+            ElementUtil.setIgnoreParentInert(previousActiveModal.getElement(),
+                    false);
+        }
+        if (activeModal != null) {
+            ElementUtil.setIgnoreParentInert(activeModal.getElement(), true);
+        }
+        if ((previousActiveModal == null) != (activeModal == null)) {
+            ElementUtil.setInert(ui.getElement(), activeModal != null);
         }
     }
 
-    private boolean isTopMostModal(Component child) {
-        // null has been checked in calling code before this
-        return !modalComponentStack.isEmpty()
-                && modalComponentStack.peek() == child;
+    private record ModalityEntry(Component component, ModalityMode mode,
+            Registration detachRegistration) implements Serializable {
     }
 
     private void removeChildrenContentFromRouterLayout(
