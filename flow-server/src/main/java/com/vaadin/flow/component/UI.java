@@ -2022,17 +2022,15 @@ public class UI extends Component
      * @since 23.0
      */
     public void addToModalComponent(Component component) {
-        if (hasModalComponent()) {
-            final Component activeModalComponent = getInternals()
-                    .getActiveModalComponent();
-            if (activeModalComponent instanceof HasComponents) {
-                ((HasComponents) activeModalComponent).add(component);
-            } else {
-                activeModalComponent.getElement()
-                        .appendChild(component.getElement());
-            }
-        } else {
+        final Component activeModalComponent = getInternals()
+                .getActiveModalComponent();
+        if (activeModalComponent == null) {
             add(component);
+        } else if (activeModalComponent instanceof HasComponents) {
+            ((HasComponents) activeModalComponent).add(component);
+        } else {
+            activeModalComponent.getElement()
+                    .appendChild(component.getElement());
         }
     }
 
