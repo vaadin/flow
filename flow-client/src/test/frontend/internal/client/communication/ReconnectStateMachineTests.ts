@@ -20,7 +20,7 @@ function makeRegistry(reconnectAttempts = 3) {
       UILifecycle: { isRunning: () => true },
       ReconnectConfiguration: { getReconnectAttempts: () => reconnectAttempts },
       RequestResponseTracker: { hasActiveRequest: () => activeRequest, endRequest: () => log.endRequests++ },
-      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
+      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++, loadingDropped: () => {} },
       Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
     })
   };
@@ -99,7 +99,7 @@ describe('ReconnectStateMachine', () => {
       UILifecycle: { isRunning: () => false },
       ReconnectConfiguration: { getReconnectAttempts: () => 3 },
       RequestResponseTracker: { hasActiveRequest: () => true, endRequest: () => log.endRequests++ },
-      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
+      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++, loadingDropped: () => {} },
       Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
     });
     const machine = new ReconnectStateMachine(registry, () => {});
@@ -176,6 +176,30 @@ describe('ReconnectStateMachine', () => {
         ]);
       });
     }
+
+    it('shows connected after a request started during a heartbeat reconnect', async () => {
+      const { machine, connectionState, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+      machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
+      // A heartbeat failure does not hold back requests, so the user's next
+      // action is sent and shows loading while the heartbeat reconnects.
+      loadingIndicatorStateHandler.processMessage(null, null);
+      loadingIndicatorStateHandler.startLoading();
+      setActiveRequest(true);
+      await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.LOADING);
+
+      machine.resolveTemporaryError(ConnectionMessageType.HEARTBEAT);
+      await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.LOADING);
+      setActiveRequest(false);
+      loadingIndicatorStateHandler.stopLoading();
+      await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.CONNECTED);
+      // Loading by another party is not finished by this request either.
+      connectionState.loadingStarted();
+      connectionState.loadingFinished();
+      expect(getState()).to.equal(ConnectionState.CONNECTED);
+    });
 
     for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT]) {
       it(`keeps loading started by another party during a ${type} reconnect`, async () => {

@@ -103,6 +103,7 @@ export class ReconnectStateMachine {
       return;
     }
     setState(RECONNECTING);
+    this.#registry.getLoadingIndicatorStateHandler().loadingDropped();
 
     if (!this.isReconnecting()) {
       // First problem encounter
@@ -156,6 +157,7 @@ export class ReconnectStateMachine {
       this.#registry.getRequestResponseTracker().endRequest();
     }
     setState(CONNECTION_LOST);
+    this.#registry.getLoadingIndicatorStateHandler().loadingDropped();
     // pauseHeartbeats: 0 pauses but stays resumable (-1 means terminated).
     this.#registry.getHeartbeat().setInterval(0);
   }
