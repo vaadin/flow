@@ -83,7 +83,7 @@ describe('ReconnectStateMachine', () => {
     machine.resolveTemporaryError(ConnectionMessageType.PUSH);
     expect(machine.isReconnecting()).to.be.true;
 
-    // The matching resolution clears the state and restores loading (XHR path).
+    // The matching resolution clears the state and restores loading.
     machine.resolveTemporaryError(ConnectionMessageType.XHR);
     expect(machine.isReconnecting()).to.be.false;
     expect(machine.getReconnectAttempt()).to.equal(0);
