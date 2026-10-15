@@ -540,7 +540,7 @@ public class BuildFrontendUtil {
             String binaryName, Map<String, String> environment,
             String... params) {
 
-        validateLicense();
+        validateProductionLicense();
 
         File buildExecutable;
         try {
@@ -640,9 +640,28 @@ public class BuildFrontendUtil {
         }
     }
 
-    private static void validateLicense() {
+    /**
+     * Validates the Flow license for a production build.
+     * <p>
+     * The check runs in strict offline mode, so it fails if the license server
+     * cannot be reached and no valid offline or server license key is
+     * available. If no license key is found, it fails immediately instead of
+     * opening a browser to download a key, because production builds usually
+     * run on CI servers.
+     * <p>
+     * Build tools must call this for every production build, also when the
+     * frontend bundle is not built because the default bundle or an existing
+     * bundle is used.
+     *
+     * @throws MissingLicenseKeyException
+     *             if no license key is found
+     * @throws LicenseException
+     *             if no valid license is available
+     */
+    public static void validateProductionLicense() {
+        LicenseChecker.setStrictOffline(true);
         LicenseChecker.checkLicense("flow", Version.getFullVersion(),
-                BuildType.PRODUCTION);
+                BuildType.PRODUCTION, null);
     }
 
     /**

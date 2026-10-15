@@ -67,7 +67,7 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.pro.licensechecker.LicenseException;
+import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -612,27 +612,35 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void commercialComponent_noLicenseKey_commercialBannerNotEnabled_buildFails()
-            throws Throwable {
+    public void commercialComponent_noLicenseKey_buildFails() throws Throwable {
         DefaultArtifact commercialComponent = createCommercialComponent();
         mojo.project.getArtifacts().add(commercialComponent);
 
-        runWithoutLicenseKeys(() -> {
-            Throwable exception = Assert
-                    .assertThrows(MojoFailureException.class, mojo::execute);
+        // The Flow license check runs first, so the build fails before the
+        // commercial components are validated
+        runWithoutLicenseKeys(this::assertBuildFailsWithMissingLicenseKey);
+    }
+
+    @Test
+    public void bundleNotBuilt_noLicenseKey_buildFails() throws Throwable {
+        // generateBundle is false, so the frontend bundle is not built, as
+        // when the default bundle or an existing bundle is used
+        runWithoutLicenseKeys(this::assertBuildFailsWithMissingLicenseKey);
+    }
+
+    private void assertBuildFailsWithMissingLicenseKey() {
+        Throwable exception = Assert.assertThrows(MojoFailureException.class,
+                mojo::execute);
+        exception = exception.getCause();
+        // Checking exception type by name because classes are loaded from
+        // different classloaders
+        while (exception != null && !exception.getClass().getName()
+                .equals(MissingLicenseKeyException.class.getName())) {
             exception = exception.getCause();
-            // Checking exception type by name because classes are loaded from
-            // different classloaders
-            while (exception != null && !exception.getClass().getName()
-                    .equals(LicenseException.class.getName())) {
-                exception = exception.getCause();
-            }
-            Assert.assertNotNull(
-                    "Expected the build to fail because of LicenseException, but not found in stack trace",
-                    exception);
-            Assert.assertTrue(exception.getMessage()
-                    .contains(InitParameters.COMMERCIAL_WITH_BANNER));
-        });
+        }
+        Assert.assertNotNull(
+                "Expected the build to fail because of MissingLicenseKeyException, but not found in stack trace",
+                exception);
     }
 
     @Test
