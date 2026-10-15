@@ -17,7 +17,6 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -122,11 +121,12 @@ public class ElementListenerMap extends NodeMap {
 
         private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
         /*
-         * Exactly sized array rather than a set: listeners hold a handful of
-         * expressions and every component event listener has its own copy, so a
-         * hash set would cost several times more memory for each one.
+         * Exactly sized unmodifiable list rather than a set: listeners hold a
+         * handful of expressions, so a hash set would cost several times more
+         * memory for each one. The list may be shared with other listeners, see
+         * addEventData(List), and is replaced with a copy when adding.
          */
-        private String[] eventDataExpressions;
+        private List<String> eventDataExpressions;
         private String filter;
 
         private int debounceTimeout = 0;
@@ -171,18 +171,43 @@ public class ElementListenerMap extends NodeMap {
                         "The event data expression must not be null");
             }
 
-            if (eventDataExpressions == null) {
-                eventDataExpressions = new String[] { eventData };
-            } else if (!hasEventData(eventData)) {
-                int size = eventDataExpressions.length;
-                eventDataExpressions = Arrays.copyOf(eventDataExpressions,
-                        size + 1);
-                eventDataExpressions[size] = eventData;
-            }
+            appendEventData(List.of(eventData));
 
             listenerMap.updateEventSettings(type);
 
             return this;
+        }
+
+        @Override
+        public DomListenerRegistration addEventData(List<String> eventData) {
+            if (eventData == null) {
+                throw new IllegalArgumentException(
+                        "The event data expressions must not be null");
+            }
+            for (String expression : eventData) {
+                if (expression == null) {
+                    throw new IllegalArgumentException(
+                            "The event data expression must not be null");
+                }
+            }
+
+            appendEventData(eventData);
+
+            listenerMap.updateEventSettings(type);
+
+            return this;
+        }
+
+        private void appendEventData(List<String> eventData) {
+            if (eventDataExpressions == null) {
+                // Keeps the given list if it is already unmodifiable
+                eventDataExpressions = List.copyOf(eventData);
+            } else if (!eventDataExpressions.containsAll(eventData)) {
+                eventDataExpressions = Stream
+                        .concat(eventDataExpressions.stream(),
+                                eventData.stream())
+                        .distinct().toList();
+            }
         }
 
         @Override
@@ -281,14 +306,8 @@ public class ElementListenerMap extends NodeMap {
         }
 
         private boolean hasEventData(String expression) {
-            if (eventDataExpressions != null) {
-                for (String existing : eventDataExpressions) {
-                    if (existing.equals(expression)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            return eventDataExpressions != null
+                    && eventDataExpressions.contains(expression);
         }
 
         @Override
