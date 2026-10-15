@@ -1456,6 +1456,8 @@ public class UITest {
         final TestFixture fixture = new TestFixture();
         assertTrue(fixture.ui.hasModalComponent(),
                 "Fixture should have set a modal component");
+        fixture.collectUiChanges();
+        verifyInert(fixture.routingComponent, true);
 
         fixture.ui.setChildComponentModal(fixture.modalComponent,
                 ModalityMode.VISUAL);
@@ -1467,6 +1469,7 @@ public class UITest {
         assertEquals(List.of(fixture.modalComponent),
                 fixture.ui.getInternals().getModalityComponents(),
                 "VISUAL component should be reported as a component with modality");
+        fixture.collectUiChanges();
         verifyInert(fixture.routingComponent, false);
 
         // re-applying the same modality should not track the component twice

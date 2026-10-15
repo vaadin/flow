@@ -1597,6 +1597,13 @@ public class UI extends Component
      * {@link #navigate(Class) navigating} to the location that is already shown
      * does nothing.
      * <p>
+     * Components with modality, such as open dialogs in either
+     * {@link ModalityMode#STRICT strict} or {@link ModalityMode#VISUAL visual}
+     * mode, are removed from the UI as part of the refresh, since they would
+     * otherwise keep showing outdated contents. If such components are present,
+     * the whole route chain is refreshed regardless of
+     * {@code refreshRouteChain}.
+     * <p>
      * In development mode, local signal field values are automatically
      * transferred from the old component instance to the new one, preserving UI
      * state across refreshes.
