@@ -1084,6 +1084,11 @@ class NavigationStateRendererTest {
         MockUI ui = new MockUI(session);
         ui.add(strictComponent);
         ui.setChildComponentModal(strictComponent, ModalityMode.STRICT);
+        // a component with modality nested inside the strict one, which goes
+        // away together with it and must stay inside it
+        ModalComponent nestedComponent = new ModalComponent();
+        strictComponent.getElement().appendChild(nestedComponent.getElement());
+        ui.setChildComponentModal(nestedComponent, ModalityMode.VISUAL);
         ui.add(modalComponent);
         ui.setChildComponentModal(modalComponent, modalityMode);
 
@@ -1100,6 +1105,9 @@ class NavigationStateRendererTest {
         assertEquals(expectedDetachCount, modalComponent.detachCount);
         assertEquals(1, strictComponent.attachCount);
         assertEquals(1, strictComponent.detachCount);
+        assertEquals(1, nestedComponent.detachCount);
+        assertEquals(strictComponent.getElement(),
+                nestedComponent.getElement().getParent());
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {

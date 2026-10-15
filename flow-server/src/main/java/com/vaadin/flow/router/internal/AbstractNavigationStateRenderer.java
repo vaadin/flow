@@ -383,9 +383,26 @@ public abstract class AbstractNavigationStateRenderer
      */
     private static void cleanModalComponents(NavigationEvent event) {
         if (event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
-            event.getUI().getInternals().getModalityComponents()
+            List<Component> modalityComponents = event.getUI().getInternals()
+                    .getModalityComponents();
+            // Components with modality nested inside another one go away
+            // together with it, and must stay in their parent
+            modalityComponents.stream().filter(
+                    component -> !isNestedIn(component, modalityComponents))
                     .forEach(Component::removeFromParent);
         }
+    }
+
+    private static boolean isNestedIn(Component component,
+            List<Component> candidateAncestors) {
+        Optional<Component> parent = component.getParent();
+        while (parent.isPresent()) {
+            if (candidateAncestors.contains(parent.get())) {
+                return true;
+            }
+            parent = parent.get().getParent();
+        }
+        return false;
     }
 
     /**

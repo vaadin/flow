@@ -28,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -2164,7 +2165,6 @@ public class UIInternals implements Serializable {
      * without making the UI inert.
      *
      * @return {@code true} if a component with modality is defined
-     * @since 25.4
      */
     public boolean hasModalityComponent() {
         return modalityStack != null && !modalityStack.isEmpty();
@@ -2176,7 +2176,6 @@ public class UIInternals implements Serializable {
      * set first.
      *
      * @return the components with modality, never {@code null}
-     * @since 25.4
      */
     public List<Component> getModalityComponents() {
         if (!hasModalityComponent()) {
@@ -2213,6 +2212,7 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to toggle modal
+     * @see #setChildModal(Component, ModalityMode)
      * @since 23.0
      */
     public void setChildModal(Component child) {
@@ -2220,21 +2220,25 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Makes an existing child component visually modal. Differently from
-     * {@link #setChildModal(Component)}, the UI and the other components inside
-     * it are not made inert, so they still react to client side requests. The
-     * component is however tracked as a component with modality, since it
-     * covers the UI with a modality curtain on the client side.
+     * Changes the modality of an existing child component by modality mode.
+     * Differently from {@link #setChildModal(Component)}, which always makes
+     * the component strictly modal, this also supports
+     * {@link ModalityMode#VISUAL}: the UI and the other components inside it
+     * are not made inert, so they still react to client side requests, but the
+     * component is tracked as a component with modality, since it covers the UI
+     * with a modality curtain on the client side. {@link ModalityMode#MODELESS}
+     * is the same as {@link #setChildModeless(Component)}.
      * <p>
      * Tracking is removed automatically when the component is removed from the
      * UI, no need to call anything.
      *
      * @param child
-     *            the child component to make visually modal
-     * @since 25.4
+     *            the child component to change modality for
+     * @param mode
+     *            the modality mode, not {@code null}
      */
-    public void setChildVisuallyModal(Component child) {
-        setModality(child, ModalityMode.VISUAL);
+    public void setChildModal(Component child, ModalityMode mode) {
+        setModality(child, Objects.requireNonNull(mode));
     }
 
     /**
