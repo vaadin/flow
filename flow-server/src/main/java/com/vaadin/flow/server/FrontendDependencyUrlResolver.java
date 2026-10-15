@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +125,7 @@ public final class FrontendDependencyUrlResolver implements Serializable {
         if (trimmed.startsWith("/")) {
             return true;
         }
-        String lower = trimmed.toLowerCase();
+        String lower = trimmed.toLowerCase(Locale.ROOT);
         return lower.startsWith("http://") || lower.startsWith("https://")
                 || lower.startsWith("//")
                 || lower.startsWith(
