@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.DevToolsMessageHandler;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
@@ -39,6 +40,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Template;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
@@ -60,7 +62,7 @@ import com.vaadin.flow.theme.Theme;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 9.0
  */
 @HandlesTypes({ Route.class, UIInitListener.class,
         VaadinServiceInitListener.class, WebComponentExporter.class,
@@ -70,16 +72,26 @@ import com.vaadin.flow.theme.Theme;
         JavaScript.Container.class, Theme.class, NoTheme.class,
         HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
         Template.class, LoadDependenciesOnStartup.class,
-        TypeScriptBootstrapModifier.class, Component.class, Layout.class,
-        StyleSheet.class, StyleSheet.Container.class })
+        TypeScriptBootstrapModifier.class, DevToolsMessageHandler.class,
+        Component.class, Layout.class, StyleSheet.class,
+        StyleSheet.Container.class, JsDefinition.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,
         ServletContextListener {
 
+    /** The manager that owns the dev mode handler, set during startup. */
     private DevModeHandlerManager devModeHandlerManager;
 
+    /**
+     * Creates the listener. The servlet container instantiates it.
+     */
+    public DevModeStartupListener() {
+        // Default constructor
+    }
+
     @Override
+    @SuppressWarnings("removal")
     public void initialize(Set<Class<?>> classes, VaadinContext context)
             throws VaadinInitializerException {
         lookupDevModeHandlerManager(context).initDevModeHandler(classes,
@@ -104,6 +116,7 @@ public class DevModeStartupListener
     }
 
     @Override
+    @SuppressWarnings("removal")
     public void contextDestroyed(ServletContextEvent ctx) {
         if (devModeHandlerManager == null) {
             // devModeHandlerManager should never be null here.
@@ -124,6 +137,7 @@ public class DevModeStartupListener
             devModeHandlerManager.stopDevModeHandler();
         }
         devModeHandlerManager = null;
+        ComponentUtil.unregisterAllComponentClasses();
     }
 
     private DevModeHandlerManager lookupDevModeHandlerManager(

@@ -12,11 +12,11 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-@NotThreadSafe
+@Isolated
 class TemplateInitializerTest {
     private TemplateParser templateParser;
     private VaadinService service;

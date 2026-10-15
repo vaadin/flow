@@ -26,11 +26,21 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;div&gt;</code> element.
+ * <p>
+ * A generic block container with no meaning of its own. Prefer a more specific
+ * element when one fits.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/div">MDN:
+ *      &lt;div&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Tag(Tag.DIV)
+// The deprecated HasOrderedComponents is declared until its removal in 26,
+// so that applications typing this component as HasOrderedComponents keep
+// compiling
+@SuppressWarnings("removal")
 public class Div extends HtmlContainer
         implements ClickNotifier<Div>, HasOrderedComponents {
 
@@ -56,6 +66,7 @@ public class Div extends HtmlContainer
      *
      * @param text
      *            the text
+     * @since 24.3
      */
     public Div(String text) {
         setText(text);
@@ -67,6 +78,7 @@ public class Div extends HtmlContainer
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public Div(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

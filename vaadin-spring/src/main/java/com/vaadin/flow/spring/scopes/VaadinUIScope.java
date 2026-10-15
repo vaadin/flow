@@ -36,10 +36,19 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public class VaadinUIScope extends AbstractScope {
 
+    /** Name the scope is registered under. */
     public static final String VAADIN_UI_SCOPE_NAME = "vaadin-ui";
+
+    /**
+     * Creates the scope. Spring instantiates it.
+     */
+    public VaadinUIScope() {
+        // Default constructor
+    }
 
     private static class UIStoreWrapper
             implements ComponentEventListener<DetachEvent> {

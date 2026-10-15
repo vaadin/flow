@@ -36,6 +36,11 @@ import com.vaadin.flow.signals.Signal;
  * <p>
  * Note: Slider doesn't support the read-only mode and will disable itself
  * instead.
+ *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/input/range">MDN:
+ *      &lt;input type=&quot;range&quot;&gt;</a>
+ * @since 24.3
  */
 @Tag(Tag.INPUT)
 public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
@@ -56,7 +61,11 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * The orientation of the range slider.
      */
     public enum Orientation {
-        HORIZONTAL("horizontal"), VERTICAL("vertical");
+        /** The slider runs from left to right. */
+        HORIZONTAL("horizontal"),
+
+        /** The slider runs from bottom to top. */
+        VERTICAL("vertical");
 
         private final String value;
 
@@ -64,13 +73,20 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
             this.value = value;
         }
 
+        /**
+         * Gets the value used for the {@code orient} attribute.
+         *
+         * @return the attribute value
+         */
         public String getValue() {
             return value;
         }
     }
 
+    /** The value change timeout in milliseconds. */
     private int valueChangeTimeout = DEFAULT_CHANGE_TIMEOUT;
 
+    /** The value change mode currently applied to the element. */
     private ValueChangeMode currentMode;
 
     /**
@@ -92,6 +108,12 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
         super("value", 0.0, false);
         setValueChangeMode(valueChangeMode);
         set(typeDescriptor, "range");
+        // Explicitly reflect the initial value to the DOM. A value-less
+        // range input defaults on the client to the midpoint of min and max,
+        // so without this the slider would render in the middle even though
+        // the server-side value is 0. Setting the value through setValue would
+        // be a no-op here because it equals the field's default model value.
+        getElement().setProperty("value", 0.0);
     }
 
     @Override
@@ -335,6 +357,11 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * property. We'll disable the component instead.
      */
     private boolean readOnly = false;
+
+    /**
+     * The enabled state requested by the application. The element itself is
+     * disabled whenever the component is read-only, so this is kept separately.
+     */
     private boolean enabled = true;
 
     @Override

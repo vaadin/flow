@@ -34,7 +34,6 @@ import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
 import java.net.URI
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
@@ -47,8 +46,8 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     /**
      * The folder where the frontend build tool should output index.js and other generated
-     * files. Defaults to `null` which will use the auto-detected value of
-     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
+     * files. Defaults to `null` which will use a task-owned build directory,
+     * usually `build/vaadin-build-frontend/META-INF/VAADIN/webapp/`.
      */
     @Deprecated(
         "use frontendOutputDirectory instead",
@@ -58,8 +57,15 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
 
     /**
      * The folder where the frontend build tool should output index.js and other generated
-     * files. Defaults to `null` which will use the auto-detected value of
-     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
+     * files. Defaults to `null` which will use a task-owned build directory,
+     * usually `build/vaadin-build-frontend/META-INF/VAADIN/webapp/`.
+     *
+     * For the production bundle to be packaged into the application archive,
+     * this directory must follow the `META-INF/VAADIN/webapp` layout (as the
+     * default does). A custom value that does not end in `META-INF/VAADIN/webapp`
+     * cannot be packaged (it never produced a servable archive and, on Gradle 9,
+     * fails the build with an implicit task-dependency error), so the plugin
+     * rejects it with an error in production mode.
      */
     public abstract val frontendOutputDirectory: Property<File>
 
@@ -354,8 +360,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * Minimum age (in days) a frontend (npm) package version must have before
      * npm, pnpm or bun is allowed to install it. Mitigates supply-chain
      * attacks where a compromised version is briefly available on the
-     * registry. Defaults to {@code 1} day; set to {@code 0} to disable.
-     * Requires pnpm >= 10.16.0 or bun >= 1.3.0 when those tools are used.
+     * registry. Set to {@code 0} to disable. Requires pnpm >= 10.16.0 or bun
+     * >= 1.3.0 when those tools are used.
+     *
+     * When not set, the value configured for npm or pnpm itself
+     * ({@code .npmrc} or {@code pnpm-workspace.yaml}) is used, so that a
+     * manually run {@code npm install} behaves the same way. Only when there is
+     * no such value does the check default to {@code 1} day. The configuration
+     * of bun cannot be read, so the default always applies for it.
      */
     public abstract val minimumFrontendPackageAgeDays: Property<Int>
 
@@ -422,7 +434,7 @@ public class PluginEffectiveConfiguration(
             .incoming.artifacts.resolvedArtifacts
             .map { result ->
                 result.filter {
-                    it.id is ModuleComponentArtifactIdentifier && it.id.componentIdentifier is ModuleComponentIdentifier
+                    it.id.componentIdentifier is ModuleComponentIdentifier
                 }.map {
                     (it.id.componentIdentifier as ModuleComponentIdentifier).moduleIdentifier
                 }.any {
@@ -435,12 +447,14 @@ public class PluginEffectiveConfiguration(
         extension.frontendOutputDirectory.convention(
             extension.webpackOutputDirectory
                 .convention(
-                    sourceSetName.map {
-                        File(
-                            project.getBuildResourcesDir(it),
-                            Constants.VAADIN_WEBAPP_RESOURCES
-                        )
-                    }
+                    project.layout.buildDirectory
+                        .dir("vaadin-build-frontend")
+                        .map {
+                            File(
+                                it.asFile,
+                                Constants.VAADIN_WEBAPP_RESOURCES
+                            )
+                        }
                 )
         )
 
@@ -669,7 +683,7 @@ public class PluginEffectiveConfiguration(
         project.getStringProperty(
             "vaadin.${InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS}"
         ).map(String::toInt)
-            .orElse(extension.minimumFrontendPackageAgeDays.convention(1))
+            .orElse(extension.minimumFrontendPackageAgeDays)
 
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)

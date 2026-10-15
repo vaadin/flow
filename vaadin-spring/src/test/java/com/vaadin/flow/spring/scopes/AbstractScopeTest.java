@@ -29,6 +29,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
@@ -66,6 +67,7 @@ abstract class AbstractScopeTest {
     @AfterEach
     void clearSession() {
         session = null;
+        CurrentInstance.clearAll();
     }
 
     @Test

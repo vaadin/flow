@@ -66,6 +66,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.ASSETS;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
@@ -76,7 +77,7 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSI
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 2.0
+ * @since 2.0.3
  */
 public class FrontendDependencies extends AbstractDependenciesScanner {
 
@@ -108,11 +109,37 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private PwaConfiguration pwaConfiguration;
     private Class<? extends Annotation> routeClass;
     private Set<String> eagerRoutes = null;
+    private final boolean productionMode;
 
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
             boolean reactEnabled) {
+        this(finder, generateEmbeddableWebComponents, featureFlags,
+                reactEnabled, false);
+    }
+
+    /**
+     * Scans the application classes for frontend dependencies.
+     *
+     * @param finder
+     *            a class finder
+     * @param generateEmbeddableWebComponents
+     *            checks {@code WebComponentExporter} classes for dependencies
+     *            if {@code true}, doesn't check otherwise
+     * @param featureFlags
+     *            available feature flags and their status
+     * @param reactEnabled
+     *            {@code true} if react is enabled, {@code false} otherwise
+     * @param productionMode
+     *            {@code true} if scanning for a production build, in which case
+     *            routes marked with {@link Route#developmentOnly()} are not
+     *            collected as entry points
+     */
+    public FrontendDependencies(ClassFinder finder,
+            boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
+            boolean reactEnabled, boolean productionMode) {
         super(finder, featureFlags);
+        this.productionMode = productionMode;
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
         long start = System.nanoTime();
@@ -161,8 +188,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // Add ReactRouterOutlet and adapter as internal so it gets added to the
         // bundle if available.
         try {
-            if (finder.getResource(
-                    "META-INF/resources/frontend/ReactRouterOutletElement.tsx") != null
+            if (finder
+                    .getResource(RESOURCES_FRONTEND_DEFAULT
+                            + "/ReactRouterOutletElement.tsx") != null
                     && !visitedClasses.containsKey(
                             "com.vaadin.flow.component.react.ReactRouterOutlet")) {
                 Class<Object> entryPointClass = finder.loadClass(
@@ -314,6 +342,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get the PWA configuration of the application.
      *
      * @return the PWA configuration
+     * @since 6.0
      */
     @Override
     public PwaConfiguration getPwaConfiguration() {
@@ -339,6 +368,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all JS modules needed in development mode.
      *
      * @return list of JS modules
+     * @since 24.2
      */
     @Override
     public Map<ChunkInfo, List<String>> getModulesDevelopment() {
@@ -383,6 +413,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all the JS files needed in development mode.
      *
      * @return the set of JS files
+     * @since 24.2
      */
     @Override
     public Map<ChunkInfo, List<String>> getScriptsDevelopment() {
@@ -423,6 +454,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Get all entryPoints in the application.
      *
      * @return the set of JS files
+     * @since 24.1
      */
     public Collection<EntryPointData> getEntryPoints() {
         return entryPoints.values();
@@ -470,6 +502,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         routeClasses.sort(this::compareEntryPoints);
 
         for (Class<?> route : routeClasses) {
+            if (productionMode && isDevelopmentOnlyRoute(route)) {
+                log().debug(
+                        "Skipping development only route {} in production mode",
+                        route.getName());
+                continue;
+            }
             List<String> triggerClasses = getDependencyTriggers(route,
                     triggerClass);
             boolean eager = isEagerRoute(route);
@@ -519,6 +557,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             collectExporterEntrypoints(WebComponentExporterFactory.class);
         }
 
+    }
+
+    private boolean isDevelopmentOnlyRoute(Class<?> route) {
+        try {
+            Annotation routeAnnotation = route.getAnnotation(routeClass);
+            Method developmentOnlyMethod = routeClass
+                    .getMethod("developmentOnly");
+            return (boolean) developmentOnlyMethod.invoke(routeAnnotation);
+        } catch (ReflectiveOperationException | SecurityException
+                | IllegalArgumentException e) {
+            log().error(
+                    "Unable to read @Route annotation for " + route.getName(),
+                    e);
+        }
+        return false;
     }
 
     private boolean isEagerRoute(Class<?> route) {

@@ -22,6 +22,8 @@ import com.vaadin.flow.signals.Node;
 
 /**
  * An immutable tree revision.
+ * 
+ * @since 25.1
  */
 public class Snapshot extends TreeRevision {
     /**

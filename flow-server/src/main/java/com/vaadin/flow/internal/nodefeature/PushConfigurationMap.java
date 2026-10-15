@@ -38,7 +38,6 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
      * Map for storing push parameters.
      *
      * @author Vaadin Ltd
-     * @since 1.0
      */
     public static class PushConfigurationParametersMap extends NodeMap {
 

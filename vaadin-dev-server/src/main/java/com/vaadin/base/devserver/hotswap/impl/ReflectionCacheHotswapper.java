@@ -27,9 +27,18 @@ import com.vaadin.flow.internal.ReflectionCache;
  * <p>
  * Should run as last, so other hotswappers can still query
  * {@link ReflectionCache} to get previous data before the cache is cleared.
+ * 
+ * @since 25.1
  */
 @Priority(Integer.MAX_VALUE)
 public class ReflectionCacheHotswapper implements VaadinHotswapper {
+
+    /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public ReflectionCacheHotswapper() {
+        // Default constructor
+    }
 
     @Override
     public void onClassesChange(HotswapClassEvent event) {

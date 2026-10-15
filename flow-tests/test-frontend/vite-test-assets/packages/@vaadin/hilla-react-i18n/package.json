@@ -1,0 +1,10 @@
+{
+  "name": "@vaadin/hilla-react-i18n",
+  "version": "1.0.0",
+  "description": "Stub of the Hilla i18n runtime, used to exercise the Vaadin i18n build plugin in the tests",
+  "main": "index.js",
+  "module": "index.js",
+  "type": "module",
+  "author": "",
+  "license": "Apache-2.0"
+}

@@ -29,12 +29,24 @@ import com.vaadin.flow.signals.Signal;
  * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is
  * used to group several UI components within a form, enhancing form
  * accessibility and organization.
+ *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/fieldset">MDN:
+ *      &lt;fieldset&gt;</a>
+ * @since 24.5
  */
 @Tag("fieldset")
 public class FieldSet extends HtmlContainer implements HasAriaLabel {
 
     /**
      * Represents an HTML <code>&lt;legend&gt;</code> element.
+     * <p>
+     * Caption for the enclosing field set. Assistive technologies use it as the
+     * name of the group.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/legend">MDN:
+     *      &lt;legend&gt;</a>
      */
     @Tag("legend")
     public static class Legend extends HtmlContainer {
@@ -63,6 +75,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
          * @param textSignal
          *            the signal to bind the legend text to, not {@code null}
          * @see #bindText(Signal)
+         * @since 25.1
          */
         public Legend(Signal<String> textSignal) {
             Objects.requireNonNull(textSignal, "textSignal must not be null");
@@ -96,6 +109,7 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
      * @param textSignal
      *            the legend text signal to bind to, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public FieldSet(Signal<String> textSignal) {
         addComponentAsFirst(new Legend(textSignal));

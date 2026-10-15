@@ -18,10 +18,10 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
@@ -29,6 +29,7 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UI.BrowserNavigateEvent;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.TestNodeVisitor;
@@ -41,6 +42,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -48,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@NotThreadSafe
+@Isolated
 class JavaScriptBootstrapHandlerTest {
 
     private MockServletServiceSessionSetup mocks;
@@ -59,6 +61,12 @@ class JavaScriptBootstrapHandlerTest {
 
     @Push
     static public class PushAppShell implements AppShellConfigurator {
+    }
+
+    // Transport differs from the default the UI is created with, so that
+    // applying the annotation is observable
+    @Push(transport = Transport.WEBSOCKET)
+    static public class WebSocketPushAppShell implements AppShellConfigurator {
     }
 
     @BeforeEach
@@ -227,6 +235,35 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
+    void uiInitListener_shouldOverridePushConfigFromAppShellAnnotation()
+            throws Exception {
+        VaadinServletContext context = new VaadinServletContext(
+                mocks.getServletContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(WebSocketPushAppShell.class);
+        mocks.setAppShellRegistry(registry);
+
+        mocks.getService().addUIInitListener(event -> {
+            PushConfiguration push = event.getUI().getPushConfiguration();
+            // The app shell annotation must already have been applied when
+            // the listener runs, so that it can be inspected and overridden
+            assertEquals(PushMode.AUTOMATIC, push.getPushMode());
+            assertEquals(Transport.WEBSOCKET, push.getTransport());
+
+            push.setPushMode(PushMode.MANUAL);
+            push.setTransport(Transport.LONG_POLLING);
+        });
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location=");
+        jsInitHandler.handleRequest(session, request, response);
+
+        PushConfiguration push = UI.getCurrent().getPushConfiguration();
+        assertEquals(PushMode.MANUAL, push.getPushMode());
+        assertEquals(Transport.LONG_POLLING, push.getTransport());
+    }
+
+    @Test
     void synchronizedHandleRequest_badLocation_noUiCreated()
             throws IOException {
         final JavaScriptBootstrapHandler bootstrapHandler = new JavaScriptBootstrapHandler();
@@ -268,6 +305,23 @@ class JavaScriptBootstrapHandlerTest {
         assertEquals(
                 "Invalid location: Location parameter missing from bootstrap request to server.",
                 response.getErrorMessage(), "Invalid message reported");
+    }
+
+    @Test
+    void browserDetailsFromIndividualParameters_storedInUi() throws Exception {
+        // Browser details are sent as plain v-* query parameters, not as a
+        // single JSON-encoded value. v-tzid carries a "/" to ensure values
+        // with reserved characters round-trip correctly.
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&location=&v-sw=1641&v-sh=736"
+                        + "&v-tzid=Europe%2FBerlin");
+        jsInitHandler.handleRequest(session, request, response);
+
+        ExtendedClientDetails details = UI.getCurrent().getInternals()
+                .getExtendedClientDetails();
+        assertNotNull(details, "Browser details should be stored");
+        assertEquals(1641, details.getScreenWidth());
+        assertEquals("Europe/Berlin", details.getTimeZoneId());
     }
 
     private boolean hasNodeTag(TestNodeVisitor visitor, String htmContent,

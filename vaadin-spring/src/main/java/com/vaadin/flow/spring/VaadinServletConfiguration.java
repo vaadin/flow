@@ -59,13 +59,23 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 @AutoConfiguration(before = WebMvcAutoConfiguration.class)
 @Conditional(RootMappedCondition.class)
 public class VaadinServletConfiguration {
 
     static final String VAADIN_SERVLET_MAPPING = "/vaadinServlet/*";
+
+    /** Name of the property that holds the URLs excluded from Vaadin. */
     public static final String EXCLUDED_URLS_PROPERTY = "vaadin.excludeUrls";
+
+    /**
+     * Creates the configuration. Spring instantiates it.
+     */
+    public VaadinServletConfiguration() {
+        // Default constructor
+    }
 
     /**
      * Gets the excluded URLs in a way compatible with both plain Spring and
@@ -100,12 +110,31 @@ public class VaadinServletConfiguration {
         }
     }
 
+    /**
+     * Handler mapping that forwards everything to Vaadin except the URLs the
+     * application excluded and the requests a static resource handler answers.
+     *
+     * @since 24.0
+     */
     public static class RootExcludeHandler extends SimpleUrlHandlerMapping {
         private List<String> excludeUrls;
         private AntPathMatcher matcher;
         private UrlPathHelper urlPathHelper = new UrlPathHelper();
         private HandlerMapping resourceHandlerMapping;
 
+        /**
+         * Creates the handler mapping.
+         *
+         * @param excludeUrls
+         *            the URL patterns that must not be forwarded to Vaadin, or
+         *            {@code null} to forward everything
+         * @param vaadinForwardingController
+         *            the controller that forwards a request to Vaadin
+         * @param resourceHandlerMapping
+         *            the mapping consulted for static resources before
+         *            forwarding, or {@code null} to skip that check
+         * @since 24.8.1
+         */
         public RootExcludeHandler(List<String> excludeUrls,
                 Controller vaadinForwardingController,
                 HandlerMapping resourceHandlerMapping) {
@@ -166,6 +195,11 @@ public class VaadinServletConfiguration {
                     });
         }
 
+        /**
+         * Gets the logger of the concrete handler class.
+         *
+         * @return the logger to use
+         */
         protected Logger getLogger() {
             return LoggerFactory.getLogger(getClass());
         }
@@ -184,10 +218,11 @@ public class VaadinServletConfiguration {
      *            the resource handler mapping, if available
      * @return an url handler mapping instance which forwards requests to vaadin
      *         servlet
+     * @since 25.3
      */
     @Bean
     public RootExcludeHandler vaadinRootMapping(Environment environment,
-            Controller vaadinForwardingController,
+            @Qualifier("vaadinForwardingController") Controller vaadinForwardingController,
             @Autowired(required = false) @Qualifier("resourceHandlerMapping") HandlerMapping resourceHandlerMapping) {
         return new RootExcludeHandler(getExcludedUrls(environment),
                 vaadinForwardingController, resourceHandlerMapping);
@@ -198,7 +233,7 @@ public class VaadinServletConfiguration {
      *
      * @return a forwarding controller
      */
-    @Bean
+    @Bean(name = "vaadinForwardingController")
     public Controller vaadinForwardingController() {
         ServletForwardingController controller = new ServletForwardingController();
         controller.setServletName(

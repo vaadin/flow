@@ -49,6 +49,7 @@ import com.vaadin.flow.spring.scopes.VaadinRouteScope;
  *
  * @author Vaadin Ltd
  *
+ * @since 18.0
  */
 @Scope(VaadinRouteScope.VAADIN_ROUTE_SCOPE_NAME)
 @Inherited

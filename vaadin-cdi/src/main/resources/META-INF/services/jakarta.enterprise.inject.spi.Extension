@@ -1,0 +1,2 @@
+com.vaadin.cdi.util.BeanManagerProvider
+com.vaadin.cdi.VaadinExtension

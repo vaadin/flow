@@ -143,6 +143,7 @@ public interface HasText extends HasElement {
      *
      * @param value
      *            the {@code "white-space"} style value, not {@code null}
+     * @since 9.0
      */
     default void setWhiteSpace(WhiteSpace value) {
         getElement().getStyle().set("white-space",
@@ -157,6 +158,7 @@ public interface HasText extends HasElement {
      * returned.
      *
      * @return the {@code "white-space"} style value, may be {@code null}
+     * @since 9.0
      */
     default WhiteSpace getWhiteSpace() {
         String value = getElement().getStyle().get("white-space");
@@ -193,6 +195,7 @@ public interface HasText extends HasElement {
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
      * @see #setText(String)
+     * @since 25.1
      */
     default SignalBinding<String> bindText(Signal<String> textSignal) {
         throwIfChildrenBindingIsActive("bindText");

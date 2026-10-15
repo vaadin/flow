@@ -23,6 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
@@ -30,6 +31,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,6 +44,8 @@ import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -309,6 +313,35 @@ public class ResponseWriterTest {
     }
 
     @Test
+    public void writeDataBrotli_compressedSiblingResolvedFromResourceUrl()
+            throws IOException {
+        // Reproduces serving a static resource from a packaged classpath
+        // location (e.g. a Spring Boot executable jar) where a path based
+        // servletContext.getResource(path + ".br") lookup does not find the
+        // compressed sibling, but it exists next to the resolved resource URL.
+        responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
+
+        File dir = Files.createTempDirectory("response-writer-test").toFile();
+        dir.deleteOnExit();
+        File jsFile = new File(dir, "file.js");
+        Files.write(jsFile.toPath(), fileJsContents);
+        File brotliFile = new File(dir, "file.js.br");
+        Files.write(brotliFile.toPath(), fileJsBrotliContents);
+
+        CapturingServletOutputStream out = new CapturingServletOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
+
+        // servletContext.getResource(...) is left unstubbed, so the path based
+        // lookup returns null and the sibling must be resolved via the
+        // resolved resource URL.
+        responseWriter.writeResponseContents("/static/file.js",
+                jsFile.toURI().toURL(), request, response);
+
+        assertArrayEquals(fileJsBrotliContents, out.getOutput());
+        Mockito.verify(response).setHeader("Content-Encoding", "br");
+    }
+
+    @Test
     public void writeDataNoBrotliVersion() throws IOException {
         responseWriter.overrideAcceptsBrotliResource = Boolean.TRUE;
 
@@ -367,10 +400,10 @@ public class ResponseWriterTest {
     public void writeByteRangeStartOmitted() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=-10"));
-        assertResponse(Arrays.copyOfRange(fileJsContents, 0, 11));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 6, 16));
         assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
-                "Content-Range", "bytes 0-10/" + fileJsContents.length));
-        assertEquals(11L, responseContentLength.get());
+                "Content-Range", "bytes 6-15/" + fileJsContents.length));
+        assertEquals(10L, responseContentLength.get());
         assertStatus(206);
     }
 
@@ -398,28 +431,45 @@ public class ResponseWriterTest {
         assertStatus(206);
     }
 
-    @Test
-    public void writeByteRangeEmpty() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = { "bytes=10-9", "f-d-d___", "-", "bytes=-",
+            "bytes=1-2,x", "bytes=1-2,", "bytes=0-1,,2-3", "items=0-1" })
+    public void writeByteRangeInvalid_wholeContentWritten(String range)
+            throws IOException {
         makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "bytes=10-9"));
+        mockRequestHeaders(new Pair<>("Range", range));
+        assertResponse(fileJsContents);
+        Mockito.verify(response, Mockito.never())
+                .setStatus(ArgumentMatchers.anyInt());
+    }
+
+    @Test
+    public void writeByteRangeUnitCaseInsensitive() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "Bytes=0-1"));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 0, 2));
+        assertStatus(206);
+    }
+
+    @Test
+    public void writeByteRangeNotSatisfiable() throws IOException {
+        makePathsAvailable(PATH_JS);
+        mockRequestHeaders(new Pair<>("Range", "bytes=16-, -0"));
         assertResponse(new byte[] {});
+        assertResponseHeaders(new Pair<>("Content-Range",
+                "bytes */" + fileJsContents.length));
         assertStatus(416);
     }
 
     @Test
-    public void writeByteRangeMalformed() throws IOException {
+    public void writeByteRangePartlySatisfiable_satisfiableRangeWritten()
+            throws IOException {
         makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "f-d-d___"));
-        assertResponse(new byte[] {});
-        assertStatus(416);
-    }
-
-    @Test
-    public void writeByteRangeBothEndsOpen() throws IOException {
-        makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "-"));
-        assertResponse(new byte[] {});
-        assertStatus(416);
+        mockRequestHeaders(new Pair<>("Range", "bytes=20-30, 2-3"));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 2, 4));
+        assertResponseHeaders(new Pair<>("Content-Range",
+                "bytes 2-3/" + fileJsContents.length));
+        assertStatus(206);
     }
 
     @Test

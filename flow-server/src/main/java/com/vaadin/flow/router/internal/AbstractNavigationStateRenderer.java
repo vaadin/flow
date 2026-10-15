@@ -148,7 +148,8 @@ public abstract class AbstractNavigationStateRenderer
 
         if (forceInstantiation
                 && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE
-                && !ui.getSession().getConfiguration().isProductionMode()) {
+                && !ui.getSessionOrThrow().getConfiguration()
+                        .isProductionMode()) {
             findActiveRouteTarget(event, isRouteTargetType)
                     .ifPresent(oldInstance -> SignalFieldTransfer
                             .transferLocalSignalValues(oldInstance,
@@ -259,6 +260,18 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
+     * Handles the navigation event again once the client data requested during
+     * the initial handling has been retrieved.
+     * <p>
+     * This happens outside the original navigation, so the app shell title
+     * fallback applied when the navigation completes is applied here as well.
+     */
+    private void handleDeferred(NavigationEvent event) {
+        handle(event);
+        event.getUI().getInternals().restoreAppShellTitleIfEmpty();
+    }
+
+    /**
      * Populate element chain from a preserved chain or give clean chain to be
      * populated.
      *
@@ -295,19 +308,19 @@ public abstract class AbstractNavigationStateRenderer
                 ExtendedClientDetails details = ui.getInternals()
                         .getExtendedClientDetails();
                 if (details.getWindowName() == null) {
-                    PreservedComponentCache cache = ui.getSession()
+                    PreservedComponentCache cache = ui.getSessionOrThrow()
                             .getAttribute(PreservedComponentCache.class);
                     if (cache != null && !cache.isEmpty()) {
                         // As there is a cached chain we get the client details
                         // to get the window name so we can determine if the
                         // cache contains a chain for us to use.
                         ui.getPage().retrieveExtendedClientDetails(
-                                d -> handle(event));
+                                d -> handleDeferred(event));
                         return true;
                     }
                 } else {
                     Optional<List<HasElement>> partialChain = getWindowPreservedChain(
-                            ui.getSession(), details.getWindowName());
+                            ui.getSessionOrThrow(), details.getWindowName());
                     if (partialChain.isPresent()) {
                         List<HasElement> oldChain = partialChain.get();
                         disconnectElements(oldChain, ui);
@@ -454,6 +467,7 @@ public abstract class AbstractNavigationStateRenderer
      * @param path
      *            request path
      * @return List of parent layouts
+     * @since 24.5
      */
     protected List<Class<? extends RouterLayout>> getTargetParentLayouts(
             RouteTarget routeTarget, RouteRegistry registry, String path) {
@@ -541,6 +555,7 @@ public abstract class AbstractNavigationStateRenderer
      *            used router instance
      * @return a list of parent {@link RouterLayout} types, not
      *         <code>null</code>
+     * @since 1.3
      */
     protected abstract List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> routeTargetType, Router router);
@@ -874,6 +889,7 @@ public abstract class AbstractNavigationStateRenderer
      *         observer or just move forward, otherwise the process will return
      *         immediately with the provided http code.
      * @see HttpStatusCode
+     * @since 4.0
      */
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
@@ -1022,7 +1038,7 @@ public abstract class AbstractNavigationStateRenderer
             NavigationEvent event) {
         final Location location = event.getLocation();
         final UI ui = event.getUI();
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
 
         final ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
@@ -1031,7 +1047,8 @@ public abstract class AbstractNavigationStateRenderer
                 // We may have a cached instance for this location, but we
                 // need to retrieve the window name before we can determine
                 // this, so execute a client-side request.
-                ui.getPage().retrieveExtendedClientDetails(d -> handle(event));
+                ui.getPage().retrieveExtendedClientDetails(
+                        d -> handleDeferred(event));
                 return Optional.empty();
             }
         } else {
@@ -1062,9 +1079,12 @@ public abstract class AbstractNavigationStateRenderer
         // Remove the top-level component from the tree
         root.getElement().removeFromTree(false);
 
-        // Transfer all remaining UI child elements (typically dialogs
-        // and notifications) to the new UI
+        // Keep the locale of the previous UI so that the preserved components
+        // are re-attached with the locale they were showing, and transfer all
+        // remaining UI child elements (typically dialogs and notifications)
+        // to the new UI
         maybePrevUI.ifPresent(prevUi -> {
+            ui.setLocale(prevUi.getLocale());
             ui.getInternals().moveElementsFrom(prevUi);
             prevUi.close();
         });
@@ -1079,7 +1099,7 @@ public abstract class AbstractNavigationStateRenderer
 
         final Location location = event.getLocation();
         final UI ui = event.getUI();
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
 
         final ExtendedClientDetails extendedClientDetails = ui.getInternals()
                 .getExtendedClientDetails();
@@ -1129,16 +1149,16 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget, String route, RouteParameters parameters) {
-        Instantiator instantiator = navigationEvent.getUI().getSession()
+        Instantiator instantiator = navigationEvent.getUI().getSessionOrThrow()
                 .getService().getInstantiator();
         QueryParameters queryParameters = navigationEvent.getLocation()
                 .getQueryParameters();
         @SuppressWarnings("unchecked")
         Class<? extends Component> targetClass = (Class<? extends Component>) instantiator
                 .getApplicationClass(routeTarget);
-        Supplier<String> lookForTitleInTarget = () -> RouteUtil
-                .resolvePageTitle(instantiator, targetClass, parameters,
-                        queryParameters)
+        Supplier<String> lookForTitleInTarget = () -> navigationEvent
+                .getSource()
+                .resolvePageTitle(targetClass, parameters, queryParameters)
                 .orElse("");
 
         // check for HasDynamicTitle in current router targets chain
@@ -1233,7 +1253,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static void clearAllPreservedChains(UI ui) {
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
         // Note that this check is always false if @PreserveOnRefresh has not
         // been used at all, avoiding the round-trip overhead.
         if (hasPreservedChain(session)) {
@@ -1256,13 +1276,14 @@ public abstract class AbstractNavigationStateRenderer
      *            the inactive UI
      * @throws IllegalStateException
      *             if the UI is not in closing state
+     * @since 24.3.11
      */
     public static void purgeInactiveUIPreservedChainCache(UI inactiveUI) {
         if (!inactiveUI.isClosing()) {
             throw new IllegalStateException(
                     "Cannot purge preserved chain cache for an active UI");
         }
-        final VaadinSession session = inactiveUI.getSession();
+        final VaadinSession session = inactiveUI.getSessionOrThrow();
         final PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
         if (cache != null && !cache.isEmpty()) {
