@@ -26,8 +26,13 @@
  * The {@code download} attribute is honoured only for same-origin URLs;
  * cross-origin responses must set Content-Disposition themselves for the
  * filename to take effect.
+ *
+ * When the triggering event has an element as its current target, the anchor
+ * is inserted next to that element instead of at the end of the body. An
+ * overlay the element is in (a modal dialog, a popover, a menu) then sees the
+ * synthesised click as an inside click and stays open.
  */
-function startDownload(url: string, filename?: string): void {
+function startDownload(event: Event | undefined, url: string, filename?: string): void {
   const a = document.createElement('a');
   a.href = url;
   // Always set `download` so the browser saves the response rather than
@@ -44,7 +49,16 @@ function startDownload(url: string, filename?: string): void {
   // Hidden but in the document — some browsers ignore clicks on detached
   // anchors.
   a.style.display = 'none';
-  document.body.appendChild(a);
+  // The synthesised click is an implementation detail: keep it from bubbling
+  // to the trigger element (which would start the download again) or to
+  // application listeners.
+  a.addEventListener('click', (e) => e.stopPropagation());
+  const origin = event?.currentTarget;
+  if (origin instanceof Element && origin.parentNode) {
+    origin.after(a);
+  } else {
+    document.body.appendChild(a);
+  }
   a.click();
   a.remove();
 }
