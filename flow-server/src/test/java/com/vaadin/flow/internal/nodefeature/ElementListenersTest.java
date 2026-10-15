@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -133,6 +134,23 @@ public class ElementListenersTest
         assertTrue(expressions.contains("data2"));
         // due to fix to #5090, data3 won't be present after removal
         assertFalse(expressions.contains("data3"));
+    }
+
+    @Test
+    void addEventDataList_existingExpressions_merged() {
+        ns.add("eventType", noOp).addEventData("data1")
+                .addEventData(List.of("data1", "data2"));
+
+        assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
+    }
+
+    @Test
+    void addEventDataList_nullExpression_throws() {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+        List<String> eventData = Arrays.asList("data1", null);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventData(eventData));
     }
 
     @Test

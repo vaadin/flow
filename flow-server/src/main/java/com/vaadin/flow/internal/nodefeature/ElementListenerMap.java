@@ -294,14 +294,8 @@ public class ElementListenerMap extends NodeMap {
         }
 
         private boolean hasEventData(String expression) {
-            if (eventDataExpressions != null) {
-                for (String existing : eventDataExpressions) {
-                    if (existing.equals(expression)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            return eventDataExpressions != null
+                    && eventDataExpressions.contains(expression);
         }
 
         @Override
