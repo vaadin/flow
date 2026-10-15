@@ -38,7 +38,7 @@ public class RouterLinkTargetView extends Div {
         RouterLink newTabLink = new RouterLink("Open in new tab",
                 TargetView.class);
         newTabLink.setId("new-tab-link");
-        newTabLink.setOpenInNewBrowserTab(true);
+        newTabLink.setTarget("_blank");
 
         RouterLink selfLink = new RouterLink("Open in this tab",
                 TargetView.class);

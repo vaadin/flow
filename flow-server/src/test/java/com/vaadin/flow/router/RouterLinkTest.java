@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -473,32 +473,17 @@ class RouterLinkTest extends HasCurrentService {
     }
 
     @Test
-    void setOpenInNewBrowserTab_togglesBlankTarget() {
+    void setTarget_setsAndRemovesTargetAttribute() {
         RouterLink link = new RouterLink(router, FooNavigationTarget.class);
-        assertNull(link.getTarget());
-        assertFalse(link.isOpenInNewBrowserTab());
+        assertEquals(Optional.empty(), link.getTarget());
 
-        link.setOpenInNewBrowserTab(true);
+        link.setTarget("_blank");
+        assertEquals(Optional.of("_blank"), link.getTarget());
         assertEquals("_blank", link.getElement().getAttribute("target"));
-        assertTrue(link.isOpenInNewBrowserTab());
-
-        link.setOpenInNewBrowserTab(false);
-        assertFalse(link.getElement().hasAttribute("target"));
-        assertFalse(link.isOpenInNewBrowserTab());
-    }
-
-    @Test
-    void setTarget_emptyRemovesAttribute() {
-        RouterLink link = new RouterLink(router, FooNavigationTarget.class);
-
-        link.setTarget("_top");
-        assertEquals("_top", link.getTarget());
-        assertEquals("_top", link.getElement().getAttribute("target"));
-        assertFalse(link.isOpenInNewBrowserTab());
 
         link.setTarget("");
         assertFalse(link.getElement().hasAttribute("target"));
-        assertNull(link.getTarget());
+        assertEquals(Optional.empty(), link.getTarget());
     }
 
     @Route("foo")
