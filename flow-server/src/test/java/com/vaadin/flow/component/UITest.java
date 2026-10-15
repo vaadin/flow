@@ -1589,6 +1589,18 @@ public class UITest {
     }
 
     @Test
+    public void addToModalComponent_onlyVisualModalityComponent_addedToUI() {
+        final TestFixture fixture = new TestFixture();
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+        Component test = new AttachableComponent();
+        fixture.ui.addToModalComponent(test);
+
+        assertEquals(Optional.of(fixture.ui), test.getParent(),
+                "test component should have been added to the UI, not to the VISUAL component");
+    }
+
+    @Test
     public void routingComponentVisible_modalComponentAdded_routingComponentInert() {
         final TestFixture fixture = new TestFixture();
 
