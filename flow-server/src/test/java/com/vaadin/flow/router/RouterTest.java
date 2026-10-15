@@ -4830,7 +4830,8 @@ public class RouterTest extends RoutingTestBase {
         NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
         assertEquals("foo", ended.getLocation().getPath());
         assertEquals(
-                new NavigationEndedEvent.Completed(FooNavigationTarget.class),
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class,
+                        RouteParameters.empty()),
                 ended.getOutcome());
         assertEquals(200, ended.getStatusCode());
     }
@@ -4845,8 +4846,23 @@ public class RouterTest extends RoutingTestBase {
         assertEquals(2, events.size());
         NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
         assertEquals("security/document", ended.getLocation().getPath());
-        assertEquals(new NavigationEndedEvent.Completed(SecurityLogin.class),
-                ended.getOutcome());
+        assertEquals(new NavigationEndedEvent.Completed(SecurityLogin.class,
+                RouteParameters.empty()), ended.getOutcome());
+    }
+
+    @Test
+    public void navigate_rerouteWithParameter_completedHasFinalParameters() {
+        setNavigationTargets(RouteWithParameter.class,
+                RerouteToRouteWithParam.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("redirect/to/param");
+
+        assertEquals(2, events.size());
+        assertEquals(
+                new NavigationEndedEvent.Completed(RouteWithParameter.class,
+                        HasUrlParameterFormat.getParameters("hello")),
+                ((NavigationEndedEvent) events.get(1)).getOutcome());
     }
 
     @Test
@@ -4907,7 +4923,31 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
-    public void proceedIntoRerouteToError_nextNavigationNotReportedFailed() {
+    public void proceed_firesPairWithOutcomeOfResumedNavigation() {
+        setNavigationTargets(PostponingOnceNavigationTarget.class,
+                FooNavigationTarget.class);
+        PostponingOnceNavigationTarget.postpone = null;
+        navigate("postpone-once");
+        // Postponed in beforeLeave
+        router.navigate(ui, new Location("foo"), NavigationTrigger.ROUTER_LINK);
+        List<EventObject> events = recordNavigationEvents();
+
+        PostponingOnceNavigationTarget.postpone.proceed();
+
+        assertEquals(2, events.size());
+        NavigationStartedEvent started = (NavigationStartedEvent) events.get(0);
+        assertEquals("foo", started.getLocation().getPath());
+        assertEquals(NavigationTrigger.ROUTER_LINK, started.getTrigger());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertEquals("foo", ended.getLocation().getPath());
+        assertEquals(
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class,
+                        RouteParameters.empty()),
+                ended.getOutcome());
+    }
+
+    @Test
+    public void proceedIntoRerouteToError_firesFailedOutcomeOnlyForResumed() {
         setNavigationTargets(PostponingOnceNavigationTarget.class,
                 RedirectToNotFoundInHasParam.class, FooNavigationTarget.class);
         PostponingOnceNavigationTarget.postpone = null;
@@ -4916,17 +4956,67 @@ public class RouterTest extends RoutingTestBase {
         navigate("toNotFound/error");
         List<EventObject> events = recordNavigationEvents();
 
-        // Resuming shows the error view outside a tracked navigation
         PostponingOnceNavigationTarget.postpone.proceed();
         assertEquals(RouteNotFoundError.class, getUIComponentClass());
-        assertEquals(0, events.size());
+        assertEquals(2, events.size());
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) ((NavigationEndedEvent) events
+                        .get(1)).getOutcome()).error());
 
         navigate("foo");
 
-        assertEquals(2, events.size());
+        assertEquals(4, events.size());
         assertEquals(
-                new NavigationEndedEvent.Completed(FooNavigationTarget.class),
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class,
+                        RouteParameters.empty()),
+                ((NavigationEndedEvent) events.get(3)).getOutcome());
+    }
+
+    @Test
+    public void proceedIntoPostponeAgain_firesPostponedOutcome() {
+        setNavigationTargets(RootNavigationTarget.class,
+                FooNavigationTarget.class);
+        navigate("");
+        List<ContinueNavigationAction> postpones = new ArrayList<>();
+        // Resuming runs the leave observers after the one that postponed, so
+        // the second one postpones the resumed navigation again
+        for (int i = 0; i < 2; i++) {
+            ui.addBeforeLeaveListener(event -> {
+                if (postpones.size() < 2) {
+                    postpones.add(event.postpone());
+                }
+            });
+        }
+        navigate("foo");
+        List<EventObject> events = recordNavigationEvents();
+
+        postpones.get(0).proceed();
+
+        assertEquals(2, postpones.size());
+        assertEquals(RootNavigationTarget.class, getUIComponentClass());
+        assertEquals(2, events.size());
+        assertEquals(new NavigationEndedEvent.Postponed(),
                 ((NavigationEndedEvent) events.get(1)).getOutcome());
+    }
+
+    @Test
+    public void proceedIntoThrowingView_firesFailedOutcomeAndPropagates() {
+        setNavigationTargets(PostponingOnceNavigationTarget.class,
+                FailOnException.class);
+        PostponingOnceNavigationTarget.postpone = null;
+        navigate("postpone-once");
+        navigate("exception");
+        List<EventObject> events = recordNavigationEvents();
+
+        // Unlike a regular navigation, no error view is rendered for an
+        // exception thrown while resuming
+        assertThrows(RuntimeException.class,
+                () -> PostponingOnceNavigationTarget.postpone.proceed());
+
+        assertEquals(2, events.size());
+        assertInstanceOf(RuntimeException.class,
+                ((NavigationEndedEvent.Failed) ((NavigationEndedEvent) events
+                        .get(1)).getOutcome()).error());
     }
 
     @Route("postpone-once")
