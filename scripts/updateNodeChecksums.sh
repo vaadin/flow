@@ -47,7 +47,7 @@ for archive in linux-arm64-musl.tar.gz linux-x64-musl.tar.gz; do
   grep -q "  node-$version-$archive\$" "$work/unofficial-SHASUMS256.txt" \
     || missing+=("$unofficial/node-$version-$archive")
 done
-if [ ${#missing[@]} -gt 0 ]; then
+if [ -n "${missing[*]:-}" ]; then
   echo "Not all Node.js $version builds are published yet. Missing checksums for:" >&2
   printf '  %s\n' "${missing[@]}" >&2
   echo "Track the unofficial builds at https://unofficial-builds.nodejs.org/ and rerun this script when they are done." >&2
