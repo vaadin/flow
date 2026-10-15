@@ -28,6 +28,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +36,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -47,12 +53,15 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ResponseWriterTest.CapturingServletOutputStream;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -68,6 +77,7 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -351,7 +361,9 @@ class AbstractDownloadHandlerTest {
         try (InputStream inputStream = Files.newInputStream(file)) {
             handler.transferContent(
                     new DownloadEvent(request, servletResponse, session, owner),
-                    inputStream, servletOutput, 10, file.toFile());
+                    inputStream, servletOutput, 10,
+                    AbstractDownloadHandler.SeekableContent
+                            .ofFile(file.toFile()));
         }
 
         assertEquals(body,
@@ -397,7 +409,8 @@ class AbstractDownloadHandlerTest {
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
                             inputStream, outputStream, declaredLength,
-                            file.toFile()));
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
             assertFalse(failure.isCancelled());
             assertTrue(failure.getCause() instanceof EOFException);
         }
@@ -443,7 +456,9 @@ class AbstractDownloadHandlerTest {
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
-                            inputStream, outputStream, 100000, file.toFile()));
+                            inputStream, outputStream, 100000,
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
             // propagated as a failure, not mistaken for a cancel
             assertFalse(failure.isCancelled());
         }
@@ -484,7 +499,9 @@ class AbstractDownloadHandlerTest {
                     () -> handler.transferContent(
                             new DownloadEvent(request, servletResponse, session,
                                     owner),
-                            inputStream, servletOutput, 100000, file.toFile()));
+                            inputStream, servletOutput, 100000,
+                            AbstractDownloadHandler.SeekableContent
+                                    .ofFile(file.toFile())));
         }
 
         verify(listener, never()).onComplete(any(), anyLong());
@@ -499,18 +516,204 @@ class AbstractDownloadHandlerTest {
         verify(servletResponse, never()).setStatus(500);
     }
 
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', nullValues = "null", value = {
+            "false | bytes=2-5     | abcdefghij",
+            "true  | bytes=1-2,6-7 | bc;gh",
+            "true  | bytes=6-7,1-2 | abcdefghij" })
+    void transferContent_streamWithoutUrl_rangesNeedingNoRereadAnswered(
+            boolean seekable, String range, String expected)
+            throws IOException {
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        CapturingServletOutputStream servletOutput = new CapturingServletOutputStream();
+        when(servletResponse.getOutputStream()).thenReturn(servletOutput);
+        when(request.getHeader("Range")).thenReturn(range);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(
+                "abcdefghij".getBytes(StandardCharsets.UTF_8));
+
+        handler.transferContent(
+                new DownloadEvent(request, servletResponse, session, owner),
+                inputStream, servletOutput, 10, seekable
+                        ? new AbstractDownloadHandler.SeekableContent("content",
+                                "\"v1\"", null)
+                        : null);
+
+        String body = new String(servletOutput.getOutput(),
+                StandardCharsets.UTF_8);
+        if (expected.contains(";")) {
+            verify(servletResponse).setStatus(206);
+            // each part follows its headers and precedes the next boundary
+            for (String part : expected.split(";")) {
+                assertTrue(body.contains("\r\n\r\n" + part + "\r\n"), body);
+            }
+        } else {
+            assertEquals(expected, body);
+            verify(servletResponse, never()).setStatus(anyInt());
+        }
+    }
+
     @Test
-    void transferContent_notAFile_rangeIgnored() throws IOException {
+    void transferContent_rangesNotEnabled_warnsOncePerClassBeforeTransfer()
+            throws Throwable {
+        VaadinService service = createService(false);
+        when(session.getService()).thenReturn(service);
         when(request.getHeader("Range")).thenReturn("bytes=2-5");
+        OutputStream clientGone = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                throw new IOException("Client closed the connection");
+            }
+        };
+        AbstractDownloadHandler<?> otherHandler = new AbstractDownloadHandler<>() {
+            @Override
+            public void handleDownloadRequest(DownloadEvent event) {
+                // Not called: the test only needs a second handler class
+            }
+        };
 
-        handler.transferContent(downloadEvent,
-                new ByteArrayInputStream(
-                        "abcdefghij".getBytes(StandardCharsets.UTF_8)),
-                outputStream, 10, null);
+        List<String> transferFailed = captureWarnings(
+                () -> assertThrows(IOException.class,
+                        () -> handler.transferContent(downloadEvent,
+                                new ByteArrayInputStream(new byte[10]),
+                                clientGone, 10, null)));
+        List<String> requestedAgain = captureWarnings(() -> {
+            handler.transferContent(downloadEvent,
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    null);
+            otherHandler.transferContent(downloadEvent,
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    null);
+        });
 
-        assertEquals("abcdefghij",
-                outputStream.toString(StandardCharsets.UTF_8));
-        verify(response, never()).setHeader(eq("Accept-Ranges"), anyString());
-        verify(response, never()).setStatus(anyInt());
+        assertEquals(1, transferFailed.size(), transferFailed.toString());
+        assertTrue(
+                transferFailed.get(0)
+                        .startsWith("The download handler "
+                                + handler.getClass().getName()
+                                + " does not answer byte range requests"),
+                transferFailed.get(0));
+        assertEquals(1, requestedAgain.size(), requestedAgain.toString());
+        assertTrue(
+                requestedAgain.get(0)
+                        .startsWith("The download handler "
+                                + otherHandler.getClass().getName()),
+                requestedAgain.get(0));
+    }
+
+    @Test
+    void transferContent_rangesEnabledButNotAnswerable_warnsWithTheCause()
+            throws Throwable {
+        VaadinService service = createService(false);
+        when(session.getService()).thenReturn(service);
+        when(request.getHeader("Range")).thenReturn("bytes=2-5");
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        when(servletResponse.getOutputStream())
+                .thenReturn(new CapturingServletOutputStream());
+
+        List<String> warnings = captureWarnings(() -> {
+            handler.transferContent(
+                    new DownloadEvent(request, servletResponse, session, owner),
+                    new ByteArrayInputStream(new byte[10]), outputStream, -1,
+                    new AbstractDownloadHandler.SeekableContent("content",
+                            "\"v1\"", null));
+            handler.transferContent(downloadEvent,
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    new AbstractDownloadHandler.SeekableContent("content",
+                            "\"v1\"", null));
+        });
+
+        assertEquals(2, warnings.size(), warnings.toString());
+        assertTrue(
+                warnings.get(0).contains(
+                        "because the length of the content is unknown"),
+                warnings.get(0));
+        assertTrue(
+                warnings.get(1).contains(
+                        "because the response is not an HTTP servlet response"),
+                warnings.get(1));
+    }
+
+    @Test
+    void transferContent_rangeAnsweredNotRequestedOrProductionMode_doesNotWarn()
+            throws Throwable {
+        VaadinService developmentMode = createService(false);
+        VaadinService productionMode = createService(true);
+        VaadinServletResponse servletResponse = mock(
+                VaadinServletResponse.class);
+        when(servletResponse.getOutputStream())
+                .thenReturn(new CapturingServletOutputStream());
+
+        List<String> warnings = captureWarnings(() -> {
+            when(session.getService()).thenReturn(developmentMode);
+            when(request.getHeader("Range")).thenReturn("bytes=2-5");
+            handler.transferContent(
+                    new DownloadEvent(request, servletResponse, session, owner),
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    new AbstractDownloadHandler.SeekableContent("content",
+                            "\"v1\"", null));
+            when(request.getHeader("Range")).thenReturn(null);
+            handler.transferContent(downloadEvent,
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    null);
+            when(session.getService()).thenReturn(productionMode);
+            when(request.getHeader("Range")).thenReturn("bytes=2-5");
+            handler.transferContent(downloadEvent,
+                    new ByteArrayInputStream(new byte[10]), outputStream, 10,
+                    null);
+        });
+
+        assertEquals(List.of(), warnings);
+    }
+
+    private static VaadinService createService(boolean productionMode) {
+        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
+        configuration.setProductionMode(productionMode);
+        MockVaadinContext context = new MockVaadinContext();
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        when(service.getContext()).thenReturn(context);
+        return service;
+    }
+
+    /**
+     * Runs the action and returns the warnings that it logged.
+     */
+    private static List<String> captureWarnings(Executable action)
+            throws Throwable {
+        List<String> warnings = new ArrayList<>();
+        Logger logger = mock(Logger.class);
+        doAnswer(invocation -> {
+            Object[] arguments = invocation.getArguments();
+            warnings.add(MessageFormatter
+                    .arrayFormat((String) arguments[0],
+                            Arrays.copyOfRange(arguments, 1, arguments.length))
+                    .getMessage());
+            return null;
+        }).when(logger).warn(anyString(), any(Object[].class));
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(() -> LoggerFactory.getLogger(
+                    AbstractDownloadHandler.UnansweredRangeRequests.class))
+                    .thenReturn(logger);
+            action.execute();
+        }
+        return warnings;
+    }
+
+    @Test
+    void withContentType_blankRejected_setValueReadBack() {
+        assertNull(handler.getContentType());
+        assertThrows(IllegalArgumentException.class,
+                () -> handler.withContentType(""));
+        assertThrows(IllegalArgumentException.class,
+                () -> handler.withContentType(" "));
+
+        handler.withContentType("text/vtt");
+
+        assertEquals("text/vtt", handler.getContentType());
+        assertEquals("text/vtt",
+                handler.resolveContentType("captions.bin", response));
     }
 }

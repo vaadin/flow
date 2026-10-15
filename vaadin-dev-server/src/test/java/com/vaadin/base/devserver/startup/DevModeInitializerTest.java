@@ -48,6 +48,9 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
@@ -333,6 +336,25 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         assertTrue(hasDevServerProcess(handler));
         runDestroy();
         assertFalse(hasDevServerProcess(handler));
+    }
+
+    @Tag("dev-mode-tagged")
+    public static class TaggedComponent extends Component {
+    }
+
+    @Test
+    @SuppressWarnings("removal")
+    void listener_should_unregisterAllComponentClasses_onDestroy()
+            throws Exception {
+        classes.add(TaggedComponent.class);
+
+        process();
+        assertEquals(Set.of(TaggedComponent.class),
+                ComponentUtil.getComponentsByTag("dev-mode-tagged"));
+
+        runDestroy();
+        assertTrue(
+                ComponentUtil.getComponentsByTag("dev-mode-tagged").isEmpty());
     }
 
     @LoadDependenciesOnStartup
