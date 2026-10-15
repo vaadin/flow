@@ -735,6 +735,11 @@ class CompileTest {
                 """);
         Path config = write("app/src/main/resources/application.properties",
                 "server.port=8080");
+        // The edit below has the same size, so only the modification time
+        // tells it apart from the seeded file. Written within one clock tick
+        // of the seed, the two times can be equal.
+        Files.setLastModifiedTime(config,
+                FileTime.fromMillis(System.currentTimeMillis() - 10_000));
         Compile compile = new Compile(project(app));
         compile.copyResources(compile.staleResources().copies());
         compile.seedResources();
