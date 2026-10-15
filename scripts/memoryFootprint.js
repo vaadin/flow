@@ -62,20 +62,30 @@ function formatValue(value, unit) {
   return unit ? `${number} ${unit}` : number;
 }
 
-function formatDifference(base, head, unit) {
+/**
+ * The difference from base to head, in bold and colored green when the
+ * footprint shrinks and red when it grows.
+ */
+function formatChange(hasBase, base, head, unit) {
+  if (!hasBase) {
+    return '—';
+  }
   if (base === undefined) {
-    return formatValue(head, unit);
+    return 'new';
   }
   if (head === undefined) {
-    return `${formatValue(base, unit)} → removed`;
+    return 'removed';
   }
   if (base === head) {
-    return `${formatValue(head, unit)} (no change)`;
+    return 'no change';
   }
   const difference = head - base;
   const sign = difference > 0 ? '+' : '−';
   const percent = ((Math.abs(difference) / base) * 100).toFixed(1);
-  return `${formatValue(base, unit)} → ${formatValue(head, unit)} (**${sign}${formatValue(Math.abs(difference), unit)}**, ${sign}${percent}%)`;
+  const color = difference > 0 ? 'red' : 'green';
+  // GitHub colors text only in math, where \textbf keeps the spaces. The
+  // percentage stays outside, as Markdown would unescape the \% math needs
+  return `$\\color{${color}}\\textbf{${sign}${formatValue(Math.abs(difference), unit)}}$ (${sign}${percent}%)`;
 }
 
 /**
@@ -142,10 +152,14 @@ function comment(base, head, baseCommit) {
   } else {
     lines.push(`Compared with the base commit ${baseCommit}.`, '');
   }
-  lines.push('| Scenario | Metric | Value |', '| --- | --- | --- |');
+  lines.push('| Scenario | Metric | Base | Head | Change |', '| --- | --- | ---: | ---: | ---: |');
   for (const row of allRows) {
-    const value = formatDifference(hasBase ? row.base?.value : undefined, row.head?.value, row.unit);
-    lines.push(`| ${row.scenario.title} | ${row.title} | ${value} |`);
+    const before = hasBase ? row.base?.value : undefined;
+    const after = row.head?.value;
+    const baseValue = before === undefined ? '—' : formatValue(before, row.unit);
+    const headValue = after === undefined ? '—' : formatValue(after, row.unit);
+    const change = formatChange(hasBase, before, after, row.unit);
+    lines.push(`| ${row.scenario.title} | ${row.title} | ${baseValue} | ${headValue} | ${change} |`);
   }
   for (const row of allRows.filter((r) => r.base?.breakdown && r.head?.breakdown)) {
     const differences = classDifferences(row.base.breakdown, row.head.breakdown);
