@@ -68,6 +68,32 @@ public interface DomListenerRegistration extends Registration {
     DomListenerRegistration addEventData(String eventData);
 
     /**
+     * Adds JavaScript expressions for extracting event data, like calling
+     * {@link #addEventData(String)} for each of them.
+     * <p>
+     * When given an unmodifiable list, such as one created with
+     * {@link List#of(Object...)} or {@link List#copyOf(java.util.Collection)},
+     * the registration may keep a reference to it instead of a copy of its own,
+     * so that listeners that use the same expressions can share one list.
+     *
+     * @param eventData
+     *            definitions for data that should be passed back to the server
+     *            together with the event, not <code>null</code> and not
+     *            containing <code>null</code>
+     * @return this registration, for chaining
+     * @see #addEventData(String)
+     * @since 25.4
+     */
+    default DomListenerRegistration addEventData(List<String> eventData) {
+        if (eventData == null) {
+            throw new IllegalArgumentException(
+                    "The event data expressions must not be null");
+        }
+        eventData.forEach(this::addEventData);
+        return this;
+    }
+
+    /**
      * Sets a JavaScript expression that is used for filtering events to this
      * listener. When an event is fired in the browser, the expression is
      * evaluated and an event is sent to the server only if the expression value

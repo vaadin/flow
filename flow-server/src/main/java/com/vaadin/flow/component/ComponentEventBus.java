@@ -38,7 +38,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -309,7 +308,7 @@ public class ComponentEventBus implements Serializable {
 
         registration.setDisabledUpdateMode(mode);
 
-        ElementListenerMap.addEventData(registration,
+        registration.addEventData(
                 ComponentEventBusUtil.getListenerEventData(eventType));
 
         if (!"".equals(filter)) {

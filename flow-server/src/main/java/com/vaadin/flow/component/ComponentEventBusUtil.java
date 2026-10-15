@@ -50,7 +50,7 @@ public class ComponentEventBusUtil {
 
     private static class EventTypeInfo {
         private final LinkedHashMap<String, Class<?>> dataExpressions;
-        private final String[] listenerEventData;
+        private final List<String> listenerEventData;
         private final Constructor<? extends ComponentEvent<?>> eventConstructor;
 
         public EventTypeInfo(Class<? extends ComponentEvent<?>> type) {
@@ -59,7 +59,7 @@ public class ComponentEventBusUtil {
             listenerEventData = toListenerEventData(dataExpressions);
         }
 
-        private static String[] toListenerEventData(
+        private static List<String> toListenerEventData(
                 LinkedHashMap<String, Class<?>> dataExpressions) {
             LinkedHashSet<String> eventData = new LinkedHashSet<>();
             dataExpressions.forEach((expression, type) -> {
@@ -75,7 +75,7 @@ public class ComponentEventBusUtil {
                     eventData.add(expression);
                 }
             });
-            return eventData.toArray(String[]::new);
+            return List.copyOf(eventData);
         }
     }
 
@@ -106,14 +106,16 @@ public class ComponentEventBusUtil {
      * the given event type, with expressions for components and elements mapped
      * like {@link DomListenerRegistration#addEventDataElement(String)} does.
      * <p>
-     * The same array is returned for every call so that all listeners of the
-     * event type can share it, and it must not be modified.
+     * The same unmodifiable list is returned for every call so that all
+     * listeners of the event type can share it, see
+     * {@link DomListenerRegistration#addEventData(List)}.
      *
      * @param eventType
      *            the component event type
-     * @return the event data expressions for a DOM listener registration
+     * @return an unmodifiable list of event data expressions for a DOM listener
+     *         registration
      */
-    static String[] getListenerEventData(
+    public static List<String> getListenerEventData(
             Class<? extends ComponentEvent<?>> eventType) {
         return cache.get(eventType).listenerEventData;
     }

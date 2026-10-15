@@ -17,7 +17,6 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -110,13 +109,12 @@ public class ElementListenerMap extends NodeMap {
 
         private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
         /*
-         * Exactly sized array rather than a set: listeners hold a handful of
-         * expressions, so a hash set would cost several times more memory for
-         * each one. The array may be shared with other listeners, see
-         * addEventData(DomListenerRegistration, String[]), so it is never
-         * modified but replaced with a copy.
+         * Exactly sized unmodifiable list rather than a set: listeners hold a
+         * handful of expressions, so a hash set would cost several times more
+         * memory for each one. The list may be shared with other listeners, see
+         * addEventData(List), and is replaced with a copy when adding.
          */
-        private String[] eventDataExpressions;
+        private List<String> eventDataExpressions;
         private String filter;
 
         private int debounceTimeout = 0;
@@ -168,27 +166,40 @@ public class ElementListenerMap extends NodeMap {
             return this;
         }
 
-        private void addEventData(String[] expressions) {
-            if (eventDataExpressions == null) {
-                // Shared on purpose, the array is never modified
-                eventDataExpressions = expressions; // NOSONAR
-            } else {
-                for (String expression : expressions) {
-                    appendEventData(expression);
+        @Override
+        public DomListenerRegistration addEventData(List<String> eventData) {
+            if (eventData == null) {
+                throw new IllegalArgumentException(
+                        "The event data expressions must not be null");
+            }
+            for (String expression : eventData) {
+                if (expression == null) {
+                    throw new IllegalArgumentException(
+                            "The event data expression must not be null");
                 }
             }
 
+            if (eventDataExpressions == null) {
+                // Keeps the given list if it is already unmodifiable
+                eventDataExpressions = List.copyOf(eventData);
+            } else {
+                eventData.forEach(this::appendEventData);
+            }
+
             listenerMap.updateEventSettings(type);
+
+            return this;
         }
 
         private void appendEventData(String eventData) {
             if (eventDataExpressions == null) {
-                eventDataExpressions = new String[] { eventData };
+                eventDataExpressions = List.of(eventData);
             } else if (!hasEventData(eventData)) {
-                int size = eventDataExpressions.length;
-                eventDataExpressions = Arrays.copyOf(eventDataExpressions,
-                        size + 1);
-                eventDataExpressions[size] = eventData;
+                int size = eventDataExpressions.size();
+                String[] expressions = eventDataExpressions
+                        .toArray(new String[size + 1]);
+                expressions[size] = eventData;
+                eventDataExpressions = List.of(expressions);
             }
         }
 
@@ -314,31 +325,6 @@ public class ElementListenerMap extends NodeMap {
      */
     public ElementListenerMap(StateNode node) {
         super(node);
-    }
-
-    /**
-     * Adds event data expressions to a listener registration, like calling
-     * {@link DomListenerRegistration#addEventData(String)} for each of them.
-     * When the registration has no event data yet, it keeps a reference to the
-     * given array instead of a copy of its own, so that listeners that use the
-     * same expressions, such as all listeners of a component event type, can
-     * share one array.
-     *
-     * @param registration
-     *            the listener registration, not <code>null</code>
-     * @param expressions
-     *            the event data expressions without duplicates, not
-     *            <code>null</code>; must not be modified after this call
-     */
-    public static void addEventData(DomListenerRegistration registration,
-            String[] expressions) {
-        if (registration instanceof DomEventListenerWrapper wrapper) {
-            wrapper.addEventData(expressions);
-        } else {
-            for (String expression : expressions) {
-                registration.addEventData(expression);
-            }
-        }
     }
 
     /**

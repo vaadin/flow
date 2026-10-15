@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +43,6 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -137,22 +137,30 @@ public class ElementListenersTest
     }
 
     @Test
-    void addSharedEventData_moreDataAddedToOneListener_otherListenersAndArrayUnchanged() {
-        String[] shared = { "data1", "data2" };
+    void addEventDataList_moreDataAddedToOneListener_otherListenersUnchanged() {
+        List<String> shared = List.of("data1", "data2");
         ElementListenerMap other = createFeature();
-        DomListenerRegistration registration = ns.add("eventType", noOp);
-        ElementListenerMap.addEventData(registration, shared);
-        ElementListenerMap.addEventData(other.add("eventType", noOp), shared);
+        DomListenerRegistration registration = ns.add("eventType", noOp)
+                .addEventData(shared);
+        other.add("eventType", noOp).addEventData(shared);
 
-        registration.addEventData("data3");
-        ElementListenerMap.addEventData(registration,
-                new String[] { "data1", "data4" });
+        registration.addEventData("data3")
+                .addEventData(List.of("data1", "data4"));
 
         assertEquals(Set.of("data1", "data2", "data3", "data4"),
                 getExpressions("eventType"));
         assertEquals(Set.of("data1", "data2"),
                 getExpressions(other, "eventType"));
-        assertArrayEquals(new String[] { "data1", "data2" }, shared);
+    }
+
+    @Test
+    void addEventDataList_modifiableListChangedAfterwards_expressionsUnchanged() {
+        List<String> eventData = new ArrayList<>(List.of("data1", "data2"));
+        ns.add("eventType", noOp).addEventData(eventData);
+
+        eventData.add("data3");
+
+        assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
     }
 
     @Test
