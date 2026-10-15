@@ -817,6 +817,49 @@ class NavigationStateRendererTest {
 
     }
 
+    @ParameterizedTest
+    @EnumSource(value = ModalityMode.class, names = { "STRICT", "VISUAL" })
+    void handle_modalComponentOpen_refreshCurrentRouteRecreatesRouteChain(
+            ModalityMode modalityMode) {
+        layoutAttachCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router).withTarget(SingleView.class)
+                        .withPath("single").build());
+        router.getRegistry().setRoute("single", SingleView.class,
+                List.of(RouteParentLayout.class));
+
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location("single"), ui,
+                NavigationTrigger.PAGE_LOAD));
+
+        String currentLayoutUUID = layoutUUID;
+        String currentViewUUID = viewUUID;
+
+        @Tag("modal-component")
+        class ModalComponent extends Component {
+        }
+        ModalComponent modalComponent = new ModalComponent();
+        ui.add(modalComponent);
+        ui.setChildComponentModal(modalComponent, modalityMode);
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        // A component with modality forces the whole route chain to be
+        // recreated
+        ui.refreshCurrentRoute(false);
+        assertEquals(2, layoutAttachCount.get());
+        assertEquals(2, viewAttachCount.get());
+        assertNotEquals(currentLayoutUUID, layoutUUID);
+        assertNotEquals(currentViewUUID, viewUUID);
+    }
+
     @Test
     void handle_refreshCurrentRoute_withForwardTo_recreatesComponents() {
         layoutAttachCount = new AtomicInteger();
