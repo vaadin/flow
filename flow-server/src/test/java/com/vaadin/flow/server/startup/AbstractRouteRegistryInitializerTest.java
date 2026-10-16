@@ -23,6 +23,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -126,6 +127,12 @@ class AbstractRouteRegistryInitializerTest {
 
     }
 
+    @Route("foo")
+    @Menu(parent = OwnMenuParent.class)
+    public static class OwnMenuParent extends Component {
+
+    }
+
     @Test
     void routeAndParentLayout_notRouterLayout_throws() {
         assertThrows(InvalidRouteLayoutConfigurationException.class, () -> {
@@ -144,6 +151,18 @@ class AbstractRouteRegistryInitializerTest {
                 Route.class));
         assertTrue(exception.getMessage()
                 .contains("not extend '" + Component.class.getCanonicalName()));
+    }
+
+    @Test
+    void validateRouteClasses_menuParentIsTheRouteItself_throws() {
+        InvalidRouteConfigurationException exception = assertThrows(
+                InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(context,
+                        Stream.of(OwnMenuParent.class)));
+        assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Menu.class));
+        assertTrue(exception.getMessage()
+                .contains(OwnMenuParent.class.getCanonicalName()));
     }
 
     @Test

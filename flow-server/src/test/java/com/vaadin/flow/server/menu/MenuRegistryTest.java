@@ -59,8 +59,10 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouteParent;
 import com.vaadin.flow.router.RouteParentContext;
 import com.vaadin.flow.router.RouteParentResolver;
+import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletContext;
@@ -506,22 +508,26 @@ class MenuRegistryTest {
     }
 
     @Test
-    void collectMenuItemsTree_urlDerivedParent_rootRouteIsNotAParent() {
+    void collectMenuItemsTree_urlDerivedParent_indexRouteIsNotAParent() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
         Arrays.asList(TreeDashboard.class, TreeSettings.class, TreeAbout.class,
-                TreeAboutTeam.class)
+                TreeAboutTeam.class, TreePrefixHome.class,
+                TreePrefixOrders.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
 
         // About has no @RouteParent: the URL-derived parent would be the root
-        // route, which is a sibling in the menu instead. Settings declares the
-        // root route as its @RouteParent explicitly and stays nested.
-        assertEquals(List.of("/", "/about"), collectRoutes(tree));
+        // route, which is a sibling in the menu instead. The same goes for
+        // Orders below the index route of a @RoutePrefix layout. Settings
+        // declares the root route as its @RouteParent explicitly and stays
+        // nested.
+        assertEquals(List.of("/", "/about", "/app", "/app/orders"),
+                collectRoutes(tree));
         assertEquals(List.of("/settings"),
                 collectRoutes(tree.get(0).children()));
-        // URL-derived parents other than the root route still nest.
+        // URL-derived parents other than an index route still nest.
         assertEquals(List.of("/about/team"),
                 collectRoutes(tree.get(1).children()));
     }
@@ -555,7 +561,7 @@ class MenuRegistryTest {
 
         // Without Dashboard none of Audit's ancestors is in the menu.
         assertEquals(List.of("/hidden/audit"), collectRoutes(tree));
-        assertNull(tree.get(0).children());
+        assertEquals(List.of(), tree.get(0).children());
     }
 
     @Test
@@ -609,6 +615,23 @@ class MenuRegistryTest {
     }
 
     @Test
+    void collectMenuItemsTree_invalidMenuParent_usesRouteHierarchy() {
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(TreeAbout.class, TreeUnregisteredMenuParent.class,
+                TreeOwnMenuParent.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // A menu parent that is not a registered route, or the view itself, is
+        // ignored, so the views nest under their URL-derived parent About.
+        assertEquals(List.of("/about"), collectRoutes(tree));
+        assertEquals(List.of("/about/own", "/about/unregistered"),
+                collectRoutes(tree.get(0).children()));
+    }
+
+    @Test
     void collectMenuItemsTree_menuParentCycle_viewsAreRoots() {
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
@@ -646,7 +669,7 @@ class MenuRegistryTest {
                         .containsAll(List.of("/hilla", "/hilla/sub")),
                 "Both client views are expected as roots, got "
                         + collectRoutes(tree));
-        tree.forEach(view -> assertNull(view.children(),
+        tree.forEach(view -> assertEquals(List.of(), view.children(),
                 "Client view " + view.route() + " is not expected to have "
                         + "children in the tree"));
     }
@@ -960,6 +983,38 @@ class MenuRegistryTest {
     @Route("about/team")
     @Menu(title = "Team")
     public static class TreeAboutTeam extends Component {
+    }
+
+    @Tag("div")
+    @RoutePrefix("app")
+    public static class TreePrefixLayout extends Component
+            implements RouterLayout {
+    }
+
+    // Index route of a @RoutePrefix layout, at /app.
+    @Tag("div")
+    @Route(value = "", layout = TreePrefixLayout.class)
+    @Menu(title = "App", order = 6)
+    public static class TreePrefixHome extends Component {
+    }
+
+    @Tag("div")
+    @Route(value = "orders", layout = TreePrefixLayout.class)
+    @Menu(title = "Orders", order = 7)
+    public static class TreePrefixOrders extends Component {
+    }
+
+    // TreeHidden is not registered in the test using this view.
+    @Tag("div")
+    @Route("about/unregistered")
+    @Menu(title = "Unregistered", parent = TreeHidden.class)
+    public static class TreeUnregisteredMenuParent extends Component {
+    }
+
+    @Tag("div")
+    @Route("about/own")
+    @Menu(title = "Own", parent = TreeOwnMenuParent.class)
+    public static class TreeOwnMenuParent extends Component {
     }
 
     // Route child of Dashboard, but nested under Settings in the menu.

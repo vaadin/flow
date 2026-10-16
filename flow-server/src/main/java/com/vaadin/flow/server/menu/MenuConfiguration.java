@@ -40,6 +40,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 public final class MenuConfiguration {
 
     private static final String STATISTICS_DYNAMIC_MENU_ENTRIES = "flow/dynamic-menu-entries";
+    private static final String STATISTICS_DYNAMIC_MENU_ENTRIES_TREE = "flow/dynamic-menu-entries-tree";
 
     /**
      * Collect ordered list of menu entries for menu population. All client
@@ -77,9 +78,10 @@ public final class MenuConfiguration {
      * {@link com.vaadin.flow.router.Menu#parent() @Menu(parent)} when it is
      * defined, and otherwise according to
      * {@link com.vaadin.flow.router.RouteParent @RouteParent} (with URL-prefix
-     * walking as fallback, which does not nest views under the root route
-     * {@code ""}). Only root entries are returned; the descendants are
-     * reachable via {@link MenuEntry#children()}.
+     * walking as fallback, which does not nest views under the index route of
+     * the application or of a {@link com.vaadin.flow.router.RoutePrefix}
+     * layout). Only root entries are returned; the descendants are reachable
+     * via {@link MenuEntry#children()}.
      * <p>
      * Hilla/TypeScript client views have no server-side route hierarchy and are
      * always returned as root entries without children.
@@ -88,7 +90,7 @@ public final class MenuConfiguration {
      *         children
      */
     public static List<MenuEntry> getMenuEntriesTree() {
-        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
+        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES_TREE, null);
         return MenuRegistry.collectMenuItemsTree().stream()
                 .map(MenuConfiguration::createMenuTreeEntry).toList();
     }
@@ -104,7 +106,7 @@ public final class MenuConfiguration {
      * @see #getMenuEntriesTree()
      */
     public static List<MenuEntry> getMenuEntriesTree(Locale locale) {
-        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES, null);
+        UsageStatistics.markAsUsed(STATISTICS_DYNAMIC_MENU_ENTRIES_TREE, null);
         return MenuRegistry.collectMenuItemsTree(locale).stream()
                 .map(MenuConfiguration::createMenuTreeEntry).toList();
     }
@@ -228,9 +230,8 @@ public final class MenuConfiguration {
 
     private static MenuEntry createMenuTreeEntry(AvailableViewInfo viewInfo) {
         MenuEntry entry = createMenuEntry(viewInfo);
-        List<MenuEntry> children = viewInfo.children() == null ? List.of()
-                : viewInfo.children().stream()
-                        .map(MenuConfiguration::createMenuTreeEntry).toList();
+        List<MenuEntry> children = viewInfo.children().stream()
+                .map(MenuConfiguration::createMenuTreeEntry).toList();
         return new MenuEntry(entry.path(), entry.title(), entry.order(),
                 entry.icon(), entry.menuClass(), children);
     }
