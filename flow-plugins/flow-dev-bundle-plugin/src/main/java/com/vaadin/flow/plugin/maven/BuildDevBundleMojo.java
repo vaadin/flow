@@ -236,6 +236,14 @@ public class BuildDevBundleMojo extends AbstractMojo
     private Integer minimumFrontendPackageAgeDays;
 
     /**
+     * Set to {@code true} to allow npm packages declared with a version that is
+     * neither a registry version nor a local path, such as a tarball URL or a
+     * git repository.
+     */
+    @Parameter(property = InitParameters.NPM_ALLOW_EXOTIC_VERSIONS, defaultValue = "false")
+    private boolean npmAllowExoticVersions;
+
+    /**
      * The folder where the META-INF/resources files are copied. Used for
      * finding the StyleSheet referenced css files.
      */
@@ -621,6 +629,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public Integer minimumFrontendPackageAgeDays() {
         return minimumFrontendPackageAgeDays;
+    }
+
+    @Override
+    public boolean isNpmAllowExoticVersions() {
+        return npmAllowExoticVersions;
     }
 
     @Override

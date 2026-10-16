@@ -79,6 +79,7 @@ import static com.vaadin.flow.server.InitParameters.FRONTEND_EXTRA_EXTENSIONS;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import static com.vaadin.flow.server.InitParameters.NPM_ALLOW_EXOTIC_VERSIONS;
 import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
@@ -170,6 +171,7 @@ public class BuildFrontendUtil {
                         adapter.frontendExtraFileExtensions())
                 .withNpmExcludeWebComponents(
                         adapter.isNpmExcludeWebComponents())
+                .withNpmAllowExoticVersions(adapter.isNpmAllowExoticVersions())
                 .withFrontendIgnoreVersionChecks(
                         adapter.isFrontendIgnoreVersionChecks())
                 .setCopyAssets(false);
@@ -279,6 +281,10 @@ public class BuildFrontendUtil {
             buildInfo.put(NPM_EXCLUDE_WEB_COMPONENTS,
                     adapter.isNpmExcludeWebComponents());
         }
+        if (adapter.isNpmAllowExoticVersions()) {
+            buildInfo.put(NPM_ALLOW_EXOTIC_VERSIONS,
+                    adapter.isNpmAllowExoticVersions());
+        }
 
         if (!adapter.frontendExtraFileExtensions().isEmpty()) {
             buildInfo.put(FRONTEND_EXTRA_EXTENSIONS,
@@ -370,6 +376,8 @@ public class BuildFrontendUtil {
                     .withReact(adapter.isReactEnabled())
                     .withNpmExcludeWebComponents(
                             adapter.isNpmExcludeWebComponents())
+                    .withNpmAllowExoticVersions(
+                            adapter.isNpmAllowExoticVersions())
                     .withFrontendExtraFileExtensions(
                             adapter.frontendExtraFileExtensions())
                     .withFrontendIgnoreVersionChecks(
@@ -452,6 +460,8 @@ public class BuildFrontendUtil {
                             adapter.frontendExtraFileExtensions())
                     .withNpmExcludeWebComponents(
                             adapter.isNpmExcludeWebComponents())
+                    .withNpmAllowExoticVersions(
+                            adapter.isNpmAllowExoticVersions())
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
                     .withMinimumFrontendPackageAgeDays(
@@ -1019,6 +1029,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
             buildInfo.remove(InitParameters.NPM_EXCLUDE_WEB_COMPONENTS);
+            buildInfo.remove(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS);
             buildInfo.remove(DISABLE_PREPARE_FRONTEND_CACHE);
             // Premium features flag is always true, because Vaadin CI server
             // uses Enterprise sub, thus it's always true.

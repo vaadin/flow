@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -955,5 +957,26 @@ class FrontendUtilsTest {
             default -> throw new RuntimeException("Invalid stream " + args[0]);
             }
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "1.2.3", "^1.2.3", "~1.2", ">=1.0.0 <2.0.0",
+            "1.x || 2.x", "*", "latest", "25.0.0-beta1",
+            "npm:@typescript/typescript6@6.0.2", "file:../web-components",
+            "link:../overlay", "workspace:*", "./target/flow-frontend",
+            "../overlay", "/opt/overlay" })
+    void isExoticVersion_registryVersionOrLocalPath_notExotic(String version) {
+        assertFalse(FrontendBuildUtils.isExoticVersion(version));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d",
+            "http://example.com/overlay.tgz",
+            "git+https://github.com/vaadin/web-components.git",
+            "git+ssh://git@github.com/vaadin/web-components.git",
+            "github:vaadin/web-components", "vaadin/web-components#main" })
+    void isExoticVersion_urlOrGitVersion_exotic(String version) {
+        assertTrue(FrontendBuildUtils.isExoticVersion(version));
     }
 }

@@ -167,6 +167,8 @@ public class Options implements Serializable {
 
     private boolean npmExcludeWebComponents = false;
 
+    private boolean npmAllowExoticVersions = false;
+
     /**
      * Removes generated files from a previous execution that are no more
      * created.
@@ -1143,6 +1145,32 @@ public class Options implements Serializable {
      */
     public Options withNpmExcludeWebComponents(boolean exclude) {
         this.npmExcludeWebComponents = exclude;
+        return this;
+    }
+
+    /**
+     * Gets whether npm packages may be declared with an exotic version, such as
+     * a tarball URL or a git repository, rather than a registry version or a
+     * local path.
+     *
+     * @return {@code true} if exotic versions are allowed
+     */
+    public boolean isNpmAllowExoticVersions() {
+        return npmAllowExoticVersions;
+    }
+
+    /**
+     * Sets whether npm packages may be declared with an exotic version, such as
+     * a tarball URL or a git repository, rather than a registry version or a
+     * local path. When not allowed, an {@code @NpmPackage} with an exotic
+     * version fails the build and a URL version in a versions file is ignored.
+     *
+     * @param allow
+     *            whether to allow exotic versions
+     * @return this builder
+     */
+    public Options withNpmAllowExoticVersions(boolean allow) {
+        this.npmAllowExoticVersions = allow;
         return this;
     }
 

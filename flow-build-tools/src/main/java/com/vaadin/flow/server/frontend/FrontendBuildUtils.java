@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -83,6 +84,32 @@ public class FrontendBuildUtils {
     static boolean isUrlVersion(String version) {
         return version != null && (version.startsWith("https://")
                 || version.startsWith("http://"));
+    }
+
+    /**
+     * Checks whether the given npm dependency version is exotic, i.e. resolved
+     * from neither the npm registry nor a local path, such as a tarball URL or
+     * a git repository.
+     * <p>
+     * A registry version is a version, a range or a dist-tag, none of which
+     * contains a {@code :} or a {@code /}, or an {@code npm:} alias. A local
+     * path is a {@code file:}, {@code link:} or {@code workspace:} version or a
+     * relative or absolute path. Any other version is exotic.
+     *
+     * @param version
+     *            the npm dependency version, may be {@code null}
+     * @return {@code true} if the version is exotic, {@code false} otherwise
+     */
+    static boolean isExoticVersion(String version) {
+        if (version == null) {
+            return false;
+        }
+        final String trimmed = version.trim();
+        if (Stream.of("npm:", "file:", "link:", "workspace:", "./", "../", "/",
+                "~/").anyMatch(trimmed::startsWith)) {
+            return false;
+        }
+        return trimmed.contains(":") || trimmed.contains("/");
     }
 
     /**

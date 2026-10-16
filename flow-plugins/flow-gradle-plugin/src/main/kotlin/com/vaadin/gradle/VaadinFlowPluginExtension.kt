@@ -351,6 +351,13 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val npmExcludeWebComponents: Property<Boolean>
 
     /**
+     * Whether npm packages may be declared with an exotic version, such as a
+     * tarball URL or a git repository, rather than a registry version or a
+     * local path. Defaults to `false`.
+     */
+    public abstract val npmAllowExoticVersions: Property<Boolean>
+
+    /**
      * Whether to ignore node/npm tool version checks or not. Defaults to
      * {@code false}.
      */
@@ -688,6 +695,9 @@ public class PluginEffectiveConfiguration(
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)
 
+    public val npmAllowExoticVersions: Provider<Boolean> = extension
+        .npmAllowExoticVersions.convention(false)
+
     public val commercialWithBanner: Provider<Boolean> =
         extension.commercialWithBanner.convention(false)
             .overrideWithSystemPropertyFlag(
@@ -780,7 +790,8 @@ public class PluginEffectiveConfiguration(
             "reactEnable=${reactEnable.get()}," +
             "cleanFrontendFiles=${cleanFrontendFiles.get()}," +
             "frontendExtraFileExtensions=${frontendExtraFileExtensions.get()}," +
-            "npmExcludeWebComponents=${npmExcludeWebComponents.get()}" +
+            "npmExcludeWebComponents=${npmExcludeWebComponents.get()}," +
+            "npmAllowExoticVersions=${npmAllowExoticVersions.get()}," +
             "commercialWithBanner=${commercialWithBanner.get()}" +
             ")"
 

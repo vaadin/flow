@@ -275,6 +275,14 @@ public interface VaadinBuildTimeConfig {
     boolean npmExcludeWebComponents();
 
     /**
+     * Whether npm packages may be declared with an exotic version, such as a
+     * tarball URL or a git repository, rather than a registry version or a
+     * local path.
+     */
+    @WithDefault("false")
+    boolean npmAllowExoticVersions();
+
+    /**
      * Set to {@code true} to ignore node/npm tool version checks.
      * <p>
      * </p>

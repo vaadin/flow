@@ -387,6 +387,17 @@ public interface PluginAdapterBase {
     boolean isNpmExcludeWebComponents();
 
     /**
+     * Whether npm packages may be declared with an exotic version, such as a
+     * tarball URL or a git repository, rather than a registry version or a
+     * local path.
+     *
+     * @return {@code true} to allow exotic versions
+     */
+    default boolean isNpmAllowExoticVersions() {
+        return false;
+    }
+
+    /**
      * Whether to ignore node/npm tool version checks or not.
      *
      * Note that disabling frontend tools version checking could cause failing
