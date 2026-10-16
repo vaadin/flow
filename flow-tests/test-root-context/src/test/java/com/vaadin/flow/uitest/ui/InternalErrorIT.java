@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,6 +38,9 @@ import static org.junit.Assert.assertTrue;
  * @author Vaadin Ltd
  * @since 1.0.
  */
+// The tests change the system messages provider of the shared VaadinService,
+// which the bootstrap page reads, so they must not run concurrently
+@NotThreadSafe
 public class InternalErrorIT extends ChromeBrowserTest {
 
     private static final String UPDATE = "update";
