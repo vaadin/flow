@@ -140,6 +140,44 @@ describe('ResourceLoader', () => {
     }
   });
 
+  it('loads a stylesheet into the given cascade layer', async () => {
+    // Orders the "theme" layer before the "app" layer
+    const app = document.createElement('style');
+    app.textContent =
+      '@layer theme, app; @layer app { .rl-layer-probe { border-top-color: rgb(0, 128, 0) } }' +
+      ' .rl-layer-probe { color: rgb(0, 0, 255) }';
+    document.head.appendChild(app);
+    const comment = document.createComment('Stylesheet end');
+    document.head.appendChild(comment);
+    const probe = document.createElement('div');
+    probe.className = 'rl-layer-probe';
+    document.body.appendChild(probe);
+    try {
+      const loader = new ResourceLoader(testRegistry({ SystemErrorHandler: { handleError: () => {} } }), false);
+      const url =
+        `data:text/css,/* ${Math.floor(performance.now())} */ div.rl-layer-probe` +
+        '{color:rgb(255, 0, 0);border-top-color:rgb(255, 0, 0);background-color:rgb(255, 255, 0)}';
+      const listener = recordingListener();
+      loader.loadStylesheet(url, listener.listener, 'dep-layer', 'theme');
+      await settle();
+
+      expect(listener.calls).to.deep.equal(['load']);
+      const style = getComputedStyle(probe);
+      // The stylesheet applies...
+      expect(style.backgroundColor).to.equal('rgb(255, 255, 0)');
+      // ...but its more specific rules lose to unlayered rules...
+      expect(style.color).to.equal('rgb(0, 0, 255)');
+      // ...and to rules in a layer ordered after "theme"
+      expect(style.borderTopColor).to.equal('rgb(0, 128, 0)');
+
+      document.head.querySelector('[data-id="dep-layer"]')?.remove();
+    } finally {
+      comment.remove();
+      app.remove();
+      probe.remove();
+    }
+  });
+
   it('inserts an inline stylesheet before the marker comment', () => {
     const comment = document.createComment('Stylesheet end');
     document.head.appendChild(comment);

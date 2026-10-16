@@ -45,6 +45,9 @@ public class ReflectionCache<C, T> {
     private static final Set<Consumer<Class<?>>> clearAllActions = Collections
             .synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
+    private static final Set<Consumer<Class<?>>> clearBeforeHotswapActions = Collections
+            .synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+
     private final ConcurrentHashMap<Class<? extends C>, T> values = new ConcurrentHashMap<>();
 
     private final SerializableFunction<Class<? extends C>, T> valueProvider;
@@ -67,6 +70,11 @@ public class ReflectionCache<C, T> {
      *            <code>null</code>
      */
     public ReflectionCache(SerializableFunction<Class<C>, T> valueProvider) {
+        this(valueProvider, false);
+    }
+
+    private ReflectionCache(SerializableFunction<Class<C>, T> valueProvider,
+            boolean clearBeforeHotswap) {
         if (valueProvider == null) {
             throw new IllegalArgumentException("value provider cannot be null");
         }
@@ -74,6 +82,38 @@ public class ReflectionCache<C, T> {
 
         // noinspection rawtypes,unchecked
         addClearAllAction((Consumer) clearAction);
+        if (clearBeforeHotswap) {
+            // noinspection rawtypes,unchecked
+            clearBeforeHotswapActions.add((Consumer) clearAction);
+        }
+    }
+
+    /**
+     * Creates a new reflection cache whose values for a class are cleared
+     * before hotswappers are run, in addition to being cleared by
+     * {@link #clearAll(Class)} like any other reflection cache.
+     * <p>
+     * Regular reflection caches are cleared only after all hotswappers have
+     * run, so that hotswappers can still compare previous values with the
+     * changed class. Use this for caches whose values must already reflect the
+     * changed class while hotswappers run, and whose previous values are not
+     * needed by any hotswapper.
+     *
+     * @see #ReflectionCache(SerializableFunction)
+     * @see #clearBeforeHotswap(Class)
+     *
+     * @param valueProvider
+     *            a function that computes the cached value for a class, not
+     *            <code>null</code>
+     * @param <C>
+     *            the class types that are used as the cache keys
+     * @param <T>
+     *            the cached value type
+     * @return a new reflection cache, not <code>null</code>
+     */
+    public static <C, T> ReflectionCache<C, T> clearedBeforeHotswap(
+            SerializableFunction<Class<C>, T> valueProvider) {
+        return new ReflectionCache<>(valueProvider, true);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -198,6 +238,20 @@ public class ReflectionCache<C, T> {
      */
     public static void clearAll(Class<?> type) {
         clearAllActions.forEach(action -> action.accept(type));
+    }
+
+    /**
+     * Clears mappings for the given type from the reflection caches created
+     * with {@link #clearedBeforeHotswap(SerializableFunction)}. Other
+     * reflection caches are not affected.
+     * <p>
+     * Called for changed classes before hotswappers are run.
+     *
+     * @param type
+     *            the type to remove; {@literal null} means all mappings.
+     */
+    public static void clearBeforeHotswap(Class<?> type) {
+        clearBeforeHotswapActions.forEach(action -> action.accept(type));
     }
 
 }

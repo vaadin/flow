@@ -35,6 +35,7 @@ const KEY_URL = 'url';
 const KEY_TYPE = 'type';
 const KEY_CONTENTS = 'contents';
 const KEY_ID = 'id';
+const KEY_LAYER = 'layer';
 
 // com.vaadin.flow.shared.ui.Dependency.Type / LoadMode. LoadMode and Dependency
 // are exported because MessageHandler builds the map this class consumes, just as
@@ -120,7 +121,8 @@ export class DependencyLoader {
     for (const dependency of dependencies) {
       const type = dependency[KEY_TYPE] as DependencyType;
       const dependencyId = KEY_ID in dependency ? (dependency[KEY_ID] as string) : null;
-      const resourceLoader = this.#getResourceLoader(type, loadMode, dependencyId);
+      const layer = (dependency[KEY_LAYER] as string | null | undefined) ?? null;
+      const resourceLoader = this.#getResourceLoader(type, loadMode, dependencyId, layer);
 
       if (type === 'DYNAMIC_IMPORT') {
         this.#loadDependencyEagerly(dependency[KEY_URL] as string, resourceLoader);
@@ -149,7 +151,12 @@ export class DependencyLoader {
     return this.#registry.getURIResolver().resolveVaadinUri(dependency[KEY_URL] as string)!;
   }
 
-  #getResourceLoader(resourceType: DependencyType, loadMode: LoadMode, dependencyId: string | null): Loader {
+  #getResourceLoader(
+    resourceType: DependencyType,
+    loadMode: LoadMode,
+    dependencyId: string | null,
+    layer: string | null
+  ): Loader {
     const resourceLoader = this.#registry.getResourceLoader();
     const inline = loadMode === 'INLINE';
 
@@ -158,7 +165,7 @@ export class DependencyLoader {
         if (inline) {
           return (data, listener) => resourceLoader.inlineStyleSheet(data, listener, dependencyId);
         }
-        return (url, listener) => resourceLoader.loadStylesheet(url, listener, dependencyId);
+        return (url, listener) => resourceLoader.loadStylesheet(url, listener, dependencyId, layer);
       case 'JAVASCRIPT':
         if (inline) {
           return (data, listener) => resourceLoader.inlineScript(data, listener);

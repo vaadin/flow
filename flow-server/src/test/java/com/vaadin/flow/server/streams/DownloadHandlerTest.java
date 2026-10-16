@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.File;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,7 +62,7 @@ class DownloadHandlerTest {
     }
 
     @Test
-    void allowDisabled_forwardsUrlPostfixAndAllowInert() {
+    void allowDisabled_forwardsUrlPostfixAllowInertAndRangeRequests() {
         DownloadHandler delegate = new DownloadHandler() {
             @Override
             public void handleDownloadRequest(DownloadEvent event) {
@@ -75,12 +77,32 @@ class DownloadHandlerTest {
             public boolean isAllowInert() {
                 return true;
             }
+
+            @Override
+            public boolean isRangeRequestsEnabled() {
+                return true;
+            }
         };
 
         DownloadHandler wrapped = delegate.allowDisabled();
 
         assertEquals("icon.svg", wrapped.getUrlPostfix());
         assertTrue(wrapped.isAllowInert());
+        assertTrue(wrapped.isRangeRequestsEnabled());
+    }
+
+    @Test
+    void isRangeRequestsEnabled_onlyForFilesAndOptedInHandlers() {
+        assertFalse(((DownloadHandler) event -> {
+        }).isRangeRequestsEnabled());
+        assertTrue(DownloadHandler.forFile(new File("video.mp4"))
+                .isRangeRequestsEnabled());
+
+        InputStreamDownloadHandler handler = DownloadHandler
+                .fromInputStream(event -> DownloadResponse.error(500));
+        assertFalse(handler.isRangeRequestsEnabled());
+        assertTrue(handler.enableRangeRequests().allowDisabled()
+                .isRangeRequestsEnabled());
     }
 
     @Test
