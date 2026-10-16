@@ -163,7 +163,6 @@ class NodeUpdaterTest {
         expectedDependencies.add("vite");
         expectedDependencies.add("@vitejs/plugin-react");
         expectedDependencies.add("rollup-plugin-brotli");
-        expectedDependencies.add("@rollup/plugin-replace");
         expectedDependencies.add("rollup-plugin-visualizer");
         expectedDependencies.add("vite-plugin-checker");
         // Note: workbox-build is now only included when PWA offline is enabled
