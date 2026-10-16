@@ -44,7 +44,7 @@ class AppProcessTest {
 
     /** What a run spawned from an empty project was launched with. */
     private static final Compile.Snapshot NOTHING = new Compile.Snapshot(
-            Map.of(), Map.of(), Map.of(), null);
+            List.of(), Map.of(), Map.of(), Map.of(), null, 0L);
 
     @TempDir
     Path root;
@@ -182,8 +182,8 @@ class AppProcessTest {
         AppProcess app = new AppProcess(root, null);
         assertTrue(app.launchSnapshot().isEmpty());
         app.beginRun(exited(), log(), NOTHING);
-        Compile.Snapshot snapshot = new Compile.Snapshot(Map.of(), Map.of(),
-                Map.of(), null);
+        Compile.Snapshot snapshot = new Compile.Snapshot(List.of(), Map.of(),
+                Map.of(), Map.of(), null, 0L);
         Process alive = alive();
         app.beginRun(alive, log(), snapshot);
 

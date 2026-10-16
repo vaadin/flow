@@ -49,7 +49,7 @@ class TransactionEngineTest {
 
     /** What a run spawned from an empty project was launched with. */
     private static final Compile.Snapshot NOTHING = new Compile.Snapshot(
-            Map.of(), Map.of(), Map.of(), null);
+            List.of(), Map.of(), Map.of(), Map.of(), null, 0L);
 
     @TempDir
     Path root;
@@ -83,13 +83,27 @@ class TransactionEngineTest {
             process.beginRun(alive, root.resolve("app.log"), current);
             TransactionEngine engine = new TransactionEngine(launch, process);
 
-            // The first registration builds the baseline, the next one
-            // re-seeds it; both have to take the registering run's stamps.
+            // The first registration builds the baseline, and has to take
+            // the registering run's stamps, not the current run's.
             engine.onConnector(connector(), registering);
-            assertEquals(List.of(view),
-                    engine.compile().staleFrontend().modified());
+            Compile.FrontendChanges changes = engine.compile().staleFrontend();
+            assertEquals(List.of(view), changes.modified());
+            engine.compile().markFrontendNotified(changes);
 
+            // The same launch registering again - a reconnect, a redeploy
+            // inside the JVM - keeps the baseline: the edit is live, and
+            // must not be offered a second time.
             engine.onConnector(connector(), registering);
+            assertTrue(engine.compile().staleFrontend().isEmpty());
+
+            // A restart re-seeds, again from the registering run's stamps:
+            // by the time its registration is handled, yet another restart
+            // can have replaced it as the current run.
+            Compile.Snapshot restarted = Compile.Snapshot.of(project);
+            Files.writeString(view, "export const editedAgain = true;");
+            process.beginRun(alive, root.resolve("app.log"),
+                    Compile.Snapshot.of(project));
+            engine.onConnector(connector(), restarted);
             assertEquals(List.of(view),
                     engine.compile().staleFrontend().modified());
         } finally {

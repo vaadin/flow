@@ -244,6 +244,9 @@ final class Compile {
      * spawn-time walk would see are not the ones the application runs; they are
      * walked when the baseline is seeded instead.
      *
+     * @param modules
+     *            the module set the launch was composed from, whose files these
+     *            are
      * @param sources
      *            the Java sources, by path
      * @param resources
@@ -253,9 +256,12 @@ final class Compile {
      * @param frontendRoot
      *            the frontend folder those were walked under, or {@code null}
      *            when the launch found none
+     * @param takenAtMillis
+     *            when the stamps were taken, in epoch milliseconds
      */
-    record Snapshot(Map<Path, Stamp> sources, Map<Path, Stamp> resources,
-            Map<Path, Stamp> frontend, Path frontendRoot) {
+    record Snapshot(List<Reactor.Module> modules, Map<Path, Stamp> sources,
+            Map<Path, Stamp> resources, Map<Path, Stamp> frontend,
+            Path frontendRoot, long takenAtMillis) {
 
         /**
          * Stamps the files a launch of this project reads.
@@ -270,33 +276,41 @@ final class Compile {
 
         private static Snapshot of(List<Reactor.Module> modules,
                 Frontend frontend) {
-            // A tree that changes under the walk - a directory removed
-            // mid-iteration - fails it unchecked, part way through. Caught
-            // here rather than in walk: a partial snapshot only leaves files
-            // out, which reports them changed - the safe way round - while a
-            // partial walk in stale() would report every file it did not
-            // reach as deleted, and delete its artifacts.
+            long takenAt = System.currentTimeMillis();
             Map<Path, Stamp> sources = new java.util.HashMap<>();
-            try {
-                forEachSource(modules,
-                        (module, file, stamp) -> sources.put(file, stamp));
-            } catch (java.io.UncheckedIOException partial) {
-                // Keep what was stamped; see above.
-            }
             Map<Path, Stamp> resources = new java.util.HashMap<>();
-            try {
-                forEachResource(modules,
-                        (module, file, stamp) -> resources.put(file, stamp));
-            } catch (java.io.UncheckedIOException partial) {
-                // Keep what was stamped; see above.
+            for (Reactor.Module module : modules) {
+                List<Reactor.Module> one = List.of(module);
+                keepingWhatWasStamped(() -> forEachSource(one,
+                        (owner, file, stamp) -> sources.put(file, stamp)));
+                keepingWhatWasStamped(() -> forEachResource(one,
+                        (owner, file, stamp) -> resources.put(file, stamp)));
             }
             Map<Path, Stamp> frontendFiles = new java.util.HashMap<>();
             Path frontendRoot = frontend.root().orElse(null);
             if (frontendRoot != null) {
                 forEachFrontendFile(frontend, frontendRoot, frontendFiles::put);
             }
-            return new Snapshot(Map.copyOf(sources), Map.copyOf(resources),
-                    Map.copyOf(frontendFiles), frontendRoot);
+            return new Snapshot(List.copyOf(modules), Map.copyOf(sources),
+                    Map.copyOf(resources), Map.copyOf(frontendFiles),
+                    frontendRoot, takenAt);
+        }
+
+        /**
+         * A tree that changes under the walk - a directory removed
+         * mid-iteration - fails it unchecked, part way through. Caught here
+         * rather than in {@link #walk}: a file left out of the snapshot is only
+         * reported changed, the safe way round, while a partial walk in
+         * {@link #stale()} would report every file it did not reach as deleted,
+         * and delete its artifacts. Caught one tree at a time, so that the
+         * files reported are that tree's and not every later module's.
+         */
+        private static void keepingWhatWasStamped(Runnable walk) {
+            try {
+                walk.run();
+            } catch (java.io.UncheckedIOException partial) {
+                // What was stamped before the failure stays.
+            }
         }
     }
 
@@ -503,6 +517,9 @@ final class Compile {
     /** The application's frontend folder, and the rules about it. */
     private final Frontend frontend;
 
+    /** What {@link #seedFromDisk(Snapshot)} last seeded this baseline from. */
+    private Snapshot seededFrom;
+
     /**
      * The compile classpath each module was last compiled against.
      * <p>
@@ -607,6 +624,24 @@ final class Compile {
     /** Which compiler this baseline compiles with, for the log and status. */
     Compiler compiler() {
         return compiler;
+    }
+
+    /**
+     * Whether this baseline already describes the given launch.
+     * <p>
+     * The same launch can register more than once - a connector that
+     * reconnects, a server that redeploys inside the JVM - and seeding again
+     * from its spawn-time stamps would put every edit applied since back into
+     * the change-set, restarting the application for a bundled frontend file it
+     * has already folded in. Identity, not equality: a later snapshot of the
+     * same disk is a different launch.
+     *
+     * @param launched
+     *            the stamps a launch was spawned with
+     * @return {@code true} when this baseline was seeded from exactly those
+     */
+    boolean isSeededFrom(Snapshot launched) {
+        return seededFrom == launched;
     }
 
     /**
@@ -939,13 +974,12 @@ final class Compile {
      * built before a first build wrote {@code flow-build-info.json}, it can
      * have settled on the convention folder where the launch found a configured
      * one. Its files are then none of the launch's, and every one of them would
-     * be reported - a bundled one by restarting the app. Such a baseline is
-     * taken from the disk as it is now instead. That is a loss: an edit made
-     * between the launch and this seed is taken as live, where the start-time
-     * cutoff used before launches were stamped would still have reported it.
-     * Missing one edit costs less than reporting every file, and it takes a
-     * baseline that settled on its folder before the build named another to get
-     * here at all.
+     * be reported - a bundled one by restarting the app. Such a baseline walks
+     * its own folder instead and keeps what was written before the snapshot was
+     * taken, so that an edit made while the application was starting is still
+     * reported. That is the clock comparison the snapshot exists to avoid, with
+     * its known weakness - see {@link #predates} - accepted for the one case
+     * that has nothing better.
      *
      * @param launched
      *            what the application was launched with
@@ -956,9 +990,26 @@ final class Compile {
             if (root.equals(launched.frontendRoot())) {
                 frontendNotified.putAll(launched.frontend());
             } else {
-                forEachFrontendFile(frontend, root, frontendNotified::put);
+                forEachFrontendFile(frontend, root, (file, stamp) -> {
+                    if (predates(stamp, launched.takenAtMillis())) {
+                        frontendNotified.put(file, stamp);
+                    }
+                });
             }
         });
+    }
+
+    /**
+     * Whether a file was written no later than the cutoff, with a modification
+     * time in the future taken as before it.
+     * <p>
+     * Trusts the clock that stamped the file and this one to agree, which is
+     * what a snapshot's stamps need not. Only for a file the snapshot has no
+     * stamp of.
+     */
+    private static boolean predates(Stamp stamp, long cutoffMillis) {
+        return stamp.modified() <= cutoffMillis
+                || isFutureDated(stamp.modified());
     }
 
     /**
@@ -1466,12 +1517,18 @@ final class Compile {
      * <p>
      * Only the files of this baseline's modules are taken: a pom edit can
      * rebuild the baseline for a module set the launch did not have, and a file
-     * of a module that has left the loop is nothing an apply can act on.
+     * of a module that has left the loop is nothing an apply can act on. A
+     * module that has joined through that edit has no stamps in the snapshot,
+     * and is taken from the disk as it is now rather than read as changed
+     * throughout: the re-resolve that let it in has just compiled it and copied
+     * its resources, and the restart its joining forces stamps it in a snapshot
+     * of its own.
      *
      * @param launched
      *            the stamps taken when the application was launched
      */
     void seedFromDisk(Snapshot launched) {
+        seededFrom = launched;
         seedClasses();
         applied.clear();
         launched.sources().forEach((source, stamp) -> {
@@ -1479,7 +1536,16 @@ final class Compile {
                 markApplied(source, stamp);
             }
         });
-        seedResources(launched.resources());
+        List<Reactor.Module> joined = modules.stream()
+                .filter(module -> !launched.modules().contains(module))
+                .toList();
+        forEachSource(joined,
+                (module, source, stamp) -> markApplied(source, stamp));
+        Map<Path, Stamp> resources = new java.util.HashMap<>(
+                launched.resources());
+        forEachResource(joined,
+                (module, source, stamp) -> resources.put(source, stamp));
+        seedResources(resources);
         // Load-bearing for the frontend leg, not just tidiness: a bundled
         // frontend edit escalates to a restart, the restart re-registers, and
         // this runs again. Without it the same file would be offered after the

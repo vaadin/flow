@@ -1363,7 +1363,15 @@ final class TransactionEngine {
         // started with. That holds for the frontend too: an edit made while
         // the app was starting is reported, at the price of one restart more
         // when a bundle had already folded it in.
-        current.seedFromDisk(launched);
+        //
+        // Once per launch, though. A connector that reconnects, or a server
+        // that redeploys inside the JVM, registers the same launch again, and
+        // seeding again from its spawn-time stamps would offer every edit
+        // applied since a second time - and restart the app for a bundled
+        // frontend file it has already folded in.
+        if (!current.isSeededFrom(launched)) {
+            current.seedFromDisk(launched);
+        }
     }
 
     /**

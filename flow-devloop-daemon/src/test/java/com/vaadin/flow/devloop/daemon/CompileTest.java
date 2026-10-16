@@ -586,14 +586,15 @@ class CompileTest {
     }
 
     @Test
-    void staleFrontend_launchUnderAnotherFolder_seedsFromDisk()
+    void staleFrontend_launchUnderAnotherFolder_keepsEditsSinceTheLaunch()
             throws IOException {
         // The baseline settled on the convention folder before a build wrote
         // the build-info token; the launch then walked the folder the token
         // names. None of the launch's files are this baseline's, and taking
         // its stamps would report every file here - restarting the app for a
-        // bundled one.
-        Compile compile = withFrontend("views/main.ts");
+        // bundled one. Its own folder is walked instead, and the "start,
+        // edit, first apply" edit must still come out of that walk.
+        Compile compile = withFrontend("views/main.ts", "views/settled.ts");
         assertEquals(repo.resolve("app/src/main/frontend"),
                 compile.frontend().root().orElseThrow());
         Path custom = repo.resolve("app/custom-frontend");
@@ -606,10 +607,13 @@ class CompileTest {
         Compile.Snapshot launched = Compile.Snapshot
                 .of(project(Reactor.Module.of(repo.resolve("app"), "app")));
         assertEquals(custom, launched.frontendRoot());
+        touch("app/src/main/frontend/views/main.ts");
 
         compile.seedFromDisk(launched);
 
-        assertTrue(compile.staleFrontend().isEmpty());
+        assertEquals(
+                List.of(repo.resolve("app/src/main/frontend/views/main.ts")),
+                compile.staleFrontend().modified());
     }
 
     @Test
@@ -1013,6 +1017,35 @@ class CompileTest {
         compile.seedFromDisk(launched);
 
         assertEquals(List.of(main), compile.stale().deleted());
+    }
+
+    @Test
+    void stale_seedingTakesAModuleThatJoinedTheLoopFromDisk()
+            throws IOException {
+        // The other direction: a pom edit let a module in that the launch
+        // did not have, so the snapshot has no stamps for it. Nothing in it
+        // was edited, and none of it may read as changed - its startup
+        // resources would restart the app over nothing.
+        Reactor.Module app = module("app", "Main", """
+                package app;
+                public class Main { }
+                """);
+        Compile.Snapshot launched = Compile.Snapshot.of(project(app));
+        Reactor.Module lib = module("lib", "Util", """
+                package lib;
+                public class Util { }
+                """);
+        Path config = write("lib/src/main/resources/lib.properties", "a=1");
+        Launch.Project withLib = project(app, lib);
+        Compile compile = new Compile(withLib);
+        compile.compile(List.of(source(app, "Main"), source(lib, "Util")),
+                withLib);
+        compile.copyResources(List.of(config));
+
+        compile.seedFromDisk(launched);
+
+        assertTrue(compile.stale().modified().isEmpty());
+        assertTrue(compile.staleResources().isEmpty());
     }
 
     @Test
