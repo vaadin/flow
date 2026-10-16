@@ -1915,6 +1915,28 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Gets the most recently set child component with modality, that is a
+     * component set either {@link ModalityMode#STRICT} or
+     * {@link ModalityMode#VISUAL}.
+     * <p>
+     * Differently from {@link #getActiveModalComponent()}, which only returns
+     * the component that escapes the inert state of the UI, this also returns
+     * components that show a modality curtain on the client side without making
+     * the UI inert. Overlays opened while such a component is showing have to
+     * be added inside it, since the curtain blocks pointer events and traps
+     * focus outside of it.
+     *
+     * @return the most recently set component with modality, or {@code null} if
+     *         there is none
+     */
+    public Component getActiveModalityComponent() {
+        if (!hasModalityComponent()) {
+            return null;
+        }
+        return modalityStack.peek().component();
+    }
+
+    /**
      * Get the active modal component if modal components set.
      *
      * @return the current active modal component
