@@ -28,9 +28,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,6 +45,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HeartbeatEvent;
 import com.vaadin.flow.component.HeartbeatListener;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -361,7 +362,11 @@ public class UIInternals implements Serializable {
 
     private boolean screenOrientationListenerInstalled;
 
-    private ArrayDeque<Component> modalComponentStack;
+    /*
+     * Components with modality, most recently set first. Strict modal
+     * components are the entries with ModalityMode.STRICT.
+     */
+    private ArrayDeque<ModalityEntry> modalityStack;
 
     private Element wrapperElement;
 
@@ -1626,8 +1631,8 @@ public class UIInternals implements Serializable {
      * component, and optionally all layouts in the route chain.
      * <p>
      *
-     * If modal components are currently defined for the UI, the whole route
-     * chain will be refreshed regardless the {@code refreshRouteChain}
+     * If components with modality are currently defined for the UI, the whole
+     * route chain will be refreshed regardless the {@code refreshRouteChain}
      * parameter, because otherwise it would not be possible to preserve the
      * correct modality cardinality and order.
      *
@@ -1643,7 +1648,7 @@ public class UIInternals implements Serializable {
         } else {
             getRouter().navigate(ui, locationForRefresh,
                     NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, true,
-                    refreshRouteChain || hasModalComponent());
+                    refreshRouteChain || hasModalityComponent());
         }
     }
 
@@ -2147,7 +2152,36 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public boolean hasModalComponent() {
-        return modalComponentStack != null && !modalComponentStack.isEmpty();
+        return getActiveModalComponent() != null;
+    }
+
+    /**
+     * Check if we have a component with modality defined for the UI, that is a
+     * child component set either {@link ModalityMode#STRICT} or
+     * {@link ModalityMode#VISUAL}.
+     * <p>
+     * Differently from {@link #hasModalComponent()}, this also takes into
+     * account components that show a modality curtain on the client side
+     * without making the UI inert.
+     *
+     * @return {@code true} if a component with modality is defined
+     */
+    public boolean hasModalityComponent() {
+        return modalityStack != null && !modalityStack.isEmpty();
+    }
+
+    /**
+     * Gets all child components with modality, that is components set either
+     * {@link ModalityMode#STRICT} or {@link ModalityMode#VISUAL}, most recently
+     * set first.
+     *
+     * @return the components with modality, never {@code null}
+     */
+    public List<Component> getModalityComponents() {
+        if (!hasModalityComponent()) {
+            return Collections.emptyList();
+        }
+        return modalityStack.stream().map(ModalityEntry::component).toList();
     }
 
     /**
@@ -2157,10 +2191,12 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public Component getActiveModalComponent() {
-        if (hasModalComponent()) {
-            return modalComponentStack.peek();
+        if (modalityStack == null) {
+            return null;
         }
-        return null;
+        return modalityStack.stream()
+                .filter(entry -> entry.mode() == ModalityMode.STRICT)
+                .map(ModalityEntry::component).findFirst().orElse(null);
     }
 
     /**
@@ -2176,40 +2212,33 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to toggle modal
+     * @see #setChildModal(Component, ModalityMode)
      * @since 23.0
      */
     public void setChildModal(Component child) {
-        if (modalComponentStack == null) {
-            modalComponentStack = new ArrayDeque<>();
-        } else if (isTopMostModal(child)) {
-            return;
-        }
-        ElementUtil.setIgnoreParentInert(child.getElement(), true);
+        setModality(child, ModalityMode.STRICT);
+    }
 
-        if (modalComponentStack.isEmpty()) {
-            ElementUtil.setInert(ui.getElement(), true);
-        } else {
-            // disable previous top most modal component
-            ElementUtil.setIgnoreParentInert(
-                    modalComponentStack.peek().getElement(), false);
-        }
-
-        final boolean needsListener = !modalComponentStack.remove(child);
-        modalComponentStack.push(child);
-
-        if (needsListener) {
-            /*
-             * Handle removal automatically on element level always due to
-             * possible component.getElement().removeFromParent() usage.
-             */
-            AtomicReference<Registration> registrationCombination = new AtomicReference<>();
-            final Registration componentRemoval = () -> setChildModeless(child);
-            final Registration listenerRegistration = child.getElement()
-                    .addDetachListener(
-                            event -> registrationCombination.get().remove());
-            registrationCombination.set(Registration.combine(componentRemoval,
-                    listenerRegistration));
-        }
+    /**
+     * Changes the modality of an existing child component by modality mode.
+     * Differently from {@link #setChildModal(Component)}, which always makes
+     * the component strictly modal, this also supports
+     * {@link ModalityMode#VISUAL}: the UI and the other components inside it
+     * are not made inert, so they still react to client side requests, but the
+     * component is tracked as a component with modality, since it covers the UI
+     * with a modality curtain on the client side. {@link ModalityMode#MODELESS}
+     * is the same as {@link #setChildModeless(Component)}.
+     * <p>
+     * Tracking is removed automatically when the component is removed from the
+     * UI, no need to call anything.
+     *
+     * @param child
+     *            the child component to change modality for
+     * @param mode
+     *            the modality mode, not {@code null}
+     */
+    public void setChildModal(Component child, ModalityMode mode) {
+        setModality(child, Objects.requireNonNull(mode));
     }
 
     /**
@@ -2222,28 +2251,61 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public void setChildModeless(Component child) {
-        if (modalComponentStack == null) {
+        setModality(child, ModalityMode.MODELESS);
+    }
+
+    private void setModality(Component child, ModalityMode mode) {
+        Component previousActiveModal = getActiveModalComponent();
+
+        ModalityEntry previousEntry = null;
+        if (modalityStack != null) {
+            previousEntry = modalityStack.stream()
+                    .filter(entry -> entry.component() == child).findFirst()
+                    .orElse(null);
+            modalityStack.remove(previousEntry);
+        }
+        if (mode != ModalityMode.MODELESS) {
+            if (modalityStack == null) {
+                modalityStack = new ArrayDeque<>();
+            }
+            /*
+             * Handle removal automatically on element level always due to
+             * possible component.getElement().removeFromParent() usage. The
+             * listener is registered only once, so that repeatedly changing the
+             * modality of a component does not pile up detach listeners.
+             */
+            Registration detachRegistration = previousEntry != null
+                    ? previousEntry.detachRegistration()
+                    : child.getElement().addDetachListener(
+                            event -> setChildModeless(child));
+            modalityStack
+                    .push(new ModalityEntry(child, mode, detachRegistration));
+        } else if (previousEntry != null) {
+            previousEntry.detachRegistration().remove();
+        }
+
+        updateInert(previousActiveModal, getActiveModalComponent());
+    }
+
+    private void updateInert(Component previousActiveModal,
+            Component activeModal) {
+        if (previousActiveModal == activeModal) {
             return;
         }
-        boolean isTopmostModal = isTopMostModal(child);
-        if (modalComponentStack.remove(child)) {
-            if (isTopmostModal) {
-                // reset ignoring inert
-                ElementUtil.setIgnoreParentInert(child.getElement(), false);
-                if (modalComponentStack.isEmpty()) { // make UI active
-                    ElementUtil.setInert(ui.getElement(), false);
-                } else { // make top most modal component ignore inert
-                    ElementUtil.setIgnoreParentInert(
-                            modalComponentStack.peek().getElement(), true);
-                }
-            }
+        if (previousActiveModal != null) {
+            ElementUtil.setIgnoreParentInert(previousActiveModal.getElement(),
+                    false);
+        }
+        if (activeModal != null) {
+            ElementUtil.setIgnoreParentInert(activeModal.getElement(), true);
+        }
+        if ((previousActiveModal == null) != (activeModal == null)) {
+            ElementUtil.setInert(ui.getElement(), activeModal != null);
         }
     }
 
-    private boolean isTopMostModal(Component child) {
-        // null has been checked in calling code before this
-        return !modalComponentStack.isEmpty()
-                && modalComponentStack.peek() == child;
+    private record ModalityEntry(Component component, ModalityMode mode,
+            Registration detachRegistration) implements Serializable {
     }
 
     private void removeChildrenContentFromRouterLayout(
