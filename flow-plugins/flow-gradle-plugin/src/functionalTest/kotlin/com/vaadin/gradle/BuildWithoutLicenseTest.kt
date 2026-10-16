@@ -20,6 +20,7 @@ import org.junit.BeforeClass
 import org.junit.ClassRule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import kotlin.test.expect
 
 class BuildWithoutLicenseTest : AbstractGradleTest() {
 
@@ -114,6 +115,32 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
             "vaadinBuildFrontend"
         )
         result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FAILED)
+    }
+
+    @Test
+    fun testBuildFrontendInProductionMode_bundleNotBuilt_buildFails() {
+        // The frontend bundle is not built, as when the default bundle or an
+        // existing bundle is used, but the license is still checked
+        testProject.buildFile.writeText(
+            testProject.buildFile.readText()
+                .replace("implementation name:'commercial-addon'", "")
+        )
+        testProject.buildFile.appendText(
+            """
+            vaadin {
+                generateBundle = false
+            }
+        """.trimIndent()
+        )
+        val result = testProject.buildAndFail(
+            "-Duser.home=${testingHomeFolder}",
+            "-Pvaadin.productionMode",
+            "vaadinBuildFrontend"
+        )
+        result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.FAILED)
+        expect(true, result.output) {
+            result.output.contains("MissingLicenseKeyException")
+        }
     }
 
     companion object {
