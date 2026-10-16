@@ -407,6 +407,29 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void initialUidl_containsScriptEndTag_lessThanIsEscaped()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+        service.setBootstrapInitialPredicate(request -> true);
+
+        String payload = "</script><b>text</b>";
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/" + payload), response);
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+
+        assertFalse("Initial UIDL must not be able to close the script element",
+                indexHtml.contains(payload));
+
+        Document document = Jsoup.parse(indexHtml);
+        Elements scripts = document.head().getElementsByTag("script");
+        Element initialUidlScript = findScript(scripts,
+                INITIAL_UIDL_SEARCH_STRING);
+        String scriptContent = initialUidlScript.data();
+        assertTrue(scriptContent.contains("\\x3C/script>\\x3Cb>text\\x3C/b>"));
+        assertFalse(scriptContent.contains("<"));
+    }
+
+    @Test
     public void should_not_initialize_UI_and_add_initialUidl_when_invalid_route()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
