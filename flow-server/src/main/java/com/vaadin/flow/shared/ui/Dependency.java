@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
  *
@@ -32,6 +34,7 @@ public class Dependency implements Serializable {
     public static final String KEY_LOAD_MODE = "loadMode";
     public static final String KEY_CONTENTS = "contents";
     public static final String KEY_ID = "id";
+    public static final String KEY_LAYER = "layer";
 
     /**
      * The type of a dependency.
@@ -56,6 +59,7 @@ public class Dependency implements Serializable {
     private final String url;
     private final LoadMode loadMode;
     private String id;
+    private final String layer;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
@@ -99,13 +103,50 @@ public class Dependency implements Serializable {
      * @since 25.0
      */
     public Dependency(Type type, String url, LoadMode loadMode, String id) {
+        this(type, url, loadMode, id, null);
+    }
+
+    /**
+     * Creates a new dependency of the given type, to be loaded from the given
+     * URL into the given CSS cascade layer, with an optional ID for tracking.
+     * <p>
+     * The URL is passed through the translation mechanism before loading, so
+     * custom protocols, specified at
+     * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param type
+     *            the type of the dependency, not {@code null}
+     * @param url
+     *            the URL to load the dependency from, not {@code null}
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param id
+     *            optional ID for tracking the dependency
+     * @param layer
+     *            the CSS cascade layer to load a style sheet into, or
+     *            {@code null} to not use a layer
+     * @throws IllegalArgumentException
+     *             if a layer is given for a dependency that is not a
+     *             {@link Type#STYLESHEET}
+     */
+    public Dependency(Type type, String url, LoadMode loadMode, String id,
+            String layer) {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
         this.type = Objects.requireNonNull(type);
+        if (layer != null && type != Type.STYLESHEET) {
+            throw new IllegalArgumentException(
+                    "Only a style sheet can be loaded into a layer, not "
+                            + type);
+        }
         this.url = url;
         this.loadMode = loadMode;
         this.id = id;
+        this.layer = layer;
     }
 
     /**
@@ -169,9 +210,21 @@ public class Dependency implements Serializable {
         return id;
     }
 
+    /**
+     * Gets the CSS cascade layer the style sheet is loaded into.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @return the layer name or null if the dependency does not use a layer
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public String getLayer() {
+        return layer;
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(type, url, loadMode, id);
+        return Objects.hash(type, url, loadMode, id, layer);
     }
 
     @Override
@@ -184,13 +237,14 @@ public class Dependency implements Serializable {
         }
         Dependency that = (Dependency) o;
         return type == that.type && loadMode == that.loadMode
-                && Objects.equals(url, that.url) && Objects.equals(id, that.id);
+                && Objects.equals(url, that.url) && Objects.equals(id, that.id)
+                && Objects.equals(layer, that.layer);
 
     }
 
     @Override
     public String toString() {
         return "Dependency [type=" + type + ", url=" + url + ", loadMode="
-                + loadMode + ", id=" + id + "]";
+                + loadMode + ", id=" + id + ", layer=" + layer + "]";
     }
 }

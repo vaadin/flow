@@ -15,21 +15,28 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.newtab.OpenInNewTab;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 /**
- * Three buttons exercising {@link OpenInNewTabAction}: a static URL with
- * default features, a static URL with a custom features string (which replaces
- * the defaults verbatim), and an {@link Input}-backed {@link PropertyInput}
- * resolved at fire time. The IT replaces {@code window.open} with a recording
- * shim so the assertions don't depend on the browser actually opening a popup —
- * and so the popup blocker doesn't interfere.
+ * Buttons exercising {@link OpenInNewTabAction}: a static URL with default
+ * features, a static URL with a custom features string (which replaces the
+ * defaults verbatim), an {@link Input}-backed {@link PropertyInput} resolved at
+ * fire time, and a {@link DownloadHandler} wired through {@link OpenInNewTab}.
+ * The IT replaces {@code window.open} with a recording shim so the assertions
+ * don't depend on the browser actually opening a popup — and so the popup
+ * blocker doesn't interfere.
  */
 @Route(value = "com.vaadin.flow.uitest.ui.TriggerOpenInNewTabView", layout = ViewTestLayout.class)
 public class TriggerOpenInNewTabView extends AbstractDivView {
@@ -40,6 +47,8 @@ public class TriggerOpenInNewTabView extends AbstractDivView {
      * round-trip without surrendering the security defaults.
      */
     static final String CUSTOM_FEATURES = "noopener,noreferrer,width=600,height=400";
+
+    static final String HANDLER_CONTENT = "Generated on the server";
 
     @Override
     protected void onShow() {
@@ -59,8 +68,11 @@ public class TriggerOpenInNewTabView extends AbstractDivView {
                 "Open javascript: URL from input");
         jsInputButton.setId("open-tab-js-input");
 
+        NativeButton handlerButton = new NativeButton("Open handler content");
+        handlerButton.setId("open-tab-handler");
+
         add(urlButton, urlWithFeaturesButton, inputButton, urlField,
-                jsInputButton);
+                jsInputButton, handlerButton);
 
         new ClickTrigger(urlButton)
                 .triggers(new OpenInNewTabAction("https://example.com/docs"));
@@ -70,5 +82,10 @@ public class TriggerOpenInNewTabView extends AbstractDivView {
                 new PropertyInput<>(urlField, "value", String.class)));
         new ClickTrigger(jsInputButton).triggers(new OpenInNewTabAction(
                 new PropertyInput<>(urlField, "value", String.class)));
+        byte[] content = HANDLER_CONTENT.getBytes(StandardCharsets.UTF_8);
+        OpenInNewTab.onClick(handlerButton,
+                DownloadHandler.fromInputStream(event -> new DownloadResponse(
+                        new ByteArrayInputStream(content), "notes.txt",
+                        "text/plain", content.length)));
     }
 }

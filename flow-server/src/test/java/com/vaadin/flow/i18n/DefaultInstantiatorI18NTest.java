@@ -78,6 +78,21 @@ class DefaultInstantiatorI18NTest {
 
         createTranslationFiles(translations);
 
+        // A JVM default locale that has a bundle must not be used as a
+        // fallback for a locale without one. The default is set
+        // unconditionally, so the original default of the JVM running the
+        // test does not matter; "de" has a bundle and differs from the
+        // "en_GB" locale asserted to get the base bundle.
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(new Locale("de"));
+        try {
+            assertTranslationsOfCreatedFiles();
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
+    }
+
+    private void assertTranslationsOfCreatedFiles() {
         VaadinService service = Mockito.mock(VaadinService.class);
         mockLookup(service);
         VaadinService.setCurrent(service);
@@ -116,9 +131,6 @@ class DefaultInstantiatorI18NTest {
         assertEquals("Korean",
                 I18NProvider.translate(new Locale("ko", "KR"), "title"));
 
-        // Note!
-        // default translations.properties will be used if
-        // the locale AND system default locale is not found
         assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
         assertEquals("Default lang",
@@ -163,9 +175,6 @@ class DefaultInstantiatorI18NTest {
         assertEquals("Default lang",
                 I18NProvider.translate(new Locale("ko", "KR"), "title"));
 
-        // Note!
-        // default translations.properties will be used if
-        // the locale AND system default locale is not found
         assertEquals("Default lang",
                 i18NProvider.getTranslation("title", new Locale("en", "GB")));
         assertEquals("Default lang",

@@ -493,11 +493,7 @@ public abstract class Component
      * @since 25.1
      */
     public void setTestId(String testId) {
-        if (testId == null) {
-            getElement().removeAttribute("data-testid");
-        } else {
-            getElement().setAttribute("data-testid", testId);
-        }
+        getElement().setAttribute("data-testid", testId);
     }
 
     /**
