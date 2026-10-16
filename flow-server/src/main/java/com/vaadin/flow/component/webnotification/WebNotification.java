@@ -89,6 +89,8 @@ public final class WebNotification implements Serializable {
     private static final Logger LOGGER = LoggerFactory
             .getLogger(WebNotification.class);
 
+    private static final String UI_NOT_NULL = "ui must not be null";
+
     private static final WebNotificationOptions DEFAULT_OPTIONS = WebNotificationOptions
             .builder().build();
 
@@ -157,7 +159,7 @@ public final class WebNotification implements Serializable {
      * @return the read-only permission signal
      */
     public static Signal<WebNotificationPermission> permissionSignal(UI ui) {
-        Objects.requireNonNull(ui, "ui must not be null");
+        Objects.requireNonNull(ui, UI_NOT_NULL);
         ui.getInternals().ensureWebNotificationPermissionWired();
         return ui.getInternals().getWebNotificationPermissionSignalReadOnly();
     }
@@ -235,7 +237,7 @@ public final class WebNotification implements Serializable {
             WebNotificationOptions options, UI ui) {
         Objects.requireNonNull(title, "title must not be null");
         Objects.requireNonNull(options, "options must not be null");
-        Objects.requireNonNull(ui, "ui must not be null");
+        Objects.requireNonNull(ui, UI_NOT_NULL);
         return new WebNotificationHandle(ui, title, options);
     }
 
@@ -269,7 +271,7 @@ public final class WebNotification implements Serializable {
      */
     public static void closeByTag(String tag, UI ui) {
         Objects.requireNonNull(tag, "tag must not be null");
-        Objects.requireNonNull(ui, "ui must not be null");
+        Objects.requireNonNull(ui, UI_NOT_NULL);
         ui.getElement().executeJs(WebNotificationJs.class).closeByTag(tag)
                 .then(ignored -> {
                 }, err -> LOGGER.debug(

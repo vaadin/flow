@@ -125,6 +125,8 @@ public class UIInternals implements Serializable {
     private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
             .compile("-\\d+$");
 
+    private static final String WEB_NOTIFICATION_PERMISSION_CHANGE_EVENT = "vaadin-web-notification-permission-change";
+
     private static final Set<Class<? extends Component>> warnedAboutDeps = ConcurrentHashMap
             .newKeySet();
 
@@ -352,8 +354,6 @@ public class UIInternals implements Serializable {
             .asReadonly();
 
     private boolean wakeLockListenerInstalled;
-
-    private static final String WEB_NOTIFICATION_PERMISSION_CHANGE_EVENT = "vaadin-web-notification-permission-change";
 
     private final ValueSignal<WebNotificationPermission> webNotificationPermissionSignal = new ValueSignal<>(
             WebNotificationPermission.UNKNOWN);
