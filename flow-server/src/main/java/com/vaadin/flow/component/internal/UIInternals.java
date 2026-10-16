@@ -1495,7 +1495,7 @@ public class UIInternals implements Serializable {
         // kept out of the bundle and are loaded at runtime instead, so their
         // absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
-                .filter(js -> !isRuntimeJavaScript(js)).map(dep -> dep.value())
+                .filter(js -> !isRuntimeJavaScript(js)).map(JavaScript::value)
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
