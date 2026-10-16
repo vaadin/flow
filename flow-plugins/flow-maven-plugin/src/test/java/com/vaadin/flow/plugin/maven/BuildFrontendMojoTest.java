@@ -48,6 +48,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -61,6 +62,7 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -539,6 +541,49 @@ public class BuildFrontendMojoTest {
                         + "should have been removed",
                 buildInfo.get(
                         InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+    }
+
+    @Test
+    public void bundleNotBuilt_noLicenseKey_buildFails() throws Throwable {
+        // generateBundle is false, so the frontend bundle is not built, as
+        // when the default bundle or an existing bundle is used
+        runWithoutLicenseKeys(() -> {
+            Throwable exception = Assert
+                    .assertThrows(MojoFailureException.class, mojo::execute);
+            exception = exception.getCause();
+            // Checking exception type by name because classes are loaded from
+            // different classloaders
+            while (exception != null && !exception.getClass().getName()
+                    .equals(MissingLicenseKeyException.class.getName())) {
+                exception = exception.getCause();
+            }
+            Assert.assertNotNull(
+                    "Expected the build to fail because of MissingLicenseKeyException, but not found in stack trace",
+                    exception);
+        });
+    }
+
+    private void runWithoutLicenseKeys(ThrowingRunnable test) throws Throwable {
+        String userHome = System.getProperty("user.home");
+        File userHomeFolder = new File(userHome);
+        Path vaadinHomeNodeFolder = userHomeFolder.toPath()
+                .resolve(Path.of(".vaadin", "node"));
+        File fakeUserHomeFolder = temporaryFolder.newFolder("fake-home");
+        // Try to speed up test by copying existing node into the fake home
+        if (Files.isDirectory(vaadinHomeNodeFolder)) {
+            File fakeVaadinHomeNode = fakeUserHomeFolder.toPath()
+                    .resolve(Path.of(".vaadin", "node")).toFile();
+            fakeVaadinHomeNode.mkdirs();
+            FileUtils.copyDirectoryStructure(vaadinHomeNodeFolder.toFile(),
+                    fakeVaadinHomeNode);
+        }
+        try {
+            System.setProperty("user.home",
+                    fakeUserHomeFolder.getAbsolutePath());
+            test.run();
+        } finally {
+            System.setProperty("user.home", userHome);
+        }
     }
 
     @Test
