@@ -2542,7 +2542,7 @@ class ElementTest extends AbstractNodeTest {
         div.setAttribute("pin", "");
 
         assertEquals(
-                "<div pin foo=\"bar\" style=\"width:20px\" class=\"cls\"></div>",
+                "<div foo=\"bar\" pin style=\"width:20px\" class=\"cls\"></div>",
                 div.getOuterHTML());
     }
 
