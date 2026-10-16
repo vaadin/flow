@@ -68,6 +68,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.CompressUtil;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -307,7 +308,11 @@ public class UIInternals implements Serializable {
 
     private byte[] lastProcessedMessageHash = null;
 
-    private String lastRequestResponse;
+    /*
+     * Kept compressed: it is held for every UI until the next client message,
+     * but only read when the client sends a message again.
+     */
+    private byte[] lastRequestResponse;
 
     private String contextRootRelativePath;
 
@@ -466,7 +471,8 @@ public class UIInternals implements Serializable {
      * @since 24.7
      */
     public void setLastRequestResponse(String lastRequestResponse) {
-        this.lastRequestResponse = lastRequestResponse;
+        this.lastRequestResponse = lastRequestResponse == null ? null
+                : CompressUtil.deflateString(lastRequestResponse);
     }
 
     /**
@@ -476,7 +482,8 @@ public class UIInternals implements Serializable {
      * @since 24.7
      */
     public String getLastRequestResponse() {
-        return lastRequestResponse;
+        return lastRequestResponse == null ? null
+                : CompressUtil.inflateString(lastRequestResponse);
     }
 
     /**
@@ -1704,13 +1711,7 @@ public class UIInternals implements Serializable {
      * @since 25.4
      */
     public boolean enterNavigation() {
-        boolean outermost = navigationDepth++ == 0;
-        if (outermost) {
-            // A failure recorded outside a tracked navigation, such as when a
-            // postponed navigation proceeds, must not leak into this one
-            navigationFailure = null;
-        }
-        return outermost;
+        return navigationDepth++ == 0;
     }
 
     /**

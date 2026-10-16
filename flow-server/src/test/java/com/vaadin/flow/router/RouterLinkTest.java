@@ -39,6 +39,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -469,6 +470,44 @@ class RouterLinkTest extends HasCurrentService {
                 IllegalArgumentException.class, () -> {
                     new RouterLink("", Foo.class);
                 });
+    }
+
+    @Test
+    void setOpenInNewBrowserTab_togglesBlankTarget() {
+        RouterLink link = new RouterLink(router, FooNavigationTarget.class);
+        assertNull(link.getTarget());
+        assertFalse(link.isOpenInNewBrowserTab());
+
+        link.setOpenInNewBrowserTab(true);
+        assertEquals("_blank", link.getElement().getAttribute("target"));
+        assertTrue(link.isOpenInNewBrowserTab());
+
+        link.setOpenInNewBrowserTab(false);
+        assertFalse(link.getElement().hasAttribute("target"));
+        assertFalse(link.isOpenInNewBrowserTab());
+    }
+
+    @Test
+    void setTarget_nullOrEmptyRemovesAttribute() {
+        RouterLink link = new RouterLink(router, FooNavigationTarget.class);
+
+        link.setTarget("_top");
+        assertEquals("_top", link.getTarget());
+        assertEquals("_top", link.getElement().getAttribute("target"));
+        assertFalse(link.isOpenInNewBrowserTab());
+
+        link.setTarget("");
+        assertFalse(link.getElement().hasAttribute("target"));
+        assertNull(link.getTarget());
+
+        link.setTarget("_top");
+        link.setTarget(null);
+        assertFalse(link.getElement().hasAttribute("target"));
+        assertNull(link.getTarget());
+
+        link.setTarget("_top");
+        link.setOpenInNewBrowserTab(false);
+        assertFalse(link.getElement().hasAttribute("target"));
     }
 
     @Route("foo")
