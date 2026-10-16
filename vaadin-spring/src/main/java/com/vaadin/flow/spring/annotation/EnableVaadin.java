@@ -72,6 +72,9 @@ public @interface EnableVaadin {
      * <p>
      * If packages are not specified then default Spring Boot application
      * package is used.
+     * <p>
+     * The annotation can be added to several configuration classes. The
+     * packages of all of them are scanned.
      *
      * @return the base packages to scan
      */
