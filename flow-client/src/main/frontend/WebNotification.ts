@@ -94,13 +94,16 @@ function installPermissionListeners(): void {
     }
   );
   // A change made in the browser's site settings does not fire a permission
-  // change event in every supported browser, and the user has to leave the tab
-  // to make it, so check again whenever the tab is shown.
+  // change event in every supported browser (Safari), so check again when the
+  // user returns: the tab is shown again after the settings were changed in
+  // another tab, or the window gets focus back from the site settings popup
+  // next to the address bar, which does not hide the tab.
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       publishPermission();
     }
   });
+  window.addEventListener('focus', () => publishPermission());
 }
 
 function forget(key: string, entry: ShownNotification): boolean {

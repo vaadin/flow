@@ -162,4 +162,21 @@ describe('webNotification', () => {
 
     expect(published).to.deep.equal(['GRANTED']);
   });
+
+  it('publishes a permission changed in the site settings when the window gets focus back', () => {
+    FakeNotification.permission = 'default';
+    $wnd.Vaadin.Flow.webNotification.queryPermission();
+
+    const published: string[] = [];
+    const listener = (e: Event) => published.push((e as CustomEvent).detail);
+    document.body.addEventListener('vaadin-web-notification-permission-change', listener);
+    try {
+      FakeNotification.permission = 'granted';
+      window.dispatchEvent(new Event('focus'));
+    } finally {
+      document.body.removeEventListener('vaadin-web-notification-permission-change', listener);
+    }
+
+    expect(published).to.deep.equal(['GRANTED']);
+  });
 });
