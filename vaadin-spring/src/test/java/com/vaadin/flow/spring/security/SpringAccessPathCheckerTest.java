@@ -22,8 +22,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -147,10 +149,18 @@ class SpringAccessPathCheckerTest {
     }
 
     @Test
-    @WithAnonymousUser(roles = "GUEST")
     void checkAccess_nullPrincipal_customAnonymousAuthenticationPreserved() {
-        assertTrue(accessPathChecker.hasAccess("guest", null, role -> false),
-                "Access to guest only path should be allowed to anonymous user with GUEST role");
+        SecurityContextHolder.getContext()
+                .setAuthentication(new AnonymousAuthenticationToken("key",
+                        "anonymousUser",
+                        AuthorityUtils.createAuthorityList("ROLE_GUEST")));
+        try {
+            assertTrue(
+                    accessPathChecker.hasAccess("guest", null, role -> false),
+                    "Access to guest only path should be allowed to anonymous user with GUEST role");
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     private boolean checkAccess(String admin) {
