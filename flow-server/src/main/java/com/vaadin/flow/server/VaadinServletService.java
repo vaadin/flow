@@ -167,9 +167,10 @@ public class VaadinServletService extends VaadinService {
     protected boolean requestCanCreateSession(VaadinRequest request) {
         if (isOtherRequest(request)) {
             /*
-             * I.e URIs that are not RPC calls or static file requests.
+             * I.e URIs that are not RPC calls or static file requests. Web
+             * component scripts are served without a session.
              */
-            return true;
+            return !WebComponentProvider.isWebComponentScriptRequest(request);
         }
 
         return false;
