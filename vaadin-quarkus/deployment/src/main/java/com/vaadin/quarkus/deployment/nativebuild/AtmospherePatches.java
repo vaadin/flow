@@ -42,10 +42,22 @@ public class AtmospherePatches {
 
     private final IndexView index;
 
+    /**
+     * Creates the patches for the classes in the given index.
+     *
+     * @param index
+     *            the index to look up the Atmosphere classes to patch in
+     */
     public AtmospherePatches(IndexView index) {
         this.index = index;
     }
 
+    /**
+     * Registers the bytecode transformers that apply the patches.
+     *
+     * @param producer
+     *            the producer of the bytecode transformers
+     */
     public void apply(BuildProducer<BytecodeTransformerBuildItem> producer) {
         producer.produce(new BytecodeTransformerBuildItem(
                 "org.atmosphere.cpr.AtmosphereRequest",

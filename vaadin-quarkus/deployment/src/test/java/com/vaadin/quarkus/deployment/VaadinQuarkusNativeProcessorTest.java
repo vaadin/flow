@@ -537,10 +537,12 @@ class VaadinQuarkusNativeProcessorTest {
 
         @ClientCallable
         public void processData(ComplexDto data) {
+            // only the signature is read, from the index
         }
 
         @ClientCallable
         public void processDataWithPrimitive(int value) {
+            // only the signature is read, from the index
         }
 
         @ClientCallable
@@ -550,6 +552,7 @@ class VaadinQuarkusNativeProcessorTest {
 
         @ClientCallable
         public void handleVoid() {
+            // only the signature is read, from the index
         }
 
         @ClientCallable
