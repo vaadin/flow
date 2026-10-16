@@ -26,6 +26,8 @@ import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 @TestFor(DomEventStopPropagationAndPreventDefaultView.class)
 public class DomEventStopPropagationAndPreventDefaultIT
         extends AbstractDefaultIT {
@@ -52,15 +54,14 @@ public class DomEventStopPropagationAndPreventDefaultIT
     private void assertMessages(int skip, String... expectedTail) {
         List<WebElement> messages = getMessages();
         if (messages.size() < skip) {
-            Assertions.fail("Cannot skip " + skip
-                    + " messages when there are only " + messages.size()
-                    + "messages. " + joinMessages(messages));
+            fail("Cannot skip " + skip + " messages when there are only "
+                    + messages.size() + "messages. " + joinMessages(messages));
         }
 
         messages = messages.subList(skip, messages.size());
 
         if (messages.size() < expectedTail.length) {
-            Assertions.fail("Expected " + expectedTail.length
+            fail("Expected " + expectedTail.length
                     + " messages, but there are only " + messages.size() + ". "
                     + joinMessages(messages));
         }
@@ -71,9 +72,8 @@ public class DomEventStopPropagationAndPreventDefaultIT
         }
 
         if (messages.size() > expectedTail.length) {
-            Assertions.fail("There are unexpected messages at the end. "
-                    + joinMessages(messages.subList(expectedTail.length,
-                            messages.size())));
+            fail("There are unexpected messages at the end. " + joinMessages(
+                    messages.subList(expectedTail.length, messages.size())));
         }
     }
 
