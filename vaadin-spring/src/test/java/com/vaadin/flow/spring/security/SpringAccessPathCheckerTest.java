@@ -146,6 +146,13 @@ class SpringAccessPathCheckerTest {
                 "Access to anonymous only path should be allowed when principal is null");
     }
 
+    @Test
+    @WithAnonymousUser(roles = "GUEST")
+    void checkAccess_nullPrincipal_customAnonymousAuthenticationPreserved() {
+        assertTrue(accessPathChecker.hasAccess("guest", null, role -> false),
+                "Access to guest only path should be allowed to anonymous user with GUEST role");
+    }
+
     private boolean checkAccess(String admin) {
         Principal principal = SecurityContextHolder.getContext()
                 .getAuthentication();
