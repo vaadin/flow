@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.base.devserver.DevToolsMessageHandler;
 import com.vaadin.base.devserver.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -37,6 +38,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.Template;
+import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
@@ -73,7 +75,8 @@ class DevModeClassFinderTest {
                 HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
                 Template.class, LoadDependenciesOnStartup.class,
                 Component.class, TypeScriptBootstrapModifier.class,
-                Layout.class, StyleSheet.class, StyleSheet.Container.class);
+                DevToolsMessageHandler.class, Layout.class, StyleSheet.class,
+                StyleSheet.Container.class, JsDefinition.class);
 
         for (Class<?> clz : classes) {
             assertTrue(knownClasses.contains(clz),

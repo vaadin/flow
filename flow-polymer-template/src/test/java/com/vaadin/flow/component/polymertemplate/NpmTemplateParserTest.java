@@ -27,7 +27,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -67,8 +66,9 @@ class NpmTemplateParserTest {
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
 
-        resourceProvider = service.getContext().getAttribute(Lookup.class)
-                .lookup(ResourceProvider.class);
+        resourceProvider = Mockito.mock(ResourceProvider.class);
+        Mockito.when(service.getLookup().lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
         Mockito.when(
                 resourceProvider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(invocation -> NpmTemplateParserTest.class

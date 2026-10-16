@@ -30,6 +30,7 @@ import com.vaadin.flow.data.binder.Binder.Binding;
  * @author Vaadin Ltd
  *
  * @see BindingException
+ * @since 9.0
  */
 @FunctionalInterface
 public interface BindingExceptionHandler extends Serializable {

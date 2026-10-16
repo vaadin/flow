@@ -32,6 +32,7 @@ import com.vaadin.flow.data.binder.ValueContext;
  * http://www.ietf.org/rfc/rfc4122.txt
  *
  * @author Vaadin Ltd
+ * @since 2.1
  */
 public class StringToUuidConverter implements Converter<String, UUID> {
 

@@ -35,6 +35,7 @@ import java.io.Serializable;
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/API/PushManager">PushManager
  *      mdn web docs</a>
+ * @since 24.6
  */
 public record WebPushSubscription(String endpoint,
         WebPushKeys keys) implements Serializable {

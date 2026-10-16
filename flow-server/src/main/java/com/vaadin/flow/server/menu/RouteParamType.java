@@ -23,6 +23,8 @@ import com.vaadin.flow.router.internal.ParameterInfo;
  * Defines the types of route parameters.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.5
  */
 public enum RouteParamType {
     // @formatter:off

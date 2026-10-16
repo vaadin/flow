@@ -55,24 +55,8 @@ public class Platform implements Serializable {
         // times by concurrent threads. Unsafe-publish is OK since String is
         // immutable and thread-safe.
         if (vaadinVersion == null) {
-            try (final InputStream vaadinPomProperties = Thread.currentThread()
-                    .getContextClassLoader()
-                    .getResourceAsStream(VAADIN_CORE_POM_PROPERTIES)) {
-                if (vaadinPomProperties != null) {
-                    final Properties properties = new Properties();
-                    properties.load(vaadinPomProperties);
-                    vaadinVersion = properties.getProperty("version", "");
-                } else {
-                    LOGGER.info(
-                            "Unable to determine Vaadin version. "
-                                    + "No {} found",
-                            VAADIN_CORE_POM_PROPERTIES);
-                    vaadinVersion = "";
-                }
-            } catch (Exception e) {
-                LOGGER.error("Unable to determine Vaadin version", e);
-                vaadinVersion = "";
-            }
+            vaadinVersion = readVaadinVersion(
+                    Thread.currentThread().getContextClassLoader()).orElse("");
         }
 
         return vaadinVersion.isEmpty() ? Optional.empty()
@@ -80,10 +64,51 @@ public class Platform implements Serializable {
     }
 
     /**
+     * Returns the platform version string, e.g., {@code "23.0.0"}, of the
+     * Vaadin on the given class loader.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param classLoader
+     *            the class loader to look the Vaadin version up from
+     * @return the platform version or {@link Optional#empty()} if unavailable.
+     * @since 25.3
+     */
+    public static Optional<String> getVaadinVersion(ClassLoader classLoader) {
+        return readVaadinVersion(classLoader);
+    }
+
+    private static Optional<String> readVaadinVersion(ClassLoader classLoader) {
+        String version;
+        {
+            try (final InputStream vaadinPomProperties = classLoader
+                    .getResourceAsStream(VAADIN_CORE_POM_PROPERTIES)) {
+                if (vaadinPomProperties != null) {
+                    final Properties properties = new Properties();
+                    properties.load(vaadinPomProperties);
+                    version = properties.getProperty("version", "");
+                } else {
+                    LOGGER.info(
+                            "Unable to determine Vaadin version. "
+                                    + "No {} found",
+                            VAADIN_CORE_POM_PROPERTIES);
+                    version = "";
+                }
+            } catch (Exception e) {
+                LOGGER.error("Unable to determine Vaadin version", e);
+                version = "";
+            }
+        }
+
+        return version.isEmpty() ? Optional.empty() : Optional.of(version);
+    }
+
+    /**
      * Returns Hilla version.
      *
      * @return Hilla version if Hilla is on the classpath; empty Optional if
      *         Hilla is not on the classpath.
+     * @since 24.1.8
      */
     public static Optional<String> getHillaVersion() {
         // thread-safe: in the worst case hillaVersion may be computed multiple

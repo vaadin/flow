@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -43,7 +42,6 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
-import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -106,6 +104,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      *
      * @param options
      *            the task options
+     * @since 25.1.2
      */
     protected NodeUpdater(Options options) {
         this.finder = options.getClassFinder();
@@ -121,7 +120,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Gets the platform pinned versions that are not overridden by the user in
+     * Gets the pinned npm versions that are not overridden by the user in
      * package.json.
      *
      * @return {@code JsonNode} with the dependencies or empty {@code JsonNode}
@@ -129,52 +128,33 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             when versions file could not be read
      */
-    ObjectNode getPlatformPinnedDependencies() throws IOException {
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-        if (coreVersionsResource == null) {
+    ObjectNode getPinnedNpmDependencies() throws IOException {
+        PinnedNpmVersions pinnedNpmVersions = getPinnedNpmVersions();
+        if (pinnedNpmVersions.isEmpty()) {
             log().info(
-                    "Couldn't find {} file to pin dependency versions for core components."
+                    "Couldn't find any versions file in {} to pin npm dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.VAADIN_CORE_VERSIONS_JSON);
+                    Constants.PINNED_NPM_VERSIONS_FOLDER);
             return JacksonUtils.createObjectNode();
         }
 
-        ObjectNode versionsJson = getFilteredVersionsFromResource(
-                coreVersionsResource, Constants.VAADIN_CORE_VERSIONS_JSON);
-
-        URL vaadinVersionsResource = finder
-                .getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (vaadinVersionsResource == null) {
-            // vaadin is not on the classpath, only vaadin-core is present.
-            return versionsJson;
-        }
-
-        ObjectNode vaadinVersionsJson = getFilteredVersionsFromResource(
-                vaadinVersionsResource, Constants.VAADIN_VERSIONS_JSON);
-        for (String key : JacksonUtils.getKeys(vaadinVersionsJson)) {
-            versionsJson.put(key, vaadinVersionsJson.get(key).asString());
-        }
-
-        return versionsJson;
+        return pinnedNpmVersions.getDependencies(
+                options.isReactEnabled()
+                        && FrontendBuildUtils.isReactModuleAvailable(options),
+                options.isNpmExcludeWebComponents(),
+                new VersionsJsonFilter(getPackageJson(), DEPENDENCIES));
     }
 
-    private ObjectNode getFilteredVersionsFromResource(URL versionsResource,
-            String versionsOrigin) throws IOException {
-        ObjectNode versionsJson;
-
-        try (InputStream content = versionsResource.openStream()) {
-            VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    options.isReactEnabled() && FrontendBuildUtils
-                            .isReactModuleAvailable(options),
-                    options.isNpmExcludeWebComponents());
-            versionsJson = convert.getConvertedJson();
-            versionsJson = new VersionsJsonFilter(getPackageJson(),
-                    DEPENDENCIES)
-                    .getFilteredVersions(versionsJson, versionsOrigin);
-        }
-        return versionsJson;
+    /**
+     * Gets the npm packages whose versions are pinned, as read once for the
+     * whole build.
+     *
+     * @return the pinned npm versions of the classpath
+     * @throws IOException
+     *             if the versions folders cannot be looked up
+     */
+    PinnedNpmVersions getPinnedNpmVersions() throws IOException {
+        return options.getPinnedNpmVersions();
     }
 
     static Set<String> getGeneratedModules(File frontendFolder) {
@@ -256,7 +236,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (packageFile.exists()) {
             String fileContent = Files.readString(packageFile.toPath(), UTF_8);
             try {
-                jsonContent = (ObjectNode) JacksonUtils.readTree(fileContent);
+                jsonContent = JacksonUtils.readTree(fileContent);
             } catch (JsonDecodingException e) { // NOSONAR
                 throw new RuntimeException(String
                         .format("Cannot parse package file '%s'", packageFile));
@@ -405,19 +385,31 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     ObjectNode getDefaultOverrides() {
-        var overrides = JacksonUtils.createObjectNode();
-
         final PwaConfiguration pwaConfiguration = options
                 .getFrontendDependenciesScanner().getPwaConfiguration();
-        // Currently, we only have overrides for workbox uses overrides, and
-        // only when PWA is enabled
-        final ObjectNode workboxOverrides = pwaConfiguration != null
-                && pwaConfiguration.isOfflineEnabled()
-                        ? (ObjectNode) readPackageJsonKey("workbox",
-                                "overrides")
-                        : null;
-        if (workboxOverrides != null) {
-            overrides = overrides.setAll(workboxOverrides);
+        // Currently, the only default overrides come from workbox, and they
+        // are only needed when PWA offline support is enabled.
+        if (pwaConfiguration != null && pwaConfiguration.isOfflineEnabled()) {
+            return getManagedDefaultOverrides();
+        }
+        return JacksonUtils.createObjectNode();
+    }
+
+    /**
+     * Returns all overrides Vaadin may add to package.json regardless of the
+     * current configuration. Used to recognize and clean up overrides that
+     * Vaadin previously added but no longer needs.
+     *
+     * @return the overrides Vaadin manages by default
+     */
+    ObjectNode getManagedDefaultOverrides() {
+        var overrides = JacksonUtils.createObjectNode();
+        if (hasPackageJson("workbox")) {
+            final JsonNode workboxOverrides = readPackageJsonKey("workbox",
+                    "overrides");
+            if (workboxOverrides instanceof ObjectNode workboxObject) {
+                overrides = overrides.setAll(workboxObject);
+            }
         }
         return overrides;
     }
@@ -485,7 +477,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         try {
             FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
-            return newVersion.isNewerThan(existingVersion);
+            return newVersion.hasSamePackageTarget(existingVersion)
+                    && newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
             if (VAADIN_FORM_PKG.equals(pkg) && json.get(pkg).asString()
                     .contains(VAADIN_FORM_PKG_LEGACY_VERSION)) {
@@ -513,14 +506,15 @@ public abstract class NodeUpdater implements FallibleCommand {
                 FrontendVersion newVersion = new FrontendVersion(version);
                 // Vaadin and package.json versions are the same, but dependency
                 // updates (can be up or down)
-                if (vaadinVersion.isEqualTo(packageVersion)
-                        && !vaadinVersion.isEqualTo(newVersion)) {
+                if (vaadinVersion.isSameDependency(packageVersion)
+                        && !vaadinVersion.isSameDependency(newVersion)) {
                     json.put(pkg, version);
                     added = true;
                     // if vaadin and package not the same, but new version is
                     // newer
                     // update package version.
-                } else if (newVersion.isNewerThan(packageVersion)) {
+                } else if (newVersion.hasSamePackageTarget(packageVersion)
+                        && newVersion.isNewerThan(packageVersion)) {
                     json.put(pkg, version);
                     added = true;
                 }
@@ -603,16 +597,17 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Generate versions json file for version locking.
+     * Generate versions json file for version pinning.
      *
      * @param packageJson
      *            the package json content
      * @throws IOException
      *             when file IO fails
+     * @since 24.7
      */
     protected void generateVersionsJson(ObjectNode packageJson)
             throws IOException {
-        versionsJson = getPlatformPinnedDependencies();
+        versionsJson = getPinnedNpmDependencies();
         ObjectNode packageJsonVersions = generateVersionsFromPackageJson(
                 packageJson);
         if (JacksonUtils.getKeys(versionsJson).isEmpty()) {
@@ -628,15 +623,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * If we do not have the platform versions to lock we should lock any
-     * versions in the package.json so we do not get multiple versions for
-     * defined packages.
+     * If we do not have the pinned npm versions we should pin any versions in
+     * the package.json so we do not get multiple versions for defined packages.
      *
      * @return versions Json based on package.json
      */
     private ObjectNode generateVersionsFromPackageJson(JsonNode packageJson) {
         ObjectNode versionsJson = JacksonUtils.createObjectNode();
-        // if we don't have versionsJson lock package dependency versions.
+        // if we don't have versionsJson pin package dependency versions.
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         if (dependencies != null) {
             for (String key : JacksonUtils.getKeys(dependencies)) {

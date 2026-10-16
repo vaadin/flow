@@ -13,6 +13,7 @@
   "bugs": {
     "url": "https://github.com/vaadin/flow/issues"
   },
+  "type": "module",
   "files": [
     "theme-loader.js",
     "theme-loader-utils.js"

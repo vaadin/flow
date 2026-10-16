@@ -45,6 +45,8 @@ import com.vaadin.flow.signals.shared.impl.SignalTree.PendingCommit;
  * two-phase commit to atomically apply changes to all participating trees.
  * Provides repeatable reads that are supplemented by changes from any staged
  * commands.
+ * 
+ * @since 25.1
  */
 public class StagedTransaction extends Transaction {
     /**

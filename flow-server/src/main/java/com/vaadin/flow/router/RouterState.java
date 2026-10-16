@@ -80,6 +80,7 @@ public record RouterState(Location location, RouteParameters routeParameters,
      *
      * @return {@code true} before the first navigation completes, otherwise
      *         {@code false}
+     * @since 25.2.1
      */
     public boolean isNavigationPending() {
         return navigationTarget == null;

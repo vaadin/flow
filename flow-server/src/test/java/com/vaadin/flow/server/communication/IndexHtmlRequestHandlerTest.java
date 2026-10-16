@@ -84,6 +84,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_FRAME_OPTIONS;
+import static com.vaadin.flow.server.InitParameters.THEMED_HTML;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -498,6 +499,29 @@ public class IndexHtmlRequestHandlerTest {
                         || scriptContent.contains("&gt;"),
                 "Initial object content should not be escaped");
         assertNotNull(UI.getCurrent());
+    }
+
+    @Test
+    public void initialUidl_containsScriptEndTag_lessThanIsEscaped()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+        service.setBootstrapInitialPredicate(request -> true);
+
+        String payload = "</script><b>text</b>";
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/" + payload), response);
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+
+        assertFalse(indexHtml.contains(payload),
+                "Initial UIDL must not be able to close the script element");
+
+        Document document = Jsoup.parse(indexHtml);
+        Elements scripts = document.head().getElementsByTag("script");
+        Element initialUidlScript = findScript(scripts,
+                INITIAL_UIDL_SEARCH_STRING);
+        String scriptContent = initialUidlScript.data();
+        assertTrue(scriptContent.contains("\\x3C/script>\\x3Cb>text\\x3C/b>"));
+        assertFalse(scriptContent.contains("<"));
     }
 
     @Test
@@ -991,6 +1015,23 @@ public class IndexHtmlRequestHandlerTest {
 
         assertEquals("", document.head().parent().attr("theme"));
         assertEquals("", document.head().parent().attr("style"));
+    }
+
+    @Test
+    public void should_theme_html_elements_only_when_enabled()
+            throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        assertFalse(Jsoup.parse(responseOutput.toString(StandardCharsets.UTF_8))
+                .body().hasClass(Constants.THEMED_HTML_CLASS_NAME));
+
+        responseOutput.reset();
+        deploymentConfiguration.setApplicationOrSystemProperty(THEMED_HTML,
+                "true");
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        assertTrue(Jsoup.parse(responseOutput.toString(StandardCharsets.UTF_8))
+                .body().hasClass(Constants.THEMED_HTML_CLASS_NAME));
     }
 
     @Test

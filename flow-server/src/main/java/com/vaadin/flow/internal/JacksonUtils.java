@@ -93,6 +93,7 @@ public final class JacksonUtils {
      *
      * @throws IllegalStateException
      *             if the Jackson version is not compatible
+     * @since 25.1.1
      */
     public static void checkJacksonCompatibility() {
         try {
@@ -143,6 +144,7 @@ public final class JacksonUtils {
      * Create a nullNode for null value.
      *
      * @return NullNode
+     * @since 24.8
      */
     public static ValueNode nullNode() {
         return (ValueNode) objectMapper.nullNode();
@@ -499,6 +501,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readToObject(JsonNode jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
@@ -520,6 +523,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readValue(JsonNode jsonValue, Class<T> tClass) {
         return readToObject(jsonValue, tClass);
@@ -535,6 +539,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readValue(JsonNode jsonValue,
             TypeReference<T> typeReference) {
@@ -590,6 +595,7 @@ public final class JacksonUtils {
      * @param keyPath
      *            the nested key path
      * @return the value of the last key found, or {@code null}
+     * @since 25.1.2
      */
     public static @Nullable JsonNode getNestedKey(ObjectNode objectNode,
             List<String> keyPath) {
@@ -627,6 +633,7 @@ public final class JacksonUtils {
      *            a function that converts intermediate {@code null} and
      *            non-{@code ObjectNode} values into {@code ObjectNode}s when
      *            necessary for recursive traversal
+     * @since 25.1.2
      */
     public static void setNestedKey(ObjectNode objectNode, List<String> keyPath,
             JsonNode valueNode,
@@ -660,6 +667,7 @@ public final class JacksonUtils {
      *            the root object containing to process
      * @param keyPath
      *            the nested key path
+     * @since 25.1.2
      */
     public static void removeNestedKey(ObjectNode objectNode,
             List<String> keyPath) {
@@ -683,6 +691,8 @@ public final class JacksonUtils {
 
     /**
      * Custom Jackson serializer for Component that delegates to NodeSerializer.
+     * 
+     * @since 25.0
      */
     public static class ComponentSerializer extends ValueSerializer<Component> {
         private final NodeSerializer nodeSerializer = new NodeSerializer();
@@ -708,6 +718,8 @@ public final class JacksonUtils {
      * Custom Jackson serializer for Node types (Element, ShadowRoot) that
      * serializes attached nodes as @v-node references for client-side DOM
      * manipulation.
+     * 
+     * @since 25.0
      */
     @SuppressWarnings("rawtypes")
     public static class NodeSerializer extends ValueSerializer<Node> {

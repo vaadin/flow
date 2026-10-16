@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -469,16 +468,42 @@ class StateTreeTest {
         StateNode child = new StateNode(ElementChildrenList.class);
         StateNodeTest.setParent(child, initialTree.getRootNode());
 
-        AtomicBoolean isExecuted = new AtomicBoolean();
-        initialTree.beforeClientResponse(child,
-                context -> isExecuted.set(true));
+        TestExecution execution = new TestExecution();
+        initialTree.beforeClientResponse(child, execution);
 
         child.removeFromTree();
 
         StateNodeTest.setParent(child, tree.getRootNode());
         tree.runExecutionsBeforeClientResponse();
 
-        assertFalse(isExecuted.get());
+        assertEquals(0, execution.executed);
+        assertTrue(execution.discarded > 0,
+                "an execution that cannot be run in the tree of its node should be reported as discarded");
+    }
+
+    @Test
+    void beforeClientResponse_ownerDetached_executionDiscardedAndRunWhenAttachedAgain() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        TestExecution execution = new TestExecution();
+        tree.beforeClientResponse(child, execution);
+
+        StateNodeTest.setParent(child, null);
+
+        assertEquals(0, execution.executed);
+        assertEquals(1, execution.discarded,
+                "detaching the node of an execution should report it as discarded");
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        assertEquals(1, execution.restored,
+                "attaching the node again should report the execution as waited for again");
+
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.executed,
+                "a detached node keeps its pending executions, so the execution should still be run");
     }
 
     @Test
@@ -487,13 +512,18 @@ class StateTreeTest {
 
         StateNode child = new StateNode(ElementChildrenList.class);
 
-        AtomicBoolean isExecuted = new AtomicBoolean();
-        someTree.beforeClientResponse(child, context -> isExecuted.set(true));
+        TestExecution execution = new TestExecution();
+        someTree.beforeClientResponse(child, execution);
 
         StateNodeTest.setParent(child, tree.getRootNode());
+
+        assertEquals(1, execution.restored,
+                "attaching the node should report the execution as waited for, also without an earlier discard");
+        assertEquals(0, execution.discarded);
+
         tree.runExecutionsBeforeClientResponse();
 
-        assertTrue(isExecuted.get());
+        assertEquals(1, execution.executed);
     }
 
     @Test
@@ -822,5 +852,26 @@ class StateTreeTest {
         initialTree.runExecutionsBeforeClientResponse();
         assertEquals(1,
                 ui.getInternals().dumpPendingJavaScriptInvocations().size());
+    }
+
+    private static class TestExecution implements DiscardAwareExecution {
+        private int executed;
+        private int discarded;
+        private int restored;
+
+        @Override
+        public void accept(ExecutionContext context) {
+            executed++;
+        }
+
+        @Override
+        public void executionDiscarded() {
+            discarded++;
+        }
+
+        @Override
+        public void executionRestored() {
+            restored++;
+        }
     }
 }

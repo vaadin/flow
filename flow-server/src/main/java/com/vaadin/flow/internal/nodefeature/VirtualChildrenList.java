@@ -77,6 +77,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
      *            the payload type
      * @param payload
      *            the payload data
+     * @since 25.0
      */
     public void add(int index, StateNode node, String type, JsonNode payload) {
         assert node != null;
@@ -129,6 +130,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
      *            the payload type
      * @param payload
      *            the payload data
+     * @since 25.0
      */
     public void append(StateNode node, String type, JsonNode payload) {
         add(size(), node, type, payload);

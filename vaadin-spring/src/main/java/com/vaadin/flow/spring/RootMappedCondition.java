@@ -39,10 +39,20 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 public class RootMappedCondition implements Condition {
 
+    /** Name of the property that holds the Vaadin servlet url mapping. */
     public static final String URL_MAPPING_PROPERTY = "vaadin.urlMapping";
+
+    /**
+     * Creates the condition. Spring instantiates it when evaluating a
+     * {@code @Conditional} annotation.
+     */
+    public RootMappedCondition() {
+        // Default constructor
+    }
 
     @Override
     public boolean matches(ConditionContext context,
@@ -59,6 +69,7 @@ public class RootMappedCondition implements Condition {
      * @param environment
      *            the application environment
      * @return the url mapping or null if none is defined
+     * @since 23.1
      */
     public static String getUrlMapping(Environment environment) {
         if (SpringUtil.isSpringBoot()) {
