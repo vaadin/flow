@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -160,11 +159,12 @@ class FrontendDependenciesTest {
             new FrontendDependencies(classFinder, false, null, true);
         }
 
-        ArgumentCaptor<Object> values = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(logger, Mockito.atLeastOnce()).warn(
-                ArgumentMatchers.contains("deprecated bundled interpretation"),
-                ArgumentMatchers.any(), values.capture());
-        assertEquals(List.of("bundled.js"), values.getAllValues());
+        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger).warn(
+                ArgumentMatchers.contains("bundled interpretation"),
+                usages.capture());
+        assertEquals("\n  - " + RuntimeJavaScriptComponent.class.getName()
+                + ": \"bundled.js\"", usages.getValue());
     }
 
     @Test

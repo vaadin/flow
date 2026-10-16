@@ -235,30 +235,32 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private void warnAboutDeprecatedJavaScriptUses() {
-        Set<String> warnedJavaScriptKeys = new LinkedHashSet<>();
+        Set<String> usages = new LinkedHashSet<>();
         for (Entry<String, ClassInfo> entry : visitedClasses.entrySet()) {
-            String className = entry.getKey();
             ClassInfo classInfo = entry.getValue();
             if (classInfo == null) {
                 continue;
             }
-            for (String value : classInfo.scripts) {
-                if (warnedJavaScriptKeys.add(className + ':' + value)) {
-                    log().warn(
-                            "@JavaScript on {} with value \"{}\" uses the deprecated bundled interpretation. "
-                                    + "Prepend context:// for a runtime <script> tag, set type=Type.MODULE for a runtime <script type=\"module\"> tag, or migrate to @JsModule for bundling.",
-                            className, value);
-                }
-            }
-            for (String value : classInfo.scriptsDevelopmentOnly) {
-                if (warnedJavaScriptKeys.add(className + ':' + value)) {
-                    log().warn(
-                            "@JavaScript on {} with value \"{}\" uses the deprecated bundled interpretation. "
-                                    + "Prepend context:// for a runtime <script> tag, set type=Type.MODULE for a runtime <script type=\"module\"> tag, or migrate to @JsModule for bundling.",
-                            className, value);
-                }
-            }
+            Stream.concat(classInfo.scripts.stream(),
+                    classInfo.scriptsDevelopmentOnly.stream())
+                    .map(value -> entry.getKey() + ": \"" + value + "\"")
+                    .forEach(usages::add);
         }
+        if (usages.isEmpty()) {
+            return;
+        }
+        // Logged once per scan rather than per usage, as annotations coming
+        // from add-ons cannot be changed by the application developer
+        log().warn(
+                "Found @JavaScript values that are bundled from the frontend directory. "
+                        + "This bundled interpretation of @JavaScript is deprecated.{}"
+                        + "\nTo keep bundling a file, replace @JavaScript with @JsModule using the same value. "
+                        + "To load it at runtime instead, move the file out of the frontend directory to a statically served location "
+                        + "(e.g. src/main/resources/META-INF/resources) and reference it with a context:// prefix, "
+                        + "or set type = JavaScript.Type.MODULE for an ES module. "
+                        + "Usages in add-ons need to be updated by the add-on maintainer.",
+                usages.stream().map(usage -> "\n  - " + usage)
+                        .collect(Collectors.joining()));
     }
 
     Set<String> collectReachableClasses(EntryPointData entryPointData) {
