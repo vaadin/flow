@@ -58,6 +58,7 @@ public class CdiServletDeployer implements ServletContainerInitializer {
      * Creates a new CDI servlet deployer.
      */
     public CdiServletDeployer() {
+        // Nothing to initialize
     }
 
     @Override

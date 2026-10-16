@@ -46,6 +46,7 @@ public class ContextualInstanceInfo<T> implements Serializable {
      * Creates a new empty contextual instance info.
      */
     public ContextualInstanceInfo() {
+        // Nothing to initialize
     }
 
     /**

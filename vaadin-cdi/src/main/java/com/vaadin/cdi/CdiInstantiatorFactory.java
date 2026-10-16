@@ -44,6 +44,7 @@ public class CdiInstantiatorFactory implements InstantiatorFactory {
      * Creates a new CDI instantiator factory.
      */
     public CdiInstantiatorFactory() {
+        // Nothing to initialize
     }
 
     @Override

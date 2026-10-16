@@ -30,5 +30,6 @@ public class AnyLiteral extends AnnotationLiteral<Any> implements Any {
      * Creates a new {@link Any} annotation literal.
      */
     public AnyLiteral() {
+        // Nothing to initialize
     }
 }

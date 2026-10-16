@@ -135,6 +135,7 @@ public class VaadinSessionScopedContext extends AbstractContext {
          * Creates a new storage manager.
          */
         public ContextualStorageManager() {
+            // Nothing to initialize
         }
 
         /**

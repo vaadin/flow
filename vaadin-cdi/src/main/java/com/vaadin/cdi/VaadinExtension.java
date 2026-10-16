@@ -51,17 +51,18 @@ import com.vaadin.cdi.util.DependentProvider;
  */
 public class VaadinExtension implements Extension {
 
-    /**
-     * Creates a new Vaadin CDI extension.
-     */
-    public VaadinExtension() {
-    }
-
     private VaadinServiceScopedContext serviceScopedContext;
     private VaadinSessionScopedContext sessionScopedContext;
     private UIScopedContext uiScopedContext;
     private RouteScopedContext routeScopedContext;
     private Set<BeanInfo> beanInfoSet = new HashSet<>();
+
+    /**
+     * Creates a new Vaadin CDI extension.
+     */
+    public VaadinExtension() {
+        // Nothing to initialize
+    }
 
     private void storeBeanValidationInfo(@Observes ProcessBean processBean) {
         beanInfoSet.add(new BeanInfo(processBean.getBean(),

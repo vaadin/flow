@@ -79,12 +79,6 @@ public class BeanManagerProvider implements Extension {
 
     private static BeanManagerProvider bmpSingleton;
 
-    /**
-     * Creates a new bean manager provider.
-     */
-    public BeanManagerProvider() {
-    }
-
     static {
         Class cdiClass = ClassUtils
                 .tryToLoadClassForName("jakarta.enterprise.inject.spi.CDI");
@@ -152,6 +146,13 @@ public class BeanManagerProvider implements Extension {
      * </p>
      */
     private final Map<ClassLoader, BeanManagerInfo> bmInfos = new ConcurrentHashMap<>();
+
+    /**
+     * Creates a new bean manager provider.
+     */
+    public BeanManagerProvider() {
+        // Nothing to initialize
+    }
 
     /**
      * Indicates whether the {@link BeanManagerProvider} has been initialized.

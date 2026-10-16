@@ -54,6 +54,7 @@ public class CdiVaadinServlet extends VaadinServlet {
      * Creates a new CDI Vaadin servlet.
      */
     public CdiVaadinServlet() {
+        // Nothing to initialize
     }
 
     @Override
