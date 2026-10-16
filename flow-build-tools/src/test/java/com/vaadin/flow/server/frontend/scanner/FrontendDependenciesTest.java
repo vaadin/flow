@@ -17,7 +17,9 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,6 +59,7 @@ import com.vaadin.flow.server.frontend.scanner.samples.MyUIInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponent;
 import com.vaadin.flow.server.frontend.scanner.samples.RouteComponentWithMethodReference;
 import com.vaadin.flow.server.frontend.scanner.samples.RuntimeJavaScriptComponent;
+import com.vaadin.flow.server.frontend.scanner.samples.RuntimeOnlyJavaScriptComponent;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -146,9 +149,41 @@ class FrontendDependenciesTest {
     }
 
     @Test
-    void bundledJavaScript_warnedAboutOnceAsDeprecated() {
-        Mockito.when(classFinder.getAnnotatedClasses(Route.class)).thenReturn(
-                Collections.singleton(RuntimeJavaScriptComponent.class));
+    void bundledJavaScript_allUsagesWarnedAboutInOneWarning() {
+        Logger logger = scanWithSpyLogger(new LinkedHashSet<>(List
+                .of(RuntimeJavaScriptComponent.class, JsOrderComponent.class)));
+
+        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
+        Mockito.verify(logger).warn(
+                ArgumentMatchers.contains("bundled interpretation"),
+                usages.capture());
+        String listed = (String) usages.getValue();
+        String jsOrder = JsOrderComponent.class.getName();
+        assertTrue(listed
+                .contains("\n  - " + RuntimeJavaScriptComponent.class.getName()
+                        + ": \"bundled.js\""),
+                listed);
+        assertTrue(
+                listed.contains(
+                        "\n  - " + jsOrder + ": \"a.js\"\n  - " + jsOrder
+                                + ": \"b.js\"\n  - " + jsOrder + ": \"c.js\""),
+                listed);
+        assertFalse(listed.contains("runtime.js"), listed);
+    }
+
+    @Test
+    void onlyRuntimeJavaScript_noDeprecationWarning() {
+        Logger logger = scanWithSpyLogger(
+                Collections.singleton(RuntimeOnlyJavaScriptComponent.class));
+
+        Mockito.verify(logger, Mockito.never()).warn(
+                ArgumentMatchers.contains("bundled interpretation"),
+                ArgumentMatchers.<Object> any());
+    }
+
+    private Logger scanWithSpyLogger(Set<Class<?>> routes) {
+        Mockito.when(classFinder.getAnnotatedClasses(Route.class))
+                .thenReturn(routes);
         Logger logger = Mockito.spy(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
                 .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
@@ -158,13 +193,7 @@ class FrontendDependenciesTest {
 
             new FrontendDependencies(classFinder, false, null, true);
         }
-
-        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(logger).warn(
-                ArgumentMatchers.contains("bundled interpretation"),
-                usages.capture());
-        assertEquals("\n  - " + RuntimeJavaScriptComponent.class.getName()
-                + ": \"bundled.js\"", usages.getValue());
+        return logger;
     }
 
     @Test

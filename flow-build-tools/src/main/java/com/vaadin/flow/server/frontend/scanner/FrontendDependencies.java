@@ -251,14 +251,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
         // Logged once per scan rather than per usage, as annotations coming
         // from add-ons cannot be changed by the application developer
-        log().warn(
-                "Found @JavaScript values that are bundled from the frontend directory. "
-                        + "This bundled interpretation of @JavaScript is deprecated.{}"
-                        + "\nTo keep bundling a file, replace @JavaScript with @JsModule using the same value. "
-                        + "To load it at runtime instead, move the file out of the frontend directory to a statically served location "
-                        + "(e.g. src/main/resources/META-INF/resources) and reference it with a context:// prefix, "
-                        + "or set type = JavaScript.Type.MODULE for an ES module. "
-                        + "Usages in add-ons need to be updated by the add-on maintainer.",
+        log().warn("Found @JavaScript values that are bundled. "
+                + "This bundled interpretation of @JavaScript is deprecated.{}"
+                + "\nTo keep bundling a file, replace @JavaScript with @JsModule using the same value. "
+                + "To load a file from the frontend directory at runtime instead, move it to a statically served location "
+                + "(e.g. src/main/resources/META-INF/resources) and reference it with a context:// prefix, "
+                + "or set type = JavaScript.Type.MODULE for an ES module. "
+                + "Usages in add-ons need to be updated by the add-on maintainer.",
                 usages.stream().map(usage -> "\n  - " + usage)
                         .collect(Collectors.joining()));
     }

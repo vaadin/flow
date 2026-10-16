@@ -60,10 +60,9 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * page as a JavaScript module (a {@code script} element with
  * {@code type="module"}). In this case a {@link JavaScript} annotation behaves
  * exactly as a {@link JsModule} annotation. This bundled interpretation is
- * deprecated and the build logs a warning for it: use {@link JsModule} with the
- * same value to keep bundling the file, or serve the file as a static resource
- * and reference it with a runtime prefix (or {@link Type#MODULE}) to load it at
- * runtime.
+ * deprecated: use {@link JsModule} with the same value to keep bundling the
+ * file, or serve the file as a static resource and reference it with a runtime
+ * prefix (or {@link Type#MODULE}) to load it at runtime.
  * <p>
  * Setting {@link #type()} to {@link Type#MODULE} opts out of that bundling: the
  * file is then always loaded at runtime as a {@code script} element with
