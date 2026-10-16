@@ -5,6 +5,7 @@ import type { EventRemover } from '../../../../../main/frontend/internal/EventRe
 import { testRegistry } from '../testRegistry';
 import { DefaultConnectionStateHandler } from '../../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
 import { XhrConnectionError } from '../../../../../main/frontend/internal/client/communication/XhrConnectionError';
+import type { PushConnection } from '../../../../../main/frontend/internal/client/communication/PushConnection';
 import {
   CONNECTED,
   CONNECTION_LOST,
@@ -171,12 +172,32 @@ describe('DefaultConnectionStateHandler', () => {
 
     // Long polling does not necessarily know when the connection is available
     // again, so the reconnect is left to the next failing xhr.
-    handler.pushReconnectPending({ isBidirectional: () => false } as never);
+    handler.pushReconnectPending({ isBidirectional: () => false, getTransportType: () => 'long-polling' } as never);
     expect(getState()).to.equal(initialState);
     expect(registry.log.heartbeatSends).to.equal(0);
 
     // A bidirectional transport tells us when it is back, so reconnect now.
     handler.pushReconnectPending({ isBidirectional: () => true } as never);
+    expect(getState()).to.equal(RECONNECTING);
+    expect(registry.log.heartbeatSends).to.equal(1);
+  });
+
+  it('reconnects a receive-only websocket when reopening it fails', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const initialState = getState();
+    const websocket: Partial<PushConnection> = { isBidirectional: () => false, getTransportType: () => 'websocket' };
+
+    // The server may close the websocket on purpose, and it reopens.
+    handler.pushReconnectPending(websocket as PushConnection);
+    handler.pushOk(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(getState()).to.equal(initialState);
+    expect(registry.log.heartbeatSends).to.equal(0);
+
+    // Reopening it failed, so the connection is lost.
+    handler.pushReconnectPending(websocket as PushConnection);
     expect(getState()).to.equal(RECONNECTING);
     expect(registry.log.heartbeatSends).to.equal(1);
   });
