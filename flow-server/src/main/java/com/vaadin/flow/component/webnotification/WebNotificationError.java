@@ -18,9 +18,6 @@ package com.vaadin.flow.component.webnotification;
 import java.io.Serializable;
 import java.util.Objects;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ArrayNode;
-
 /**
  * Why the browser did not show a notification. Delivered to the listeners added
  * with {@link WebNotificationHandle#addErrorListener}.
@@ -44,31 +41,6 @@ public record WebNotificationError(Reason reason,
     public WebNotificationError {
         Objects.requireNonNull(reason, "reason must not be null");
         Objects.requireNonNull(message, "message must not be null");
-    }
-
-    /**
-     * Reads the error the client reports through a notification's return
-     * channel as {@code ('error', reason, message)}. A reason this server does
-     * not know, for example from a newer client, is read as
-     * {@link Reason#UNKNOWN}. For framework use only.
-     *
-     * @param args
-     *            the arguments the client passed to the channel, not
-     *            {@code null}
-     * @return the error, not {@code null}
-     */
-    public static WebNotificationError readFromChannel(ArrayNode args) {
-        JsonNode reason = args.get(1);
-        JsonNode message = args.get(2);
-        Reason parsed;
-        try {
-            parsed = reason == null ? Reason.UNKNOWN
-                    : Reason.valueOf(reason.asString());
-        } catch (IllegalArgumentException e) {
-            parsed = Reason.UNKNOWN;
-        }
-        return new WebNotificationError(parsed,
-                message == null || message.isNull() ? "" : message.asString());
     }
 
     /**

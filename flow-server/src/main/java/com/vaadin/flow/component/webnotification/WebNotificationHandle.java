@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.trigger.internal.WebNotificationErrorReader;
 import com.vaadin.flow.component.webnotification.WebNotification.WebNotificationJs;
 import com.vaadin.flow.component.webnotification.WebNotificationError.Reason;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -162,7 +163,7 @@ public final class WebNotificationHandle implements Serializable {
             disconnect();
             List.copyOf(closeListeners).forEach(SerializableRunnable::run);
         }
-        case "error" -> fail(WebNotificationError.readFromChannel(args));
+        case "error" -> fail(WebNotificationErrorReader.read(args));
         default -> LOGGER
                 .debug("Unknown web notification event from client: {}", type);
         }

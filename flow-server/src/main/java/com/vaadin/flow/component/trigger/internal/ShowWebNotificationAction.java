@@ -133,7 +133,7 @@ public class ShowWebNotificationAction extends Action {
         switch (args.get(0).asString()) {
         case "click" -> Objects.requireNonNull(onClick).run();
         case "error" -> Objects.requireNonNull(onError)
-                .accept(WebNotificationError.readFromChannel(args));
+                .accept(WebNotificationErrorReader.read(args));
         default -> {
             // Notifications shown by a trigger have no close callback
         }
