@@ -174,7 +174,6 @@ class NodeUpdaterTest {
         expectedDependencies.add("@babel/types");
         expectedDependencies
                 .add("@babel/plugin-transform-react-jsx-development");
-        expectedDependencies.add("@babel/preset-react");
         expectedDependencies.add("@rolldown/plugin-babel");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
