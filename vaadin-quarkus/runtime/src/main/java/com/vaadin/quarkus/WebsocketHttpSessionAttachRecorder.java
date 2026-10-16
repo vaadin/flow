@@ -47,11 +47,15 @@ import io.undertow.websockets.vertx.VertxWebSocketHandler;
 import io.undertow.websockets.vertx.VertxWebSocketHttpExchange;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
+ * Attaches the HTTP session of the upgrade request to WebSocket connections, so
+ * that Vaadin Push over WebSocket finds the Vaadin session.
+ *
  * @since 1.1
  */
 @Recorder
@@ -117,7 +121,7 @@ public class WebsocketHttpSessionAttachRecorder {
 
     // Extract of logics from Undertow ServletInitialHandler to apply
     // SessionAttachmentHandler and get HTTP session for the current request
-    private static class UpgradeRequestSessionAttachmentHandler {
+    private static final class UpgradeRequestSessionAttachmentHandler {
 
         private final Deployment deployment;
         private final SessionAttachmentHandler sessionAttachmentHandler;
@@ -159,7 +163,11 @@ public class WebsocketHttpSessionAttachRecorder {
             try {
                 handleRequest(serverExchange);
             } catch (Exception e) {
-                // ignore and proceed with original behaviour
+                // proceed without a session, as for a request that has none
+                LoggerFactory
+                        .getLogger(UpgradeRequestSessionAttachmentHandler.class)
+                        .debug("Cannot attach the HTTP session to the WebSocket upgrade request",
+                                e);
                 return Optional.empty();
             }
             SessionManager sessionManager = deployment.getSessionManager();

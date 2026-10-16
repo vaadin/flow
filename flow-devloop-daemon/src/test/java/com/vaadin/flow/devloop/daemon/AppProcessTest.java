@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalLong;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -39,6 +41,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * {@code flow-tests/test-devloop}.
  */
 class AppProcessTest {
+
+    /** What a run spawned from an empty project was launched with. */
+    private static final Compile.Snapshot NOTHING = new Compile.Snapshot(
+            List.of(), Map.of(), Map.of(), Map.of(), null, 0L);
 
     @TempDir
     Path root;
@@ -58,7 +64,7 @@ class AppProcessTest {
     @Test
     void exitOfCurrentProcess_reportsCrash() throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run current = app.beginRun(exited(), log());
+        AppProcess.Run current = app.beginRun(exited(), log(), NOTHING);
 
         app.handleExit(current);
 
@@ -71,7 +77,7 @@ class AppProcessTest {
     @Test
     void exitOfExpectedStop_reportsStopped() throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run current = app.beginRun(exited(), log());
+        AppProcess.Run current = app.beginRun(exited(), log(), NOTHING);
         current.stopExpected.set(true);
 
         app.handleExit(current);
@@ -83,9 +89,9 @@ class AppProcessTest {
     @Test
     void exitOfSupersededProcess_leavesRestartedAppAlone() throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run previous = app.beginRun(exited(), log());
+        AppProcess.Run previous = app.beginRun(exited(), log(), NOTHING);
         // The restart: a new process takes over before the old callback runs.
-        AppProcess.Run restarted = app.beginRun(exited(), log());
+        AppProcess.Run restarted = app.beginRun(exited(), log(), NOTHING);
         AppProcess.State before = app.state();
 
         app.handleExit(previous);
@@ -102,8 +108,8 @@ class AppProcessTest {
     @Test
     void registrationFromSupersededProcess_isRefused() throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run previous = app.beginRun(exited(), log());
-        app.beginRun(exited(), log());
+        AppProcess.Run previous = app.beginRun(exited(), log(), NOTHING);
+        app.beginRun(exited(), log(), NOTHING);
 
         assertTrue(
                 app.onRegistered("dev", OptionalLong.of(previous.process.pid()))
@@ -117,9 +123,9 @@ class AppProcessTest {
     void closeOfSupersededRegistration_keepsNewAppRegistered()
             throws Exception {
         AppProcess app = new AppProcess(root, null);
-        AppProcess.Run previous = app.beginRun(exited(), log());
+        AppProcess.Run previous = app.beginRun(exited(), log(), NOTHING);
         app.onRegistered("dev", OptionalLong.of(previous.process.pid()));
-        AppProcess.Run restarted = app.beginRun(exited(), log());
+        AppProcess.Run restarted = app.beginRun(exited(), log(), NOTHING);
         app.onRegistered("dev", OptionalLong.of(restarted.process.pid()));
 
         // The predecessor's socket closes only now, after the restart is up.
@@ -166,6 +172,28 @@ class AppProcessTest {
         assertTrue(wait.isOver(pastBoth));
     }
 
+    /**
+     * What a registration seeds the change baseline from has to be what the
+     * process now running was spawned with - not a predecessor's, and nothing
+     * once it is gone, when a baseline from the disk is the only one left.
+     */
+    @Test
+    void launchSnapshot_belongsToTheRunningProcess() throws Exception {
+        AppProcess app = new AppProcess(root, null);
+        assertTrue(app.launchSnapshot().isEmpty());
+        app.beginRun(exited(), log(), NOTHING);
+        Compile.Snapshot snapshot = new Compile.Snapshot(List.of(), Map.of(),
+                Map.of(), Map.of(), null, 0L);
+        Process alive = alive();
+        app.beginRun(alive, log(), snapshot);
+
+        assertSame(snapshot, app.launchSnapshot().orElseThrow());
+
+        alive.destroy();
+        assertTrue(alive.waitFor(10, TimeUnit.SECONDS));
+        assertTrue(app.launchSnapshot().isEmpty());
+    }
+
     @Test
     void abandonedLaunch_killsTheAppAndLetsTheNextStartTryAgain()
             throws Exception {
@@ -174,7 +202,7 @@ class AppProcessTest {
         Process alive = alive();
         // Where start() waits for the connector, reached the way it reaches it.
         app.markStarting();
-        AppProcess.Run current = app.beginRun(alive, log());
+        AppProcess.Run current = app.beginRun(alive, log(), NOTHING);
         assertTrue(app.alreadyLaunching(), "precondition: the launch is open");
 
         // The registration timeout: the JVM is still up, it just never called

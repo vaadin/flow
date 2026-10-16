@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -112,6 +111,8 @@ class VaadinQuarkusProcessor {
 
     private static final String FEATURE = "vaadin-quarkus";
 
+    private static final String VAADIN_GROUP_ID = "com.vaadin";
+
     private static final Predicate<String> IS_VAADIN_JANDEX = Pattern
             .compile("vaadin(-core)?-jandex").asMatchPredicate();
 
@@ -130,9 +131,10 @@ class VaadinQuarkusProcessor {
             BuildProducer<IndexDependencyBuildItem> producer) {
         // Development dependencies built outside Flow, which ship no Jandex
         // index of their own. The Flow modules carry one.
-        producer.produce(new IndexDependencyBuildItem("com.vaadin", "copilot"));
         producer.produce(
-                new IndexDependencyBuildItem("com.vaadin", "ui-tests"));
+                new IndexDependencyBuildItem(VAADIN_GROUP_ID, "copilot"));
+        producer.produce(
+                new IndexDependencyBuildItem(VAADIN_GROUP_ID, "ui-tests"));
     }
 
     /*
@@ -147,7 +149,7 @@ class VaadinQuarkusProcessor {
         ApplicationModel applicationModel = curateOutcome.getApplicationModel();
         List<ResolvedDependency> vaadinIndexes = applicationModel
                 .getDependencies().stream()
-                .filter(archive -> "com.vaadin".equals(archive.getGroupId())
+                .filter(archive -> VAADIN_GROUP_ID.equals(archive.getGroupId())
                         && IS_VAADIN_JANDEX.test(archive.getArtifactId()))
                 .toList();
         if (!liveReload.isLiveReload()) {
@@ -155,7 +157,7 @@ class VaadinQuarkusProcessor {
                     indexDependencyConfig());
         }
         if (vaadinIndexes.size() > 1) {
-            ArtifactKey artifactKey = ArtifactKey.of("com.vaadin",
+            ArtifactKey artifactKey = ArtifactKey.of(VAADIN_GROUP_ID,
                     "vaadin-core-jandex", null, "jar");
             // To prevent the vaadin-core-index to be indexed, it should add to
             // the removed resources, but producing a RemovedResourceBuildItem
@@ -172,6 +174,9 @@ class VaadinQuarkusProcessor {
                 applicationModel.getRemovedResources().put(artifactKey,
                         Set.of());
             } catch (Exception ex) {
+                LOG.debug(
+                        "Cannot add {} to the removed resources of the application model, producing build items instead",
+                        artifactKey, ex);
                 removedResourceProducer.produce(
                         new RemovedResourceBuildItem(artifactKey, Set.of()));
                 ignoreSplitPackage.produce(new IgnoreSplitPackageBuildItem(
@@ -250,7 +255,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void build(
+    void build(
             final BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer,
             final BuildProducer<BeanDefiningAnnotationBuildItem> additionalBeanDefiningAnnotationRegistry) {
         additionalBeanProducer.produce(AdditionalBeanBuildItem
@@ -262,7 +267,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void ensureSingleVaadinExecutor(
+    void ensureSingleVaadinExecutor(
             ValidationPhaseBuildItem validationPhaseBuildItem,
             BuildProducer<ValidationPhaseBuildItem.ValidationErrorBuildItem> validationErrors) {
 
@@ -280,9 +285,6 @@ class VaadinQuarkusProcessor {
 
         if (candidates.size() > 1) {
             // Multiple beans found, throw an exception
-            String candidatesInfo = candidates.stream().map(BeanInfo::toString)
-                    .collect(Collectors.joining(", "));
-
             validationErrors.produce(
                     new ValidationPhaseBuildItem.ValidationErrorBuildItem(
                             new IllegalStateException(
@@ -303,7 +305,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void specifyRouterLayoutBeans(CombinedIndexBuildItem item,
+    void specifyRouterLayoutBeans(CombinedIndexBuildItem item,
             BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> layouts = item.getComputingIndex()
                 .getAllKnownImplementations(
@@ -315,7 +317,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void specifyErrorViewsBeans(CombinedIndexBuildItem item,
+    void specifyErrorViewsBeans(CombinedIndexBuildItem item,
             BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> errors = item.getComputingIndex()
                 .getAllKnownImplementations(DotName
@@ -359,7 +361,7 @@ class VaadinQuarkusProcessor {
                         .equals(QuarkusVaadinServlet.class.getName())
                         && !servlet.name().toString()
                                 .equals(VaadinServlet.class.getName()))
-                .collect(Collectors.toList());
+                .toList();
 
         // Register VaadinServlet instances annotated with @WebServlet
         vaadinServlets = registerUserServlets(servletProducer,

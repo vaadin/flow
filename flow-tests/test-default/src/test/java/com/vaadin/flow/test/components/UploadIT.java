@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
@@ -33,6 +34,7 @@ import static com.vaadin.flow.test.components.UploadView.INPUT_ID;
 import static com.vaadin.flow.test.components.UploadView.REFRESH_ID;
 import static com.vaadin.flow.test.components.UploadView.RESULT_ID;
 import static com.vaadin.flow.test.components.UploadView.UPLOAD_ID;
+import static com.vaadin.flow.test.components.UploadView.UPLOAD_STATUS_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestFor(UploadView.class)
@@ -58,6 +60,13 @@ public class UploadIT extends AbstractDefaultIT {
         fileInput.sendKeys(uploadFile);
 
         $(NativeButtonElement.class).id(UPLOAD_ID).click();
+        // The click only makes the browser start the upload with fetch(),
+        // which runs outside the Flow request queue. Refresh only after the
+        // upload response has arrived, so that the server already has the
+        // uploaded content when it handles the refresh round trip.
+        waitForElementPresent(By.id(UPLOAD_STATUS_ID));
+        Assertions.assertEquals("Upload successful",
+                $(DivElement.class).id(UPLOAD_STATUS_ID).getText());
         $(NativeButtonElement.class).id(REFRESH_ID).click();
 
         Assertions.assertEquals("Test upload.",
