@@ -41,6 +41,13 @@ public abstract class AbstractContext implements Context {
      */
     private final boolean passivatingScope;
 
+    /**
+     * Creates a new context and determines whether its scope is passivating.
+     *
+     * @param beanManager
+     *            the bean manager used to check whether the scope of this
+     *            context is a passivating scope
+     */
     protected AbstractContext(BeanManager beanManager) {
         passivatingScope = beanManager.isPassivatingScope(getScope());
     }
@@ -49,6 +56,9 @@ public abstract class AbstractContext implements Context {
      * An implementation has to return the underlying storage which contains the
      * items held in the Context.
      * 
+     * @param contextual
+     *            the contextual for which the storage is requested, may be
+     *            {@code null}
      * @param createIfNotExist
      *            whether a ContextualStorage shall get created if it doesn't
      *            yet exist.
@@ -57,6 +67,12 @@ public abstract class AbstractContext implements Context {
     protected abstract ContextualStorage getContextualStorage(
             Contextual<?> contextual, boolean createIfNotExist);
 
+    /**
+     * Returns the contextual storages that are currently active for this
+     * context.
+     *
+     * @return a list of the active contextual storages
+     */
     protected List<ContextualStorage> getActiveContextualStorages() {
         List<ContextualStorage> result = new ArrayList<ContextualStorage>();
         result.add(getContextualStorage(null, false));
@@ -64,6 +80,8 @@ public abstract class AbstractContext implements Context {
     }
 
     /**
+     * Checks whether the scope served by this context is a passivating scope.
+     *
      * @return whether the served scope is a passivating scope
      */
     public boolean isPassivatingScope() {
@@ -174,6 +192,10 @@ public abstract class AbstractContext implements Context {
      * Destroys all the Contextual Instances in the specified ContextualStorage.
      * This is a static method to allow various holder objects to cleanup
      * properly in &#064;PreDestroy.
+     *
+     * @param storage
+     *            the storage whose contextual instances should be destroyed
+     * @return a map of the destroyed entries that were held in the storage
      */
     public static Map<Object, ContextualInstanceInfo<?>> destroyAllActive(
             ContextualStorage storage) {
@@ -193,6 +215,14 @@ public abstract class AbstractContext implements Context {
         return contextMap;
     }
 
+    /**
+     * Destroys the given contextual instance using the given bean.
+     *
+     * @param bean
+     *            the bean to use for destroying the instance
+     * @param contextualInstanceInfo
+     *            the contextual instance and its creational context
+     */
     public static void destroyBean(Contextual bean,
             ContextualInstanceInfo<?> contextualInstanceInfo) {
         bean.destroy(contextualInstanceInfo.getContextualInstance(),

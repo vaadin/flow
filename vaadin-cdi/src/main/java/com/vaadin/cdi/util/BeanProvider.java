@@ -397,12 +397,38 @@ public final class BeanProvider {
         return result;
     }
 
+    /**
+     * Gets a {@link DependentProvider} for the bean of the given type and
+     * qualifiers, using the current bean manager.
+     *
+     * @param type
+     *            the type of the bean
+     * @param qualifiers
+     *            the qualifiers of the bean
+     * @param <T>
+     *            the bean type
+     * @return a provider for the resolved bean
+     */
     public static <T> DependentProvider<T> getDependent(Class<T> type,
             Annotation... qualifiers) {
         BeanManager beanManager = getBeanManager();
         return getDependent(beanManager, type, qualifiers);
     }
 
+    /**
+     * Gets a {@link DependentProvider} for the bean of the given type and
+     * qualifiers, using the given bean manager.
+     *
+     * @param beanManager
+     *            the bean manager to use for resolving the bean
+     * @param type
+     *            the type of the bean
+     * @param qualifiers
+     *            the qualifiers of the bean
+     * @param <T>
+     *            the bean type
+     * @return a provider for the resolved bean
+     */
     public static <T> DependentProvider<T> getDependent(BeanManager beanManager,
             Class<T> type, Annotation... qualifiers) {
         Set<Bean<?>> beans = beanManager.getBeans(type, qualifiers);
@@ -411,11 +437,33 @@ public final class BeanProvider {
         return createDependentProvider(beanManager, type, bean);
     }
 
+    /**
+     * Gets a {@link DependentProvider} for the bean with the given name, using
+     * the current bean manager.
+     *
+     * @param name
+     *            the name of the bean
+     * @param <T>
+     *            the bean type
+     * @return a provider for the resolved bean
+     */
     public static <T> DependentProvider<T> getDependent(String name) {
         BeanManager beanManager = getBeanManager();
         return getDependent(beanManager, name);
     }
 
+    /**
+     * Gets a {@link DependentProvider} for the bean with the given name, using
+     * the given bean manager.
+     *
+     * @param beanManager
+     *            the bean manager to use for resolving the bean
+     * @param name
+     *            the name of the bean
+     * @param <T>
+     *            the bean type
+     * @return a provider for the resolved bean
+     */
     public static <T> DependentProvider<T> getDependent(BeanManager beanManager,
             String name) {
         Set<Bean<?>> beans = beanManager.getBeans(name);

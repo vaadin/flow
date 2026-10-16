@@ -79,6 +79,12 @@ public class BeanManagerProvider implements Extension {
 
     private static BeanManagerProvider bmpSingleton;
 
+    /**
+     * Creates a new bean manager provider.
+     */
+    public BeanManagerProvider() {
+    }
+
     static {
         Class cdiClass = ClassUtils
                 .tryToLoadClassForName("jakarta.enterprise.inject.spi.CDI");
@@ -305,6 +311,9 @@ public class BeanManagerProvider implements Extension {
      *
      * In EARs with multiple webapps, each WAR might get a different Extension.
      * This depends on the container used.
+     *
+     * @param adv
+     *            the after deployment validation event
      */
     public void cleanupFinalBeanManagers(
             @Observes AfterDeploymentValidation adv) {

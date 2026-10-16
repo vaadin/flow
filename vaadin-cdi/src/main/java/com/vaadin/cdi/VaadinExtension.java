@@ -51,6 +51,12 @@ import com.vaadin.cdi.util.DependentProvider;
  */
 public class VaadinExtension implements Extension {
 
+    /**
+     * Creates a new Vaadin CDI extension.
+     */
+    public VaadinExtension() {
+    }
+
     private VaadinServiceScopedContext serviceScopedContext;
     private VaadinSessionScopedContext sessionScopedContext;
     private UIScopedContext uiScopedContext;

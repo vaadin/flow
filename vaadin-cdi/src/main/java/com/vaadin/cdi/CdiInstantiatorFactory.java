@@ -40,6 +40,12 @@ public class CdiInstantiatorFactory implements InstantiatorFactory {
     @Inject
     private BeanManager beanManager;
 
+    /**
+     * Creates a new CDI instantiator factory.
+     */
+    public CdiInstantiatorFactory() {
+    }
+
     @Override
     public Instantiator createInstantitor(VaadinService service) {
         if (!getServiceClass().isAssignableFrom(service.getClass())) {
@@ -49,6 +55,13 @@ public class CdiInstantiatorFactory implements InstantiatorFactory {
         return new CdiInstantiator(beanManager, service);
     }
 
+    /**
+     * Gets the service class this factory creates instantiators for. The
+     * factory only creates an instantiator for services that are instances of
+     * this class.
+     *
+     * @return the supported service class
+     */
     public Class<? extends VaadinService> getServiceClass() {
         return CdiVaadinServletService.class;
     }
