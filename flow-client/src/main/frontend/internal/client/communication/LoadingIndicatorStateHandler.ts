@@ -57,6 +57,10 @@ export class LoadingIndicatorStateHandler {
 
   #showLoading = false;
 
+  // Whether the connection state currently counts this handler's loading,
+  // which a state change such as reconnecting drops.
+  #announced = false;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -91,9 +95,20 @@ export class LoadingIndicatorStateHandler {
   }
 
   /**
+   * Notes that a connection state change (e.g. to reconnecting) dropped the
+   * loading indication, so that {@link restoreLoading} re-announces an ongoing
+   * one and a later stop does not finish the loading another party started
+   * after the change.
+   */
+  loadingDropped(): void {
+    this.#announced = false;
+  }
+
+  /**
    * Restores the loading indication after a reconnect, which replaced it with
-   * the reconnecting state. Re-announces an ongoing loading indication, moving
-   * the state from reconnecting to loading in one transition, or adding to the
+   * the reconnecting state. Re-announces an ongoing loading indication unless
+   * a request started during the reconnect already announced it, moving the
+   * state from reconnecting to loading in one transition, or adding to the
    * loading started by another party (Flow router, Hilla requests) during the
    * reconnect. Otherwise shows connected, also leaving a connection lost set
    * by another party, unless another party is loading. Then stops the loading
@@ -101,7 +116,11 @@ export class LoadingIndicatorStateHandler {
    */
   restoreLoading(): void {
     if (this.#loading) {
-      loadingStarted();
+      // Also re-announce when not loading, as a state change by another party
+      // (e.g. going offline) drops the loading without notice.
+      if (!this.#announced || getState() !== LOADING) {
+        this.#announce();
+      }
     } else if (getState() !== LOADING) {
       setState(CONNECTED);
     }
@@ -132,9 +151,15 @@ export class LoadingIndicatorStateHandler {
     // loadingStarted/loadingFinished are preferred over setState so as not to
     // interfere with other loading parties (Flow router, Hilla requests).
     if (this.#loading) {
-      loadingStarted();
-    } else {
+      this.#announce();
+    } else if (this.#announced) {
+      this.#announced = false;
       loadingFinished();
     }
+  }
+
+  #announce(): void {
+    this.#announced = true;
+    loadingStarted();
   }
 }

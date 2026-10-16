@@ -20,7 +20,7 @@ function makeRegistry(reconnectAttempts = 3) {
       UILifecycle: { isRunning: () => true },
       ReconnectConfiguration: { getReconnectAttempts: () => reconnectAttempts },
       RequestResponseTracker: { hasActiveRequest: () => activeRequest, endRequest: () => log.endRequests++ },
-      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
+      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++, loadingDropped: () => {} },
       Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
     })
   };
@@ -83,7 +83,7 @@ describe('ReconnectStateMachine', () => {
     machine.resolveTemporaryError(ConnectionMessageType.PUSH);
     expect(machine.isReconnecting()).to.be.true;
 
-    // The matching resolution clears the state and restores loading (XHR path).
+    // The matching resolution clears the state and restores loading.
     machine.resolveTemporaryError(ConnectionMessageType.XHR);
     expect(machine.isReconnecting()).to.be.false;
     expect(machine.getReconnectAttempt()).to.equal(0);
@@ -99,7 +99,7 @@ describe('ReconnectStateMachine', () => {
       UILifecycle: { isRunning: () => false },
       ReconnectConfiguration: { getReconnectAttempts: () => 3 },
       RequestResponseTracker: { hasActiveRequest: () => true, endRequest: () => log.endRequests++ },
-      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
+      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++, loadingDropped: () => {} },
       Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
     });
     const machine = new ReconnectStateMachine(registry, () => {});
@@ -148,30 +148,53 @@ describe('ReconnectStateMachine', () => {
       expect(getState()).to.equal(ConnectionState.CONNECTED);
     });
 
-    it('shows connected after a request that was loading is re-sent successfully', async () => {
-      const { machine, transitions, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+    for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT]) {
+      it(`keeps showing a loading request after a ${type} reconnect`, async () => {
+        const { machine, transitions, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+        loadingIndicatorStateHandler.processMessage(null, null);
+        loadingIndicatorStateHandler.startLoading();
+        setActiveRequest(true);
+        await afterDeferred();
+        machine.handleRecoverableError(type, type === ConnectionMessageType.XHR ? { rpc: 1 } : null);
+        expect(getState()).to.equal(ConnectionState.RECONNECTING);
+
+        // The connection is re-established while the request is still in
+        // progress, then its response has been handled.
+        machine.resolveTemporaryError(type);
+        await afterDeferred();
+        expect(getState()).to.equal(ConnectionState.LOADING);
+        setActiveRequest(false);
+        loadingIndicatorStateHandler.stopLoading();
+        await afterDeferred();
+        expect(getState()).to.equal(ConnectionState.CONNECTED);
+        // Straight from reconnecting to loading, never connected in between.
+        expect(transitions).to.deep.equal([
+          ConnectionState.LOADING,
+          ConnectionState.RECONNECTING,
+          ConnectionState.LOADING,
+          ConnectionState.CONNECTED
+        ]);
+      });
+    }
+
+    it('shows connected after a request started during a heartbeat reconnect', async () => {
+      const { machine, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+      machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
+      // A heartbeat failure does not hold back requests, so the user's next
+      // action is sent and shows loading while the heartbeat reconnects.
       loadingIndicatorStateHandler.processMessage(null, null);
       loadingIndicatorStateHandler.startLoading();
       setActiveRequest(true);
       await afterDeferred();
-      machine.handleRecoverableError(ConnectionMessageType.XHR, { rpc: 1 });
-      expect(getState()).to.equal(ConnectionState.RECONNECTING);
+      expect(getState()).to.equal(ConnectionState.LOADING);
 
-      // The re-sent request succeeds, then its response has been handled.
-      machine.resolveTemporaryError(ConnectionMessageType.XHR);
+      machine.resolveTemporaryError(ConnectionMessageType.HEARTBEAT);
       await afterDeferred();
       expect(getState()).to.equal(ConnectionState.LOADING);
       setActiveRequest(false);
       loadingIndicatorStateHandler.stopLoading();
       await afterDeferred();
       expect(getState()).to.equal(ConnectionState.CONNECTED);
-      // Straight from reconnecting to loading, never connected in between.
-      expect(transitions).to.deep.equal([
-        ConnectionState.LOADING,
-        ConnectionState.RECONNECTING,
-        ConnectionState.LOADING,
-        ConnectionState.CONNECTED
-      ]);
     });
 
     for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT]) {
@@ -186,6 +209,29 @@ describe('ReconnectStateMachine', () => {
         expect(getState()).to.equal(ConnectionState.LOADING);
         connectionState.loadingFinished();
         expect(getState()).to.equal(ConnectionState.CONNECTED);
+      });
+    }
+
+    // A request finishing after a reconnect, or giving up (e.g. going offline),
+    // dropped its loading must not finish the loading of another party.
+    for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT, 'give-up'] as const) {
+      it(`keeps loading started by another party when a request finishes after ${type}`, async () => {
+        const { machine, connectionState, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+        loadingIndicatorStateHandler.processMessage(null, null);
+        loadingIndicatorStateHandler.startLoading();
+        setActiveRequest(true);
+        await afterDeferred();
+        if (type === 'give-up') {
+          machine.giveUp();
+        } else {
+          machine.handleRecoverableError(type, null);
+        }
+        connectionState.loadingStarted();
+
+        setActiveRequest(false);
+        loadingIndicatorStateHandler.stopLoading();
+        await afterDeferred();
+        expect(getState()).to.equal(ConnectionState.LOADING);
       });
     }
 
