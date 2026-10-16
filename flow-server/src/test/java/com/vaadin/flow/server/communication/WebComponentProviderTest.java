@@ -67,6 +67,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class WebComponentProviderTest {
@@ -227,15 +228,15 @@ class WebComponentProviderTest {
             throws IOException {
         registry = setupConfigurations(MyComponentExporter.class);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
+        when(response.getOutputStream()).thenReturn(out);
 
-        Mockito.when(request.getPathInfo())
+        when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         assertTrue(provider.handleSessionExpired(request, response));
         assertTrue(out.toString().contains("web-component-bootstrap.js"),
                 "Response should contain the web component script");
 
-        Mockito.when(request.getPathInfo())
+        when(request.getPathInfo())
                 .thenReturn("/web-component/web-component-bootstrap.js");
         assertFalse(provider.handleSessionExpired(request, response),
                 "Bootstrap request needs a session and should not be handled");

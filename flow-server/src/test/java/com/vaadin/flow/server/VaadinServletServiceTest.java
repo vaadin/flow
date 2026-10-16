@@ -55,6 +55,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
@@ -213,16 +216,15 @@ class VaadinServletServiceTest {
 
     @Test
     void requestCanCreateSession_webComponentScript_doesNotCreateSession() {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinContext context = mock(VaadinContext.class);
         WebComponentConfigurationRegistry registry = Mockito
                 .mock(WebComponentConfigurationRegistry.class);
         when(registry.hasConfigurations()).thenReturn(true);
-        when(context.getAttribute(
-                Mockito.eq(WebComponentConfigurationRegistry.class),
-                Mockito.any())).thenReturn(registry);
-        VaadinService requestService = Mockito.mock(VaadinService.class);
+        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
+                any())).thenReturn(registry);
+        VaadinService requestService = mock(VaadinService.class);
         when(requestService.getContext()).thenReturn(context);
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinRequest request = mock(VaadinRequest.class);
         when(request.getService()).thenReturn(requestService);
 
         when(request.getPathInfo())
