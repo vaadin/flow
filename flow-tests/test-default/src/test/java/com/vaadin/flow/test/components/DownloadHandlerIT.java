@@ -26,7 +26,6 @@ import java.util.Map;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
@@ -94,36 +93,6 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
         // Special characters in the file name in URL are encoded.
         Assertions.assertEquals(
                 "download-%C5%98%C5%99%C3%BC%C3%B1%C3%AE%C3%A7%C3%B8d%C3%AB%201%E4%B8%AD%E6%96%87.json",
-                FilenameUtils.getName(url));
-    }
-
-    // jetty 12 may throw MalformedURLException which Flow logs as a warning
-    // when checking for static resource before handling the download request.
-    @Disabled("In dev mode with frontend hotdeploy the dev server handler rejects /VAADIN/ paths that contain a quote with 403 before the stream handler sees them")
-    @BrowserTest
-    public void getDynamicDownloadHandlerFileResourceUnicodeNameWithQuote()
-            throws IOException {
-        open();
-
-        WebElement link = findElement(
-                By.id("download-handler-file-unicode-quote"));
-        Assertions.assertEquals("", link.getAttribute("router-ignore"),
-                "Anchor element should have router-ignore " + "attribute");
-        String url = link.getAttribute("href");
-
-        getDriver().manage().timeouts()
-                .scriptTimeout(Duration.of(15, ChronoUnit.SECONDS));
-
-        try (InputStream stream = download(url)) {
-            List<String> lines = IOUtils.readLines(stream,
-                    StandardCharsets.UTF_8);
-            Assertions.assertEquals("""
-                    {
-                      "download": true
-                    }""", String.join("\n", lines));
-        }
-        // Special characters in the file name in URL are encoded.
-        Assertions.assertEquals("download-%22.json",
                 FilenameUtils.getName(url));
     }
 

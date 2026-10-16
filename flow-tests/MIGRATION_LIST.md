@@ -16,7 +16,7 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | Target | ITs |
 |---|---|
-| test-default | 371 |
+| test-default | 372 |
 | ?UNMAPPED? | 32 |
 | test-embedding | 26 |
 | test-production | 23 |
@@ -43,7 +43,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | test-plain-spring | 1 |
 | test-push-startup(keep) | 1 |
 | test-tailwind | 1 |
-| **TOTAL** | **606** |
+| **TOTAL** | **607** |
 
 ## Mapping (grouped by target module, then feature)
 
@@ -252,6 +252,12 @@ procedure in [README.md](README.md) and the permutation policy in
 | TableSpanGridIT | test-root-context | move |
 | TimingInfoReportedIT | test-root-context | move |
 | TrackMessageSizeIT | test-root-context | move |
+
+**`components`**
+
+| IT | from | type |
+|---|---|---|
+| DownloadQuoteFileNameIT | test-root-context | move |
 
 **`dependencies`**
 
