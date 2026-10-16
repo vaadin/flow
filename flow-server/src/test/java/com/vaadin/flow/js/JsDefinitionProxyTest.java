@@ -126,6 +126,9 @@ class JsDefinitionProxyTest {
         assertTrue(exception.getMessage().contains("undeclared"),
                 "the message should name the method that declares nothing: "
                         + exception.getMessage());
+        // A definition that fails the check is not remembered as checked
+        assertThrows(IllegalArgumentException.class,
+                () -> proxy(UndeclaredJs.class));
     }
 
     @Test
