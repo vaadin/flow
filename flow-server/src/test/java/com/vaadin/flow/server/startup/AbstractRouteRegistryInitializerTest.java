@@ -155,10 +155,10 @@ class AbstractRouteRegistryInitializerTest {
 
     @Test
     void validateRouteClasses_menuParentIsTheRouteItself_throws() {
+        Stream<Class<?>> routeClasses = Stream.of(OwnMenuParent.class);
         InvalidRouteConfigurationException exception = assertThrows(
                 InvalidRouteConfigurationException.class,
-                () -> initializer.validateRouteClasses(context,
-                        Stream.of(OwnMenuParent.class)));
+                () -> initializer.validateRouteClasses(context, routeClasses));
         assertTrue(containsQuotedAnnotationName(exception.getMessage(),
                 Menu.class));
         assertTrue(exception.getMessage()

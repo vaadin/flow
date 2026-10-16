@@ -345,14 +345,9 @@ public class MenuRegistry {
 
         private Optional<Class<? extends Component>> resolve(
                 Class<? extends Component> navigationTarget) {
-            Optional<Class<? extends Component>> parent = parents
-                    .get(navigationTarget);
-            if (parent == null) {
-                parent = resolveDeclaredParent(navigationTarget)
-                        .or(() -> resolveRouteParent(navigationTarget));
-                parents.put(navigationTarget, parent);
-            }
-            return parent;
+            return parents.computeIfAbsent(navigationTarget,
+                    target -> resolveDeclaredParent(target)
+                            .or(() -> resolveRouteParent(target)));
         }
 
         private Optional<Class<? extends Component>> resolveDeclaredParent(
