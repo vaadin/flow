@@ -431,8 +431,9 @@ public class IndexHtmlRequestHandlerTest {
                 createVaadinRequest("/" + payload), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
 
-        assertFalse(indexHtml.contains(payload),
-                "Initial UIDL must not be able to close the script element");
+        assertFalse(
+                "Initial UIDL must not be able to close the script element",
+                indexHtml.contains(payload));
 
         Document document = Jsoup.parse(indexHtml);
         Elements scripts = document.head().getElementsByTag("script");
