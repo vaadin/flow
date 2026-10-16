@@ -133,9 +133,17 @@ $wnd.Vaadin.Flow.webNotification = {
     return publishPermission();
   },
 
-  show(title: string, options: VaadinWebNotificationOptions, key: string, channel: VaadinWebNotificationChannel): void {
+  show(
+    title: string,
+    options: VaadinWebNotificationOptions,
+    key: string | null,
+    channel: VaadinWebNotificationChannel | null
+  ): void {
+    // A trigger-bound action passes no key, since it closes notifications by
+    // tag only, and no channel when the server is not interested in events.
+    const report: VaadinWebNotificationChannel = channel ?? (() => {});
     if (!isSupported()) {
-      channel(
+      report(
         'error',
         'UNSUPPORTED',
         window.isSecureContext
@@ -145,7 +153,7 @@ $wnd.Vaadin.Flow.webNotification = {
       return;
     }
     if (Notification.permission !== 'granted') {
-      channel('error', 'NOT_ALLOWED', 'Notification permission has not been granted');
+      report('error', 'NOT_ALLOWED', 'Notification permission has not been granted');
       return;
     }
     let notification: Notification;
@@ -154,7 +162,7 @@ $wnd.Vaadin.Flow.webNotification = {
     } catch (e: any) {
       // Chrome on Android only shows notifications through a service worker
       // and throws a TypeError from the constructor.
-      channel('error', 'UNKNOWN', e?.message ? String(e.message) : String(e));
+      report('error', 'UNKNOWN', e?.message ? String(e.message) : String(e));
       return;
     }
     if (options.tag) {
@@ -167,21 +175,22 @@ $wnd.Vaadin.Flow.webNotification = {
         }
       });
     }
-    const entry: ShownNotification = { notification, tag: options.tag, channel };
-    shown.set(key, entry);
+    const entryKey = key ?? crypto.randomUUID();
+    const entry: ShownNotification = { notification, tag: options.tag, channel: report };
+    shown.set(entryKey, entry);
     notification.addEventListener('click', () => {
       window.focus();
-      channel('click');
+      report('click');
       notification.close();
     });
     notification.addEventListener('close', () => {
-      if (forget(key, entry)) {
-        channel('close');
+      if (forget(entryKey, entry)) {
+        report('close');
       }
     });
     notification.addEventListener('error', () => {
-      if (forget(key, entry)) {
-        channel('error', 'UNKNOWN', 'The browser could not show the notification');
+      if (forget(entryKey, entry)) {
+        report('error', 'UNKNOWN', 'The browser could not show the notification');
       }
     });
   },

@@ -80,14 +80,48 @@ class WebNotificationTest {
 
         WebNotification.onClick(button).requestPermission();
 
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
-        JsFunction install = (JsFunction) ui.getInternals()
-                .dumpPendingJavaScriptInvocations().get(0).getInvocation()
-                .getParameters().get(2);
-        assertTrue(install.getCaptures().contains("click"),
-                "click trigger install captures: " + install.getCaptures());
         assertEquals("window.Vaadin.Flow.webNotification.requestPermission()",
-                ((JsFunction) install.getCaptures().get(0)).getBody());
+                clickHandler(ui).getBody());
+    }
+
+    @Test
+    void onClick_show_showsInsideTheClickHandlerAndReportsBack() {
+        UI ui = new MockUI();
+        TestButton button = new TestButton();
+        ui.getElement().appendChild(button.getElement());
+        List<String> events = new ArrayList<>();
+
+        WebNotification.onClick(button).show("Test",
+                WebNotificationOptions.builder().tag("test").build(),
+                () -> events.add("click"),
+                error -> events.add("error " + error.reason()));
+
+        JsFunction handler = clickHandler(ui);
+        assertEquals(
+                "window.Vaadin.Flow.webNotification.show($0(event), $1, null, $2)",
+                handler.getBody());
+        ReturnChannelRegistration channel = (ReturnChannelRegistration) handler
+                .getCaptures().get(2);
+        channel.invoke(args("click"));
+        channel.invoke(args("close"));
+        channel.invoke(args("error", "NOT_ALLOWED", "no permission"));
+        assertEquals(List.of("click", "error NOT_ALLOWED"), events);
+    }
+
+    @Test
+    void onClick_showWithoutCallbacks_reportsNothingBack() {
+        UI ui = new MockUI();
+        TestButton button = new TestButton();
+        ui.getElement().appendChild(button.getElement());
+
+        WebNotification.onClick(button).show("Test",
+                WebNotificationOptions.builder().build());
+
+        assertEquals(
+                "window.Vaadin.Flow.webNotification.show($0(event), $1, null, null)",
+                clickHandler(ui).getBody());
+        assertFalse(button.getElement().getNode()
+                .getFeature(ReturnChannelMap.class).hasChannels());
     }
 
     @Test
@@ -198,6 +232,16 @@ class WebNotificationTest {
         WebNotificationOptions.Builder builder = WebNotificationOptions
                 .builder().renotify(true);
         assertThrows(IllegalArgumentException.class, builder::build);
+    }
+
+    private static JsFunction clickHandler(UI ui) {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        JsFunction install = (JsFunction) ui.getInternals()
+                .dumpPendingJavaScriptInvocations().get(0).getInvocation()
+                .getParameters().get(2);
+        assertTrue(install.getCaptures().contains("click"),
+                "click trigger install captures: " + install.getCaptures());
+        return (JsFunction) install.getCaptures().get(0);
     }
 
     private static JavaScriptInvocation showInvocation(MockUI ui) {

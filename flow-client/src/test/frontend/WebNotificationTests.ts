@@ -100,6 +100,17 @@ describe('webNotification', () => {
     expect(other.calls).to.deep.equal([]);
   });
 
+  it('shows a notification for a trigger, which passes no key and no channel', () => {
+    $wnd.Vaadin.Flow.webNotification.show('Test', { tag: 'trigger' }, null, null);
+    const notification = FakeNotification.instances[0];
+    let closed = false;
+    notification.addEventListener('close', () => (closed = true));
+
+    notification.dispatchEvent(new Event('click'));
+
+    expect(closed).to.be.true;
+  });
+
   it('keeps the notification with the same tag when the new one cannot be shown', () => {
     const first = recordingChannel();
     const firstKey = nextKey();

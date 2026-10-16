@@ -24,10 +24,10 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.trigger.internal.ShowWebNotificationAction;
 import com.vaadin.flow.component.webnotification.WebNotification.WebNotificationJs;
 import com.vaadin.flow.component.webnotification.WebNotificationError.Reason;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -163,8 +163,7 @@ public final class WebNotificationHandle implements Serializable {
             disconnect();
             List.copyOf(closeListeners).forEach(SerializableRunnable::run);
         }
-        case "error" -> fail(new WebNotificationError(parseReason(args.get(1)),
-                textOrEmpty(args.get(2))));
+        case "error" -> fail(ShowWebNotificationAction.readError(args));
         default -> LOGGER
                 .debug("Unknown web notification event from client: {}", type);
         }
@@ -180,18 +179,5 @@ public final class WebNotificationHandle implements Serializable {
             channel.remove();
             channel = null;
         }
-    }
-
-    private static Reason parseReason(@Nullable JsonNode value) {
-        try {
-            return value == null ? Reason.UNKNOWN
-                    : Reason.valueOf(value.asString());
-        } catch (IllegalArgumentException e) {
-            return Reason.UNKNOWN;
-        }
-    }
-
-    private static String textOrEmpty(@Nullable JsonNode value) {
-        return value == null || value.isNull() ? "" : value.asString();
     }
 }
