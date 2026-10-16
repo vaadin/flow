@@ -91,6 +91,28 @@ if (import.meta.hot) {
     const registration = await navigator.serviceWorker.getRegistration();
     if (registration) {
       await registration.update();
+      activateWaitingServiceWorker(registration);
     }
   });
+}
+
+/**
+ * Activates the worker that an update installed, which otherwise waits until
+ * every page of the application is closed.
+ */
+function activateWaitingServiceWorker(registration: ServiceWorkerRegistration) {
+  const worker = registration.installing ?? registration.waiting;
+  if (!worker) {
+    return;
+  }
+  const skipWaiting = () => worker.postMessage({ method: 'Vaadin.ServiceWorker.skipWaiting' });
+  if (worker.state === 'installed') {
+    skipWaiting();
+  } else {
+    worker.addEventListener('statechange', () => {
+      if (worker.state === 'installed') {
+        skipWaiting();
+      }
+    });
+  }
 }
