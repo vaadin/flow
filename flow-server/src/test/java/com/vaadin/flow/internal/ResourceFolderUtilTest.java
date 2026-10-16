@@ -85,6 +85,26 @@ class ResourceFolderUtilTest {
     }
 
     @Test
+    void folderPathContainsLiteralNonAsciiCharacter_filesInTheJarAreVisited()
+            throws IOException {
+        File jar = new File(temporaryFolder, "themes.jar");
+        try (JarOutputStream jarStream = new JarOutputStream(
+                new FileOutputStream(jar))) {
+            writeEntry(jarStream, "thèmes/");
+            writeEntry(jarStream, "thèmes/one.txt");
+        }
+
+        // A jar URL does not have to be percent-encoded, so the entry name can
+        // reach the utility with the characters it has in the jar
+        List<String> names = new ArrayList<>();
+        ResourceFolderUtil.visitFiles(
+                new URL("jar:" + jar.toURI().toURL() + "!/thèmes/"),
+                file -> names.add(file.getName()));
+
+        assertEquals(List.of("one.txt"), names);
+    }
+
+    @Test
     void unknownProtocol_folderIsReadAsAPath() throws IOException {
         File folder = new File(temporaryFolder, "exploded");
         Files.createDirectories(folder.toPath());

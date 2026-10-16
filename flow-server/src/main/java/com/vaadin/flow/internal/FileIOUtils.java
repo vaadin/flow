@@ -131,6 +131,12 @@ public class FileIOUtils {
 
     /**
      * Copies a directory recursively.
+     * <p>
+     * Relative symbolic links that point to a location inside the source
+     * directory are copied as links, so they keep working in the copy. Other
+     * symbolic links to files are followed and the file content is copied.
+     * Other symbolic links to directories are not traversed: an empty directory
+     * is created in their place.
      *
      * @param source
      *            the source directory
@@ -145,7 +151,8 @@ public class FileIOUtils {
     }
 
     /**
-     * Copies a directory recursively with a file filter.
+     * Copies a directory recursively with a file filter. Symbolic links are
+     * handled as in {@link #copyDirectory(File, File)}.
      *
      * @param source
      *            the source directory
@@ -179,12 +186,26 @@ public class FileIOUtils {
             public FileVisitResult visitFile(Path file,
                     BasicFileAttributes attrs) throws IOException {
                 if (filter == null || filter.accept(file.toFile())) {
-                    Files.copy(file, target.resolve(source.relativize(file)),
-                            StandardCopyOption.REPLACE_EXISTING);
+                    Path targetFile = target.resolve(source.relativize(file));
+                    if (attrs.isSymbolicLink()
+                            && isRelativeLinkWithin(file, source)) {
+                        Files.copy(file, targetFile, LinkOption.NOFOLLOW_LINKS,
+                                StandardCopyOption.REPLACE_EXISTING);
+                    } else {
+                        Files.copy(file, targetFile,
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
                 }
                 return FileVisitResult.CONTINUE;
             }
         });
+    }
+
+    private static boolean isRelativeLinkWithin(Path link, Path directory)
+            throws IOException {
+        Path linkTarget = Files.readSymbolicLink(link);
+        return !linkTarget.isAbsolute() && link.getParent().resolve(linkTarget)
+                .normalize().startsWith(directory.normalize());
     }
 
     /**
@@ -576,7 +597,80 @@ public class FileIOUtils {
             return path.getParent().getParent().toFile();
         }
 
+        return getGradleProjectFolder(path);
+    }
+
+    /**
+     * Determines the project folder from a Gradle source set output folder,
+     * which is either
+     * {@code <project>/<buildDir>/classes/<language>/<sourceSet>} or
+     * {@code <project>/<buildDir>/resources/<sourceSet>}.
+     * <p>
+     * The name of the build directory is configurable, so the candidate is
+     * accepted only when it belongs to a Gradle build instead of matching the
+     * directory by name. Without that check a path such as
+     * {@code /srv/classes/foo/bar} would be taken for a project folder.
+     * <p>
+     * The resources layout is matched first because a build directory named
+     * {@code classes} makes the two overlap: in
+     * {@code <project>/classes/resources/main} the classes layout would match
+     * too, and it would climb one level too far.
+     *
+     * @param outputFolder
+     *            a folder on the classpath
+     * @return the project folder, or {@code null} if the folder is not the
+     *         output folder of a Gradle source set
+     */
+    private static File getGradleProjectFolder(Path outputFolder) {
+        int names = outputFolder.getNameCount();
+        Path candidate = null;
+        if (names > 2 && "resources"
+                .equals(outputFolder.getName(names - 2).toString())) {
+            candidate = ancestor(outputFolder, 3);
+        } else if (names > 3 && "classes"
+                .equals(outputFolder.getName(names - 3).toString())) {
+            candidate = ancestor(outputFolder, 4);
+        }
+        if (candidate != null && belongsToGradleBuild(candidate)) {
+            return candidate.toFile();
+        }
         return null;
+    }
+
+    /**
+     * Whether the given folder is a project of a Gradle build, that is it has a
+     * build script of its own or it lies inside a build whose root has a
+     * settings script. A subproject that the root project configures entirely
+     * has no build script of its own.
+     *
+     * @param projectFolder
+     *            the candidate project folder
+     * @return {@code true} if the folder belongs to a Gradle build
+     */
+    private static boolean belongsToGradleBuild(Path projectFolder) {
+        if (hasAnyFile(projectFolder, "build.gradle", "build.gradle.kts")) {
+            return true;
+        }
+        for (Path folder = projectFolder; folder != null; folder = folder
+                .getParent()) {
+            if (hasAnyFile(folder, "settings.gradle", "settings.gradle.kts")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasAnyFile(Path folder, String... fileNames) {
+        return Arrays.stream(fileNames)
+                .anyMatch(name -> Files.isRegularFile(folder.resolve(name)));
+    }
+
+    private static Path ancestor(Path path, int levels) {
+        Path ancestor = path;
+        for (int i = 0; i < levels && ancestor != null; i++) {
+            ancestor = ancestor.getParent();
+        }
+        return ancestor;
     }
 
     /**

@@ -165,6 +165,13 @@ public class DevModeInitializer implements Serializable {
                     + "/?$");
 
     /**
+     * Creates the initializer.
+     */
+    public DevModeInitializer() {
+        // Default constructor
+    }
+
+    /**
      * Initialize the devmode server if not in production mode or compatibility
      * mode.
      *

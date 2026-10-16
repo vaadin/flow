@@ -49,6 +49,14 @@ public class SpringLookupInitializer extends LookupInitializer {
 
     private static final Object LOCK = new Object();
 
+    /**
+     * Creates the initializer. Flow instantiates it while bootstrapping the
+     * {@code Lookup}.
+     */
+    public SpringLookupInitializer() {
+        // Default constructor
+    }
+
     private static interface BootstrapCallable {
 
         void execute() throws ServletException;

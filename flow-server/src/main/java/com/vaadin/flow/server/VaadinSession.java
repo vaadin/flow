@@ -360,6 +360,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 : "Cannot change the lock from one instance to another";
         assert hasLock(service, session);
         lock = service.getSessionLock(session);
+        if (lock instanceof InstrumentedReentrantLock instrumentedLock) {
+            instrumentedLock.bind(service, this);
+        }
     }
 
     /**
@@ -557,6 +560,31 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public static VaadinSession getCurrent() {
         return CurrentInstance.get(VaadinSession.class);
+    }
+
+    /**
+     * Gets the currently used session, throwing an exception if none is
+     * available. Use this method when the code must run within an active
+     * session context.
+     * <p>
+     * If the code can work without a session, use {@link #getCurrent()} instead
+     * and check for null.
+     *
+     * @return the current session instance, never <code>null</code>
+     * @throws IllegalStateException
+     *             if no session is bound to the current thread
+     * @see #getCurrent()
+     * @see #access(Command)
+     * @since 25.4
+     */
+    public static VaadinSession getCurrentOrThrow() {
+        VaadinSession session = getCurrent();
+        if (session == null) {
+            throw new IllegalStateException(
+                    "No currently active VaadinSession found. This code must be run within a session context. "
+                            + "If you are running this from a background thread, wrap the call in UI.access() or VaadinSession.access().");
+        }
+        return session;
     }
 
     /**

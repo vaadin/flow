@@ -164,7 +164,12 @@ public class ApplicationConstants implements Serializable {
 
     /**
      * Path to the Vaadin client engine folder, relative to the context root.
+     *
+     * @deprecated the GWT client engine this folder held has been removed, the
+     *             client is served as part of the application bundle and
+     *             nothing writes to or serves this path any more
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static final String CLIENT_ENGINE_PATH = VAADIN_STATIC_FILES_PATH
             + "client";
 

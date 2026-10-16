@@ -30,6 +30,18 @@ public class HotswapCompleteEvent {
     private final VaadinService vaadinService;
     private final boolean redefined;
 
+    /**
+     * Creates a new event.
+     *
+     * @param vaadinService
+     *            the active {@link VaadinService} instance
+     * @param classes
+     *            the set of classes that were updated
+     * @param redefined
+     *            {@literal true} if the classes have been redefined by the
+     *            hotswap mechanism, {@literal false} if they have been loaded
+     *            for the first time by the ClassLoader
+     */
     public HotswapCompleteEvent(VaadinService vaadinService,
             Set<Class<?>> classes, boolean redefined) {
         this.classes = classes;

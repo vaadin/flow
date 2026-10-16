@@ -59,6 +59,7 @@ import com.vaadin.flow.spring.annotation.RouteScopeOwner;
  */
 public class VaadinRouteScope extends AbstractScope {
 
+    /** Name the scope is registered under. */
     public static final String VAADIN_ROUTE_SCOPE_NAME = "vaadin-route";
 
     private static class RouteStoreWrapper implements Serializable {
@@ -162,7 +163,7 @@ public class VaadinRouteScope extends AbstractScope {
 
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
-            BeanStore store = getBeanStoreIfExists(ui.getSession());
+            BeanStore store = getBeanStoreIfExists(ui.getSessionOrThrow());
             if (store == null) {
                 assert getBeanNamesByNavigationComponents().isEmpty();
             } else {
@@ -184,7 +185,7 @@ public class VaadinRouteScope extends AbstractScope {
             currentNavigationTarget = event.getNavigationTarget();
             currentLayouts = event.getLayouts();
 
-            BeanStore store = getBeanStoreIfExists(ui.getSession());
+            BeanStore store = getBeanStoreIfExists(ui.getSessionOrThrow());
             if (store == null) {
                 assert getBeanNamesByNavigationComponents().isEmpty();
             } else {
@@ -246,7 +247,8 @@ public class VaadinRouteScope extends AbstractScope {
         }
 
         private BeanNamesWrapper getBeanNamesWrapper() {
-            RouteBeanStore beanStore = getBeanStoreIfExists(ui.getSession());
+            RouteBeanStore beanStore = getBeanStoreIfExists(
+                    ui.getSessionOrThrow());
             return beanStore == null ? null : beanStore.getBeanNamesWrapper();
         }
 
@@ -410,6 +412,13 @@ public class VaadinRouteScope extends AbstractScope {
     }
 
     private ConfigurableListableBeanFactory beanFactory;
+
+    /**
+     * Creates the scope. Spring instantiates it.
+     */
+    public VaadinRouteScope() {
+        // Default constructor
+    }
 
     @Override
     public void postProcessBeanFactory(

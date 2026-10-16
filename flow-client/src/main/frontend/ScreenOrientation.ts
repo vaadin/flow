@@ -15,10 +15,7 @@
  */
 
 type VaadinScreenOrientationType =
-  | 'portrait-primary'
-  | 'portrait-secondary'
-  | 'landscape-primary'
-  | 'landscape-secondary';
+  'portrait-primary' | 'portrait-secondary' | 'landscape-primary' | 'landscape-secondary';
 
 interface VaadinScreenOrientationDetail {
   type: VaadinScreenOrientationType | '';

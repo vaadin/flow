@@ -77,7 +77,8 @@ public class Query<T, F> implements Serializable {
      * @param limit
      *            fetched item count
      * @param sortOrders
-     *            sorting order for fetching; used for sorting backends
+     *            sorting order for fetching; used for sorting backends; can be
+     *            null, which is treated as an empty list
      * @param inMemorySorting
      *            comparator for sorting in-memory data
      * @param filter
@@ -87,7 +88,8 @@ public class Query<T, F> implements Serializable {
             Comparator<T> inMemorySorting, F filter) {
         this.offset = offset;
         this.limit = limit;
-        this.sortOrders = sortOrders;
+        this.sortOrders = sortOrders == null ? Collections.emptyList()
+                : sortOrders;
         this.inMemorySorting = inMemorySorting;
         this.filter = filter;
     }
@@ -184,7 +186,7 @@ public class Query<T, F> implements Serializable {
      * component only for the columns that have key set using either
      * {@code Column#setKey} or {@code Grid#setColumns} methods.
      *
-     * @return list of sort orders
+     * @return list of sort orders, never null
      */
     public List<QuerySortOrder> getSortOrders() {
         return sortOrders;

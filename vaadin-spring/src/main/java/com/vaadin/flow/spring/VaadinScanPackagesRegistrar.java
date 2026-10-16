@@ -39,6 +39,13 @@ import com.vaadin.flow.spring.annotation.EnableVaadin;
 public class VaadinScanPackagesRegistrar
         implements ImportBeanDefinitionRegistrar {
 
+    /**
+     * Creates the registrar. Spring instantiates it.
+     */
+    public VaadinScanPackagesRegistrar() {
+        // Default constructor
+    }
+
     static class VaadinScanPackages {
 
         private final List<String> scanPackages;

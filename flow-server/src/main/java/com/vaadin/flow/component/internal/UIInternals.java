@@ -28,9 +28,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,6 +50,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
@@ -66,7 +67,9 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.CompressUtil;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -77,6 +80,10 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.internal.streams.ActiveTransfer;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -98,6 +105,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
 
@@ -128,6 +136,7 @@ public class UIInternals implements Serializable {
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
         private final List<Object> parameters = new ArrayList<>();
+        private final @Nullable JsCall jsCall;
 
         /**
          * Creates a new invocation.
@@ -139,6 +148,24 @@ public class UIInternals implements Serializable {
          * @since 25.0
          */
         public JavaScriptInvocation(String expression, Object... parameters) {
+            this((JsCall) null, expression, parameters);
+        }
+
+        /**
+         * Creates a new invocation for the given call, whose expression and
+         * parameters the caller has already resolved.
+         *
+         * @param jsCall
+         *            the call that this invocation performs, or
+         *            <code>null</code> if the invocation is plain JavaScript
+         * @param expression
+         *            the expression to invoke
+         * @param parameters
+         *            a list of parameters to use when invoking the script
+         * @since 25.4
+         */
+        public JavaScriptInvocation(@Nullable JsCall jsCall, String expression,
+                Object... parameters) {
             /*
              * To ensure attached elements are actually attached, the parameters
              * won't be serialized until the phase the UIDL message is created.
@@ -152,6 +179,7 @@ public class UIInternals implements Serializable {
 
             this.expression = expression;
             Collections.addAll(this.parameters, parameters);
+            this.jsCall = jsCall;
         }
 
         /**
@@ -170,6 +198,20 @@ public class UIInternals implements Serializable {
          */
         public List<Object> getParameters() {
             return Collections.unmodifiableList(parameters);
+        }
+
+        /**
+         * Gets the call that this invocation performs, for a caller that acts
+         * on the invocation instead of running its JavaScript — the client,
+         * which looks up the generated function rather than compiling the
+         * expression, and a driver of the client side that recognizes the call.
+         *
+         * @return the call, or <code>null</code> if the invocation is plain
+         *         JavaScript scheduled with an expression
+         * @since 25.4
+         */
+        public @Nullable JsCall getJsCall() {
+            return jsCall;
         }
     }
 
@@ -249,6 +291,11 @@ public class UIInternals implements Serializable {
 
     private ContinueNavigationAction continueNavigationAction = null;
 
+    // Both only have a value while the router handles a navigation, which
+    // happens within one request, so they are not serialized
+    private transient int navigationDepth;
+    private transient Exception navigationFailure;
+
     /**
      * The Vaadin session to which the related UI belongs.
      */
@@ -262,7 +309,11 @@ public class UIInternals implements Serializable {
 
     private byte[] lastProcessedMessageHash = null;
 
-    private String lastRequestResponse;
+    /*
+     * Kept compressed: it is held for every UI until the next client message,
+     * but only read when the client sends a message again.
+     */
+    private byte[] lastRequestResponse;
 
     private String contextRootRelativePath;
 
@@ -311,13 +362,22 @@ public class UIInternals implements Serializable {
 
     private boolean screenOrientationListenerInstalled;
 
-    private ArrayDeque<Component> modalComponentStack;
-
-    private ArrayDeque<Component> modalityComponentStack;
-
-    private Map<Component, Registration> modalityRemovalRegistrations;
+    /*
+     * Components with modality, most recently set first. Strict modal
+     * components are the entries with ModalityMode.STRICT.
+     */
+    private ArrayDeque<ModalityEntry> modalityStack;
 
     private Element wrapperElement;
+
+    /*
+     * Unlike the rest of the UI state, this is not protected by the session
+     * lock: an upload or download request is served without holding the lock,
+     * so the request thread registers and removes its own transfer while other
+     * threads may be checking or terminating the transfers of this UI.
+     */
+    private final Set<ActiveTransfer> activeTransfers = ConcurrentHashMap
+            .newKeySet();
 
     /**
      * Creates a new instance for the given UI.
@@ -385,6 +445,11 @@ public class UIInternals implements Serializable {
      * Sets the last processed server message id.
      * <p>
      * Used internally for communication tracking.
+     * <p>
+     * Also forgets the response recorded for the previous message, as it stops
+     * being an answer this UI may send again once a new message is processed. A
+     * caller that sets the id for any other reason, such as restoring tracking
+     * state, would discard a response the client may still ask for.
      *
      * @param lastProcessedClientToServerId
      *            the id of the last processed server message
@@ -396,17 +461,23 @@ public class UIInternals implements Serializable {
             byte[] lastProcessedMessageHash) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
         this.lastProcessedMessageHash = lastProcessedMessageHash;
+        // A new message is being processed, so the recorded response answers
+        // the previous one. It can be sent again only once the answer to this
+        // message exists.
+        this.lastRequestResponse = null;
     }
 
     /**
-     * Sets the response created for the last UIDL request.
+     * Sets the response created for a client message, so that it can be sent
+     * again if the client re-sends that same message.
      *
      * @param lastRequestResponse
-     *            The request that was sent for the last UIDL request.
+     *            the response that was created for the client message
      * @since 24.7
      */
     public void setLastRequestResponse(String lastRequestResponse) {
-        this.lastRequestResponse = lastRequestResponse;
+        this.lastRequestResponse = lastRequestResponse == null ? null
+                : CompressUtil.deflateString(lastRequestResponse);
     }
 
     /**
@@ -416,7 +487,8 @@ public class UIInternals implements Serializable {
      * @since 24.7
      */
     public String getLastRequestResponse() {
-        return lastRequestResponse;
+        return lastRequestResponse == null ? null
+                : CompressUtil.inflateString(lastRequestResponse);
     }
 
     /**
@@ -479,6 +551,7 @@ public class UIInternals implements Serializable {
      *
      * @return the time the pending updates were last purged
      * @see UI#getLastUpdateSentTimestamp()
+     * @since 25.3
      */
     public Instant getLastUpdateSentTimestamp() {
         return lastUpdateSentTimestamp;
@@ -758,6 +831,65 @@ public class UIInternals implements Serializable {
         session.checkHasLock();
         pendingJsInvocations.add(invocation);
         pendingJsInvocationOwners.add(invocation.getOwner());
+        // Counts an invocation that is queued directly, such as one from
+        // Page.executeJs. An invocation queued through its owner being
+        // attached is already counted, and counting is idempotent
+        invocation.countWhenAttached();
+    }
+
+    /**
+     * Adds an invocation of the given call to be sent to the client, owned by
+     * the root node of the state tree, which is what makes it an invocation of
+     * this UI rather than of anything in it.
+     * <p>
+     * The call runs on nothing in particular, the way JavaScript given to
+     * {@link Page#executeJs(String, Object...)} does, rather than on an element
+     * the way a call made on one does.
+     *
+     * @param call
+     *            the call to run, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     * @since 25.4
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(JsCall call) {
+        return addJavaScriptInvocation(new JavaScriptInvocation(call,
+                call.getExpression(), call.parametersFor(null)));
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client, owned by the root
+     * node of the state tree, which is what makes it an invocation of this UI
+     * rather than of anything in it.
+     *
+     * @param invocation
+     *            the invocation to add, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     * @since 25.4
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(
+            JavaScriptInvocation invocation) {
+        return addJavaScriptInvocation(getStateTree().getRootNode(),
+                invocation);
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client, owned by the given
+     * node, which is what decides when it is sent and what it is discarded
+     * with.
+     *
+     * @param owner
+     *            the node the invocation belongs to, not <code>null</code>
+     * @param invocation
+     *            the invocation to add, not <code>null</code>
+     * @return the invocation, which answers with what the client returns
+     * @since 25.4
+     */
+    public PendingJavaScriptResult addJavaScriptInvocation(StateNode owner,
+            JavaScriptInvocation invocation) {
+        PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
+                owner, invocation);
+        addJavaScriptInvocation(pending);
+        return pending;
     }
 
     /**
@@ -817,14 +949,20 @@ public class UIInternals implements Serializable {
      *
      * @param owner
      *            the node whose invocations to discard, not <code>null</code>
+     * @since 25.3
      */
     public void discardPendingJavaScriptInvocations(StateNode owner) {
         checkInvocationQueueLock();
         if (!pendingJsInvocationOwners.remove(owner)) {
             return;
         }
-        pendingJsInvocations
-                .removeIf(invocation -> invocation.getOwner() == owner);
+        pendingJsInvocations.removeIf(invocation -> {
+            if (invocation.getOwner() != owner) {
+                return false;
+            }
+            invocation.stopCounting();
+            return true;
+        });
     }
 
     /**
@@ -833,9 +971,12 @@ public class UIInternals implements Serializable {
      * Called by {@link StateTree} when resynchronizing, which reinitializes the
      * whole client side, so the queue is emptied in one go rather than node by
      * node.
+     * 
+     * @since 25.3
      */
     public void discardPendingJavaScriptInvocations() {
         checkInvocationQueueLock();
+        pendingJsInvocations.forEach(PendingJavaScriptInvocation::stopCounting);
         pendingJsInvocations.clear();
         pendingJsInvocationOwners.clear();
     }
@@ -880,6 +1021,34 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Checks whether a pending invocation is a call of the named method of the
+     * given JavaScript definition.
+     * <p>
+     * This lets a caller recognize what it scheduled itself, such as the router
+     * checking for a pending location change, without matching text in a
+     * script.
+     * <p>
+     * Methods are matched by name only, so a call of any overload with the
+     * given name counts.
+     *
+     * @param definitionType
+     *            the JavaScript definition, not <code>null</code>
+     * @param methodName
+     *            the name of the called method, not <code>null</code>
+     * @return <code>true</code> if such a call is pending, <code>false</code>
+     *         otherwise
+     * @since 25.4
+     */
+    public boolean containsPendingJsCall(Class<?> definitionType,
+            String methodName) {
+        return getPendingJavaScriptInvocations()
+                .map(js -> js.getInvocation().getJsCall())
+                .anyMatch(call -> call != null
+                        && call.definitionType() == definitionType
+                        && call.methodName().equals(methodName));
+    }
+
+    /**
      * Records the page title set with {@link Page#setTitle(String)}.
      * <p>
      * You should not set the page title for the browser with this method, use
@@ -891,27 +1060,16 @@ public class UIInternals implements Serializable {
     public void setTitle(String title) {
         assert title != null;
 
-        pendingTitleUpdateCanceler = ui.getPage()
-                .executeJs(generateTitleScript().stripIndent(), title);
-
-        this.title = title;
-    }
-
-    private String generateTitleScript() {
-        String setTitleScript = """
-                    document.title = $0;
-                    if(window?.Vaadin?.documentTitleSignal) {
-                        window.Vaadin.documentTitleSignal.value = $0;
-                    }
-                """;
+        TitleJs titleJs = ui.getPage().executeJs(TitleJs.class);
         if (getSession().getConfiguration().isReactEnabled()) {
             // For react-router we should wait for navigation to finish
             // before updating the title.
-            setTitleScript = String.format(
-                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s }",
-                    setTitleScript);
+            pendingTitleUpdateCanceler = titleJs.setTitleAfterNavigation(title);
+        } else {
+            pendingTitleUpdateCanceler = titleJs.setTitle(title);
         }
-        return setTitleScript;
+
+        this.title = title;
     }
 
     /**
@@ -967,6 +1125,23 @@ public class UIInternals implements Serializable {
         boolean result = pendingTitleUpdateCanceler.cancelExecution();
         pendingTitleUpdateCanceler = null;
         return result;
+    }
+
+    /**
+     * Restores the app shell title if the current page title is empty, i.e. the
+     * route target does not define a title.
+     * <p>
+     * <b>NOTE</b> Intended for internal use, you should not call this method.
+     *
+     * @since 25.4
+     */
+    public void restoreAppShellTitleIfEmpty() {
+        // app shell title is computed from the title tag in index.html
+        if ((title == null || title.isEmpty()) && appShellTitle != null
+                && !appShellTitle.isEmpty()) {
+            cancelPendingTitleUpdate();
+            setTitle(appShellTitle);
+        }
     }
 
     /**
@@ -1233,7 +1408,7 @@ public class UIInternals implements Serializable {
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(session.getService(), componentClass);
         // In npm mode, add external JavaScripts directly to the page.
-        addExternalDependencies(dependencies);
+        addRuntimeDependencies(componentClass, dependencies);
         if (mightHaveChunk(componentClass, dependencies)) {
             triggerChunkLoading(componentClass);
         }
@@ -1242,7 +1417,9 @@ public class UIInternals implements Serializable {
             String resolved = FrontendDependencyUrlResolver
                     .resolveToContextRoot(styleSheet.value());
             if (resolved != null) {
-                page.addStyleSheet(resolved, styleSheet.loadMode());
+                page.addStyleSheet(resolved, styleSheet.loadMode(),
+                        styleSheet.layer().isEmpty() ? null
+                                : styleSheet.layer());
             }
         });
 
@@ -1273,25 +1450,41 @@ public class UIInternals implements Serializable {
             Class<? extends Component> componentClass) {
         boolean isProductionMode = ui.getSession() != null
                 && ui.getSession().getConfiguration().isProductionMode();
-        List<String> chunkIds = new ArrayList<>();
-        chunkIds.add(BundleUtils.getChunkId(componentClass));
+        Set<String> chunkIds = new LinkedHashSet<>();
         if (isProductionMode) {
-            // When using the default production bundle, the chunk for a
-            // specific
-            // Flow component subclass may not be present (e.g. MyChart < Chart)
-            // However, the required imports are in the bundle, associated with
-            // the chunk id of the parent class.
-            // Force loading of potential chunks for all parent classes in the
-            // component hierarchy. DependencyList takes care to prevent loading
-            // the same chunk multiple times.
-            Class<?> clazz = componentClass.getSuperclass();
-            while (clazz != Component.class) {
-                chunkIds.add(BundleUtils.getChunkId(clazz.getName()));
-                clazz = clazz.getSuperclass();
-            }
+            collectProductionChunkIds(componentClass, chunkIds,
+                    new HashSet<>());
+        } else {
+            chunkIds.add(BundleUtils.getChunkId(componentClass));
         }
         chunkIds.forEach(chunkId -> ui.getPage().addDynamicImport(
                 "return window.Vaadin.Flow.loadOnDemand('" + chunkId + "');"));
+    }
+
+    private static void collectProductionChunkIds(
+            Class<? extends Component> componentClass, Set<String> chunkIds,
+            Set<Class<?>> visited) {
+        if (!visited.add(componentClass)) {
+            return;
+        }
+        // When using the default production bundle, the chunk for a specific
+        // Flow component subclass may not be present (e.g. MyChart < Chart)
+        // However, the required imports are in the bundle, associated with
+        // the chunk id of the parent class.
+        // Force loading of potential chunks for all parent classes in the
+        // component hierarchy. DependencyList takes care to prevent loading
+        // the same chunk multiple times.
+        Class<?> clazz = componentClass;
+        while (clazz != Component.class) {
+            chunkIds.add(BundleUtils.getChunkId(clazz.getName()));
+            clazz = clazz.getSuperclass();
+        }
+        // The default production bundle has a chunk per component class, so
+        // the imports of a @Uses target are only loaded through its own chunk
+        for (Uses uses : AnnotationReader.getAnnotationsFor(componentClass,
+                Uses.class)) {
+            collectProductionChunkIds(uses.value(), chunkIds, visited);
+        }
     }
 
     private void warnForUnavailableBundledDependencies(
@@ -1303,7 +1496,10 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
+        // type=MODULE values are deliberately kept out of the bundle and are
+        // loaded at runtime instead, so their absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
+                .filter(dep -> dep.type() != JavaScript.Type.MODULE)
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
@@ -1334,14 +1530,56 @@ public class UIInternals implements Serializable {
 
     }
 
-    private void addExternalDependencies(DependencyInfo dependency) {
+    private void addRuntimeDependencies(
+            Class<? extends Component> componentClass,
+            DependencyInfo dependency) {
         Page page = ui.getPage();
-        dependency.getJavaScripts().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJavaScript(js.value(), js.loadMode()));
+        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+                .forEach(js -> {
+                    // Checked before resolving the value so that an
+                    // unsupported combination is reported even when the value
+                    // itself would be rejected
+                    if (js.type() == JavaScript.Type.MODULE
+                            && js.loadMode() == LoadMode.INLINE) {
+                        throw new IllegalArgumentException("The @JavaScript('"
+                                + js.value() + "') annotation on "
+                                + componentClass.getName()
+                                + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
+                    }
+                    String resolved = resolveRuntimeJavaScript(js.value());
+                    if (resolved == null) {
+                        return;
+                    }
+                    page.addJavaScript(resolved, js.loadMode(), js.type());
+                });
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
-                .forEach(js -> page.addJsModule(js.value()));
+                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
+                        JavaScript.Type.MODULE));
+    }
+
+    private boolean isRuntimeJavaScript(JavaScript js) {
+        return js.type() == JavaScript.Type.MODULE
+                || UrlUtil.isExternal(js.value());
+    }
+
+    /**
+     * Normalizes a runtime {@link JavaScript} annotation value so that the
+     * bootstrap URI resolver can expand it.
+     * <p>
+     * Values with a protocol (external URLs but also {@code context://} and
+     * {@code base://}) are passed through untouched, the same way they were
+     * before {@link JavaScript.Type#MODULE} existed. Only bare relative values,
+     * which are new with {@code Type.MODULE}, need normalizing to the context
+     * root.
+     *
+     * @return the normalized value, or {@code null} if the value was rejected
+     */
+    private String resolveRuntimeJavaScript(String value) {
+        if (UrlUtil.isExternal(value)) {
+            return value;
+        }
+        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
     }
 
     /**
@@ -1465,6 +1703,62 @@ public class UIInternals implements Serializable {
     public void setContinueNavigationAction(
             ContinueNavigationAction continueNavigationAction) {
         this.continueNavigationAction = continueNavigationAction;
+    }
+
+    /**
+     * Marks that the router has started handling a navigation for this UI.
+     * Every call must be matched by a call to {@link #exitNavigation()}, also
+     * when the navigation fails. For framework use only.
+     *
+     * @return {@code true} if this is the outermost navigation, {@code false}
+     *         if it is nested inside a navigation that is already being
+     *         handled, such as a forward, a reroute or an error view
+     * @since 25.4
+     */
+    public boolean enterNavigation() {
+        return navigationDepth++ == 0;
+    }
+
+    /**
+     * Marks that the router has finished handling a navigation started with
+     * {@link #enterNavigation()}. For framework use only.
+     * 
+     * @since 25.4
+     */
+    public void exitNavigation() {
+        navigationDepth--;
+        if (navigationDepth == 0) {
+            navigationFailure = null;
+        }
+    }
+
+    /**
+     * Records the exception for which an error view is rendered during the
+     * ongoing navigation. Only the first exception of a navigation is kept,
+     * since any later one comes from handling the first. Nothing is recorded
+     * outside a navigation started with {@link #enterNavigation()}. For
+     * framework use only.
+     *
+     * @param exception
+     *            the exception the error view is rendered for, not {@code null}
+     * @since 25.4
+     */
+    public void recordNavigationFailure(Exception exception) {
+        if (navigationDepth > 0 && navigationFailure == null) {
+            navigationFailure = exception;
+        }
+    }
+
+    /**
+     * Gets the exception for which an error view was rendered during the
+     * ongoing navigation. For framework use only.
+     *
+     * @return the exception, or {@code null} if no error view has been rendered
+     *         during the ongoing navigation
+     * @since 25.4
+     */
+    public @Nullable Exception getNavigationFailure() {
+        return navigationFailure;
     }
 
     /**
@@ -1858,7 +2152,7 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public boolean hasModalComponent() {
-        return modalComponentStack != null && !modalComponentStack.isEmpty();
+        return getActiveModalComponent() != null;
     }
 
     /**
@@ -1871,11 +2165,9 @@ public class UIInternals implements Serializable {
      * without making the UI inert.
      *
      * @return {@code true} if a component with modality is defined
-     * @since 25.3
      */
     public boolean hasModalityComponent() {
-        return modalityComponentStack != null
-                && !modalityComponentStack.isEmpty();
+        return modalityStack != null && !modalityStack.isEmpty();
     }
 
     /**
@@ -1884,13 +2176,12 @@ public class UIInternals implements Serializable {
      * set first.
      *
      * @return the components with modality, never {@code null}
-     * @since 25.3
      */
     public List<Component> getModalityComponents() {
         if (!hasModalityComponent()) {
             return Collections.emptyList();
         }
-        return List.copyOf(modalityComponentStack);
+        return modalityStack.stream().map(ModalityEntry::component).toList();
     }
 
     /**
@@ -1909,10 +2200,10 @@ public class UIInternals implements Serializable {
      *         there is none
      */
     public Component getActiveModalityComponent() {
-        if (hasModalityComponent()) {
-            return modalityComponentStack.peek();
+        if (!hasModalityComponent()) {
+            return null;
         }
-        return null;
+        return modalityStack.peek().component();
     }
 
     /**
@@ -1922,10 +2213,12 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public Component getActiveModalComponent() {
-        if (hasModalComponent()) {
-            return modalComponentStack.peek();
+        if (modalityStack == null) {
+            return null;
         }
-        return null;
+        return modalityStack.stream()
+                .filter(entry -> entry.mode() == ModalityMode.STRICT)
+                .map(ModalityEntry::component).findFirst().orElse(null);
     }
 
     /**
@@ -1941,82 +2234,33 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to toggle modal
+     * @see #setChildModal(Component, ModalityMode)
      * @since 23.0
      */
     public void setChildModal(Component child) {
-        if (modalComponentStack == null) {
-            modalComponentStack = new ArrayDeque<>();
-        } else if (isTopMostModal(child)) {
-            return;
-        }
-        ElementUtil.setIgnoreParentInert(child.getElement(), true);
-
-        if (modalComponentStack.isEmpty()) {
-            ElementUtil.setInert(ui.getElement(), true);
-        } else {
-            // disable previous top most modal component
-            ElementUtil.setIgnoreParentInert(
-                    modalComponentStack.peek().getElement(), false);
-        }
-
-        modalComponentStack.remove(child);
-        modalComponentStack.push(child);
-
-        trackModality(child);
+        setModality(child, ModalityMode.STRICT);
     }
 
     /**
-     * Makes an existing child component visually modal. Differently from
-     * {@link #setChildModal(Component)}, the UI and the other components inside
-     * it are not made inert, so they still react to client side requests. The
-     * component is however tracked as a component with modality, since it
-     * covers the UI with a modality curtain on the client side.
+     * Changes the modality of an existing child component by modality mode.
+     * Differently from {@link #setChildModal(Component)}, which always makes
+     * the component strictly modal, this also supports
+     * {@link ModalityMode#VISUAL}: the UI and the other components inside it
+     * are not made inert, so they still react to client side requests, but the
+     * component is tracked as a component with modality, since it covers the UI
+     * with a modality curtain on the client side. {@link ModalityMode#MODELESS}
+     * is the same as {@link #setChildModeless(Component)}.
      * <p>
      * Tracking is removed automatically when the component is removed from the
      * UI, no need to call anything.
      *
      * @param child
-     *            the child component to make visually modal
-     * @since 25.3
+     *            the child component to change modality for
+     * @param mode
+     *            the modality mode, not {@code null}
      */
-    public void setChildVisuallyModal(Component child) {
-        // strict and visual modality are mutually exclusive
-        removeStrictModality(child);
-        trackModality(child);
-    }
-
-    private void trackModality(Component child) {
-        if (modalityComponentStack == null) {
-            modalityComponentStack = new ArrayDeque<>();
-        }
-        modalityComponentStack.remove(child);
-        modalityComponentStack.push(child);
-        registerModalityRemoval(child);
-    }
-
-    /*
-     * Handle removal automatically on element level always due to possible
-     * component.getElement().removeFromParent() usage. Does nothing if the
-     * child is already registered, so that repeatedly changing the modality of
-     * a component does not pile up detach listeners.
-     */
-    private void registerModalityRemoval(Component child) {
-        if (modalityRemovalRegistrations == null) {
-            modalityRemovalRegistrations = new IdentityHashMap<>();
-        } else if (modalityRemovalRegistrations.containsKey(child)) {
-            return;
-        }
-        AtomicReference<Registration> registrationCombination = new AtomicReference<>();
-        final Registration componentRemoval = () -> {
-            modalityRemovalRegistrations.remove(child);
-            setChildModeless(child);
-        };
-        final Registration listenerRegistration = child.getElement()
-                .addDetachListener(
-                        event -> registrationCombination.get().remove());
-        registrationCombination.set(
-                Registration.combine(componentRemoval, listenerRegistration));
-        modalityRemovalRegistrations.put(child, registrationCombination.get());
+    public void setChildModal(Component child, ModalityMode mode) {
+        setModality(child, Objects.requireNonNull(mode));
     }
 
     /**
@@ -2029,35 +2273,61 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public void setChildModeless(Component child) {
-        if (modalityComponentStack != null) {
-            modalityComponentStack.remove(child);
-        }
-        removeStrictModality(child);
+        setModality(child, ModalityMode.MODELESS);
     }
 
-    private void removeStrictModality(Component child) {
-        if (modalComponentStack == null) {
+    private void setModality(Component child, ModalityMode mode) {
+        Component previousActiveModal = getActiveModalComponent();
+
+        ModalityEntry previousEntry = null;
+        if (modalityStack != null) {
+            previousEntry = modalityStack.stream()
+                    .filter(entry -> entry.component() == child).findFirst()
+                    .orElse(null);
+            modalityStack.remove(previousEntry);
+        }
+        if (mode != ModalityMode.MODELESS) {
+            if (modalityStack == null) {
+                modalityStack = new ArrayDeque<>();
+            }
+            /*
+             * Handle removal automatically on element level always due to
+             * possible component.getElement().removeFromParent() usage. The
+             * listener is registered only once, so that repeatedly changing the
+             * modality of a component does not pile up detach listeners.
+             */
+            Registration detachRegistration = previousEntry != null
+                    ? previousEntry.detachRegistration()
+                    : child.getElement().addDetachListener(
+                            event -> setChildModeless(child));
+            modalityStack
+                    .push(new ModalityEntry(child, mode, detachRegistration));
+        } else if (previousEntry != null) {
+            previousEntry.detachRegistration().remove();
+        }
+
+        updateInert(previousActiveModal, getActiveModalComponent());
+    }
+
+    private void updateInert(Component previousActiveModal,
+            Component activeModal) {
+        if (previousActiveModal == activeModal) {
             return;
         }
-        boolean isTopmostModal = isTopMostModal(child);
-        if (modalComponentStack.remove(child)) {
-            if (isTopmostModal) {
-                // reset ignoring inert
-                ElementUtil.setIgnoreParentInert(child.getElement(), false);
-                if (modalComponentStack.isEmpty()) { // make UI active
-                    ElementUtil.setInert(ui.getElement(), false);
-                } else { // make top most modal component ignore inert
-                    ElementUtil.setIgnoreParentInert(
-                            modalComponentStack.peek().getElement(), true);
-                }
-            }
+        if (previousActiveModal != null) {
+            ElementUtil.setIgnoreParentInert(previousActiveModal.getElement(),
+                    false);
+        }
+        if (activeModal != null) {
+            ElementUtil.setIgnoreParentInert(activeModal.getElement(), true);
+        }
+        if ((previousActiveModal == null) != (activeModal == null)) {
+            ElementUtil.setInert(ui.getElement(), activeModal != null);
         }
     }
 
-    private boolean isTopMostModal(Component child) {
-        // null has been checked in calling code before this
-        return !modalComponentStack.isEmpty()
-                && modalComponentStack.peek() == child;
+    private record ModalityEntry(Component component, ModalityMode mode,
+            Registration detachRegistration) implements Serializable {
     }
 
     private void removeChildrenContentFromRouterLayout(
@@ -2109,11 +2379,114 @@ public class UIInternals implements Serializable {
 
     /**
      * Get outlet element reference wrapper if set.
-     * 
+     *
      * @return wrapperElement if set else {@code null}
      * @since 25.1
      */
     public Element getWrapperElement() {
         return wrapperElement;
+    }
+
+    /**
+     * Registers an upload or download request that is currently being served
+     * for this UI.
+     * <p>
+     * A UI that has active transfers is not detached from its session even if
+     * it is closed, so that listeners and callbacks bound to this UI are still
+     * effective while a transfer is ongoing. The returned registration must
+     * therefore be removed when the request has been served, so that a closed
+     * UI is eventually detached.
+     *
+     * @param transfer
+     *            the transfer to register, not {@code null}
+     * @return a registration for removing the transfer
+     * @since 25.4
+     */
+    public Registration registerActiveTransfer(ActiveTransfer transfer) {
+        return Registration.addAndRemove(activeTransfers, transfer);
+    }
+
+    /**
+     * Checks whether there are upload or download requests currently being
+     * served for this UI.
+     *
+     * @return {@code true} if there is at least one active transfer,
+     *         {@code false} otherwise
+     * @since 25.4
+     */
+    public boolean hasActiveTransfers() {
+        return !activeTransfers.isEmpty();
+    }
+
+    /**
+     * Terminates the upload and download requests that are currently being
+     * served for this UI, since the session they belong to is no longer valid.
+     * <p>
+     * The reason for the invalidation is not known here, so a session that has
+     * merely timed out is treated in the same way as one that has been
+     * invalidated for a security critical reason such as a password reset.
+     * 
+     * @since 25.4
+     */
+    public void terminateActiveTransfers() {
+        /*
+         * Terminating every transfer before logging about any of them, so that
+         * a failure while describing one cannot leave the rest running.
+         */
+        List<ActiveTransfer> terminated = List.copyOf(activeTransfers);
+        terminated.forEach(ActiveTransfer::terminate);
+
+        terminated.forEach(transfer -> getLogger().warn(
+                "Terminating an ongoing transfer for UI {} because the session has been invalidated: {}",
+                ui.getUIId(), transfer.getDescription()));
+    }
+
+    /**
+     * How the title of the page is set, as a JavaScript definition for
+     * {@link Page#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface TitleJs extends Serializable {
+
+        /**
+         * What setting the title does, shared by the plain call and the one
+         * that waits for the navigation. The indentation ends up inside the
+         * body of the function the bundle carries, where JavaScript ignores it.
+         */
+        String SET_TITLE = """
+                    document.title = $0;
+                    if(window?.Vaadin?.documentTitleSignal) {
+                        window.Vaadin.documentTitleSignal.value = $0;
+                    }
+                """;
+
+        /**
+         * Sets the title of the page.
+         *
+         * @param title
+         *            the title to set
+         * @return the pending result, which is what cancels the update when a
+         *         later one replaces it
+         */
+        @JsExpression(SET_TITLE)
+        PendingJavaScriptResult setTitle(String title);
+
+        /**
+         * Sets the title of the page once the client side router has finished
+         * navigating, so that the title of the page it navigated away from is
+         * not the one that sticks.
+         *
+         * @param title
+         *            the title to set
+         * @return the pending result, which is what cancels the update when a
+         *         later one replaces it
+         */
+        @JsExpression("if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {"
+                + SET_TITLE + "}, {once:true}); }  else { " + SET_TITLE + " }")
+        PendingJavaScriptResult setTitleAfterNavigation(String title);
     }
 }

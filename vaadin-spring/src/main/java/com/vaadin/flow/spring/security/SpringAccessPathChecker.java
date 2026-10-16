@@ -55,6 +55,7 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
 public class SpringAccessPathChecker implements AccessPathChecker {
 
     private final transient WebInvocationPrivilegeEvaluator evaluator;
+    /** The Vaadin servlet url mapping the checked paths are relative to. */
     private final String urlMapping;
 
     /**

@@ -232,6 +232,7 @@ public interface ClassFinder extends Serializable {
      * @return all matching resources, never {@code null}
      * @throws IOException
      *             if the resources cannot be listed
+     * @since 25.3
      */
     default List<URL> getResources(String name) throws IOException {
         return Collections.list(getClassLoader().getResources(name));

@@ -1926,7 +1926,7 @@ public class StateNodeTest {
     }
 
     @Test
-    void describe_component_componentClassIncluded() {
+    void describe_componentWithoutTrackingInformation_classAndToStringIncluded() {
         UI ui = new UI();
         TestDescribedComponent component = new TestDescribedComponent();
         ui.getElement().appendChild(component.getElement());
@@ -1935,9 +1935,10 @@ public class StateNodeTest {
 
         assertTrue(description.contains(TestDescribedComponent.class.getName()),
                 description);
-        // The creation location is not asserted here since ComponentTracker
-        // ignores stack frames from framework packages, which is where a
-        // component created by this test comes from
+        // ComponentTracker ignores stack frames from framework packages, which
+        // is where a component created by this test comes from, so the
+        // description falls back to what the component says about itself
+        assertTrue(description.contains(component.toString()), description);
     }
 
     @Test
@@ -1947,8 +1948,67 @@ public class StateNodeTest {
         assertEquals("node id=" + node.getId(), node.describe());
     }
 
+    @Test
+    void describe_getParentThrows_failureDescribedWithDetailsSoFar() {
+        String description = describeBrokenComponent(
+                component -> component.brokenGetParent = true);
+
+        assertTrue(description.contains(BrokenComponent.class.getName()),
+                description);
+        assertTrue(
+                description.contains(
+                        UnsupportedOperationException.class.getName()),
+                description);
+    }
+
+    @Test
+    void describe_toStringThrows_failureDescribedWithDetailsSoFar() {
+        String description = describeBrokenComponent(
+                component -> component.brokenToString = true);
+
+        assertTrue(description.contains(BrokenComponent.class.getName()),
+                description);
+        assertTrue(
+                description.contains(
+                        UnsupportedOperationException.class.getName()),
+                description);
+    }
+
+    private String describeBrokenComponent(Consumer<BrokenComponent> breaker) {
+        UI ui = new UI();
+        BrokenComponent component = new BrokenComponent();
+        ui.getElement().appendChild(component.getElement());
+        // Broken only after attaching, so that the attach itself succeeds
+        breaker.accept(component);
+
+        return component.getElement().getNode().describe();
+    }
+
     @Tag("div")
     private static class TestDescribedComponent
             extends com.vaadin.flow.component.Component {
+    }
+
+    @Tag("div")
+    private static class BrokenComponent
+            extends com.vaadin.flow.component.Component {
+        private boolean brokenGetParent;
+        private boolean brokenToString;
+
+        @Override
+        public Optional<com.vaadin.flow.component.Component> getParent() {
+            if (brokenGetParent) {
+                throw new UnsupportedOperationException("broken getParent");
+            }
+            return super.getParent();
+        }
+
+        @Override
+        public String toString() {
+            if (brokenToString) {
+                throw new UnsupportedOperationException("broken toString");
+            }
+            return super.toString();
+        }
     }
 }

@@ -58,6 +58,54 @@ public class NavigationIT extends AbstractDefaultIT {
     }
 
     @BrowserTest
+    public void testRouterLinkWithBlankTarget_opensRouteInNewTab() {
+        open();
+        String firstWindow = getDriver().getWindowHandle();
+        String url = getDriver().getCurrentUrl();
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_NEW_TAB_ID)
+                .click();
+
+        waitUntil(driver -> driver.getWindowHandles().size() == 2);
+        Assertions.assertEquals(url, getDriver().getCurrentUrl(),
+                "First tab should not have navigated");
+        Assertions.assertEquals("NavigationView",
+                $(SpanElement.class).first().getText());
+
+        String secondWindow = getDriver().getWindowHandles().stream()
+                .filter(handle -> !handle.equals(firstWindow)).findFirst()
+                .get();
+        getDriver().switchTo().window(secondWindow);
+        waitUntil(driver -> $(SpanElement.class).exists()
+                && "RouterView".equals($(SpanElement.class).first().getText()));
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl()
+                        .endsWith("com.vaadin.flow.RouterView"),
+                "Url of the new tab was : " + getDriver().getCurrentUrl());
+    }
+
+    @BrowserTest
+    public void testRouterLinkWithSelfTarget_navigatesInPlace() {
+        open();
+        executeScript("window.noReload = true;");
+
+        $(AnchorElement.class).id(NavigationView.ROUTER_LINK_SELF_TARGET_ID)
+                .click();
+
+        Assertions.assertEquals("RouterView",
+                $(SpanElement.class).first().getText());
+        Assertions.assertEquals(1, getDriver().getWindowHandles().size());
+        Assertions.assertTrue(
+                getDriver().getCurrentUrl()
+                        .endsWith("com.vaadin.flow.RouterView"),
+                "Url should have updated to RouterView was : "
+                        + getDriver().getCurrentUrl());
+        Assertions.assertEquals(Boolean.TRUE,
+                executeScript("return window.noReload;"),
+                "Navigation should not have reloaded the page");
+    }
+
+    @BrowserTest
     public void testNavigationPostpone_anchor() {
         open();
 
@@ -327,6 +375,37 @@ public class NavigationIT extends AbstractDefaultIT {
         Assertions.assertTrue(
                 getDriver().getCurrentUrl().endsWith("?test=anchor"),
                 "Query was missing in url");
+    }
+
+    @BrowserTest
+    public void testQueuedNavigation_queryAndHashPreserved() {
+        open();
+
+        AnchorElement first = $(AnchorElement.class)
+                .id(NavigationView.QUEUED_FIRST_ID);
+        AnchorElement second = $(AnchorElement.class)
+                .id(NavigationView.QUEUED_SECOND_ID);
+        // Start the second navigation while the first one is still waiting
+        // for the server, and record whether the first one had completed
+        executeScript("""
+                arguments[0].click();
+                setTimeout(() => {
+                    window.queryLogAtSecondClick =
+                        document.getElementById(arguments[2])?.textContent;
+                    arguments[1].click();
+                }, 100);
+                """, first, second, NavigationView.QUERY_LOG_ID);
+
+        waitUntil(driver -> $(SpanElement.class).id(NavigationView.QUERY_LOG_ID)
+                .getText().contains(","));
+
+        Assertions.assertNull(
+                executeScript("return window.queryLogAtSecondClick"),
+                "Second navigation should start while the first one is in progress");
+        Assertions.assertEquals("first,second",
+                $(SpanElement.class).id(NavigationView.QUERY_LOG_ID).getText());
+        waitUntil(driver -> driver.getCurrentUrl()
+                .endsWith("/second?qp=second#fragment"));
     }
 
     private void checkNavigatedEvent(String log) {

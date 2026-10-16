@@ -86,6 +86,19 @@ class ThemeListGroupBindTest extends SignalsUnitTest {
     }
 
     @Test
+    void entryContainingSpaces_throwsIllegalArgumentException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<List<String>> signal = new ValueSignal<>(
+                List.of("primary small"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> component.bindThemeNames(signal),
+                "A theme name containing spaces cannot be stored as a single theme name");
+    }
+
+    @Test
     void secondGroupBind_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);

@@ -1622,6 +1622,7 @@ public class DataCommunicator<T> implements Serializable {
      * Gets the UI this data communicator belongs to.
      *
      * @return the UI, or {@code null} if the component is not attached
+     * @since 25.3
      */
     protected UI getUI() {
         NodeOwner owner = stateNode.getOwner();
@@ -1637,6 +1638,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @return the component, or {@code null} if none can be resolved, for
      *         example when the communicator is driven by a bare element
+     * @since 25.3
      */
     protected Component getComponent() {
         return ElementUtil.from(stateNode).flatMap(Element::getComponent)

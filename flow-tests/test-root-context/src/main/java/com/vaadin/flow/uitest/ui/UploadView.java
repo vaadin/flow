@@ -38,6 +38,7 @@ public class UploadView extends Div {
     public static final String RESULT_ID = "result-span";
     public static final String UPLOAD_ID = "upload-button";
     public static final String REFRESH_ID = "refresh-button";
+    public static final String UPLOAD_STATUS_ID = "upload-status";
 
     public UploadView() {
         Span result = new Span("--empty--");
@@ -85,6 +86,7 @@ public class UploadView extends Div {
                             body: formData
                         }).then(response => {
                             const result = document.createElement("div");
+                            result.id = $2;
                             if (response.ok) {
                                 result.innerText = "Upload successful";
                             } else {
@@ -92,7 +94,7 @@ public class UploadView extends Div {
                             }
                             $0.parentElement.parentElement.appendChild(result);
                         });
-                        """, input.getElement(), uploadUrl));
+                        """, input.getElement(), uploadUrl, UPLOAD_STATUS_ID));
         uploadButton.setId(UPLOAD_ID);
         add(new Span(container, uploadButton));
     }

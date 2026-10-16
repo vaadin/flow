@@ -47,6 +47,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Layout;
@@ -89,6 +90,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HotswapperTest {
@@ -280,6 +282,30 @@ class HotswapperTest {
                 service, classes, true);
         assertOnHotswapCompleteInvoked(flowHotswapper, hotswapCompleteEvent);
         assertOnHotswapCompleteInvoked(hillaHotswapper, hotswapCompleteEvent);
+    }
+
+    @Test
+    void onHotswap_optedInReflectionCachesClearedBeforeHotswappersRun() {
+        ReflectionCache<Object, String> regular = new ReflectionCache<>(
+                Class::getName);
+        ReflectionCache<Object, String> optedIn = ReflectionCache
+                .clearedBeforeHotswap(Class::getName);
+        regular.get(String.class);
+        optedIn.get(String.class);
+        optedIn.get(Integer.class);
+
+        List<Boolean> cachedDuringHotswap = new ArrayList<>();
+        Mockito.doAnswer(i -> {
+            cachedDuringHotswap.add(regular.contains(String.class));
+            cachedDuringHotswap.add(optedIn.contains(String.class));
+            cachedDuringHotswap.add(optedIn.contains(Integer.class));
+            return null;
+        }).when(flowHotswapper).onClassesChange(any(HotswapClassEvent.class));
+
+        hotswapper.onHotswap(new String[] { String.class.getName() }, true);
+
+        assertEquals(List.of(true, false, true), cachedDuringHotswap,
+                "Only opted-in caches should be cleared, and only for the changed classes");
     }
 
     @Test
@@ -831,8 +857,8 @@ class HotswapperTest {
                 true);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test

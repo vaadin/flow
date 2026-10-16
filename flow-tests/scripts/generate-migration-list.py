@@ -101,6 +101,15 @@ SUBMAP = {
 
 SERVLET_NAMES = ("SyncError", "LogoutWithNotification")
 
+# flat ui package ITs whose keyword-derived feature was overruled when their
+# feature batch migrated
+CONFIRMED_FEATURES = {
+    "ElementInitOrderIT": "templates.polymer",
+    "ServiceInitListenersIT": "bootstrap",
+    "CustomBrowserTooOldPageIT": "bootstrap",
+    "TransferProgressListenerIT": "components",
+}
+
 
 def target(module, submodule, pkg, cls, sub):
     """(target_module, feature, type) where type is move|reuse|keep|done."""
@@ -112,7 +121,8 @@ def target(module, submodule, pkg, cls, sub):
         if pkg == "com.vaadin.flow":
             return ("test-default", "bootstrap", "move")
         if sub == "":  # flat ui package
-            return ("test-default", feat_flat(cls), "move")
+            feat = CONFIRMED_FEATURES.get(cls) or feat_flat(cls)
+            return ("test-default", feat, "move")
         feat = SUBMAP.get(sub)
         if feat == "__faulttol__":
             return ("test-fault-tolerance(keep)", "fault-tolerance", "keep")
@@ -121,10 +131,6 @@ def target(module, submodule, pkg, cls, sub):
         return ("test-default", "(already migrated)", "done")
 
     M = module
-    if M == "test-dev-mode":
-        return ("test-default", "devmode", "move")
-    if M == "test-react-router":
-        return ("test-default", "routing", "move")
     if M == "test-react-adapter":
         return ("test-default", "react", "move")
     if M == "test-vaadin-router":
@@ -160,8 +166,13 @@ def target(module, submodule, pkg, cls, sub):
     if M == "test-client-queue":
         return ("test-plain-servlet", "devmode", "move")
     if M == "test-misc":
-        return ("test-default", "misc", "move")
-    if M in ("test-multi-war", "servlet-containers", "test-commercial-banner"):
+        # The module runs flow-maven-plugin:build-frontend, which writes
+        # productionMode=true, so every IT here is a production mode IT. The
+        # ones whose behavior turns out to be mode-independent move to
+        # test-default as part of the migration PR (permutation policy).
+        return ("test-production", feat_flat(cls), "move")
+    if M in ("test-multi-war", "servlet-containers", "test-commercial-banner",
+             "test-devloop", "test-push-startup"):
         return (M + "(keep)", "infra", "keep")
     if M == "test-express-build":
         s = (submodule or "").lower()

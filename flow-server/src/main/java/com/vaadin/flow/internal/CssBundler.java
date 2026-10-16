@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,12 @@ public class CssBundler {
     private static final String MEDIA_QUERY = "(\\s+[a-zA-Z].*)?";
     private static final String MAYBE_LAYER_OR_MEDIA_QUERY = "(" + LAYER + "|"
             + MEDIA_QUERY + ")";
+
+    // One <ident> token of a dot separated CSS <layer-name>. Escapes in
+    // identifiers are not accepted, which also keeps the name safe to write
+    // into a rule.
+    private static final Pattern LAYER_NAME_PART = Pattern
+            .compile("-?[_a-zA-Z][_a-zA-Z0-9-]*+|--[_a-zA-Z0-9-]*+");
 
     // Selects how url(...) references are rewritten when inlining @import
     // statements. The right choice depends on how the bundled CSS is later
@@ -637,6 +644,102 @@ public class CssBundler {
         // Remove trailing semicolons before }
         css = css.replaceAll(";}", "}");
         return css.trim();
+    }
+
+    /**
+     * Returns whether the given value is a valid CSS cascade layer name: one or
+     * more CSS identifiers separated by dots, such as {@code theme} or
+     * {@code theme.base}.
+     *
+     * @param layer
+     *            the layer name to check, not {@code null}
+     * @return {@code true} if the value is a valid layer name
+     */
+    public static boolean isValidLayerName(String layer) {
+        return Stream.of(layer.split("\\.", -1))
+                .allMatch(part -> LAYER_NAME_PART.matcher(part).matches());
+    }
+
+    /**
+     * Checks that the given value is a valid CSS cascade layer name: one or
+     * more CSS identifiers separated by dots, such as {@code theme} or
+     * {@code theme.base}.
+     *
+     * @param layer
+     *            the layer name to check, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the value is not a valid layer name
+     */
+    public static void validateLayerName(String layer) {
+        if (!isValidLayerName(layer)) {
+            throw new IllegalArgumentException(
+                    createInvalidLayerNameMessage(layer));
+        }
+    }
+
+    /**
+     * Creates the message that explains why the given value is not a valid CSS
+     * cascade layer name.
+     *
+     * @param layer
+     *            the invalid layer name
+     * @return the error message
+     */
+    public static String createInvalidLayerNameMessage(String layer) {
+        return "'" + layer + "' is not a valid CSS cascade layer name. Use"
+                + " one or more identifiers separated by dots, e.g. 'theme'"
+                + " or 'theme.base'.";
+    }
+
+    /**
+     * Creates a CSS {@code @import} rule that loads the style sheet at the
+     * given URL into the given cascade layer.
+     * <p>
+     * A {@code <link rel="stylesheet">} cannot put a style sheet into a layer,
+     * so a layered style sheet is loaded through this rule in a {@code <style>}
+     * element instead.
+     *
+     * @param url
+     *            the URL of the style sheet, not {@code null}
+     * @param layer
+     *            a valid cascade layer name, see
+     *            {@link #validateLayerName(String)}
+     * @return the {@code @import} rule
+     */
+    public static String createLayerImport(String url, String layer) {
+        validateLayerName(layer);
+        String escapedUrl = url.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\n", "\\a ").replace("\r", "\\d ");
+        return "@import url(\"" + escapedUrl + "\") layer(" + layer + ");";
+    }
+
+    /**
+     * Wraps the given style sheet content into a {@code @layer} block so that
+     * it applies in the given cascade layer.
+     * <p>
+     * The content must not contain {@code @import} rules, as those are not
+     * allowed inside a block and a browser would silently drop them.
+     *
+     * @param css
+     *            the style sheet content, not {@code null}
+     * @param layer
+     *            a valid cascade layer name, see
+     *            {@link #validateLayerName(String)}
+     * @return the content wrapped into a {@code @layer} block
+     * @throws IllegalArgumentException
+     *             if the layer name is not valid or the content contains an
+     *             {@code @import} rule
+     */
+    public static String wrapInLayer(String css, String layer) {
+        validateLayerName(layer);
+        if (IMPORT_PATTERN.matcher(StringUtil.removeComments(css, true))
+                .find()) {
+            throw new IllegalArgumentException(
+                    "Style sheet content with @import rules cannot be wrapped"
+                            + " into layer '" + layer + "'. Load the style"
+                            + " sheet by URL instead of inlining it.");
+        }
+        return "@layer " + layer + " {\n" + css + "\n}";
     }
 
 }
