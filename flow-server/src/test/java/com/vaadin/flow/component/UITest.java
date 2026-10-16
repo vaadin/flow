@@ -1650,6 +1650,15 @@ public class UITest {
                 "Component should have been added to the VISUAL component once the STRICT one is removed");
 
         visualComponent.removeFromParent();
+        Component strictModalOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictModalOverlay);
+        fixture.collectUiChanges();
+
+        assertEquals(Optional.of(fixture.modalComponent),
+                strictModalOverlay.getParent(),
+                "Component should have been added to the STRICT component once the VISUAL one on top of it is removed");
+        verifyInert(strictModalOverlay, false);
+
         fixture.modalComponent.removeFromParent();
         Component uiOverlay = new AttachableComponent();
         fixture.ui.addToModalComponent(uiOverlay);
