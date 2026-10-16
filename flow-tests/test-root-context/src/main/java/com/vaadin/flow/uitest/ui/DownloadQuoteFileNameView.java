@@ -26,18 +26,21 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class DownloadQuoteFileNameView extends Div {
 
     static final String CONTENT = "quoted";
+    static final String FILE_NAME = "download-\".json";
 
     public DownloadQuoteFileNameView() {
-        // The URL postfix puts the file name with the quote into the URL
+        // The quote goes both into the URL, through the URL postfix, and into
+        // the Content-Disposition header, through the file name
         DownloadHandler handler = new DownloadHandler() {
             @Override
             public void handleDownloadRequest(DownloadEvent event) {
+                event.setFileName(FILE_NAME);
                 event.getWriter().print(CONTENT);
             }
 
             @Override
             public String getUrlPostfix() {
-                return "download-\".json";
+                return FILE_NAME;
             }
         };
         Anchor download = new Anchor(handler,
