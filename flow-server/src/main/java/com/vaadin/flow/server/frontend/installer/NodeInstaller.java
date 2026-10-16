@@ -12,12 +12,17 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -514,7 +519,8 @@ public class NodeInstaller {
     }
 
     private void downloadFileIfMissing(URI downloadUrl, File destination,
-            String userName, String password) throws DownloadException {
+            String userName, String password)
+            throws DownloadException, InstallationException {
         if (!destination.exists()) {
             getLogger().info("Downloading {} to {}", downloadUrl, destination);
             for (int i = 0; i < MAX_DOWNLOAD_ATTEMPS; i++) {
@@ -524,6 +530,11 @@ public class NodeInstaller {
 
                     verifyArchive(destination);
                     return;
+                } catch (InstallationException e) {
+                    // A different archive of the default version is served,
+                    // so downloading it again won't help
+                    removeArchiveFile(destination);
+                    throw e;
                 } catch (DownloadException e) {
                     if (i == MAX_DOWNLOAD_ATTEMPS - 1) {
                         removeArchiveFile(destination);
@@ -552,7 +563,8 @@ public class NodeInstaller {
         } else {
             try {
                 verifyArchive(destination);
-            } catch (VerificationException de) {
+            } catch (VerificationException | InstallationException e) {
+                // Possibly left over from an interrupted download
                 removeArchiveFile(destination);
                 downloadFileIfMissing(downloadUrl, destination, userName,
                         password);
@@ -560,8 +572,8 @@ public class NodeInstaller {
         }
     }
 
-    private void verifyArchive(File archive)
-            throws DownloadException, VerificationException {
+    private void verifyArchive(File archive) throws DownloadException,
+            VerificationException, InstallationException {
         try {
             URI shaSumsURL = nodeDownloadRoot
                     .resolve(nodeVersion + "/" + SHA_SUMS_FILE);
@@ -570,42 +582,31 @@ public class NodeInstaller {
                 return;
             }
 
-            File shaSums = new File(installDirectory, "node-" + SHA_SUMS_FILE);
-
-            getLogger().debug("Downloading {} to {}", shaSumsURL, shaSums);
-
-            try {
-                fileDownloader.download(shaSumsURL, shaSums, userName, password,
-                        null);
-            } catch (DownloadException e) {
-                if (Boolean.getBoolean(ACCEPT_MISSING_SHA)) {
-                    getLogger().warn(
-                            "Could not verify SHA256 sum of downloaded node in {}. Accepting missing checksum verification as set in '{}' system property.",
-                            archive, ACCEPT_MISSING_SHA);
+            // Checksums shipped with Flow are trusted over the ones served by
+            // the download root, so a mirror can't swap the default version.
+            // Musl builds come from unofficial-builds, which has its own
+            // checksums for archives also named like official ones.
+            String archiveTargetSHA256 = (platform.isNodeSupportExperimental()
+                    ? DefaultNodeChecksums.UNOFFICIAL_CHECKSUMS
+                    : DefaultNodeChecksums.CHECKSUMS).get(archive.getName());
+            boolean shippedChecksum = archiveTargetSHA256 != null;
+            if (!shippedChecksum) {
+                archiveTargetSHA256 = downloadChecksum(shaSumsURL, archive);
+                if (archiveTargetSHA256 == null) {
                     return;
-                } else {
-                    getLogger().info(
-                            "Download of {} failed. If failure persists, use system property '{}' to skip verification or download node manually.",
-                            SHA_SUMS_FILE, ACCEPT_MISSING_SHA);
-                    throw e;
                 }
             }
 
             String archiveSHA256 = MessageDigestUtil
                     .sha256Hex(Files.readAllBytes(archive.toPath()));
 
-            List<String> sha256sums = Files.readAllLines(shaSums.toPath());
-            String archiveTargetSHA256 = sha256sums.stream()
-                    .filter(sum -> sum
-                            .endsWith(archive.getName()))
-                    .map(sum -> sum
-                            .substring(0,
-                                    sum.length() - archive.getName().length())
-                            .trim())
-                    .findFirst().orElse("-1");
-
-            shaSums.delete();
-
+            if (shippedChecksum && !archiveSHA256.equals(archiveTargetSHA256)) {
+                throw new InstallationException(String.format(
+                        "The Node.js archive downloaded from %s does not match the checksum shipped with Vaadin for %s: expected SHA256 [%s], got [%s]. "
+                                + "Only the Node.js archives published by nodejs.org and its unofficial-builds are installed. To use a custom Node.js build, install it separately and make it available on the PATH.",
+                        nodeDownloadRoot, archive.getName(),
+                        archiveTargetSHA256, archiveSHA256));
+            }
             if (!archiveSHA256.equals(archiveTargetSHA256)) {
                 getLogger().error(
                         "Expected SHA256 [{}] for downloaded node archive, got [{}]",
@@ -616,6 +617,98 @@ public class NodeInstaller {
         } catch (IOException e) {
             throw new VerificationException("Failed to validate archive hash.",
                     e);
+        }
+    }
+
+    /**
+     * Downloads the checksum of the archive from the download root.
+     *
+     * @return the expected checksum, {@code "-1"} if the archive is not listed
+     *         or {@code null} if the checksums could not be downloaded and
+     *         {@link #ACCEPT_MISSING_SHA} allows skipping the verification
+     */
+    private String downloadChecksum(URI shaSumsURL, File archive)
+            throws DownloadException, IOException {
+        File shaSums = new File(installDirectory, "node-" + SHA_SUMS_FILE);
+
+        getLogger().debug("Downloading {} to {}", shaSumsURL, shaSums);
+
+        try {
+            fileDownloader.download(shaSumsURL, shaSums, userName, password,
+                    null);
+        } catch (DownloadException e) {
+            if (Boolean.getBoolean(ACCEPT_MISSING_SHA)) {
+                getLogger().warn(
+                        "Could not verify SHA256 sum of downloaded node in {}. Accepting missing checksum verification as set in '{}' system property.",
+                        archive, ACCEPT_MISSING_SHA);
+                return null;
+            } else {
+                getLogger().info(
+                        "Download of {} failed. If failure persists, use system property '{}' to skip verification or download node manually.",
+                        SHA_SUMS_FILE, ACCEPT_MISSING_SHA);
+                throw e;
+            }
+        }
+
+        try {
+            return parseChecksums(Files.readAllLines(shaSums.toPath()))
+                    .getOrDefault(archive.getName(), "-1");
+        } finally {
+            shaSums.delete();
+        }
+    }
+
+    /**
+     * Parses the lines of a {@value #SHA_SUMS_FILE} file into a map from file
+     * name to its SHA-256 checksum.
+     *
+     * @param lines
+     *            lines in the {@code <checksum>  <file name>} format
+     * @return checksums by file name
+     */
+    static Map<String, String> parseChecksums(List<String> lines) {
+        Map<String, String> checksums = new HashMap<>();
+        for (String line : lines) {
+            String[] parts = line.trim().split("\\s+", 2);
+            if (parts.length == 2) {
+                checksums.put(parts[1], parts[0]);
+            }
+        }
+        return checksums;
+    }
+
+    /**
+     * Checksums of the
+     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_NODE_VERSION}
+     * archives from {@value #DEFAULT_NODEJS_DOWNLOAD_ROOT} and
+     * {@value #UNOFFICIAL_NODEJS_DOWNLOAD_ROOT}, downloaded by
+     * {@code scripts/updateNodeChecksums.sh}.
+     */
+    static final class DefaultNodeChecksums {
+        static final String RESOURCE = "default-node-" + SHA_SUMS_FILE;
+        static final String UNOFFICIAL_RESOURCE = "default-node-unofficial-"
+                + SHA_SUMS_FILE;
+
+        static final Map<String, String> CHECKSUMS = load(RESOURCE);
+        static final Map<String, String> UNOFFICIAL_CHECKSUMS = load(
+                UNOFFICIAL_RESOURCE);
+
+        private DefaultNodeChecksums() {
+        }
+
+        private static Map<String, String> load(String resource) {
+            try (InputStream stream = NodeInstaller.class
+                    .getResourceAsStream(resource)) {
+                if (stream == null) {
+                    throw new IllegalStateException(
+                            "Missing resource " + resource);
+                }
+                return Map
+                        .copyOf(parseChecksums(new String(stream.readAllBytes(),
+                                StandardCharsets.UTF_8).lines().toList()));
+            } catch (IOException e) {
+                throw new UncheckedIOException("Failed to read " + resource, e);
+            }
         }
     }
 

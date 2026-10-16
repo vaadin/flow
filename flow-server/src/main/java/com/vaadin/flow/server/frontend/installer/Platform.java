@@ -253,6 +253,16 @@ public class Platform {
         return nodeDownloadRoot;
     }
 
+    /**
+     * Checks if the platform uses the musl builds of Node.js from
+     * unofficial-builds.
+     *
+     * @return {@code true} on Linux with musl, {@code false} otherwise
+     */
+    boolean isNodeSupportExperimental() {
+        return isLinux() && "musl".equals(classifier);
+    }
+
     private Architecture resolveArchitecture(FrontendVersion nodeVersion) {
         if (isMac() && architecture == Architecture.ARM64) {
             Integer nodeMajorVersion = nodeVersion.getMajorVersion();
