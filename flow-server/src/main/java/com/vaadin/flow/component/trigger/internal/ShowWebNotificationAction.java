@@ -20,11 +20,9 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.webnotification.WebNotificationError;
-import com.vaadin.flow.component.webnotification.WebNotificationError.Reason;
 import com.vaadin.flow.component.webnotification.WebNotificationOptions;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -134,35 +132,11 @@ public class ShowWebNotificationAction extends Action {
         // Only registered when the callbacks were given
         switch (args.get(0).asString()) {
         case "click" -> Objects.requireNonNull(onClick).run();
-        case "error" -> Objects.requireNonNull(onError).accept(readError(args));
+        case "error" -> Objects.requireNonNull(onError)
+                .accept(WebNotificationError.readFromChannel(args));
         default -> {
             // Notifications shown by a trigger have no close callback
         }
         }
-    }
-
-    /**
-     * Reads the error the client reports through a notification's return
-     * channel as {@code ('error', reason, message)}. A reason this server does
-     * not know, for example from a newer client, is read as
-     * {@link Reason#UNKNOWN}.
-     *
-     * @param args
-     *            the arguments the client passed to the channel, not
-     *            {@code null}
-     * @return the error, not {@code null}
-     */
-    public static WebNotificationError readError(ArrayNode args) {
-        JsonNode reason = args.get(1);
-        JsonNode message = args.get(2);
-        Reason parsed;
-        try {
-            parsed = reason == null ? Reason.UNKNOWN
-                    : Reason.valueOf(reason.asString());
-        } catch (IllegalArgumentException e) {
-            parsed = Reason.UNKNOWN;
-        }
-        return new WebNotificationError(parsed,
-                message == null || message.isNull() ? "" : message.asString());
     }
 }
