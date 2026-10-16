@@ -137,6 +137,15 @@ class SpringAccessPathCheckerTest {
                 "Access to not defined path should not be allowed to user with ADMIN and GUEST roles");
     }
 
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void checkAccess_nullPrincipal_evaluatedAsAnonymous() {
+        assertFalse(accessPathChecker.hasAccess("admin", null, role -> false),
+                "Access to admin only path should not be allowed when principal is null");
+        assertTrue(accessPathChecker.hasAccess("anon", null, role -> false),
+                "Access to anonymous only path should be allowed when principal is null");
+    }
+
     private boolean checkAccess(String admin) {
         Principal principal = SecurityContextHolder.getContext()
                 .getAuthentication();

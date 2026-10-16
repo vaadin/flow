@@ -18,6 +18,9 @@ package com.vaadin.flow.spring.security;
 import java.security.Principal;
 import java.util.function.Predicate;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
@@ -53,6 +56,10 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * @since 24.3
  */
 public class SpringAccessPathChecker implements AccessPathChecker {
+
+    private static final Authentication ANONYMOUS_AUTHENTICATION = new AnonymousAuthenticationToken(
+            "anonymous", "anonymousUser",
+            AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
 
     private final transient WebInvocationPrivilegeEvaluator evaluator;
     /** The Vaadin servlet url mapping the checked paths are relative to. */
@@ -91,7 +98,12 @@ public class SpringAccessPathChecker implements AccessPathChecker {
     public boolean hasAccess(String path, Principal principal,
             Predicate<String> roleChecker) {
         path = RequestUtil.applyUrlMapping(urlMapping, path);
-        return evaluator.isAllowed(path,
-                SecurityContextHolder.getContext().getAuthentication());
+        // A null principal means the check is done on behalf of an anonymous
+        // user (e.g. when detecting public views), regardless of the
+        // authentication bound to the current thread
+        Authentication authentication = principal == null
+                ? ANONYMOUS_AUTHENTICATION
+                : SecurityContextHolder.getContext().getAuthentication();
+        return evaluator.isAllowed(path, authentication);
     }
 }
