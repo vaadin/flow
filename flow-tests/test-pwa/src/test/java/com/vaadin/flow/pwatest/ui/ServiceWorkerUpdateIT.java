@@ -87,36 +87,36 @@ public class ServiceWorkerUpdateIT extends ChromeDeviceTest {
         Map<?, ?> result = (Map<?, ?>) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(
                         """
-                                      const done = arguments[arguments.length - 1];
-                                      const stateReached = (worker, states) => new Promise((resolve) => {
-                                        const check = () => states.includes(worker.state) && resolve();
-                                        check();
-                                        worker.addEventListener('statechange', check);
-                                      });
-                                      (async () => {
-                                        const registration = await navigator.serviceWorker.getRegistration();
-                                        const previous = registration.active;
-                                        await navigator.serviceWorker.register(previous.scriptURL + '?update');
-                                        const worker = registration.installing || registration.waiting || registration.active;
-                                        await stateReached(worker, ['installed', 'activating', 'activated']);
-                                        // Give a worker that skips waiting time to activate
-                                        await new Promise((resolve) => setTimeout(resolve, 2000));
-                                        if (registration.waiting !== worker || registration.active !== previous) {
-                                          return { waiting: false };
-                                        }
-                                        const controllerChanged = new Promise((resolve) =>
-                                          navigator.serviceWorker.addEventListener('controllerchange', resolve));
-                                        // Same message as vite-devmode.ts sends after an
-                                // update of sw.ts, see the message listener in sw.ts
-                                worker.postMessage({ method: 'Vaadin.ServiceWorker.skipWaiting' });
-                                        await stateReached(worker, ['activated']);
-                                        await controllerChanged;
-                                        return {
-                                          waiting: true,
-                                          controlling: navigator.serviceWorker.controller === worker
-                                        };
-                                      })().then(done, (error) => done({ error: String(error) }));
-                                      """);
+                                const done = arguments[arguments.length - 1];
+                                const stateReached = (worker, states) => new Promise((resolve) => {
+                                  const check = () => states.includes(worker.state) && resolve();
+                                  check();
+                                  worker.addEventListener('statechange', check);
+                                });
+                                (async () => {
+                                  const registration = await navigator.serviceWorker.getRegistration();
+                                  const previous = registration.active;
+                                  await navigator.serviceWorker.register(previous.scriptURL + '?update');
+                                  const worker = registration.installing || registration.waiting || registration.active;
+                                  await stateReached(worker, ['installed', 'activating', 'activated']);
+                                  // Give a worker that skips waiting time to activate
+                                  await new Promise((resolve) => setTimeout(resolve, 2000));
+                                  if (registration.waiting !== worker || registration.active !== previous) {
+                                    return { waiting: false };
+                                  }
+                                  const controllerChanged = new Promise((resolve) =>
+                                    navigator.serviceWorker.addEventListener('controllerchange', resolve));
+                                  // Same message as vite-devmode.ts sends after an update of
+                                  // sw.ts, see the message listener in sw.ts
+                                  worker.postMessage({ method: 'Vaadin.ServiceWorker.skipWaiting' });
+                                  await stateReached(worker, ['activated']);
+                                  await controllerChanged;
+                                  return {
+                                    waiting: true,
+                                    controlling: navigator.serviceWorker.controller === worker
+                                  };
+                                })().then(done, (error) => done({ error: String(error) }));
+                                """);
 
         Assert.assertNull("Updating the service worker failed",
                 result.get("error"));
