@@ -16,7 +16,7 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | Target | ITs |
 |---|---|
-| test-default | 370 |
+| test-default | 372 |
 | ?UNMAPPED? | 32 |
 | test-embedding | 26 |
 | test-production | 23 |
@@ -43,7 +43,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | test-plain-spring | 1 |
 | test-push-startup(keep) | 1 |
 | test-tailwind | 1 |
-| **TOTAL** | **605** |
+| **TOTAL** | **607** |
 
 ## Mapping (grouped by target module, then feature)
 
@@ -157,42 +157,67 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | IT | from | type |
 |---|---|---|
+| AbstractBasicElementComponentIT | test-default | done |
 | AbstractDefaultIT | test-default | done |
 | AbstractEventDataIT | test-default | done |
+| AbstractStreamResourceIT | test-default | done |
 | AddQueryParamIT | test-default | done |
 | AllowInertDomEventIT | test-default | done |
 | BackNavIT | test-default | done |
 | BasePathIT | test-default | done |
+| BasicComponentIT | test-default | done |
 | BasicElementIT | test-default | done |
 | BrowserLoggingIT | test-default | done |
 | ClassListBindIT | test-default | done |
+| ComplexDialogShortcutIT | test-default | done |
 | ComponentEventDataIT | test-default | done |
+| CompositeIT | test-default | done |
+| CompositeNestedIT | test-default | done |
 | CustomCustomElementIT | test-default | done |
 | DependencyFilterIT | test-default | done |
 | DependencyIT | test-default | done |
+| DialogShortcutIT | test-default | done |
+| DisabledImageDownloadHandlerIT | test-default | done |
+| DnDAbsolutePositioningIT | test-default | done |
+| DnDIT | test-default | done |
 | DomEventFilterIT | test-default | done |
 | DomEventStopPropagationAndPreventDefaultIT | test-default | done |
+| DownloadHandlerIT | test-default | done |
 | ElementInnerHtmlIT | test-default | done |
 | ElementRemoveItselfIT | test-default | done |
+| EnabledIT | test-default | done |
 | EventListenersIT | test-default | done |
 | EventTargetIT | test-default | done |
 | ExceptionStacktraceIT | test-default | done |
 | ExportedJSFunctionIT | test-default | done |
+| FindComponentIT | test-default | done |
 | FocusBlurIT | test-default | done |
 | ForwardTargetIT | test-default | done |
+| IFrameIT | test-default | done |
+| ImageClickIT | test-default | done |
+| InMemoryChildrenIT | test-default | done |
+| InertComponentIT | test-default | done |
 | InfoIT | test-default | done |
 | InvisibleSlotAttributeIT | test-default | done |
 | KeyboardEventIT | test-default | done |
+| LoadingIndicatorIT | test-default | done |
+| MediaComponentsIT | test-default | done |
+| ModalDialogIT | test-default | done |
 | NamespacedElementsIT | test-default | done |
 | NavigationIT | test-default | done |
+| NestedPopoverShortcutIT | test-default | done |
 | OrderedDependencyIT | test-default | done |
 | PageIT | test-default | done |
 | PageVisibilityIT | test-default | done |
+| PopoverOwnerShortcutIT | test-default | done |
 | RemoveAddVisibilityIT | test-default | done |
 | ShadowRootIT | test-default | done |
+| ShortcutsIT | test-default | done |
 | StateIT | test-default | done |
 | StreamResourceIT | test-default | done |
+| TransferProgressListenerIT | test-default | done |
 | UIElementIT | test-default | done |
+| UploadIT | test-default | done |
 | UrlValidationIT | test-default | done |
 | VisibilityIT | test-default | done |
 | ViteCommunicationIT | test-default | done |
@@ -232,30 +257,7 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | IT | from | type |
 |---|---|---|
-| AbstractBasicElementComponentIT | test-root-context | move |
-| BasicComponentIT | test-root-context | move |
-| ComplexDialogShortcutIT | test-root-context | move |
-| CompositeIT | test-root-context | move |
-| CompositeNestedIT | test-root-context | move |
-| DialogShortcutIT | test-root-context | move |
-| DisabledImageDownloadHandlerIT | test-root-context | move |
-| DnDAbsolutePositioningIT | test-root-context | move |
-| DnDIT | test-root-context | move |
-| DownloadHandlerIT | test-root-context | move |
-| EnabledIT | test-root-context | move |
-| FindComponentIT | test-root-context | move |
-| IFrameIT | test-root-context | move |
-| ImageClickIT | test-root-context | move |
-| InMemoryChildrenIT | test-root-context | move |
-| InertComponentIT | test-root-context | move |
-| LoadingIndicatorIT | test-root-context | move |
-| MediaComponentsIT | test-root-context | move |
-| ModalDialogIT | test-root-context | move |
-| NestedPopoverShortcutIT | test-root-context | move |
-| PopoverOwnerShortcutIT | test-root-context | move |
-| ShortcutsIT | test-root-context | move |
-| TransferProgressListenerIT | test-root-context | move |
-| UploadIT | test-root-context | move |
+| DownloadQuoteFileNameIT | test-root-context | move |
 
 **`dependencies`**
 

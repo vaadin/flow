@@ -107,7 +107,6 @@ CONFIRMED_FEATURES = {
     "ElementInitOrderIT": "templates.polymer",
     "ServiceInitListenersIT": "bootstrap",
     "CustomBrowserTooOldPageIT": "bootstrap",
-    "TransferProgressListenerIT": "components",
 }
 
 
