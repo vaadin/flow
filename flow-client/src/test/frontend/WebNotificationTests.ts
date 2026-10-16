@@ -163,20 +163,27 @@ describe('webNotification', () => {
     expect(published).to.deep.equal(['GRANTED']);
   });
 
-  it('publishes a permission changed in the site settings when the window gets focus back', () => {
-    FakeNotification.permission = 'default';
-    $wnd.Vaadin.Flow.webNotification.queryPermission();
+  (
+    [
+      ['the window gets focus back', window, 'focus'],
+      ['the tab is shown again', document, 'visibilitychange']
+    ] as const
+  ).forEach(([when, target, eventName]) => {
+    it(`publishes a permission changed in the site settings when ${when}`, () => {
+      FakeNotification.permission = 'default';
+      $wnd.Vaadin.Flow.webNotification.queryPermission();
 
-    const published: string[] = [];
-    const listener = (e: Event) => published.push((e as CustomEvent).detail);
-    document.body.addEventListener('vaadin-web-notification-permission-change', listener);
-    try {
-      FakeNotification.permission = 'granted';
-      window.dispatchEvent(new Event('focus'));
-    } finally {
-      document.body.removeEventListener('vaadin-web-notification-permission-change', listener);
-    }
+      const published: string[] = [];
+      const listener = (e: Event) => published.push((e as CustomEvent).detail);
+      document.body.addEventListener('vaadin-web-notification-permission-change', listener);
+      try {
+        FakeNotification.permission = 'granted';
+        target.dispatchEvent(new Event(eventName));
+      } finally {
+        document.body.removeEventListener('vaadin-web-notification-permission-change', listener);
+      }
 
-    expect(published).to.deep.equal(['GRANTED']);
+      expect(published).to.deep.equal(['GRANTED']);
+    });
   });
 });
