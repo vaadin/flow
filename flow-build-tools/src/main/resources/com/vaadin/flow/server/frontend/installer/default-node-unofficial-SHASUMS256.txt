@@ -2,5 +2,9 @@
 c30445f95c9f6e44b4cc3d5a2b5644d5195fa11a1799b4a182006072d8cb68ec  node-v26.12.0-headers.tar.xz
 2e70b6d5adbae94546c4d7e01de7b64c50bf8d3dbfaad2bb0774942e9da902b8  node-v26.12.0-linux-arm64-musl.tar.gz
 3336c2e93c097c515257d8eccf8350c6ce97301e3dd1430d2e986d28aad01871  node-v26.12.0-linux-arm64-musl.tar.xz
+b4c2171701890f68bf7d1a806bf2e7e4c503e1aee73aba3ffac68de9655b4d87  node-v26.12.0-linux-loong64.tar.gz
+6b3247f839b3086b6242dd986c9cdd88ffcd980ca9b0e45c09645833a8aa7626  node-v26.12.0-linux-loong64.tar.xz
+38e0726dfcfce86bf59e5d6b16b6611bbc563d502301f6043babb8599d1f0bd5  node-v26.12.0-linux-riscv64-pointer-compression.tar.gz
+9c4594655edfbe7c5d4fce4969b5c513babd7fec83add1e1cf15729caf09846d  node-v26.12.0-linux-riscv64-pointer-compression.tar.xz
 48ba1cdf21e684f13f38b6295f43bfea951f1ffd008b4cf93361c966b33f6938  node-v26.12.0-linux-x64-musl.tar.gz
 985c19191eee24b1ab2c63548c77a7536992a35037e4051caf92c0f1c9e65ca6  node-v26.12.0-linux-x64-musl.tar.xz
