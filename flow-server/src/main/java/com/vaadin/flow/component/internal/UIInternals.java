@@ -60,6 +60,7 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.screenorientation.ScreenOrientationData;
 import com.vaadin.flow.component.screenorientation.ScreenOrientationType;
 import com.vaadin.flow.component.wakelock.WakeLockAvailability;
+import com.vaadin.flow.component.webnotification.WebNotificationPermission;
 import com.vaadin.flow.component.webshare.WebShareSupport;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
@@ -123,6 +124,8 @@ public class UIInternals implements Serializable {
 
     private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
             .compile("-\\d+$");
+
+    private static final String WEB_NOTIFICATION_PERMISSION_CHANGE_EVENT = "vaadin-web-notification-permission-change";
 
     private static final Set<Class<? extends Component>> warnedAboutDeps = ConcurrentHashMap
             .newKeySet();
@@ -351,6 +354,14 @@ public class UIInternals implements Serializable {
             .asReadonly();
 
     private boolean wakeLockListenerInstalled;
+
+    private final ValueSignal<WebNotificationPermission> webNotificationPermissionSignal = new ValueSignal<>(
+            WebNotificationPermission.UNKNOWN);
+
+    private final Signal<WebNotificationPermission> webNotificationPermissionReadOnly = webNotificationPermissionSignal
+            .asReadonly();
+
+    private boolean webNotificationPermissionListenerInstalled;
 
     private static final String SCREEN_ORIENTATION_CHANGE_EVENT = "vaadin-screen-orientation-change";
 
@@ -2143,6 +2154,65 @@ public class UIInternals implements Serializable {
 
     private record ScreenOrientationDetail(@Nullable String type,
             int angle) implements Serializable {
+    }
+
+    /**
+     * Returns the read-only view of the web notification permission signal for
+     * this UI. Application code reads it via
+     * {@link com.vaadin.flow.component.webnotification.WebNotification#permissionSignal()}.
+     *
+     * @return the read-only permission signal
+     */
+    public Signal<WebNotificationPermission> getWebNotificationPermissionSignalReadOnly() {
+        return webNotificationPermissionReadOnly;
+    }
+
+    /**
+     * Seeds the web notification permission signal from the raw client-side
+     * value (e.g. from the initial bootstrap parameters) and ensures the
+     * listener for subsequent permission changes is installed. A {@code null}
+     * or unknown value leaves the current permission untouched. For framework
+     * use only.
+     *
+     * @param permission
+     *            the raw permission from the client, or {@code null}
+     */
+    public void setWebNotificationPermissionFromClient(
+            @Nullable String permission) {
+        ensureWebNotificationPermissionWired();
+        applyWebNotificationPermission(permission);
+    }
+
+    /**
+     * Installs, once per UI, the DOM listener that bridges
+     * {@code vaadin-web-notification-permission-change} events into the web
+     * notification permission signal. Guarded by a flag so repeated calls do
+     * not attach duplicate listeners. For framework use only.
+     */
+    public void ensureWebNotificationPermissionWired() {
+        if (webNotificationPermissionListenerInstalled) {
+            return;
+        }
+        webNotificationPermissionListenerInstalled = true;
+        ui.getElement()
+                .addEventListener(WEB_NOTIFICATION_PERMISSION_CHANGE_EVENT,
+                        e -> applyWebNotificationPermission(
+                                e.getEventDetail(String.class)))
+                .addEventDetail().allowInert();
+    }
+
+    private void applyWebNotificationPermission(@Nullable String permission) {
+        if (permission == null) {
+            return;
+        }
+        try {
+            webNotificationPermissionSignal
+                    .set(WebNotificationPermission.valueOf(permission));
+        } catch (IllegalArgumentException e) {
+            getLogger().debug(
+                    "Unknown web notification permission from " + "client: {}",
+                    permission);
+        }
     }
 
     /**
