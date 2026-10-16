@@ -100,15 +100,17 @@ describe('webNotification', () => {
     expect(other.calls).to.deep.equal([]);
   });
 
-  it('shows a notification for a trigger, which passes no key and no channel', () => {
-    $wnd.Vaadin.Flow.webNotification.show('Test', { tag: 'trigger' }, null, null);
-    const notification = FakeNotification.instances[0];
-    let closed = false;
-    notification.addEventListener('close', () => (closed = true));
+  it('tracks notifications shown by a trigger, which passes no key and no channel, by tag', () => {
+    $wnd.Vaadin.Flow.webNotification.show('Build done', { tag: 'builds' }, null, null);
+    $wnd.Vaadin.Flow.webNotification.show('New message', { tag: 'inbox' }, null, null);
+    const closed: string[] = [];
+    FakeNotification.instances.forEach((n) => n.addEventListener('close', () => closed.push(n.title)));
 
-    notification.dispatchEvent(new Event('click'));
+    $wnd.Vaadin.Flow.webNotification.closeByTag('builds');
 
-    expect(closed).to.be.true;
+    expect(closed).to.deep.equal(['Build done']);
+    $wnd.Vaadin.Flow.webNotification.closeByTag('inbox');
+    expect(closed).to.deep.equal(['Build done', 'New message']);
   });
 
   it('keeps the notification with the same tag when the new one cannot be shown', () => {

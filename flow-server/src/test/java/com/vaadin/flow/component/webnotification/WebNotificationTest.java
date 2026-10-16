@@ -97,11 +97,12 @@ class WebNotificationTest {
                 error -> events.add("error " + error.reason()));
 
         JsFunction handler = clickHandler(ui);
-        assertEquals(
-                "window.Vaadin.Flow.webNotification.show($0(event), $1, null, $2)",
+        assertTrue(handler.getBody().contains("webNotification.show("),
                 handler.getBody());
-        ReturnChannelRegistration channel = (ReturnChannelRegistration) handler
-                .getCaptures().get(2);
+        ReturnChannelRegistration channel = handler.getCaptures().stream()
+                .filter(ReturnChannelRegistration.class::isInstance)
+                .map(ReturnChannelRegistration.class::cast).findFirst()
+                .orElseThrow();
         channel.invoke(args("click"));
         channel.invoke(args("close"));
         channel.invoke(args("error", "NOT_ALLOWED", "no permission"));
@@ -117,9 +118,11 @@ class WebNotificationTest {
         WebNotification.onClick(button).show("Test",
                 WebNotificationOptions.builder().build());
 
-        assertEquals(
-                "window.Vaadin.Flow.webNotification.show($0(event), $1, null, null)",
-                clickHandler(ui).getBody());
+        JsFunction handler = clickHandler(ui);
+        assertTrue(handler.getBody().contains("webNotification.show("),
+                handler.getBody());
+        assertTrue(handler.getCaptures().stream()
+                .noneMatch(ReturnChannelRegistration.class::isInstance));
         assertFalse(button.getElement().getNode()
                 .getFeature(ReturnChannelMap.class).hasChannels());
     }

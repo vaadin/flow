@@ -45,7 +45,10 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * Two construction modes: fire-and-forget, or with {@code onClick} and
  * {@code onError} callbacks that run on the UI thread when the user clicks one
  * of the notifications the action showed, or when the browser did not show one.
- * The callbacks are shared by every notification the action shows.
+ * The callbacks are shared by every notification the action shows. They are
+ * reported through the trigger's host, so they only run while the host is
+ * attached, visible and enabled; a notification clicked after the user left the
+ * view runs no callback.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -122,17 +125,9 @@ public class ShowWebNotificationAction extends Action {
     }
 
     private ReturnChannelRegistration channelFor(Trigger trigger) {
-        StateNode node = trigger.getHost().getNode();
-        return channelByNode.computeIfAbsent(node, key -> {
-            ReturnChannelRegistration channel = key
-                    .getFeature(ReturnChannelMap.class)
-                    .registerChannel(this::dispatch);
-            trigger.addCleanup(() -> {
-                channel.remove();
-                channelByNode.remove(key);
-            });
-            return channel;
-        });
+        return channelByNode.computeIfAbsent(trigger.getHost().getNode(),
+                node -> node.getFeature(ReturnChannelMap.class)
+                        .registerChannel(this::dispatch));
     }
 
     private void dispatch(ArrayNode args) {
