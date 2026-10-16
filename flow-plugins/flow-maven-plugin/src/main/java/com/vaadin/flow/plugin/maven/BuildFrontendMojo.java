@@ -131,6 +131,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
+        // Validate before any other work: the frontend build also validates
+        // the license, but it is skipped when an existing bundle is used
+        BuildFrontendUtil.validateProductionLicense();
+
         Options options = new Options(null, getClassFinder(), npmFolder())
                 .withFrontendDirectory(frontendDirectory())
                 .withFrontendGeneratedFolder(generatedTsFolder());
