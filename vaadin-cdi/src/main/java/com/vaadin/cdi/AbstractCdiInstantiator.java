@@ -32,6 +32,10 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 
 /**
+ * Base class for CDI-aware instantiators. Looks up instances as CDI beans
+ * through the {@link BeanManager}, and falls back to a
+ * {@link DefaultInstantiator} delegate when no suitable bean is found.
+ *
  * @since 11.2
  */
 abstract public class AbstractCdiInstantiator implements Instantiator {
@@ -39,10 +43,32 @@ abstract public class AbstractCdiInstantiator implements Instantiator {
     private static final String CANNOT_USE_CDI_BEANS_FOR_I18N = "Cannot use CDI beans for I18N, falling back to the default behavior.";
     private static final String FALLING_BACK_TO_DEFAULT_INSTANTIATION = "Falling back to default instantiation.";
 
+    /**
+     * Whether the I18N fallback message should still be logged.
+     */
     private AtomicBoolean i18NLoggingEnabled = new AtomicBoolean(true);
 
+    /**
+     * Creates a new CDI instantiator.
+     */
+    @SuppressWarnings("java:S5993") // public constructor is published API
+    public AbstractCdiInstantiator() {
+        // Nothing to initialize
+    }
+
+    /**
+     * Gets the instantiator used when an instance cannot be provided as a CDI
+     * bean.
+     *
+     * @return the fallback instantiator
+     */
     protected abstract DefaultInstantiator getDelegate();
 
+    /**
+     * Gets the bean manager used for looking up CDI beans.
+     *
+     * @return the bean manager
+     */
     public abstract BeanManager getBeanManager();
 
     @Override
