@@ -16,6 +16,10 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
@@ -38,6 +42,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
@@ -261,6 +266,36 @@ class JavaScriptBootstrapHandlerTest {
         PushConfiguration push = UI.getCurrent().getPushConfiguration();
         assertEquals(PushMode.MANUAL, push.getPushMode());
         assertEquals(Transport.LONG_POLLING, push.getTransport());
+    }
+
+    @Test
+    void browserTabInitListener_notifiedOncePerTabBeforeUIInitListeners()
+            throws Exception {
+        // Browser tabs are kept in a session attribute
+        Map<Class<?>, Object> attributes = new HashMap<>();
+        attributes.put(SessionRouteRegistry.class,
+                session.getAttribute(SessionRouteRegistry.class));
+        Mockito.when(session.getAttribute(Mockito.any(Class.class)))
+                .thenAnswer(invocation -> attributes
+                        .get(invocation.getArgument(0, Class.class)));
+        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(session)
+                .setAttribute(Mockito.any(Class.class), Mockito.any());
+
+        List<String> events = new ArrayList<>();
+        mocks.getService().addBrowserTabInitListener(
+                event -> events.add("tab " + event.getBrowserTab().getId()));
+        mocks.getService().addUIInitListener(event -> events.add("ui"));
+
+        for (String windowName : List.of("tab-a", "tab-a", "tab-b")) {
+            jsInitHandler.handleRequest(session,
+                    mocks.createRequest(mocks, "/",
+                            "v-r=init&location=&v-sw=1&v-wn=" + windowName),
+                    response);
+        }
+
+        assertEquals(List.of("tab tab-a", "ui", "ui", "tab tab-b", "ui"),
+                events);
     }
 
     @Test
