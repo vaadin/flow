@@ -859,7 +859,7 @@ public class BuildFrontendUtilTest {
                 // before the build is run, which is what this test verifies.
             }
             licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
-                    Version.getFullVersion(), BuildType.PRODUCTION));
+                    Version.getFullVersion(), BuildType.PRODUCTION, null));
         }
     }
 
