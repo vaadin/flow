@@ -277,6 +277,30 @@ class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void cached_nestedCachedWithoutListeners_outerUpdatedOnTransitiveChange() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        AtomicInteger outerCount = new AtomicInteger();
+
+        Signal<Integer> inner = Signal.cached(source.map(value -> value % 10));
+        Signal<Integer> outer = Signal.cached(() -> {
+            outerCount.incrementAndGet();
+            return inner.get() + 1;
+        });
+
+        assertEquals(2, outer.peek());
+        assertEquals(1, outerCount.intValue());
+
+        source.set(2);
+        assertEquals(3, outer.peek());
+        assertEquals(2, outerCount.intValue());
+
+        // Inner is recomputed but produces the same value
+        source.set(12);
+        assertEquals(3, outer.peek());
+        assertEquals(2, outerCount.intValue());
+    }
+
+    @Test
     void map_mapCachedSignal_valueIsMapped() {
         SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
