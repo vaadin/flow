@@ -44,6 +44,28 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
+    static final String UNMAINTAINED_VERSION_WARNING = """
+
+             .:::::::::::::::::::::::  WARNING  :::::::::::::::::::::::.\s
+            ::'                                                       '::
+            ::                                                         ::
+            ::                  P L E A S E   N O T E                  ::
+            ::                                                         ::
+            ::                                                         ::
+            ::        This is an unmaintained version of Vaadin        ::
+            ::         that no longer receives security fixes.         ::
+            ::                                                         ::
+            ::     Upgrade to a maintained version, or learn about     ::
+            ::        extended maintenance for this version on         ::
+            ::                                                         ::
+            ::             https://vaadin.com/maintenance              ::
+            ::                                                         ::
+            ::                                                         ::
+            ::.                                                       .::
+             ':::::::::::::::::::::::  WARNING  :::::::::::::::::::::::'\s
+
+            """;
+
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = "WARNING: Cross-site request forgery protection is disabled!";
@@ -166,6 +188,9 @@ public class DefaultDeploymentConfiguration
 
     private void logMessages() {
         Logger logger = LoggerFactory.getLogger(getClass().getName());
+        if (logger.isWarnEnabled()) {
+            logger.warn(UNMAINTAINED_VERSION_WARNING);
+        }
 
         if (!warnings.isEmpty()) {
             warnings.add(0, DEPLOYMENT_WARNINGS);
