@@ -158,6 +158,7 @@ public final class WebNotification {
      */
     public static Signal<WebNotificationPermission> permissionSignal(UI ui) {
         Objects.requireNonNull(ui, "ui must not be null");
+        ui.getInternals().ensureWebNotificationPermissionWired();
         return ui.getInternals().getWebNotificationPermissionSignalReadOnly();
     }
 
@@ -180,7 +181,9 @@ public final class WebNotification {
     /**
      * Shows a notification with the given title on the given UI. Same as
      * {@link #show(String)}; use this overload from background threads or
-     * anywhere {@link UI#getCurrent()} is unreliable.
+     * anywhere {@link UI#getCurrent()} is unreliable. Like any change to the
+     * UI, the call must hold the session lock, so call it inside
+     * {@code ui.access(...)} from a background thread.
      *
      * @param title
      *            the title of the notification, not {@code null}
@@ -216,6 +219,8 @@ public final class WebNotification {
      * text, an icon, a tag or other options. Same as
      * {@link #show(String, WebNotificationOptions)}; use this overload from
      * background threads or anywhere {@link UI#getCurrent()} is unreliable.
+     * Like any change to the UI, the call must hold the session lock, so call
+     * it inside {@code ui.access(...)} from a background thread.
      *
      * @param title
      *            the title of the notification, not {@code null}
@@ -254,7 +259,8 @@ public final class WebNotification {
      * {@linkplain WebNotificationOptions#tag() tag} that the given UI has shown
      * and that are still visible. Same as {@link #closeByTag(String)}; use this
      * overload from background threads or anywhere {@link UI#getCurrent()} is
-     * unreliable.
+     * unreliable. Like any change to the UI, the call must hold the session
+     * lock, so call it inside {@code ui.access(...)} from a background thread.
      *
      * @param tag
      *            the tag of the notifications to close, not {@code null}

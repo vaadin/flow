@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -51,16 +53,18 @@ class WebNotificationTest {
     }
 
     @Test
-    void permissionSignal_seededFromClientAndFollowsChanges() {
+    void permissionSignal_followsChangesAndBootstrapValue() {
         MockUI ui = new MockUI();
         Signal<WebNotificationPermission> permission = WebNotification
                 .permissionSignal(ui);
         assertEquals(WebNotificationPermission.UNKNOWN, permission.peek());
 
-        ui.getInternals().setWebNotificationPermissionFromClient("PROMPT");
+        // Reading the signal is enough to receive changes, also for a UI
+        // whose bootstrap did not report a permission
+        firePermissionChange(ui, "PROMPT");
         assertEquals(WebNotificationPermission.PROMPT, permission.peek());
 
-        firePermissionChange(ui, "GRANTED");
+        ui.getInternals().setWebNotificationPermissionFromClient("GRANTED");
         assertEquals(WebNotificationPermission.GRANTED, permission.peek());
 
         firePermissionChange(ui, "SOMETHING_NEW");
@@ -122,21 +126,56 @@ class WebNotificationTest {
                 "closing a closed notification does nothing");
     }
 
-    @Test
-    void show_errorFromClient_runsErrorListenersWithReason() {
+    @ParameterizedTest
+    @CsvSource({ "NOT_ALLOWED,NOT_ALLOWED", "SOMETHING_NEW,UNKNOWN" })
+    void show_errorFromClient_runsErrorListenersWithReason(String sent,
+            WebNotificationError.Reason expected) {
         MockUI ui = new MockUI();
         List<WebNotificationError> errors = new ArrayList<>();
         WebNotificationHandle handle = WebNotification.show("Hi", ui);
         handle.addErrorListener(errors::add);
         ReturnChannelRegistration channel = channel(showInvocation(ui));
 
-        channel.invoke(args("error", "NOT_ALLOWED", "no permission"));
+        channel.invoke(args("error", sent, "no permission"));
 
-        assertEquals(List.of(new WebNotificationError(
-                WebNotificationError.Reason.NOT_ALLOWED, "no permission")),
+        assertEquals(
+                List.of(new WebNotificationError(expected, "no permission")),
                 errors);
         assertFalse(ui.getElement().getNode().getFeature(ReturnChannelMap.class)
                 .hasChannels());
+    }
+
+    @Test
+    void show_clientBridgeFails_errorListenerGetsUnknown() {
+        MockUI ui = new MockUI();
+        List<WebNotificationError> errors = new ArrayList<>();
+        WebNotification.show("Hi", ui).addErrorListener(errors::add);
+
+        // The browser could not run the show call at all, for example because
+        // the client-side bridge is missing
+        ui.dumpPendingJsInvocations().get(0)
+                .completeExceptionally(JacksonUtils.createNode("boom"));
+
+        assertEquals(1, errors.size());
+        assertEquals(WebNotificationError.Reason.UNKNOWN,
+                errors.get(0).reason());
+        assertTrue(errors.get(0).message().contains("boom"),
+                "the failure should be passed on: " + errors.get(0));
+        assertFalse(ui.getElement().getNode().getFeature(ReturnChannelMap.class)
+                .hasChannels());
+    }
+
+    @Test
+    void closeByTag_sendsTheTag() {
+        MockUI ui = new MockUI();
+
+        WebNotification.closeByTag("inbox", ui);
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        assertEquals(1, invocations.size());
+        assertEquals("inbox",
+                invocations.get(0).getInvocation().getParameters().get(0));
     }
 
     @Test

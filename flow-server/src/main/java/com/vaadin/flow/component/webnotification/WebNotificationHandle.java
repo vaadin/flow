@@ -134,6 +134,9 @@ public final class WebNotificationHandle implements Serializable {
      * Closes the notification if it is still visible. The close listeners run
      * once the browser confirms. Calling this when the notification is already
      * gone does nothing.
+     * <p>
+     * Like any change to the UI, the call must hold the session lock, so call
+     * it inside {@code ui.access(...)} from a background thread.
      */
     public void close() {
         if (channel == null) {

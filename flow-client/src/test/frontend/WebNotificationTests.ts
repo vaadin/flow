@@ -88,6 +88,40 @@ describe('webNotification', () => {
     expect(second.calls).to.deep.equal([['close']]);
   });
 
+  it('closes only the notifications with the given tag', () => {
+    const inbox = recordingChannel();
+    const other = recordingChannel();
+    $wnd.Vaadin.Flow.webNotification.show('New message', { tag: 'inbox' }, nextKey(), inbox.channel);
+    $wnd.Vaadin.Flow.webNotification.show('Build done', { tag: 'builds' }, nextKey(), other.channel);
+
+    $wnd.Vaadin.Flow.webNotification.closeByTag('inbox');
+
+    expect(inbox.calls).to.deep.equal([['close']]);
+    expect(other.calls).to.deep.equal([]);
+  });
+
+  it('keeps the notification with the same tag when the new one cannot be shown', () => {
+    const first = recordingChannel();
+    const firstKey = nextKey();
+    $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, firstKey, first.channel);
+    $wnd.Notification = class extends FakeNotification {
+      constructor(title: string, options: NotificationOptions) {
+        super(title, options);
+        throw new TypeError('Illegal constructor');
+      }
+    };
+    const second = recordingChannel();
+    const secondKey = nextKey();
+
+    $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, secondKey, second.channel);
+    $wnd.Vaadin.Flow.webNotification.close(secondKey);
+
+    expect(second.calls).to.deep.equal([['error', 'UNKNOWN', 'Illegal constructor']]);
+    expect(first.calls).to.deep.equal([]);
+    $wnd.Vaadin.Flow.webNotification.close(firstKey);
+    expect(first.calls).to.deep.equal([['close']]);
+  });
+
   it('reports an error without showing anything when permission is not granted', () => {
     FakeNotification.permission = 'default';
     const { calls, channel } = recordingChannel();

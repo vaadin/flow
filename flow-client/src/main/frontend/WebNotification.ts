@@ -148,16 +148,6 @@ $wnd.Vaadin.Flow.webNotification = {
       channel('error', 'NOT_ALLOWED', 'Notification permission has not been granted');
       return;
     }
-    if (options.tag) {
-      // The browser replaces a notification that has the same tag, so the
-      // previous one is gone for the user even though it fires no close event.
-      shown.forEach((entry, previousKey) => {
-        if (entry.tag === options.tag) {
-          shown.delete(previousKey);
-          entry.channel('close');
-        }
-      });
-    }
     let notification: Notification;
     try {
       notification = new Notification(title, options);
@@ -166,6 +156,16 @@ $wnd.Vaadin.Flow.webNotification = {
       // and throws a TypeError from the constructor.
       channel('error', 'UNKNOWN', e?.message ? String(e.message) : String(e));
       return;
+    }
+    if (options.tag) {
+      // The browser replaced a notification that has the same tag, so the
+      // previous one is gone for the user even though it fires no close event.
+      shown.forEach((previous, previousKey) => {
+        if (previous.tag === options.tag) {
+          shown.delete(previousKey);
+          previous.channel('close');
+        }
+      });
     }
     const entry: ShownNotification = { notification, tag: options.tag, channel };
     shown.set(key, entry);
