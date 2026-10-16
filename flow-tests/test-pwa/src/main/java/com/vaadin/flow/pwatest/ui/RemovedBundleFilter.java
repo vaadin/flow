@@ -1,0 +1,53 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.pwatest.ui;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.HttpFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+/**
+ * Responds with 404 to bundle files while the {@value #BUNDLE_REMOVED_COOKIE}
+ * cookie is set, the way the server does for the files of a previous build
+ * after a frontend rebuild. See {@code ServiceWorkerUpdateIT}.
+ */
+@WebFilter(urlPatterns = "/VAADIN/build/*")
+public class RemovedBundleFilter extends HttpFilter {
+
+    /**
+     * Name of the cookie that makes the bundle files unavailable.
+     */
+    public static final String BUNDLE_REMOVED_COOKIE = "bundleRemoved";
+
+    @Override
+    protected void doFilter(HttpServletRequest request,
+            HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (request.getCookies() != null && Arrays.stream(request.getCookies())
+                .anyMatch(cookie -> BUNDLE_REMOVED_COOKIE
+                        .equals(cookie.getName()))) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        chain.doFilter(request, response);
+    }
+}
