@@ -1400,15 +1400,66 @@ public class UITest {
     }
 
     @Test
-    public void addToModalComponent_onlyVisualModalityComponent_addedToUI() {
+    public void addToModalComponent_onlyVisualModalityComponent_addedToVisualComponent() {
         final TestFixture fixture = new TestFixture();
         fixture.ui.setChildComponentModal(fixture.modalComponent,
                 ModalityMode.VISUAL);
         Component test = new AttachableComponent();
         fixture.ui.addToModalComponent(test);
 
-        assertEquals(Optional.of(fixture.ui), test.getParent(),
-                "test component should have been added to the UI, not to the VISUAL component");
+        assertEquals(Optional.of(fixture.modalComponent), test.getParent(),
+                "test component should have been added to the VISUAL component");
+    }
+
+    @Test
+    public void addToModalComponent_strictAndVisualModalityInterleaved_addedToMostRecentlySet() {
+        final TestFixture fixture = new TestFixture();
+        Component visualComponent = new AttachableComponent();
+        fixture.ui.addToModalComponent(visualComponent);
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.VISUAL);
+
+        Component overlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(overlay);
+
+        assertEquals(Optional.of(visualComponent), overlay.getParent(),
+                "Component should have been added to the VISUAL component opened on top of the STRICT one");
+
+        Component strictComponent = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictComponent);
+        fixture.ui.setChildComponentModal(strictComponent, ModalityMode.STRICT);
+        Component strictOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictOverlay);
+        fixture.collectUiChanges();
+
+        assertEquals(Optional.of(visualComponent), strictComponent.getParent(),
+                "STRICT component should have been added to the VISUAL component");
+        assertEquals(Optional.of(strictComponent), strictOverlay.getParent(),
+                "Component should have been added to the STRICT component opened on top of the VISUAL one");
+        verifyInert(strictOverlay, false);
+
+        strictComponent.removeFromParent();
+        Component nextOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(nextOverlay);
+
+        assertEquals(Optional.of(visualComponent), nextOverlay.getParent(),
+                "Component should have been added to the VISUAL component once the STRICT one is removed");
+
+        visualComponent.removeFromParent();
+        Component strictModalOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictModalOverlay);
+        fixture.collectUiChanges();
+
+        assertEquals(Optional.of(fixture.modalComponent),
+                strictModalOverlay.getParent(),
+                "Component should have been added to the STRICT component once the VISUAL one on top of it is removed");
+        verifyInert(strictModalOverlay, false);
+
+        fixture.modalComponent.removeFromParent();
+        Component uiOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(uiOverlay);
+
+        assertEquals(Optional.of(fixture.ui), uiOverlay.getParent(),
+                "Component should have been added to the UI once no component with modality is left");
     }
 
     @Test
