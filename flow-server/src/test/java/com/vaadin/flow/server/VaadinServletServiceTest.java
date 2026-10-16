@@ -239,6 +239,11 @@ class VaadinServletServiceTest {
             when(request.getPathInfo()).thenReturn(path);
             assertTrue(service.requestCanCreateSession(request), path);
         }
+
+        when(registry.hasConfigurations()).thenReturn(false);
+        when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.js");
+        assertTrue(service.requestCanCreateSession(request));
     }
 
     private String testLocation(String base, String contextPath,
