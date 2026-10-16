@@ -28,6 +28,8 @@ import java.util.function.Consumer;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -1176,6 +1178,17 @@ class RouteUtilTest {
         }
     }
 
+    @ParameterizedTest
+    @CsvSource({ "OrgView, false", "DefaultsOnlyParentView, false",
+            "SettingsView, true", "ProjectView, true" })
+    void hasExplicitRouteParent_onlyWhenValueOrResolverIsDefined(
+            String simpleName, boolean expected) throws Exception {
+        Class<? extends Component> target = Class
+                .forName(RouteUtilTest.class.getName() + "$" + simpleName)
+                .asSubclass(Component.class);
+        assertEquals(expected, RouteUtil.hasExplicitRouteParent(target));
+    }
+
     @Test
     void getRouteParent_staticValue_carriesParameters() {
         RouteParameters parameters = new RouteParameters("orgId", "acme");
@@ -1389,6 +1402,12 @@ class RouteUtilTest {
         public ProjectView() {
             instantiated = true;
         }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("defaults-only")
+    @RouteParent
+    public static class DefaultsOnlyParentView extends Component {
     }
 
     @Tag(Tag.DIV)
