@@ -70,8 +70,13 @@ public abstract class AbstractContext implements Context {
     /**
      * Returns the contextual storages that are currently active for this
      * context.
+     * <p>
+     * The default implementation returns a list containing the storage returned
+     * by {@link #getContextualStorage(Contextual, boolean)} without creating
+     * it, so the only entry is {@code null} if no storage exists yet.
      *
-     * @return a list of the active contextual storages
+     * @return a list of the active contextual storages, entries may be
+     *         {@code null}
      */
     protected List<ContextualStorage> getActiveContextualStorages() {
         List<ContextualStorage> result = new ArrayList<ContextualStorage>();
