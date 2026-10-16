@@ -69,7 +69,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return isWebComponentScriptRequest(request);
+        return isWebComponentPath(request.getPathInfo())
+                && hasWebComponentConfigurations(request);
     }
 
     @Override
@@ -86,7 +87,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler
         // parallel does not get a new session from each of them, leaving the
         // browser with a cookie for a session other than the one its embedded
         // UI was created in.
-        return canHandleRequest(request)
+        return isWebComponentScriptRequest(request)
                 && writeWebComponentScript(request, response);
     }
 
@@ -101,10 +102,15 @@ public class WebComponentProvider extends SynchronizedRequestHandler
      */
     public static boolean isWebComponentScriptRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
+        return isWebComponentPath(pathInfo)
+                && new ComponentInfo(pathInfo).isJS()
+                && hasWebComponentConfigurations(request);
+    }
+
+    private static boolean isWebComponentPath(String pathInfo) {
         return pathInfo != null && pathInfo.startsWith(PATH_PREFIX)
                 && !WebComponentBootstrapHandler.PATH_PATTERN.matcher(pathInfo)
-                        .find()
-                && hasWebComponentConfigurations(request);
+                        .find();
     }
 
     private boolean writeWebComponentScript(VaadinRequest request,
@@ -320,6 +326,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler
 
         boolean isHTML() {
             return HTML_EXTENSION.equals(extension);
+        }
+
+        boolean isJS() {
+            return JS_EXTENSION.equals(extension);
         }
 
     }

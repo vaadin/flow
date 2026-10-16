@@ -232,6 +232,13 @@ class VaadinServletServiceTest {
         when(request.getPathInfo())
                 .thenReturn("/web-component/web-component-bootstrap.js");
         assertTrue(service.requestCanCreateSession(request));
+
+        for (String path : new String[] { "/web-component/",
+                "/web-component/my-component",
+                "/web-component/my-component.html" }) {
+            when(request.getPathInfo()).thenReturn(path);
+            assertTrue(service.requestCanCreateSession(request), path);
+        }
     }
 
     private String testLocation(String base, String contextPath,
