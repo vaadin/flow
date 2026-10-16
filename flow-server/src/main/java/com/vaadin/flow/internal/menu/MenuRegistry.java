@@ -47,11 +47,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitleGenerator;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
@@ -189,8 +189,9 @@ public class MenuRegistry {
      * <ol>
      * <li>{@link com.vaadin.flow.router.Menu#parent() @Menu(parent)} when
      * defined, for menu hierarchies that differ from the route hierarchy. A
-     * declared parent that is not a registered route, or is the view itself, is
-     * ignored with a warning,
+     * declared parent that is not a registered route, or is the view itself for
+     * a route registered after startup, is ignored with a warning (a route
+     * naming itself is rejected at startup),
      * <li>otherwise the logical route parent resolved by
      * {@link RouteConfiguration#getRouteParent(Class, RouteParameters)}, i.e.
      * {@link com.vaadin.flow.router.RouteParent @RouteParent} with URL-prefix
@@ -417,9 +418,21 @@ public class MenuRegistry {
          * it.
          */
         private boolean isIndexRoute(Class<? extends Component> parent) {
-            return parent.equals(rootRoute) || AnnotationReader
-                    .getAnnotationFor(parent, Route.class)
-                    .map(route -> route.value().isEmpty()).orElse(false);
+            return parent.equals(rootRoute)
+                    || "".equals(resolveOwnRoutePath(parent));
+        }
+
+        /**
+         * Resolves the path the target declares with its own {@link Route}
+         * annotation, relative to its layout prefixes and honoring the naming
+         * convention; {@code null} when the target is not annotated itself.
+         */
+        private static String resolveOwnRoutePath(
+                Class<? extends Component> target) {
+            VaadinService service = VaadinService.getCurrent();
+            return service != null
+                    ? RouteUtil.resolve(service.getContext(), target)
+                    : new DefaultRoutePathProvider().getRoutePath(target);
         }
 
         private static void warnOnce(Class<?> navigationTarget, String kind,

@@ -35,7 +35,10 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
@@ -513,20 +516,22 @@ class MenuRegistryTest {
                 .forRegistry(registry);
         Arrays.asList(TreeDashboard.class, TreeSettings.class, TreeAbout.class,
                 TreeAboutTeam.class, TreePrefixHome.class,
-                TreePrefixOrders.class)
+                TreePrefixOrders.class, TreePrefixInvoices.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
         List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
 
         // About has no @RouteParent: the URL-derived parent would be the root
         // route, which is a sibling in the menu instead. The same goes for
-        // Orders below the index route of a @RoutePrefix layout. Settings
-        // declares the root route as its @RouteParent explicitly and stays
-        // nested.
+        // Orders below the index route of a @RoutePrefix layout. Settings and
+        // Invoices declare the index route as their @RouteParent explicitly
+        // and stay nested.
         assertEquals(List.of("/", "/about", "/app", "/app/orders"),
                 collectRoutes(tree));
         assertEquals(List.of("/settings"),
                 collectRoutes(tree.get(0).children()));
+        assertEquals(List.of("/app/invoices"),
+                collectRoutes(tree.get(2).children()));
         // URL-derived parents other than an index route still nest.
         assertEquals(List.of("/about/team"),
                 collectRoutes(tree.get(1).children()));
@@ -571,6 +576,13 @@ class MenuRegistryTest {
         Arrays.asList(TreeDashboard.class, TreeSettings.class,
                 TreeProject.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
+
+        // TreeProject is not used by any other test, as the warned-once state
+        // is kept across menu builds
+        List<String> warnings = collectWarningsOfTwoTreeBuilds();
+        assertEquals(1, warnings.size(),
+                "Expected one warning, got " + warnings);
+        assertTrue(warnings.get(0).startsWith("Failed to resolve"));
 
         List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
 
@@ -622,6 +634,14 @@ class MenuRegistryTest {
                 TreeOwnMenuParent.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
+        // Both views are not used by any other test, as the warned-once state
+        // is kept across menu builds
+        List<String> warnings = collectWarningsOfTwoTreeBuilds();
+        assertEquals(2, warnings.size(),
+                "Expected one warning per view, got " + warnings);
+        assertTrue(warnings.stream()
+                .allMatch(warning -> warning.startsWith("Ignoring @Menu")));
+
         List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
 
         // A menu parent that is not a registered route, or the view itself, is
@@ -672,6 +692,21 @@ class MenuRegistryTest {
         tree.forEach(view -> assertEquals(List.of(), view.children(),
                 "Client view " + view.route() + " is not expected to have "
                         + "children in the tree"));
+    }
+
+    private static List<String> collectWarningsOfTwoTreeBuilds() {
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory.getLogger(MenuRegistry.class))
+                    .thenReturn(logger);
+            MenuRegistry.collectMenuItemsTree();
+            MenuRegistry.collectMenuItemsTree();
+        }
+        return Mockito.mockingDetails(logger).getInvocations().stream().filter(
+                invocation -> invocation.getMethod().getName().equals("warn"))
+                .map(invocation -> (String) invocation.getArgument(0)).toList();
     }
 
     private static List<String> collectRoutes(List<AvailableViewInfo> infos) {
@@ -1002,6 +1037,13 @@ class MenuRegistryTest {
     @Route(value = "orders", layout = TreePrefixLayout.class)
     @Menu(title = "Orders", order = 7)
     public static class TreePrefixOrders extends Component {
+    }
+
+    @Tag("div")
+    @Route(value = "invoices", layout = TreePrefixLayout.class)
+    @RouteParent(TreePrefixHome.class)
+    @Menu(title = "Invoices")
+    public static class TreePrefixInvoices extends Component {
     }
 
     // TreeHidden is not registered in the test using this view.

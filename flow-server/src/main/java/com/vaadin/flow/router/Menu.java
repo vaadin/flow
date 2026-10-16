@@ -91,8 +91,10 @@ public @interface Menu {
      * route. If the given parent is not itself part of the menu, the entry is
      * nested under the nearest ancestor of that parent which is, or becomes a
      * root entry when there is none. The parent has to be a registered route
-     * other than the annotated one; otherwise the declaration is ignored with a
-     * warning and the route hierarchy is used.
+     * other than the annotated one. A route naming itself is rejected at
+     * startup; a parent that is not a registered route (or a self-reference of
+     * a route registered after startup) is ignored with a warning and the route
+     * hierarchy is used instead.
      *
      * @return the menu parent navigation target, or {@link Component} itself,
      *         the default, when the route hierarchy should be used
