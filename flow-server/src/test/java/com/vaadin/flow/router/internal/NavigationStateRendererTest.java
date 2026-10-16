@@ -35,6 +35,8 @@ import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -43,6 +45,7 @@ import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.HasElement;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
@@ -865,6 +868,49 @@ class NavigationStateRendererTest {
 
     }
 
+    @ParameterizedTest
+    @EnumSource(value = ModalityMode.class, names = { "STRICT", "VISUAL" })
+    void handle_modalComponentOpen_refreshCurrentRouteRecreatesRouteChain(
+            ModalityMode modalityMode) {
+        layoutAttachCount = new AtomicInteger();
+        viewAttachCount = new AtomicInteger();
+
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        router = session.getService().getRouter();
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                new NavigationStateBuilder(router).withTarget(SingleView.class)
+                        .withPath("single").build());
+        router.getRegistry().setRoute("single", SingleView.class,
+                List.of(RouteParentLayout.class));
+
+        MockUI ui = new MockUI(session);
+
+        renderer.handle(new NavigationEvent(router, new Location("single"), ui,
+                NavigationTrigger.PAGE_LOAD));
+
+        String currentLayoutUUID = layoutUUID;
+        String currentViewUUID = viewUUID;
+
+        @Tag("modal-component")
+        class ModalComponent extends Component {
+        }
+        ModalComponent modalComponent = new ModalComponent();
+        ui.add(modalComponent);
+        ui.setChildComponentModal(modalComponent, modalityMode);
+
+        ui.getInternals().clearLastHandledNavigation();
+
+        // A component with modality forces the whole route chain to be
+        // recreated
+        ui.refreshCurrentRoute(false);
+        assertEquals(2, layoutAttachCount.get());
+        assertEquals(2, viewAttachCount.get());
+        assertNotEquals(currentLayoutUUID, layoutUUID);
+        assertNotEquals(currentViewUUID, viewUUID);
+    }
+
     @Test
     void handle_refreshCurrentRoute_withForwardTo_recreatesComponents() {
         layoutAttachCount = new AtomicInteger();
@@ -985,8 +1031,10 @@ class NavigationStateRendererTest {
         }
     }
 
-    @Test
-    void handle_refreshRoute_modalComponentsDetached() {
+    @ParameterizedTest
+    @EnumSource(ModalityMode.class)
+    void handle_refreshRoute_componentsWithModalityDetached(
+            ModalityMode modalityMode) {
         beforeEnterCount = new AtomicInteger();
         viewAttachCount = new AtomicInteger();
 
@@ -1022,16 +1070,37 @@ class NavigationStateRendererTest {
             }
         }
 
+        // a strict modal component opened below the one under test, so that
+        // removal of several components with modality is covered
+        ModalComponent strictComponent = new ModalComponent();
         ModalComponent modalComponent = new ModalComponent();
         MockUI ui = new MockUI(session);
-        ui.addModal(modalComponent);
+        ui.add(strictComponent);
+        ui.setChildComponentModal(strictComponent, ModalityMode.STRICT);
+        // a component with modality nested inside the strict one, which goes
+        // away together with it and must stay inside it
+        ModalComponent nestedComponent = new ModalComponent();
+        strictComponent.getElement().appendChild(nestedComponent.getElement());
+        ui.setChildComponentModal(nestedComponent, ModalityMode.VISUAL);
+        ui.add(modalComponent);
+        ui.setChildComponentModal(modalComponent, modalityMode);
 
         renderer.handle(new NavigationEvent(router, new Location(""), ui,
                 NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, false,
                 true, true));
 
+        // Components with modality, such as dialogs, are attached to the UI
+        // instead of the route, so they have to be removed on refresh since it
+        // is not possible to preserve the correct modality cardinality and
+        // order. Modeless components are instead left untouched.
+        int expectedDetachCount = modalityMode == ModalityMode.MODELESS ? 0 : 1;
         assertEquals(1, modalComponent.attachCount);
-        assertEquals(1, modalComponent.detachCount);
+        assertEquals(expectedDetachCount, modalComponent.detachCount);
+        assertEquals(1, strictComponent.attachCount);
+        assertEquals(1, strictComponent.detachCount);
+        assertEquals(1, nestedComponent.detachCount);
+        assertEquals(strictComponent.getElement(),
+                nestedComponent.getElement().getParent());
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {
