@@ -37,32 +37,36 @@ import com.vaadin.flow.testutil.ChromeDeviceTest;
  */
 public class ServiceWorkerUpdateIT extends ChromeDeviceTest {
 
-    private static final Pattern PRECACHED_ENTRY_SCRIPT = Pattern
-            .compile("VAADIN/build/indexhtml-[^\"'`]+\\.js");
+    private static final Pattern PRECACHED_BUNDLE_SCRIPT = Pattern
+            .compile("VAADIN/build/[^\"'`]+\\.js");
 
     @Test
     public void precachedBundleFile_removedFromServer_servedFromPrecache()
             throws IOException {
+        // Only a dev bundle has precached bundle files that the development
+        // mode route could fetch from the network instead. With the Vite dev
+        // server nothing is precached, and in production the files are always
+        // served from the precache.
+        Assume.assumeTrue("Not running with a dev bundle",
+                Boolean.getBoolean("vaadin.test.devBundle"));
         open();
         waitForServiceWorkerControl();
 
-        // The bundle files are only precached when the bundle is built, not
-        // when served by the Vite dev server
-        Matcher matcher = PRECACHED_ENTRY_SCRIPT
+        Matcher matcher = PRECACHED_BUNDLE_SCRIPT
                 .matcher(readString(getRootURL() + "/sw.js"));
-        Assume.assumeTrue("The entry script should be precached",
+        Assert.assertTrue("The bundle scripts should be precached",
                 matcher.find());
-        String entryScript = matcher.group();
+        String bundleScript = matcher.group();
 
         executeScript("document.cookie = arguments[0] + '=true'",
                 RemovedBundleFilter.BUNDLE_REMOVED_COOKIE);
         try {
             Assert.assertEquals(
-                    "The server should no longer have the entry script", 404,
-                    getStatusWithoutServiceWorker(entryScript));
+                    "The server should no longer have the bundle script", 404,
+                    getStatusWithoutServiceWorker(bundleScript));
             Assert.assertEquals(
-                    "The entry script should be served from the precache", 200L,
-                    fetchStatus(entryScript));
+                    "The bundle script should be served from the precache",
+                    200L, fetchStatus(bundleScript));
         } finally {
             executeScript("document.cookie = arguments[0] + '=; max-age=0'",
                     RemovedBundleFilter.BUNDLE_REMOVED_COOKIE);
@@ -79,34 +83,36 @@ public class ServiceWorkerUpdateIT extends ChromeDeviceTest {
         Map<?, ?> result = (Map<?, ?>) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(
                         """
-                                const done = arguments[arguments.length - 1];
-                                const stateReached = (worker, states) => new Promise((resolve) => {
-                                  const check = () => states.includes(worker.state) && resolve();
-                                  check();
-                                  worker.addEventListener('statechange', check);
-                                });
-                                (async () => {
-                                  const registration = await navigator.serviceWorker.getRegistration();
-                                  const previous = registration.active;
-                                  await navigator.serviceWorker.register(previous.scriptURL + '?update');
-                                  const worker = registration.installing || registration.waiting || registration.active;
-                                  await stateReached(worker, ['installed', 'activating', 'activated']);
-                                  // Give a worker that skips waiting time to activate
-                                  await new Promise((resolve) => setTimeout(resolve, 2000));
-                                  if (registration.waiting !== worker || registration.active !== previous) {
-                                    return { waiting: false };
-                                  }
-                                  const controllerChanged = new Promise((resolve) =>
-                                    navigator.serviceWorker.addEventListener('controllerchange', resolve));
-                                  worker.postMessage({ method: 'Vaadin.ServiceWorker.skipWaiting' });
-                                  await stateReached(worker, ['activated']);
-                                  await controllerChanged;
-                                  return {
-                                    waiting: true,
-                                    controlling: navigator.serviceWorker.controller === worker
-                                  };
-                                })().then(done, (error) => done({ error: String(error) }));
-                                """);
+                                      const done = arguments[arguments.length - 1];
+                                      const stateReached = (worker, states) => new Promise((resolve) => {
+                                        const check = () => states.includes(worker.state) && resolve();
+                                        check();
+                                        worker.addEventListener('statechange', check);
+                                      });
+                                      (async () => {
+                                        const registration = await navigator.serviceWorker.getRegistration();
+                                        const previous = registration.active;
+                                        await navigator.serviceWorker.register(previous.scriptURL + '?update');
+                                        const worker = registration.installing || registration.waiting || registration.active;
+                                        await stateReached(worker, ['installed', 'activating', 'activated']);
+                                        // Give a worker that skips waiting time to activate
+                                        await new Promise((resolve) => setTimeout(resolve, 2000));
+                                        if (registration.waiting !== worker || registration.active !== previous) {
+                                          return { waiting: false };
+                                        }
+                                        const controllerChanged = new Promise((resolve) =>
+                                          navigator.serviceWorker.addEventListener('controllerchange', resolve));
+                                        // Same message as vite-devmode.ts sends after an
+                                // update of sw.ts, see the message listener in sw.ts
+                                worker.postMessage({ method: 'Vaadin.ServiceWorker.skipWaiting' });
+                                        await stateReached(worker, ['activated']);
+                                        await controllerChanged;
+                                        return {
+                                          waiting: true,
+                                          controlling: navigator.serviceWorker.controller === worker
+                                        };
+                                      })().then(done, (error) => done({ error: String(error) }));
+                                      """);
 
         Assert.assertNull("Updating the service worker failed",
                 result.get("error"));
