@@ -375,10 +375,26 @@ public abstract class AbstractNavigationStateRenderer
             // Components with modality nested inside another one go away
             // together with it, and must stay in their parent. The rest are
             // removed most recently set first.
-            modalityComponents.stream().filter(component -> component
-                    .findAncestor(modalityComponents::contains).isEmpty())
+            modalityComponents.stream().filter(
+                    component -> !hasAncestorIn(component, modalityComponents))
                     .forEachOrdered(Component::removeFromParent);
         }
+    }
+
+    /*
+     * Checks whether any ancestor of the component, the component itself
+     * excluded, is one of the given components.
+     */
+    private static boolean hasAncestorIn(Component component,
+            Collection<Component> components) {
+        Optional<Component> ancestor = component.getParent();
+        while (ancestor.isPresent()) {
+            if (components.contains(ancestor.get())) {
+                return true;
+            }
+            ancestor = ancestor.get().getParent();
+        }
+        return false;
     }
 
     /**
