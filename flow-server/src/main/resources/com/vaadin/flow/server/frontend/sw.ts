@@ -276,6 +276,12 @@ self.addEventListener('message', (event) => {
   if (event.data.method === 'Vaadin.ServiceWorker.isConnectionLost' && 'id' in event.data) {
     event.source?.postMessage({ id: event.data.id, result: connectionLost }, []);
   }
+
+  // Sent by the dev server when sw.ts has been edited, to apply the rebuilt
+  // worker without closing the open pages
+  if (event.data.method === 'Vaadin.ServiceWorker.skipWaiting') {
+    self.skipWaiting();
+  }
 });
 
 // Handle web push
