@@ -97,7 +97,11 @@ class FullDependenciesScannerTest {
     }
 
     @JavaScript("bundled.js")
+    @JavaScript("context://runtime.js")
+    @JavaScript("/absolute.js")
+    @JavaScript("base://servlet-relative.js")
     @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
+    @JsModule("/abs-module.js")
     public static class RuntimeJavaScriptComponent extends Component {
 
     }
@@ -305,7 +309,7 @@ class FullDependenciesScannerTest {
     }
 
     @Test
-    void getScripts_javaScriptWithTypeModule_excludedFromBundleImports()
+    void getScripts_javaScriptWithRuntimePrefixOrTypeModule_excludedFromBundleImports()
             throws ClassNotFoundException {
         Class fakeAnnotation = Object.class;
         Mockito.when(finder.loadClass(JavaScript.class.getName()))
@@ -317,9 +321,27 @@ class FullDependenciesScannerTest {
                 (type, annotation) -> findAnnotations(type, JavaScript.class),
                 null, true);
 
-        // module-runtime.js is loaded at runtime as a <script type="module">,
-        // so it must not end up in the generated bundle imports
+        // Runtime-prefixed values and module-runtime.js are loaded at runtime
+        // as <script> tags, so they must not end up in the bundle imports
         DepsTests.assertImports(scanner.getScripts(), "bundled.js");
+    }
+
+    @Test
+    void getModules_jsModuleWithRuntimePrefix_stillBundled()
+            throws ClassNotFoundException {
+        Class fakeAnnotation = Object.class;
+        Mockito.when(finder.loadClass(JsModule.class.getName()))
+                .thenReturn(fakeAnnotation);
+        Mockito.when(finder.getAnnotatedClasses(fakeAnnotation)).thenReturn(
+                Collections.singleton(RuntimeJavaScriptComponent.class));
+
+        FullDependenciesScanner scanner = new FullDependenciesScanner(finder,
+                (type, annotation) -> findAnnotations(type, JsModule.class),
+                null, true);
+
+        // Runtime prefixes only change the meaning of @JavaScript values,
+        // @JsModule values are always bundled
+        DepsTests.assertImports(scanner.getModules(), "/abs-module.js");
     }
 
     @Test

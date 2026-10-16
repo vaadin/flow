@@ -162,6 +162,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             computePackages();
             computePwaConfiguration();
             aggregateEntryPointInformation();
+            warnAboutDeprecatedJavaScriptUses();
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visitedClasses.size(),
                     ms);
@@ -231,6 +232,34 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
         }
 
+    }
+
+    private void warnAboutDeprecatedJavaScriptUses() {
+        Set<String> usages = new LinkedHashSet<>();
+        for (Entry<String, ClassInfo> entry : visitedClasses.entrySet()) {
+            ClassInfo classInfo = entry.getValue();
+            if (classInfo == null) {
+                continue;
+            }
+            Stream.concat(classInfo.scripts.stream(),
+                    classInfo.scriptsDevelopmentOnly.stream())
+                    .map(value -> entry.getKey() + ": \"" + value + "\"")
+                    .forEach(usages::add);
+        }
+        if (usages.isEmpty()) {
+            return;
+        }
+        // Logged once per scan rather than per usage, as annotations coming
+        // from add-ons cannot be changed by the application developer
+        log().warn("Found @JavaScript values that are bundled. "
+                + "This bundled interpretation of @JavaScript is deprecated.{}"
+                + "\nTo keep bundling a file, replace @JavaScript with @JsModule using the same value. "
+                + "To load a file from the frontend directory at runtime instead, move it to a statically served location "
+                + "(e.g. src/main/resources/META-INF/resources) and reference it with a context:// prefix, "
+                + "or set type = JavaScript.Type.MODULE for an ES module. "
+                + "Usages in add-ons need to be updated by the add-on maintainer.",
+                usages.stream().map(usage -> "\n  - " + usage)
+                        .collect(Collectors.joining()));
     }
 
     Set<String> collectReachableClasses(EntryPointData entryPointData) {

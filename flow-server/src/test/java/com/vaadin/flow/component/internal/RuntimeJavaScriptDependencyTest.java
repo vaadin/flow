@@ -68,6 +68,11 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JavaScript("/script.js")
+    private static class AbsoluteScript extends Component {
+    }
+
+    @Tag("div")
     @JavaScript("https://example.net/pkg/../dist/script.js")
     private static class ExternalScriptWithParentPath extends Component {
     }
@@ -137,6 +142,12 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
+    void absoluteScript_addedAsRuntimeJavaScript() {
+        assertSingleDependency(AbsoluteScript.class, Dependency.Type.JAVASCRIPT,
+                "/script.js", LoadMode.EAGER);
+    }
+
+    @Test
     void externalScriptWithParentPath_urlPassedThroughUntouched() {
         // External URLs are not normalized, so a '..' segment inside one must
         // not cause the dependency to be dropped
@@ -193,6 +204,16 @@ class RuntimeJavaScriptDependencyTest {
 
         assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
                 "A type=MODULE value is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
+                        + log);
+    }
+
+    @Test
+    void productionMode_absoluteScript_noMissingBundleImportError()
+            throws Exception {
+        String log = productionModeLog(AbsoluteScript.class);
+
+        assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
+                "A value with a runtime prefix is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
                         + log);
     }
 
