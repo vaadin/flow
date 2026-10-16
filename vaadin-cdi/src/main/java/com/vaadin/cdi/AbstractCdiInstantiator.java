@@ -51,8 +51,7 @@ abstract public class AbstractCdiInstantiator implements Instantiator {
     /**
      * Creates a new CDI instantiator.
      */
-    // Public like the implicit constructor it documents, to keep the API
-    @SuppressWarnings("java:S5993")
+    @SuppressWarnings("java:S5993") // public constructor is published API
     public AbstractCdiInstantiator() {
         // Nothing to initialize
     }
