@@ -149,6 +149,16 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
     }
 
     @Test
+    public void withContentType_servedWithItUnlessDownloadResponseHasOne() {
+        open();
+
+        Assert.assertEquals("text/vtt",
+                fetchContentType("download-handler-content-type"));
+        Assert.assertEquals("text/plain",
+                fetchContentType("download-handler-response-content-type"));
+    }
+
+    @Test
     public void getDynamicDownloadHandlerClassResource() throws IOException {
         open();
 
@@ -263,6 +273,23 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
         findElement(By.id("detach-attach")).click();
 
         assertDownloadedContent("download-handler-text", "file%2B.jpg");
+    }
+
+    /**
+     * Fetches the download of the given link and returns its media type,
+     * without parameters such as a charset that the container may add.
+     */
+    private String fetchContentType(String downloadId) {
+        String url = findElement(By.id(downloadId)).getAttribute("href");
+        String contentType = (String) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(
+                        """
+                                const done = arguments[arguments.length - 1];
+                                fetch(arguments[0])
+                                  .then(response => done(response.headers.get('Content-Type')));
+                                """,
+                        url);
+        return contentType.split(";")[0].trim();
     }
 
     private void assertDownloadedContent(String downloadId, String filename)
