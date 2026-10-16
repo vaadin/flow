@@ -84,7 +84,7 @@ import com.vaadin.flow.signals.Signal;
  * the application is closed, use Web Push instead.</li>
  * </ul>
  */
-public final class WebNotification {
+public final class WebNotification implements Serializable {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(WebNotification.class);
