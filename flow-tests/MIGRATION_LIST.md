@@ -171,6 +171,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | DependencyFilterIT | test-default | done |
 | DependencyIT | test-default | done |
 | DomEventFilterIT | test-default | done |
+| DomEventStopPropagationAndPreventDefaultIT | test-default | done |
 | ElementInnerHtmlIT | test-default | done |
 | ElementRemoveItselfIT | test-default | done |
 | EventListenersIT | test-default | done |
@@ -345,7 +346,6 @@ procedure in [README.md](README.md) and the permutation policy in
 |---|---|---|
 | AbstractErrorIT | test-root-context | move |
 | ComponentErrorIT | test-root-context | move |
-| DomEventStopPropagationAndPreventDefaultIT | test-root-context | move |
 | ErrorHandlingIT | test-root-context | move |
 | ErrorPageIT | test-root-context | move |
 | ExceptionDuringMapSyncIT | test-root-context | move |

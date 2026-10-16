@@ -84,6 +84,7 @@ moving a test.
 | `dom` ITs × Tomcat 10 — `servlet-containers/tomcat10` runs `test-root-context`'s test-jar | **dropped on purpose** for the migrated `dom` ITs: that module is excluded from the CI matrix and no workflow runs it, and `test-default` runs on Spring Boot's embedded Tomcat, so the ITs still run on Tomcat |
 | `ElementInitOrder` (Polymer element vs plain custom element) | **stays in `test-root-context`** with the `templates.polymer` batch: its frontend module imports `@polymer/polymer`, which `test-default` does not install |
 | `dom` keyword matches that are not DOM tests: `ServiceInitListeners`, `CustomBrowserTooOldPage`, `TransferProgressListener` | **re-mapped, not moved**: the first two go with `bootstrap`, `TransferProgressListener` with the stream/download tests in `components` (it shares `AbstractStreamResourceIT` with them) |
+| `DomEventStopPropagationAndPreventDefault` — the keyword heuristic files it under `errorhandling` (`preventdefault` contains `fault`) | **moved with `dom`**: it tests `@DomEvent` / `DomListenerRegistration` `stopPropagation` and `preventDefault`, so it is a DOM-event test |
 | `test-spring-common` × {war, jar, undertow, contextpath, reverseproxy, scan, …} | **retain**: 10+ sibling modules already run its ITs by reusing its `test-jar`, so migrating it has to turn those into reuse-runs instead of moving the source away |
 
 Every source module's migration PR updates this ledger so each retain/drop is

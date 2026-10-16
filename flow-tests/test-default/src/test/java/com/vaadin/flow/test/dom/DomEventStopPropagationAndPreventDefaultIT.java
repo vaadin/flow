@@ -13,23 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.dom;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.AbstractDefaultIT;
+import com.vaadin.flow.test.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
+@TestFor(DomEventStopPropagationAndPreventDefaultView.class)
 public class DomEventStopPropagationAndPreventDefaultIT
-        extends ChromeBrowserTest {
+        extends AbstractDefaultIT {
 
-    @Test
-    public void preventDefault() throws InterruptedException {
+    @BrowserTest
+    public void preventDefault() {
         open();
 
         int nextMsg = 0;
@@ -50,25 +52,26 @@ public class DomEventStopPropagationAndPreventDefaultIT
     private void assertMessages(int skip, String... expectedTail) {
         List<WebElement> messages = getMessages();
         if (messages.size() < skip) {
-            Assert.fail("Cannot skip " + skip + " messages when there are only "
-                    + messages.size() + "messages. " + joinMessages(messages));
+            Assertions.fail("Cannot skip " + skip
+                    + " messages when there are only " + messages.size()
+                    + "messages. " + joinMessages(messages));
         }
 
         messages = messages.subList(skip, messages.size());
 
         if (messages.size() < expectedTail.length) {
-            Assert.fail("Expected " + expectedTail.length
+            Assertions.fail("Expected " + expectedTail.length
                     + " messages, but there are only " + messages.size() + ". "
                     + joinMessages(messages));
         }
 
         for (int i = 0; i < expectedTail.length; i++) {
-            Assert.assertEquals("Unexpected message at index " + i,
-                    expectedTail[i], messages.get(i).getText());
+            Assertions.assertEquals(expectedTail[i], messages.get(i).getText(),
+                    "Unexpected message at index " + i);
         }
 
         if (messages.size() > expectedTail.length) {
-            Assert.fail("There are unexpected messages at the end. "
+            Assertions.fail("There are unexpected messages at the end. "
                     + joinMessages(messages.subList(expectedTail.length,
                             messages.size())));
         }

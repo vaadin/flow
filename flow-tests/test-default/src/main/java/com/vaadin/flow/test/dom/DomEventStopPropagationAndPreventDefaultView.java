@@ -13,22 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.dom;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.DomEventStopPropagationAndPreventDefaultView", layout = ViewTestLayout.class)
-public class DomEventStopPropagationAndPreventDefaultView
-        extends AbstractDivView {
+@Route("dom-event-stop-propagation-and-prevent-default")
+public class DomEventStopPropagationAndPreventDefaultView extends Div {
 
     @Tag("div")
     public static class DivComponent extends Component {
