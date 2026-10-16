@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -119,6 +120,7 @@ public class DefaultDeploymentConfiguration
     private boolean requestTiming;
     private boolean frontendHotdeploy;
     private SessionLockCheckStrategy sessionLockCheckStrategy;
+    private CspMode cspMode;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -158,6 +160,7 @@ public class DefaultDeploymentConfiguration
         checkSendUrlsAsParameters();
         checkFrontendHotdeploy();
         checkSessionLockCheckStrategy();
+        checkCspMode();
 
         if (log) {
             logMessages();
@@ -304,6 +307,11 @@ public class DefaultDeploymentConfiguration
     @Override
     public SessionLockCheckStrategy getSessionLockCheckStrategy() {
         return sessionLockCheckStrategy;
+    }
+
+    @Override
+    public CspMode getCspMode() {
+        return cspMode;
     }
 
     @Override
@@ -457,6 +465,23 @@ public class DefaultDeploymentConfiguration
             warnings.add(WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
             sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
         }
+    }
+
+    private void checkCspMode() {
+        cspMode = getApplicationOrSystemProperty(InitParameters.CSP,
+                CspMode.OFF, DefaultDeploymentConfiguration::parseCspMode);
+    }
+
+    private static CspMode parseCspMode(String value) {
+        return Arrays.stream(CspMode.values())
+                .filter(mode -> mode.name().equalsIgnoreCase(value)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "Property named '%s' contains unrecognized value '%s'. The permitted values are %s (case-insensitive).",
+                        InitParameters.CSP, value,
+                        Arrays.stream(CspMode.values())
+                                .map(mode -> "'" + mode.name()
+                                        .toLowerCase(Locale.ENGLISH) + "'")
+                                .collect(Collectors.joining(", ")))));
     }
 
     private void checkPushServletMapping() {
