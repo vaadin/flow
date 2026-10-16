@@ -1,0 +1,66 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.component.trigger.internal;
+
+import java.util.Objects;
+
+import com.vaadin.flow.dom.JsFunction;
+
+/**
+ * Reads a value out of the trigger context — the object a trigger supplies to
+ * describe what it fired for. A {@link SinkTrigger} rendered into a template
+ * supplies {@code {args}}, the arguments the template called the action with,
+ * so {@code new ContextInput<String>("args", "0")} yields the first of them at
+ * fire time.
+ * <p>
+ * This is what lets one action serve every element a renderer draws: the value
+ * is not captured on the server per element, the template passes it when the
+ * action runs.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @param <T>
+ *            the runtime type of the value produced
+ */
+public class ContextInput<T> extends Action.Input<T> {
+
+    private final String contextProperty;
+    private final String valueProperty;
+
+    /**
+     * Creates an input reading {@code context[contextProperty][valueProperty]}
+     * at fire time.
+     *
+     * @param contextProperty
+     *            the context member to read from (e.g. {@code "args"}), not
+     *            {@code null}
+     * @param valueProperty
+     *            the property to read off that member, not {@code null}
+     */
+    public ContextInput(String contextProperty, String valueProperty) {
+        this.contextProperty = Objects.requireNonNull(contextProperty);
+        this.valueProperty = Objects.requireNonNull(valueProperty);
+    }
+
+    @Override
+    public JsFunction toJs(Trigger trigger) {
+        // Both names are captures, so nothing is concatenated into the body.
+        // Optional chaining yields undefined rather than throwing when the
+        // trigger supplies no context.
+        return JsFunction.of("return context?.[$0]?.[$1]", contextProperty,
+                valueProperty).withArguments("event", "context");
+    }
+}

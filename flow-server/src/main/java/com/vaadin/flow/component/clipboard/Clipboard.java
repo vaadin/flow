@@ -23,7 +23,11 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.ClientAction;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
+import com.vaadin.flow.component.trigger.internal.ClientActions;
+import com.vaadin.flow.component.trigger.internal.ContextInput;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -163,6 +167,29 @@ public final class Clipboard implements Serializable {
             T component) {
         Objects.requireNonNull(component, "component must not be null");
         return new ClipboardBinding(new ClickTrigger(component));
+    }
+
+    /**
+     * Creates a clipboard write that is not bound to any component, for copy
+     * affordances rendered on the client where there is no server-side
+     * component to bind to. The action copies the first argument it is called
+     * with as {@code text/plain}, so the template decides what to copy:
+     *
+     * <pre>{@code
+     * LitRenderer.<Customer> of(
+     *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
+     *         .withProperty("email", Customer::email)
+     *         .withClientAction("copy", Clipboard.write());
+     * }</pre>
+     *
+     * The action still runs inside the browser's own event handler, so the user
+     * gesture is valid, exactly as with {@link #onClick(Component)}.
+     *
+     * @return an unbound action, to be handed to whatever fires it
+     */
+    public static ClientAction write() {
+        return ClientActions.of(new WriteToClipboardAction(
+                new ContextInput<>("args", "0"), null));
     }
 
     /**

@@ -130,11 +130,11 @@ public class ShareAction extends PromiseAction<Void> {
 
     @Override
     protected JsFunction toPromiseJs(Trigger trigger) {
-        // navigator.share({title:$0(event), ...}) with only the slots that were
-        // set; each slot's value is produced on the client by invoking the
-        // input's JsFunction with the trigger event. validate() already ensures
-        // at least one slot is present, so the object is never empty (the Web
-        // Share API rejects a call with no payload fields).
+        // navigator.share({title:$0(event, context), ...}) with only the slots
+        // that were set; each slot's value is produced on the client by
+        // invoking the input's JsFunction with the trigger event. validate()
+        // already ensures at least one slot is present, so the object is never
+        // empty (the Web Share API rejects a call with no payload fields).
         StringBuilder expression = new StringBuilder(
                 "return navigator.share({");
         List<JsFunction> args = new ArrayList<>();
@@ -143,7 +143,7 @@ public class ShareAction extends PromiseAction<Void> {
         appendSlot(expression, args, "url", urlInput, trigger);
         expression.append("})");
         return JsFunction.of(expression.toString(), args.toArray())
-                .withArguments("event");
+                .withArguments("event", "context");
     }
 
     private static void appendSlot(StringBuilder expression,
@@ -156,7 +156,7 @@ public class ShareAction extends PromiseAction<Void> {
             expression.append(',');
         }
         expression.append(key).append(":$").append(args.size())
-                .append("(event)");
+                .append("(event, context)");
         args.add(input.toJs(trigger));
     }
 }
