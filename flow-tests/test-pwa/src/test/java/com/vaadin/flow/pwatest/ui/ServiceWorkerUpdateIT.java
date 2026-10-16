@@ -75,6 +75,10 @@ public class ServiceWorkerUpdateIT extends ChromeDeviceTest {
 
     @Test
     public void newServiceWorker_waitsUntilSkipWaitingRequested() {
+        // The Vite dev server does not serve sw.js with a query string, which
+        // the test uses to install a new worker
+        Assume.assumeFalse("Running with the Vite dev server",
+                Boolean.getBoolean("vaadin.test.viteDevServer"));
         open();
         waitForServiceWorkerControl();
 
