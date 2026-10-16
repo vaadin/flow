@@ -15,7 +15,7 @@ describe('BrowserHelpers', () => {
 
     expect(params['v-sw']).to.equal(String(window.screen.width));
     expect(params['v-tzid']).to.equal(Intl.DateTimeFormat().resolvedOptions().timeZone);
-    expect(params).to.include.keys('v-pv', 'v-fs', 'v-so', 'v-soa', 'v-ga', 'v-wla', 'v-ws');
+    expect(params).to.include.keys('v-pv', 'v-fs', 'v-so', 'v-soa', 'v-ga', 'v-wla', 'v-wnp', 'v-ws');
     Object.values(params).forEach((value) => expect(value).to.be.a('string'));
   });
 });
