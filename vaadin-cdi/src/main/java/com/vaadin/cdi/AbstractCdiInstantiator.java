@@ -51,7 +51,7 @@ abstract public class AbstractCdiInstantiator implements Instantiator {
     /**
      * Creates a new CDI instantiator.
      */
-    protected AbstractCdiInstantiator() {
+    public AbstractCdiInstantiator() {
         // Nothing to initialize
     }
 
