@@ -16,7 +16,9 @@ declare var self: ServiceWorkerGlobalScope & {
   additionalNetworkFirstUrls?: Array<string>;
 };
 
-self.skipWaiting();
+// No skipWaiting(): a worker of a new build waits until the pages of the
+// previous build are closed. Activating right away would remove the previous
+// build's files from the precache while those pages still load from it.
 clientsClaim();
 
 declare var OFFLINE_PATH: string; // defined by Webpack/Vite
@@ -193,8 +195,12 @@ if (import.meta.env.DEV) {
   });
 
   // Cache /VAADIN/* resources in dev mode. Ensure the Vite specific URLs on another port are not handled to avoid excessive logging.
+  // Precached files of a dev bundle are left to the precache route: after a
+  // rebuild the server no longer has them, but the app shell served from the
+  // precache still references them.
   registerRoute(
-    ({ url }) => url.port === scope.port && url.pathname.startsWith(`${scope.pathname}VAADIN/`),
+    ({ url }) =>
+      url.port === scope.port && url.pathname.startsWith(`${scope.pathname}VAADIN/`) && !isManifestEntryURL(url),
     networkFirst
   );
 }
