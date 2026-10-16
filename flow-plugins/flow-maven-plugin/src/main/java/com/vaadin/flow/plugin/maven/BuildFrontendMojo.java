@@ -133,6 +133,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
+        // Validate before any other work: the frontend build also validates
+        // the license, but it is skipped when an existing bundle is used
+        BuildFrontendUtil.validateProductionLicense();
+
         Options options = new Options(null, getClassFinder(), npmFolder())
                 .withFrontendDirectory(frontendDirectory())
                 .withFrontendGeneratedFolder(generatedTsFolder());
@@ -179,6 +183,10 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                     frontendDependencies);
             commercialBannerRequired = false;
         } catch (MissingLicenseKeyException ex) {
+            // Commercial banner builds are not supported: this Vaadin version
+            // always requires a license and isCommercialBannerEnabled() always
+            // returns false, so validateLicenses never throws this exception.
+            // The handling is kept in case the banner feature is restored.
             licenseRequired = true;
             commercialBannerRequired = true;
             getLog().info(ex.getMessage());

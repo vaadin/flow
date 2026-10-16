@@ -79,6 +79,10 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
             check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
+            // Validate before any other work: the frontend build also validates
+            // the license, but it is skipped when an existing bundle is used
+            BuildFrontendUtil.validateProductionLicense()
+
             val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
                 .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))
                 .withFrontendGeneratedFolder(config.generatedTsFolder.get())
@@ -119,6 +123,11 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                     ), false
                 )
             } catch (e: MissingLicenseKeyException) {
+                // Commercial banner builds are not supported: this Vaadin
+                // version always requires a license and
+                // isCommercialBannerEnabled() always returns false, so
+                // validateLicenses never throws this exception. The handling
+                // is kept in case the banner feature is restored.
                 logger.info(e.message)
                 Pair(true, true)
             }
