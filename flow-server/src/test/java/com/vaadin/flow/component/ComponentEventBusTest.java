@@ -47,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
 
 class ComponentEventBusTest {
 
@@ -785,9 +786,8 @@ class ComponentEventBusTest {
         final TestButton button = new TestButton();
         try (MockedStatic<MessageDigestUtil> util = Mockito
                 .mockStatic(MessageDigestUtil.class)) {
-            util.when(() -> MessageDigestUtil.sha256(Mockito.anyString()))
-                    .thenReturn(
-                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
+            util.when(() -> MessageDigestUtil.sha256(anyString())).thenReturn(
+                    new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
             button.addClickListener(event -> {
             });
             util.verifyNoInteractions();

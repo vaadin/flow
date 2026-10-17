@@ -38,6 +38,8 @@ import static com.vaadin.flow.server.frontend.scanner.ChunkInfo.GLOBAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskGenerateTailwindCssTest {
 
@@ -64,7 +66,7 @@ class TaskGenerateTailwindCssTest {
         frontendDependenciesScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);
@@ -109,7 +111,7 @@ class TaskGenerateTailwindCssTest {
                 "@theme { --color-my-theme: red; }");
 
         // Recreate task to pick up the custom file
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);
@@ -132,13 +134,13 @@ class TaskGenerateTailwindCssTest {
         Files.writeString(stylesCss.toPath(),
                 ".custom-class { @apply text-blue-500; }");
 
-        ThemeDefinition themeDefinition = Mockito.mock(ThemeDefinition.class);
-        Mockito.when(frontendDependenciesScanner.getThemeDefinition())
+        ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(frontendDependenciesScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
-        Mockito.when(themeDefinition.getName()).thenReturn(themeName);
+        when(themeDefinition.getName()).thenReturn(themeName);
 
         // Recreate task with theme name
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);
@@ -153,7 +155,7 @@ class TaskGenerateTailwindCssTest {
 
     @Test
     void should_notIncludeThemeImport_whenNoTheme() throws Exception {
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);
@@ -172,7 +174,7 @@ class TaskGenerateTailwindCssTest {
         File themeFolder = new File(themesFolder, themeName);
         themeFolder.mkdirs();
 
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);
@@ -197,13 +199,13 @@ class TaskGenerateTailwindCssTest {
         Files.writeString(stylesCss.toPath(),
                 ".jar-class { @apply text-red-500; }");
 
-        ThemeDefinition themeDefinition = Mockito.mock(ThemeDefinition.class);
-        Mockito.when(frontendDependenciesScanner.getThemeDefinition())
+        ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(frontendDependenciesScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
-        Mockito.when(themeDefinition.getName()).thenReturn(themeName);
+        when(themeDefinition.getName()).thenReturn(themeName);
 
         // Recreate task with JAR resources folder
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -241,13 +243,13 @@ class TaskGenerateTailwindCssTest {
         Files.writeString(jarStylesCss.toPath(),
                 ".jar-class { @apply text-red-500; }");
 
-        ThemeDefinition themeDefinition = Mockito.mock(ThemeDefinition.class);
-        Mockito.when(frontendDependenciesScanner.getThemeDefinition())
+        ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(frontendDependenciesScanner.getThemeDefinition())
                 .thenReturn(themeDefinition);
-        Mockito.when(themeDefinition.getName()).thenReturn(themeName);
+        when(themeDefinition.getName()).thenReturn(themeName);
 
         // Recreate task with both folders
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
@@ -277,9 +279,9 @@ class TaskGenerateTailwindCssTest {
         addOnCss.createNewFile();
         Map<ChunkInfo, List<CssData>> addOns = Collections.singletonMap(GLOBAL,
                 List.of(new CssData("./add-on/add-on.css", null, null, null)));
-        Mockito.when(frontendDependenciesScanner.getCss()).thenReturn(addOns);
+        when(frontendDependenciesScanner.getCss()).thenReturn(addOns);
 
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);

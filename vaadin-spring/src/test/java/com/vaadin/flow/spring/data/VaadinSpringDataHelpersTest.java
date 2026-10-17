@@ -35,6 +35,8 @@ import com.vaadin.flow.data.provider.QuerySortOrder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 
 class VaadinSpringDataHelpersTest {
 
@@ -93,7 +95,7 @@ class VaadinSpringDataHelpersTest {
         PagingAndSortingRepository repo = Mockito
                 .mock(PagingAndSortingRepository.class);
 
-        Mockito.doAnswer(mock -> {
+        doAnswer(mock -> {
             PageRequest pageRequest = mock.getArgument(0);
             int from = pageRequest.getPageNumber() * pageRequest.getPageSize();
 
@@ -109,7 +111,7 @@ class VaadinSpringDataHelpersTest {
                     .limit(pageRequest.getPageSize()).map(i -> "Item " + i)
                     .collect(Collectors.toList());
             return new PageImpl<>(items);
-        }).when(repo).findAll(Mockito.any(PageRequest.class));
+        }).when(repo).findAll(any(PageRequest.class));
 
         CallbackDataProvider.FetchCallback<String, Void> callback = VaadinSpringDataHelpers
                 .fromPagingRepository(repo);

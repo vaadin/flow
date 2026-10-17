@@ -41,6 +41,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @Isolated
 class TaskGenerateTsConfigTest {
@@ -61,8 +62,8 @@ class TaskGenerateTsConfigTest {
     void setUp() throws IOException {
         npmFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                 .toFile();
-        featureFlags = Mockito.mock(FeatureFlags.class);
-        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+        featureFlags = mock(FeatureFlags.class);
+        Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFeatureFlags(featureFlags);
 
         taskGenerateTsConfig = new TaskGenerateTsConfig(options);

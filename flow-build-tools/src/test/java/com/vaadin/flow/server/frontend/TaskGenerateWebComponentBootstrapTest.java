@@ -29,6 +29,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskGenerateWebComponentBootstrapTest {
     @TempDir
@@ -47,8 +49,8 @@ class TaskGenerateWebComponentBootstrapTest {
         generatedImports.createNewFile();
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Mockito.when(scanner.getThemeDefinition()).thenReturn(null);
-        Options options = new Options(Mockito.mock(Lookup.class), null)
+        when(scanner.getThemeDefinition()).thenReturn(null);
+        Options options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendDirectory)
                 .withFrontendDependenciesScanner(scanner);
 

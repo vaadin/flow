@@ -51,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class ReturnChannelHandlerTest {
     /**
@@ -309,7 +310,7 @@ class ReturnChannelHandlerTest {
             int channelId) {
         List<String> warnings = new ArrayList<>();
         List<String> debugMessages = new ArrayList<>();
-        Logger logger = Mockito.mock(Logger.class,
+        Logger logger = mock(Logger.class,
                 invocation -> record(invocation, warnings, debugMessages));
 
         // Only the handler's own logger is mocked. Invoking a channel runs

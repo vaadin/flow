@@ -31,13 +31,18 @@ import org.atmosphere.cpr.BroadcasterConfig;
 import org.atmosphere.cpr.DefaultAtmosphereResourceSessionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 class LongPollingCacheFilterTest {
 
@@ -144,9 +149,8 @@ class LongPollingCacheFilterTest {
                 "Expecting message not seen on client to be sent");
         assertSame(message, action.message(),
                 "Message should not be altered by filter when continuing");
-        Mockito.verify(cache).addToCache(ArgumentMatchers.eq(broadcasterId),
-                ArgumentMatchers.eq(RESOURCE_UUID),
-                ArgumentMatchers.argThat(m -> m.message() == originalMessage));
+        verify(cache).addToCache(eq(broadcasterId), eq(RESOURCE_UUID),
+                argThat(m -> m.message() == originalMessage));
     }
 
     @Test
@@ -193,32 +197,31 @@ class LongPollingCacheFilterTest {
 
     @BeforeEach
     void setUp() {
-        resource = Mockito.mock(AtmosphereResource.class);
-        AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
-        Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
+        resource = mock(AtmosphereResource.class);
+        AtmosphereRequest request = mock(AtmosphereRequest.class);
+        Broadcaster broadcaster = mock(Broadcaster.class);
         BroadcasterConfig broadcasterConfig = Mockito
                 .mock(BroadcasterConfig.class);
-        cache = Mockito.mock(BroadcasterCache.class);
-        Mockito.when(broadcaster.getBroadcasterConfig())
-                .thenReturn(broadcasterConfig);
-        Mockito.when(broadcasterConfig.getBroadcasterCache()).thenReturn(cache);
+        cache = mock(BroadcasterCache.class);
+        when(broadcaster.getBroadcasterConfig()).thenReturn(broadcasterConfig);
+        when(broadcasterConfig.getBroadcasterCache()).thenReturn(cache);
 
         sessionFactory = new DefaultAtmosphereResourceSessionFactory();
-        AtmosphereConfig config = Mockito.mock(AtmosphereConfig.class);
-        Mockito.when(config.sessionFactory()).thenReturn(sessionFactory);
+        AtmosphereConfig config = mock(AtmosphereConfig.class);
+        when(config.sessionFactory()).thenReturn(sessionFactory);
 
-        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-        Mockito.when(resource.getRequest()).thenReturn(request);
-        Mockito.when(resource.uuid()).thenReturn(RESOURCE_UUID);
-        Mockito.when(resource.getAtmosphereConfig()).thenReturn(config);
+        when(resource.getBroadcaster()).thenReturn(broadcaster);
+        when(resource.getRequest()).thenReturn(request);
+        when(resource.uuid()).thenReturn(RESOURCE_UUID);
+        when(resource.getAtmosphereConfig()).thenReturn(config);
     }
 
     private void setTransport(AtmosphereResource.TRANSPORT transport) {
-        Mockito.when(resource.transport()).thenReturn(transport);
+        when(resource.transport()).thenReturn(transport);
     }
 
     private void setSeenServerSyncIdHeader(int id, int... ids) {
-        Mockito.when(resource.getRequest()
+        when(resource.getRequest()
                 .getHeader(LongPollingCacheFilter.SEEN_SERVER_SYNC_ID))
                 .thenReturn(Integer.toString(id), IntStream.of(ids)
                         .mapToObj(Integer::toString).toArray(String[]::new));
@@ -229,6 +232,6 @@ class LongPollingCacheFilterTest {
     }
 
     private void verifyMessageIsNotCached() {
-        Mockito.verifyNoInteractions(cache);
+        verifyNoInteractions(cache);
     }
 }

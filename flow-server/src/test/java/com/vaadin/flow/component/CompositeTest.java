@@ -36,6 +36,8 @@ import com.vaadin.tests.util.TestUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class CompositeTest {
@@ -115,12 +117,11 @@ class CompositeTest {
         layoutWithSingleComponentComposite.track();
 
         VaadinService.setCurrent(null);
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
         VaadinService.setCurrent(service);
     }
 

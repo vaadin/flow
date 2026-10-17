@@ -18,8 +18,6 @@ package com.vaadin.flow.component.littemplate.internal;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -36,8 +34,15 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class LitTemplateParserImplTest {
 
@@ -49,37 +54,34 @@ class LitTemplateParserImplTest {
     void init() {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        when(configuration.getStringProperty(anyString(), anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
+        when(configuration.getBuildFolder()).thenReturn("target");
 
         Properties properties = new Properties();
-        Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+        when(configuration.getInitParameters()).thenReturn(properties);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getServiceInitListeners())
+        Instantiator instantiator = mock(Instantiator.class);
+        when(instantiator.getServiceInitListeners()).thenReturn(Stream.empty());
+        when(instantiator.getDependencyFilters(any()))
                 .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
-                .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any()))
+        when(instantiator.getIndexHtmlRequestListeners(any()))
                 .thenReturn(Stream.empty());
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
-        Mockito.when(service.getLookup().lookup(ResourceProvider.class))
+        when(service.getLookup().lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
-        Mockito.when(
-                resourceProvider.getApplicationResource(Mockito.anyString()))
+        when(resourceProvider.getApplicationResource(anyString()))
                 .thenAnswer(invoc -> LitTemplateParserImpl.class
                         .getClassLoader().getResource(invoc.getArgument(0)));
     }
 
     @Test
     void getTemplateContent_rootElementParsed() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance
                 .getTemplateContent(MyLitElement.class, "my-element", service);
@@ -99,7 +101,7 @@ class LitTemplateParserImplTest {
 
     @Test
     void getTemplateContent_templateParsedGreedly_rootElementParsed() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         TemplateData templateContent = instance.getTemplateContent(
                 MyGreedyLitElement.class, "my-greedy-element", service);
@@ -157,8 +159,7 @@ class LitTemplateParserImplTest {
 
     @Test
     void getTemplateContent_localFileNotFound_returnsNull() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        when(configuration.getStringProperty(anyString(), anyString()))
                 .thenReturn("META-INF/resources/foo-bar.json");
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         assertNull(instance.getTemplateContent(FooView.class, "foo-view",
@@ -250,9 +251,8 @@ class LitTemplateParserImplTest {
         // name", the second one doesn't contain this string.
         // The second module should be chosen since its name matches the tag
         // name
-        MatcherAssert.assertThat(templateContent.getTemplateElement().html(),
-                CoreMatchers.not(CoreMatchers.containsString(
-                        "Tag name doesn't match the JS module name")));
+        assertThat(templateContent.getTemplateElement().html(), not(
+                containsString("Tag name doesn't match the JS module name")));
     }
 
     @Tag("my-element")

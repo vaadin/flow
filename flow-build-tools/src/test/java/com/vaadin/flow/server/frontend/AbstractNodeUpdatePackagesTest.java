@@ -58,6 +58,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
@@ -86,7 +89,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         baseDir = temporaryFolder;
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
-        classFinder = Mockito.spy(getClassFinder());
+        classFinder = spy(getClassFinder());
         options = new MockOptions(classFinder, baseDir)
                 .withBuildDirectory(TARGET).withBundleBuild(true)
                 .withFrontendDependenciesScanner(getScanner(classFinder));
@@ -96,8 +99,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 .toFile();
         versions = new File(versionsFolder, "versions.json");
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
-        Mockito.when(
-                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -342,7 +344,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     void versionsDoNotMatch_inVaadinJson_cleanUpPnpm() throws IOException {
         options.withEnablePnpm(true);
         options = options.withFrontendDependenciesScanner(
-                Mockito.mock(FrontendDependencies.class));
+                mock(FrontendDependencies.class));
 
         packageUpdater = new TaskUpdatePackages(options);
 
@@ -380,7 +382,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
         // packages.put(VAADIN_CORE, "1.1.1");
 
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -430,7 +432,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -459,7 +461,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -503,7 +505,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -533,7 +535,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -555,7 +557,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 .mock(FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -579,7 +581,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
                 .mock(FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -605,7 +607,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -663,7 +665,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -707,7 +709,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
 
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -855,7 +857,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -896,7 +898,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);
@@ -974,7 +976,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options) {
@@ -1043,7 +1045,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options) {
@@ -1106,7 +1108,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
         packages.put("@polymer/paper-button", "3.0.2");
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
         options = options.withFrontendDependenciesScanner(frontendDependencies);
 
         packageUpdater = new TaskUpdatePackages(options);

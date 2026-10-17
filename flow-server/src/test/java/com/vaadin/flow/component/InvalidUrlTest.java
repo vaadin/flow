@@ -40,6 +40,9 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class InvalidUrlTest {
 
@@ -65,8 +68,8 @@ class InvalidUrlTest {
     private static void initUI(UI ui, String initialLocation,
             ArgumentCaptor<Integer> statusCodeCaptor)
             throws InvalidRouteConfigurationException, ServiceException {
-        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinServletRequest request = mock(VaadinServletRequest.class);
+        VaadinResponse response = mock(VaadinResponse.class);
 
         String pathInfo;
         if (initialLocation.isEmpty()) {
@@ -75,7 +78,7 @@ class InvalidUrlTest {
             assertFalse(initialLocation.startsWith("/"));
             pathInfo = "/" + initialLocation;
         }
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        when(request.getPathInfo()).thenReturn(pathInfo);
 
         VaadinService service = new MockVaadinServletService() {
             @Override
@@ -90,7 +93,7 @@ class InvalidUrlTest {
                 } else {
                     DeploymentConfiguration config = Mockito
                             .mock(DeploymentConfiguration.class);
-                    Mockito.when(config.isProductionMode()).thenReturn(false);
+                    when(config.isProductionMode()).thenReturn(false);
                     setConfiguration(config);
                     return config;
                 }
@@ -102,10 +105,10 @@ class InvalidUrlTest {
 
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(config.isProductionMode()).thenReturn(false);
-        Mockito.when(config.getFrontendFolder()).thenReturn(new File("front"));
-        Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
-        Mockito.when(config.getBuildFolder()).thenReturn("build");
+        when(config.isProductionMode()).thenReturn(false);
+        when(config.getFrontendFolder()).thenReturn(new File("front"));
+        when(config.getProjectFolder()).thenReturn(new File("./"));
+        when(config.getBuildFolder()).thenReturn("build");
 
         ((MockVaadinServletService) service).setConfiguration(config);
         CurrentInstance.set(VaadinSession.class, session);
@@ -126,7 +129,7 @@ class InvalidUrlTest {
                 UITest.requestToLocation(request));
 
         if (statusCodeCaptor != null) {
-            Mockito.verify(response).setStatus(statusCodeCaptor.capture());
+            verify(response).setStatus(statusCodeCaptor.capture());
         }
     }
 }

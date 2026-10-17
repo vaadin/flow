@@ -41,6 +41,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskGeneratePWAIconsTest {
 
@@ -69,13 +71,13 @@ class TaskGeneratePWAIconsTest {
 
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        Mockito.when(scanner.getPwaConfiguration()).then(i -> pwaConfiguration);
+        when(scanner.getPwaConfiguration()).then(i -> pwaConfiguration);
 
         URLClassLoader classFinderClassLoader = new URLClassLoader(
                 new URL[] { resourcesDirectory.toUri().toURL() }, null);
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 classFinderClassLoader);
-        Options options = new Options(Mockito.mock(Lookup.class), classFinder,
+        Options options = new Options(mock(Lookup.class), classFinder,
                 projectDirectory)
                 .withBuildResultFolders(wabappResourceOutDirectory.toFile(),
                         resourceOutDirectory.toFile());

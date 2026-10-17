@@ -27,10 +27,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.cdi.context.ServiceUnderTestContext;
@@ -45,6 +43,11 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class CdiVaadinServletTest extends AbstractWeldTest {
 
     @Inject
@@ -54,57 +57,54 @@ public class CdiVaadinServletTest extends AbstractWeldTest {
 
     @BeforeEach
     public void setUp() throws ServletException {
-        final ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
+        final ServletConfig servletConfig = mock(ServletConfig.class);
         final ServletContext servletContext = Mockito
                 .mock(ServletContext.class);
         ClassLoader loader = CdiVaadinServletServiceTest.class.getClassLoader();
-        Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
+        when(servletContext.getClassLoader()).thenReturn(loader);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(provider);
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+        Lookup lookup = mock(Lookup.class);
+        ResourceProvider provider = mock(ResourceProvider.class);
+        when(lookup.lookup(ResourceProvider.class)).thenReturn(provider);
+        when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
         final DefaultApplicationConfigurationFactory applicationConfigurationFactory = Mockito
                 .mock(DefaultApplicationConfigurationFactory.class);
         final ApplicationConfiguration applicationConfiguration = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(applicationConfiguration.getPropertyNames())
+        when(applicationConfiguration.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        final VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(applicationConfiguration.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class),
-                ArgumentMatchers.any(Supplier.class)))
+        final VaadinContext context = mock(VaadinContext.class);
+        when(applicationConfiguration.getContext()).thenReturn(context);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(context.getAttribute(any(Class.class), any(Supplier.class)))
                 .then(i -> i.getArgument(1, Supplier.class).get());
 
-        Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
+        when(lookup.lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(applicationConfigurationFactory);
-        Mockito.when(applicationConfigurationFactory.create(Mockito.any()))
+        when(applicationConfigurationFactory.create(any()))
                 .thenReturn(applicationConfiguration);
 
         StaticFileHandlerFactory staticFileHandlerFactory = vaadinService -> new StaticFileServer(
                 vaadinService);
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+        when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn(staticFileHandlerFactory);
 
-        Mockito.when(servletConfig.getInitParameterNames())
+        when(servletConfig.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(servletConfig.getServletContext())
-                .thenReturn(servletContext);
-        Mockito.when(servletConfig.getServletName()).thenReturn("test");
-        Mockito.when(servletContext.getInitParameterNames())
+        when(servletConfig.getServletContext()).thenReturn(servletContext);
+        when(servletConfig.getServletName()).thenReturn("test");
+        when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         final ServletRegistration servletRegistration = Mockito
                 .mock(ServletRegistration.class);
         final Map servletRegistrationMap = Collections.singletonMap("test",
                 servletRegistration);
-        Mockito.when(servletContext.getServletRegistrations())
+        when(servletContext.getServletRegistrations())
                 .thenReturn(servletRegistrationMap);
-        Mockito.when(servletRegistration.getMappings())
+        when(servletRegistration.getMappings())
                 .thenReturn(Collections.emptyList());
 
         servlet = new CdiVaadinServlet();
@@ -121,7 +121,7 @@ public class CdiVaadinServletTest extends AbstractWeldTest {
     @Test
     public void getService_servletInitialized_cdiVaadinServletServiceReturned() {
         final VaadinService service = servlet.getService();
-        Assertions.assertTrue(CdiVaadinServletService.class
+        assertTrue(CdiVaadinServletService.class
                 .isAssignableFrom(service.getClass()));
     }
 }

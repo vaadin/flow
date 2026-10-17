@@ -77,8 +77,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -203,8 +211,8 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         MockVirtualFile virtualFile = new MockVirtualFile();
         virtualFile.file = new File(getClass().getResource(path).toURI());
 
-        URLConnection urlConnection = Mockito.mock(URLConnection.class);
-        Mockito.when(urlConnection.getContent()).thenReturn(virtualFile);
+        URLConnection urlConnection = mock(URLConnection.class);
+        when(urlConnection.getContent()).thenReturn(virtualFile);
 
         try {
             URL.setURLStreamHandlerFactory(protocol -> {
@@ -262,7 +270,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     void minimumFrontendPackageAgeDays_readFromConfig_passedToOptions()
             throws Exception {
-        Mockito.when(appConfig.getStringProperty(
+        when(appConfig.getStringProperty(
                 InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS, null))
                 .thenReturn("7");
 
@@ -312,7 +320,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     void should_Not_Run_Updaters_inProductionMode() throws Exception {
-        Mockito.when(appConfig.isProductionMode()).thenReturn(true);
+        when(appConfig.isProductionMode()).thenReturn(true);
         devModeStartupListener = new DevModeStartupListener();
         devModeStartupListener.onStartup(classes, servletContext);
         assertNoDevModeHandlerCreated();
@@ -323,13 +331,12 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         ArgumentCaptor<? extends EventListener> arg = ArgumentCaptor
                 .forClass(EventListener.class);
         process();
-        Mockito.verify(servletContext, Mockito.never())
-                .addListener(arg.capture());
+        verify(servletContext, never()).addListener(arg.capture());
     }
 
     @Test
     void listener_should_stopDevModeHandler_onDestroy() throws Exception {
-        Mockito.when(appConfig.reuseDevServer()).thenReturn(false);
+        when(appConfig.reuseDevServer()).thenReturn(false);
 
         process();
 
@@ -364,7 +371,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     void shouldUseByteCodeScannerIfPropertySet() throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
+        when(appConfig.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 false)).thenReturn(true);
 
@@ -425,16 +432,16 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
                     javaSourceFolder.getAbsolutePath());
 
             assertFalse(generatedOpenApiJson.exists());
-            try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+            try (MockedStatic<FrontendBuildUtils> util = mockStatic(
                     FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
-                util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
-                        Mockito.any())).thenReturn(true);
+                util.when(() -> FrontendBuildUtils.isHillaUsed(any(), any()))
+                        .thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();
                 waitForDevServer();
             }
 
-            Mockito.verify(taskGenerateEndpoint, times(1)).execute();
+            verify(taskGenerateEndpoint, times(1)).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
@@ -458,7 +465,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
             originalJavaSourceFolder = System
                     .getProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             System.clearProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
-            Mockito.doReturn(null).when(lookup)
+            doReturn(null).when(lookup)
                     .lookup(EndpointGeneratorTaskFactory.class);
 
             assertFalse(generatedOpenApiJson.exists());
@@ -466,7 +473,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
             handler = getDevModeHandler();
             waitForDevServer();
 
-            Mockito.verify(taskGenerateEndpoint, never()).execute();
+            verify(taskGenerateEndpoint, never()).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
@@ -492,16 +499,16 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     javaSourceFolder.getAbsolutePath());
 
-            try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+            try (MockedStatic<FrontendBuildUtils> util = mockStatic(
                     FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
-                util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
-                        Mockito.any())).thenReturn(true);
+                util.when(() -> FrontendBuildUtils.isHillaUsed(any(), any()))
+                        .thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();
                 waitForDevServer();
             }
 
-            Mockito.verify(taskGenerateEndpoint, times(1)).execute();
+            verify(taskGenerateEndpoint, times(1)).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
@@ -526,17 +533,15 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     void onStartup_devModeAlreadyStarted_shouldBeTrueWhenStarted()
             throws Exception {
         final Map<String, Object> servletContextAttributes = new HashMap<>();
-        Mockito.doAnswer(answer -> {
+        doAnswer(answer -> {
             String key = answer.getArgument(0);
             Object value = answer.getArgument(1);
             servletContextAttributes.putIfAbsent(key, value);
             return null;
-        }).when(servletContext).setAttribute(Mockito.anyString(),
-                Mockito.any());
-        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
-                .thenAnswer(answer -> {
-                    return servletContextAttributes.get(answer.getArgument(0));
-                });
+        }).when(servletContext).setAttribute(anyString(), any());
+        when(servletContext.getAttribute(anyString())).thenAnswer(answer -> {
+            return servletContextAttributes.get(answer.getArgument(0));
+        });
 
         servletContextAttributes.put(Lookup.class.getName(), lookup);
         servletContextAttributes.put(ApplicationConfiguration.class.getName(),
@@ -549,8 +554,8 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     void onStartup_fallbackBaseDirIsNotProjectDirectory_throws()
             throws Exception {
-        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null)).thenReturn(null);
+        when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR, null))
+                .thenReturn(null);
         baseDir = devModeTempDir.getPath();
 
         String originalUserDirValue = null;
@@ -570,8 +575,8 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     void onStartup_fallbackBaseDirIsMavenProjectDirectory_isAccepted()
             throws Exception {
-        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null)).thenReturn(null);
+        when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR, null))
+                .thenReturn(null);
         new File(devModeTempDir, "pom.xml").createNewFile();
         baseDir = devModeTempDir.getPath();
 
@@ -590,8 +595,8 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     void onStartup_fallbackBaseDirIsGradleProjectDirectory_isAccepted()
             throws Exception {
-        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null)).thenReturn(null);
+        when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR, null))
+                .thenReturn(null);
         new File(devModeTempDir, "build.gradle").createNewFile();
         baseDir = devModeTempDir.getPath();
 
@@ -609,7 +614,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     void getFrontendExtraExtensions_noExtensionsSet_returnsNull() {
-        Mockito.when(appConfig.getStringProperty(
+        when(appConfig.getStringProperty(
                 InitParameters.FRONTEND_EXTRA_EXTENSIONS, "")).thenReturn("");
 
         List<String> frontendExtraFileExtensions = DevModeInitializer
@@ -619,7 +624,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     void getFrontendExtraExtensions_extensionsSet_returnsExtensionsList() {
-        Mockito.when(appConfig.getStringProperty(
+        when(appConfig.getStringProperty(
                 InitParameters.FRONTEND_EXTRA_EXTENSIONS, ""))
                 .thenReturn(".svg,.ico,png");
 
@@ -695,9 +700,9 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         // Create mock resource provider with the single jar to be found
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
-        Mockito.when(resourceProvider.getApplicationResources(resourcesFolder))
+        when(resourceProvider.getApplicationResources(resourcesFolder))
                 .thenReturn(urls);
 
         // load jars from classloader
@@ -728,9 +733,9 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         // Create mock resource provider with the single jar to be found
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
-        Mockito.when(resourceProvider.getApplicationResources(resourcesFolder))
+        when(resourceProvider.getApplicationResources(resourcesFolder))
                 .thenReturn(List.copyOf(urls));
 
         // load jars from classloader

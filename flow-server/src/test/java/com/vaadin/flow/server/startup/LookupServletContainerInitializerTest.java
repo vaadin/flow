@@ -47,6 +47,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class LookupServletContainerInitializerTest {
 
@@ -171,16 +175,16 @@ class LookupServletContainerInitializerTest {
     @Test
     void processLookupServletContainerInitializer_contextHasDeferredInitializers_runInitializersAndClearAttribute()
             throws ServletException {
-        ServletContext context = Mockito.mock(ServletContext.class);
+        ServletContext context = mock(ServletContext.class);
         DeferredServletContextInitializers deferredInitializers = Mockito
                 .mock(DeferredServletContextInitializers.class);
-        Mockito.when(context.getAttribute(
+        when(context.getAttribute(
                 DeferredServletContextInitializers.class.getName()))
                 .thenReturn(deferredInitializers);
         mockLookup(context);
 
-        Mockito.verify(deferredInitializers).runInitializers(context);
-        Mockito.verify(context).removeAttribute(
+        verify(deferredInitializers).runInitializers(context);
+        verify(context).removeAttribute(
                 DeferredServletContextInitializers.class.getName());
     }
 
@@ -245,7 +249,7 @@ class LookupServletContainerInitializerTest {
     @Test
     void process_classSetIsNull_throws() throws ServletException {
         assertThrows(ServletException.class, () -> {
-            initializer.process(null, Mockito.mock(ServletContext.class));
+            initializer.process(null, mock(ServletContext.class));
         });
     }
 
@@ -258,13 +262,13 @@ class LookupServletContainerInitializerTest {
                 .concat(Stream.of(LookupInitializer.class), Stream.of(classes));
         initializer.process(stream.collect(Collectors.toSet()), context);
 
-        Mockito.verify(context).setAttribute(Mockito.eq(Lookup.class.getName()),
+        verify(context).setAttribute(eq(Lookup.class.getName()),
                 lookupCapture.capture());
 
         return lookupCapture.getValue();
     }
 
     private Lookup mockLookup(Class<?>... classes) throws ServletException {
-        return mockLookup(Mockito.mock(ServletContext.class), classes);
+        return mockLookup(mock(ServletContext.class), classes);
     }
 }

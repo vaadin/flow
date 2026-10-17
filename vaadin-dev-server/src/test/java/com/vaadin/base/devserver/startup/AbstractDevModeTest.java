@@ -50,6 +50,11 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public abstract class AbstractDevModeTest {
 
@@ -82,46 +87,46 @@ public abstract class AbstractDevModeTest {
         npmFolder = temporaryFolder;
 
         Boolean enablePnpm = Boolean.TRUE;
-        appConfig = Mockito.spy(ApplicationConfiguration.class);
+        appConfig = spy(ApplicationConfiguration.class);
 
-        servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext
+        servletContext = mock(ServletContext.class);
+        when(servletContext
                 .getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfig);
-        Mockito.when(servletContext.getClassLoader())
+        when(servletContext.getClassLoader())
                 .thenReturn(servletContext.getClass().getClassLoader());
-        Mockito.when(servletContext.getContextPath()).thenReturn("");
+        when(servletContext.getContextPath()).thenReturn("");
 
         vaadinContext = new VaadinServletContext(servletContext);
 
-        lookup = Mockito.mock(Lookup.class);
+        lookup = mock(Lookup.class);
         vaadinContext.setAttribute(Lookup.class, lookup);
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+        when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
         mockApplicationConfiguration(appConfig, enablePnpm);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
         setupMockResourceProvider(resourceProvider);
         devModeHandlerManager = new DevModeHandlerManagerImpl();
-        Mockito.when(lookup.lookup(DevModeHandlerManager.class))
+        when(lookup.lookup(DevModeHandlerManager.class))
                 .thenReturn(devModeHandlerManager);
 
         configuration = new MockDeploymentConfiguration();
-        Mockito.when(lookup.lookup(DeploymentConfiguration.class))
+        when(lookup.lookup(DeploymentConfiguration.class))
                 .thenReturn(configuration);
-        Mockito.when(lookup.lookup(ApplicationConfiguration.class))
+        when(lookup.lookup(ApplicationConfiguration.class))
                 .thenReturn(appConfig);
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+        when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn(service -> new StaticFileServer(service));
 
-        vaadinService = Mockito.mock(VaadinService.class);
+        vaadinService = mock(VaadinService.class);
 
-        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
-        Mockito.when(vaadinService.getDeploymentConfiguration())
+        when(vaadinService.getContext()).thenReturn(vaadinContext);
+        when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(configuration);
 
     }
@@ -141,30 +146,28 @@ public abstract class AbstractDevModeTest {
         // that @JsModule files on UI can be found during frontend scanning.
         List<URL> frontendUrls = Collections.list(getClass().getClassLoader()
                 .getResources(Constants.RESOURCES_FRONTEND_DEFAULT));
-        Mockito.when(mockResourceProvider
+        when(mockResourceProvider
                 .getApplicationResources(Constants.RESOURCES_FRONTEND_DEFAULT))
                 .thenReturn(frontendUrls);
     }
 
     private void mockApplicationConfiguration(
             ApplicationConfiguration appConfig, boolean enablePnpm) {
-        Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        when(appConfig.getStringProperty(anyString(), anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
-        Mockito.when(appConfig.getMode())
+        when(appConfig.isProductionMode()).thenReturn(false);
+        when(appConfig.getContext()).thenReturn(vaadinContext);
+        when(appConfig.getMode())
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
-        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
+        when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
 
-        Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
-                Mockito.anyBoolean()))
+        when(appConfig.getBooleanProperty(anyString(), anyBoolean()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
 
-        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null)).thenReturn(baseDir);
-        Mockito.when(appConfig.getBuildFolder()).thenReturn(Constants.TARGET);
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR, null))
+                .thenReturn(baseDir);
+        when(appConfig.getBuildFolder()).thenReturn(Constants.TARGET);
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.emptyList()));
     }
 

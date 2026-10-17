@@ -46,6 +46,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PendingJavaScriptInvocationUtilTest {
 
@@ -303,8 +305,8 @@ class PendingJavaScriptInvocationUtilTest {
     void warningMessage_openPushConnection_noMissingConnectionClaimed() {
         MockUI ui = new MockUI();
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
-        PushConnection pushConnection = Mockito.mock(PushConnection.class);
-        Mockito.when(pushConnection.isConnected()).thenReturn(true);
+        PushConnection pushConnection = mock(PushConnection.class);
+        when(pushConnection.isConnected()).thenReturn(true);
         ui.getInternals().setPushConnection(pushConnection);
         TestComponent component = new TestComponent();
         ui.add(component);
@@ -487,7 +489,7 @@ class PendingJavaScriptInvocationUtilTest {
         MockVaadinServletService service = new MockVaadinServletService();
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
         service.getContext().setAttribute(ApplicationConfiguration.class,
                 configuration);
         MockUI ui = new MockUI(new AlwaysLockedVaadinSession(service));

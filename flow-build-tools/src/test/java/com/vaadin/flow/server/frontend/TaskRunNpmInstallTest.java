@@ -62,6 +62,14 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.matches;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 @Tag("com.vaadin.flow.testcategory.SlowTests")
@@ -130,7 +138,7 @@ class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -145,13 +153,13 @@ class TaskRunNpmInstallTest {
         ensurePackageJson();
 
         task.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
 
         deleteDirectory(nodeModules);
 
         options.withCiBuild(true);
         task.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -180,7 +188,7 @@ class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -224,7 +232,7 @@ class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -239,7 +247,7 @@ class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -255,11 +263,10 @@ class TaskRunNpmInstallTest {
         task.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(captor.capture(),
-                Mockito.matches(getToolName()), Mockito.matches(getCommand()),
-                Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\",
-                        "\\\\\\\\")),
-                Mockito.any(), Mockito.matches(Constants.PACKAGE_JSON));
+        verify(logger).info(captor.capture(), matches(getToolName()),
+                matches(getCommand()), matches(nodeModules.getAbsolutePath()
+                        .replaceAll("\\\\", "\\\\\\\\")),
+                any(), matches(Constants.PACKAGE_JSON));
         assertEquals(
                 "Skipping `{} {}` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
                 captor.getValue());
@@ -276,7 +283,7 @@ class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     void writeLocalHash(String hash) throws IOException {
@@ -296,7 +303,7 @@ class TaskRunNpmInstallTest {
         ensurePackageJson();
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -346,11 +353,11 @@ class TaskRunNpmInstallTest {
                 "Hash should have been updated");
 
         getNodeUpdater().writePackageFile(packageJson);
-        logger = Mockito.mock(Logger.class);
+        logger = mock(Logger.class);
 
         task.execute();
 
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     protected void setupPostinstallPackages() throws IOException {
@@ -831,9 +838,9 @@ class TaskRunNpmInstallTest {
         assertMinimumFrontendPackageAge(options, tools, false, null);
 
         // an age npm is configured with is a value that blocks nothing too
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
-                Mockito.eq("before"))).thenReturn(Optional.of("0"));
+        when(tools.getConfiguredSetting(anyList(), eq(npmFolder),
+                eq("min-release-age"), eq("before")))
+                .thenReturn(Optional.of("0"));
 
         assertMinimumFrontendPackageAge(options, tools, false, null);
     }
@@ -854,9 +861,9 @@ class TaskRunNpmInstallTest {
     @Test
     void resolveMinimumFrontendPackageAge_npmrcValue_doesNotOverrideIt() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
-                Mockito.eq("before"))).thenReturn(Optional.of("7"));
+        when(tools.getConfiguredSetting(anyList(), eq(npmFolder),
+                eq("min-release-age"), eq("before")))
+                .thenReturn(Optional.of("7"));
 
         // No argument is passed, so npm applies its own configuration
         MockLogger logger = assertMinimumFrontendPackageAge(
@@ -876,9 +883,8 @@ class TaskRunNpmInstallTest {
         // 11.10 has no min-release-age setting at all, and a project may
         // configure before itself, so a date is what npm reports in any of
         // those cases
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
-                Mockito.eq("before")))
+        when(tools.getConfiguredSetting(anyList(), eq(npmFolder),
+                eq("min-release-age"), eq("before")))
                 .thenReturn(Optional.of("2026-06-08T08:04:31.925Z"));
 
         // No argument is passed, so npm applies its own configuration, and a
@@ -895,9 +901,9 @@ class TaskRunNpmInstallTest {
     @Test
     void resolveMinimumFrontendPackageAge_configuredInVaadin_overridesNpmrcValue() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
-                Mockito.eq("before"))).thenReturn(Optional.of("7"));
+        when(tools.getConfiguredSetting(anyList(), eq(npmFolder),
+                eq("min-release-age"), eq("before")))
+                .thenReturn(Optional.of("7"));
 
         assertEquals("--min-release-age=3",
                 resolveMinimumFrontendPackageAgeArgument(
@@ -909,8 +915,7 @@ class TaskRunNpmInstallTest {
     @Test
     void resolveMinimumFrontendPackageAge_npmTooOldWithNothingConfigured_usesBeforeDefault() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
-        Mockito.when(tools.npmSupportsMinReleaseAge(Mockito.anyList()))
-                .thenReturn(false);
+        when(tools.npmSupportsMinReleaseAge(anyList())).thenReturn(false);
 
         assertTrue(resolveMinimumFrontendPackageAgeArgument(
                 new MockOptions(npmFolder), tools).orElseThrow()
@@ -921,9 +926,8 @@ class TaskRunNpmInstallTest {
     void resolveMinimumFrontendPackageAge_pnpmConfiguredValue_doesNotOverrideIt() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // pnpm names the setting minimumReleaseAge, unlike npm
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("minimumReleaseAge"),
-                Mockito.eq("minimum-release-age")))
+        when(tools.getConfiguredSetting(anyList(), eq(npmFolder),
+                eq("minimumReleaseAge"), eq("minimum-release-age")))
                 .thenReturn(Optional.of("4320"));
 
         // No argument is passed, so pnpm applies its own configuration
@@ -941,8 +945,7 @@ class TaskRunNpmInstallTest {
     void resolveMinimumFrontendPackageAge_bun_configurationIsNotRead() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // whatever bun might resolve is ignored, as bun cannot report it
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.any(), Mockito.any(String[].class)))
+        when(tools.getConfiguredSetting(anyList(), any(), any(String[].class)))
                 .thenReturn(Optional.of("4320"));
 
         // bunfig.toml is not looked at, so the default is applied
@@ -952,8 +955,8 @@ class TaskRunNpmInstallTest {
                 resolveMinimumFrontendPackageAgeArgument(
                         new MockOptions(npmFolder).withEnableBun(true), tools)
                         .orElseThrow());
-        Mockito.verify(tools, Mockito.never()).getConfiguredSetting(
-                Mockito.anyList(), Mockito.any(), Mockito.any(String[].class));
+        verify(tools, never()).getConfiguredSetting(anyList(), any(),
+                any(String[].class));
     }
 
     @Test
@@ -961,9 +964,9 @@ class TaskRunNpmInstallTest {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // npm keeps applying the 7 days of its own configuration, as Vaadin
         // only leaves out the command line argument
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
-                Mockito.eq("before"))).thenReturn(Optional.of("7"));
+        when(tools.getConfiguredSetting(anyList(), eq(npmFolder),
+                eq("min-release-age"), eq("before")))
+                .thenReturn(Optional.of("7"));
         Options options = new MockOptions(npmFolder)
                 .withMinimumFrontendPackageAgeDays(0);
 
@@ -986,9 +989,9 @@ class TaskRunNpmInstallTest {
     void resolveMinimumFrontendPackageAge_npmrcValueOfZero_noAgeApplies() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // npm is configured not to block anything, so neither does Vaadin
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
-                Mockito.eq("before"))).thenReturn(Optional.of("0"));
+        when(tools.getConfiguredSetting(anyList(), eq(npmFolder),
+                eq("min-release-age"), eq("before")))
+                .thenReturn(Optional.of("0"));
 
         TaskRunNpmInstall.MinimumFrontendPackageAge minimumAge = TaskRunNpmInstall
                 .resolveMinimumFrontendPackageAge(new MockOptions(npmFolder),
@@ -1031,8 +1034,8 @@ class TaskRunNpmInstallTest {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // a command line value replaces the configured list instead of
         // adding to it, so the configured patterns are passed along
-        Mockito.when(tools.getConfiguredSettingValues(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("min-release-age-exclude")))
+        when(tools.getConfiguredSettingValues(anyList(), eq(npmFolder),
+                eq("min-release-age-exclude")))
                 .thenReturn(List.of("@acme/*", "internal-tooling"));
 
         assertEquals(
@@ -1047,7 +1050,7 @@ class TaskRunNpmInstallTest {
     void minimumFrontendPackageAgeExclude_npmTooOld_warnsInsteadOfExcluding() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // npm older than 11.17 only warns about an unknown configuration
-        Mockito.when(tools.npmSupportsMinReleaseAgeExclude(Mockito.anyList()))
+        when(tools.npmSupportsMinReleaseAgeExclude(anyList()))
                 .thenReturn(false);
         MockLogger logger = new MockLogger();
 
@@ -1070,8 +1073,7 @@ class TaskRunNpmInstallTest {
     void minimumFrontendPackageAgeExclude_pnpmTooOld_warnsInsteadOfExcluding() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
         // pnpm 10.16 ignores the setting
-        Mockito.when(
-                tools.pnpmSupportsMinimumReleaseAgeExclude(Mockito.anyList()))
+        when(tools.pnpmSupportsMinimumReleaseAgeExclude(anyList()))
                 .thenReturn(false);
         MockLogger logger = new MockLogger();
 
@@ -1159,9 +1161,9 @@ class TaskRunNpmInstallTest {
     @Test
     void minimumFrontendPackageAgeExclude_npmrcValue_isStillExcludedFrom() {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.eq(npmFolder), Mockito.eq("min-release-age"),
-                Mockito.eq("before"))).thenReturn(Optional.of("7"));
+        when(tools.getConfiguredSetting(anyList(), eq(npmFolder),
+                eq("min-release-age"), eq("before")))
+                .thenReturn(Optional.of("7"));
         Options options = new MockOptions(npmFolder);
 
         // the age npm resolves itself is kept, but the packages Vaadin
@@ -1200,20 +1202,15 @@ class TaskRunNpmInstallTest {
     }
 
     private FrontendTools mockToolsWithoutMinimumReleaseAge() {
-        FrontendTools tools = Mockito.mock(FrontendTools.class);
-        Mockito.when(tools.npmSupportsMinReleaseAge(Mockito.anyList()))
+        FrontendTools tools = mock(FrontendTools.class);
+        when(tools.npmSupportsMinReleaseAge(anyList())).thenReturn(true);
+        when(tools.npmSupportsMinReleaseAgeExclude(anyList())).thenReturn(true);
+        when(tools.pnpmSupportsMinimumReleaseAgeExclude(anyList()))
                 .thenReturn(true);
-        Mockito.when(tools.npmSupportsMinReleaseAgeExclude(Mockito.anyList()))
-                .thenReturn(true);
-        Mockito.when(
-                tools.pnpmSupportsMinimumReleaseAgeExclude(Mockito.anyList()))
-                .thenReturn(true);
-        Mockito.when(tools.getConfiguredSetting(Mockito.anyList(),
-                Mockito.any(), Mockito.any(String[].class)))
+        when(tools.getConfiguredSetting(anyList(), any(), any(String[].class)))
                 .thenReturn(Optional.empty());
-        Mockito.when(tools.getConfiguredSettingValues(Mockito.anyList(),
-                Mockito.any(), Mockito.any(String[].class)))
-                .thenReturn(List.of());
+        when(tools.getConfiguredSettingValues(anyList(), any(),
+                any(String[].class))).thenReturn(List.of());
         return tools;
     }
 

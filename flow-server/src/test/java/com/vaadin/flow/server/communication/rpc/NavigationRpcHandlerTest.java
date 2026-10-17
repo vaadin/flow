@@ -26,6 +26,10 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.JsonConstants;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 class NavigationRpcHandlerTest {
 
     private UI ui;
@@ -54,9 +58,8 @@ class NavigationRpcHandlerTest {
         invocation.put(JsonConstants.RPC_NAVIGATION_ROUTERLINK, true);
         rpcHandler.handle(ui, invocation);
 
-        Mockito.verify(historyStateChangeHandler, Mockito.times(1))
-                .onHistoryStateChange(
-                        Mockito.any(History.HistoryStateChangeEvent.class));
+        verify(historyStateChangeHandler, times(1)).onHistoryStateChange(
+                any(History.HistoryStateChangeEvent.class));
     }
 
     @Test
@@ -68,9 +71,8 @@ class NavigationRpcHandlerTest {
         invocation.put(JsonConstants.RPC_NAVIGATION_ROUTERLINK, true);
         rpcHandler.handle(ui, invocation);
 
-        Mockito.verify(historyStateChangeHandler, Mockito.times(1))
-                .onHistoryStateChange(
-                        Mockito.any(History.HistoryStateChangeEvent.class));
+        verify(historyStateChangeHandler, times(1)).onHistoryStateChange(
+                any(History.HistoryStateChangeEvent.class));
     }
 
     @Test
@@ -78,8 +80,7 @@ class NavigationRpcHandlerTest {
         ui.addModal(new RouterLink());
         rpcHandler.handle(ui, invocation);
 
-        Mockito.verify(historyStateChangeHandler, Mockito.times(1))
-                .onHistoryStateChange(
-                        Mockito.any(History.HistoryStateChangeEvent.class));
+        verify(historyStateChangeHandler, times(1)).onHistoryStateChange(
+                any(History.HistoryStateChangeEvent.class));
     }
 }

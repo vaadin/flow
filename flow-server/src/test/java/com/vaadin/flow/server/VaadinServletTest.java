@@ -40,6 +40,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class VaadinServletTest {
@@ -140,13 +146,13 @@ class VaadinServletTest {
             @Override
             protected VaadinServletService createServletService()
                     throws ServletException, ServiceException {
-                return Mockito.mock(VaadinServletService.class);
+                return mock(VaadinServletService.class);
             }
 
             @Override
             protected StaticFileHandler createStaticFileHandler(
                     VaadinService servletService) {
-                return Mockito.mock(StaticFileHandler.class);
+                return mock(StaticFileHandler.class);
             }
 
             @Override
@@ -157,8 +163,8 @@ class VaadinServletTest {
 
         ServletConfig config = mockConfig();
         ServletContext servletContext = config.getServletContext();
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
-                .thenReturn(Mockito.mock(Lookup.class));
+        when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(mock(Lookup.class));
         servlet.init(config);
 
         assertTrue(called.get());
@@ -172,20 +178,20 @@ class VaadinServletTest {
 
                 @Override
                 public void init() throws ServletException {
-                    VaadinSession.setCurrent(Mockito.mock(VaadinSession.class));
+                    VaadinSession.setCurrent(mock(VaadinSession.class));
                 }
 
                 @Override
                 protected VaadinServletService createServletService()
                         throws ServletException, ServiceException {
-                    VaadinService.setCurrent(Mockito.mock(VaadinService.class));
-                    return Mockito.mock(VaadinServletService.class);
+                    VaadinService.setCurrent(mock(VaadinService.class));
+                    return mock(VaadinServletService.class);
                 }
 
                 @Override
                 protected StaticFileHandler createStaticFileHandler(
                         VaadinService servletService) {
-                    return Mockito.mock(StaticFileHandler.class);
+                    return mock(StaticFileHandler.class);
                 }
 
                 @Override
@@ -196,8 +202,8 @@ class VaadinServletTest {
 
             ServletConfig config = mockConfig();
             ServletContext servletContext = config.getServletContext();
-            Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
-                    .thenReturn(Mockito.mock(Lookup.class));
+            when(servletContext.getAttribute(Lookup.class.getName()))
+                    .thenReturn(mock(Lookup.class));
             servlet.init(config);
 
             assertNull(VaadinService.getCurrent());
@@ -216,7 +222,7 @@ class VaadinServletTest {
 
                 @Override
                 public void init() throws ServletException {
-                    VaadinService.setCurrent(Mockito.mock(VaadinService.class));
+                    VaadinService.setCurrent(mock(VaadinService.class));
                 }
 
             };
@@ -236,14 +242,14 @@ class VaadinServletTest {
 
         ServletConfig config = mockConfig();
         ServletContext servletContext = config.getServletContext();
-        ClassLoader loader = Mockito.mock(ClassLoader.class);
-        Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
+        ClassLoader loader = mock(ClassLoader.class);
+        when(servletContext.getClassLoader()).thenReturn(loader);
         servlet.init(config);
 
         ArgumentCaptor<ApplicationClassLoaderAccess> captor = ArgumentCaptor
                 .forClass(ApplicationClassLoaderAccess.class);
-        Mockito.verify(servletContext).setAttribute(
-                Mockito.eq(ApplicationClassLoaderAccess.class.getName()),
+        verify(servletContext).setAttribute(
+                eq(ApplicationClassLoaderAccess.class.getName()),
                 captor.capture());
 
         ApplicationClassLoaderAccess access = captor.getValue();
@@ -256,20 +262,19 @@ class VaadinServletTest {
 
         ServletConfig config = mockConfig();
         ServletContext servletContext = config.getServletContext();
-        ClassLoader loader = Mockito.mock(ClassLoader.class);
+        ClassLoader loader = mock(ClassLoader.class);
 
         VaadinContextInitializer initializer = Mockito
                 .mock(VaadinContextInitializer.class);
 
-        Mockito.when(servletContext
+        when(servletContext
                 .getAttribute(VaadinContextInitializer.class.getName()))
                 .thenReturn(initializer);
 
-        Mockito.when(servletContext.getClassLoader()).thenReturn(loader);
+        when(servletContext.getClassLoader()).thenReturn(loader);
         servlet.init(config);
 
-        Mockito.verify(initializer)
-                .initialize(Mockito.any(VaadinContext.class));
+        verify(initializer).initialize(any(VaadinContext.class));
     }
 
     @Test
@@ -307,31 +312,30 @@ class VaadinServletTest {
     @Test
     void createStaticFileHandler_delegateToStaticFileHandlerFactory() {
         VaadinServlet servlet = new VaadinServlet();
-        VaadinService service = Mockito.mock(VaadinService.class);
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(service.getContext()).thenReturn(context);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        VaadinService service = mock(VaadinService.class);
+        VaadinContext context = mock(VaadinContext.class);
+        when(service.getContext()).thenReturn(context);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
         StaticFileHandlerFactory factory = Mockito
                 .mock(StaticFileHandlerFactory.class);
 
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
-                .thenReturn(factory);
+        when(lookup.lookup(StaticFileHandlerFactory.class)).thenReturn(factory);
 
-        StaticFileHandler handler = Mockito.mock(StaticFileHandler.class);
-        Mockito.when(factory.createHandler(service)).thenReturn(handler);
+        StaticFileHandler handler = mock(StaticFileHandler.class);
+        when(factory.createHandler(service)).thenReturn(handler);
 
         StaticFileHandler result = servlet.createStaticFileHandler(service);
 
-        Mockito.verify(factory).createHandler(service);
+        verify(factory).createHandler(service);
         assertSame(handler, result);
     }
 
     @Test
     void destroy_servletConfigAvailableInServbiceDestroy()
             throws ServletException {
-        VaadinServletService service = Mockito.mock(VaadinServletService.class);
+        VaadinServletService service = mock(VaadinServletService.class);
         VaadinServlet servlet = new VaadinServlet() {
             @Override
             public VaadinServletService getService() {
@@ -340,7 +344,7 @@ class VaadinServletTest {
         };
 
         AtomicReference<ServletConfig> configDuringDestroy = new AtomicReference<>();
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             configDuringDestroy.set(servlet.getServletConfig());
             return null;
         }).when(service).destroy();
@@ -355,9 +359,9 @@ class VaadinServletTest {
     }
 
     private ServletConfig mockConfig() {
-        ServletConfig config = Mockito.mock(ServletConfig.class);
-        ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(config.getServletContext()).thenReturn(context);
+        ServletConfig config = mock(ServletConfig.class);
+        ServletContext context = mock(ServletContext.class);
+        when(config.getServletContext()).thenReturn(context);
         return config;
     }
 

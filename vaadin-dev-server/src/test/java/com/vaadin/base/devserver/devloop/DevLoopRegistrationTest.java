@@ -42,6 +42,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.abort;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * An application the daemon did not launch must be left entirely alone: the
@@ -114,7 +118,7 @@ class DevLoopRegistrationTest {
         // behalf.
         DevLoopHotswapper hotswapper = new DevLoopHotswapper();
 
-        hotswapper.onInit(Mockito.mock(VaadinService.class));
+        hotswapper.onInit(mock(VaadinService.class));
 
         assertNull(DevLoopHotswapper.getActive());
         assertFalse(hotswapper.isCompleted());
@@ -126,7 +130,7 @@ class DevLoopRegistrationTest {
         System.setProperty(DevLoopRegistration.TOKEN_PROPERTY, "s3cr3t");
         DevLoopHotswapper hotswapper = new DevLoopHotswapper();
 
-        hotswapper.onInit(Mockito.mock(VaadinService.class));
+        hotswapper.onInit(mock(VaadinService.class));
 
         assertSame(hotswapper, DevLoopHotswapper.getActive());
     }
@@ -146,12 +150,11 @@ class DevLoopRegistrationTest {
     }
 
     private static VaadinService serviceInMode(Mode mode) {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.getMode()).thenReturn(mode);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(configuration.getMode()).thenReturn(mode);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
         return service;
     }
 
@@ -199,15 +202,13 @@ class DevLoopRegistrationTest {
 
     private static ServiceInitEvent eventInProductionMode(
             boolean productionMode) {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(productionMode);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        ServiceInitEvent event = Mockito.mock(ServiceInitEvent.class);
-        Mockito.when(event.getSource()).thenReturn(service);
+        when(configuration.isProductionMode()).thenReturn(productionMode);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        ServiceInitEvent event = mock(ServiceInitEvent.class);
+        when(event.getSource()).thenReturn(service);
         return event;
     }
 
@@ -218,35 +219,34 @@ class DevLoopRegistrationTest {
 
     @Test
     void initListener_withoutADaemon_touchesNothing() {
-        VaadinService service = Mockito.mock(VaadinService.class);
-        ServiceInitEvent event = Mockito.mock(ServiceInitEvent.class);
-        Mockito.when(event.getSource()).thenReturn(service);
+        VaadinService service = mock(VaadinService.class);
+        ServiceInitEvent event = mock(ServiceInitEvent.class);
+        when(event.getSource()).thenReturn(service);
 
         new DevLoopInitListener().serviceInit(event);
 
         // Not even the deployment configuration is asked for: an application
         // running from an IDE must see no trace of the dev loop.
-        Mockito.verify(service, Mockito.never()).getDeploymentConfiguration();
+        verify(service, never()).getDeploymentConfiguration();
     }
 
     @Test
     void initListener_productionMode_doesNotRegister() {
         System.setProperty(DevLoopRegistration.DAEMON_PORT_PROPERTY, "51234");
         System.setProperty(DevLoopRegistration.TOKEN_PROPERTY, "s3cr3t");
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        ServiceInitEvent event = Mockito.mock(ServiceInitEvent.class);
-        Mockito.when(event.getSource()).thenReturn(service);
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        ServiceInitEvent event = mock(ServiceInitEvent.class);
+        when(event.getSource()).thenReturn(service);
 
         new DevLoopInitListener().serviceInit(event);
 
         // The launch and the configuration disagree; the dev loop stays out
         // rather than opening a socket it could never redefine anything over.
-        Mockito.verify(service, Mockito.never()).getContext();
+        verify(service, never()).getContext();
     }
 
     /**

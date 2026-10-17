@@ -31,6 +31,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateFeatureFlagsTest {
 
@@ -51,7 +52,7 @@ class TaskGenerateFeatureFlagsTest {
 
         frontendFolder.mkdirs();
         featureFlags = FeatureFlags.get(context);
-        Options options = new Options(Mockito.mock(Lookup.class), null)
+        Options options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder)
                 .withFeatureFlags(featureFlags);
         taskGenerateFeatureFlags = new TaskGenerateFeatureFlags(options);

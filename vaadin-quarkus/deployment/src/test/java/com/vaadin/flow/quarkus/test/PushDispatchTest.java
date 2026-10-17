@@ -22,9 +22,11 @@ import io.quarkus.test.QuarkusUnitTest;
 import io.undertow.websockets.ServerWebSocketContainer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Verifies that the Vaadin Quarkus extension defaults
@@ -48,11 +50,10 @@ public class PushDispatchTest {
     public void dispatchToWorker_defaultsToTrue() {
         WebSocketContainer container = ContainerProvider
                 .getWebSocketContainer();
-        Assertions.assertInstanceOf(ServerWebSocketContainer.class, container,
+        assertInstanceOf(ServerWebSocketContainer.class, container,
                 "Expected Quarkus to expose its ServerWebSocketContainer as the "
                         + "default JSR-356 container.");
-        Assertions.assertTrue(
-                ((ServerWebSocketContainer) container).isDispatchToWorker(),
+        assertTrue(((ServerWebSocketContainer) container).isDispatchToWorker(),
                 "Vaadin Quarkus must default quarkus.websocket.dispatch-to-worker=true "
                         + "so Push frame handling runs on the worker pool, not the "
                         + "Vert.x event loop.");

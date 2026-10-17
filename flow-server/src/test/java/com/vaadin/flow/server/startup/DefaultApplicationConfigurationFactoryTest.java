@@ -50,6 +50,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DefaultApplicationConfigurationFactoryTest {
 
@@ -59,8 +63,8 @@ class DefaultApplicationConfigurationFactoryTest {
     @Test
     void create_tokenFileIsReadFromClassloader_externalStatsFileIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
 
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
@@ -118,8 +122,8 @@ class DefaultApplicationConfigurationFactoryTest {
     @Test
     void create_tokenFileIsReadFromClassloader_externalStatsUrlIsReadFromTokenFile_predefinedContext()
             throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
 
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
@@ -142,14 +146,14 @@ class DefaultApplicationConfigurationFactoryTest {
 
     @Test
     void create_propertiesAreReadFromContext() throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
-        Mockito.when(context.getContextParameterNames()).thenReturn(
+        when(context.getContextParameterNames()).thenReturn(
                 Collections.enumeration(Collections.singleton("foo")));
-        Mockito.when(context.getContextParameter("foo")).thenReturn("bar");
+        when(context.getContextParameter("foo")).thenReturn("bar");
 
         mockClassPathTokenFile(resourceProvider, "{}");
 
@@ -180,14 +184,14 @@ class DefaultApplicationConfigurationFactoryTest {
     @Test
     void create_nestedJarsOfSpringBoot_tokenFileOfTheApplicationIsUsed()
             throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
         // Spring Boot 3.2 and newer separate the jar of the application from
         // the archive nested in it with '/!' instead of '!/'
-        Mockito.when(resourceProvider
+        when(resourceProvider
                 .getApplicationResource(FrontendUtils.VITE_GENERATED_CONFIG))
                 .thenReturn(new URL("file", "", -1,
                         "nested:/opt/app.jar/!BOOT-INF/lib/flow-server.jar!/"
@@ -210,15 +214,15 @@ class DefaultApplicationConfigurationFactoryTest {
 
     @Test
     void getMode_returnsLivereload_tailwindCssIsEnabled() throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
         mockClassPathTokenFile(resourceProvider, "{}");
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
         ApplicationConfiguration configuration = factory.create(context);
 
-        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        FeatureFlags featureFlags = mock(FeatureFlags.class);
         try (MockedStatic<FeatureFlags> flags = Mockito
                 .mockStatic(FeatureFlags.class)) {
             flags.when(() -> FeatureFlags.get(context))
@@ -227,8 +231,7 @@ class DefaultApplicationConfigurationFactoryTest {
             assertEquals(Mode.DEVELOPMENT_BUNDLE, configuration.getMode(),
                     "Should have bundle mode by default");
 
-            Mockito.when(featureFlags
-                    .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS))
+            when(featureFlags.isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS))
                     .thenReturn(true);
 
             assertEquals(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD,
@@ -250,8 +253,8 @@ class DefaultApplicationConfigurationFactoryTest {
 
     private String nodeVersionFromTokenFile(String nodeVersion)
             throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
         mockClassPathTokenFile(resourceProvider,
@@ -265,8 +268,8 @@ class DefaultApplicationConfigurationFactoryTest {
 
     private void assertTokenAttributeIsPropagatedToDeploymentConfiguration(
             String attributeName, Object value) throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        VaadinContext context = mock(VaadinContext.class);
+        VaadinConfig config = mock(VaadinConfig.class);
 
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
@@ -297,7 +300,7 @@ class DefaultApplicationConfigurationFactoryTest {
 
     private void mockClassPathTokenFiles(ResourceProvider resourceProvider,
             URL... urls) throws IOException {
-        Mockito.when(resourceProvider
+        when(resourceProvider
                 .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
                 .thenReturn(List.of(urls));
     }
@@ -322,36 +325,35 @@ class DefaultApplicationConfigurationFactoryTest {
 
     private ResourceProvider mockResourceProvider(VaadinConfig config,
             VaadinContext context) {
-        Mockito.when(config.getVaadinContext()).thenReturn(context);
+        when(config.getVaadinContext()).thenReturn(context);
 
-        Mockito.when(context.getContextParameterNames())
+        when(context.getContextParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(config.getConfigParameterNames())
+        when(config.getConfigParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
 
-        Mockito.when(context.getAttribute(ApplicationConfiguration.class))
+        when(context.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(appConfig);
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        when(context.getAttribute(eq(ApplicationConfiguration.class), any()))
                 .thenReturn(appConfig);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
+        Lookup lookup = mock(Lookup.class);
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
         return resourceProvider;
     }
 
     private VaadinContext mockTokenFileViaContextParam(String content)
             throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(context.getContextParameterNames())
+        VaadinContext context = mock(VaadinContext.class);
+        when(context.getContextParameterNames())
                 .thenReturn(Collections.enumeration(
                         Collections.singleton(FrontendUtils.PARAM_TOKEN_FILE)));
 
@@ -359,8 +361,7 @@ class DefaultApplicationConfigurationFactoryTest {
                 .createTempFile(temporaryFolder, "tmp", null).toFile();
         Files.write(tmpFile.toPath(), Collections.singletonList(content));
 
-        Mockito.when(
-                context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
+        when(context.getContextParameter(FrontendUtils.PARAM_TOKEN_FILE))
                 .thenReturn(tmpFile.getPath());
         return context;
     }

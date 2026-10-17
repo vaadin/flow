@@ -38,6 +38,10 @@ import com.vaadin.flow.testutil.ClassesSerializableTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SpringClassesSerializableTest extends ClassesSerializableTest {
 
@@ -173,18 +177,16 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
         final Properties initParameters = new Properties();
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(
-                context.getAttribute(Mockito.any(Class.class), Mockito.any()))
+        VaadinContext context = mock(VaadinContext.class);
+        when(context.getAttribute(any(Class.class), any()))
                 .then(i -> i.getArgument(1, Supplier.class).get());
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        when(context.getAttribute(eq(ApplicationConfiguration.class), any()))
                 .thenReturn(appConfig);
-        Mockito.when(appConfig.getContext()).thenReturn(context);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(appConfig.getContext()).thenReturn(context);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         VaadinService service = new VaadinServletService(new VaadinServlet(),
                 new DefaultDeploymentConfiguration(appConfig, getClass(),
                         initParameters)) {

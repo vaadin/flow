@@ -39,7 +39,6 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +47,11 @@ import com.vaadin.flow.utils.FlowFileUtils;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getClassPath;
 import static com.vaadin.flow.utils.FlowFileUtils.convertToUrl;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasToString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -87,20 +91,18 @@ class ReflectorTest {
         MyMojo source = new MyMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
-        MatcherAssert.assertThat("foo field", target,
-                Matchers.hasProperty("foo", Matchers.equalTo(source.foo)));
-        MatcherAssert.assertThat("bar field", target,
-                Matchers.hasProperty("bar", Matchers.equalTo(source.bar)));
-        MatcherAssert.assertThat("notAnnotated field", target,
-                Matchers.hasProperty("notAnnotated",
-                        Matchers.equalTo(source.notAnnotated)));
-        MatcherAssert.assertThat("mojoExecution field", target,
-                Matchers.hasProperty("mojoExecution",
-                        Matchers.equalTo(source.mojoExecution)));
-        MatcherAssert.assertThat("maven project field", target, Matchers
-                .hasProperty("project", Matchers.equalTo(source.project)));
-        MatcherAssert.assertThat("classFinder field", target,
-                Matchers.hasProperty("classFinder", Matchers.notNullValue()));
+        assertThat("foo field", target,
+                hasProperty("foo", equalTo(source.foo)));
+        assertThat("bar field", target,
+                hasProperty("bar", equalTo(source.bar)));
+        assertThat("notAnnotated field", target,
+                hasProperty("notAnnotated", equalTo(source.notAnnotated)));
+        assertThat("mojoExecution field", target,
+                hasProperty("mojoExecution", equalTo(source.mojoExecution)));
+        assertThat("maven project field", target,
+                Matchers.hasProperty("project", equalTo(source.project)));
+        assertThat("classFinder field", target,
+                hasProperty("classFinder", notNullValue()));
     }
 
     @Test
@@ -108,23 +110,20 @@ class ReflectorTest {
         SubClassMojo source = new SubClassMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
-        MatcherAssert.assertThat("foo field", target,
-                Matchers.hasProperty("foo", Matchers.equalTo(source.foo)));
-        MatcherAssert.assertThat("bar field", target,
-                Matchers.hasProperty("bar", Matchers.equalTo(source.bar)));
-        MatcherAssert.assertThat("childProperty field", target,
-                Matchers.hasProperty("childProperty",
-                        Matchers.equalTo(source.childProperty)));
-        MatcherAssert.assertThat("notAnnotated field", target,
-                Matchers.hasProperty("notAnnotated",
-                        Matchers.equalTo(source.notAnnotated)));
-        MatcherAssert.assertThat("mojoExecution field", target,
-                Matchers.hasProperty("mojoExecution",
-                        Matchers.equalTo(source.mojoExecution)));
-        MatcherAssert.assertThat("maven project field", target, Matchers
-                .hasProperty("project", Matchers.equalTo(source.project)));
-        MatcherAssert.assertThat("classFinder field", target,
-                Matchers.hasProperty("classFinder", Matchers.notNullValue()));
+        assertThat("foo field", target,
+                hasProperty("foo", equalTo(source.foo)));
+        assertThat("bar field", target,
+                hasProperty("bar", equalTo(source.bar)));
+        assertThat("childProperty field", target,
+                hasProperty("childProperty", equalTo(source.childProperty)));
+        assertThat("notAnnotated field", target,
+                hasProperty("notAnnotated", equalTo(source.notAnnotated)));
+        assertThat("mojoExecution field", target,
+                hasProperty("mojoExecution", equalTo(source.mojoExecution)));
+        assertThat("maven project field", target,
+                Matchers.hasProperty("project", equalTo(source.project)));
+        assertThat("classFinder field", target,
+                hasProperty("classFinder", notNullValue()));
     }
 
     @Test
@@ -145,16 +144,14 @@ class ReflectorTest {
         CloneableFieldsMojo source = new CloneableFieldsMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
-        MatcherAssert.assertThat("cloneable field", target, Matchers
-                .hasProperty("cloneableField", Matchers.notNullValue()));
-        MatcherAssert.assertThat("cloneable field value", target,
-                Matchers.hasProperty("cloneableField",
-                        Matchers.hasToString("TEST-CLONEABLE-FIELD")));
-        MatcherAssert.assertThat("cloneable type", target,
-                Matchers.hasProperty("cloneableType", Matchers.notNullValue()));
-        MatcherAssert.assertThat("cloneable type value", target,
-                Matchers.hasProperty("cloneableType",
-                        Matchers.hasToString("TEST-CLONEABLE-TYPE")));
+        assertThat("cloneable field", target,
+                Matchers.hasProperty("cloneableField", notNullValue()));
+        assertThat("cloneable field value", target, hasProperty(
+                "cloneableField", hasToString("TEST-CLONEABLE-FIELD")));
+        assertThat("cloneable type", target,
+                hasProperty("cloneableType", notNullValue()));
+        assertThat("cloneable type value", target, hasProperty("cloneableType",
+                hasToString("TEST-CLONEABLE-TYPE")));
     }
 
     @Test

@@ -44,6 +44,9 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 
 class FileIOUtilsTest {
 
@@ -186,7 +189,7 @@ class FileIOUtilsTest {
         // Simulate a file system that does not support atomic moves. The write
         // must still succeed via the non-atomic fallback while every other file
         // operation runs for real.
-        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+        try (MockedStatic<Files> files = mockStatic(Files.class,
                 Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.move(any(), eq(file.toPath()),
                     eq(StandardCopyOption.ATOMIC_MOVE),
@@ -307,10 +310,10 @@ class FileIOUtilsTest {
         // itself instead of traversing into the linked contents.
         BasicFileAttributes junctionAttributes = Mockito
                 .mock(BasicFileAttributes.class);
-        Mockito.when(junctionAttributes.isDirectory()).thenReturn(true);
-        Mockito.when(junctionAttributes.isOther()).thenReturn(true);
+        when(junctionAttributes.isDirectory()).thenReturn(true);
+        when(junctionAttributes.isOther()).thenReturn(true);
 
-        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+        try (MockedStatic<Files> files = mockStatic(Files.class,
                 Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.readAttributes(junction,
                     BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS))
@@ -323,8 +326,8 @@ class FileIOUtilsTest {
             // can be the reason its contents were not traversed
             files.verify(() -> Files.readAttributes(junction,
                     BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS));
-            files.verify(() -> Files.walkFileTree(Mockito.eq(junction),
-                    Mockito.any()), Mockito.never());
+            files.verify(() -> Files.walkFileTree(eq(junction), any()),
+                    never());
         }
 
         assertFalse(Files.exists(junction, LinkOption.NOFOLLOW_LINKS));
@@ -353,10 +356,10 @@ class FileIOUtilsTest {
         // linked contents instead of the link.
         BasicFileAttributes junctionAttributes = Mockito
                 .mock(BasicFileAttributes.class);
-        Mockito.when(junctionAttributes.isDirectory()).thenReturn(true);
-        Mockito.when(junctionAttributes.isOther()).thenReturn(true);
+        when(junctionAttributes.isDirectory()).thenReturn(true);
+        when(junctionAttributes.isOther()).thenReturn(true);
 
-        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+        try (MockedStatic<Files> files = mockStatic(Files.class,
                 Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.readAttributes(junction,
                     BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS))
@@ -379,7 +382,7 @@ class FileIOUtilsTest {
         AccessDeniedException cause = new AccessDeniedException(
                 locked.getAbsolutePath());
 
-        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+        try (MockedStatic<Files> files = mockStatic(Files.class,
                 Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.deleteIfExists(locked.toPath()))
                     .thenThrow(cause);
@@ -405,9 +408,9 @@ class FileIOUtilsTest {
 
         // Simulate a file that cannot be removed, which on Windows typically
         // means that another process is keeping it open
-        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+        try (MockedStatic<Files> files = mockStatic(Files.class,
                 Mockito.CALLS_REAL_METHODS);
-                MockedStatic<FrontendUtils> platform = Mockito.mockStatic(
+                MockedStatic<FrontendUtils> platform = mockStatic(
                         FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.deleteIfExists(file.toPath())).thenThrow(
                     new AccessDeniedException(file.getAbsolutePath()));
@@ -450,7 +453,7 @@ class FileIOUtilsTest {
 
         // An entry whose attributes cannot be read has to be reported the same
         // way as one that cannot be deleted
-        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+        try (MockedStatic<Files> files = mockStatic(Files.class,
                 Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.readAttributes(unreadable.toPath(),
                     BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS))
@@ -475,7 +478,7 @@ class FileIOUtilsTest {
         AccessDeniedException cause = new AccessDeniedException(
                 file.getAbsolutePath());
 
-        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+        try (MockedStatic<Files> files = mockStatic(Files.class,
                 Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.readAttributes(file.toPath(),
                     BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS))
@@ -497,7 +500,7 @@ class FileIOUtilsTest {
             throws Exception {
         File file = new File(dir, "locked.txt");
 
-        try (MockedStatic<Files> files = Mockito.mockStatic(Files.class,
+        try (MockedStatic<Files> files = mockStatic(Files.class,
                 Mockito.CALLS_REAL_METHODS)) {
             files.when(() -> Files.deleteIfExists(file.toPath())).thenThrow(
                     new AccessDeniedException(file.getAbsolutePath()));

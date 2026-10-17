@@ -18,9 +18,7 @@ package com.vaadin.cdi.context;
 import java.io.Serializable;
 import java.util.Collections;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -33,6 +31,9 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.cdi.SerializationUtils.serializeAndDeserialize;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 
 public class RouteContextPseudoTest extends
         AbstractContextTest<RouteContextPseudoTest.RouteScopedTestBean> {
@@ -79,11 +80,10 @@ public class RouteContextPseudoTest extends
         UI ui = context.getUi();
         try (MockedStatic<ApplicationConfiguration> appCfg = Mockito
                 .mockStatic(ApplicationConfiguration.class)) {
-            appCfg.when(
-                    () -> ApplicationConfiguration.get(ArgumentMatchers.any()))
-                    .thenReturn(Mockito.mock(ApplicationConfiguration.class));
+            appCfg.when(() -> ApplicationConfiguration.get(any()))
+                    .thenReturn(mock(ApplicationConfiguration.class));
             UI ui2 = serializeAndDeserialize(ui);
-            Assertions.assertNotNull(ui2);
+            assertNotNull(ui2);
         }
     }
 

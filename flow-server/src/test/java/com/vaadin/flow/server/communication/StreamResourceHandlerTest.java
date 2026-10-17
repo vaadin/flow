@@ -39,6 +39,10 @@ import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class StreamResourceHandlerTest {
 
@@ -52,10 +56,10 @@ class StreamResourceHandlerTest {
         VaadinService service = new MockVaadinServletService();
 
         session = new AlwaysLockedVaadinSession(service);
-        request = Mockito.mock(VaadinServletRequest.class);
-        ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(request.getServletContext()).thenReturn(context);
-        response = Mockito.mock(VaadinServletResponse.class);
+        request = mock(VaadinServletRequest.class);
+        ServletContext context = mock(ServletContext.class);
+        when(request.getServletContext()).thenReturn(context);
+        response = mock(VaadinServletResponse.class);
     }
 
     @Test
@@ -71,7 +75,7 @@ class StreamResourceHandlerTest {
             // Exception is expected; verify it's the same one we threw.
             assertEquals("Simulated-1", exception.getMessage());
         }
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -88,7 +92,7 @@ class StreamResourceHandlerTest {
             // Exception is expected; verify it's the same one we threw.
             assertEquals("Simulated-2", exception.getMessage());
         }
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -108,7 +112,7 @@ class StreamResourceHandlerTest {
         } catch (IOException ignore) {
             // Exception is expected
         }
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -117,9 +121,8 @@ class StreamResourceHandlerTest {
             throws IOException {
         ServletOutputStream servletOutputStream = Mockito
                 .mock(ServletOutputStream.class);
-        Mockito.when(response.getOutputStream())
-                .thenReturn(servletOutputStream);
-        Mockito.doThrow(new RuntimeException("Error on close"))
+        when(response.getOutputStream()).thenReturn(servletOutputStream);
+        doThrow(new RuntimeException("Error on close"))
                 .when(servletOutputStream).close();
         StreamResource res = new StreamResource("readme.md",
                 (StreamResourceWriter) (stream, session) -> {
@@ -130,7 +133,7 @@ class StreamResourceHandlerTest {
         } catch (RuntimeException exception) {
             assertEquals("Simulated-3", exception.getMessage());
         }
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -143,6 +146,6 @@ class StreamResourceHandlerTest {
 
         handler.handleRequest(session, request, response, res);
 
-        Mockito.verify(response).setHeader("foo", "bar");
+        verify(response).setHeader("foo", "bar");
     }
 }

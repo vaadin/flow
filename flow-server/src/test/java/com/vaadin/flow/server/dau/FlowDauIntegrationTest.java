@@ -27,6 +27,8 @@ import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class FlowDauIntegrationTest {
 
@@ -35,8 +37,8 @@ class FlowDauIntegrationTest {
         try (MockedStatic<DauIntegration> key = Mockito
                 .mockStatic(DauIntegration.class)) {
             key.when(DauIntegration::newTrackingHash).thenReturn("hash");
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.isSecure()).thenReturn(true);
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.isSecure()).thenReturn(true);
             Cookie cookie = FlowDauIntegration.generateNewCookie(request);
             String[] hashAndTime = cookie.getValue().split("\\$");
             assertEquals("hash", hashAndTime[0]);
@@ -55,8 +57,8 @@ class FlowDauIntegrationTest {
         try (MockedStatic<DauIntegration> key = Mockito
                 .mockStatic(DauIntegration.class)) {
             key.when(DauIntegration::newTrackingHash).thenReturn("hash");
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.isSecure()).thenReturn(false);
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.isSecure()).thenReturn(false);
             Cookie cookie = FlowDauIntegration.generateNewCookie(request);
             assertFalse(cookie.getSecure());
         }

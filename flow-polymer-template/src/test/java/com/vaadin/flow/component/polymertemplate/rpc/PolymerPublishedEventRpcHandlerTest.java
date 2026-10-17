@@ -35,6 +35,8 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PolymerPublishedEventRpcHandlerTest {
 
@@ -44,13 +46,12 @@ class PolymerPublishedEventRpcHandlerTest {
 
     @BeforeEach
     void setup() {
-        service = Mockito.mock(VaadinService.class);
+        service = mock(VaadinService.class);
         VaadinService.setCurrent(service);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         handler = new PolymerPublishedEventRpcHandler();
     }

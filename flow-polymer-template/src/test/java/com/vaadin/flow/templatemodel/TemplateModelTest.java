@@ -17,8 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,6 +34,8 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.server.VaadinService;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -44,6 +44,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TemplateModelTest extends HasCurrentService {
 
@@ -560,12 +562,11 @@ class TemplateModelTest extends HasCurrentService {
 
     @Override
     protected VaadinService createService() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
         return service;
     }
 
@@ -1061,8 +1062,7 @@ class TemplateModelTest extends HasCurrentService {
             boolean notSameInstances, T... beans) {
         assertEquals(beans.length, list.size());
         for (int i = 0; i < beans.length; i++) {
-            MatcherAssert.assertThat(list.get(i),
-                    Matchers.samePropertyValuesAs(beans[i]));
+            assertThat(list.get(i), samePropertyValuesAs(beans[i]));
             if (notSameInstances) {
                 assertNotSame(beans[i], list.get(i));
             }

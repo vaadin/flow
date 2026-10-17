@@ -31,18 +31,23 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextInit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SpringApplicationConfigurationFactoryTest {
 
     private WebApplicationContext webAppContext = Mockito
             .mock(WebApplicationContext.class);
 
-    private ServletContext servletContext = Mockito.mock(ServletContext.class);
+    private ServletContext servletContext = mock(ServletContext.class);
 
     private VaadinServletContext context = new VaadinServletContext(
             servletContext);
 
-    private Environment env = Mockito.mock(Environment.class);
+    private Environment env = mock(Environment.class);
 
     private SpringApplicationConfigurationFactory factory = new SpringApplicationConfigurationFactory();
 
@@ -50,28 +55,27 @@ class SpringApplicationConfigurationFactoryTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             map.put(invocation.getArgument(0), invocation.getArgument(1));
             return null;
-        }).when(servletContext).setAttribute(Mockito.anyString(),
-                Mockito.any());
+        }).when(servletContext).setAttribute(anyString(), any());
 
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             return map.get(invocation.getArgument(0));
-        }).when(servletContext).getAttribute(Mockito.anyString());
+        }).when(servletContext).getAttribute(anyString());
 
-        Mockito.when(servletContext.getAttribute(
+        when(servletContext.getAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE))
                 .thenReturn(webAppContext);
 
-        Mockito.when(webAppContext.getBean(Environment.class)).thenReturn(env);
+        when(webAppContext.getBean(Environment.class)).thenReturn(env);
     }
 
     @Test
     void doCreate_vaadinApplicationConfigurationHasSpringPropertiesPrefixedByVaadin() {
         String prefix = "foo_";
         SpringServlet.PROPERTY_NAMES.stream()
-                .forEach(name -> Mockito.when(env.getProperty("vaadin." + name))
+                .forEach(name -> when(env.getProperty("vaadin." + name))
                         .thenReturn(prefix + name));
         Map<String, String> props = new HashMap<>();
         ApplicationConfiguration config = factory.doCreate(context, props);
@@ -90,9 +94,8 @@ class SpringApplicationConfigurationFactoryTest {
 
     @Test
     void doCreate__servletContextIsNotYetAvailableViaSrpingUtils_vaadinApplicationConfigurationHasSpringPropertiesPrefixedByVaadin() {
-        Mockito.when(webAppContext.getServletContext())
-                .thenReturn(servletContext);
-        Mockito.when(servletContext.getAttribute(
+        when(webAppContext.getServletContext()).thenReturn(servletContext);
+        when(servletContext.getAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE))
                 .thenReturn(null);
 

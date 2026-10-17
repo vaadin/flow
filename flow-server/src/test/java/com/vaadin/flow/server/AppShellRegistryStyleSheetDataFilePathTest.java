@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 class AppShellRegistryStyleSheetDataFilePathTest {
 
@@ -352,11 +353,10 @@ class AppShellRegistryStyleSheetDataFilePathTest {
             String contextPath, String servletPath) {
         jakarta.servlet.http.HttpServletRequest req = Mockito
                 .mock(jakarta.servlet.http.HttpServletRequest.class);
-        Mockito.when(req.getServletPath()).thenReturn(servletPath);
-        Mockito.when(req.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(req.getRequestURL())
-                .thenReturn(new StringBuffer(pathInfo));
-        Mockito.when(req.getContextPath()).thenReturn(contextPath);
+        when(req.getServletPath()).thenReturn(servletPath);
+        when(req.getPathInfo()).thenReturn(pathInfo);
+        when(req.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
+        when(req.getContextPath()).thenReturn(contextPath);
         return new VaadinServletRequest(req, mocks.getService());
     }
 }

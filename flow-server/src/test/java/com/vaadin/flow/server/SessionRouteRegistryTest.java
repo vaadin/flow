@@ -75,6 +75,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class SessionRouteRegistryTest {
 
@@ -85,15 +87,15 @@ class SessionRouteRegistryTest {
     @BeforeEach
     void init() {
         registry = ApplicationRouteRegistry.getInstance(
-                new VaadinServletContext(Mockito.mock(ServletContext.class)));
+                new VaadinServletContext(mock(ServletContext.class)));
 
-        vaadinService = Mockito.mock(MockService.class);
-        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        vaadinService = mock(MockService.class);
+        when(vaadinService.getRouteRegistry()).thenReturn(registry);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.getFrontendFolder())
+        when(configuration.getFrontendFolder())
                 .thenReturn(new File("/frontend"));
-        Mockito.when(vaadinService.getDeploymentConfiguration())
+        when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(configuration);
         VaadinServletContext context = new MockVaadinContext();
 
@@ -103,9 +105,8 @@ class SessionRouteRegistryTest {
         context.setAttribute(ApplicationConfiguration.class,
                 applicationConfiguration);
 
-        Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(applicationConfiguration.isProductionMode())
-                .thenReturn(true);
+        when(vaadinService.getContext()).thenReturn(context);
+        when(applicationConfiguration.isProductionMode()).thenReturn(true);
 
         VaadinService.setCurrent(vaadinService);
 
@@ -968,11 +969,10 @@ class SessionRouteRegistryTest {
         VaadinService service = new TestService();
         RouteRegistry newAppRegistry = service.getRouteRegistry();
 
-        Mockito.when(newAppRegistry.getNavigationTarget("foo",
-                Collections.emptyList()))
+        when(newAppRegistry.getNavigationTarget("foo", Collections.emptyList()))
                 .thenReturn(Optional.of(HtmlContainer.class));
 
-        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        WrappedSession wrappedSession = mock(WrappedSession.class);
         deserialized.session.refreshTransients(wrappedSession, service);
 
         // The original registry doesn't contain "foo" navigation target
@@ -1194,13 +1194,13 @@ class SessionRouteRegistryTest {
 
     private static class TestService extends VaadinServletService {
 
-        private ReentrantLock lock = Mockito.mock(ReentrantLock.class);
+        private ReentrantLock lock = mock(ReentrantLock.class);
 
         private RouteRegistry appRegistry = Mockito
                 .mock(ApplicationRouteRegistry.class);
 
         {
-            Mockito.when(lock.isHeldByCurrentThread()).thenReturn(true);
+            when(lock.isHeldByCurrentThread()).thenReturn(true);
         }
 
         @Override

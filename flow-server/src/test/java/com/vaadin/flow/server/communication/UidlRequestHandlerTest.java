@@ -60,9 +60,11 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class UidlRequestHandlerTest {
@@ -75,10 +77,10 @@ class UidlRequestHandlerTest {
 
     @BeforeEach
     void setup() throws IOException {
-        request = Mockito.mock(VaadinRequest.class);
-        response = Mockito.mock(VaadinResponse.class);
-        outputStream = Mockito.mock(OutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        request = mock(VaadinRequest.class);
+        response = mock(VaadinResponse.class);
+        outputStream = mock(OutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
 
         handler = new UidlRequestHandler();
     }
@@ -87,11 +89,11 @@ class UidlRequestHandlerTest {
     void writeSessionExpired() throws Exception {
         ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getPropertyNames())
+        when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(config.getBuildFolder()).thenReturn(".");
+        when(config.getBuildFolder()).thenReturn(".");
         VaadinContext context = new MockVaadinContext();
-        Mockito.when(config.getContext()).thenReturn(context);
+        when(config.getContext()).thenReturn(context);
         VaadinService service = new VaadinServletService(null,
                 new DefaultDeploymentConfiguration(config, getClass(),
                         new Properties()));
@@ -141,8 +143,8 @@ class UidlRequestHandlerTest {
         VaadinService service = session.getService();
         DeploymentConfiguration conf = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
-        Mockito.when(conf.isRequestTiming()).thenReturn(false);
+        when(service.getDeploymentConfiguration()).thenReturn(conf);
+        when(conf.isRequestTiming()).thenReturn(false);
 
         String requestBody = """
                 {
@@ -166,8 +168,8 @@ class UidlRequestHandlerTest {
                    "clientId": 0
                  }
                 """;
-        Mockito.when(request.getService()).thenReturn(service);
-        Mockito.when(conf.isSyncIdCheckEnabled()).thenReturn(true);
+        when(request.getService()).thenReturn(service);
+        when(conf.isSyncIdCheckEnabled()).thenReturn(true);
 
         Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
                 .synchronizedHandleRequest(session, request, response,
@@ -178,9 +180,9 @@ class UidlRequestHandlerTest {
                 .getStringWhenWriteString(outputStream);
 
         // Init clean response
-        response = Mockito.mock(VaadinResponse.class);
-        outputStream = Mockito.mock(OutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        response = mock(VaadinResponse.class);
+        outputStream = mock(OutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
 
         result = handler.synchronizedHandleRequest(session, request, response,
                 requestBody);
@@ -203,10 +205,10 @@ class UidlRequestHandlerTest {
         VaadinService service = session.getService();
         DeploymentConfiguration conf = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
-        Mockito.when(conf.isRequestTiming()).thenReturn(false);
-        Mockito.when(request.getService()).thenReturn(service);
-        Mockito.when(conf.isSyncIdCheckEnabled()).thenReturn(true);
+        when(service.getDeploymentConfiguration()).thenReturn(conf);
+        when(conf.isRequestTiming()).thenReturn(false);
+        when(request.getService()).thenReturn(service);
+        when(conf.isSyncIdCheckEnabled()).thenReturn(true);
 
         String requestBody = """
                 {
@@ -228,9 +230,9 @@ class UidlRequestHandlerTest {
         // push connection leaves when it cannot create one.
         ui.getInternals().setLastRequestResponse(null);
 
-        response = Mockito.mock(VaadinResponse.class);
-        outputStream = Mockito.mock(OutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
+        response = mock(VaadinResponse.class);
+        outputStream = mock(OutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
 
         handler.synchronizedHandleRequest(session, request, response,
                 requestBody).orElseThrow().writeResponse();
@@ -387,7 +389,7 @@ class UidlRequestHandlerTest {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
         when(session.getService()).thenReturn(service);
-        UI ui = Mockito.mock(UI.class);
+        UI ui = mock(UI.class);
 
         when(service.findUI(request)).thenReturn(ui);
 
@@ -409,7 +411,7 @@ class UidlRequestHandlerTest {
 
         handler.synchronizedHandleRequest(session, request, response, "");
 
-        Mockito.verify(response).setHeader(DAUUtils.STATUS_CODE_KEY, "503");
+        verify(response).setHeader(DAUUtils.STATUS_CODE_KEY, "503");
     }
 
     @Test
@@ -418,13 +420,13 @@ class UidlRequestHandlerTest {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
         when(session.getService()).thenReturn(service);
-        UI ui = Mockito.mock(UI.class);
+        UI ui = mock(UI.class);
 
         when(service.findUI(request)).thenReturn(ui);
         when(request.getService()).thenReturn(service);
 
         SystemMessages systemMessages = new CustomizedSystemMessages();
-        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+        when(service.getSystemMessages(any(), any()))
                 .thenReturn(systemMessages);
 
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
@@ -464,7 +466,7 @@ class UidlRequestHandlerTest {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
         when(session.getService()).thenReturn(service);
-        UI ui = Mockito.mock(UI.class);
+        UI ui = mock(UI.class);
 
         when(service.findUI(request)).thenReturn(ui);
         when(request.getService()).thenReturn(service);
@@ -473,7 +475,7 @@ class UidlRequestHandlerTest {
         customMessages.setSyncErrorCaption("Custom Sync Caption");
         customMessages.setSyncErrorMessage("Custom sync error message");
         customMessages.setSyncErrorURL("/custom-redirect");
-        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+        when(service.getSystemMessages(any(), any()))
                 .thenReturn(customMessages);
 
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
@@ -513,14 +515,14 @@ class UidlRequestHandlerTest {
         VaadinService service = mock(VaadinService.class);
         VaadinSession session = mock(VaadinSession.class);
         when(session.getService()).thenReturn(service);
-        UI ui = Mockito.mock(UI.class);
+        UI ui = mock(UI.class);
 
         when(service.findUI(request)).thenReturn(ui);
         when(request.getService()).thenReturn(service);
 
         CustomizedSystemMessages customMessages = new CustomizedSystemMessages();
         customMessages.setSyncErrorNotificationEnabled(false);
-        when(service.getSystemMessages(Mockito.any(), Mockito.any()))
+        when(service.getSystemMessages(any(), any()))
                 .thenReturn(customMessages);
 
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
@@ -698,7 +700,7 @@ class UidlRequestHandlerTest {
 
         UI ui = new MockUI(session);
 
-        when(service.findUI(Mockito.any())).thenReturn(ui);
+        when(service.findUI(any())).thenReturn(ui);
 
         return ui;
     }

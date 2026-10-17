@@ -58,6 +58,8 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest()
@@ -86,15 +88,14 @@ class RequestUtilPathAccessTest {
         Set<String> publicPaths = Set.of("", "alias/public", "other",
                 "alias/other");
         Set<String> publicPathsPrefix = Set.of("tpl/public/", "tpl/other/");
-        Mockito.when(accessPathChecker.hasAccess(any(), any(), any()))
-                .then(i -> {
-                    String path = i.getArgument(0);
-                    if (publicPaths.contains(path) || publicPathsPrefix.stream()
-                            .anyMatch(path::startsWith)) {
-                        return true;
-                    }
-                    return false;
-                });
+        when(accessPathChecker.hasAccess(any(), any(), any())).then(i -> {
+            String path = i.getArgument(0);
+            if (publicPaths.contains(path)
+                    || publicPathsPrefix.stream().anyMatch(path::startsWith)) {
+                return true;
+            }
+            return false;
+        });
     }
 
     @Route("")
@@ -120,8 +121,7 @@ class RequestUtilPathAccessTest {
 
     @Test
     void testAnonymousRouteRequest_rootMappedServlet_publicView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
+        when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
         addRoute(servlet, AnotherPublicView.class);
@@ -153,8 +153,7 @@ class RequestUtilPathAccessTest {
 
     @Test
     void testAnonymousRouteRequest_rootMappedServlet_notAView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
+        when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
         addRoute(servlet, AnotherPublicView.class);
@@ -187,8 +186,7 @@ class RequestUtilPathAccessTest {
 
     @Test
     void testAnonymousRouteRequest_rootMappedServlet_privateView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
+        when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
         addRoute(setupMockServlet(), AdminView.class);
 
         MockHttpServletRequest request = createRequest(null);
@@ -206,7 +204,7 @@ class RequestUtilPathAccessTest {
 
     @Test
     void testAnonymousRouteRequest_fooMappedServlet_publicView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+        when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
@@ -247,7 +245,7 @@ class RequestUtilPathAccessTest {
 
     @Test
     void testAnonymousRouteRequest_fooMappedServlet_notAView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+        when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
@@ -280,7 +278,7 @@ class RequestUtilPathAccessTest {
 
     @Test
     void testAnonymousRouteRequest_fooMappedServlet_privateView() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+        when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
         addRoute(setupMockServlet(), AdminView.class);
 
@@ -299,7 +297,7 @@ class RequestUtilPathAccessTest {
 
     @Test
     void testAnonymousRouteRequest_fooMappedServlet_publicViewPathOutsideServlet() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+        when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
         addRoute(servlet, PublicRootView.class);
@@ -333,8 +331,7 @@ class RequestUtilPathAccessTest {
 
     @Test
     void testRouteRequest_servletNotInited() {
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
+        when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
         setupMockServlet(false);
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
@@ -367,24 +364,23 @@ class RequestUtilPathAccessTest {
     }
 
     private SpringServlet setupMockServlet(boolean inited) {
-        SpringServlet servlet = Mockito.mock(SpringServlet.class);
+        SpringServlet servlet = mock(SpringServlet.class);
         SpringVaadinServletService service = Mockito
                 .mock(SpringVaadinServletService.class);
-        Router router = Mockito.mock(Router.class);
+        Router router = mock(Router.class);
 
         RouteRegistry routeRegistry = new TestRouteRegistry();
         DeploymentConfiguration deploymentConfiguration = Mockito
                 .mock(DeploymentConfiguration.class);
 
-        Mockito.when(springServletRegistration.getServlet())
-                .thenReturn(servlet);
+        when(springServletRegistration.getServlet()).thenReturn(servlet);
         if (inited) {
-            Mockito.when(servlet.getService()).thenReturn(service);
+            when(servlet.getService()).thenReturn(service);
         }
-        Mockito.when(service.getDeploymentConfiguration())
+        when(service.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
-        Mockito.when(service.getRouter()).thenReturn(router);
-        Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
+        when(service.getRouter()).thenReturn(router);
+        when(router.getRegistry()).thenReturn(routeRegistry);
         return servlet;
     }
 

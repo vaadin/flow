@@ -53,6 +53,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class DebugWindowConnectionLicenseCheckTest {
 
@@ -203,12 +207,12 @@ class DebugWindowConnectionLicenseCheckTest {
     private AtomicInteger captureDownloadTimeout(ObjectNode command) {
         AtomicInteger usedTimeout = new AtomicInteger();
         DebugWindowMessage message = sendAndReceive(command,
-                licenseChecker -> licenseChecker.when(() -> LicenseChecker
-                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
+                licenseChecker -> licenseChecker
+                        .when(() -> LicenseChecker.checkLicenseAsync(
+                                eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class),
-                                Mockito.anyInt()))
+                                any(LicenseChecker.Callback.class), anyInt()))
                         .then(i -> {
                             usedTimeout.set(i.getArgument(4, Integer.class));
                             return null;
@@ -264,24 +268,26 @@ class DebugWindowConnectionLicenseCheckTest {
         ObjectNode command = OBJECT_MAPPER.createObjectNode();
         command.put("command", "downloadLicense");
         command.putPOJO("data", TEST_PRODUCT);
-        return sendAndReceive(command, licenseChecker -> licenseChecker
-                .when(() -> LicenseChecker.checkLicenseAsync(
-                        eq(TEST_PRODUCT.getName()),
-                        eq(TEST_PRODUCT.getVersion()),
-                        eq(BuildType.DEVELOPMENT),
-                        any(LicenseChecker.Callback.class), Mockito.anyInt()))
-                .then(i -> {
-                    LicenseChecker.Callback callback = i.getArgument(3,
-                            LicenseChecker.Callback.class);
-                    callbackHolder.set(() -> {
-                        if (success) {
-                            callback.ok();
-                        } else {
-                            callback.failed(new LicenseException("BOOM"));
-                        }
-                    });
-                    return null;
-                }));
+        return sendAndReceive(command,
+                licenseChecker -> licenseChecker
+                        .when(() -> LicenseChecker.checkLicenseAsync(
+                                eq(TEST_PRODUCT.getName()),
+                                eq(TEST_PRODUCT.getVersion()),
+                                eq(BuildType.DEVELOPMENT),
+                                any(LicenseChecker.Callback.class), anyInt()))
+                        .then(i -> {
+                            LicenseChecker.Callback callback = i.getArgument(3,
+                                    LicenseChecker.Callback.class);
+                            callbackHolder.set(() -> {
+                                if (success) {
+                                    callback.ok();
+                                } else {
+                                    callback.failed(
+                                            new LicenseException("BOOM"));
+                                }
+                            });
+                            return null;
+                        }));
     }
 
     private DebugWindowMessage sendAndReceive(ObjectNode command,
@@ -309,11 +315,9 @@ class DebugWindowConnectionLicenseCheckTest {
     private Consumer<MockedStatic<LicenseChecker>> mockCheckLicense(
             LicenseCheckResult licenseCheckResult) {
         return licenseChecker -> {
-            licenseChecker
-                    .when(() -> LicenseChecker.checkLicense(anyString(),
-                            anyString(), Mockito.any(BuildType.class),
-                            Mockito.isNull(), Mockito.any(Capabilities.class)))
-                    .then(i -> {
+            licenseChecker.when(() -> LicenseChecker.checkLicense(anyString(),
+                    anyString(), any(BuildType.class), isNull(),
+                    any(Capabilities.class))).then(i -> {
                         switch (licenseCheckResult) {
                         case INVALID ->
                             throw new LicenseException(INVALID_LICENSE_ERROR);
@@ -333,7 +337,7 @@ class DebugWindowConnectionLicenseCheckTest {
         VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        when(appConfig.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class, appConfig);
         context.setAttribute(Lookup.class,
                 Lookup.of(appConfig, ApplicationConfiguration.class));
@@ -345,15 +349,14 @@ class DebugWindowConnectionLicenseCheckTest {
         private final AtmosphereResource resource;
 
         private ClientMessageReceiver() {
-            this.resource = Mockito.mock(AtmosphereResource.class);
-            Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
-            Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-            Mockito.when(broadcaster.broadcast(anyString(), same(resource)))
-                    .then(i -> {
-                        messages.add(deserializeMessage(
-                                i.getArgument(0, String.class)));
-                        return null;
-                    });
+            this.resource = mock(AtmosphereResource.class);
+            Broadcaster broadcaster = mock(Broadcaster.class);
+            when(resource.getBroadcaster()).thenReturn(broadcaster);
+            when(broadcaster.broadcast(anyString(), same(resource))).then(i -> {
+                messages.add(
+                        deserializeMessage(i.getArgument(0, String.class)));
+                return null;
+            });
         }
 
         private DebugWindowMessage deserializeMessage(String message)

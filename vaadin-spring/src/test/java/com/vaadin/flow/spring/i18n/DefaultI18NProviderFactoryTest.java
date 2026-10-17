@@ -52,6 +52,8 @@ import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @Import(VaadinApplicationConfiguration.class)
@@ -98,9 +100,8 @@ class DefaultI18NProviderFactoryTest {
         pathMatchingResourcePatternResolverMockedConstruction = Mockito
                 .mockConstruction(PathMatchingResourcePatternResolver.class,
                         (mock, context) -> {
-                            Mockito.when(mock.getPathMatcher())
-                                    .thenCallRealMethod();
-                            Mockito.when(mock.getResources(Mockito.anyString()))
+                            when(mock.getPathMatcher()).thenCallRealMethod();
+                            when(mock.getResources(anyString()))
                                     .thenAnswer(invocationOnMock -> {
                                         String pattern = invocationOnMock
                                                 .getArgument(0);

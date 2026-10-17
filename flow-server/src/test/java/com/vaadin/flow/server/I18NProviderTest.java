@@ -41,6 +41,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 @Isolated
 public class I18NProviderTest {
@@ -182,7 +183,7 @@ public class I18NProviderTest {
 
         HttpServletRequest httpServletRequest = Mockito
                 .mock(HttpServletRequest.class);
-        HttpSession mockHttpSession = Mockito.mock(HttpSession.class);
+        HttpSession mockHttpSession = mock(HttpSession.class);
         WrappedSession mockWrappedSession = new WrappedHttpSession(
                 mockHttpSession) {
             final ReentrantLock lock = new ReentrantLock();

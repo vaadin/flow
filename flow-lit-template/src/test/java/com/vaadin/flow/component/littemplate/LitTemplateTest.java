@@ -31,10 +31,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class LitTemplateTest {
 
-    private VaadinService service = Mockito.mock(VaadinService.class);
+    private VaadinService service = mock(VaadinService.class);
 
     @Tag("foo-bar")
     private static class TestLitTemplate extends LitTemplate {
@@ -113,8 +115,7 @@ class LitTemplateTest {
     void setUp() {
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
     }
 
     @Test

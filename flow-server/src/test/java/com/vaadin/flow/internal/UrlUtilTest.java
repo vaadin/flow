@@ -45,6 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class UrlUtilTest {
 
@@ -143,11 +145,11 @@ class UrlUtilTest {
             throw new IllegalArgumentException(
                     "A context path is either empty or starts, but not ends with, a slash");
         }
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getServletPath()).thenReturn(servletPath);
-        Mockito.when(request.getContextPath()).thenReturn(contextPath);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getServletPath()).thenReturn(servletPath);
+        when(request.getContextPath()).thenReturn(contextPath);
         return new VaadinServletRequest(request,
-                Mockito.mock(VaadinServletService.class));
+                mock(VaadinServletService.class));
     }
 
     @Test
@@ -326,10 +328,9 @@ class UrlUtilTest {
     void isSafeUrl_configuredSchemes_replaceDefaults() {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(config.getUrlSafeSchemes())
-                .thenReturn(Set.of("custom", "https"));
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        when(config.getUrlSafeSchemes()).thenReturn(Set.of("custom", "https"));
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(config);
 
         try (MockedStatic<VaadinService> mock = Mockito
                 .mockStatic(VaadinService.class)) {
@@ -517,10 +518,10 @@ class UrlUtilTest {
     void isSafeUrl_configuredWildcard_allowsAnyScheme() {
         DeploymentConfiguration config = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(config.getUrlSafeSchemes())
+        when(config.getUrlSafeSchemes())
                 .thenReturn(Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD));
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(config);
 
         try (MockedStatic<VaadinService> mock = Mockito
                 .mockStatic(VaadinService.class)) {

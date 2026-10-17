@@ -51,6 +51,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -75,15 +79,13 @@ class DAUUtilsTest {
 
     @Test
     void trackUser_uidlRequest_deferTracking() {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
                 .thenReturn(HandlerHelper.RequestType.UIDL.getIdentifier());
         Map<String, Object> attributes = new HashMap<>();
-        Mockito.doAnswer(
-                i -> attributes.put(i.getArgument(0), i.getArgument(1)))
+        doAnswer(i -> attributes.put(i.getArgument(0), i.getArgument(1)))
                 .when(request).setAttribute(anyString(), any());
-        Mockito.when(request.getAttribute(anyString()))
+        when(request.getAttribute(anyString()))
                 .thenAnswer(i -> attributes.get(i.<String> getArgument(0)));
 
         try (MockedStatic<DauIntegration> dauIntegration = Mockito
@@ -106,15 +108,13 @@ class DAUUtilsTest {
 
     @Test
     void trackUser_notUidlRequest_track() {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
                 .thenReturn(HandlerHelper.RequestType.INIT.getIdentifier());
         Map<String, Object> attributes = new HashMap<>();
-        Mockito.doAnswer(
-                i -> attributes.put(i.getArgument(0), i.getArgument(1)))
+        doAnswer(i -> attributes.put(i.getArgument(0), i.getArgument(1)))
                 .when(request).setAttribute(anyString(), any());
-        Mockito.when(request.getAttribute(anyString()))
+        when(request.getAttribute(anyString()))
                 .thenAnswer(i -> attributes.get(i.<String> getArgument(0)));
 
         try (MockedStatic<DauIntegration> dauIntegration = Mockito
@@ -141,8 +141,8 @@ class DAUUtilsTest {
                 .mockStatic(DauIntegration.class)) {
             VaadinService service = VaadinServiceDauTest
                     .vaadinServiceWithDau(null);
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.getService()).thenReturn(service);
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.getService()).thenReturn(service);
             String response = DAUUtils.jsonEnforcementResponse(request,
                     new DauEnforcementException(
                             new EnforcementException("STOP")));
@@ -176,8 +176,8 @@ class DAUUtilsTest {
             };
             VaadinService service = VaadinServiceDauTest
                     .vaadinServiceWithDau(customizer);
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.getService()).thenReturn(service);
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.getService()).thenReturn(service);
 
             String response = DAUUtils.jsonEnforcementResponse(request,
                     new DauEnforcementException(
@@ -214,8 +214,8 @@ class DAUUtilsTest {
 
             result.endRequestAction().run();
 
-            verify(service).requestEnd(any(VaadinRequest.class),
-                    Mockito.isNull(), Mockito.isNull());
+            verify(service).requestEnd(any(VaadinRequest.class), isNull(),
+                    isNull());
         }
     }
 
@@ -243,8 +243,8 @@ class DAUUtilsTest {
 
             result.endRequestAction().run();
 
-            verify(service).requestEnd(any(VaadinRequest.class),
-                    Mockito.isNull(), Mockito.isNull());
+            verify(service).requestEnd(any(VaadinRequest.class), isNull(),
+                    isNull());
         }
     }
 
@@ -270,11 +270,11 @@ class DAUUtilsTest {
         private HttpServletResponse response;
 
         public MocksForTrackDAU() {
-            this.service = Mockito.mock(VaadinServletService.class);
-            this.request = Mockito.mock(HttpServletRequest.class);
-            this.response = Mockito.mock(HttpServletResponse.class);
+            this.service = mock(VaadinServletService.class);
+            this.request = mock(HttpServletRequest.class);
+            this.response = mock(HttpServletResponse.class);
 
-            VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+            VaadinContext vaadinContext = mock(VaadinContext.class);
             when(vaadinContext.getAttribute(any())).thenReturn(null);
             MockDeploymentConfiguration config = new MockDeploymentConfiguration();
             config.setProductionMode(true);
@@ -290,9 +290,8 @@ class DAUUtilsTest {
             assertNull(result.origin());
             verify(service).requestStart(any(VaadinRequest.class),
                     any(VaadinResponse.class));
-            verify(service, Mockito.never()).requestEnd(
-                    any(VaadinRequest.class), Mockito.isNull(),
-                    Mockito.isNull());
+            verify(service, never()).requestEnd(any(VaadinRequest.class),
+                    isNull(), isNull());
         }
 
         private void assertEnforcement(DAUUtils.EnforcementResult result) {
@@ -302,9 +301,8 @@ class DAUUtilsTest {
             assertNotNull(result.origin());
             verify(service).requestStart(any(VaadinRequest.class),
                     any(VaadinResponse.class));
-            verify(service, Mockito.never()).requestEnd(
-                    any(VaadinRequest.class), Mockito.isNull(),
-                    Mockito.isNull());
+            verify(service, never()).requestEnd(any(VaadinRequest.class),
+                    isNull(), isNull());
         }
     }
 }

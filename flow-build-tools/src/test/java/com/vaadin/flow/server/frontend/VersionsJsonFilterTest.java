@@ -38,6 +38,12 @@ import com.vaadin.flow.internal.JacksonUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class VersionsJsonFilterTest {
 
@@ -107,7 +113,7 @@ class VersionsJsonFilterTest {
                 NodeUpdater.DEPENDENCIES);
         String versionOrigin = "dummy-origin.json";
 
-        Logger logger = Mockito.spy(Logger.class);
+        Logger logger = spy(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
                 .mockStatic(LoggerFactory.class)) {
             loggerFactoryMocked
@@ -116,36 +122,33 @@ class VersionsJsonFilterTest {
 
             ObjectNode sourceJsonMocked = getMockedJsonNode();
 
-            JsonNode versionMocked = Mockito.mock(JsonNode.class);
-            Mockito.when(versionMocked.asString())
-                    .thenThrow(new ClassCastException());
-            Mockito.when(sourceJsonMocked.get(Mockito.anyString()))
-                    .thenReturn(versionMocked);
+            JsonNode versionMocked = mock(JsonNode.class);
+            when(versionMocked.asString()).thenThrow(new ClassCastException());
+            when(sourceJsonMocked.get(anyString())).thenReturn(versionMocked);
             filter.getFilteredVersions(sourceJsonMocked, versionOrigin);
-            Mockito.verify(logger, Mockito.times(1)).warn(
+            verify(logger, times(1)).warn(
                     "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
                     "test", versionOrigin);
 
             sourceJsonMocked = getMockedJsonNode();
 
             String nfeMessage = "NFE MSG";
-            versionMocked = Mockito.mock(JsonNode.class);
-            Mockito.when(versionMocked.asString())
+            versionMocked = mock(JsonNode.class);
+            when(versionMocked.asString())
                     .thenThrow(new NumberFormatException(nfeMessage));
-            Mockito.when(sourceJsonMocked.get(Mockito.anyString()))
-                    .thenReturn(versionMocked);
+            when(sourceJsonMocked.get(anyString())).thenReturn(versionMocked);
             filter.getFilteredVersions(sourceJsonMocked, versionOrigin);
-            Mockito.verify(logger, Mockito.times(1)).warn(
+            verify(logger, times(1)).warn(
                     "Ignoring error while parsing frontend dependency version in {}: {}",
                     versionOrigin, nfeMessage);
         }
     }
 
     private ObjectNode getMockedJsonNode() {
-        ObjectNode jsonObject = Mockito.mock(ObjectNode.class);
-        Mockito.when(jsonObject.propertyNames())
+        ObjectNode jsonObject = mock(ObjectNode.class);
+        when(jsonObject.propertyNames())
                 .thenReturn(Arrays.stream(new String[] { "test" }).toList());
-        Mockito.when(jsonObject.has("test")).thenReturn(true);
+        when(jsonObject.has("test")).thenReturn(true);
         return jsonObject;
     }
 

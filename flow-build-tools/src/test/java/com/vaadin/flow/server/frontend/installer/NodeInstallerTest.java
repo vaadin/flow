@@ -49,6 +49,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 class NodeInstallerTest {
 
@@ -227,7 +228,7 @@ class NodeInstallerTest {
         Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
         try (MockedStatic<Platform.OS> os = Mockito
                 .mockStatic(Platform.OS.class);
-                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+                MockedStatic<Files> files = mockStatic(Files.class)) {
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
             files.when(() -> Files.exists(alpineReleaseFilePath))
                     .thenReturn(true);
@@ -336,8 +337,8 @@ class NodeInstallerTest {
     void testGuess_whenOsIsLinuxAndAlpineReleaseFileExists_unofficialNodeDownloadPathReturned() {
         try (MockedStatic<Platform.OS> os = Mockito
                 .mockStatic(Platform.OS.class);
-                MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class);
-                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+                MockedStatic<Paths> paths = mockStatic(Paths.class);
+                MockedStatic<Files> files = mockStatic(Files.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
             Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);

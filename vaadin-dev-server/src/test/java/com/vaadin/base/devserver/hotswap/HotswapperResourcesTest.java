@@ -37,7 +37,11 @@ import static com.vaadin.base.devserver.hotswap.HotswapperTest.createMockVaadinS
 import static com.vaadin.base.devserver.hotswap.HotswapperTest.initUIAndNavigateTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class HotswapperResourcesTest {
 
@@ -52,21 +56,19 @@ class HotswapperResourcesTest {
         service = new MockVaadinServletService();
 
         // Wire BrowserLiveReload into Lookup via BrowserLiveReloadAccessor
-        liveReload = Mockito.mock(BrowserLiveReload.class);
-        Mockito.when(
-                service.getLookup().lookup(BrowserLiveReloadAccessor.class))
+        liveReload = mock(BrowserLiveReload.class);
+        when(service.getLookup().lookup(BrowserLiveReloadAccessor.class))
                 .thenReturn(context -> liveReload);
-        flowHotswapper = Mockito.mock(VaadinHotswapper.class);
-        hillaHotswapper = Mockito.mock(VaadinHotswapper.class);
-        Mockito.when(service.getLookup().lookupAll(VaadinHotswapper.class))
+        flowHotswapper = mock(VaadinHotswapper.class);
+        hillaHotswapper = mock(VaadinHotswapper.class);
+        when(service.getLookup().lookupAll(VaadinHotswapper.class))
                 .thenReturn(List.of(flowHotswapper, hillaHotswapper));
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenAnswer(
+        when(appConfig.isProductionMode()).thenAnswer(
                 i -> service.getDeploymentConfiguration().isProductionMode());
-        Mockito.when(service.getLookup()
-                .lookup(ApplicationConfigurationFactory.class))
+        when(service.getLookup().lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(context -> appConfig);
 
         hotswapper = new Hotswapper(service);
@@ -82,7 +84,7 @@ class HotswapperResourcesTest {
         liveReload = null;
         hotswapper = new Hotswapper(service);
 
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapResourceEvent.class)
                     .sendHmrEvent("my-event", JacksonUtils.createObjectNode());
             return null;
@@ -99,13 +101,13 @@ class HotswapperResourcesTest {
     @Test
     void onResourceHotswap_hotswapperRequestsReload_liveReloadTriggered()
             throws ServiceException {
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapResourceEvent.class)
                     .triggerUpdate(UIUpdateStrategy.REFRESH);
             return null;
         }).when(flowHotswapper)
                 .onResourcesChange(any(HotswapResourceEvent.class));
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapResourceEvent.class)
                     .triggerUpdate(UIUpdateStrategy.RELOAD);
             return null;
@@ -118,14 +120,14 @@ class HotswapperResourcesTest {
 
         hotswapper.onHotswap(new URI[0],
                 new URI[] { URI.create("some-file.txt") }, new URI[0]);
-        Mockito.verify(liveReload).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
     @Test
     void onResourceHotswap_hotswapperRequestsRefresh_refreshTriggered()
             throws ServiceException {
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapResourceEvent.class)
                     .triggerUpdate(UIUpdateStrategy.REFRESH);
             return null;
@@ -138,8 +140,8 @@ class HotswapperResourcesTest {
 
         hotswapper.onHotswap(new URI[0],
                 new URI[] { URI.create("some-file.txt") }, new URI[0]);
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload).refresh(true);
+        verify(liveReload, never()).reload();
+        verify(liveReload).refresh(true);
     }
 
     @Test
@@ -150,7 +152,7 @@ class HotswapperResourcesTest {
         HotswapperTest.RefreshTestingUI ui = initUIAndNavigateTo(service,
                 session, HotswapperTest.MyRoute.class);
 
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapResourceEvent.class)
                     .triggerUpdate(UIUpdateStrategy.REFRESH);
             return null;
@@ -160,8 +162,8 @@ class HotswapperResourcesTest {
         hotswapper.onHotswap(new URI[0],
                 new URI[] { URI.create("some-file.txt") }, new URI[0]);
         ui.assertNotRefreshed();
-        Mockito.verify(liveReload).refresh(true);
-        Mockito.verify(liveReload, never()).reload();
+        verify(liveReload).refresh(true);
+        verify(liveReload, never()).reload();
     }
 
     @Test
@@ -169,7 +171,7 @@ class HotswapperResourcesTest {
             throws ServiceException {
         VaadinSession session = createMockVaadinSession(service);
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             i.getArgument(0, HotswapResourceEvent.class)
                     .triggerUpdate(UIUpdateStrategy.REFRESH);
             return null;
@@ -184,8 +186,8 @@ class HotswapperResourcesTest {
                 new URI[] { URI.create("some-file.txt") }, new URI[0]);
 
         ui.assertChainRefreshed();
-        Mockito.verify(liveReload, never()).reload();
-        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        verify(liveReload, never()).reload();
+        verify(liveReload, never()).refresh(anyBoolean());
     }
 
 }

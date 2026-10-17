@@ -24,10 +24,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -38,9 +36,13 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 class WebComponentExporterAwareValidatorTest {
 
@@ -52,7 +54,7 @@ class WebComponentExporterAwareValidatorTest {
     @BeforeEach
     void init() {
         annotationValidator = new WebComponentExporterAwareValidator();
-        servletContext = Mockito.mock(ServletContext.class);
+        servletContext = mock(ServletContext.class);
     }
 
     @Tag(Tag.DIV)
@@ -133,10 +135,9 @@ class WebComponentExporterAwareValidatorTest {
 
     private void assertHint(String msg,
             Class<? extends Annotation> anntationType) {
-        MatcherAssert.assertThat("Exception has hint.", msg,
-                CoreMatchers.allOf(
-                        CoreMatchers
-                                .containsString(anntationType.getSimpleName()),
-                        CoreMatchers.containsString(ERROR_HINT)));
+        assertThat("Exception has hint.", msg,
+                allOf(CoreMatchers
+                        .containsString(anntationType.getSimpleName()),
+                        containsString(ERROR_HINT)));
     }
 }

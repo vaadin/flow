@@ -44,6 +44,9 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class AbstractSinglePropertyFieldTest {
 
@@ -134,7 +137,7 @@ class AbstractSinglePropertyFieldTest {
         stringField.setSynchronizedEvent("blur");
         DomListenerRegistration recentReg = stringField
                 .getSynchronizationRegistration();
-        Mockito.verify(unregisterListener).run();
+        verify(unregisterListener).run();
         assertNotSame(origReg, recentReg);
         assertEquals("blur", recentReg.getEventType());
     }
@@ -149,7 +152,7 @@ class AbstractSinglePropertyFieldTest {
 
         stringField.setSynchronizedEvent(null);
         assertNull(stringField.getSynchronizationRegistration());
-        Mockito.verify(unregisterListener).run();
+        verify(unregisterListener).run();
     }
 
     @Test
@@ -523,12 +526,12 @@ class AbstractSinglePropertyFieldTest {
         UI ui = new MockUI();
         UI.setCurrent(ui);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Instantiator instantiator = mock(Instantiator.class);
         TestVaadinServletService service = (TestVaadinServletService) ui
                 .getSession().getService();
         service.setInstantiator(instantiator);
 
-        Mockito.when(instantiator.createComponent(StringField.class))
+        when(instantiator.createComponent(StringField.class))
                 .thenAnswer(a -> new StringField());
 
         StringField field = Component.from(element, StringField.class);

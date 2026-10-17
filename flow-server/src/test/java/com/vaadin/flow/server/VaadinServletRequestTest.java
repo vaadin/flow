@@ -20,6 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import static org.mockito.Mockito.verify;
+
 class VaadinServletRequestTest {
 
     @Test
@@ -30,6 +32,6 @@ class VaadinServletRequestTest {
         VaadinServletRequest request = new VaadinServletRequest(servletRequest,
                 null);
         request.getContentLengthLong();
-        Mockito.verify(servletRequest).getContentLengthLong();
+        verify(servletRequest).getContentLengthLong();
     }
 }

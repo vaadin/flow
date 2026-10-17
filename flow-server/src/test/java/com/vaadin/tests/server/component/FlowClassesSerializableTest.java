@@ -52,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.when;
 
 class FlowClassesSerializableTest extends ClassesSerializableTest {
 
@@ -120,10 +121,9 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
 
                 ApplicationConfiguration configuration = Mockito
                         .mock(ApplicationConfiguration.class);
-                Mockito.when(configuration.isProductionMode()).thenReturn(
+                when(configuration.isProductionMode()).thenReturn(
                         getDeploymentConfiguration().isProductionMode());
-                Mockito.when(
-                        configuration.isDevModeSessionSerializationEnabled())
+                when(configuration.isDevModeSessionSerializationEnabled())
                         .thenReturn(true);
                 getContext().setAttribute(ApplicationConfiguration.class,
                         configuration);

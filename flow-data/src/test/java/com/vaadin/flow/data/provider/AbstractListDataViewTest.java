@@ -54,6 +54,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class AbstractListDataViewTest {
 
@@ -329,8 +332,7 @@ class AbstractListDataViewTest {
         beanDataView.addIdentifierProviderChangeListener(mockEventListener);
         beanDataView.setIdentifierProvider(Item::getId);
 
-        Mockito.verify(mockEventListener, Mockito.times(1))
-                .onComponentEvent(Mockito.any());
+        verify(mockEventListener, times(1)).onComponentEvent(any());
     }
 
     @Test
@@ -349,8 +351,7 @@ class AbstractListDataViewTest {
         registration.remove();
         beanDataView.setIdentifierProvider(Item::getId);
 
-        Mockito.verify(mockEventListener, Mockito.times(0))
-                .onComponentEvent(Mockito.any());
+        verify(mockEventListener, times(0)).onComponentEvent(any());
     }
 
     @Test
@@ -887,7 +888,7 @@ class AbstractListDataViewTest {
         firstItem.setValue("updatedValue");
 
         dataView.refreshItem(firstItem);
-        Mockito.verify(dataProvider).refreshItem(firstItem);
+        verify(dataProvider).refreshItem(firstItem);
 
         dataView.setIdentifierProvider(Item::getId);
         Item secondItem = iterator.next();
@@ -897,8 +898,8 @@ class AbstractListDataViewTest {
         dataView.refreshItem(secondItemDuplicate);
         // Verify that the refresh is made on a new object, no on an old
         // object.
-        Mockito.verify(dataProvider).refreshItem(secondItemDuplicate);
-        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(secondItem);
+        verify(dataProvider).refreshItem(secondItemDuplicate);
+        verify(dataProvider, times(0)).refreshItem(secondItem);
     }
 
     @Test

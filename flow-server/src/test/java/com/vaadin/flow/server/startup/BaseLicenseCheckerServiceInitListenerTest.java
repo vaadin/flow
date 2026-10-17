@@ -46,6 +46,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 
 @SuppressWarnings("unchecked")
@@ -145,8 +146,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
             Document document = Jsoup
                     .parse("<html><head></head><body></body></html>");
             IndexHtmlResponse indexHtmlResponse = new IndexHtmlResponse(
-                    Mockito.mock(VaadinRequest.class),
-                    Mockito.mock(VaadinResponse.class), document);
+                    mock(VaadinRequest.class), mock(VaadinResponse.class),
+                    document);
             indexHtmlRequestListeners.get(0)
                     .modifyIndexHtmlResponse(indexHtmlResponse);
 
@@ -196,8 +197,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
             Document document = Jsoup
                     .parse("<html><head></head><body></body></html>");
             IndexHtmlResponse indexHtmlResponse = new IndexHtmlResponse(
-                    Mockito.mock(VaadinRequest.class),
-                    Mockito.mock(VaadinResponse.class), document);
+                    mock(VaadinRequest.class), mock(VaadinResponse.class),
+                    document);
             indexHtmlRequestListeners.get(0)
                     .modifyIndexHtmlResponse(indexHtmlResponse);
 
@@ -267,8 +268,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
             Document document = Jsoup
                     .parse("<html><head></head><body></body></html>");
             IndexHtmlResponse indexHtmlResponse = new IndexHtmlResponse(
-                    Mockito.mock(VaadinRequest.class),
-                    Mockito.mock(VaadinResponse.class), document);
+                    mock(VaadinRequest.class), mock(VaadinResponse.class),
+                    document);
             indexHtmlRequestListeners.get(0)
                     .modifyIndexHtmlResponse(indexHtmlResponse);
 

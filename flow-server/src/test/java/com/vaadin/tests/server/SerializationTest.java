@@ -54,6 +54,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class SerializationTest {
 
@@ -156,7 +160,7 @@ class SerializationTest {
     void testSerializeVaadinSession_notProductionMode_canSerializeWithoutTransients()
             throws Exception {
         VaadinService vaadinService = new MockVaadinService(false, true);
-        VaadinSession session = Mockito.spy(new VaadinSession(vaadinService));
+        VaadinSession session = spy(new VaadinSession(vaadinService));
 
         assertEquals(vaadinService, session.getService());
         VaadinSession serializedAndDeserializedSession = serializeAndDeserialize(
@@ -373,14 +377,14 @@ class SerializationTest {
 
         public MockVaadinService(boolean productionMode) {
             super();
-            this.vaadinContext = Mockito.mock(VaadinContext.class);
+            this.vaadinContext = mock(VaadinContext.class);
             this.productionMode = productionMode;
             serialize = false;
         }
 
         public MockVaadinService(boolean productionMode, boolean serialize) {
             super();
-            this.vaadinContext = Mockito.mock(VaadinContext.class);
+            this.vaadinContext = mock(VaadinContext.class);
             this.productionMode = productionMode;
             this.serialize = serialize;
         }
@@ -389,12 +393,11 @@ class SerializationTest {
         public VaadinContext getContext() {
             ApplicationConfiguration applicationConfiguration = Mockito
                     .mock(ApplicationConfiguration.class);
-            Mockito.when(
-                    vaadinContext.getAttribute(Mockito.any(), Mockito.any()))
+            when(vaadinContext.getAttribute(any(), any()))
                     .thenReturn(applicationConfiguration);
-            Mockito.when(applicationConfiguration.isProductionMode())
+            when(applicationConfiguration.isProductionMode())
                     .thenReturn(productionMode);
-            Mockito.when(applicationConfiguration
+            when(applicationConfiguration
                     .isDevModeSessionSerializationEnabled())
                     .thenReturn(serialize);
             return vaadinContext;

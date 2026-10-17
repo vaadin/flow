@@ -42,7 +42,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
@@ -56,6 +55,12 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ServletDeployerTest {
     private final ServletDeployer deployer = new ServletDeployer();
@@ -229,50 +234,48 @@ class ServletDeployerTest {
         ServletRegistration.Dynamic dynamicMock = Mockito
                 .mock(ServletRegistration.Dynamic.class);
 
-        Mockito.when(dynamicMock.addMapping(Mockito.anyString()))
-                .thenAnswer(answer -> {
-                    String mappings = answer.getArgument(0);
-                    this.servletMappings.addAll(Arrays.asList(mappings));
-                    return Collections.emptySet();
-                });
-        Mockito.doAnswer(i -> this.servletLoadOnStartup.add(i.getArgument(0)))
-                .when(dynamicMock).setLoadOnStartup(ArgumentMatchers.anyInt());
+        when(dynamicMock.addMapping(anyString())).thenAnswer(answer -> {
+            String mappings = answer.getArgument(0);
+            this.servletMappings.addAll(Arrays.asList(mappings));
+            return Collections.emptySet();
+        });
+        doAnswer(i -> this.servletLoadOnStartup.add(i.getArgument(0)))
+                .when(dynamicMock).setLoadOnStartup(anyInt());
 
-        ServletContext contextMock = Mockito.mock(ServletContext.class);
+        ServletContext contextMock = mock(ServletContext.class);
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(contextMock.getAttribute(Lookup.class.getName()))
+        Lookup lookup = mock(Lookup.class);
+        when(contextMock.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
 
-        Mockito.when(resourceProvider.getApplicationResources(Mockito.any()))
+        when(resourceProvider.getApplicationResources(any()))
                 .thenReturn(Collections.emptyList());
 
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
 
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        when(appConfig.isProductionMode()).thenReturn(false);
 
-        Mockito.when(appConfig.disableAutomaticServletRegistration())
+        when(appConfig.disableAutomaticServletRegistration())
                 .thenReturn(disableAutomaticServletRegistration);
 
-        Mockito.when(contextMock
-                .getAttribute(ApplicationConfiguration.class.getName()))
+        when(contextMock.getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfig);
 
-        Mockito.when(contextMock.getContextPath()).thenReturn("");
-        Mockito.when(contextMock.getClassLoader())
+        when(contextMock.getContextPath()).thenReturn("");
+        when(contextMock.getClassLoader())
                 .thenReturn(this.getClass().getClassLoader());
 
-        Mockito.when(contextMock.addServlet(Mockito.anyString(),
-                Mockito.any(Class.class))).thenAnswer(answer -> {
+        when(contextMock.addServlet(anyString(), any(Class.class)))
+                .thenAnswer(answer -> {
                     String servletName = answer.getArgument(0);
                     servletNames.add(servletName);
                     return dynamicMock;
@@ -283,16 +286,15 @@ class ServletDeployerTest {
         // types specified (or being inlined) but works with raw type
         Map hack = Stream.of(servletRegistrations).collect(
                 Collectors.toMap(Registration::getName, Function.identity()));
-        Mockito.when(contextMock.getServletRegistrations()).thenReturn(hack);
+        when(contextMock.getServletRegistrations()).thenReturn(hack);
 
         File token = Files.createTempFile(tempFolder, "temp", null).toFile();
         FileUtils.write(token, "{}", StandardCharsets.UTF_8);
 
-        Mockito.when(contextMock.getInitParameterNames())
+        when(contextMock.getInitParameterNames())
                 .thenReturn(Collections.enumeration(Collections
                         .singletonList(FrontendUtils.PARAM_TOKEN_FILE)));
-        Mockito.when(
-                contextMock.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
+        when(contextMock.getInitParameter(FrontendUtils.PARAM_TOKEN_FILE))
                 .thenReturn(token.getPath());
 
         return new ServletContextEvent(contextMock);
@@ -303,13 +305,12 @@ class ServletDeployerTest {
             Map<String, String> initParameters) {
         ServletRegistration registrationMock = Mockito
                 .mock(ServletRegistration.class);
-        Mockito.when(registrationMock.getClassName()).thenReturn(
+        when(registrationMock.getClassName()).thenReturn(
                 servletClass != null ? servletClass.getName() : null);
-        Mockito.when(registrationMock.getMappings()).thenReturn(pathMappings);
-        Mockito.when(registrationMock.getName()).thenReturn(servletName);
-        Mockito.when(registrationMock.getInitParameters())
-                .thenReturn(initParameters);
-        Mockito.when(registrationMock.getInitParameter(Mockito.anyString()))
+        when(registrationMock.getMappings()).thenReturn(pathMappings);
+        when(registrationMock.getName()).thenReturn(servletName);
+        when(registrationMock.getInitParameters()).thenReturn(initParameters);
+        when(registrationMock.getInitParameter(anyString()))
                 .thenAnswer(answer -> {
                     String name = answer.getArgument(0);
                     return initParameters.get(name);

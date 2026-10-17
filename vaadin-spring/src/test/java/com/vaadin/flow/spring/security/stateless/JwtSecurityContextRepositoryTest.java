@@ -49,7 +49,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -75,6 +74,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class JwtSecurityContextRepositoryTest {
     static private final String TEST_USERNAME = "username@example.com";
@@ -159,8 +162,8 @@ class JwtSecurityContextRepositoryTest {
 
     @AfterEach
     void teardown() {
-        Mockito.verifyNoInteractions(request);
-        Mockito.verifyNoInteractions(response);
+        verifyNoInteractions(request);
+        verifyNoInteractions(response);
         if (originalontextHolderStrategy != null) {
             SecurityContextHolder
                     .setContextHolderStrategy(originalontextHolderStrategy);
@@ -174,16 +177,14 @@ class JwtSecurityContextRepositoryTest {
         SecurityContext securityContext = jwtSecurityContextRepository
                 .loadDeferredContext(request).get();
 
-        Mockito.verify(serializedJwtSplitCookieRepository)
-                .loadSerializedJwt(request);
+        verify(serializedJwtSplitCookieRepository).loadSerializedJwt(request);
 
         assertEmptySecurityContext(securityContext);
     }
 
     @Test
     void loadContext_returnsEmptyContext_when_plainJwt() {
-        Mockito.doReturn(
-                new PlainJWT(getClaimsSetBuilder().build()).serialize())
+        doReturn(new PlainJWT(getClaimsSetBuilder().build()).serialize())
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
 
@@ -196,7 +197,7 @@ class JwtSecurityContextRepositoryTest {
     @Test
     void loadContext_returnsEmptyContext_when_keySourceReturnsNull()
             throws JOSEException {
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -212,7 +213,7 @@ class JwtSecurityContextRepositoryTest {
     @Test
     void loadContext_returnsEmptyContext_when_keySourceReturnsEmpty()
             throws JOSEException {
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -230,8 +231,7 @@ class JwtSecurityContextRepositoryTest {
             throws JOSEException {
         String missingSignatureJwt = getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().build()).replaceFirst("\\.[^.]*$", ".");
-        Mockito.doReturn(missingSignatureJwt)
-                .when(serializedJwtSplitCookieRepository)
+        doReturn(missingSignatureJwt).when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
@@ -245,8 +245,7 @@ class JwtSecurityContextRepositoryTest {
             throws JOSEException {
         String invalidSignatureJwt = getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().build(), new MACSigner(TEST_OTHER_KEY));
-        Mockito.doReturn(invalidSignatureJwt)
-                .when(serializedJwtSplitCookieRepository)
+        doReturn(invalidSignatureJwt).when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
@@ -261,8 +260,7 @@ class JwtSecurityContextRepositoryTest {
         String missingSignatureJwt = getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().expirationTime(Date.from(TEST_PAST))
                         .build());
-        Mockito.doReturn(missingSignatureJwt)
-                .when(serializedJwtSplitCookieRepository)
+        doReturn(missingSignatureJwt).when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
@@ -275,7 +273,7 @@ class JwtSecurityContextRepositoryTest {
     void loadContext_returnsEmptyContext_when_jwtIssuerMissing()
             throws JOSEException {
         jwtSecurityContextRepository.setIssuer(TEST_ISSUER);
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -290,7 +288,7 @@ class JwtSecurityContextRepositoryTest {
     void loadContext_returnsEmptyContext_when_jwtIssuerInvalid()
             throws JOSEException {
         jwtSecurityContextRepository.setIssuer(TEST_ISSUER);
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().issuer(TEST_OTHER_ISSUER).build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -304,7 +302,7 @@ class JwtSecurityContextRepositoryTest {
     @Test
     void loadContext_returnsEmptyContext_when_algorithmHasNoKey()
             throws JOSEException {
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().issuer(TEST_OTHER_ISSUER).build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -319,7 +317,7 @@ class JwtSecurityContextRepositoryTest {
     @Test
     void loadContext_returnsUserContext_when_validJwt_withoutIssuer()
             throws JOSEException {
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -334,7 +332,7 @@ class JwtSecurityContextRepositoryTest {
     void loadContext_returnsUserContext_when_validJwt_withIssuer()
             throws JOSEException {
         jwtSecurityContextRepository.setIssuer(TEST_ISSUER);
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().issuer(TEST_ISSUER).build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -348,7 +346,7 @@ class JwtSecurityContextRepositoryTest {
     @Test
     void loadContext_throws_when_algorithmNull() throws JOSEException {
         jwtSecurityContextRepository.setIssuer(TEST_ISSUER);
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().issuer(TEST_OTHER_ISSUER).build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -361,7 +359,7 @@ class JwtSecurityContextRepositoryTest {
 
     @Test
     void loadContext_throws_when_keySourceNull() throws JOSEException {
-        Mockito.doReturn(getJwt(getHeaderBuilder().build(),
+        doReturn(getJwt(getHeaderBuilder().build(),
                 getClaimsSetBuilder().build()))
                 .when(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -374,28 +372,28 @@ class JwtSecurityContextRepositoryTest {
 
     @Test
     void containsContext_returnsFalse_when_noJwtInRepository() {
-        Mockito.doReturn(false).when(serializedJwtSplitCookieRepository)
+        doReturn(false).when(serializedJwtSplitCookieRepository)
                 .containsSerializedJwt(request);
 
         boolean contains = jwtSecurityContextRepository
                 .containsContext(request);
 
         assertFalse(contains);
-        Mockito.verify(serializedJwtSplitCookieRepository)
+        verify(serializedJwtSplitCookieRepository)
                 .containsSerializedJwt(request);
-        Mockito.verifyNoInteractions(request);
+        verifyNoInteractions(request);
     }
 
     @Test
     void containsContext_returnsTrue_when_jwtInRepository() {
-        Mockito.doReturn(true).when(serializedJwtSplitCookieRepository)
+        doReturn(true).when(serializedJwtSplitCookieRepository)
                 .containsSerializedJwt(request);
 
         boolean contains = jwtSecurityContextRepository
                 .containsContext(request);
 
         assertTrue(contains);
-        Mockito.verify(serializedJwtSplitCookieRepository)
+        verify(serializedJwtSplitCookieRepository)
                 .containsSerializedJwt(request);
     }
 
@@ -418,7 +416,7 @@ class JwtSecurityContextRepositoryTest {
                 AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
         SecurityContext securityContext = SecurityContextHolder
                 .createEmptyContext();
-        Mockito.doReturn(anonymousAuthenticationToken).when(securityContext)
+        doReturn(anonymousAuthenticationToken).when(securityContext)
                 .getAuthentication();
 
         jwtSecurityContextRepository.saveContext(securityContext, request,
@@ -437,17 +435,16 @@ class JwtSecurityContextRepositoryTest {
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
         Authentication authentication = getJwtAuthenticationToken(header,
                 claimsSet);
-        Mockito.doReturn(authentication).when(securityContext)
-                .getAuthentication();
+        doReturn(authentication).when(securityContext).getAuthentication();
         AuthenticationTrustResolver trustResolver = Mockito
                 .mock(AuthenticationTrustResolver.class);
-        Mockito.doReturn(true).when(trustResolver).isAnonymous(authentication);
+        doReturn(true).when(trustResolver).isAnonymous(authentication);
         jwtSecurityContextRepository.setTrustResolver(trustResolver);
 
         jwtSecurityContextRepository.saveContext(securityContext, request,
                 response);
 
-        Mockito.verify(trustResolver).isAnonymous(authentication);
+        verify(trustResolver).isAnonymous(authentication);
         String serializedJwt = getSavedSerializedJwt();
         assertNull(serializedJwt);
     }
@@ -459,7 +456,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository.setJwsAlgorithm(JWSAlgorithm.HS512);
 
@@ -476,7 +473,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository.setJwkSource(null);
 
@@ -495,7 +492,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository
                 .setJwkSource((jwkSelector, context) -> null);
@@ -515,7 +512,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository
                 .setJwkSource((jwkSelector, context) -> new ArrayList<>());
@@ -534,7 +531,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository.setJwsAlgorithm(null);
 
@@ -554,8 +551,8 @@ class JwtSecurityContextRepositoryTest {
         User testUser = new User(TEST_USERNAME, "", TEST_AUTHORITIES);
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                 testUser, testUser.getPassword(), testUser.getAuthorities());
-        Mockito.doReturn(usernamePasswordAuthenticationToken)
-                .when(securityContext).getAuthentication();
+        doReturn(usernamePasswordAuthenticationToken).when(securityContext)
+                .getAuthentication();
 
         jwtSecurityContextRepository.saveContext(securityContext, request,
                 response);
@@ -572,7 +569,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
 
         jwtSecurityContextRepository.saveContext(securityContext, request,
@@ -593,11 +590,11 @@ class JwtSecurityContextRepositoryTest {
                 AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
         SecurityContext securityContext = SecurityContextHolder
                 .createEmptyContext();
-        Mockito.doReturn(anonymousAuthenticationToken).when(securityContext)
+        doReturn(anonymousAuthenticationToken).when(securityContext)
                 .getAuthentication();
         AuthenticationTrustResolver trustResolver = Mockito
                 .mock(AuthenticationTrustResolver.class);
-        Mockito.doReturn(false).when(trustResolver)
+        doReturn(false).when(trustResolver)
                 .isAnonymous(anonymousAuthenticationToken);
         jwtSecurityContextRepository.setTrustResolver(trustResolver);
 
@@ -620,7 +617,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository.setIssuer(TEST_ISSUER);
 
@@ -641,7 +638,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository.setExpiresIn(300);
 
@@ -661,7 +658,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         final ImmutableSecret secret = new ImmutableSecret<>(TEST_OTHER_KEY);
         jwtSecurityContextRepository.setJwkSource(secret);
@@ -684,7 +681,7 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         JWSHeader header = getHeaderBuilder().build();
         JWTClaimsSet claimsSet = getClaimsSetBuilder().build();
-        Mockito.doReturn(getJwtAuthenticationToken(header, claimsSet))
+        doReturn(getJwtAuthenticationToken(header, claimsSet))
                 .when(securityContext).getAuthentication();
         final ImmutableSecret secret = new ImmutableSecret<>(
                 TEST_64BYTE_KEY.getEncoded());
@@ -703,17 +700,16 @@ class JwtSecurityContextRepositoryTest {
     }
 
     private void assertEmptySecurityContext(SecurityContext securityContext) {
-        Mockito.verifyNoInteractions(securityContext);
+        verifyNoInteractions(securityContext);
     }
 
     private void assertSecurityContext(String username,
             Collection<? extends GrantedAuthority> authorities,
             SecurityContext securityContext) throws JOSEException {
-        Mockito.verify(serializedJwtSplitCookieRepository)
-                .loadSerializedJwt(request);
+        verify(serializedJwtSplitCookieRepository).loadSerializedJwt(request);
         ArgumentCaptor<JwtAuthenticationToken> captor = ArgumentCaptor
                 .forClass(JwtAuthenticationToken.class);
-        Mockito.verify(securityContext).setAuthentication(captor.capture());
+        verify(securityContext).setAuthentication(captor.capture());
         JwtAuthenticationToken actualAuthentication = captor.getValue();
         assertTrue(actualAuthentication.isAuthenticated());
         assertEquals(username, actualAuthentication.getName());
@@ -741,9 +737,8 @@ class JwtSecurityContextRepositoryTest {
     private String getSavedSerializedJwt() {
         ArgumentCaptor<String> jwtCaptor = ArgumentCaptor
                 .forClass(String.class);
-        Mockito.verify(serializedJwtSplitCookieRepository).saveSerializedJwt(
-                jwtCaptor.capture(), ArgumentMatchers.eq(request),
-                ArgumentMatchers.eq(response));
+        verify(serializedJwtSplitCookieRepository).saveSerializedJwt(
+                jwtCaptor.capture(), eq(request), eq(response));
         String serializedJwt = jwtCaptor.getValue();
         return serializedJwt;
     }

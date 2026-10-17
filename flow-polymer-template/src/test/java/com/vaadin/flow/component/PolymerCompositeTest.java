@@ -22,6 +22,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class PolymerCompositeTest {
@@ -53,13 +55,12 @@ class PolymerCompositeTest {
 
     @BeforeEach
     void setup() {
-        service = Mockito.mock(VaadinService.class);
+        service = mock(VaadinService.class);
         VaadinService.setCurrent(service);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
     }
 
     @AfterEach

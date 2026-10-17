@@ -30,6 +30,11 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Flow now registers the hotswapper itself, so it has to be safe to register
@@ -47,8 +52,7 @@ class HotswapperRegistrationTest {
         context = new MockVaadinContext();
         ApplicationConfiguration applicationConfiguration = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(applicationConfiguration.isProductionMode())
-                .thenReturn(false);
+        when(applicationConfiguration.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class,
                 applicationConfiguration);
         service = mockService();
@@ -56,12 +60,12 @@ class HotswapperRegistrationTest {
     }
 
     private VaadinService mockService() {
-        VaadinService mock = Mockito.mock(VaadinService.class);
+        VaadinService mock = mock(VaadinService.class);
         DeploymentConfiguration deployment = Mockito
                 .mock(DeploymentConfiguration.class);
-        Mockito.when(deployment.isProductionMode()).thenReturn(false);
-        Mockito.when(mock.getDeploymentConfiguration()).thenReturn(deployment);
-        Mockito.when(mock.getContext()).thenReturn(context);
+        when(deployment.isProductionMode()).thenReturn(false);
+        when(mock.getDeploymentConfiguration()).thenReturn(deployment);
+        when(mock.getContext()).thenReturn(context);
         return mock;
     }
 
@@ -74,14 +78,10 @@ class HotswapperRegistrationTest {
         assertSame(first.get(), second.get());
         // The listeners must be added once, or every class change refreshes
         // twice.
-        Mockito.verify(service, Mockito.times(1))
-                .addUIInitListener(Mockito.any());
-        Mockito.verify(service, Mockito.times(1))
-                .addSessionInitListener(Mockito.any());
-        Mockito.verify(service, Mockito.times(1))
-                .addSessionDestroyListener(Mockito.any());
-        Mockito.verify(service, Mockito.times(1))
-                .addServiceDestroyListener(Mockito.any());
+        verify(service, times(1)).addUIInitListener(any());
+        verify(service, times(1)).addSessionInitListener(any());
+        verify(service, times(1)).addSessionDestroyListener(any());
+        verify(service, times(1)).addServiceDestroyListener(any());
     }
 
     @Test
@@ -122,8 +122,7 @@ class HotswapperRegistrationTest {
         // And with the first still findable, registering it again reuses it
         // rather than building a second one that doubles every refresh.
         assertSame(first, Hotswapper.register(service).orElseThrow());
-        Mockito.verify(service, Mockito.times(1))
-                .addUIInitListener(Mockito.any());
+        verify(service, times(1)).addUIInitListener(any());
     }
 
     @Test
@@ -139,7 +138,7 @@ class HotswapperRegistrationTest {
 
     @Test
     void register_productionMode_isSkipped() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
 
         assertTrue(Hotswapper.register(service).isEmpty());
     }

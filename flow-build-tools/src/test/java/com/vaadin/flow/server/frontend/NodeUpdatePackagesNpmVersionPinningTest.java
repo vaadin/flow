@@ -48,6 +48,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 @Tag("com.vaadin.flow.testcategory.SlowTests")
 class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
@@ -72,7 +74,7 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
-        classFinder = Mockito.spy(getClassFinder());
+        classFinder = spy(getClassFinder());
         File versionsFolder = Files
                 .createTempDirectory(temporaryFolder.toPath(), "versions")
                 .toFile();
@@ -86,8 +88,7 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
                 StandardCharsets.UTF_8);
         // @formatter:on
 
-        Mockito.when(
-                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
     }
 
@@ -110,8 +111,7 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
     void shouldNotLockPinnedVersion_whenNotExistsInDependencies()
             throws IOException {
         // Test when there is no vaadin-version-core.json available
-        Mockito.when(
-                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
 
         TaskUpdatePackages packageUpdater = createPackageUpdater();
@@ -283,8 +283,7 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
     @Test
     void shouldRemoveUnusedLocking() throws IOException {
         // Test when there is no vaadin-version-core.json available
-        Mockito.when(
-                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
 
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);

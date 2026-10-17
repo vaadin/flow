@@ -32,6 +32,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Vaadin Ltd
@@ -64,13 +66,12 @@ class TemplateInitializerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        service = Mockito.mock(VaadinService.class);
+        service = mock(VaadinService.class);
         VaadinService.setCurrent(service);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         String parentTemplateId = InTemplateClass.class.getAnnotation(Tag.class)
                 .value();

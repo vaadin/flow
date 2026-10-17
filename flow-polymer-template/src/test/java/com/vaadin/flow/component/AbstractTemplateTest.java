@@ -19,6 +19,10 @@ import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 abstract class AbstractTemplateTest {
 
     private VaadinService service;
@@ -27,26 +31,25 @@ abstract class AbstractTemplateTest {
 
     @BeforeEach
     void init() throws Exception {
-        service = Mockito.mock(VaadinService.class);
+        service = mock(VaadinService.class);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
 
         ui = new UI();
         ui.getInternals().setSession(session);
 
-        Mockito.when(session.getService()).thenReturn(service);
+        when(session.getService()).thenReturn(service);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.createComponent(Mockito.any()))
+        Instantiator instantiator = mock(Instantiator.class);
+        when(instantiator.createComponent(any()))
                 .thenAnswer(invocation -> ReflectTools
                         .createInstance(invocation.getArgument(0)));
 
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+        when(service.getInstantiator()).thenReturn(instantiator);
 
         CurrentInstance.setCurrent(ui);
         VaadinService.setCurrent(service);
