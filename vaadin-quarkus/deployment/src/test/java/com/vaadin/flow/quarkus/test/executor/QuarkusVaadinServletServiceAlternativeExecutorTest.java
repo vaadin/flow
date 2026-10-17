@@ -24,9 +24,11 @@ import java.util.concurrent.Executor;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.test.QuarkusUnitTest;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.mockito.Mockito;
 
 import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.withSettings;
 
 class QuarkusVaadinServletServiceAlternativeExecutorTest
         extends AbstractVaadinServiceExecutorTestSupport {
@@ -42,11 +44,10 @@ class QuarkusVaadinServletServiceAlternativeExecutorTest
 
     static class TestConfig {
 
-        public static final Executor CUSTOM_EXECUTOR = Mockito.mock(
-                Executor.class, Mockito.withSettings().name("CustomExecutor"));
-        public static final Executor ALTERNATIVE_EXECUTOR = Mockito.mock(
-                Executor.class,
-                Mockito.withSettings().name("AlternativeExecutor"));
+        public static final Executor CUSTOM_EXECUTOR = mock(Executor.class,
+                withSettings().name("CustomExecutor"));
+        public static final Executor ALTERNATIVE_EXECUTOR = mock(Executor.class,
+                withSettings().name("AlternativeExecutor"));
 
         @Produces
         @Singleton

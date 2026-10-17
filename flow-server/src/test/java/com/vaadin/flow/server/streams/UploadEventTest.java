@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.VaadinRequest;
@@ -33,6 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link UploadEvent} rejection functionality.
@@ -46,12 +47,12 @@ class UploadEventTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        request = Mockito.mock(VaadinRequest.class);
-        response = Mockito.mock(VaadinResponse.class);
-        session = Mockito.mock(VaadinSession.class);
-        owner = Mockito.mock(Element.class);
+        request = mock(VaadinRequest.class);
+        response = mock(VaadinResponse.class);
+        session = mock(VaadinSession.class);
+        owner = mock(Element.class);
 
-        Mockito.when(request.getInputStream())
+        when(request.getInputStream())
                 .thenReturn(new ByteArrayInputStream(new byte[0]));
     }
 

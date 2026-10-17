@@ -31,7 +31,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -54,6 +53,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 
 import static com.vaadin.cdi.DeploymentValidator.DeploymentProblem.ErrorCode.NORMAL_SCOPED_COMPONENT;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class DeploymentValidatorTest extends AbstractWeldTest {
 
@@ -184,7 +185,7 @@ public class DeploymentValidatorTest extends AbstractWeldTest {
 
         validator.validateForTest(infoSet, problems::add);
 
-        Assertions.assertEquals(2, problems.size());
+        assertEquals(2, problems.size());
         assertProblemExists(NORMAL_SCOPED_COMPONENT, NormalScopedLabel.class);
         assertProblemExists(NORMAL_SCOPED_COMPONENT,
                 ProducedNormalScopedComponent.class);
@@ -200,7 +201,7 @@ public class DeploymentValidatorTest extends AbstractWeldTest {
 
         validator.validateForTest(infoSet, problems::add);
 
-        Assertions.assertEquals(0, problems.size());
+        assertEquals(0, problems.size());
     }
 
     private void assertProblemExists(ErrorCode errorCode, Type baseType) {
@@ -209,7 +210,7 @@ public class DeploymentValidatorTest extends AbstractWeldTest {
                 .map(info -> new ProblemId((DeploymentProblem) info))
                 .anyMatch(Predicate.isEqual(expected));
         if (!match) {
-            Assertions.fail("Problem does not exist: " + expected);
+            fail("Problem does not exist: " + expected);
         }
     }
 

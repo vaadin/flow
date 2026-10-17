@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
-import org.mockito.Mockito;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+
+import static org.mockito.Mockito.mock;
 
 public class TestSecurityContextHolderStrategy
         implements SecurityContextHolderStrategy {
@@ -36,6 +37,6 @@ public class TestSecurityContextHolderStrategy
 
     @Override
     public SecurityContext createEmptyContext() {
-        return Mockito.mock(SecurityContext.class);
+        return mock(SecurityContext.class);
     }
 }

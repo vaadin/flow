@@ -21,9 +21,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.testutil.TestUtils;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 abstract class AbstractStatisticsTest {
 
@@ -57,14 +61,13 @@ abstract class AbstractStatisticsTest {
 
     @BeforeEach
     void setup() throws Exception {
-        storage = Mockito.spy(new StatisticsStorage());
+        storage = spy(new StatisticsStorage());
         storage.usageStatisticsFile = File.createTempFile("test-storage",
                 "json");
-        sender = Mockito.spy(new StatisticsSender(storage));
-        Mockito.doAnswer(answer -> null).when(sender)
-                .triggerSendIfNeeded(Mockito.any());
+        sender = spy(new StatisticsSender(storage));
+        doAnswer(answer -> null).when(sender).triggerSendIfNeeded(any());
         // Change the file storage and reporting parameters for testing
-        Mockito.when(storage.getUsageStatisticsFile()).thenReturn(
+        when(storage.getUsageStatisticsFile()).thenReturn(
                 createTempStorage("stats-data/usage-statistics-1.json"));
     }
 }
