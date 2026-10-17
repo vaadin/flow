@@ -404,10 +404,9 @@ public class ServerRpcHandler implements Serializable {
             }
         }
         return "the key sent to UI " + uiId
-                + " belongs to no UI of the session, so the client most"
-                + " likely holds a UI of an earlier session, such as a"
-                + " browser tab that stayed open while the session expired"
-                + " or the user logged in again";
+                + " belongs to no UI of the session; the client may hold a UI"
+                + " of an earlier session, or the request did not originate"
+                + " from this application";
     }
 
     protected void handleRpc(UI ui, String message, VaadinRequest request,
