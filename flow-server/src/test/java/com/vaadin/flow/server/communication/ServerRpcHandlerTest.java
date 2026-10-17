@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -61,6 +60,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -705,8 +706,7 @@ class ServerRpcHandlerTest {
 
     private void enableDau() {
         when(deploymentConfiguration.isProductionMode()).thenReturn(true);
-        when(deploymentConfiguration.getBooleanProperty(
-                ArgumentMatchers.eq(Constants.DAU_TOKEN),
-                ArgumentMatchers.anyBoolean())).thenReturn(true);
+        when(deploymentConfiguration.getBooleanProperty(eq(Constants.DAU_TOKEN),
+                anyBoolean())).thenReturn(true);
     }
 }
