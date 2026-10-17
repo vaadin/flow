@@ -231,8 +231,8 @@ public class PushHandler {
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().warn("Invalid security key received from {}",
-                    resource.getRequest().getRemoteHost());
+            getLogger().warn("Invalid security key received from {}: {}",
+                    resource.getRequest().getRemoteHost(), e.getMessage());
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
         } catch (MessageIdSyncException e) {

@@ -171,8 +171,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             // Refresh on client side
             return Optional.of(() -> writeRefresh(response));
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().warn("Invalid security key received from {}",
-                    request.getRemoteHost());
+            getLogger().warn("Invalid security key received from {}: {}",
+                    request.getRemoteHost(), e.getMessage());
             // Refresh on client side
             return Optional.of(() -> writeRefresh(response));
         } catch (MessageIdSyncException e) {
