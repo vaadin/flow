@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
@@ -41,8 +40,7 @@ class AttachExistingElementFeatureTest {
 
         Element element = mock(Element.class);
         StateNode child = mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer callback = mock(ChildElementConsumer.class);
         Node<?> parent = mock(Node.class);
         feature.register(parent, element, child, callback);
 
@@ -61,8 +59,7 @@ class AttachExistingElementFeatureTest {
 
         Element element = mock(Element.class);
         StateNode child = mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer callback = mock(ChildElementConsumer.class);
         Node<?> parent = mock(Node.class);
         feature.register(parent, element, child, callback);
 
@@ -80,8 +77,7 @@ class AttachExistingElementFeatureTest {
 
         Element element = mock(Element.class);
         StateNode child = mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer callback = mock(ChildElementConsumer.class);
         Node<?> parent = mock(Node.class);
         feature.register(parent, element, child, callback);
 

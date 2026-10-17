@@ -35,7 +35,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
@@ -146,8 +145,7 @@ class StreamReceiverHandlerTest {
     }
 
     private void mockRequest() throws IOException {
-        HttpServletRequest servletRequest = Mockito
-                .mock(HttpServletRequest.class);
+        HttpServletRequest servletRequest = mock(HttpServletRequest.class);
         when(servletRequest.getContentLength()).thenAnswer(
                 invocationOnMock -> Integer.parseInt(contentLength));
 

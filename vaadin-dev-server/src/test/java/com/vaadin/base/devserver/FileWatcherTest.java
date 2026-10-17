@@ -26,7 +26,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
@@ -36,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class FileWatcherTest {
@@ -88,15 +88,14 @@ class FileWatcherTest {
         jarFrontendResources.mkdirs();
 
         VaadinContext vaadinContext = mock(VaadinContext.class);
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getStringProperty(
                 InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null))
                 .thenReturn("./,./fakeproject");
         when(config.getProjectFolder()).thenReturn(projectFolder);
 
-        try (MockedStatic<ApplicationConfiguration> appConfig = Mockito
-                .mockStatic(ApplicationConfiguration.class)) {
+        try (MockedStatic<ApplicationConfiguration> appConfig = mockStatic(
+                ApplicationConfiguration.class)) {
             appConfig.when(() -> ApplicationConfiguration.get(any()))
                     .thenReturn(config);
             try (var watcher = new ExternalDependencyWatcher(vaadinContext,
@@ -142,15 +141,14 @@ class FileWatcherTest {
         jarFrontendResources.mkdirs();
 
         VaadinContext vaadinContext = mock(VaadinContext.class);
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getStringProperty(
                 InitParameters.FRONTEND_HOTDEPLOY_DEPENDENCIES, null))
                 .thenReturn(null);
         when(config.getProjectFolder()).thenReturn(projectFolder);
 
-        try (MockedStatic<ApplicationConfiguration> appConfig = Mockito
-                .mockStatic(ApplicationConfiguration.class)) {
+        try (MockedStatic<ApplicationConfiguration> appConfig = mockStatic(
+                ApplicationConfiguration.class)) {
             appConfig.when(() -> ApplicationConfiguration.get(any()))
                     .thenReturn(config);
             try (var watcher = new ExternalDependencyWatcher(vaadinContext,

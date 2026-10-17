@@ -21,7 +21,6 @@ import java.util.Set;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -39,6 +38,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -85,8 +85,8 @@ class SpringBootAutoConfigurationUrlMappedTest {
         properties.setUrlMapping("/zing/*");
         properties.setExcludeUrls(excludeUrls);
         Logger logger = mock(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
             loggerFactory
                     .when(() -> LoggerFactory
                             .getLogger(SpringBootAutoConfiguration.class))

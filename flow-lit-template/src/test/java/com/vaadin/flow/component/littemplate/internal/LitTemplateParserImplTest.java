@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Tag;
@@ -70,8 +69,7 @@ class LitTemplateParserImplTest {
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(service.getLookup().lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
         when(resourceProvider.getApplicationResource(anyString()))

@@ -1050,13 +1050,12 @@ class RouteUtilTest {
         clientRoutes.put("/hilla", new AvailableViewInfo("public", null, false,
                 "", false, false, null, null, null, false, null));
 
-        try (MockedStatic<MenuRegistry> registry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
+        try (MockedStatic<MenuRegistry> registry = mockStatic(
+                MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
                 MockedStatic<FrontendUtils> frontendUtils = mockStatic(
                         FrontendUtils.class, Mockito.CALLS_REAL_METHODS);) {
             VaadinService service = mock(VaadinService.class);
-            DeploymentConfiguration conf = Mockito
-                    .mock(DeploymentConfiguration.class);
+            DeploymentConfiguration conf = mock(DeploymentConfiguration.class);
             when(service.getDeploymentConfiguration()).thenReturn(conf);
             when(conf.isProductionMode()).thenReturn(false);
             when(conf.getFrontendFolder()).thenReturn(mock(File.class));
@@ -1085,13 +1084,12 @@ class RouteUtilTest {
         clientRoutes.put("/hilla", new AvailableViewInfo("public", null, false,
                 "", false, false, null, null, null, false, null));
 
-        try (MockedStatic<MenuRegistry> registry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
+        try (MockedStatic<MenuRegistry> registry = mockStatic(
+                MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
                 MockedStatic<FrontendUtils> frontendUtils = mockStatic(
                         FrontendUtils.class, Mockito.CALLS_REAL_METHODS);) {
             VaadinService service = mock(VaadinService.class);
-            DeploymentConfiguration conf = Mockito
-                    .mock(DeploymentConfiguration.class);
+            DeploymentConfiguration conf = mock(DeploymentConfiguration.class);
             when(service.getDeploymentConfiguration()).thenReturn(conf);
             when(conf.isProductionMode()).thenReturn(false);
             when(conf.getFrontendFolder()).thenReturn(new File("/tmp/folder"));

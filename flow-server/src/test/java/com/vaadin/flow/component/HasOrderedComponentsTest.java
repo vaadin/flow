@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 
@@ -27,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 // The class under test is deprecated for removal in 26; delete this test
@@ -59,8 +59,7 @@ class HasOrderedComponentsTest {
 
     }
 
-    private HasOrderedComponents components = Mockito
-            .spy(TestOrderedComponents.class);
+    private HasOrderedComponents components = spy(TestOrderedComponents.class);
 
     private TestComponentContianer contianer = new TestComponentContianer();
 

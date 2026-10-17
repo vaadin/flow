@@ -26,7 +26,6 @@ import org.atmosphere.cpr.Broadcaster;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -56,6 +55,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class DebugWindowConnectionLicenseCheckTest {
@@ -305,8 +305,8 @@ class DebugWindowConnectionLicenseCheckTest {
     private void withMockedLicenseChecker(
             Consumer<MockedStatic<LicenseChecker>> instrumenter,
             Runnable test) {
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class, Answers.RETURNS_MOCKS)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class, Answers.RETURNS_MOCKS)) {
             instrumenter.accept(licenseChecker);
             test.run();
         }
@@ -335,8 +335,8 @@ class DebugWindowConnectionLicenseCheckTest {
 
     private VaadinContext getMockContext() {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class, appConfig);
         context.setAttribute(Lookup.class,

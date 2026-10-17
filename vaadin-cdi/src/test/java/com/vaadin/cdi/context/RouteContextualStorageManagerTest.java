@@ -29,7 +29,6 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.cdi.AbstractWeldTest;
 import com.vaadin.cdi.annotation.RouteScopeOwner;
@@ -576,8 +575,8 @@ public class RouteContextualStorageManagerTest extends AbstractWeldTest {
                 super.activate();
 
                 if (windowName != null) {
-                    ExtendedClientDetails details = Mockito
-                            .mock(ExtendedClientDetails.class);
+                    ExtendedClientDetails details = mock(
+                            ExtendedClientDetails.class);
                     when(details.getWindowName()).thenReturn(windowName);
                     getUi().getInternals().setExtendedClientDetails(details);
                 }

@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.communication.rpc;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
@@ -57,8 +56,7 @@ class AttachExistingElementRpcHandlerTest {
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);
         Node<?> parentNode = mock(Node.class);
-        ChildElementConsumer consumer = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer consumer = mock(ChildElementConsumer.class);
         Element sibling = mock(Element.class);
         feature.register(parentNode, sibling, requested, consumer);
         when(node.getFeature(AttachExistingElementFeature.class))
@@ -94,8 +92,7 @@ class AttachExistingElementRpcHandlerTest {
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);
         Node<?> parentNode = mock(Node.class);
-        ChildElementConsumer consumer = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer consumer = mock(ChildElementConsumer.class);
         Element sibling = mock(Element.class);
         feature.register(parentNode, sibling, requested, consumer);
         when(node.getFeature(AttachExistingElementFeature.class))
@@ -135,8 +132,7 @@ class AttachExistingElementRpcHandlerTest {
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);
         Node<?> parentNode = mock(Node.class);
-        ChildElementConsumer consumer = Mockito
-                .mock(ChildElementConsumer.class);
+        ChildElementConsumer consumer = mock(ChildElementConsumer.class);
         Element sibling = mock(Element.class);
         feature.register(parentNode, sibling, requested, consumer);
         when(node.getFeature(AttachExistingElementFeature.class))

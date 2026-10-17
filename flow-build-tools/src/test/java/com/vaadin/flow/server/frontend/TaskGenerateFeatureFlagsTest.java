@@ -20,7 +20,6 @@ import java.io.File;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
@@ -44,8 +43,8 @@ class TaskGenerateFeatureFlagsTest {
     @BeforeEach
     void setUp() throws Exception {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
         context.setAttribute(ApplicationConfiguration.class, configuration);
 
         File frontendFolder = new File(temporaryFolder, FRONTEND);

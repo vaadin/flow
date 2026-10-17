@@ -14,7 +14,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -185,8 +184,8 @@ class PolymerPublishedServerEventHandlerRpcHandlerTest {
         assertNull(System.getSecurityManager());
         service = mock(VaadinService.class);
 
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(false);
         Properties properties = new Properties();
         when(configuration.getInitParameters()).thenReturn(properties);

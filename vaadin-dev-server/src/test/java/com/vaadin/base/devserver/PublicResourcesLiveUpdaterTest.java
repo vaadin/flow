@@ -29,7 +29,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -97,8 +96,7 @@ class PublicResourcesLiveUpdaterTest {
                 StandardCharsets.UTF_8);
 
         // Mock ApplicationConfiguration.get(context) -> project folder
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(project);
         appConfigStatic = mockStatic(ApplicationConfiguration.class);
 
@@ -109,8 +107,7 @@ class PublicResourcesLiveUpdaterTest {
 
         // Mock BrowserLiveReload available from context
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -132,20 +129,21 @@ class PublicResourcesLiveUpdaterTest {
             // Assert: BrowserLiveReload.update("context://main.css",
             // mergedContent) is called
             // with both imported and main rules present, with imported first.
-            Awaitility.await().untilAsserted(
-                    () -> Mockito.verify(liveReload, atLeastOnce()).update(
-                            eq("context://main.css"), argThat(content -> {
-                                if (content == null)
-                                    return false;
-                                String normalized = content
-                                        .replaceAll("\\s+", " ").trim();
-                                int idxImp = normalized
-                                        .indexOf(".imp{background:green;}");
-                                int idxMain = normalized
-                                        .indexOf(".main{color:red;}");
-                                return idxImp >= 0 && idxMain >= 0
-                                        && idxImp < idxMain;
-                            })));
+            Awaitility.await()
+                    .untilAsserted(() -> verify(liveReload, atLeastOnce())
+                            .update(eq("context://main.css"),
+                                    argThat(content -> {
+                                        if (content == null)
+                                            return false;
+                                        String normalized = content
+                                                .replaceAll("\\s+", " ").trim();
+                                        int idxImp = normalized.indexOf(
+                                                ".imp{background:green;}");
+                                        int idxMain = normalized
+                                                .indexOf(".main{color:red;}");
+                                        return idxImp >= 0 && idxMain >= 0
+                                                && idxImp < idxMain;
+                                    })));
         }
     }
 
@@ -169,8 +167,7 @@ class PublicResourcesLiveUpdaterTest {
                 StandardCharsets.UTF_8);
 
         // Mock ApplicationConfiguration.get(context) -> project folder
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(project);
         appConfigStatic = mockStatic(ApplicationConfiguration.class);
 
@@ -181,8 +178,7 @@ class PublicResourcesLiveUpdaterTest {
 
         // Mock BrowserLiveReload available from context
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -217,8 +213,7 @@ class PublicResourcesLiveUpdaterTest {
         assertTrue(publicRoot.mkdirs());
 
         // Mock ApplicationConfiguration.get(context) -> project folder
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(project);
         appConfigStatic = mockStatic(ApplicationConfiguration.class);
 
@@ -229,8 +224,7 @@ class PublicResourcesLiveUpdaterTest {
 
         // Mock BrowserLiveReload available from context
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -268,8 +262,7 @@ class PublicResourcesLiveUpdaterTest {
                 StandardCharsets.UTF_8);
 
         // Mock ApplicationConfiguration.get(context) -> project folder
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(project);
         appConfigStatic = mockStatic(ApplicationConfiguration.class);
 
@@ -280,8 +273,7 @@ class PublicResourcesLiveUpdaterTest {
 
         // Mock BrowserLiveReload available from context
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -320,8 +312,7 @@ class PublicResourcesLiveUpdaterTest {
         Files.writeString(localCss.toPath(), "body{margin:0;}",
                 StandardCharsets.UTF_8);
 
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(project);
         appConfigStatic = mockStatic(ApplicationConfiguration.class);
 
@@ -330,8 +321,7 @@ class PublicResourcesLiveUpdaterTest {
                 .thenReturn(config);
 
         // Mock ResourceProvider to report the classpath stylesheet exists
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(resourceProvider.getApplicationResource(
                 "META-INF/resources/frontend/addon.styles.css"))
                 .thenReturn(getClass().getResource("/"));
@@ -340,8 +330,7 @@ class PublicResourcesLiveUpdaterTest {
                 .thenReturn(resourceProvider);
 
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -359,7 +348,7 @@ class PublicResourcesLiveUpdaterTest {
 
             // The local stylesheet should be updated with content
             Awaitility.await().untilAsserted(
-                    () -> Mockito.verify(liveReload, atLeastOnce()).update(
+                    () -> verify(liveReload, atLeastOnce()).update(
                             eq("context://styles.css"), argThat(c -> c != null
                                     && c.contains("body{margin:8px;}"))));
 
@@ -393,8 +382,7 @@ class PublicResourcesLiveUpdaterTest {
         Files.writeString(addonCss.toPath(), ".addon{color:blue;}",
                 StandardCharsets.UTF_8);
 
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(project);
         appConfigStatic = mockStatic(ApplicationConfiguration.class);
 
@@ -403,8 +391,7 @@ class PublicResourcesLiveUpdaterTest {
                 .thenReturn(config);
 
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -460,8 +447,7 @@ class PublicResourcesLiveUpdaterTest {
         Files.writeString(addonCss.toPath(), ".addon{color:teal;}",
                 StandardCharsets.UTF_8);
 
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(project);
         appConfigStatic = mockStatic(ApplicationConfiguration.class);
 
@@ -470,8 +456,7 @@ class PublicResourcesLiveUpdaterTest {
                 .thenReturn(config);
 
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -525,8 +510,7 @@ class PublicResourcesLiveUpdaterTest {
 
         VaadinContext context = new MockVaadinContext();
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -567,8 +551,7 @@ class PublicResourcesLiveUpdaterTest {
         Files.writeString(deletedCss.toPath(), ".gone{color:gray;}",
                 StandardCharsets.UTF_8);
 
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(project);
         appConfigStatic = mockStatic(ApplicationConfiguration.class);
 
@@ -577,8 +560,7 @@ class PublicResourcesLiveUpdaterTest {
                 .thenReturn(config);
 
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -596,7 +578,7 @@ class PublicResourcesLiveUpdaterTest {
 
             // keep.css should be updated with content
             Awaitility.await().untilAsserted(
-                    () -> Mockito.verify(liveReload, atLeastOnce()).update(
+                    () -> verify(liveReload, atLeastOnce()).update(
                             eq("context://keep.css"), argThat(c -> c != null
                                     && c.contains(".keep{color:blue;}"))));
 
@@ -616,27 +598,26 @@ class PublicResourcesLiveUpdaterTest {
 
         // Mocks for Vaadin context and configuration (dev mode)
         VaadinContext ctx = mock(VaadinContext.class);
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.isProductionMode()).thenReturn(false);
 
         // Mock BrowserLiveReload plumbing via Lookup
         Lookup lookup = mock(Lookup.class);
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        BrowserLiveReloadAccessor accessor = Mockito
-                .mock(BrowserLiveReloadAccessor.class);
+        BrowserLiveReloadAccessor accessor = mock(
+                BrowserLiveReloadAccessor.class);
         when(accessor.getLiveReload(ctx)).thenReturn(liveReload);
         when(lookup.lookup(BrowserLiveReloadAccessor.class))
                 .thenReturn(accessor);
         when(ctx.getAttribute(eq(Lookup.class))).thenReturn(lookup);
 
         // Mock Static: ApplicationConfiguration.get(context)
-        try (MockedStatic<ApplicationConfiguration> appConfig = Mockito
-                .mockStatic(ApplicationConfiguration.class);
+        try (MockedStatic<ApplicationConfiguration> appConfig = mockStatic(
+                ApplicationConfiguration.class);
                 // Mock Static:
                 // PublicStyleSheetBundler.forResourceLocations(...)
-                MockedStatic<PublicStyleSheetBundler> bundlerStatic = Mockito
-                        .mockStatic(PublicStyleSheetBundler.class)) {
+                MockedStatic<PublicStyleSheetBundler> bundlerStatic = mockStatic(
+                        PublicStyleSheetBundler.class)) {
 
             appConfig.when(() -> ApplicationConfiguration.get(any()))
                     .thenReturn(config);
@@ -648,16 +629,16 @@ class PublicResourcesLiveUpdaterTest {
                     "/aura/aura.css", "aura/aura.css", "/css/app.css",
                     "context://css/app.css", "base://css/app.css",
                     "http://localhost:8080/hello"));
-            ActiveStyleSheetTracker tracker = Mockito
-                    .mock(ActiveStyleSheetTracker.class);
+            ActiveStyleSheetTracker tracker = mock(
+                    ActiveStyleSheetTracker.class);
             when(tracker.getActiveUrls()).thenReturn(activeUrls);
             // Ensure context returns our tracker for attribute-based access
             when(ctx.getAttribute(eq(ActiveStyleSheetTracker.class), any()))
                     .thenReturn(tracker);
 
             // Bundler mock
-            PublicStyleSheetBundler bundler = Mockito
-                    .mock(PublicStyleSheetBundler.class);
+            PublicStyleSheetBundler bundler = mock(
+                    PublicStyleSheetBundler.class);
             // Return some Optional content for non-Lumo URLs to allow
             // liveReload.update
             when(bundler.bundle(anyString(), anyString()))

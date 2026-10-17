@@ -16,7 +16,6 @@
 package com.vaadin.base.devserver;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -76,13 +75,12 @@ class BrowserLiveReloadAccessorImplTest {
     private VaadinService mockConfiguration(boolean productionMode,
             boolean liveReloadEnabled) {
         VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         when(service.getDeploymentConfiguration()).thenReturn(config);
         when(config.isProductionMode()).thenReturn(productionMode);
         when(config.isDevModeLiveReloadEnabled()).thenReturn(liveReloadEnabled);
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
         when(applicationConfiguration.isProductionMode())
                 .thenReturn(productionMode);
         VaadinContext context = mock(VaadinContext.class);

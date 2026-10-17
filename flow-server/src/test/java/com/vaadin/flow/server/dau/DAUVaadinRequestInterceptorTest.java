@@ -25,7 +25,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
@@ -52,6 +51,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -243,8 +243,8 @@ class DAUVaadinRequestInterceptorTest {
 
     @Test
     void serviceInit_shouldStartDauTracking() {
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             interceptor.serviceInit(new ServiceInitEvent(vaadinService));
             dauIntegration.verify(() -> DauIntegration.startTracking(APP_ID));
         }
@@ -252,8 +252,8 @@ class DAUVaadinRequestInterceptorTest {
 
     @Test
     void serviceDestroy_shouldStopDauTracking() {
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             interceptor.serviceDestroy(new ServiceDestroyEvent(vaadinService));
             dauIntegration.verify(DauIntegration::stopTracking);
         }
@@ -261,8 +261,8 @@ class DAUVaadinRequestInterceptorTest {
 
     @Test
     void serviceInit_shouldInstallServiceDestroyListenerToStopDauTrackingOnShutdown() {
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             interceptor.serviceInit(new ServiceInitEvent(vaadinService));
             dauIntegration.verify(() -> DauIntegration.startTracking(APP_ID));
             vaadinService.destroy();
@@ -283,8 +283,8 @@ class DAUVaadinRequestInterceptorTest {
 
         VaadinSession.setCurrent(new MockVaadinSession(vaadinService));
 
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             interceptor.requestStart(request, response);
             dauIntegration
                     .verify(() -> DauIntegration.trackUser(trackingHash, null));
@@ -318,8 +318,8 @@ class DAUVaadinRequestInterceptorTest {
 
         VaadinSession.setCurrent(new MockVaadinSession(vaadinService));
 
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             interceptor.requestStart(request, response);
             dauIntegration.verify(
                     () -> DauIntegration.trackUser(trackingHash, userIdentity));
@@ -341,8 +341,8 @@ class DAUVaadinRequestInterceptorTest {
 
         VaadinSession.setCurrent(new MockVaadinSession(vaadinService));
 
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             interceptor.requestStart(request, response);
             dauIntegration.verify(
                     () -> DauIntegration.trackUser(trackingHash, null),
@@ -365,8 +365,8 @@ class DAUVaadinRequestInterceptorTest {
 
         VaadinSession.setCurrent(new MockVaadinSession(vaadinService));
 
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             interceptor.requestStart(request, response);
             dauIntegration.verify(
                     () -> DauIntegration.trackUser(anyString(), any()),
@@ -393,8 +393,8 @@ class DAUVaadinRequestInterceptorTest {
 
         VaadinSession.setCurrent(new MockVaadinSession(vaadinService));
 
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             dauIntegration.when(DauIntegration::shouldEnforce).thenReturn(true);
             interceptor.requestStart(request, response);
             dauIntegration
@@ -414,8 +414,8 @@ class DAUVaadinRequestInterceptorTest {
         String trackingHash = "trackingHash";
         VaadinSession.setCurrent(new MockVaadinSession(vaadinService));
 
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             dauIntegration.when(DauIntegration::shouldEnforce).thenReturn(true);
             dauIntegration.when(DauIntegration::newTrackingHash)
                     .thenReturn(trackingHash);

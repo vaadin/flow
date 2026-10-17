@@ -33,7 +33,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -50,6 +49,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @PWA(name = "foo", shortName = "bar")
@@ -192,13 +192,13 @@ class PwaRegistryTest {
             boolean productionMode,
             BiFunction<PwaRegistry, VaadinRequest, T> action)
             throws IOException {
-        try (MockedStatic<VaadinService> vaadinService = Mockito
-                .mockStatic(VaadinService.class);
-                MockedStatic<FeatureFlags> featureFlags = Mockito
-                        .mockStatic(FeatureFlags.class)) {
+        try (MockedStatic<VaadinService> vaadinService = mockStatic(
+                VaadinService.class);
+                MockedStatic<FeatureFlags> featureFlags = mockStatic(
+                        FeatureFlags.class)) {
 
-            VaadinServletService vaadinServiceMocked = Mockito
-                    .mock(VaadinServletService.class);
+            VaadinServletService vaadinServiceMocked = mock(
+                    VaadinServletService.class);
             when(vaadinServiceMocked.isResourceAvailable(anyString()))
                     .thenAnswer((InvocationOnMock invocation) -> {
                         final String resourceUrl = (String) invocation

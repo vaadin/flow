@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
@@ -735,8 +734,7 @@ class UIInternalsTest {
     }
 
     private PushConfiguration setUpInitialPush() {
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         vaadinService.setConfiguration(config);
 
         PushConfiguration pushConfig = mock(PushConfiguration.class);
@@ -748,10 +746,10 @@ class UIInternalsTest {
 
     @Test
     void getDeploymentConfiguration() {
-        AlwaysLockedVaadinSession session = Mockito
-                .mock(AlwaysLockedVaadinSession.class);
-        MockVaadinServletService mockVaadinServletService = Mockito
-                .mock(MockVaadinServletService.class);
+        AlwaysLockedVaadinSession session = mock(
+                AlwaysLockedVaadinSession.class);
+        MockVaadinServletService mockVaadinServletService = mock(
+                MockVaadinServletService.class);
 
         internals = new UIInternals(ui);
         internals.setSession(session);

@@ -24,7 +24,6 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
@@ -66,8 +65,8 @@ abstract class AbstractUIScopedTest extends AbstractScopeTest {
         when(service.getRouter()).thenReturn(router);
 
         Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         when(service.getMainDivId(any(), any())).thenReturn("abc");

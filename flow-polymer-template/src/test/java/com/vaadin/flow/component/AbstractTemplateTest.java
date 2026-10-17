@@ -10,7 +10,6 @@ package com.vaadin.flow.component;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -32,8 +31,8 @@ abstract class AbstractTemplateTest {
     @BeforeEach
     void init() throws Exception {
         service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
 
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
 

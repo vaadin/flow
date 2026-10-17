@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,7 +29,6 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.cdi.context.ServiceUnderTestContext;
 import com.vaadin.cdi.util.BeanProvider;
@@ -58,8 +57,7 @@ public class CdiVaadinServletTest extends AbstractWeldTest {
     @BeforeEach
     public void setUp() throws ServletException {
         final ServletConfig servletConfig = mock(ServletConfig.class);
-        final ServletContext servletContext = Mockito
-                .mock(ServletContext.class);
+        final ServletContext servletContext = mock(ServletContext.class);
         ClassLoader loader = CdiVaadinServletServiceTest.class.getClassLoader();
         when(servletContext.getClassLoader()).thenReturn(loader);
 
@@ -69,10 +67,10 @@ public class CdiVaadinServletTest extends AbstractWeldTest {
         when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
-        final DefaultApplicationConfigurationFactory applicationConfigurationFactory = Mockito
-                .mock(DefaultApplicationConfigurationFactory.class);
-        final ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        final DefaultApplicationConfigurationFactory applicationConfigurationFactory = mock(
+                DefaultApplicationConfigurationFactory.class);
+        final ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
         when(applicationConfiguration.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         final VaadinContext context = mock(VaadinContext.class);
@@ -98,8 +96,8 @@ public class CdiVaadinServletTest extends AbstractWeldTest {
         when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
-        final ServletRegistration servletRegistration = Mockito
-                .mock(ServletRegistration.class);
+        final ServletRegistration servletRegistration = mock(
+                ServletRegistration.class);
         final Map servletRegistrationMap = Collections.singletonMap("test",
                 servletRegistration);
         when(servletContext.getServletRegistrations())

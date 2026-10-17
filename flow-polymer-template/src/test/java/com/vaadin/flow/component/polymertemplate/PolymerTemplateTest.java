@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
@@ -63,6 +62,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @Isolated
@@ -518,8 +518,8 @@ class PolymerTemplateTest extends HasCurrentService {
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         Instantiator instantiator = mock(Instantiator.class);
-        TemplateParser.TemplateParserFactory factory = Mockito
-                .mock(TemplateParser.TemplateParserFactory.class);
+        TemplateParser.TemplateParserFactory factory = mock(
+                TemplateParser.TemplateParserFactory.class);
         when(instantiator.getOrCreate(TemplateParserFactory.class))
                 .thenReturn(factory);
         when(factory.createParser())
@@ -1010,15 +1010,15 @@ class PolymerTemplateTest extends HasCurrentService {
                 .get(null);
         boolean licenseCheckedInitValue = licenseCheckedHolder.get();
 
-        try (MockedStatic<LicenseChecker> checker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> checker = mockStatic(
+                LicenseChecker.class)) {
             AtomicInteger counter = new AtomicInteger(0);
             checker.when(() -> LicenseChecker.checkLicense(anyString(),
                     anyString(), eq(BuildType.DEVELOPMENT)))
                     .then(ignore -> counter.incrementAndGet());
 
-            DeploymentConfiguration configuration = Mockito
-                    .mock(DeploymentConfiguration.class);
+            DeploymentConfiguration configuration = mock(
+                    DeploymentConfiguration.class);
             when(configuration.isProductionMode()).thenReturn(false);
 
             VaadinService service = mock(VaadinService.class);
@@ -1037,15 +1037,15 @@ class PolymerTemplateTest extends HasCurrentService {
 
     @Test
     void licenseCheck_prodMode_licenseNotChecked() {
-        try (MockedStatic<LicenseChecker> checker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> checker = mockStatic(
+                LicenseChecker.class)) {
             AtomicInteger counter = new AtomicInteger(0);
             checker.when(() -> LicenseChecker.checkLicense(anyString(),
                     anyString(), eq(BuildType.DEVELOPMENT)))
                     .then(ignore -> counter.incrementAndGet());
 
-            DeploymentConfiguration configuration = Mockito
-                    .mock(DeploymentConfiguration.class);
+            DeploymentConfiguration configuration = mock(
+                    DeploymentConfiguration.class);
             when(configuration.isProductionMode()).thenReturn(true);
 
             VaadinService service = mock(VaadinService.class);

@@ -308,8 +308,8 @@ class MenuRegistryTest {
         ClassLoader mockClassLoader = mock(ClassLoader.class);
         when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
                 .thenReturn(clientFiles.toURI().toURL());
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
             menuRegistry.when(() -> MenuRegistry.getClassLoader())
                     .thenReturn(mockClassLoader);
 

@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
@@ -123,8 +122,8 @@ class LookupInitializerTest {
                 .lookup(StaticFileHandlerFactory.class);
 
         VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         ClassLoader loader = mock(ClassLoader.class);
         when(service.getClassLoader()).thenReturn(loader);
@@ -321,10 +320,9 @@ class LookupInitializerTest {
     @Test
     void initialize_callEnsureMethodsAndBootstrap() throws ServletException {
         LookupInitializer initializer = spy(LookupInitializer.class);
-        Map<Class<?>, Collection<Class<?>>> services = Mockito
-                .mock(HashMap.class);
-        VaadinApplicationInitializationBootstrap bootstrap = Mockito
-                .mock(VaadinApplicationInitializationBootstrap.class);
+        Map<Class<?>, Collection<Class<?>>> services = mock(HashMap.class);
+        VaadinApplicationInitializationBootstrap bootstrap = mock(
+                VaadinApplicationInitializationBootstrap.class);
         initializer.initialize(null, services, bootstrap);
 
         verify(initializer).ensureService(services, ResourceProvider.class,

@@ -47,7 +47,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.Feature;
@@ -97,6 +96,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -137,8 +137,8 @@ public class IndexHtmlRequestHandlerTest {
         context = service.getContext();
         springTokenString = UUID.randomUUID().toString();
 
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
         when(context.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(applicationConfiguration);
 
@@ -160,15 +160,13 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException()
             throws IOException {
-        VaadinServletService vaadinService = Mockito
-                .mock(VaadinServletService.class);
+        VaadinServletService vaadinService = mock(VaadinServletService.class);
         when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
 
         when(vaadinService.getContext()).thenReturn(context);
         final Lookup lookup = mock(Lookup.class);
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
@@ -178,8 +176,7 @@ public class IndexHtmlRequestHandlerTest {
                 .thenReturn(resource);
         when(resource.openStream()).thenReturn(null);
 
-        VaadinServletRequest vaadinRequest = Mockito
-                .mock(VaadinServletRequest.class);
+        VaadinServletRequest vaadinRequest = mock(VaadinServletRequest.class);
         when(vaadinRequest.getService()).thenReturn(vaadinService);
 
         String expectedError = "java.io.IOException: Unable to find index.html. "
@@ -278,8 +275,8 @@ public class IndexHtmlRequestHandlerTest {
         enabledFeature.setEnabled(true);
         FeatureFlags featureFlags = mock(FeatureFlags.class);
         when(featureFlags.getFeatures()).thenReturn(List.of(enabledFeature));
-        try (MockedStatic<FeatureFlags> featureFlagsMock = Mockito
-                .mockStatic(FeatureFlags.class)) {
+        try (MockedStatic<FeatureFlags> featureFlagsMock = mockStatic(
+                FeatureFlags.class)) {
             featureFlagsMock.when(() -> FeatureFlags.get(any()))
                     .thenReturn(featureFlags);
             indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -1152,8 +1149,7 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         final IndexHtmlRequestHandler bootstrapHandler = new IndexHtmlRequestHandler();
 
-        final VaadinServletRequest request = Mockito
-                .mock(VaadinServletRequest.class);
+        final VaadinServletRequest request = mock(VaadinServletRequest.class);
         doAnswer(invocation -> "..**").when(request).getPathInfo();
 
         final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
@@ -1254,8 +1250,8 @@ public class IndexHtmlRequestHandlerTest {
             String remoteAddr, List<String> forwardedForHeader) {
         VaadinRequest request = mock(VaadinRequest.class);
         when(request.getRemoteAddr()).thenReturn(remoteAddr);
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
         doAnswer(q -> hostsAllowedProperty).when(configuration)
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED,
                         null);
@@ -1450,8 +1446,8 @@ public class IndexHtmlRequestHandlerTest {
 
             VaadinRequest request = mock(VaadinRequest.class);
             when(request.getRemoteAddr()).thenReturn("127.0.0.1");
-            ApplicationConfiguration configuration = Mockito
-                    .mock(ApplicationConfiguration.class);
+            ApplicationConfiguration configuration = mock(
+                    ApplicationConfiguration.class);
             when(configuration.getStringProperty(
                     SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null))
                     .thenAnswer(q -> "1.2.3.4,5.6.7.8");

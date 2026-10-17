@@ -1472,8 +1472,7 @@ class BundleValidationTest {
         createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
                 "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
@@ -1499,8 +1498,7 @@ class BundleValidationTest {
         new File(temporaryFolder,
                 DEFAULT_FRONTEND_DIR + "themes/my-parent-theme").mkdirs();
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
@@ -1523,8 +1521,7 @@ class BundleValidationTest {
         setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
         new File(temporaryFolder, DEFAULT_FRONTEND_DIR + "themes/my-theme")
@@ -1560,8 +1557,7 @@ class BundleValidationTest {
                 }
                 """, "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
@@ -1611,8 +1607,7 @@ class BundleValidationTest {
                         """,
                 "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
@@ -1650,8 +1645,7 @@ class BundleValidationTest {
                 }
                 """, "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
@@ -1687,8 +1681,7 @@ class BundleValidationTest {
         createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
                 "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
@@ -1714,8 +1707,7 @@ class BundleValidationTest {
         createProjectThemeJsonStub("{\"parent\": \"parent-theme\"}",
                 "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
@@ -1929,8 +1921,7 @@ class BundleValidationTest {
         FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
                 StandardCharsets.UTF_8);
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
@@ -3018,8 +3009,7 @@ class BundleValidationTest {
         FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
                 StandardCharsets.UTF_8);
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
         when(themeDefinition.getName()).thenReturn("my-theme");
         when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 

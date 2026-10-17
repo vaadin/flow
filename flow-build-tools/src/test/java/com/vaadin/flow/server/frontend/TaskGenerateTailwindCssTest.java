@@ -25,7 +25,6 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
@@ -63,8 +62,7 @@ class TaskGenerateTailwindCssTest {
         frontendGeneratedFolder = new File(frontendFolder, "generated");
         frontendGeneratedFolder.mkdirs();
 
-        frontendDependenciesScanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        frontendDependenciesScanner = mock(FrontendDependenciesScanner.class);
 
         Options options = new Options(mock(Lookup.class), npmFolder)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner)

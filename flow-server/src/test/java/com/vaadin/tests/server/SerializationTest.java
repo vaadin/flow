@@ -30,7 +30,6 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -391,8 +390,8 @@ class SerializationTest {
 
         @Override
         public VaadinContext getContext() {
-            ApplicationConfiguration applicationConfiguration = Mockito
-                    .mock(ApplicationConfiguration.class);
+            ApplicationConfiguration applicationConfiguration = mock(
+                    ApplicationConfiguration.class);
             when(vaadinContext.getAttribute(any(), any()))
                     .thenReturn(applicationConfiguration);
             when(applicationConfiguration.isProductionMode())

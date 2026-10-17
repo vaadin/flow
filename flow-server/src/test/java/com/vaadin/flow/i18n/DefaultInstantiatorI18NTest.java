@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Lookup;
@@ -44,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
 
 @Isolated
@@ -248,14 +248,12 @@ class DefaultInstantiatorI18NTest {
         try {
             Thread.currentThread().setContextClassLoader(urlClassLoader);
 
-            try (MockedConstruction<DefaultI18NProvider> mockedConstruction = Mockito
-                    .mockConstruction(DefaultI18NProvider.class,
-                            (mock, context) -> {
-                                ClassLoader classLoaderArgument = (ClassLoader) context
-                                        .arguments().get(1);
-                                assertEquals(urlClassLoader,
-                                        classLoaderArgument);
-                            })) {
+            try (MockedConstruction<DefaultI18NProvider> mockedConstruction = mockConstruction(
+                    DefaultI18NProvider.class, (mock, context) -> {
+                        ClassLoader classLoaderArgument = (ClassLoader) context
+                                .arguments().get(1);
+                        assertEquals(urlClassLoader, classLoaderArgument);
+                    })) {
                 I18NProvider i18NProvider = defaultInstantiator
                         .getI18NProvider();
 

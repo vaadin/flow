@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,8 +18,6 @@ package com.vaadin.cdi.context;
 import jakarta.enterprise.inject.spi.CDI;
 
 import java.util.Properties;
-
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinSession;
@@ -50,8 +48,8 @@ public class SessionUnderTestContext implements UnderTestContext {
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
         when(session.hasLock()).thenReturn(true);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(session.getConfiguration()).thenReturn(configuration);
         Properties props = new Properties();
         when(configuration.getInitParameters()).thenReturn(props);

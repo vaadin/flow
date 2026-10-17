@@ -44,7 +44,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
@@ -326,8 +325,8 @@ class DeploymentConfigurationFactoryTest {
         when(config.getVaadinContext()).thenReturn(context);
         when(context.getAttribute(Lookup.class)).thenReturn(mock(Lookup.class));
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
 
         when(config.getConfigParameterNames()).thenReturn(
                 Collections.enumeration(Collections.singleton("foo")));
@@ -523,8 +522,8 @@ class DeploymentConfigurationFactoryTest {
         VaadinContext context = mock(VaadinContext.class);
         VaadinConfig config = mock(VaadinConfig.class);
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
 
         when(config.getConfigParameterNames())
                 .thenReturn(Collections.enumeration(
@@ -635,8 +634,8 @@ class DeploymentConfigurationFactoryTest {
 
     private ApplicationConfiguration mockApplicationConfiguration() {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(true);
         when(configuration.getContext()).thenReturn(context);
         when(configuration.getStringProperty(anyString(), anyString()))

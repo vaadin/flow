@@ -28,7 +28,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -535,8 +534,8 @@ class NavigationAccessControlTest {
             roles = new String[0];
         }
 
-        VaadinServletRequest vaadinServletRequest = Mockito
-                .mock(VaadinServletRequest.class);
+        VaadinServletRequest vaadinServletRequest = mock(
+                VaadinServletRequest.class);
         HttpServletRequest httpServletRequest = AccessAnnotationCheckerTest
                 .createRequest(principal, roles);
         when(vaadinServletRequest.getHttpServletRequest())
@@ -566,8 +565,8 @@ class NavigationAccessControlTest {
         VaadinSession vaadinSession = mock(VaadinSession.class);
         when(ui.getSession()).thenReturn(vaadinSession);
         when(ui.getSessionOrThrow()).thenCallRealMethod();
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(vaadinSession.getConfiguration()).thenReturn(configuration);
         when(configuration.isProductionMode()).thenReturn(productionMode);
 

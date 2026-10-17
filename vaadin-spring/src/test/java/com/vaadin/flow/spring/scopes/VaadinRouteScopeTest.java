@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.web.context.WebApplicationContext;
@@ -140,8 +139,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
         when(details.getWindowName()).thenReturn("bar");
         ui.getInternals().setExtendedClientDetails(details);
         anotherUI.getInternals().setExtendedClientDetails(details);
@@ -189,8 +187,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
         when(details.getWindowName()).thenReturn("bar");
         ui.getInternals().setExtendedClientDetails(details);
 
@@ -236,8 +233,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
         when(details.getWindowName()).thenReturn("bar");
         ui.getInternals().setExtendedClientDetails(details);
         anotherUI.getInternals().setExtendedClientDetails(details);
@@ -286,8 +282,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
 
         UI anotherUI = makeAnotherUI(ui);
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
         when(details.getWindowName()).thenReturn("bar");
         ui.getInternals().setExtendedClientDetails(details);
         anotherUI.getInternals().setExtendedClientDetails(details);
@@ -359,8 +354,7 @@ class VaadinRouteScopeTest extends AbstractUIScopedTest {
         VaadinServletContext context = ((VaadinServletContext) service
                 .getContext());
         ServletContext servletContext = context.getContext();
-        WebApplicationContext appContext = Mockito
-                .mock(WebApplicationContext.class);
+        WebApplicationContext appContext = mock(WebApplicationContext.class);
         when(servletContext.getAttribute(
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE))
                 .thenReturn(appContext);

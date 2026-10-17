@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Tag;
@@ -1708,8 +1707,8 @@ public class StateNodeTest {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> MatcherAssert
-                    .assertThat(tree.dirtyNodes, hasItem(node)));
+            stateNode.visitNodeTree(
+                    node -> assertThat(tree.dirtyNodes, hasItem(node)));
         }
 
         assertEquals(visibilityChanged ? 3 : 2, changes.size());
@@ -1836,8 +1835,8 @@ public class StateNodeTest {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> MatcherAssert
-                    .assertThat(tree.dirtyNodes, hasItem(node)));
+            stateNode.visitNodeTree(
+                    node -> assertThat(tree.dirtyNodes, hasItem(node)));
         }
 
         changes.clear();

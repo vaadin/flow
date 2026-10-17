@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
@@ -308,8 +309,8 @@ class FileIOUtilsTest {
         // Junctions can only be created on Windows, where they are reported as
         // a directory that is also "other". Deleting one has to remove the link
         // itself instead of traversing into the linked contents.
-        BasicFileAttributes junctionAttributes = Mockito
-                .mock(BasicFileAttributes.class);
+        BasicFileAttributes junctionAttributes = mock(
+                BasicFileAttributes.class);
         when(junctionAttributes.isDirectory()).thenReturn(true);
         when(junctionAttributes.isOther()).thenReturn(true);
 
@@ -354,8 +355,8 @@ class FileIOUtilsTest {
         // directory that is also "other", see
         // delete_junctionIsRemovedAsLink. Traversing into it would delete the
         // linked contents instead of the link.
-        BasicFileAttributes junctionAttributes = Mockito
-                .mock(BasicFileAttributes.class);
+        BasicFileAttributes junctionAttributes = mock(
+                BasicFileAttributes.class);
         when(junctionAttributes.isDirectory()).thenReturn(true);
         when(junctionAttributes.isOther()).thenReturn(true);
 

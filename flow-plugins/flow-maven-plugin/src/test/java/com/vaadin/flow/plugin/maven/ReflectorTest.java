@@ -39,7 +39,6 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -100,7 +99,7 @@ class ReflectorTest {
         assertThat("mojoExecution field", target,
                 hasProperty("mojoExecution", equalTo(source.mojoExecution)));
         assertThat("maven project field", target,
-                Matchers.hasProperty("project", equalTo(source.project)));
+                hasProperty("project", equalTo(source.project)));
         assertThat("classFinder field", target,
                 hasProperty("classFinder", notNullValue()));
     }
@@ -121,7 +120,7 @@ class ReflectorTest {
         assertThat("mojoExecution field", target,
                 hasProperty("mojoExecution", equalTo(source.mojoExecution)));
         assertThat("maven project field", target,
-                Matchers.hasProperty("project", equalTo(source.project)));
+                hasProperty("project", equalTo(source.project)));
         assertThat("classFinder field", target,
                 hasProperty("classFinder", notNullValue()));
     }
@@ -145,7 +144,7 @@ class ReflectorTest {
         source.fillFields();
         Mojo target = reflector.createMojo(source);
         assertThat("cloneable field", target,
-                Matchers.hasProperty("cloneableField", notNullValue()));
+                hasProperty("cloneableField", notNullValue()));
         assertThat("cloneable field value", target, hasProperty(
                 "cloneableField", hasToString("TEST-CLONEABLE-FIELD")));
         assertThat("cloneable type", target,

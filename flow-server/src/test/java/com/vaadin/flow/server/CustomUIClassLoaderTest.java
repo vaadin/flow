@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -81,8 +80,7 @@ class CustomUIClassLoaderTest {
         Properties properties = new Properties();
         properties.put(InitParameters.UI_PARAMETER, MyUI.class.getName());
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         when(config.getBuildFolder()).thenReturn(".");

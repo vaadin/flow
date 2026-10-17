@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -55,6 +54,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -327,8 +328,8 @@ class AbstractListDataViewTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     void setIdentifierProvider_firesIdentifierProviderChangeEvent() {
-        ComponentEventListener mockEventListener = Mockito
-                .mock(ComponentEventListener.class);
+        ComponentEventListener mockEventListener = mock(
+                ComponentEventListener.class);
         beanDataView.addIdentifierProviderChangeListener(mockEventListener);
         beanDataView.setIdentifierProvider(Item::getId);
 
@@ -344,8 +345,8 @@ class AbstractListDataViewTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test()
     void addIdentifierProviderChangeListener_removeListener_listenerIsNotNotified() {
-        ComponentEventListener mockEventListener = Mockito
-                .mock(ComponentEventListener.class);
+        ComponentEventListener mockEventListener = mock(
+                ComponentEventListener.class);
         Registration registration = beanDataView
                 .addIdentifierProviderChangeListener(mockEventListener);
         registration.remove();
@@ -877,8 +878,8 @@ class AbstractListDataViewTest {
     void refreshItem_itemPresentInDataSet_refreshesItem() {
         Collection<Item> items = getTestItems();
 
-        ListDataProvider<Item> dataProvider = Mockito
-                .spy(DataProvider.ofCollection(items));
+        ListDataProvider<Item> dataProvider = spy(
+                DataProvider.ofCollection(items));
 
         ItemListDataView dataView = new ItemListDataView(() -> dataProvider,
                 component);

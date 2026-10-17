@@ -39,7 +39,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.di.Lookup;
@@ -59,11 +58,10 @@ class SpringLookupInitializerTest {
 
     private SpringLookupInitializer initializer = new SpringLookupInitializer();
 
-    private WebApplicationContext webAppContext = Mockito
-            .mock(WebApplicationContext.class);
+    private WebApplicationContext webAppContext = mock(
+            WebApplicationContext.class);
 
-    private VaadinServletContext context = Mockito
-            .mock(VaadinServletContext.class);
+    private VaadinServletContext context = mock(VaadinServletContext.class);
 
     private ServletContext servletContext = mock(ServletContext.class);
 
@@ -86,8 +84,8 @@ class SpringLookupInitializerTest {
     @Test
     void initialize_contextIsAvailable_bootstrapImmidiately()
             throws ServletException {
-        VaadinApplicationInitializationBootstrap bootstrap = Mockito
-                .mock(VaadinApplicationInitializationBootstrap.class);
+        VaadinApplicationInitializationBootstrap bootstrap = mock(
+                VaadinApplicationInitializationBootstrap.class);
         initializer.initialize(context, new HashMap<>(), bootstrap);
 
         verify(bootstrap).bootstrap(any());
@@ -101,8 +99,8 @@ class SpringLookupInitializerTest {
                 WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE))
                 .thenReturn(null);
 
-        VaadinApplicationInitializationBootstrap bootstrap = Mockito
-                .mock(VaadinApplicationInitializationBootstrap.class);
+        VaadinApplicationInitializationBootstrap bootstrap = mock(
+                VaadinApplicationInitializationBootstrap.class);
         initializer.initialize(context, new HashMap<>(), bootstrap);
 
         verifyNoInteractions(bootstrap);

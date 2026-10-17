@@ -10,7 +10,6 @@ package com.vaadin.flow.templatemodel;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.HasCurrentService;
@@ -55,8 +54,8 @@ class TemplateModelProxyHandlerTest extends HasCurrentService {
     @Override
     protected VaadinService createService() {
         VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(true);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
 

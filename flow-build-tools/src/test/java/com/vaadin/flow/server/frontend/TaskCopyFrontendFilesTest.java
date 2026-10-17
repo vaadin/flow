@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.contains;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -113,8 +114,8 @@ class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         TaskCopyFrontendFiles task = taskFor(legacyJar);
 
         Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(task.getClass()))
                     .thenReturn(logger);
@@ -136,8 +137,8 @@ class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
                 TestUtils.getTestJar("jar-with-modern-frontend.jar"));
 
         Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(task.getClass()))
                     .thenReturn(logger);

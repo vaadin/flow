@@ -20,7 +20,6 @@ import java.io.File;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -47,8 +46,8 @@ class TaskGenerateWebComponentBootstrapTest {
                 .getFlowGeneratedImports(frontendDirectory);
         generatedImports.getParentFile().mkdirs();
         generatedImports.createNewFile();
-        FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
         when(scanner.getThemeDefinition()).thenReturn(null);
         Options options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendDirectory)

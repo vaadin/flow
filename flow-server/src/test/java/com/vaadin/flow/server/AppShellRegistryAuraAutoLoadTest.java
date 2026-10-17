@@ -26,7 +26,6 @@ import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
@@ -72,8 +71,8 @@ class AppShellRegistryAuraAutoLoadTest {
 
         // Create a minimal service mock
         service = mock(VaadinServletService.class);
-        DeploymentConfiguration deploymentConfig = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration deploymentConfig = mock(
+                DeploymentConfiguration.class);
         when(deploymentConfig.isProductionMode()).thenReturn(false);
         when(service.getDeploymentConfiguration()).thenReturn(deploymentConfig);
         when(service.getInstantiator())
@@ -133,8 +132,8 @@ class AppShellRegistryAuraAutoLoadTest {
         VaadinService.setCurrent(service);
 
         // Configure instantiator to return a new instance of MyAppShell
-        com.vaadin.flow.di.Instantiator instantiator = Mockito
-                .mock(com.vaadin.flow.di.Instantiator.class);
+        com.vaadin.flow.di.Instantiator instantiator = mock(
+                com.vaadin.flow.di.Instantiator.class);
         when(service.getInstantiator()).thenReturn(instantiator);
         when(instantiator.getOrCreate(MyAppShell.class))
                 .thenReturn(new MyAppShell());
@@ -156,8 +155,8 @@ class AppShellRegistryAuraAutoLoadTest {
 
     private VaadinServletRequest createRequest(String pathInfo,
             String contextPath) {
-        jakarta.servlet.http.HttpServletRequest req = Mockito
-                .mock(jakarta.servlet.http.HttpServletRequest.class);
+        jakarta.servlet.http.HttpServletRequest req = mock(
+                jakarta.servlet.http.HttpServletRequest.class);
         when(req.getServletPath()).thenReturn("");
         when(req.getPathInfo()).thenReturn(pathInfo);
         when(req.getRequestURL()).thenReturn(new StringBuffer(pathInfo));

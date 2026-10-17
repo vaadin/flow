@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -175,8 +174,8 @@ class SpringClassesSerializableTest extends ClassesSerializableTest {
 
     private TestBeanStore createStore() {
         final Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         VaadinContext context = mock(VaadinContext.class);

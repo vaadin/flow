@@ -54,6 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -392,8 +393,8 @@ class TranslationFileRequestHandlerTest {
         writer = new PrintWriter(out);
         when(response.getWriter()).thenReturn(writer);
         retrievedLocaleCapture = ArgumentCaptor.forClass(String.class);
-        doNothing().when(response).setHeader(Mockito
-                .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
+        doNothing().when(response).setHeader(
+                eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
                 retrievedLocaleCapture.capture());
     }
 
@@ -401,8 +402,8 @@ class TranslationFileRequestHandlerTest {
         Instantiator instantiator = mock(Instantiator.class);
         when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
         when(service.getInstantiator()).thenReturn(instantiator);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(isProductionMode);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         when(request.getService()).thenReturn(service);

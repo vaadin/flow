@@ -50,7 +50,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
@@ -76,6 +75,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -436,8 +436,8 @@ class JwtSecurityContextRepositoryTest {
         Authentication authentication = getJwtAuthenticationToken(header,
                 claimsSet);
         doReturn(authentication).when(securityContext).getAuthentication();
-        AuthenticationTrustResolver trustResolver = Mockito
-                .mock(AuthenticationTrustResolver.class);
+        AuthenticationTrustResolver trustResolver = mock(
+                AuthenticationTrustResolver.class);
         doReturn(true).when(trustResolver).isAnonymous(authentication);
         jwtSecurityContextRepository.setTrustResolver(trustResolver);
 
@@ -592,8 +592,8 @@ class JwtSecurityContextRepositoryTest {
                 .createEmptyContext();
         doReturn(anonymousAuthenticationToken).when(securityContext)
                 .getAuthentication();
-        AuthenticationTrustResolver trustResolver = Mockito
-                .mock(AuthenticationTrustResolver.class);
+        AuthenticationTrustResolver trustResolver = mock(
+                AuthenticationTrustResolver.class);
         doReturn(false).when(trustResolver)
                 .isAnonymous(anonymousAuthenticationToken);
         jwtSecurityContextRepository.setTrustResolver(trustResolver);

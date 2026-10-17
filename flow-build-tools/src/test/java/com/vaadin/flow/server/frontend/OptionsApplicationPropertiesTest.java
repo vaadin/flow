@@ -19,21 +19,20 @@ import java.io.File;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.MockOptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class OptionsApplicationPropertiesTest {
 
     @Test
     void getApplicationBooleanProperty_configAvailable_returnsPropertyValue() {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getBooleanProperty("test.prop", false)).thenReturn(true);
 
         Options options = new MockOptions(new File("."))
@@ -55,8 +54,7 @@ class OptionsApplicationPropertiesTest {
 
     @Test
     void getApplicationStringProperty_configAvailable_returnsPropertyValue() {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getStringProperty("test.prop", "default"))
                 .thenReturn("custom");
 

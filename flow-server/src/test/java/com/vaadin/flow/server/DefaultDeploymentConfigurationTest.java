@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
@@ -40,6 +39,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 /**
@@ -359,8 +360,8 @@ class DefaultDeploymentConfigurationTest {
         org.apache.commons.io.FileUtils.writeStringToFile(viewFile,
                 "export default function MyView(){}", "UTF-8");
 
-        try (MockedStatic<EndpointRequestUtil> util = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> util = mockStatic(
+                EndpointRequestUtil.class)) {
             util.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
             Properties init = new Properties();
             init.put(FrontendUtils.PROJECT_BASEDIR,
@@ -389,8 +390,8 @@ class DefaultDeploymentConfigurationTest {
     }
 
     private ApplicationConfiguration setupAppConfig() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.getFrontendFolder()).thenCallRealMethod();
         when(appConfig.getStringProperty(FrontendUtils.PARAM_FRONTEND_DIR,
                 FrontendUtils.DEFAULT_FRONTEND_DIR))

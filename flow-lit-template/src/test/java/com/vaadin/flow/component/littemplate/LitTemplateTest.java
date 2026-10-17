@@ -18,7 +18,6 @@ package com.vaadin.flow.component.littemplate;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.template.Id;
@@ -113,8 +112,8 @@ class LitTemplateTest {
 
     @BeforeEach
     void setUp() {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
     }
 

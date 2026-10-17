@@ -23,14 +23,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 
-import org.hamcrest.CoreMatchers;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -127,8 +125,8 @@ class WebComponentBootstrapHandlerViteTest {
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
 
         assertThat(resultingScript, containsString("var i=1;"));
-        assertThat(resultingScript, not(CoreMatchers
-                .containsString("body {height:100vh;width:100vw;margin:0;}")));
+        assertThat(resultingScript, not(
+                containsString("body {height:100vh;width:100vw;margin:0;}")));
         assertThat(resultingScript, not(containsString("http-equiv")));
     }
 
@@ -395,8 +393,8 @@ class WebComponentBootstrapHandlerViteTest {
         when(request.getService()).thenReturn(service);
         when(service.getContext()).thenReturn(context);
 
-        WebComponentConfigurationRegistry registry = Mockito
-                .mock(WebComponentConfigurationRegistry.class);
+        WebComponentConfigurationRegistry registry = mock(
+                WebComponentConfigurationRegistry.class);
         when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
                 any())).thenReturn(registry);
         when(registry.hasConfigurations()).thenReturn(hasConfig);

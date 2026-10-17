@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
 import org.springframework.context.ApplicationContext;
@@ -80,6 +79,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -120,8 +120,8 @@ class VaadinServletContextInitializerTest {
         when(applicationContext.getBeansOfType(Executor.class))
                 .thenReturn(Collections.singletonMap("foo", executor));
 
-        autoConfigurationPackagesMock = Mockito
-                .mockStatic(AutoConfigurationPackages.class);
+        autoConfigurationPackagesMock = mockStatic(
+                AutoConfigurationPackages.class);
         servletDeployerMock = mockStatic(ServletDeployer.class);
     }
 
@@ -358,8 +358,7 @@ class VaadinServletContextInitializerTest {
         autoConfigurationPackagesMock
                 .when(() -> AutoConfigurationPackages.has(applicationContext))
                 .thenReturn(false);
-        ServletContextEvent initEventMock = Mockito
-                .mock(ServletContextEvent.class);
+        ServletContextEvent initEventMock = mock(ServletContextEvent.class);
         when(initEventMock.getServletContext()).thenReturn(servletContext);
 
         return () -> {
@@ -369,8 +368,8 @@ class VaadinServletContextInitializerTest {
 
     private VaadinServletContextInitializer getStubbedVaadinServletContextInitializer()
             throws Exception {
-        VaadinServletContextInitializer vaadinServletContextInitializerMock = Mockito
-                .spy(new VaadinServletContextInitializer(applicationContext));
+        VaadinServletContextInitializer vaadinServletContextInitializerMock = spy(
+                new VaadinServletContextInitializer(applicationContext));
 
         doAnswer(invocation -> Stream.empty())
                 .when(vaadinServletContextInitializerMock)

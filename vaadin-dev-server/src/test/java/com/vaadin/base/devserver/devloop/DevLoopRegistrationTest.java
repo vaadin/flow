@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -151,8 +150,8 @@ class DevLoopRegistrationTest {
 
     private static VaadinService serviceInMode(Mode mode) {
         VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.getMode()).thenReturn(mode);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         return service;
@@ -203,8 +202,8 @@ class DevLoopRegistrationTest {
     private static ServiceInitEvent eventInProductionMode(
             boolean productionMode) {
         VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(productionMode);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         ServiceInitEvent event = mock(ServiceInitEvent.class);
@@ -235,8 +234,8 @@ class DevLoopRegistrationTest {
         System.setProperty(DevLoopRegistration.DAEMON_PORT_PROPERTY, "51234");
         System.setProperty(DevLoopRegistration.TOKEN_PROPERTY, "s3cr3t");
         VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(true);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         ServiceInitEvent event = mock(ServiceInitEvent.class);

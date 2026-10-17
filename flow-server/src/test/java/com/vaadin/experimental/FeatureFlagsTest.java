@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -243,8 +243,7 @@ class FeatureFlagsTest {
         File flagsFile = new File(propertiesDir,
                 "another-" + PROPERTIES_FILENAME);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(resourceProvider.getApplicationResource(PROPERTIES_FILENAME))
                 .thenReturn(flagsFile.toURI().toURL());
         Lookup lookup = context.getAttribute(Lookup.class);
@@ -384,8 +383,7 @@ class FeatureFlagsTest {
                         ApplicationRouteRegistry attribute = context
                                 .getAttribute(ApplicationRouteRegistry.class);
                         if (attribute == null) {
-                            attribute = Mockito
-                                    .mock(ApplicationRouteRegistry.class);
+                            attribute = mock(ApplicationRouteRegistry.class);
                             context.setAttribute(attribute);
                         }
                     }
@@ -408,8 +406,8 @@ class FeatureFlagsTest {
     void propertiesFileCheckedForUnsupportedFeatureFlags() throws IOException {
         Logger mockedLogger = mock(Logger.class);
 
-        try (MockedStatic<LoggerFactory> context = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> context = mockStatic(
+                LoggerFactory.class)) {
             context.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
 
@@ -431,8 +429,8 @@ class FeatureFlagsTest {
             throws IOException {
         Logger mockedLogger = mock(Logger.class);
 
-        try (MockedStatic<LoggerFactory> context = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> context = mockStatic(
+                LoggerFactory.class)) {
             context.when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
 
@@ -456,8 +454,8 @@ class FeatureFlagsTest {
                 + "unsupportedFeature";
         var previousValue = System.getProperty(exampleProperty);
 
-        try (MockedStatic<LoggerFactory> mockedFactory = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> mockedFactory = mockStatic(
+                LoggerFactory.class)) {
             mockedFactory
                     .when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
@@ -500,8 +498,8 @@ class FeatureFlagsTest {
         VaadinContext vaadinContext = mock(VaadinContext.class);
         when(service.getContext()).thenReturn(vaadinContext);
 
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
         when(vaadinContext.getAttribute(eq(ApplicationConfiguration.class),
                 any())).thenReturn(applicationConfiguration);
         when(applicationConfiguration.getJavaResourceFolder())

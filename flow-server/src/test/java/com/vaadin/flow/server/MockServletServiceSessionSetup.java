@@ -40,7 +40,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.di.Instantiator;
@@ -61,6 +60,7 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -464,8 +464,8 @@ public class MockServletServiceSessionSetup {
     }
 
     public TestVaadinServletResponse createResponse() throws IOException {
-        HttpServletResponse httpServletResponse = Mockito
-                .mock(HttpServletResponse.class);
+        HttpServletResponse httpServletResponse = mock(
+                HttpServletResponse.class);
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         when(httpServletResponse.getOutputStream()).thenReturn(out);
         return new TestVaadinServletResponse(httpServletResponse, getService());
@@ -482,8 +482,7 @@ public class MockServletServiceSessionSetup {
 
         QueryParameters queryParams = QueryParameters.fromString(queryString);
         Map<String, List<String>> params = queryParams.getParameters();
-        HttpServletRequest httpServletRequest = Mockito
-                .mock(HttpServletRequest.class);
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
         return new VaadinServletRequest(httpServletRequest,
                 mocks.getService()) {
             @Override

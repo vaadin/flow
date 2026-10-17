@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -30,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class PropertyDeploymentConfigurationTest {
@@ -297,8 +297,8 @@ class PropertyDeploymentConfigurationTest {
 
     @Test
     void getInitParameters_prorprtiesAreMergedFromParentAndDeploymentConfig() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.getPropertyNames()).thenReturn(
                 Collections.enumeration(Collections.singleton("foo")));
 
@@ -344,8 +344,8 @@ class PropertyDeploymentConfigurationTest {
     }
 
     private ApplicationConfiguration mockAppConfig() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
 

@@ -24,7 +24,6 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InputStreamFactory;
@@ -119,8 +118,8 @@ class StreamResourceHandlerTest {
     @Test
     void inputStreamResourceWriterAndResponseThrows_streamResourceWriterExceptionIsPropagated()
             throws IOException {
-        ServletOutputStream servletOutputStream = Mockito
-                .mock(ServletOutputStream.class);
+        ServletOutputStream servletOutputStream = mock(
+                ServletOutputStream.class);
         when(response.getOutputStream()).thenReturn(servletOutputStream);
         doThrow(new RuntimeException("Error on close"))
                 .when(servletOutputStream).close();

@@ -21,7 +21,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.ServiceInitEvent;
@@ -47,6 +46,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 
 @SuppressWarnings("unchecked")
@@ -65,8 +65,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
     @Test
     void serviceInit_productionMode_licenseNotChecked() {
         config.setProductionMode(true);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class)) {
             listener.serviceInit(event);
             licenseChecker.verifyNoInteractions();
         }
@@ -76,8 +76,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
     void serviceInit_devToolsDisabled_validLicense_noAction() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(false);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class)) {
             listener.serviceInit(event);
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
@@ -95,8 +95,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
     void serviceInit_devToolsDisabled_missingOrInvalid_throws() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(false);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class)) {
             LicenseException checkerException = new LicenseException(
                     "Invalid or missing license");
             licenseChecker
@@ -121,8 +121,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
     void serviceInit_devToolsEnabled_missingLicense_delegateHandlingToDevTools() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class)) {
             licenseChecker
                     .when(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), isNull(BuildType.class),
@@ -163,8 +163,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
     void serviceInit_devToolsEnabled_missingLicense_multipleListenersCollectedIntoSingleScript() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class)) {
             licenseChecker.when(() -> LicenseChecker.checkLicense(anyString(),
                     anyString(), isNull(BuildType.class), any(Consumer.class),
                     eq(0), any(Capabilities.class))).then(i -> {
@@ -218,8 +218,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
     void serviceInit_devToolsEnabled_invalidLicense_throws() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class)) {
             LicenseException checkerException = new LicenseException(
                     "Invalid or missing license");
             licenseChecker
@@ -244,8 +244,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
     void serviceInit_devToolsEnabled_expiredPreTrial_delegateHandlingToDevTools() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class)) {
             licenseChecker
                     .when(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), isNull(BuildType.class),
@@ -285,8 +285,8 @@ class BaseLicenseCheckerServiceInitListenerTest {
     void serviceInit_devToolsEnabled_nonExpiredPreTrial_throws() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class)) {
             PreTrialLicenseValidationException checkerException = new PreTrialLicenseValidationException(
                     new PreTrial(PRODUCT_NAME,
                             PreTrial.PreTrialState.ACCESS_DENIED, 7, 0));

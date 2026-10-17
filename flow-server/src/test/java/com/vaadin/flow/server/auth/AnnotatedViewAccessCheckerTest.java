@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -688,8 +687,8 @@ class AnnotatedViewAccessCheckerTest {
         VaadinContext vaadinContext = mock(VaadinContext.class);
         when(routeRegistry.getContext()).thenReturn(vaadinContext);
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.isProductionMode()).thenReturn(productionMode);
         when(vaadinContext.getAttribute(eq(ApplicationConfiguration.class),
                 any())).thenReturn(appConfig);
@@ -731,8 +730,8 @@ class AnnotatedViewAccessCheckerTest {
         VaadinContext vaadinContext = mock(VaadinContext.class);
         when(routeRegistry.getContext()).thenReturn(vaadinContext);
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.isProductionMode()).thenReturn(productionMode);
         when(vaadinContext.getAttribute(eq(ApplicationConfiguration.class),
                 any())).thenReturn(appConfig);

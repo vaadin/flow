@@ -35,7 +35,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -285,8 +284,7 @@ class StreamRequestHandlerTest {
 
         streamResourceRegistry.registerResource(res);
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
         when(response.getOutputStream()).thenReturn(outputStream);
         when(request.getPathInfo()).thenReturn(String.format("/%s%s/%s/%s",
                 DYN_RES_PREFIX, ui.getId().orElse("-1"), res.getId(),
@@ -306,8 +304,7 @@ class StreamRequestHandlerTest {
 
         streamResourceRegistry.registerResource(res);
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
         when(response.getOutputStream()).thenReturn(outputStream);
         when(request.getPathInfo()).thenReturn(String.format("/%s%s/%s/%s",
                 DYN_RES_PREFIX, ui.getId().orElse("-1"), res.getId(),
@@ -339,8 +336,7 @@ class StreamRequestHandlerTest {
 
         streamResourceRegistry.registerResource(res);
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
         when(response.getOutputStream()).thenReturn(outputStream);
         when(request.getPathInfo()).thenReturn(String.format("/%s%s/%s/%s",
                 DYN_RES_PREFIX, ui.getId().orElse("-1"), res.getId(),

@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.polymertemplate.HasCurrentService;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -548,8 +547,8 @@ class TemplateModelWithEncodersTest extends HasCurrentService {
     @Override
     protected VaadinService createService() {
         VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(true);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         return service;

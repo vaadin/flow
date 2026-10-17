@@ -31,7 +31,6 @@ import org.atmosphere.cpr.BroadcasterConfig;
 import org.atmosphere.cpr.DefaultAtmosphereResourceSessionFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -200,8 +199,7 @@ class LongPollingCacheFilterTest {
         resource = mock(AtmosphereResource.class);
         AtmosphereRequest request = mock(AtmosphereRequest.class);
         Broadcaster broadcaster = mock(Broadcaster.class);
-        BroadcasterConfig broadcasterConfig = Mockito
-                .mock(BroadcasterConfig.class);
+        BroadcasterConfig broadcasterConfig = mock(BroadcasterConfig.class);
         cache = mock(BroadcasterCache.class);
         when(broadcaster.getBroadcasterConfig()).thenReturn(broadcasterConfig);
         when(broadcasterConfig.getBroadcasterCache()).thenReturn(cache);

@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.core.env.Environment;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -39,8 +38,8 @@ import static org.mockito.Mockito.when;
 
 class SpringApplicationConfigurationFactoryTest {
 
-    private WebApplicationContext webAppContext = Mockito
-            .mock(WebApplicationContext.class);
+    private WebApplicationContext webAppContext = mock(
+            WebApplicationContext.class);
 
     private ServletContext servletContext = mock(ServletContext.class);
 

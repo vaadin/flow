@@ -24,7 +24,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.config.ObjectPostProcessor;
@@ -516,21 +515,19 @@ class AuthenticationContextTest {
         Authentication authentication = SecurityContextHolder.getContext()
                 .getAuthentication();
 
-        LogoutSuccessHandler successHandler = Mockito
-                .mock(LogoutSuccessHandler.class);
+        LogoutSuccessHandler successHandler = mock(LogoutSuccessHandler.class);
         LogoutHandler handler1 = mock(LogoutHandler.class);
         LogoutHandler handler2 = mock(LogoutHandler.class);
         authContext.setLogoutHandlers(successHandler,
                 List.of(handler2, handler1));
 
         HttpServletRequest request = mock(HttpServletRequest.class);
-        VaadinServletRequest vaadinRequest = Mockito
-                .mock(VaadinServletRequest.class);
+        VaadinServletRequest vaadinRequest = mock(VaadinServletRequest.class);
         when(vaadinRequest.getHttpServletRequest()).thenReturn(request);
 
         HttpServletResponse response = mock(HttpServletResponse.class);
-        VaadinServletResponse vaadinResponse = Mockito
-                .mock(VaadinServletResponse.class);
+        VaadinServletResponse vaadinResponse = mock(
+                VaadinServletResponse.class);
         when(vaadinResponse.getHttpServletResponse()).thenReturn(response);
         return new SetupForLogoutTest(authentication, successHandler, handler1,
                 handler2, request, vaadinRequest, response, vaadinResponse);
@@ -545,8 +542,8 @@ class AuthenticationContextTest {
 
     @Test
     void applySecurityConfiguration_logoutHandlerConfigured() throws Exception {
-        LogoutSuccessHandler logoutSuccessHandler = Mockito
-                .mock(LogoutSuccessHandler.class);
+        LogoutSuccessHandler logoutSuccessHandler = mock(
+                LogoutSuccessHandler.class);
         LogoutHandler handler1 = mock(LogoutHandler.class);
         LogoutHandler handler2 = mock(LogoutHandler.class);
 
@@ -577,8 +574,8 @@ class AuthenticationContextTest {
     @Test
     void applySecurityConfiguration_unbuiltHttpSecurity_throws()
             throws Exception {
-        LogoutSuccessHandler logoutSuccessHandler = Mockito
-                .mock(LogoutSuccessHandler.class);
+        LogoutSuccessHandler logoutSuccessHandler = mock(
+                LogoutSuccessHandler.class);
         LogoutHandler handler1 = mock(LogoutHandler.class);
         LogoutHandler handler2 = mock(LogoutHandler.class);
         HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
@@ -616,8 +613,7 @@ class AuthenticationContextTest {
     private static void mockPush(UI ui, Transport pushTransport) {
         UIInternals internals = mock(UIInternals.class);
         PushConnection pushConnection = mock(PushConnection.class);
-        PushConfiguration pushConfiguration = Mockito
-                .mock(PushConfiguration.class);
+        PushConfiguration pushConfiguration = mock(PushConfiguration.class);
 
         when(ui.getPushConfiguration()).thenReturn(pushConfiguration);
         when(pushConfiguration.getTransport())

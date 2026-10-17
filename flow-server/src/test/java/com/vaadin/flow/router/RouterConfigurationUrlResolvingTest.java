@@ -24,7 +24,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -48,8 +47,8 @@ class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     private RouteConfiguration routeConfiguration;
     private UI ui;
     private VaadinService service = mock(VaadinService.class);
-    private DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+    private DeploymentConfiguration configuration = mock(
+            DeploymentConfiguration.class);
 
     @BeforeEach
     void init() throws NoSuchFieldException, IllegalAccessException {

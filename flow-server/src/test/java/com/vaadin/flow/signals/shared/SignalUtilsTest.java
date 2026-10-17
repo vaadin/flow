@@ -16,7 +16,6 @@
 package com.vaadin.flow.signals.shared;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.TestUtil;
@@ -35,8 +34,7 @@ class SignalUtilsTest {
     @Test
     void treeOf_returnsSignalsUnderlyingTree() {
         SignalTree tree = mock(SignalTree.class);
-        AbstractSharedSignal<?> signal = Mockito
-                .mock(AbstractSharedSignal.class);
+        AbstractSharedSignal<?> signal = mock(AbstractSharedSignal.class);
         when(signal.tree()).thenReturn(tree);
         assertSame(tree, SignalUtils.treeOf(signal));
         verify(signal, times(1)).tree();
@@ -45,8 +43,7 @@ class SignalUtilsTest {
 
     @Test
     void isValid_callsSignalsIsValid() {
-        AbstractSharedSignal<?> signal = Mockito
-                .mock(AbstractSharedSignal.class);
+        AbstractSharedSignal<?> signal = mock(AbstractSharedSignal.class);
         SignalCommand command = TestUtil.writeRootValueCommand();
         when(signal.isValid(any())).thenReturn(true);
         assertTrue(SignalUtils.isValid(signal, command));

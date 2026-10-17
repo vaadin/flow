@@ -19,12 +19,12 @@ import java.io.File;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.server.AbstractConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ComponentTrackerLocationTest {
@@ -32,8 +32,7 @@ class ComponentTrackerLocationTest {
     @Test
     void findJavaFile_simpleClass() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
+        AbstractConfiguration configuration = mock(AbstractConfiguration.class);
         when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
         ComponentTracker.Location location = new ComponentTracker.Location(
@@ -49,8 +48,7 @@ class ComponentTrackerLocationTest {
     @Test
     void findJavaFile_simpleClass_dollarInPackage() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
+        AbstractConfiguration configuration = mock(AbstractConfiguration.class);
         when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
         ComponentTracker.Location location = new ComponentTracker.Location(
@@ -66,8 +64,7 @@ class ComponentTrackerLocationTest {
     @Test
     void findJavaFile_simpleClass_dollarInName() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
+        AbstractConfiguration configuration = mock(AbstractConfiguration.class);
         when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
         ComponentTracker.Location location = new ComponentTracker.Location(
@@ -84,8 +81,7 @@ class ComponentTrackerLocationTest {
     @Test
     void findJavaFile_innerClass() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
+        AbstractConfiguration configuration = mock(AbstractConfiguration.class);
         when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
         ComponentTracker.Location location = new ComponentTracker.Location(
@@ -102,8 +98,7 @@ class ComponentTrackerLocationTest {
     @Test
     void findJavaFile_nestedInnerClass() {
         File fakeSrcDir = new File("src");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
+        AbstractConfiguration configuration = mock(AbstractConfiguration.class);
         when(configuration.getJavaSourceFolder()).thenReturn(fakeSrcDir);
 
         ComponentTracker.Location location = new ComponentTracker.Location(
@@ -121,8 +116,7 @@ class ComponentTrackerLocationTest {
     void findKotlinFile_simpleClass() {
         File defaultJavaSrcDir = new File("src/main/java");
         File kotlinExpectedSrcDir = new File("src/main/kotlin");
-        AbstractConfiguration configuration = Mockito
-                .mock(AbstractConfiguration.class);
+        AbstractConfiguration configuration = mock(AbstractConfiguration.class);
         when(configuration.getJavaSourceFolder()).thenReturn(defaultJavaSrcDir);
 
         ComponentTracker.Location location = new ComponentTracker.Location(

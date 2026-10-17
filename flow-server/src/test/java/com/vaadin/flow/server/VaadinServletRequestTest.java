@@ -18,16 +18,15 @@ package com.vaadin.flow.server;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class VaadinServletRequestTest {
 
     @Test
     void getContentLengthLong_delegateToServletRequestGetContentLengthLong() {
-        HttpServletRequest servletRequest = Mockito
-                .mock(HttpServletRequest.class);
+        HttpServletRequest servletRequest = mock(HttpServletRequest.class);
 
         VaadinServletRequest request = new VaadinServletRequest(servletRequest,
                 null);

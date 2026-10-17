@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HasValue;
@@ -119,8 +118,8 @@ class DefaultBindingExceptionHandlerTest {
         VaadinContext context = mock(VaadinContext.class);
         when(service.getContext()).thenReturn(context);
 
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
         when(context.getAttribute(eq(ApplicationConfiguration.class), any()))
                 .thenReturn(configuration);
         when(configuration.isProductionMode()).thenReturn(productionMode);

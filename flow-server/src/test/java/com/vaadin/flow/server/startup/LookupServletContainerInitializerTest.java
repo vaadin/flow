@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
@@ -176,8 +175,8 @@ class LookupServletContainerInitializerTest {
     void processLookupServletContainerInitializer_contextHasDeferredInitializers_runInitializersAndClearAttribute()
             throws ServletException {
         ServletContext context = mock(ServletContext.class);
-        DeferredServletContextInitializers deferredInitializers = Mockito
-                .mock(DeferredServletContextInitializers.class);
+        DeferredServletContextInitializers deferredInitializers = mock(
+                DeferredServletContextInitializers.class);
         when(context.getAttribute(
                 DeferredServletContextInitializers.class.getName()))
                 .thenReturn(deferredInitializers);

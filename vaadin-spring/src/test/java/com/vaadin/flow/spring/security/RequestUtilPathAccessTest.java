@@ -23,7 +23,6 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -365,13 +364,13 @@ class RequestUtilPathAccessTest {
 
     private SpringServlet setupMockServlet(boolean inited) {
         SpringServlet servlet = mock(SpringServlet.class);
-        SpringVaadinServletService service = Mockito
-                .mock(SpringVaadinServletService.class);
+        SpringVaadinServletService service = mock(
+                SpringVaadinServletService.class);
         Router router = mock(Router.class);
 
         RouteRegistry routeRegistry = new TestRouteRegistry();
-        DeploymentConfiguration deploymentConfiguration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration deploymentConfiguration = mock(
+                DeploymentConfiguration.class);
 
         when(springServletRegistration.getServlet()).thenReturn(servlet);
         if (inited) {

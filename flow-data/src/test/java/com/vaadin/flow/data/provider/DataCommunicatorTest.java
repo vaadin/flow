@@ -1670,8 +1670,8 @@ public class DataCommunicatorTest {
                 dataGenerator, arrayUpdater, data -> {
                 }, element.getNode(), false);
 
-        DataProvider<Item, ?> dataProvider = Mockito
-                .spy(DataProvider.ofItems(new Item(0)));
+        DataProvider<Item, ?> dataProvider = spy(
+                DataProvider.ofItems(new Item(0)));
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setViewportRange(0, 0);
@@ -1909,8 +1909,7 @@ public class DataCommunicatorTest {
     void setViewportRange_defaultPageSize_tooMuchItemsRequested_maxItemsAllowedRequested(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-        DataProvider<Item, Object> dataProvider = Mockito
-                .spy(createDataProvider(1000));
+        DataProvider<Item, Object> dataProvider = spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
         // Paging is disabled for easier check of requested amount of items
         dataCommunicator.setPagingEnabled(false);
@@ -1932,8 +1931,7 @@ public class DataCommunicatorTest {
     void setSmallPageSize_fetchMaximumItemsLowerLimit(
             boolean dataProviderWithParallelStream) {
         this.dataProviderWithParallelStream = dataProviderWithParallelStream;
-        DataProvider<Item, Object> dataProvider = Mockito
-                .spy(createDataProvider(1000));
+        DataProvider<Item, Object> dataProvider = spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setPageSize(2);
         dataCommunicator.setViewportRange(0, 1000);
@@ -1953,8 +1951,7 @@ public class DataCommunicatorTest {
         int newPageSize = 300;
         dataCommunicator.setPageSize(newPageSize);
 
-        DataProvider<Item, Object> dataProvider = Mockito
-                .spy(createDataProvider(1000));
+        DataProvider<Item, Object> dataProvider = spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
         // Paging is disabled for easier check of requested amount of items
         dataCommunicator.setPagingEnabled(false);

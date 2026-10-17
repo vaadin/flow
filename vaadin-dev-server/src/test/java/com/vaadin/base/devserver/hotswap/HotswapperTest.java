@@ -34,7 +34,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -114,8 +113,8 @@ class HotswapperTest {
         service = new MockVaadinServletService();
         lookup = service.getLookup();
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.isProductionMode()).then(
                 i -> service.getDeploymentConfiguration().isProductionMode());
         when(lookup.lookup(ApplicationConfigurationFactory.class))
@@ -1396,8 +1395,8 @@ class HotswapperTest {
 
             @Override
             protected void instrumentMockLookup(Lookup lookup) {
-                ApplicationConfiguration appConfig = Mockito
-                        .mock(ApplicationConfiguration.class);
+                ApplicationConfiguration appConfig = mock(
+                        ApplicationConfiguration.class);
                 when(appConfig.isProductionMode()).then(
                         i -> getDeploymentConfiguration().isProductionMode());
                 when(lookup.lookup(ApplicationConfigurationFactory.class))

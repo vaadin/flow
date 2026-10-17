@@ -41,7 +41,6 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
@@ -91,16 +90,16 @@ class SessionRouteRegistryTest {
 
         vaadinService = mock(MockService.class);
         when(vaadinService.getRouteRegistry()).thenReturn(registry);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.getFrontendFolder())
                 .thenReturn(new File("/frontend"));
         when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(configuration);
         VaadinServletContext context = new MockVaadinContext();
 
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
 
         context.setAttribute(ApplicationConfiguration.class,
                 applicationConfiguration);
@@ -1196,8 +1195,8 @@ class SessionRouteRegistryTest {
 
         private ReentrantLock lock = mock(ReentrantLock.class);
 
-        private RouteRegistry appRegistry = Mockito
-                .mock(ApplicationRouteRegistry.class);
+        private RouteRegistry appRegistry = mock(
+                ApplicationRouteRegistry.class);
 
         {
             when(lock.isHeldByCurrentThread()).thenReturn(true);

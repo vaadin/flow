@@ -258,8 +258,8 @@ public class SpringInstantiatorTest {
         when(servletContext.getClassLoader())
                 .thenReturn(servlet.getClass().getClassLoader());
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         when(appConfig.getContext())

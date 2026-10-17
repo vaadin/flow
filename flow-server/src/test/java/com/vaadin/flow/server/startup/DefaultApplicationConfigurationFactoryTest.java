@@ -30,7 +30,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.experimental.FeatureFlags;
@@ -53,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class DefaultApplicationConfigurationFactoryTest {
@@ -223,8 +223,8 @@ class DefaultApplicationConfigurationFactoryTest {
         ApplicationConfiguration configuration = factory.create(context);
 
         FeatureFlags featureFlags = mock(FeatureFlags.class);
-        try (MockedStatic<FeatureFlags> flags = Mockito
-                .mockStatic(FeatureFlags.class)) {
+        try (MockedStatic<FeatureFlags> flags = mockStatic(
+                FeatureFlags.class)) {
             flags.when(() -> FeatureFlags.get(context))
                     .thenReturn(featureFlags);
 
@@ -332,8 +332,8 @@ class DefaultApplicationConfigurationFactoryTest {
         when(config.getConfigParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
 
         when(context.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(appConfig);
@@ -341,8 +341,7 @@ class DefaultApplicationConfigurationFactoryTest {
                 .thenReturn(appConfig);
 
         Lookup lookup = mock(Lookup.class);
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
         when(context.getAttribute(Lookup.class)).thenReturn(lookup);

@@ -87,6 +87,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -165,26 +166,26 @@ class BuildFrontendUtilTest {
             throws URISyntaxException, ExecutionFailedException {
         setupPluginAdapterDefaults();
 
-        MockedConstruction<TaskRunNpmInstall> construction = Mockito
-                .mockConstruction(TaskRunNpmInstall.class);
+        MockedConstruction<TaskRunNpmInstall> construction = mockConstruction(
+                TaskRunNpmInstall.class);
 
-        final EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = Mockito
-                .mock(EndpointGeneratorTaskFactory.class);
+        final EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = mock(
+                EndpointGeneratorTaskFactory.class);
         doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        final TaskGenerateOpenAPI taskGenerateOpenAPI = Mockito
-                .mock(TaskGenerateOpenAPI.class);
+        final TaskGenerateOpenAPI taskGenerateOpenAPI = mock(
+                TaskGenerateOpenAPI.class);
         doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any());
 
-        final TaskGenerateEndpoint taskGenerateEndpoint = Mockito
-                .mock(TaskGenerateEndpoint.class);
+        final TaskGenerateEndpoint taskGenerateEndpoint = mock(
+                TaskGenerateEndpoint.class);
         doReturn(taskGenerateEndpoint).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(any());
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
         when(frontendDependencies.getPwaConfiguration())
                 .thenReturn(new PwaConfiguration());
         try (MockedStatic<FrontendBuildUtils> util = mockStatic(
@@ -211,8 +212,8 @@ class BuildFrontendUtilTest {
     @Test
     void detectsUsedCommercialComponents() {
 
-        final FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        final FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
         Map<String, String> packages = new HashMap<>();
         packages.put("comm-component", "4.6.5");
         packages.put("comm-component2", "4.6.5");
@@ -591,8 +592,8 @@ class BuildFrontendUtilTest {
         Map<ChunkInfo, List<String>> modulesMap = Collections
                 .singletonMap(ChunkInfo.GLOBAL, modules);
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
         when(frontendDependencies.getPackages()).thenReturn(packages);
         when(frontendDependencies.getModules()).thenReturn(modulesMap);
 
@@ -630,8 +631,8 @@ class BuildFrontendUtilTest {
         Map<ChunkInfo, List<String>> modulesMap = Collections
                 .singletonMap(ChunkInfo.GLOBAL, modules);
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
         when(frontendDependencies.getPackages()).thenReturn(packages);
         when(frontendDependencies.getModules()).thenReturn(modulesMap);
 
@@ -667,8 +668,8 @@ class BuildFrontendUtilTest {
         Map<ChunkInfo, List<String>> modulesMap = Collections
                 .singletonMap(ChunkInfo.GLOBAL, modules);
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
         when(frontendDependencies.getPackages()).thenReturn(packages);
         when(frontendDependencies.getModules()).thenReturn(modulesMap);
 
@@ -717,8 +718,8 @@ class BuildFrontendUtilTest {
         Map<ChunkInfo, List<String>> modulesMap = Collections
                 .singletonMap(ChunkInfo.GLOBAL, modules);
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
         when(frontendDependencies.getPackages()).thenReturn(packages);
         when(frontendDependencies.getModules()).thenReturn(modulesMap);
 
@@ -733,8 +734,8 @@ class BuildFrontendUtilTest {
 
     private void withMockedLicenseChecker(boolean isValidLicense,
             ThrowingRunnable test) throws IOException {
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class, Answers.RETURNS_MOCKS)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class, Answers.RETURNS_MOCKS)) {
             licenseChecker.when(
                     () -> LicenseChecker.isValidLicense(any(), any(), any()))
                     .thenReturn(isValidLicense);
@@ -798,8 +799,8 @@ class BuildFrontendUtilTest {
         when(adapter.createLookup(any())).thenReturn(lookup);
         doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
         when(frontendDependencies.getPwaConfiguration())
                 .thenReturn(new PwaConfiguration());
         BuildFrontendUtil.runNodeUpdater(adapter, frontendDependencies);

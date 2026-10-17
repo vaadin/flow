@@ -22,7 +22,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -37,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 
 class VaadinSpringDataHelpersTest {
 
@@ -92,8 +92,8 @@ class VaadinSpringDataHelpersTest {
 
     @Test
     void fromPagingRepository_fetchesItemsFromPagingRepoAccordingToVaadinQuery() {
-        PagingAndSortingRepository repo = Mockito
-                .mock(PagingAndSortingRepository.class);
+        PagingAndSortingRepository repo = mock(
+                PagingAndSortingRepository.class);
 
         doAnswer(mock -> {
             PageRequest pageRequest = mock.getArgument(0);

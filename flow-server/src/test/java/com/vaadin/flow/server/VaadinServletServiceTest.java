@@ -40,7 +40,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
@@ -59,6 +58,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
@@ -192,8 +192,8 @@ class VaadinServletServiceTest {
 
     @Test
     void getPwaRegistry_servletInitialized_getsRegistry() {
-        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
-                .spy(mocks.getServlet());
+        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = spy(
+                mocks.getServlet());
         // Restore original behavior of getServletContext
         when(vaadinServlet.getServletContext()).thenAnswer(
                 i -> vaadinServlet.getServletConfig().getServletContext());
@@ -204,8 +204,8 @@ class VaadinServletServiceTest {
 
     @Test
     void getPwaRegistry_servletNotInitialized_getsNull() {
-        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
-                .spy(mocks.getServlet());
+        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = spy(
+                mocks.getServlet());
         // Restore original behavior of getServletContext
         when(vaadinServlet.getServletContext()).thenAnswer(
                 i -> vaadinServlet.getServletConfig().getServletContext());

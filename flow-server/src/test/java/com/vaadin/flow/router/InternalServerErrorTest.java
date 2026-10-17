@@ -19,7 +19,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -37,8 +36,8 @@ class InternalServerErrorTest {
 
     private VaadinService service = mock(VaadinService.class);
 
-    private DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+    private DeploymentConfiguration configuration = mock(
+            DeploymentConfiguration.class);
 
     @BeforeEach
     void setUp() {

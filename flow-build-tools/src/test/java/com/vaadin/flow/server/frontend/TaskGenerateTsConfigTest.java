@@ -42,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 @Isolated
 class TaskGenerateTsConfigTest {
@@ -245,9 +246,9 @@ class TaskGenerateTsConfigTest {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsConfig.execute();
@@ -264,9 +265,9 @@ class TaskGenerateTsConfigTest {
         File tsconfig = writeTestTsConfigContent(
                 "tsconfig-custom-content.json");
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsConfig.execute();

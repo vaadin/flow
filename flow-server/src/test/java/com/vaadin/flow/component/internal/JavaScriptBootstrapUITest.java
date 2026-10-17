@@ -31,7 +31,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
@@ -84,6 +83,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -571,8 +571,8 @@ class JavaScriptBootstrapUITest {
         UIInternals internals = mockUIInternals();
 
         VaadinSession session = mocks.getSession();
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(internals.getSession()).thenReturn(session);
         when(session.getConfiguration()).thenReturn(configuration);
         ((MockDeploymentConfiguration) session.getService()
@@ -589,8 +589,8 @@ class JavaScriptBootstrapUITest {
                 .createStateNode("foo-element");
         when(stateTree.getRootNode()).thenReturn(stateNode);
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
 
             menuRegistry
                     .when(() -> MenuRegistry.hasClientRoute("clean/1", true))
@@ -722,8 +722,7 @@ class JavaScriptBootstrapUITest {
         doAnswer(invocation -> attributes.get(invocation.getArgument(0)))
                 .when(session).getAttribute(any(Class.class));
 
-        ExtendedClientDetails details = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
         when(details.getWindowName()).thenReturn("window");
         ui.getInternals().setExtendedClientDetails(details);
         ui.browserNavigate(new BrowserNavigateEvent(ui, true, location, "",

@@ -33,7 +33,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -98,6 +97,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -368,8 +368,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hillaAnonymousEndpointRequest_arePermitted() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -398,8 +398,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hillaEndpointRequest_areAuthenticated() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -428,8 +428,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hilla_checkAllowedRoutes() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);

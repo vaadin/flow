@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -136,8 +135,7 @@ class WebComponentExporterAwareValidatorTest {
     private void assertHint(String msg,
             Class<? extends Annotation> anntationType) {
         assertThat("Exception has hint.", msg,
-                allOf(CoreMatchers
-                        .containsString(anntationType.getSimpleName()),
+                allOf(containsString(anntationType.getSimpleName()),
                         containsString(ERROR_HINT)));
     }
 }

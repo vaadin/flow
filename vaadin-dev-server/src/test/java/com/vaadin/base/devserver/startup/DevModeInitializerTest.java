@@ -82,6 +82,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -289,8 +290,8 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     private Options captureNodeTasksOptions() throws Exception {
         List<Options> captured = new ArrayList<>();
-        try (MockedConstruction<NodeTasks> ignored = Mockito
-                .mockConstruction(NodeTasks.class, (mock, context) -> captured
+        try (MockedConstruction<NodeTasks> ignored = mockConstruction(
+                NodeTasks.class, (mock, context) -> captured
                         .add((Options) context.arguments().get(0)))) {
             process();
         }
@@ -698,8 +699,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
         urls.add(jar);
 
         // Create mock resource provider with the single jar to be found
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
         when(resourceProvider.getApplicationResources(resourcesFolder))
@@ -731,8 +731,7 @@ class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws IOException, VaadinInitializerException {
 
         // Create mock resource provider with the single jar to be found
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
         when(resourceProvider.getApplicationResources(resourcesFolder))

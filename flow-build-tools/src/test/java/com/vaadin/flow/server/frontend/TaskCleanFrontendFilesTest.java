@@ -27,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
@@ -36,6 +35,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class TaskCleanFrontendFilesTest {
     @TempDir
@@ -138,8 +138,8 @@ class TaskCleanFrontendFilesTest {
     void hillaIsUsed_nodeModulesFolderIsKept()
             throws IOException, ExecutionFailedException {
         TaskCleanFrontendFiles clean;
-        try (MockedStatic<FrontendBuildUtils> util = Mockito
-                .mockStatic(FrontendBuildUtils.class)) {
+        try (MockedStatic<FrontendBuildUtils> util = mockStatic(
+                FrontendBuildUtils.class)) {
             util.when(() -> FrontendBuildUtils.isHillaUsed(any(),
                     any(ClassFinder.class))).thenReturn(true);
             clean = new TaskCleanFrontendFiles(options);
@@ -167,8 +167,8 @@ class TaskCleanFrontendFilesTest {
         new File(nodeModules, "file-routes.ts").createNewFile();
         new File(nodeModules, "file-routes.json").createNewFile();
 
-        try (MockedStatic<FrontendBuildUtils> util = Mockito
-                .mockStatic(FrontendBuildUtils.class)) {
+        try (MockedStatic<FrontendBuildUtils> util = mockStatic(
+                FrontendBuildUtils.class)) {
             util.when(() -> FrontendBuildUtils.isHillaUsed(any(),
                     any(ClassFinder.class))).thenReturn(false);
             new TaskCleanFrontendFiles(options);

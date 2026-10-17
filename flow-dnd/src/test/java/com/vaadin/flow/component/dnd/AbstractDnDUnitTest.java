@@ -21,7 +21,6 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -48,8 +47,8 @@ abstract class AbstractDnDUnitTest {
 
     @BeforeEach
     void setup() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         when(appConfig.getBuildFolder()).thenReturn(".");

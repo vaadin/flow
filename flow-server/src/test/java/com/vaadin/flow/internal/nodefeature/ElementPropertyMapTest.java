@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -457,8 +456,8 @@ class ElementPropertyMapTest {
     private Runnable assertDeferredUpdate_putResult(ElementPropertyMap map,
             String property) throws PropertyChangeDeniedException {
         Runnable runnable = map.deferredUpdateFromClient(property, "a");
-        assertThat(runnable.getClass().getName(), CoreMatchers
-                .equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
+        assertThat(runnable.getClass().getName(),
+                equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
         return runnable;
     }
 

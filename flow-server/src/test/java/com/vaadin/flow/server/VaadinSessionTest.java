@@ -44,7 +44,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
@@ -396,8 +395,8 @@ class VaadinSessionTest {
     @Test
     @Tag("com.vaadin.flow.testcategory.SlowTests")
     void threadLocalsWhenDeserializing() throws Exception {
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
 
         when(configuration.isDevModeSessionSerializationEnabled())
                 .thenReturn(true);
@@ -603,8 +602,7 @@ class VaadinSessionTest {
             throw new RuntimeException(e);
         }
 
-        HttpSessionBindingEvent event = Mockito
-                .mock(HttpSessionBindingEvent.class);
+        HttpSessionBindingEvent event = mock(HttpSessionBindingEvent.class);
         session.valueUnbound(null);
 
         verify(session).valueUnbound(null);

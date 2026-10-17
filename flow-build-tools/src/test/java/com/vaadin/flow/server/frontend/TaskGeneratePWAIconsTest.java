@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -69,8 +68,8 @@ class TaskGeneratePWAIconsTest {
         iconsOutDirectory = wabappResourceOutDirectory
                 .resolve(Constants.VAADIN_PWA_ICONS);
 
-        FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
         when(scanner.getPwaConfiguration()).then(i -> pwaConfiguration);
 
         URLClassLoader classFinderClassLoader = new URLClassLoader(

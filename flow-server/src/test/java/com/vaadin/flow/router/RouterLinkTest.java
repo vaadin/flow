@@ -24,7 +24,6 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -70,8 +69,7 @@ class RouterLinkTest extends HasCurrentService {
     void setUp() throws NoSuchFieldException, IllegalAccessException,
             InvalidRouteConfigurationException {
         VaadinService service = VaadinService.getCurrent();
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         when(config.getFrontendFolder()).thenReturn(new File("/frontend"));
         when(service.getDeploymentConfiguration()).thenReturn(config);
 

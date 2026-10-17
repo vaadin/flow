@@ -34,7 +34,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -74,8 +73,7 @@ public class QuarkusVaadinServletTest {
     @BeforeEach
     public void setUp() {
         servletConfig = mock(ServletConfig.class);
-        final ServletContext servletContext = Mockito
-                .mock(ServletContext.class);
+        final ServletContext servletContext = mock(ServletContext.class);
         when(servletContext.getClassLoader())
                 .thenReturn(getClass().getClassLoader());
 
@@ -85,10 +83,10 @@ public class QuarkusVaadinServletTest {
         when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
-        final DefaultApplicationConfigurationFactory configurationFactory = Mockito
-                .mock(DefaultApplicationConfigurationFactory.class);
-        final ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        final DefaultApplicationConfigurationFactory configurationFactory = mock(
+                DefaultApplicationConfigurationFactory.class);
+        final ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
         when(applicationConfiguration.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         final VaadinContext context = mock(VaadinContext.class);
@@ -110,8 +108,8 @@ public class QuarkusVaadinServletTest {
         when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
-        final ServletRegistration servletRegistration = Mockito
-                .mock(ServletRegistration.class);
+        final ServletRegistration servletRegistration = mock(
+                ServletRegistration.class);
         when(servletRegistration.getMappings())
                 .thenReturn(Collections.emptyList());
         when(servletContext.getServletRegistrations())

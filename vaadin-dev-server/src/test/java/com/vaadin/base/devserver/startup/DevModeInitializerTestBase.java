@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
@@ -92,13 +91,12 @@ class DevModeInitializerTestBase extends AbstractDevModeTest {
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
-        ServletRegistration vaadinServletRegistration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration vaadinServletRegistration = mock(
+                ServletRegistration.class);
 
         when(vaadinServletRegistration.getClassName())
                 .thenReturn(VaadinServletSubClass.class.getName());
-        endpointGeneratorTaskFactory = Mockito
-                .mock(EndpointGeneratorTaskFactory.class);
+        endpointGeneratorTaskFactory = mock(EndpointGeneratorTaskFactory.class);
         taskGenerateEndpoint = mock(TaskGenerateEndpoint.class);
         taskGenerateOpenAPI = mock(TaskGenerateOpenAPI.class);
         doReturn(endpointGeneratorTaskFactory).when(lookup)

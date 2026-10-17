@@ -46,7 +46,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -722,8 +721,7 @@ public class ResponseWriterTest {
                 @Override
                 protected URLConnection openConnection(URL u)
                         throws IOException {
-                    URLConnection connection = Mockito
-                            .mock(URLConnection.class);
+                    URLConnection connection = mock(URLConnection.class);
                     when(connection.getInputStream())
                             .thenReturn(new ByteArrayInputStream(data));
                     when(connection.getContentLengthLong())

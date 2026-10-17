@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
@@ -59,8 +58,8 @@ class QuarkusVaadinServletServiceTest {
     void setUp() {
         beanManager = mock(BeanManager.class);
         servlet = mock(QuarkusVaadinServlet.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         service = new QuarkusVaadinServletService(servlet, configuration,
                 beanManager);
     }
@@ -140,8 +139,7 @@ class QuarkusVaadinServletServiceTest {
         when(beanManager.getBeans(eq(InstantiatorFactory.class), any()))
                 .thenReturn(Set.of(bean));
         when(beanManager.resolve(any())).thenReturn(bean);
-        CreationalContext creationalContext = Mockito
-                .mock(CreationalContext.class);
+        CreationalContext creationalContext = mock(CreationalContext.class);
         when(beanManager.createCreationalContext(bean))
                 .thenReturn(creationalContext);
         Context context = mock(Context.class);

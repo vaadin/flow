@@ -35,7 +35,6 @@ import java.util.jar.JarOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -51,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class PinnedNpmVersionsTest {
@@ -396,8 +396,8 @@ class PinnedNpmVersionsTest {
                 false);
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
             loggerFactory.when(
                     () -> LoggerFactory.getLogger(PinnedNpmVersions.class))
                     .thenReturn(logger);
@@ -550,8 +550,7 @@ class PinnedNpmVersionsTest {
 
         // No file of the platform, so the version of the Vaadin on the
         // classpath is used and what the file says is ignored
-        try (MockedStatic<Platform> platform = Mockito
-                .mockStatic(Platform.class)) {
+        try (MockedStatic<Platform> platform = mockStatic(Platform.class)) {
             platform.when(() -> Platform.getVaadinVersion(any()))
                     .thenReturn(Optional.of("25.1.0"));
 

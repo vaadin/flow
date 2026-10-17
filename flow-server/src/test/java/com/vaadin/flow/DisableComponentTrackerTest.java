@@ -22,7 +22,6 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -35,6 +34,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class DisableComponentTrackerTest {
@@ -112,10 +112,10 @@ class DisableComponentTrackerTest {
 
     private void withVaadinEnvironment(
             Consumer<ApplicationConfiguration> action) {
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
         Map<Class<?>, CurrentInstance> instances = CurrentInstance
                 .getInstances();
         CurrentInstance.clearAll();

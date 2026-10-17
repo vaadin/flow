@@ -64,7 +64,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.WarURLStreamHandlerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -103,8 +102,8 @@ class StaticFileServerTest implements Serializable {
     private Map<String, Long> dateHeaders;
     private AtomicInteger responseCode;
     private AtomicLong responseContentLength;
-    private VaadinServletService servletService = Mockito
-            .mock(VaadinServletService.class);
+    private VaadinServletService servletService = mock(
+            VaadinServletService.class);
     private DeploymentConfiguration configuration;
     private ServletContext servletContext;
 

@@ -42,7 +42,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -231,8 +230,8 @@ class ServletDeployerTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private ServletContextEvent getContextEvent(
             ServletRegistration... servletRegistrations) throws Exception {
-        ServletRegistration.Dynamic dynamicMock = Mockito
-                .mock(ServletRegistration.Dynamic.class);
+        ServletRegistration.Dynamic dynamicMock = mock(
+                ServletRegistration.Dynamic.class);
 
         when(dynamicMock.addMapping(anyString())).thenAnswer(answer -> {
             String mappings = answer.getArgument(0);
@@ -248,8 +247,7 @@ class ServletDeployerTest {
         when(contextMock.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
 
         when(resourceProvider.getApplicationResources(any()))
                 .thenReturn(Collections.emptyList());
@@ -257,8 +255,8 @@ class ServletDeployerTest {
         when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
 
         when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
@@ -303,8 +301,7 @@ class ServletDeployerTest {
     private ServletRegistration getServletRegistration(String servletName,
             Class<?> servletClass, Collection<String> pathMappings,
             Map<String, String> initParameters) {
-        ServletRegistration registrationMock = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration registrationMock = mock(ServletRegistration.class);
         when(registrationMock.getClassName()).thenReturn(
                 servletClass != null ? servletClass.getName() : null);
         when(registrationMock.getMappings()).thenReturn(pathMappings);

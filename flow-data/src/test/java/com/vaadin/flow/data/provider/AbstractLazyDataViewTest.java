@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import tools.jackson.databind.JsonNode;
 
@@ -39,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -361,15 +361,15 @@ class AbstractLazyDataViewTest {
         Item item1 = new Item(0L, "value1");
         Item item2 = new Item(1L, "value2");
 
-        DataProvider<Item, Void> dataProvider = Mockito
-                .spy(DataProvider.fromCallbacks(query -> {
+        DataProvider<Item, Void> dataProvider = spy(
+                DataProvider.fromCallbacks(query -> {
                     query.getOffset();
                     query.getLimit();
                     return Stream.of(item1, item2);
                 }, query -> 2));
 
-        DataCommunicator<Item> dataCommunicator = Mockito
-                .spy(new DataCommunicator<>((item, jsonObject) -> {
+        DataCommunicator<Item> dataCommunicator = spy(
+                new DataCommunicator<>((item, jsonObject) -> {
                 }, arrayUpdater, null, component.getElement().getNode()));
 
         dataCommunicator.setDataProvider(dataProvider, null);
@@ -402,15 +402,15 @@ class AbstractLazyDataViewTest {
     void refreshItem_itemNotPresent_itemNotRefreshed() {
         Item item1 = new Item(0L, "value1");
 
-        DataProvider<Item, Void> dataProvider = Mockito
-                .spy(DataProvider.fromCallbacks(query -> {
+        DataProvider<Item, Void> dataProvider = spy(
+                DataProvider.fromCallbacks(query -> {
                     query.getOffset();
                     query.getLimit();
                     return Stream.of(item1);
                 }, query -> 1));
 
-        DataCommunicator<Item> dataCommunicator = Mockito
-                .spy(new DataCommunicator<>((item, jsonObject) -> {
+        DataCommunicator<Item> dataCommunicator = spy(
+                new DataCommunicator<>((item, jsonObject) -> {
                 }, arrayUpdater, null, component.getElement().getNode()));
 
         dataCommunicator.setDataProvider(dataProvider, null);

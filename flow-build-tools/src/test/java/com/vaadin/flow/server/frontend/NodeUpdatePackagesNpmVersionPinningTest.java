@@ -27,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -48,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -530,8 +530,8 @@ class NodeUpdatePackagesNpmVersionPinningTest extends NodeUpdateTestUtil {
 
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm,
             ObjectNode testOverrides) {
-        FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
         Options options = new MockOptions(classFinder, baseDir)
                 .withEnablePnpm(enablePnpm).withBuildDirectory(TARGET)
                 .withProductionMode(true)

@@ -24,7 +24,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -87,8 +86,7 @@ class ThemeLiveUpdaterTest {
     void push_withoutABrowser_saysSoRatherThanThrowing() {
         File themeFolder = new File(temporaryFolder, "gone");
         VaadinContext context = new MockVaadinContext();
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))
@@ -144,8 +142,7 @@ class ThemeLiveUpdaterTest {
     }
 
     private VaadinContext context(File themeFolder) {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getProjectFolder()).thenReturn(temporaryFolder);
         // ThemeUtils resolves the theme folder from the configuration rather
         // than from the folder it is handed, so the two have to agree - as they
@@ -161,8 +158,7 @@ class ThemeLiveUpdaterTest {
 
     private BrowserLiveReload liveReload(VaadinContext context) {
         BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
-        liveReloadAccessorStatic = Mockito
-                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic = mockStatic(BrowserLiveReloadAccessor.class);
         liveReloadAccessorStatic
                 .when(() -> BrowserLiveReloadAccessor
                         .getLiveReloadFromContext(eq(context)))

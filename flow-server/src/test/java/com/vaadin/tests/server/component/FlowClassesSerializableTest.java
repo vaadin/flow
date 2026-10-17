@@ -22,7 +22,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlComponent;
@@ -52,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class FlowClassesSerializableTest extends ClassesSerializableTest {
@@ -119,8 +119,8 @@ class FlowClassesSerializableTest extends ClassesSerializableTest {
             public void init() {
                 super.init();
 
-                ApplicationConfiguration configuration = Mockito
-                        .mock(ApplicationConfiguration.class);
+                ApplicationConfiguration configuration = mock(
+                        ApplicationConfiguration.class);
                 when(configuration.isProductionMode()).thenReturn(
                         getDeploymentConfiguration().isProductionMode());
                 when(configuration.isDevModeSessionSerializationEnabled())

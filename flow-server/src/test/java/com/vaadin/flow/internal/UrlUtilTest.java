@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -46,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class UrlUtilTest {
@@ -326,14 +326,13 @@ class UrlUtilTest {
 
     @Test
     void isSafeUrl_configuredSchemes_replaceDefaults() {
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         when(config.getUrlSafeSchemes()).thenReturn(Set.of("custom", "https"));
         VaadinService service = mock(VaadinService.class);
         when(service.getDeploymentConfiguration()).thenReturn(config);
 
-        try (MockedStatic<VaadinService> mock = Mockito
-                .mockStatic(VaadinService.class)) {
+        try (MockedStatic<VaadinService> mock = mockStatic(
+                VaadinService.class)) {
             mock.when(VaadinService::getCurrent).thenReturn(service);
             assertTrue(UrlUtil.isSafeUrl("custom:foo"));
             assertFalse(UrlUtil.isSafeUrl("mailto:a@b.com"));
@@ -409,8 +408,8 @@ class UrlUtilTest {
         TestComponent component = new TestComponent();
         VaadinService service = createService("https");
 
-        try (MockedStatic<VaadinService> mock = Mockito
-                .mockStatic(VaadinService.class)) {
+        try (MockedStatic<VaadinService> mock = mockStatic(
+                VaadinService.class)) {
             mock.when(VaadinService::getCurrent).thenReturn(service);
             // The component may end up in an application other than the one
             // that happens to be current while the value is being set
@@ -516,15 +515,14 @@ class UrlUtilTest {
 
     @Test
     void isSafeUrl_configuredWildcard_allowsAnyScheme() {
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         when(config.getUrlSafeSchemes())
                 .thenReturn(Set.of(Constants.URL_SAFE_SCHEMES_WILDCARD));
         VaadinService service = mock(VaadinService.class);
         when(service.getDeploymentConfiguration()).thenReturn(config);
 
-        try (MockedStatic<VaadinService> mock = Mockito
-                .mockStatic(VaadinService.class)) {
+        try (MockedStatic<VaadinService> mock = mockStatic(
+                VaadinService.class)) {
             mock.when(VaadinService::getCurrent).thenReturn(service);
             assertTrue(UrlUtil.isSafeUrl("javascript:alert(1)"));
         }

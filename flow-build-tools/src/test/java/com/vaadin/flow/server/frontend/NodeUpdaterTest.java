@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -62,6 +61,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -486,8 +486,8 @@ class NodeUpdaterTest {
     void testGetPinnedNpmDependencies_noVersionsFileIsPresent_outputIsEmptyJson()
             throws IOException {
         Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(nodeUpdater.getClass()))
                     .thenReturn(logger);
@@ -700,10 +700,10 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        MockedStatic<FrontendUtils> mockFrontendUtils = Mockito
-                .mockStatic(FrontendUtils.class);
-        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = Mockito
-                .mockStatic(FrontendBuildUtils.class);
+        MockedStatic<FrontendUtils> mockFrontendUtils = mockStatic(
+                FrontendUtils.class);
+        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = mockStatic(
+                FrontendBuildUtils.class);
         try {
             mockFrontendBuildUtils.when(() -> FrontendBuildUtils
                     .isHillaUsed(any(File.class), any(ClassFinder.class)))
@@ -737,8 +737,8 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendBuildUtils> mock = Mockito
-                .mockStatic(FrontendBuildUtils.class)) {
+        try (MockedStatic<FrontendBuildUtils> mock = mockStatic(
+                FrontendBuildUtils.class)) {
             mock.when(() -> FrontendBuildUtils.isHillaUsed(any(File.class),
                     any(ClassFinder.class))).thenReturn(true);
             options.withReact(false);
@@ -779,8 +779,8 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDevDependencies_includesWorkbox_whenPwaOfflineEnabled() {
         // Create a mock PwaConfiguration with PWA offline enabled
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
         when(pwaConfig.isOfflineEnabled()).thenReturn(true);
         when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
@@ -803,8 +803,8 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDevDependencies_excludesWorkbox_whenPwaOfflineDisabled() {
         // Create a mock PwaConfiguration with PWA offline disabled
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
         when(pwaConfig.isOfflineEnabled()).thenReturn(false);
         when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
@@ -848,8 +848,8 @@ class NodeUpdaterTest {
     @Test
     void getDefaultOverrides_includesWorkboxOverrides_whenPwaOfflineEnabled() {
         // Create a mock PwaConfiguration with PWA offline enabled
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
         when(pwaConfig.isOfflineEnabled()).thenReturn(true);
         when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
@@ -875,8 +875,8 @@ class NodeUpdaterTest {
     @Test
     void getDefaultOverrides_returnsEmpty_whenPwaOfflineDisabled() {
         // Create a mock PwaConfiguration with PWA offline enabled
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
         when(pwaConfig.isOfflineEnabled()).thenReturn(false);
         when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
@@ -958,13 +958,13 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDependencies_hillaAvailableButNotUsed_addsGeneratorDependencies() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendBuildUtils> frontendBuildUtilsMock = Mockito
-                .mockStatic(FrontendBuildUtils.class);
-                MockedStatic<FrontendUtils> frontendUtilsMock = Mockito
-                        .mockStatic(FrontendUtils.class);
+        try (MockedStatic<FrontendBuildUtils> frontendBuildUtilsMock = mockStatic(
+                FrontendBuildUtils.class);
+                MockedStatic<FrontendUtils> frontendUtilsMock = mockStatic(
+                        FrontendUtils.class);
 
-                MockedStatic<EndpointRequestUtil> endpointUtilMock = Mockito
-                        .mockStatic(EndpointRequestUtil.class)) {
+                MockedStatic<EndpointRequestUtil> endpointUtilMock = mockStatic(
+                        EndpointRequestUtil.class)) {
 
             // Hilla is available in classpath but not used
             frontendBuildUtilsMock.when(() -> FrontendBuildUtils

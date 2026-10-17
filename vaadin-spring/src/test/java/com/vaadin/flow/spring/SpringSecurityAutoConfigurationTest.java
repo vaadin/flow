@@ -24,7 +24,6 @@ import java.security.Principal;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -60,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -223,8 +223,7 @@ class SpringSecurityAutoConfigurationTest {
         assertThat(context).hasSingleBean(NavigationAccessControl.class);
         NavigationAccessControl control = context
                 .getBean(NavigationAccessControl.class);
-        NavigationContext navigationContext = Mockito
-                .mock(NavigationContext.class);
+        NavigationContext navigationContext = mock(NavigationContext.class);
         when(navigationContext.getNavigationTarget())
                 .thenReturn((Class) Component.class);
         when(navigationContext.getLocation()).thenReturn(new Location("path"));

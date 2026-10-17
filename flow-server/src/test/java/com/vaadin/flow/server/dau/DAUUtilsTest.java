@@ -25,7 +25,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeType;
 
@@ -54,6 +53,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -88,8 +88,8 @@ class DAUUtilsTest {
         when(request.getAttribute(anyString()))
                 .thenAnswer(i -> attributes.get(i.<String> getArgument(0)));
 
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             dauIntegration
                     .when(() -> DauIntegration.trackUser("trackingHash", null))
                     .thenThrow(new EnforcementException("STOP"));
@@ -117,8 +117,8 @@ class DAUUtilsTest {
         when(request.getAttribute(anyString()))
                 .thenAnswer(i -> attributes.get(i.<String> getArgument(0)));
 
-        try (MockedStatic<DauIntegration> dauIntegration = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegration = mockStatic(
+                DauIntegration.class)) {
             dauIntegration
                     .when(() -> DauIntegration.trackUser("trackingHash", null))
                     .thenThrow(new EnforcementException("STOP"));
@@ -137,8 +137,8 @@ class DAUUtilsTest {
 
     @Test
     void jsonEnforcementResponse_noDauCustomizer_defaultMessages() {
-        try (MockedStatic<DauIntegration> dauIntegrationMock = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegrationMock = mockStatic(
+                DauIntegration.class)) {
             VaadinService service = VaadinServiceDauTest
                     .vaadinServiceWithDau(null);
             VaadinRequest request = mock(VaadinRequest.class);
@@ -163,8 +163,8 @@ class DAUUtilsTest {
 
     @Test
     void jsonEnforcementResponse_customMessages() {
-        try (MockedStatic<DauIntegration> dauIntegrationMock = Mockito
-                .mockStatic(DauIntegration.class)) {
+        try (MockedStatic<DauIntegration> dauIntegrationMock = mockStatic(
+                DauIntegration.class)) {
             EnforcementNotificationMessages expectedMessages = new EnforcementNotificationMessages(
                     "caption", "message", "details", "url");
             DAUCustomizer customizer = new DAUCustomizer() {
@@ -202,8 +202,8 @@ class DAUUtilsTest {
         HttpServletRequest request = mocks.request;
         HttpServletResponse response = mocks.response;
 
-        try (MockedStatic<FlowDauIntegration> flowDauIntegration = Mockito
-                .mockStatic(FlowDauIntegration.class)) {
+        try (MockedStatic<FlowDauIntegration> flowDauIntegration = mockStatic(
+                FlowDauIntegration.class)) {
 
             DAUUtils.EnforcementResult result = DAUUtils.trackDAU(service,
                     request, response);
@@ -226,8 +226,8 @@ class DAUUtilsTest {
         HttpServletRequest request = mocks.request;
         HttpServletResponse response = mocks.response;
 
-        try (MockedStatic<FlowDauIntegration> flowDauIntegration = Mockito
-                .mockStatic(FlowDauIntegration.class)) {
+        try (MockedStatic<FlowDauIntegration> flowDauIntegration = mockStatic(
+                FlowDauIntegration.class)) {
             flowDauIntegration
                     .when(() -> FlowDauIntegration
                             .applyEnforcement(any(VaadinRequest.class), any()))

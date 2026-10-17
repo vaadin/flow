@@ -44,7 +44,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
@@ -92,6 +91,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -243,14 +243,14 @@ class VaadinServiceTest {
 
     @Test
     void requestEnd_interceptorFailure_allInterceptorsInvoked_doNotThrowAndThreadLocalsCleared() {
-        VaadinRequestInterceptor interceptor1 = Mockito
-                .mock(VaadinRequestInterceptor.class);
-        VaadinRequestInterceptor interceptor2 = Mockito
-                .mock(VaadinRequestInterceptor.class);
+        VaadinRequestInterceptor interceptor1 = mock(
+                VaadinRequestInterceptor.class);
+        VaadinRequestInterceptor interceptor2 = mock(
+                VaadinRequestInterceptor.class);
         doThrow(new RuntimeException("BOOM")).when(interceptor2)
                 .requestEnd(any(), any(), any());
-        VaadinRequestInterceptor interceptor3 = Mockito
-                .mock(VaadinRequestInterceptor.class);
+        VaadinRequestInterceptor interceptor3 = mock(
+                VaadinRequestInterceptor.class);
 
         VaadinServiceInitListener initListener = event -> {
             event.addVaadinRequestInterceptor(interceptor1);
@@ -524,8 +524,8 @@ class VaadinServiceTest {
 
     private void runWithClientRoute(String route, boolean flowLayout,
             MockVaadinServletService service, Runnable runnable) {
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
             menuRegistry
                     .when(() -> MenuRegistry.collectClientMenuItems(false,
                             service.getDeploymentConfiguration()))
@@ -733,8 +733,7 @@ class VaadinServiceTest {
         Lookup lookup = mock(Lookup.class);
         servletConfig.getServletContext().setAttribute(Lookup.class.getName(),
                 lookup);
-        StaticFileHandlerFactory factory = Mockito
-                .mock(StaticFileHandlerFactory.class);
+        StaticFileHandlerFactory factory = mock(StaticFileHandlerFactory.class);
         when(lookup.lookup(StaticFileHandlerFactory.class)).thenReturn(factory);
         VaadinServlet servlet = new VaadinServlet() {
             @Override

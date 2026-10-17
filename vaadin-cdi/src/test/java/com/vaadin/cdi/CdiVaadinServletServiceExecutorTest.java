@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,7 +32,6 @@ import org.jboss.weld.junit5.WeldInitiator;
 import org.jboss.weld.junit5.WeldSetup;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.cdi.context.ServiceUnderTestContext;
 import com.vaadin.flow.internal.ReflectTools;
@@ -150,8 +149,8 @@ public class CdiVaadinServletServiceExecutorTest {
 
     private static abstract class BaseTest {
 
-        ManagedExecutorService managedExecutorService = Mockito
-                .mock(ManagedExecutorService.class);
+        ManagedExecutorService managedExecutorService = mock(
+                ManagedExecutorService.class);
 
         Executor customExecutor = mock(Executor.class);
 

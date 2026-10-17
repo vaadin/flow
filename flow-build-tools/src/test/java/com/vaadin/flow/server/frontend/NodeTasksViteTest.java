@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -52,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 
@@ -263,10 +263,10 @@ class NodeTasksViteTest {
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withFrontendHotdeploy(true).withProductionMode(false)
                 .withBuildResultFolders(npmFolder, npmFolder);
-        try (MockedStatic<BundleBuildUtils> bundleBuildUtils = Mockito
-                .mockStatic(BundleBuildUtils.class);
-                MockedStatic<BundleValidationUtil> validationUtil = Mockito
-                        .mockStatic(BundleValidationUtil.class)) {
+        try (MockedStatic<BundleBuildUtils> bundleBuildUtils = mockStatic(
+                BundleBuildUtils.class);
+                MockedStatic<BundleValidationUtil> validationUtil = mockStatic(
+                        BundleValidationUtil.class)) {
             new NodeTasks(options).execute();
             bundleBuildUtils.verify(
                     () -> BundleBuildUtils.copyPackageLockFromBundle(options),

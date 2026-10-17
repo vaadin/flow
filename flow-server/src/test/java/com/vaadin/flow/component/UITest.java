@@ -26,12 +26,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -263,8 +261,7 @@ public class UITest {
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         when(config.isProductionMode()).thenReturn(false);
         when(config.getFrontendFolder()).thenReturn(new File("front"));
         when(config.getProjectFolder()).thenReturn(new File("./"));
@@ -544,8 +541,8 @@ public class UITest {
                 .getActiveRouterTargetsChain();
         assertEquals(2, chain.size());
         assertThat(chain.get(0), instanceOf(FooBarParamNavigationTarget.class));
-        assertThat(chain.get(1), CoreMatchers
-                .instanceOf(FooBarParamParentNavigationTarget.class));
+        assertThat(chain.get(1),
+                instanceOf(FooBarParamParentNavigationTarget.class));
     }
 
     @Test
@@ -569,8 +566,8 @@ public class UITest {
                 .getActiveRouterTargetsChain();
         assertEquals(2, chain.size());
         assertThat(chain.get(0), instanceOf(FooBarParamNavigationTarget.class));
-        assertThat(chain.get(1), CoreMatchers
-                .instanceOf(FooBarParamParentNavigationTarget.class));
+        assertThat(chain.get(1),
+                instanceOf(FooBarParamParentNavigationTarget.class));
     }
 
     @Test

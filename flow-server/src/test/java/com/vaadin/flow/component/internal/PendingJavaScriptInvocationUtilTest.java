@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -487,8 +486,8 @@ class PendingJavaScriptInvocationUtilTest {
     void serializeUIWithCountedInvocation_countedUntilSentByTheRestoredUI()
             throws Exception {
         MockVaadinServletService service = new MockVaadinServletService();
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(true);
         service.getContext().setAttribute(ApplicationConfiguration.class,
                 configuration);

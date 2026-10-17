@@ -19,7 +19,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -50,8 +49,8 @@ class HotswapperRegistrationTest {
     @BeforeEach
     void setup() {
         context = new MockVaadinContext();
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
         when(applicationConfiguration.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class,
                 applicationConfiguration);
@@ -61,8 +60,8 @@ class HotswapperRegistrationTest {
 
     private VaadinService mockService() {
         VaadinService mock = mock(VaadinService.class);
-        DeploymentConfiguration deployment = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration deployment = mock(
+                DeploymentConfiguration.class);
         when(deployment.isProductionMode()).thenReturn(false);
         when(mock.getDeploymentConfiguration()).thenReturn(deployment);
         when(mock.getContext()).thenReturn(context);

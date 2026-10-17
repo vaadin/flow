@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -130,8 +129,8 @@ class AbstractSinglePropertyFieldTest {
         StringField stringField = new StringField();
         DomListenerRegistration origReg = stringField
                 .getSynchronizationRegistration();
-        SerializableRunnable unregisterListener = Mockito
-                .mock(SerializableRunnable.class);
+        SerializableRunnable unregisterListener = mock(
+                SerializableRunnable.class);
         origReg.onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent("blur");
@@ -145,8 +144,8 @@ class AbstractSinglePropertyFieldTest {
     @Test
     void synchronizedEvent_null_noSynchronization() {
         StringField stringField = new StringField();
-        SerializableRunnable unregisterListener = Mockito
-                .mock(SerializableRunnable.class);
+        SerializableRunnable unregisterListener = mock(
+                SerializableRunnable.class);
         stringField.getSynchronizationRegistration()
                 .onUnregister(unregisterListener);
 

@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
@@ -195,8 +194,8 @@ class WebComponentProviderTest {
 
         ByteArrayOutputStream out = spy(new ByteArrayOutputStream());
 
-        DefaultDeploymentConfiguration configuration = Mockito
-                .mock(DefaultDeploymentConfiguration.class);
+        DefaultDeploymentConfiguration configuration = mock(
+                DefaultDeploymentConfiguration.class);
 
         when(response.getOutputStream()).thenReturn(out);
         when(session.getConfiguration()).thenReturn(configuration);
@@ -230,8 +229,8 @@ class WebComponentProviderTest {
         ByteArrayOutputStream out1 = new ByteArrayOutputStream();
         ByteArrayOutputStream out2 = new ByteArrayOutputStream();
 
-        DefaultDeploymentConfiguration configuration = Mockito
-                .mock(DefaultDeploymentConfiguration.class);
+        DefaultDeploymentConfiguration configuration = mock(
+                DefaultDeploymentConfiguration.class);
 
         when(response.getOutputStream()).thenReturn(out1);
         when(session.getConfiguration()).thenReturn(configuration);
@@ -309,8 +308,8 @@ class WebComponentProviderTest {
         when(request.getService()).thenReturn(service);
         when(service.getContext()).thenReturn(context);
 
-        WebComponentConfigurationRegistry registry = Mockito
-                .mock(WebComponentConfigurationRegistry.class);
+        WebComponentConfigurationRegistry registry = mock(
+                WebComponentConfigurationRegistry.class);
         when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
                 any())).thenReturn(registry);
         when(registry.hasConfigurations()).thenReturn(hasConfig);

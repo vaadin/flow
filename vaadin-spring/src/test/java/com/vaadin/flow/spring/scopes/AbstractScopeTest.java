@@ -23,7 +23,6 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
@@ -169,8 +168,8 @@ abstract class AbstractScopeTest {
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
         final Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         VaadinContext context = mock(VaadinContext.class);

@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -68,6 +67,7 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.matches;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,8 +86,7 @@ class TaskRunNpmInstallTest {
 
     protected ClassFinder finder;
 
-    protected Logger logger = Mockito
-            .spy(LoggerFactory.getLogger(NodeUpdater.class));
+    protected Logger logger = spy(LoggerFactory.getLogger(NodeUpdater.class));
 
     protected Options options;
 

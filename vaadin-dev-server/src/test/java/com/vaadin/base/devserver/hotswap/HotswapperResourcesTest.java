@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -64,8 +63,8 @@ class HotswapperResourcesTest {
         when(service.getLookup().lookupAll(VaadinHotswapper.class))
                 .thenReturn(List.of(flowHotswapper, hillaHotswapper));
 
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.isProductionMode()).thenAnswer(
                 i -> service.getDeploymentConfiguration().isProductionMode());
         when(service.getLookup().lookup(ApplicationConfigurationFactory.class))

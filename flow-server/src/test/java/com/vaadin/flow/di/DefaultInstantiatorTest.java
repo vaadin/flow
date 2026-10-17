@@ -23,7 +23,6 @@ import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -49,8 +48,7 @@ class DefaultInstantiatorTest {
 
     @Test
     void createComponent_dontDependOnGetOrCreate() {
-        DefaultInstantiator instantiator = Mockito
-                .mock(DefaultInstantiator.class);
+        DefaultInstantiator instantiator = mock(DefaultInstantiator.class);
 
         when(instantiator.createComponent(any())).thenCallRealMethod();
 

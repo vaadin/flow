@@ -42,7 +42,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -987,8 +986,7 @@ class UploadHandlerTest {
     private void mockRequest(AbstractStreamResource res, String content)
             throws IOException {
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
         when(response.getOutputStream()).thenReturn(outputStream);
         when(request.getPathInfo())
                 .thenReturn(String.format("/%s%s/%s/%s", DYN_RES_PREFIX,

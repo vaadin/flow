@@ -23,7 +23,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TracksAttachDetach;
@@ -118,8 +117,8 @@ class CompositeTest {
 
         VaadinService.setCurrent(null);
         VaadinService service = mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(true);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         VaadinService.setCurrent(service);

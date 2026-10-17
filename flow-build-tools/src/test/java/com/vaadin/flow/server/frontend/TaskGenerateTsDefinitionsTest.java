@@ -23,7 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -43,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 @Isolated
 class TaskGenerateTsDefinitionsTest {
@@ -281,9 +281,9 @@ class TaskGenerateTsDefinitionsTest {
         Files.writeString(typesTSfile, originalContent);
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsDefinitions.execute();
@@ -320,9 +320,9 @@ class TaskGenerateTsDefinitionsTest {
         Files.writeString(typesTSfile, originalContent);
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsDefinitions.execute();
@@ -356,9 +356,9 @@ class TaskGenerateTsDefinitionsTest {
         Files.writeString(typesTSfile, originalContent);
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsDefinitions.execute();
@@ -495,10 +495,11 @@ class TaskGenerateTsDefinitionsTest {
         ExecutionFailedException exception = assertThrows(
                 ExecutionFailedException.class,
                 taskGenerateTsDefinitions::execute);
-        assertThat(exception.getMessage(), CoreMatchers.containsString(
-                TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE.substring(0,
-                        TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
-                                .indexOf("%s"))));
+        assertThat(exception.getMessage(),
+                containsString(TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
+                        .substring(0,
+                                TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
+                                        .indexOf("%s"))));
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         assertEquals(lastModifiedTime, Files.getLastModifiedTime(typesTSfile),
@@ -517,10 +518,11 @@ class TaskGenerateTsDefinitionsTest {
         ExecutionFailedException exception = assertThrows(
                 ExecutionFailedException.class,
                 taskGenerateTsDefinitions::execute);
-        assertThat(exception.getMessage(), CoreMatchers.containsString(
-                TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE.substring(0,
-                        TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
-                                .indexOf("%s"))));
+        assertThat(exception.getMessage(),
+                containsString(TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
+                        .substring(0,
+                                TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
+                                        .indexOf("%s"))));
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         assertEquals(lastModifiedTime, Files.getLastModifiedTime(typesTSfile),

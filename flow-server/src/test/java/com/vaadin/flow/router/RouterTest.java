@@ -35,7 +35,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -91,8 +90,8 @@ public class RouterTest extends RoutingTestBase {
 
     private VaadinService service = mock(VaadinService.class);
 
-    private DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+    private DeploymentConfiguration configuration = mock(
+            DeploymentConfiguration.class);
 
     @Route("")
     @Tag(Tag.DIV)
@@ -4012,8 +4011,7 @@ public class RouterTest extends RoutingTestBase {
                 .getExtendedClientDetails();
 
         // Used with PreserveOnRefresh.
-        ExtendedClientDetails clientDetails = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails clientDetails = mock(ExtendedClientDetails.class);
         ui.getInternals().setExtendedClientDetails(clientDetails);
 
         when(clientDetails.getWindowName()).thenReturn("mock");

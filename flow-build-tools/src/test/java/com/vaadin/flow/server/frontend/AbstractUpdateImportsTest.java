@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -320,8 +319,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             assertThat(e.getMessage(),
                     allOf(containsString("Failed to find the following files:"),
                             containsString(fooFileName),
-                            CoreMatchers.containsString(
-                                    getFrontendErrorMessageSuffix())));
+                            containsString(getFrontendErrorMessageSuffix())));
         }
 
     }
@@ -363,8 +361,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     allOf(containsString("Failed to find the following files:"),
                             containsString(localTemplateFileName),
                             containsString(fooFileName),
-                            CoreMatchers.containsString(
-                                    getFrontendErrorMessageSuffix())));
+                            containsString(getFrontendErrorMessageSuffix())));
         }
 
     }
@@ -476,8 +473,8 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertThat(output, containsString(
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
-        assertThat(output, CoreMatchers
-                .containsString("Use the './' prefix for files in the '"
+        assertThat(output,
+                containsString("Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
                         + "' folder: 'vaadin-mixed-component/src/vaadin-mixed-component.js'"));
 
@@ -498,8 +495,8 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         String output = logger.getLogs();
         assertThat(output, containsString(
                 "Failed to find the following css files in the `node_modules`"));
-        assertThat(output, CoreMatchers
-                .containsString("@vaadin/vaadin-mixed-component/bar.css"));
+        assertThat(output,
+                containsString("@vaadin/vaadin-mixed-component/bar.css"));
     }
 
     @Test

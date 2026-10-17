@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -68,10 +67,9 @@ public class UsageStatisticsTest {
     }
 
     private void initMocks(boolean productionMode) {
-        final QuarkusVaadinServlet servlet = Mockito
-                .mock(QuarkusVaadinServlet.class);
-        final DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        final QuarkusVaadinServlet servlet = mock(QuarkusVaadinServlet.class);
+        final DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(configuration.isProductionMode()).thenReturn(productionMode);
         when(configuration.getInitParameters()).thenReturn(new Properties());
         final BeanManager beanManager = mock(BeanManager.class);

@@ -36,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -295,8 +294,7 @@ public class VaadinAppShellInitializerTest {
                 invocationOnMock.getArguments()[1])).when(servletContext)
                 .setAttribute(anyString(), any());
 
-        ServletRegistration registration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration registration = mock(ServletRegistration.class);
         context = new VaadinServletContext(servletContext);
 
         classes = new HashSet<>();
@@ -665,8 +663,7 @@ public class VaadinAppShellInitializerTest {
     }
 
     private ApplicationConfiguration mockApplicationConfiguration() {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.isProductionMode()).thenReturn(false);
 
         when(config.getStringProperty(anyString(), anyString()))

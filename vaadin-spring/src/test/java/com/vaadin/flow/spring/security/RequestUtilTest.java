@@ -28,7 +28,6 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -553,12 +552,12 @@ class RequestUtilTest {
 
     private SpringServlet setupMockServlet(boolean inited) {
         SpringServlet servlet = mock(SpringServlet.class);
-        SpringVaadinServletService service = Mockito
-                .mock(SpringVaadinServletService.class);
+        SpringVaadinServletService service = mock(
+                SpringVaadinServletService.class);
         Router router = mock(Router.class);
         RouteRegistry routeRegistry = mock(RouteRegistry.class);
-        DeploymentConfiguration deploymentConfiguration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration deploymentConfiguration = mock(
+                DeploymentConfiguration.class);
 
         when(springServletRegistration.getServlet()).thenReturn(servlet);
         if (inited) {
@@ -612,8 +611,8 @@ class RequestUtilTest {
         RouteRegistry routeRegistry = servlet.getService().getRouter()
                 .getRegistry();
         RouteTarget publicRouteTarget = mock(RouteTarget.class);
-        NavigationRouteTarget navigationTarget = Mockito
-                .mock(NavigationRouteTarget.class);
+        NavigationRouteTarget navigationTarget = mock(
+                NavigationRouteTarget.class);
 
         when(routeRegistry.getNavigationRouteTarget(path))
                 .thenReturn(navigationTarget);

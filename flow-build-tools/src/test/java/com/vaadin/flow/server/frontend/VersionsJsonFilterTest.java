@@ -26,7 +26,6 @@ import java.util.Objects;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -40,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -114,8 +114,8 @@ class VersionsJsonFilterTest {
         String versionOrigin = "dummy-origin.json";
 
         Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(FrontendVersion.class))
                     .thenReturn(logger);

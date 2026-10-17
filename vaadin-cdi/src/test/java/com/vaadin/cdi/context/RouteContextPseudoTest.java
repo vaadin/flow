@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,7 +20,6 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.cdi.annotation.RouteScoped;
 import com.vaadin.cdi.context.RouteScopedContext.NavigationData;
@@ -34,6 +33,7 @@ import static com.vaadin.cdi.SerializationUtils.serializeAndDeserialize;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 public class RouteContextPseudoTest extends
         AbstractContextTest<RouteContextPseudoTest.RouteScopedTestBean> {
@@ -78,8 +78,8 @@ public class RouteContextPseudoTest extends
         context.activate();
         BeanProvider.getContextualReference(getBeanType());
         UI ui = context.getUi();
-        try (MockedStatic<ApplicationConfiguration> appCfg = Mockito
-                .mockStatic(ApplicationConfiguration.class)) {
+        try (MockedStatic<ApplicationConfiguration> appCfg = mockStatic(
+                ApplicationConfiguration.class)) {
             appCfg.when(() -> ApplicationConfiguration.get(any()))
                     .thenReturn(mock(ApplicationConfiguration.class));
             UI ui2 = serializeAndDeserialize(ui);

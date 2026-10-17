@@ -29,7 +29,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
@@ -106,8 +105,7 @@ public abstract class AbstractDevModeTest {
 
         mockApplicationConfiguration(appConfig, enablePnpm);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
         setupMockResourceProvider(resourceProvider);

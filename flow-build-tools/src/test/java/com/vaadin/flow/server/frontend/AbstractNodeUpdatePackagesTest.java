@@ -30,7 +30,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.StringNode;
@@ -59,6 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -356,8 +356,7 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
         packageUpdater.updateVaadinJsonContents(
                 Collections.singletonMap(VAADIN_VERSION, "1.1.1"));
 
-        try (MockedStatic<Platform> platform = Mockito
-                .mockStatic(Platform.class)) {
+        try (MockedStatic<Platform> platform = mockStatic(Platform.class)) {
             platform.when(Platform::getVaadinVersion)
                     .thenReturn(Optional.of("1.2.3"));
             packageUpdater.execute();
@@ -371,8 +370,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void versionsMatch_noCleanUp() throws IOException {
         // TODO: Fixme
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -422,8 +421,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     void generatePackageJson_sameDependencies_updaterIsNotModified() {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -451,8 +450,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void generatePackageJson_sameDependenciesInDifferentOrder_updaterIsNotModified()
             throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -495,8 +494,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     void generatePackageJson_removedDependencies_updaterIsModified() {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -525,8 +524,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     void generatePackageJson_addedDependencies_updaterIsModified() {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -553,8 +552,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     void generatePackageJson_noDependencies_updaterIsNotModified() {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         when(frontendDependencies.getPackages()).thenReturn(packages);
@@ -577,8 +576,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     void updatedPackageJson_noDependencies_creatorAndUpdatedIsMarkedModified() {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         when(frontendDependencies.getPackages()).thenReturn(packages);
@@ -597,8 +596,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     void userAddedDependencies_notCleanedByUpdater() throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -655,8 +654,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     void frameworkManagedPackages_versionsAreUpdated() throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -699,8 +698,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
 
     @Test
     void removedFrameworkDependencies_dependencyIsRemoved() throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -852,8 +851,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void generatePackageJson_userOverridesChanged_updaterIsNotModified()
             throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -893,8 +892,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void generatePackageJson_vaadinOverridesChanged_updaterIsModified()
             throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -971,8 +970,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void generatePackageJson_sameOverrides_updaterIsNotModified()
             throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -1040,8 +1039,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void generatePackageJson_userModifiesVaadinOverride_overrideEnforced()
             throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");
@@ -1102,8 +1101,8 @@ abstract class AbstractNodeUpdatePackagesTest extends NodeUpdateTestUtil {
     @Test
     void generatePackageJson_managedOverridesEnforced_userOverridesPreserved()
             throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
+        FrontendDependencies frontendDependencies = mock(
+                FrontendDependencies.class);
 
         Map<String, String> packages = new HashMap<>();
         packages.put("@polymer/iron-list", "3.0.2");

@@ -23,7 +23,6 @@ import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
@@ -294,8 +293,8 @@ class DebugWindowConnectionTest {
 
     private VaadinContext getMockContext() {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(appConfig.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class, appConfig);
         context.setAttribute(Lookup.class,

@@ -21,7 +21,6 @@ import java.util.Arrays;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -91,8 +90,8 @@ class InvalidUrlTest {
                 if (super.getDeploymentConfiguration() != null) {
                     return super.getDeploymentConfiguration();
                 } else {
-                    DeploymentConfiguration config = Mockito
-                            .mock(DeploymentConfiguration.class);
+                    DeploymentConfiguration config = mock(
+                            DeploymentConfiguration.class);
                     when(config.isProductionMode()).thenReturn(false);
                     setConfiguration(config);
                     return config;
@@ -103,8 +102,7 @@ class InvalidUrlTest {
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         when(config.isProductionMode()).thenReturn(false);
         when(config.getFrontendFolder()).thenReturn(new File("front"));
         when(config.getProjectFolder()).thenReturn(new File("./"));

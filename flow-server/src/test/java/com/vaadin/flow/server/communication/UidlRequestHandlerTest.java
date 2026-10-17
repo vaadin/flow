@@ -25,7 +25,6 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -87,8 +86,7 @@ class UidlRequestHandlerTest {
 
     @Test
     void writeSessionExpired() throws Exception {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
         when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         when(config.getBuildFolder()).thenReturn(".");
@@ -141,8 +139,7 @@ class UidlRequestHandlerTest {
         UI ui = getUi();
         VaadinSession session = ui.getSession();
         VaadinService service = session.getService();
-        DeploymentConfiguration conf = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration conf = mock(DeploymentConfiguration.class);
         when(service.getDeploymentConfiguration()).thenReturn(conf);
         when(conf.isRequestTiming()).thenReturn(false);
 
@@ -203,8 +200,7 @@ class UidlRequestHandlerTest {
         UI ui = getUi();
         VaadinSession session = ui.getSession();
         VaadinService service = session.getService();
-        DeploymentConfiguration conf = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration conf = mock(DeploymentConfiguration.class);
         when(service.getDeploymentConfiguration()).thenReturn(conf);
         when(conf.isRequestTiming()).thenReturn(false);
         when(request.getService()).thenReturn(service);

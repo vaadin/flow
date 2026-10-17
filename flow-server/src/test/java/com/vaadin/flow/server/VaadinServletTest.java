@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
@@ -264,8 +263,8 @@ class VaadinServletTest {
         ServletContext servletContext = config.getServletContext();
         ClassLoader loader = mock(ClassLoader.class);
 
-        VaadinContextInitializer initializer = Mockito
-                .mock(VaadinContextInitializer.class);
+        VaadinContextInitializer initializer = mock(
+                VaadinContextInitializer.class);
 
         when(servletContext
                 .getAttribute(VaadinContextInitializer.class.getName()))
@@ -318,8 +317,7 @@ class VaadinServletTest {
         Lookup lookup = mock(Lookup.class);
         when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
-        StaticFileHandlerFactory factory = Mockito
-                .mock(StaticFileHandlerFactory.class);
+        StaticFileHandlerFactory factory = mock(StaticFileHandlerFactory.class);
 
         when(lookup.lookup(StaticFileHandlerFactory.class)).thenReturn(factory);
 
@@ -367,8 +365,7 @@ class VaadinServletTest {
 
     private HttpServletRequest createRequest(
             MockServletServiceSessionSetup mocks, String path) {
-        HttpServletRequest httpServletRequest = Mockito
-                .mock(HttpServletRequest.class);
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
         return new VaadinServletRequest(httpServletRequest,
                 mocks.getService()) {
             @Override

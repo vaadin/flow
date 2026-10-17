@@ -53,6 +53,7 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @Isolated
@@ -83,14 +84,13 @@ class DevModeEndpointTest extends AbstractDevModeTest {
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
-        ServletRegistration vaadinServletRegistration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration vaadinServletRegistration = mock(
+                ServletRegistration.class);
 
         doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
         when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
 
@@ -127,11 +127,10 @@ class DevModeEndpointTest extends AbstractDevModeTest {
                 .toFile();
 
         assertFalse(generatedOpenApiJson.exists());
-        MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
-        MockedStatic<FrontendBuildUtils> frontendBuildUtils = Mockito
-                .mockStatic(FrontendBuildUtils.class,
-                        Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendBuildUtils> frontendBuildUtils = mockStatic(
+                FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS);
         try {
             frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                     .thenReturn(true);
@@ -170,11 +169,10 @@ class DevModeEndpointTest extends AbstractDevModeTest {
 
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
-        MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
-        MockedStatic<FrontendBuildUtils> frontendBuildUtils = Mockito
-                .mockStatic(FrontendBuildUtils.class,
-                        Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendBuildUtils> frontendBuildUtils = mockStatic(
+                FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS);
         try {
             frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                     .thenReturn(true);
