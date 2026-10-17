@@ -170,6 +170,9 @@ class ServerRpcHandlerTest {
 
         assertTrue(e.getMessage().startsWith(expectedMessageStart),
                 e.getMessage());
+        // The message is logged, so it must not reveal any key
+        assertFalse(e.getMessage().contains("key-of-ui"), e.getMessage());
+        assertFalse(e.getMessage().contains("unknown-key"), e.getMessage());
     }
 
     @Test
