@@ -556,7 +556,7 @@ final class Launch {
      * also means the loop cannot contain a module the application does not
      * actually use.
      */
-    private List<Reactor.Module> selectModules(List<String> entries) {
+    List<Reactor.Module> selectModules(List<String> entries) {
         List<Reactor.Module> modules = new ArrayList<>();
         modules.add(reactor.app());
         Optional<List<Path>> forced = forcedModuleDirs();
@@ -640,9 +640,18 @@ final class Launch {
     /**
      * The nearest ancestor that is a Maven module, never above the reactor
      * root.
+     * <p>
+     * A directory outside the root has no owner here at all. Maven 4 resolves a
+     * module of an enclosing build - one aggregating this reactor from above -
+     * to that module's {@code target/classes} rather than to its installed jar,
+     * and taking such a module into the loop would treat whatever writes to its
+     * sources as an edit of the application.
      */
     private Path moduleDirOf(Path classesDir) {
         Path root = reactor.root();
+        if (!Reactor.real(classesDir).startsWith(root)) {
+            return null;
+        }
         for (Path dir = classesDir.getParent(); dir != null; dir = dir
                 .getParent()) {
             if (Files.isRegularFile(dir.resolve("pom.xml"))) {

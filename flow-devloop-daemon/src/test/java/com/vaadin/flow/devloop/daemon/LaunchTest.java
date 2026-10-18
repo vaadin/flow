@@ -169,6 +169,56 @@ class LaunchTest {
     }
 
     /**
+     * Maven 4 resolves a module of a build aggregating the reactor from above
+     * to its {@code target/classes}, so a directory on the classpath is not
+     * necessarily one of the reactor's own modules.
+     */
+    @Test
+    void selectModules_leavesOutDirectoriesOutsideTheReactor(
+            @TempDir Path workspace) throws IOException {
+        Path root = workspace.resolve("fixture");
+        Files.createDirectories(root);
+        Files.writeString(root.resolve("pom.xml"), """
+                <project>
+                  <artifactId>fixture</artifactId>
+                  <packaging>pom</packaging>
+                  <modules>
+                    <module>app</module>
+                    <module>lib</module>
+                  </modules>
+                </project>
+                """);
+        Path app = module(root.resolve("app"), "app");
+        Path lib = module(root.resolve("lib"), "lib");
+        Path outside = module(workspace.resolve("outside"), "outside");
+        Launch launch = new Launch(Reactor.discover(app, text -> {
+        }), text -> {
+        });
+
+        List<String> selected = launch
+                .selectModules(List.of(
+                        lib.resolve("target").resolve("classes").toString(),
+                        outside.resolve("target").resolve("classes")
+                                .toString()))
+                .stream().map(Reactor.Module::artifactId).toList();
+
+        assertEquals(List.of("app", "lib"), selected);
+    }
+
+    private static Path module(Path dir, String artifactId) throws IOException {
+        Files.createDirectories(
+                dir.resolve("src").resolve("main").resolve("java"));
+        Files.createDirectories(dir.resolve("target").resolve("classes"));
+        Files.writeString(dir.resolve("pom.xml"), """
+                <project>
+                  <artifactId>%s</artifactId>
+                  <packaging>jar</packaging>
+                </project>
+                """.formatted(artifactId));
+        return dir;
+    }
+
+    /**
      * {@code disabledPlugins} only ever reached the system class loader: every
      * other loader's configuration re-reads the empty {@code disabledPlugins=}
      * bundled in HotswapAgent's jar, which shadows the system property. So a
