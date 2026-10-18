@@ -22,7 +22,11 @@ one shape while the other stayed green:
 
 Each fixture is its own multi-module reactor with a sibling library beside the
 application, because the case worth testing — an edit in a sibling reaching the
-running page — only exists if there is a sibling. All of them are laid out
+running page — only exists if there is a sibling. Each fixture also carries an empty
+`.mvn/` directory, which makes it a project root of its own as an application
+would be: Maven 4 otherwise takes the nearest `.mvn/` above it - Flow's own -
+as the root, and `-pl … -am` against a fixture then builds Flow itself on every
+restart. All of them are laid out
 identically, down to the module directory names and the fixture files
 (`TaskListView`, `TaskService`, `DueDateFormatter`, `task-list.css`), so that
 the tests which are about the loop rather than about a container can be written
