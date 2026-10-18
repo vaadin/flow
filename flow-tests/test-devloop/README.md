@@ -22,11 +22,7 @@ one shape while the other stayed green:
 
 Each fixture is its own multi-module reactor with a sibling library beside the
 application, because the case worth testing — an edit in a sibling reaching the
-running page — only exists if there is a sibling. Each fixture also carries an empty
-`.mvn/` directory, which makes it a project root of its own as an application
-would be: Maven 4 otherwise takes the nearest `.mvn/` above it - Flow's own -
-as the root, and `-pl … -am` against a fixture then builds Flow itself on every
-restart. All of them are laid out
+running page — only exists if there is a sibling. All of them are laid out
 identically, down to the module directory names and the fixture files
 (`TaskListView`, `TaskService`, `DueDateFormatter`, `task-list.css`), so that
 the tests which are about the loop rather than about a container can be written
@@ -59,6 +55,12 @@ regardless of `-DskipTests`, rather than in this aggregator's `<modules>`. That
 is how CI gets it into the local repository: the IT jobs build no test module at
 all, so anything they resolve has to have been installed by the workspace build,
 which runs with `-DskipTests`.
+
+This aggregator and every fixture carry an empty `.mvn/` directory, which makes
+each a project root of its own, as an application is. Maven 4 otherwise takes
+the nearest `.mvn/` above them - Flow's own - as the root, loads all of Flow
+into the session, and has `-pl … -am` build Flow's modules too: on every compile
+and restart the daemon runs, and in CI's shared-module build.
 
 ## Running
 
