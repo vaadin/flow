@@ -76,7 +76,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Maven 4
         run: |
-          curl -sSfL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
@@ -132,7 +132,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Maven 4
         run: |
-          curl -sSfL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
@@ -246,7 +246,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Maven 4
         run: |
-          curl -sSfL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
@@ -418,7 +418,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Maven 4
         run: |
-          curl -sSfL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
@@ -600,7 +600,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Maven 4
         run: |
-          curl -sSfL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
@@ -763,7 +763,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Maven 4
         run: |
-          curl -sSfL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
@@ -898,7 +898,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Maven 4
         run: |
-          curl -sSfL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
@@ -1080,7 +1080,7 @@ jobs:
           distribution: 'temurin'
       - name: Set up Maven 4
         run: |
-          curl -sSfL --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
