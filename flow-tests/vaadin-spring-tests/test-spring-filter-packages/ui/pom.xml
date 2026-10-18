@@ -95,6 +95,9 @@
     <repository>
       <id>my-local-repo</id>
       <url>file://${project.basedir}/local-lib/</url>
+      <releases>
+        <checksumPolicy>ignore</checksumPolicy>
+      </releases>
     </repository>
   </repositories>
 
