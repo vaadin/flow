@@ -171,11 +171,12 @@ class LaunchTest {
     /**
      * Maven 4 resolves a module of a build aggregating the reactor from above
      * to its {@code target/classes}, so a directory on the classpath is not
-     * necessarily one of the reactor's own modules.
+     * necessarily one of the reactor's own modules - while a module the reactor
+     * aggregates from beside its root still is.
      */
     @Test
-    void selectModules_leavesOutDirectoriesOutsideTheReactor(
-            @TempDir Path workspace) throws IOException {
+    void selectModules_takesOnlyTheReactorsOwnModules(@TempDir Path workspace)
+            throws IOException {
         Path root = workspace.resolve("fixture");
         Files.createDirectories(root);
         Files.writeString(root.resolve("pom.xml"), """
@@ -185,11 +186,13 @@ class LaunchTest {
                   <modules>
                     <module>app</module>
                     <module>lib</module>
+                    <module>../shared</module>
                   </modules>
                 </project>
                 """);
         Path app = module(root.resolve("app"), "app");
         Path lib = module(root.resolve("lib"), "lib");
+        Path shared = module(workspace.resolve("shared"), "shared");
         Path outside = module(workspace.resolve("outside"), "outside");
         Launch launch = new Launch(Reactor.discover(app, text -> {
         }), text -> {
@@ -198,11 +201,12 @@ class LaunchTest {
         List<String> selected = launch
                 .selectModules(List.of(
                         lib.resolve("target").resolve("classes").toString(),
+                        shared.resolve("target").resolve("classes").toString(),
                         outside.resolve("target").resolve("classes")
                                 .toString()))
                 .stream().map(Reactor.Module::artifactId).toList();
 
-        assertEquals(List.of("app", "lib"), selected);
+        assertEquals(List.of("app", "lib", "shared"), selected);
     }
 
     private static Path module(Path dir, String artifactId) throws IOException {
