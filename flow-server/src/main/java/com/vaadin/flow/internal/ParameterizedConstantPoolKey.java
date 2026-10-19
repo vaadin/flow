@@ -18,8 +18,8 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.Objects;
 
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * A value that is sent to the client as a reference to a shared constant
@@ -42,7 +42,7 @@ import tools.jackson.databind.node.ArrayNode;
 public class ParameterizedConstantPoolKey implements Serializable {
 
     private final ConstantPoolKey sharedValue;
-    private final JsonNode parameters;
+    private final ObjectNode parameters;
 
     /**
      * Creates a new parameterized constant pool key.
@@ -55,7 +55,7 @@ public class ParameterizedConstantPoolKey implements Serializable {
      *            <code>null</code>
      */
     public ParameterizedConstantPoolKey(ConstantPoolKey sharedValue,
-            JsonNode parameters) {
+            ObjectNode parameters) {
         this.sharedValue = Objects.requireNonNull(sharedValue);
         this.parameters = Objects.requireNonNull(parameters);
     }

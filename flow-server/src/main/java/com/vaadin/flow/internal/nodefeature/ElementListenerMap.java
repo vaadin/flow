@@ -81,6 +81,13 @@ public class ElementListenerMap extends NodeMap {
      */
     private static final char CAPTURE_KEY_SEPARATOR = '$';
 
+    /**
+     * Filter entry that always passes, used for making the client send events
+     * also to listeners that have no filter of their own.
+     */
+    private static final ExpressionEntry ALWAYS_TRUE_ENTRY = ExpressionEntry
+            .forFilter(ALWAYS_TRUE_FILTER, JacksonUtils.createArrayNode());
+
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
@@ -115,13 +122,13 @@ public class ElementListenerMap extends NodeMap {
     private static final class ExpressionEntry implements Serializable {
         private final String name;
         private final String expression;
-        private final List<JsonNode> captures;
+        private final ArrayNode captures;
 
         private String sharedKey;
         private String key;
 
         private ExpressionEntry(String name, String expression,
-                List<JsonNode> captures) {
+                ArrayNode captures) {
             this.name = name;
             this.expression = expression;
             this.captures = captures;
@@ -132,7 +139,7 @@ public class ElementListenerMap extends NodeMap {
          * server under the given name.
          */
         private static ExpressionEntry forEventData(String name,
-                String expression, List<JsonNode> captures) {
+                String expression, ArrayNode captures) {
             return new ExpressionEntry(Objects.requireNonNull(name), expression,
                     captures);
         }
@@ -143,7 +150,7 @@ public class ElementListenerMap extends NodeMap {
          */
         private static ExpressionEntry forEventData(String expression) {
             return forEventData(expression, expression,
-                    Collections.emptyList());
+                    JacksonUtils.createArrayNode());
         }
 
         /**
@@ -152,7 +159,7 @@ public class ElementListenerMap extends NodeMap {
          * under its derived key.
          */
         private static ExpressionEntry forFilter(String expression,
-                List<JsonNode> captures) {
+                ArrayNode captures) {
             return new ExpressionEntry(null, expression, captures);
         }
 
@@ -180,9 +187,13 @@ public class ElementListenerMap extends NodeMap {
          */
         private String getSharedKey() {
             if (sharedKey == null) {
-                sharedKey = isPseudoExpression() ? expression
-                        : hash((isFilter() ? "f" : "d") + captures.size() + '|'
-                                + name + '|' + expression);
+                if (isPseudoExpression()) {
+                    sharedKey = expression;
+                } else {
+                    String kind = isFilter() ? "f" : "d";
+                    sharedKey = hash(kind + captures.size() + '|' + name + '|'
+                            + expression);
+                }
             }
             return sharedKey;
         }
@@ -192,10 +203,9 @@ public class ElementListenerMap extends NodeMap {
          */
         private String getKey() {
             if (key == null) {
-                String sharedKey = getSharedKey();
-                key = captures.isEmpty() ? sharedKey
-                        : sharedKey + CAPTURE_KEY_SEPARATOR
-                                + hash(capturesToJson().toString());
+                key = captures.isEmpty() ? getSharedKey()
+                        : (getSharedKey() + CAPTURE_KEY_SEPARATOR
+                                + hash(captures.toString()));
             }
             return key;
         }
@@ -211,12 +221,6 @@ public class ElementListenerMap extends NodeMap {
             return getKey().hashCode();
         }
 
-        private ArrayNode capturesToJson() {
-            ArrayNode json = JacksonUtils.createArrayNode();
-            captures.forEach(json::add);
-            return json;
-        }
-
         /**
          * Encodes the capture values of this entry for the client as
          * <code>[sharedKey, capture0, capture1, ...]</code>.
@@ -224,12 +228,27 @@ public class ElementListenerMap extends NodeMap {
         private ArrayNode toCaptureJson() {
             ArrayNode json = JacksonUtils.createArrayNode();
             json.add(getSharedKey());
-            captures.forEach(json::add);
+            json.addAll(captures);
             return json;
+        }
+
+        /**
+         * Creates a short key for the given content, using the same approach as
+         * {@link ConstantPoolKey}.
+         */
+        private static String hash(String content) {
+            byte[] digest = MessageDigestUtil.sha256(content);
+
+            // Only use the first 64 bits to keep the key short
+            ByteBuffer truncatedDigest = ByteBuffer.wrap(digest, 0, 8);
+
+            return StandardCharsets.US_ASCII
+                    .decode(Base64.getEncoder().encode(truncatedDigest))
+                    .toString();
         }
     }
 
-    private static class ExpressionSettings implements Serializable {
+    private static final class ExpressionSettings implements Serializable {
         private final String expression;
         private final int captureCount;
 
@@ -286,7 +305,7 @@ public class ElementListenerMap extends NodeMap {
      * The settings for one event type, i.e. everything that the client needs to
      * know for evaluating the expressions of all listeners for that type.
      */
-    private static class EventSettings implements Serializable {
+    private static final class EventSettings implements Serializable {
         /**
          * Settings that are shared through the constant pool, keyed by
          * {@link ExpressionEntry#getSharedKey()}.
@@ -343,27 +362,6 @@ public class ElementListenerMap extends NodeMap {
 
             return settings;
         }
-    }
-
-    /**
-     * Filter entry that always passes, used for making the client send events
-     * also to listeners that have no filter of their own.
-     */
-    private static final ExpressionEntry ALWAYS_TRUE_ENTRY = ExpressionEntry
-            .forFilter(ALWAYS_TRUE_FILTER, Collections.emptyList());
-
-    /**
-     * Creates a short key for the given content, using the same approach as
-     * {@link ConstantPoolKey}.
-     */
-    private static String hash(String content) {
-        byte[] digest = MessageDigestUtil.sha256(content);
-
-        // Only use the first 64 bits to keep the key short
-        ByteBuffer truncatedDigest = ByteBuffer.wrap(digest, 0, 8);
-
-        return StandardCharsets.US_ASCII
-                .decode(Base64.getEncoder().encode(truncatedDigest)).toString();
     }
 
     private static class DomEventListenerWrapper
@@ -480,7 +478,7 @@ public class ElementListenerMap extends NodeMap {
                         "The event data expression must not be null");
             }
 
-            List<JsonNode> encodedCaptures = encodeCaptures(captures);
+            ArrayNode encodedCaptures = encodeCaptures(captures);
             if (encodedCaptures.isEmpty() && name.equals(expression)) {
                 return addEventData(expression);
             }
@@ -516,15 +514,19 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration setFilter(String filter) {
-            return setFilter(filter, new Object[0]);
+            return updateFilter(filter, JacksonUtils.createArrayNode());
         }
 
         @Override
         public DomListenerRegistration setFilter(String filter,
                 Object... captures) {
+            return updateFilter(filter, encodeCaptures(captures));
+        }
+
+        private DomListenerRegistration updateFilter(String filter,
+                ArrayNode captures) {
             this.filter = filter == null ? null
-                    : ExpressionEntry.forFilter(filter,
-                            encodeCaptures(captures));
+                    : ExpressionEntry.forFilter(filter, captures);
 
             listenerMap.updateEventSettings(type);
 
@@ -604,10 +606,10 @@ public class ElementListenerMap extends NodeMap {
         private boolean isPropertySynchronized(String propertyName) {
             String token = JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
                     + propertyName;
-            return eventDataExpressions != null
-                    && eventDataExpressions.contains(token)
-                    || eventDataEntries != null && eventDataEntries.stream()
-                            .anyMatch(entry -> token.equals(entry.expression));
+            return (eventDataExpressions != null
+                    && eventDataExpressions.contains(token))
+                    || (eventDataEntries != null && eventDataEntries.stream()
+                            .anyMatch(entry -> token.equals(entry.expression)));
         }
 
         private Stream<ExpressionEntry> streamEventData() {
@@ -623,6 +625,14 @@ public class ElementListenerMap extends NodeMap {
         public DomListenerRegistration allowInert() {
             allowInert = true;
             return this;
+        }
+
+        private static ArrayNode encodeCaptures(Object... captures) {
+            if (captures == null) {
+                return JacksonUtils.createArrayNode();
+            }
+            return Stream.of(captures).map(JacksonCodec::encodeWithTypeInfo)
+                    .collect(JacksonUtils.asArray());
         }
     }
 
@@ -827,14 +837,6 @@ public class ElementListenerMap extends NodeMap {
         });
     }
 
-    private static List<JsonNode> encodeCaptures(Object... captures) {
-        if (captures == null || captures.length == 0) {
-            return Collections.emptyList();
-        }
-        return Stream.of(captures).map(JacksonCodec::encodeWithTypeInfo)
-                .collect(Collectors.toUnmodifiableList());
-    }
-
     /**
      * Maps the keys that the client uses for reporting event data values to the
      * names that are used on the server. Values that the server has no name
@@ -849,8 +851,8 @@ public class ElementListenerMap extends NodeMap {
      *         <code>null</code>
      */
     public JsonNode translateEventData(String eventType, JsonNode eventData) {
-        assert eventType != null;
-        assert eventData != null;
+        Objects.requireNonNull(eventType, "Event type cannot be null");
+        Objects.requireNonNull(eventData, "Event data cannot be null");
 
         if (getWrappers(eventType).isEmpty()) {
             return eventData;
@@ -985,7 +987,7 @@ public class ElementListenerMap extends NodeMap {
      *         filter
      */
     public static String getFilterKey(DomListenerRegistration registration) {
-        assert registration != null;
+        Objects.requireNonNull(registration, "Registration cannot be null");
         ExpressionEntry filter = ((DomEventListenerWrapper) registration).filter;
         return filter == null ? null : filter.getKey();
     }
@@ -1005,8 +1007,8 @@ public class ElementListenerMap extends NodeMap {
      */
     public static String getEventDataKey(DomListenerRegistration registration,
             String name) {
-        assert registration != null;
-        assert name != null;
+        Objects.requireNonNull(registration, "Registration cannot be null");
+        Objects.requireNonNull(name, "Name cannot be null");
 
         return ((DomEventListenerWrapper) registration).streamEventData()
                 .filter(entry -> name.equals(entry.name))
