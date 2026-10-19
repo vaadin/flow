@@ -171,7 +171,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             // Refresh on client side
             return Optional.of(() -> writeRefresh(response));
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().debug(
+            getLogger().info(
                     "Invalid cross-site request forgery protection key received from {}: {}",
                     request.getRemoteHost(), e.getMessage());
             // Refresh on client side

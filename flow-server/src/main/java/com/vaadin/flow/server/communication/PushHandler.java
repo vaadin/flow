@@ -231,7 +231,7 @@ public class PushHandler {
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
         } catch (InvalidUIDLSecurityKeyException e) {
-            getLogger().debug(
+            getLogger().info(
                     "Invalid cross-site request forgery protection key received from {}: {}",
                     resource.getRequest().getRemoteHost(), e.getMessage());
             // Refresh on client side
