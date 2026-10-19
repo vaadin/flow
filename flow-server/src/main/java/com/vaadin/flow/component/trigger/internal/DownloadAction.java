@@ -15,17 +15,11 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
-import java.io.Serializable;
-import java.net.URI;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
-import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
@@ -44,11 +38,12 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * {@link DownloadHandler#forFile}, {@link DownloadHandler#forClassResource},
  * {@link DownloadHandler#fromInputStream}, or any lambda. Use
  * {@link #DownloadAction(DownloadHandler)}. The action lazily registers a
- * stream resource scoped to the trigger host element; the resource is
+ * stream resource per trigger, scoped to its host element; the resource is
  * unregistered when the host detaches and re-registered on re-attach, keeping
- * the URL stable for the lifetime of the action. Filename comes from the
- * {@link DownloadHandler} itself (its URL postfix and/or
- * {@code Content-Disposition} header).</li>
+ * the URL stable for the lifetime of the action. Removing the trigger
+ * unregisters the resource for good, so its URL stops serving the file.
+ * Filename comes from the {@link DownloadHandler} itself (its URL postfix
+ * and/or {@code Content-Disposition} header).</li>
  * <li><b>A value resolved from client state at fire time</b> — use
  * {@link #DownloadAction(Action.Input)} or
  * {@link #DownloadAction(Action.Input, Action.Input)} when the URL (or
@@ -79,6 +74,8 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * }</pre>
  *
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class DownloadAction extends Action {
 
@@ -114,7 +111,7 @@ public class DownloadAction extends Action {
     /**
      * Downloads from a {@link DownloadHandler}. The handler is registered as a
      * stream resource scoped to the trigger host element the first time this
-     * action is wired to a trigger; re-attaching the host re-registers the
+     * action is wired to each trigger; re-attaching the host re-registers the
      * resource with the same URL.
      *
      * @param handler
@@ -122,7 +119,7 @@ public class DownloadAction extends Action {
      *            {@code null}
      */
     public DownloadAction(DownloadHandler handler) {
-        this.urlInput = new HandlerBinding(
+        this.urlInput = new DownloadHandlerInput(
                 Objects.requireNonNull(handler, "handler must not be null"));
         this.filenameInput = null;
     }
@@ -163,62 +160,23 @@ public class DownloadAction extends Action {
     protected JsFunction toJs(Trigger trigger) {
         // Two body shapes — with or without a filename argument — keep the
         // emitted JS minimal. Both URL and filename are JsFunctions invoked
-        // with event so any handler-scoped inputs read live state.
+        // with event so any handler-scoped inputs read live state. The event
+        // itself is passed last so the client can click the anchor next to
+        // the trigger element, keeping a surrounding overlay open, while
+        // url-only overrides of the client helper keep working.
         if (filenameInput == null) {
-            return JsFunction.of("window.Vaadin.Flow.download.start($0(event))",
+            return JsFunction.of(
+                    "window.Vaadin.Flow.download.start($0(event), undefined, event)",
                     urlInput.toJs(trigger)).withArguments("event");
         }
-        return JsFunction
-                .of("window.Vaadin.Flow.download.start($0(event), $1(event))",
-                        urlInput.toJs(trigger), filenameInput.toJs(trigger))
+        return JsFunction.of(
+                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
+                urlInput.toJs(trigger), filenameInput.toJs(trigger))
                 .withArguments("event");
     }
 
     private static LiteralInput<String> literal(String value, String name) {
         return new LiteralInput<>(
                 Objects.requireNonNull(value, name + " must not be null"));
-    }
-
-    /**
-     * Manages the {@link DownloadHandler}-backed flavour: one
-     * {@link StreamResourceRegistry.ElementStreamResource} per trigger host.
-     * Lifecycle (register on attach, unregister on detach, re-register on
-     * re-attach) is delegated to
-     * {@link Element#setAttribute(String, AbstractStreamResource)} — the same
-     * machinery {@code Image.setSrc(DownloadHandler)} and
-     * {@code Anchor.setHref(DownloadHandler)} use. The attribute name is
-     * derived from the resource's UUID id, so it is unique per binding and
-     * harmless on any host element. The URI baked into the JS is the same one
-     * the framework re-publishes on the attribute, kept stable by the
-     * resource's id.
-     */
-    private static final class HandlerBinding extends Action.Input<String>
-            implements Serializable {
-
-        private static final String ATTR_PREFIX = "data-flow-download-";
-
-        private final DownloadHandler handler;
-        private final Map<Element, URI> uriByHost = new IdentityHashMap<>();
-
-        HandlerBinding(DownloadHandler handler) {
-            this.handler = handler;
-        }
-
-        @Override
-        public JsFunction toJs(Trigger trigger) {
-            // Register-and-resolve in one step: the URI is stable per
-            // (handler, host) pair, so multiple toJs() calls for the same
-            // host reuse the same resource.
-            URI uri = uriByHost.computeIfAbsent(trigger.getHost(),
-                    this::registerForHost);
-            return JsFunction.of("return $0", uri.toASCIIString());
-        }
-
-        private URI registerForHost(Element host) {
-            StreamResourceRegistry.ElementStreamResource resource = new StreamResourceRegistry.ElementStreamResource(
-                    handler, host);
-            host.setAttribute(ATTR_PREFIX + resource.getId(), resource);
-            return StreamResourceRegistry.getURI(resource);
-        }
     }
 }

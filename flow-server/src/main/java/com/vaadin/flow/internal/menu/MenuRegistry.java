@@ -69,6 +69,8 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
  * that require path parameters.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.5
  */
 public class MenuRegistry {
 
@@ -164,7 +166,7 @@ public class MenuRegistry {
 
         Map<String, AvailableViewInfo> menuRoutes = new HashMap<>(
                 collectClientMenuItems(filterClientViews, VaadinService
-                        .getCurrent().getDeploymentConfiguration()));
+                        .getCurrentOrThrow().getDeploymentConfiguration()));
 
         collectAndAddServerMenuItems(routeConfiguration, menuRoutes);
 
@@ -277,6 +279,7 @@ public class MenuRegistry {
      *            the route parameters handed to a {@link PageTitleGenerator},
      *            not {@code null}
      * @return title to use for route
+     * @since 25.2
      */
     public static String getTitle(Class<? extends Component> target,
             RouteParameters parameters) {

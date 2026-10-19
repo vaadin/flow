@@ -24,6 +24,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.PathMatcher
 import java.util.zip.ZipInputStream
+import kotlin.io.path.createTempDirectory
 import kotlin.test.expect
 import kotlin.test.fail
 
@@ -151,10 +152,10 @@ fun expectArchiveContainsVaadinBundle(
 ) {
     val isWar: Boolean = archive.name.endsWith(".war", true)
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
-    val resourcePackaging: String = when {
-        isWar -> "WEB-INF/classes/"
-        else -> ""
-    }
+    // The bundle is packaged as source set output: a War routes it to
+    // WEB-INF/classes, while a plain or Spring Boot executable jar keeps it at
+    // the archive root. (Spring Boot dependency jars still go to BOOT-INF/lib.)
+    val resourcePackaging: String = if (isWar) "WEB-INF/classes/" else ""
     expectArchiveContains(
             "${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json",
             "${resourcePackaging}META-INF/VAADIN/config/stats.json",
@@ -185,11 +186,9 @@ fun expectArchiveDoesntContainVaadinBundle(archive: File,
                                            isSpringBootJar: Boolean) {
     val isWar: Boolean = archive.name.endsWith(".war", true)
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
-    val resourcePackaging: String = when {
-        isWar -> "WEB-INF/classes/"
-        isSpringBootJar -> "BOOT-INF/classes/"
-        else -> ""
-    }
+    // See expectArchiveContainsVaadinBundle: War → WEB-INF/classes, plain and
+    // Spring Boot executable jars keep the bundle at the archive root.
+    val resourcePackaging: String = if (isWar) "WEB-INF/classes/" else ""
     expectArchiveDoesntContain("${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json",
             "${resourcePackaging}META-INF/VAADIN/config/stats.json",
             "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.gz",
@@ -224,7 +223,7 @@ class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTE
     /**
      * The project root dir.
      */
-    val dir: File = createTempDir("junit-vaadin-gradle-plugin")
+    val dir: File = createTempDirectory("junit-vaadin-gradle-plugin").toFile()
 
     /**
      * The main `build.gradle` file.

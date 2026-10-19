@@ -28,9 +28,17 @@ import com.vaadin.flow.spring.scopes.VaadinUIScope;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0
  */
 @AutoConfiguration
 public class VaadinScopesConfig {
+
+    /**
+     * Creates the configuration. Spring instantiates it.
+     */
+    public VaadinScopesConfig() {
+        // Default constructor
+    }
 
     /**
      * Creates a Vaadin session scope.
@@ -56,6 +64,7 @@ public class VaadinScopesConfig {
      * Creates a Vaadin route scope.
      *
      * @return the Vaadin route scope
+     * @since 18.0
      */
     @Bean
     public static BeanFactoryPostProcessor vaadinRouteScope() {

@@ -22,6 +22,8 @@ import com.vaadin.flow.data.binder.ValueContext;
 
 /**
  * A converter that converts from {@link Long} to {@link BigDecimal} and back.
+ * 
+ * @since 24.5
  */
 public class LongToBigDecimalConverter implements Converter<Long, BigDecimal> {
 

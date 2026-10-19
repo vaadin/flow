@@ -49,6 +49,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  *         () -> Notification.show("Shared!"),
  *         err -> Notification.show("Cancelled: " + err.name()));
  * }</pre>
+ * 
+ * @since 25.2
  */
 public final class WebShareBinding implements Serializable {
 

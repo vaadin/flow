@@ -19,6 +19,8 @@ import tools.jackson.databind.JsonNode;
 
 /**
  * Handles dev tools messages from the client.
+ * 
+ * @since 24.2
  */
 public interface DevToolsMessageHandler {
 
@@ -46,6 +48,7 @@ public interface DevToolsMessageHandler {
      *            message
      * @return {@code true} if the message was handled and should not be passed
      *         on to further handlers
+     * @since 24.8
      */
     default boolean handleMessage(String command, JsonNode data,
             DevToolsInterface devToolsInterface) {
@@ -58,6 +61,7 @@ public interface DevToolsMessageHandler {
      * @param devToolsInterface
      *            for interaction with the development tools, e.g. sending a
      *            message
+     * @since 24.2.1
      */
     default void handleDisconnect(DevToolsInterface devToolsInterface) {
     }

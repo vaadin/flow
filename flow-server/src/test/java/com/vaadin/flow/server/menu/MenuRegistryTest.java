@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -80,8 +80,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class MenuRegistryTest {
     @TempDir
     Path tmpDir;
@@ -108,25 +113,23 @@ class MenuRegistryTest {
 
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
-        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
-        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
-        Mockito.when(vaadinService.getRouter())
-                .thenReturn(new Router(registry));
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        when(vaadinService.getContext()).thenReturn(vaadinContext);
+        when(vaadinService.getRouter()).thenReturn(new Router(registry));
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
 
-        Mockito.when(vaadinService.getDeploymentConfiguration())
+        when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
 
-        Mockito.when(deploymentConfiguration.getFrontendFolder())
+        when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.toFile());
-        Mockito.when(deploymentConfiguration.getProjectFolder())
+        when(deploymentConfiguration.getProjectFolder())
                 .thenReturn(tmpDir.toFile());
-        Mockito.when(deploymentConfiguration.getBuildFolder())
-                .thenReturn("build");
+        when(deploymentConfiguration.getBuildFolder()).thenReturn("build");
 
-        frontendUtils = Mockito.mockStatic(FrontendUtils.class);
-        frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+        frontendUtils = mockStatic(FrontendUtils.class);
+        frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                 .thenReturn(true);
 
         VaadinService.setCurrent(vaadinService);
@@ -140,7 +143,7 @@ class MenuRegistryTest {
 
         VaadinSession.setCurrent(session);
 
-        Mockito.when(request.getService()).thenReturn(vaadinService);
+        when(request.getService()).thenReturn(vaadinService);
         CurrentInstance.set(VaadinRequest.class, request);
     }
 
@@ -191,7 +194,7 @@ class MenuRegistryTest {
         PageTitleGenerator defaultGenerator = context -> "default:"
                 + context.navigationTarget().getSimpleName() + ":"
                 + context.value();
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService) {
                     @Override
                     public PageTitleGenerator getPageTitleGenerator() {
@@ -293,8 +296,7 @@ class MenuRegistryTest {
     @Test
     void productionMode_getMenuItemsContainsExpectedClientPaths()
             throws IOException {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(true);
+        when(deploymentConfiguration.isProductionMode()).thenReturn(true);
         // Clear any production mode execution route contents
         MenuRegistry.clearFileRoutesCache();
 
@@ -303,11 +305,11 @@ class MenuRegistryTest {
                 FILE_ROUTES_JSON_PROD_PATH);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        ClassLoader mockClassLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
+        ClassLoader mockClassLoader = mock(ClassLoader.class);
+        when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
                 .thenReturn(clientFiles.toURI().toURL());
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
             menuRegistry.when(() -> MenuRegistry.getClassLoader())
                     .thenReturn(mockClassLoader);
 
@@ -381,10 +383,8 @@ class MenuRegistryTest {
 
     @Test
     void testWithLoggedInUser_userHasRoles() throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(true);
+        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(request.isUserInRole(anyString())).thenReturn(true);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -410,10 +410,8 @@ class MenuRegistryTest {
 
     @Test
     void testWithLoggedInUser_noMatchingRoles() throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(false);
+        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(request.isUserInRole(anyString())).thenReturn(false);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();

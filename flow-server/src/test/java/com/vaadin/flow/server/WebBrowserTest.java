@@ -18,10 +18,11 @@ package com.vaadin.flow.server;
 import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class WebBrowserTest {
 
@@ -93,6 +94,16 @@ class WebBrowserTest {
     }
 
     @Test
+    void isSafariOnIPhone_userDetails_returnsTrue() {
+        VaadinRequest request = initRequest(
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1");
+
+        browser = new WebBrowser(request);
+        assertTrue(browser.isIPhone());
+        assertTrue(browser.isSafari());
+    }
+
+    @Test
     void isFirefoxOnAndroid_userDetails_returnsTrue() {
         VaadinRequest request = initRequest(
                 "Mozilla/5.0 (Android; Tablet; rv:33.0) Gecko/33.0 Firefox/33.0");
@@ -103,11 +114,11 @@ class WebBrowserTest {
     }
 
     private static VaadinRequest initRequest(String userAgent) {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request.getLocale()).thenReturn(Locale.ENGLISH);
-        Mockito.when(request.getRemoteAddr()).thenReturn("0.0.0.0");
-        Mockito.when(request.isSecure()).thenReturn(false);
-        Mockito.when(request.getHeader("User-Agent")).thenReturn(userAgent);
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getLocale()).thenReturn(Locale.ENGLISH);
+        when(request.getRemoteAddr()).thenReturn("0.0.0.0");
+        when(request.isSecure()).thenReturn(false);
+        when(request.getHeader("User-Agent")).thenReturn(userAgent);
         return request;
     }
 }

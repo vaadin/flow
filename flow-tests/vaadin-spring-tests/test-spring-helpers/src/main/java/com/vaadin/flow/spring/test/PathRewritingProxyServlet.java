@@ -20,11 +20,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Locale;
 
 import org.eclipse.jetty.client.Response;
 import org.eclipse.jetty.ee10.proxy.ProxyServlet;
+import org.eclipse.jetty.http.HttpField;
 
 public class PathRewritingProxyServlet extends ProxyServlet.Transparent {
 
@@ -39,34 +41,39 @@ public class PathRewritingProxyServlet extends ProxyServlet.Transparent {
     }
 
     @Override
-    protected String filterServerResponseHeader(
+    protected HttpField filterServerResponseHeader(
             HttpServletRequest clientRequest, Response serverResponse,
-            String headerName, String headerValue) {
+            HttpField field) {
+        String headerName = field.getName();
+        String headerValue = field.getValue();
         if (headerName.toLowerCase(Locale.ENGLISH).equals("set-cookie")) {
             // Set-Cookie: JSESSIONID=07E35F87D336463E597B5B0D32744660; Path=/;
             // HttpOnly
-            return headerValue.replace("Path=/", "Path=" + prefix);
+            return replaceValue(field,
+                    headerValue.replace("Path=/", "Path=" + prefix));
         } else if (headerName.equals("Location")) {
             // Location: http://localhost:8888/my/login/page
             if ((headerValue.startsWith("http://")
                     || headerValue.startsWith("https://"))
                     && !headerValue.startsWith(proxyTo)) {
                 // External location
-                return headerValue;
+                return replaceValue(field, headerValue);
             }
 
             try {
-                URL publicURL = new URL(
-                        clientRequest.getRequestURL().toString());
+                URL publicURL = URI
+                        .create(clientRequest.getRequestURL().toString())
+                        .toURL();
                 String hostAndBasePath = publicURL.getProtocol() + "://"
                         + publicURL.getHost() + ":" + publicURL.getPort()
                         + prefix + "/";
 
                 if (headerValue.startsWith(proxyTo)) {
-                    return headerValue.replace(proxyTo, hostAndBasePath);
+                    return replaceValue(field,
+                            headerValue.replace(proxyTo, hostAndBasePath));
                 } else {
                     // Location: /foo/bar
-                    return prefix + headerValue;
+                    return replaceValue(field, prefix + headerValue);
                 }
             } catch (MalformedURLException e) {
                 throw new IllegalArgumentException("Unable to rewrite header "
@@ -75,6 +82,10 @@ public class PathRewritingProxyServlet extends ProxyServlet.Transparent {
 
         }
         return super.filterServerResponseHeader(clientRequest, serverResponse,
-                headerName, headerValue);
+                field);
+    }
+
+    private HttpField replaceValue(HttpField field, String value) {
+        return new HttpField(field.getHeader(), field.getName(), value);
     }
 }

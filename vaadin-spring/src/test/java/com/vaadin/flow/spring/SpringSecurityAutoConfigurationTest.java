@@ -23,19 +23,20 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.vaadin.flow.component.Component;
@@ -55,6 +56,14 @@ import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class SpringSecurityAutoConfigurationTest {
 
@@ -135,6 +144,58 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @Test
+    void multipleContexts_strategyBeansShareSecurityContext() {
+        SecurityContextHolderStrategy installedStrategy = SecurityContextHolder
+                .getContextHolderStrategy();
+        try {
+            this.contextRunner.run((firstContext) -> {
+                SecurityContextHolderStrategy firstStrategy = firstContext
+                        .getBean(SecurityContextHolderStrategy.class);
+                // A second refresh installs the strategy bean of the second
+                // context into the classloader wide SecurityContextHolder,
+                // like a second cached context in a test JVM does
+                this.contextRunner.withPropertyValues("some.property=other")
+                        .run((secondContext) -> {
+                            assertThat(secondContext)
+                                    .getBean(
+                                            SecurityContextHolderStrategy.class)
+                                    .isNotSameAs(firstStrategy);
+                            assertThat(SecurityContextHolder
+                                    .getContextHolderStrategy())
+                                    .isNotSameAs(firstStrategy);
+
+                            SecurityContext securityContext = SecurityContextHolder
+                                    .createEmptyContext();
+                            securityContext.setAuthentication(
+                                    new UsernamePasswordAuthenticationToken(
+                                            "user", "n/a"));
+                            SecurityContextHolder.setContext(securityContext);
+                            try {
+                                // Beans of the first context, e.g. the method
+                                // security interceptors, are wired to its own
+                                // strategy bean, which has to see the same
+                                // security context
+                                assertThat(firstStrategy.getContext())
+                                        .isSameAs(securityContext);
+                            } finally {
+                                SecurityContextHolder.clearContext();
+                            }
+                            // ... and the other way around, so that clearing
+                            // after a test does not leak into the next one
+                            assertThat(firstStrategy.getContext()
+                                    .getAuthentication()).isNull();
+                        });
+            });
+        } finally {
+            // getContext() lazily stores an empty context in the thread local
+            // shared by all instances, which would otherwise be inherited by
+            // the tests running afterwards on this thread
+            SecurityContextHolder.clearContext();
+            SecurityContextHolder.setContextHolderStrategy(installedStrategy);
+        }
+    }
+
+    @Test
     void securityBeansAreSerializable() {
         this.contextRunner.run((context) -> {
 
@@ -162,30 +223,26 @@ class SpringSecurityAutoConfigurationTest {
         assertThat(context).hasSingleBean(NavigationAccessControl.class);
         NavigationAccessControl control = context
                 .getBean(NavigationAccessControl.class);
-        NavigationContext navigationContext = Mockito
-                .mock(NavigationContext.class);
-        Mockito.when(navigationContext.getNavigationTarget())
+        NavigationContext navigationContext = mock(NavigationContext.class);
+        when(navigationContext.getNavigationTarget())
                 .thenReturn((Class) Component.class);
-        Mockito.when(navigationContext.getLocation())
-                .thenReturn(new Location("path"));
-        Mockito.when(navigationContext.allow()).thenCallRealMethod();
-        Mockito.when(navigationContext.neutral()).thenCallRealMethod();
-        Mockito.when(navigationContext.deny(ArgumentMatchers.anyString()))
-                .thenCallRealMethod();
+        when(navigationContext.getLocation()).thenReturn(new Location("path"));
+        when(navigationContext.allow()).thenCallRealMethod();
+        when(navigationContext.neutral()).thenCallRealMethod();
+        when(navigationContext.deny(anyString())).thenCallRealMethod();
 
         AccessCheckResult result = control.checkAccess(navigationContext,
                 false);
         assertThat(result.decision()).isEqualTo(AccessCheckDecision.DENY);
         assertThat(result.reason()).isEqualTo("Custom Implementation");
 
-        Mockito.verify(navigationContext, Mockito.times(2))
-                .deny(ArgumentMatchers.anyString());
-        Mockito.verify(navigationContext, Mockito.never()).allow();
-        Mockito.verify(navigationContext, Mockito.never()).neutral();
+        verify(navigationContext, times(2)).deny(anyString());
+        verify(navigationContext, never()).allow();
+        verify(navigationContext, never()).neutral();
     }
 
     private <T> void assertObjectIsSerializable(T instance) {
-        Object deserialized = Assertions.assertDoesNotThrow(() -> {
+        Object deserialized = assertDoesNotThrow(() -> {
             ByteArrayOutputStream bs = new ByteArrayOutputStream();
             try (ObjectOutputStream out = new ObjectOutputStream(bs)) {
                 out.writeObject(instance);
@@ -199,7 +256,7 @@ class SpringSecurityAutoConfigurationTest {
                 return readObject;
             }
         });
-        Assertions.assertNotNull(deserialized, "Deserialized object is null");
+        assertNotNull(deserialized, "Deserialized object is null");
     }
 
     @TestConfiguration(proxyBeanMethods = false)

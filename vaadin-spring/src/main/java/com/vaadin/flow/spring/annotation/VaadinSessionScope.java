@@ -29,6 +29,7 @@ import static com.vaadin.flow.spring.scopes.VaadinSessionScope.VAADIN_SESSION_SC
  * Stereotype annotation for Spring's {@code @Scope("vaadin-session")}.
  *
  * @author Vaadin Ltd
+ * @since 10.0
  */
 @Scope(VAADIN_SESSION_SCOPE_NAME)
 @Target({ ElementType.TYPE, ElementType.METHOD })

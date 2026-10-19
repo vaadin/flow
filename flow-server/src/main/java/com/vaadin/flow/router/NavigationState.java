@@ -43,6 +43,7 @@ public class NavigationState implements Serializable {
      *
      * @param router
      *            the router managing navigation
+     * @since 1.3
      */
     public NavigationState(Router router) {
         this.router = router;
@@ -86,6 +87,7 @@ public class NavigationState implements Serializable {
      * Gets the route target for this navigation state.
      *
      * @return the route target to navigate to.
+     * @since 4.0
      */
     public RouteTarget getRouteTarget() {
         if (routeTarget == null && navigationTarget != null) {
@@ -139,6 +141,7 @@ public class NavigationState implements Serializable {
      * Gets the route parameters map.
      *
      * @return route parameters.
+     * @since 4.0
      */
     public RouteParameters getRouteParameters() {
         return routeParameters;

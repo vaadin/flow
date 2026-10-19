@@ -30,6 +30,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  *
  * @author Vaadin Ltd
  *
+ * @since 8.0
  */
 public interface BrowserLiveReloadAccessor {
 
@@ -76,6 +77,7 @@ public interface BrowserLiveReloadAccessor {
      *            a Vaadin Context
      * @return an {@link Optional} containing a {@link BrowserLiveReload}
      *         instance or <code>EMPTY</code> if disabled or in production mode
+     * @since 24.0
      */
     static Optional<BrowserLiveReload> getLiveReloadFromContext(
             VaadinContext context) {

@@ -23,13 +23,13 @@ import java.util.Vector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.server.VaadinRequest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.when;
 
 /**
  * Test class for the locale util methods.
@@ -47,7 +47,7 @@ class LocaleUtilTest {
         MockitoAnnotations.initMocks(this);
 
         // request locales are returned as Enumeration
-        Mockito.when(request.getLocales()).thenReturn(
+        when(request.getLocales()).thenReturn(
                 new Vector<>(Arrays.asList(new Locale("fi"), LOCALE_EN))
                         .elements());
     }

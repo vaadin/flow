@@ -37,7 +37,7 @@ import com.vaadin.flow.server.VaadinSession;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.5
+ * @since 25.1
  */
 public interface VaadinHotswapper {
 
@@ -49,7 +49,6 @@ public interface VaadinHotswapper {
      *
      * @param vaadinService
      *            the active {@link VaadinService} instance being initialized
-     * @since 25.0
      */
     default void onInit(VaadinService vaadinService) {
         // no-op by default
@@ -58,7 +57,6 @@ public interface VaadinHotswapper {
     /**
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
-     * <p>
      * <p>
      * This method is meant to perform application-wide updates. Operation
      * targeting Vaadin session should be implemented in
@@ -90,7 +88,6 @@ public interface VaadinHotswapper {
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>
-     * <p>
      * This method is meant to perform application-wide updates. Operation
      * targeting Vaadin session should be implemented in
      * {@link #onClassesChange(HotswapClassSessionEvent)} method.
@@ -103,7 +100,6 @@ public interface VaadinHotswapper {
      *            the event instance carrying the information about the changed
      *            classes.
      * @see #onClassesChange(HotswapClassSessionEvent)
-     * @since 25.0
      */
     default void onClassesChange(HotswapClassEvent event) {
         boolean reload = onClassLoadEvent(event.getVaadinService(),
@@ -116,7 +112,6 @@ public interface VaadinHotswapper {
     /**
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
-     * <p>
      * <p>
      * This method is meant to perform updates at {@link VaadinSession} level.
      * Operation targeting the entire application should be implemented in
@@ -148,7 +143,6 @@ public interface VaadinHotswapper {
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>
-     * <p>
      * This method is meant to perform updates at {@link VaadinSession} level.
      * Operation targeting the entire application should be implemented in
      * {@link #onClassesChange(HotswapClassEvent)} method.
@@ -161,7 +155,6 @@ public interface VaadinHotswapper {
      *            the event instance carrying the information about the changed
      *            classes.
      * @see #onClassesChange(HotswapClassEvent)
-     * @since 25.0
      */
     default void onClassesChange(HotswapClassSessionEvent event) {
         boolean reload = onClassLoadEvent(event.getVaadinSession(),
@@ -175,14 +168,12 @@ public interface VaadinHotswapper {
      * Called by Vaadin hotswap entry point when one or more application
      * resources have been updated.
      * <p>
-     * <p>
      * This method is meant to perform application-wide updates, involving all
      * active UI instances.
      *
      * @param event
      *            the event instance carrying the information about the changed
      *            resources.
-     * @since 25.0
      */
     default void onResourcesChange(HotswapResourceEvent event) {
         // no-op by default

@@ -101,6 +101,7 @@ public abstract class AbstractComponentDataGenerator<T>
      *            the updated item
      * @return the component that should represent the updated item, not
      *         <code>null</code>
+     * @since 1.2
      */
     protected Component updateComponent(Component currentComponent, T item) {
         return createComponent(item);

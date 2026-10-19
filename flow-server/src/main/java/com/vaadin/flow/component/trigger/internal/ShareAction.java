@@ -44,6 +44,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * browser reports when the user dismisses the sheet without picking a target.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class ShareAction extends PromiseAction<Void> {
 

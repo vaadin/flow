@@ -307,6 +307,7 @@ public class PwaIcon implements Serializable {
      * @param targetHeight
      *            the height of the resulting image in pixels
      * @return a new {@link BufferedImage} with the resized icon drawn centered
+     * @since 25.2
      */
     public static BufferedImage drawIconImage(BufferedImage baseImage,
             int targetWidth, int targetHeight) {

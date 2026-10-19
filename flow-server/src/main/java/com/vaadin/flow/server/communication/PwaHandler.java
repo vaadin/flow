@@ -65,6 +65,7 @@ public class PwaHandler implements RequestHandler {
      * @param pwaRegistryGetter
      *            PWA registry getter
      *
+     * @since 6.0
      */
     public PwaHandler(SerializableSupplier<PwaRegistry> pwaRegistryGetter) {
         this.pwaRegistryGetter = pwaRegistryGetter;
@@ -128,7 +129,8 @@ public class PwaHandler implements RequestHandler {
                 (session, request, response) -> {
                     response.setContentType("application/javascript");
                     try (PrintWriter writer = response.getWriter()) {
-                        writer.write(pwaRegistry.getRuntimeServiceWorkerJs());
+                        writer.write(
+                                pwaRegistry.getRuntimeServiceWorkerJs(request));
                     }
                     return true;
                 });

@@ -67,6 +67,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @param <C>
  *            the child (mapped) signal value type
  * @see ValueSignal#modifier(SignalModifier)
+ * @since 25.1
  */
 @FunctionalInterface
 public interface SignalModifier<P extends @Nullable Object, C extends @Nullable Object>

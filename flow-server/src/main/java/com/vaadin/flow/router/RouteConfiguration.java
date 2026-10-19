@@ -23,6 +23,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -39,6 +41,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 
@@ -169,6 +172,7 @@ public class RouteConfiguration implements Serializable {
      * @param path
      *            path to check for availability
      * @return true if there exists a route for the given path
+     * @since 4.0
      */
     public boolean isPathAvailable(String path) {
         if (handledRegistry instanceof AbstractRouteRegistry) {
@@ -261,6 +265,9 @@ public class RouteConfiguration implements Serializable {
      * Giving a navigation target here will handle the {@link Route} annotation
      * to get the path and also register any {@link RouteAlias} that may be on
      * the class.
+     * <p>
+     * A navigation target with {@link Route#developmentOnly()} set is not
+     * registered when the application runs in production mode.
      *
      * @param navigationTarget
      *            navigation target to register
@@ -268,11 +275,19 @@ public class RouteConfiguration implements Serializable {
      *             thrown if exact route already defined in this scope
      */
     public void setAnnotatedRoute(Class<? extends Component> navigationTarget) {
-        if (!navigationTarget.isAnnotationPresent(Route.class)) {
+        Route routeAnnotation = navigationTarget.getAnnotation(Route.class);
+        if (routeAnnotation == null) {
             String message = String.format(
                     "Given navigationTarget %s is missing the '@Route' annotation.",
                     navigationTarget.getName());
             throw new InvalidRouteConfigurationException(message);
+        }
+        if (routeAnnotation.developmentOnly() && ApplicationConfiguration
+                .get(handledRegistry.getContext()).isProductionMode()) {
+            LoggerFactory.getLogger(RouteConfiguration.class).debug(
+                    "Not registering route {} because it is development only and the application runs in production mode.",
+                    navigationTarget.getName());
+            return;
         }
         String route = RouteUtil.getRoutePath(handledRegistry.getContext(),
                 navigationTarget);
@@ -481,6 +496,7 @@ public class RouteConfiguration implements Serializable {
      * @param navigationTarget
      *            target class.
      * @return main template for the given target.
+     * @since 4.0
      */
     public Optional<String> getTemplate(
             Class<? extends Component> navigationTarget) {
@@ -538,6 +554,9 @@ public class RouteConfiguration implements Serializable {
     /**
      * Gets the url which navigates to given navigationTarget using given
      * parameters.
+     * <p>
+     * The url carries no query string; use
+     * {@link #getUrl(Class, RouteParameters, QueryParameters)} to append one.
      *
      * @param navigationTarget
      *            navigation target.
@@ -548,6 +567,7 @@ public class RouteConfiguration implements Serializable {
      * @throws NotFoundException
      *             in case the navigationTarget is not registered with a url
      *             template matching the given parameters.
+     * @since 4.0
      */
     public String getUrl(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -562,16 +582,50 @@ public class RouteConfiguration implements Serializable {
         return targetUrl.get();
     }
 
+    /**
+     * Gets the url which navigates to given navigationTarget using given route
+     * parameters, followed by the query string of given query parameters.
+     *
+     * <pre>{@code
+     * // => "orders/1001?tab=items"
+     * config.getUrl(OrderView.class, new RouteParameters("orderId", "1001"),
+     *         QueryParameters.of("tab", "items"));
+     * }</pre>
+     *
+     * The {@code ?} is only added when there are query parameters, so for
+     * {@link QueryParameters#empty()} this returns the same url as
+     * {@link #getUrl(Class, RouteParameters)}.
+     *
+     * @param navigationTarget
+     *            navigation target.
+     * @param parameters
+     *            route parameters.
+     * @param queryParameters
+     *            query parameters to append to the url.
+     * @return the url which navigates to given navigationTarget with given
+     *         query parameters.
+     * @throws NotFoundException
+     *             in case the navigationTarget is not registered with a url
+     *             template matching the given parameters.
+     * @since 25.4
+     */
+    public String getUrl(Class<? extends Component> navigationTarget,
+            RouteParameters parameters, QueryParameters queryParameters) {
+        String url = getUrl(navigationTarget, parameters);
+        String queryString = queryParameters.getQueryString();
+        return queryString.isEmpty() ? url : url + "?" + queryString;
+    }
+
     /* Private methods */
 
     private static RouteRegistry getApplicationRegistry() {
         return ApplicationRouteRegistry
-                .getInstance(VaadinService.getCurrent().getContext());
+                .getInstance(VaadinService.getCurrentOrThrow().getContext());
     }
 
     private static RouteRegistry getSessionRegistry() {
         return SessionRouteRegistry
-                .getSessionRegistry(VaadinSession.getCurrent());
+                .getSessionRegistry(VaadinSession.getCurrentOrThrow());
     }
 
     @SafeVarargs
@@ -595,6 +649,7 @@ public class RouteConfiguration implements Serializable {
      * Automatically adds access controls from UI if available.
      *
      * @return list of accessible menu routes available for handled registry
+     * @since 24.5
      */
     public List<RouteData> getRegisteredAccessibleMenuRoutes() {
         UI ui = UI.getCurrent();
@@ -618,6 +673,7 @@ public class RouteConfiguration implements Serializable {
      * @param accessControls
      *            the access controls to use for checking access
      * @return list of accessible menu routes available for handled registry
+     * @since 24.5
      */
     public List<RouteData> getRegisteredAccessibleMenuRoutes(
             Collection<BeforeEnterListener> accessControls) {

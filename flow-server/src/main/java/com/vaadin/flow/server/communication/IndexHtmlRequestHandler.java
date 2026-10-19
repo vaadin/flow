@@ -83,6 +83,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * and inject baseHref as well as the bundle scripts into the template.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 3.0
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
@@ -120,7 +122,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
-            UI ui = UI.getCurrent();
+            UI ui = UI.getCurrentOrThrow();
             var flowContainerElement = new Element(
                     ui.getInternals().getContainerTag());
             flowContainerElement.attr("id", ui.getInternals().getAppId());
@@ -200,6 +202,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         addDevBundleTheme(indexDocument, context);
         applyColorScheme(indexDocument, context);
+        if (config.isThemedHtml()) {
+            indexDocument.body().addClass(Constants.THEMED_HTML_CLASS_NAME);
+        }
 
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
@@ -348,8 +353,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
+        // The CSS Custom Highlight API needs Firefox 140 (ESR), Chrome 105 or
+        // Safari 17.2, and light-dark() needs Firefox 120, Chrome 123 or Safari
+        // 17.5. Together they match the build target in vite.generated.ts
+        // without turning away Chrome that is a few versions behind.
         addScript(indexDocument, """
-                if (!Object.hasOwn(HTMLElement.prototype, "popover")) {
+                if (typeof Highlight !== "function"
+                        || !CSS.supports("color", "light-dark(red, red)")) {
                     window.location.search='v-r=oldbrowser';
                 }
                 """);
@@ -384,6 +394,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
      *
      * @param indexDocument
      *            the document to add the license checker to
+     * @since 23.2
      */
     public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker
@@ -610,10 +621,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request) {
         SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
                 indexDocument.head(), request);
+        // The < symbol is escaped so that values in the JSON (e.g. a
+        // </script> or <!-- coming from the request) cannot break out of the
+        // inline script element. In valid JSON < can only appear inside string
+        // literals, where \x3C is an equivalent JavaScript escape.
+        String json = initialJson.toString().replace("<", "\\x3C");
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.TypeScript= " + initialJson.toString() + ";"));
+                "window.Vaadin.TypeScript= " + json + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 

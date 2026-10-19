@@ -46,7 +46,7 @@ import com.vaadin.flow.server.VaadinSession;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 25.0
+ * @since 25.1
  */
 public class HotswapClassSessionEvent extends HotswapClassEvent {
     private final VaadinSession vaadinSession;
@@ -56,6 +56,8 @@ public class HotswapClassSessionEvent extends HotswapClassEvent {
      *
      * @param vaadinService
      *            the active {@link VaadinService} instance
+     * @param vaadinSession
+     *            the session the changed classes are applied to
      * @param classes
      *            the set of classes that were updated
      * @param redefined

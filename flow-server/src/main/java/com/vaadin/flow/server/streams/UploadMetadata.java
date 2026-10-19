@@ -26,6 +26,7 @@ package com.vaadin.flow.server.streams;
  *            the content type of the uploaded file
  * @param contentLength
  *            the length of the uploaded content in bytes
+ * @since 24.8
  */
 public record UploadMetadata(String fileName, String contentType,
         long contentLength) {

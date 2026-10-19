@@ -21,7 +21,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.HasAriaLabel;
-import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
@@ -34,12 +34,18 @@ import com.vaadin.flow.server.streams.DownloadResponse;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
+ * <p>
+ * Embeds an image. Always set alternative text so the content is available when
+ * the image cannot be shown.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img">MDN:
+ *      &lt;img&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
 @Tag(Tag.IMG)
-public class Image extends HtmlContainer
+public class Image extends HtmlComponent
         implements ClickNotifier<Image>, HasAriaLabel {
 
     private static final String ALT_ATTRIBUTE = "alt";
@@ -113,6 +119,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
+     * @since 24.8
      */
     public Image(DownloadHandler downloadHandler, String alt) {
         setSrc(downloadHandler);
@@ -144,6 +151,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
+     * @since 25.0
      */
     public Image(byte[] imageContent, String imageName) {
         this(imageContent, imageName,
@@ -178,6 +186,7 @@ public class Image extends HtmlContainer
      *
      * @see #setSrc(DownloadHandler)
      * @see #setAlt(String)
+     * @since 25.0
      */
     public Image(byte[] imageContent, String imageName, String mimeType) {
         this(DownloadHandler.fromInputStream(event -> {
@@ -238,6 +247,7 @@ public class Image extends HtmlContainer
      *
      * @param downloadHandler
      *            the download handler resource, not null
+     * @since 24.8
      */
     public void setSrc(DownloadHandler downloadHandler) {
         if (downloadHandler instanceof AbstractDownloadHandler<?> handler) {
@@ -255,12 +265,8 @@ public class Image extends HtmlContainer
      *            the alternate text
      */
     public void setAlt(String alt) {
-        if (alt == null) {
-            getElement().removeAttribute(ALT_ATTRIBUTE);
-        } else {
-            // Also an empty string should be set as alt
-            getElement().setAttribute(ALT_ATTRIBUTE, alt);
-        }
+        // Also an empty string should be set as alt
+        getElement().setAttribute(ALT_ATTRIBUTE, alt);
     }
 
     /**

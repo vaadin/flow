@@ -17,10 +17,12 @@ package com.vaadin.flow.internal;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,10 +30,16 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Internal utility class for URL handling.
@@ -45,6 +53,14 @@ public class UrlUtil {
 
     private static final Pattern PERCENT_ENCODED = Pattern
             .compile("%([0-9A-Fa-f]{2})");
+
+    /**
+     * The only {@code about:} URL that is considered safe regardless of the
+     * configured schemes. It shows an empty document and cannot run scripts,
+     * while there are legitimate uses for it, such as the initial source of an
+     * {@code IFrame}.
+     */
+    private static final String ABOUT_BLANK = "about:blank";
 
     private UrlUtil() {
     }
@@ -80,6 +96,7 @@ public class UrlUtil {
      * @param uri
      *            the uri to encode
      * @return the encoded URI
+     * @since 9.0
      */
     public static String encodeURI(String uri) {
         try {
@@ -107,6 +124,7 @@ public class UrlUtil {
      * @param path
      *            the path to encode
      * @return the encoded path
+     * @since 9.0
      */
     public static String encodeURIComponent(String path) {
         try {
@@ -130,10 +148,15 @@ public class UrlUtil {
      * space character, making it suitable for decoding strings encoded with
      * JavaScript's {@code encodeURIComponent()} or
      * {@link #encodeURIComponent(String)}.
+     * <p>
+     * Only percent-encoded escapes are decoded. Characters that are not escaped
+     * are kept as they are, so an already decoded string containing for example
+     * {@code ü} is returned unchanged.
      *
      * @param encoded
      *            the percent-encoded string
      * @return the decoded string
+     * @since 24.9.12
      */
     public static String decodeURIComponent(String encoded) {
         if (encoded == null || encoded.isEmpty()) {
@@ -141,40 +164,47 @@ public class UrlUtil {
         }
 
         Matcher matcher = PERCENT_ENCODED.matcher(encoded);
+        if (!matcher.find()) {
+            // Nothing is percent-encoded, so the input is already decoded
+            return encoded;
+        }
+
         StringBuilder result = new StringBuilder();
+        // Consecutive escapes are collected so that a multi-byte UTF-8
+        // character split over several escapes is decoded as one character
+        ByteArrayOutputStream escapedBytes = new ByteArrayOutputStream();
         int lastEnd = 0;
 
-        while (matcher.find()) {
-            // Append text before the match
-            result.append(encoded, lastEnd, matcher.start());
-
-            // Decode the hex value
-            String hex = matcher.group(1);
-            int value = Integer.parseInt(hex, 16);
-            result.append((char) value);
-
+        do {
+            if (matcher.start() != lastEnd) {
+                // Text between two escapes ends the current byte sequence
+                appendDecoded(result, escapedBytes);
+                result.append(encoded, lastEnd, matcher.start());
+            }
+            escapedBytes.write(Integer.parseInt(matcher.group(1), 16));
             lastEnd = matcher.end();
-        }
+        } while (matcher.find());
 
-        // Append remaining text
+        appendDecoded(result, escapedBytes);
+
+        // Append remaining text, which is not encoded and thus kept as-is
         result.append(encoded, lastEnd, encoded.length());
 
-        // Handle multi-byte UTF-8 sequences
-        byte[] bytes = new byte[result.length()];
-        boolean hasMultibyte = false;
-        for (int i = 0; i < result.length(); i++) {
-            char c = result.charAt(i);
-            if (c > 127) {
-                hasMultibyte = true;
-            }
-            bytes[i] = (byte) c;
-        }
-
-        if (hasMultibyte) {
-            return new String(bytes, StandardCharsets.UTF_8);
-        }
-
         return result.toString();
+    }
+
+    /**
+     * Decodes the collected percent-encoded bytes as UTF-8 into the given
+     * builder and resets the byte sequence. Characters that were not
+     * percent-encoded are appended separately so that they are not mistaken for
+     * UTF-8 bytes.
+     */
+    private static void appendDecoded(StringBuilder result,
+            ByteArrayOutputStream escapedBytes) {
+        if (escapedBytes.size() > 0) {
+            result.append(escapedBytes.toString(StandardCharsets.UTF_8));
+            escapedBytes.reset();
+        }
     }
 
     /**
@@ -191,6 +221,7 @@ public class UrlUtil {
      *            the parameter value, or {@code null} to skip
      * @return the URL with the parameter appended, or the original URL if name
      *         or value is {@code null}
+     * @since 25.1
      */
     public static String appendQueryParameter(String url, String name,
             String value) {
@@ -211,6 +242,7 @@ public class UrlUtil {
      * @return a relative path that when applied to the servlet path, refers to
      *         the absolute path without containing the context path or servlet
      *         path
+     * @since 23.3
      */
     public static String getServletPathRelative(String absolutePath,
             HttpServletRequest request) {
@@ -255,31 +287,190 @@ public class UrlUtil {
      * The set of safe schemes is read from the current {@link VaadinService}'s
      * {@link DeploymentConfiguration#getUrlSafeSchemes()}, falling back to
      * {@link Constants#DEFAULT_URL_SAFE_SCHEMES} when no {@link VaadinService}
-     * is available. Relative URLs (without a scheme) are always considered
-     * safe, whereas URLs containing control characters are rejected as they can
-     * be used to obfuscate the scheme. A {@code null} URL is considered unsafe.
+     * is available. Relative URLs (without a scheme) and {@code about:blank}
+     * are always considered safe, whereas URLs containing control characters
+     * are rejected as they can be used to obfuscate the scheme. A {@code null}
+     * URL is considered unsafe.
      *
      * @param url
      *            the URL to check, may be {@code null}
      * @return {@code true} if the URL is safe, {@code false} otherwise
+     * @since 25.1.12
+     * @deprecated use
+     *             {@link #validateUrl(Component, String, String, String, SerializableRunnable)}
+     *             instead, as it uses the configuration of the application that
+     *             the component belongs to instead of relying on the current
+     *             thread having a locked session
      */
+    @Deprecated(since = "25.3")
     public static boolean isSafeUrl(String url) {
         VaadinService service = VaadinService.getCurrent();
-        Set<String> safeSchemes;
         if (service == null) {
-            if (getLogger().isDebugEnabled()) {
-                getLogger()
-                        .debug("No VaadinService available on current thread; "
-                                + "falling back to default safe URL schemes. "
-                                + "Any custom {} configuration will not apply "
-                                + "here.", InitParameters.URL_SAFE_SCHEMES);
-            }
-            safeSchemes = Constants.DEFAULT_URL_SAFE_SCHEMES;
-        } else {
-            safeSchemes = service.getDeploymentConfiguration()
-                    .getUrlSafeSchemes();
+            // Nothing will re-check the URL later on, so this is the last
+            // chance to tell that the configuration wasn't applied
+            getLogger().warn("No VaadinService available on the current "
+                    + "thread, so the URL \"{}\" is checked against the "
+                    + "default safe schemes instead of the {} configuration "
+                    + "of the application. Check URLs through a component or "
+                    + "a UI to have the configuration applied.", url,
+                    InitParameters.URL_SAFE_SCHEMES);
+            return isSafeUrl(url, Constants.DEFAULT_URL_SAFE_SCHEMES);
         }
-        return isSafeUrl(url, safeSchemes);
+        return isSafeUrl(url,
+                service.getDeploymentConfiguration().getUrlSafeSchemes());
+    }
+
+    /**
+     * Validates a URL that is set for a component that is attached to a
+     * {@link UI} which belongs to a {@link VaadinSession}, such as a {@link UI}
+     * itself.
+     *
+     * @see #validateUrl(Component, String, String, String,
+     *      SerializableRunnable)
+     *
+     * @param component
+     *            the component that the URL is set for, not {@code null}
+     * @param type
+     *            the kind of URL being set, for example {@code "href"}
+     * @param url
+     *            the URL to validate, not {@code null}
+     * @param unsafeMethod
+     *            the signature of the method that bypasses validation, for
+     *            example {@code "setUnsafeHref(String)"}
+     * @throws IllegalArgumentException
+     *             if the URL uses a scheme that is not considered safe
+     * @throws IllegalStateException
+     *             if the configuration of the application cannot be found
+     *             through the given component
+     * @since 25.3
+     */
+    public static void validateUrl(Component component, String type, String url,
+            String unsafeMethod) {
+        if (!isSafeUrl(url, getSafeSchemes(component))) {
+            throw new IllegalArgumentException(
+                    getUnsafeUrlMessage(type, url, unsafeMethod));
+        }
+    }
+
+    /**
+     * Validates a URL that is set for a component, using the
+     * {@link InitParameters#URL_SAFE_SCHEMES} configuration of the application
+     * that the component belongs to.
+     * <p>
+     * The set of safe schemes is read from the {@link VaadinService} of the
+     * component's own {@link UI}. A component that isn't attached yet is thus
+     * validated when it is attached, which is the first point where the
+     * application is known and also the point where the value would first be
+     * sent to the browser.
+     * <p>
+     * If the URL isn't safe, then the value is cleared through
+     * {@code urlClearer} before an {@link IllegalArgumentException} is thrown,
+     * so that an unsafe URL isn't sent to the client even if the application
+     * catches the exception.
+     * <p>
+     * Any previously deferred validation for the same component and type is
+     * canceled. Use {@link #cancelUrlValidation(Component, String)} when the
+     * value is replaced through a method that doesn't validate it.
+     *
+     * @param component
+     *            the component that the URL is set for, not {@code null}
+     * @param type
+     *            the kind of URL being set, for example {@code "href"}
+     * @param url
+     *            the URL to validate, not {@code null}
+     * @param unsafeMethod
+     *            the signature of the method that bypasses validation, for
+     *            example {@code "setUnsafeHref(String)"}
+     * @param urlClearer
+     *            clears the URL value of the component, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the component is attached and the URL uses a scheme that
+     *             is not considered safe
+     * @since 25.3
+     */
+    public static void validateUrl(Component component, String type, String url,
+            String unsafeMethod, SerializableRunnable urlClearer) {
+        cancelUrlValidation(component, type);
+
+        Optional<Set<String>> safeSchemes = findSafeSchemes(component);
+        if (safeSchemes.isEmpty()) {
+            deferUrlValidation(component, type, url, unsafeMethod, urlClearer);
+        } else if (!isSafeUrl(url, safeSchemes.get())) {
+            throw new IllegalArgumentException(
+                    getUnsafeUrlMessage(type, url, unsafeMethod));
+        }
+    }
+
+    private static void deferUrlValidation(Component component, String type,
+            String url, String unsafeMethod, SerializableRunnable urlClearer) {
+        Registration registration = component.addAttachListener(event -> {
+            // Also unregisters this listener, so that the same value isn't
+            // reported again if the application catches the exception and
+            // attaches the component another time
+            cancelUrlValidation(component, type);
+
+            if (!isSafeUrl(url, getSafeSchemes(component))) {
+                // Clear the value first so that an unsafe URL isn't sent to
+                // the client even if the exception is caught
+                urlClearer.run();
+                throw new IllegalArgumentException(
+                        getUnsafeUrlMessage(type, url, unsafeMethod));
+            }
+        });
+        ComponentUtil.setData(component, getValidationKey(type), registration);
+    }
+
+    /**
+     * Cancels a check scheduled by
+     * {@link #validateUrl(Component, String, String, String, SerializableRunnable)},
+     * for example because the value has been replaced through a method that
+     * doesn't validate it. Does nothing if no check is scheduled.
+     *
+     * @param component
+     *            the component that the URL is set for, not {@code null}
+     * @param type
+     *            the kind of URL, for example {@code "href"}
+     * @since 25.3
+     */
+    public static void cancelUrlValidation(Component component, String type) {
+        String key = getValidationKey(type);
+        Object registration = ComponentUtil.getData(component, key);
+        if (registration != null) {
+            ((Registration) registration).remove();
+            ComponentUtil.setData(component, key, null);
+        }
+    }
+
+    private static String getValidationKey(String type) {
+        return UrlUtil.class.getName() + "." + type;
+    }
+
+    /**
+     * Gets the safe schemes configured for the application that the given
+     * component belongs to, or throws if they cannot be found. Used where the
+     * component is expected to be attached, so that a missing configuration
+     * means that validation would silently be skipped.
+     */
+    private static Set<String> getSafeSchemes(Component component) {
+        return findSafeSchemes(component)
+                .orElseThrow(() -> new IllegalStateException(String.format(
+                        "Cannot find the %s configuration for %s. A URL can "
+                                + "only be checked through a component that is "
+                                + "attached to a UI which belongs to a "
+                                + "VaadinSession.",
+                        InitParameters.URL_SAFE_SCHEMES,
+                        component.getClass().getName())));
+    }
+
+    /**
+     * Finds the safe schemes configured for the application that the given
+     * component belongs to, or an empty optional if the component isn't
+     * attached to a UI that knows its application.
+     */
+    private static Optional<Set<String>> findSafeSchemes(Component component) {
+        return component.getUI().map(UI::getSession)
+                .map(VaadinSession::getService).map(service -> service
+                        .getDeploymentConfiguration().getUrlSafeSchemes());
     }
 
     /**
@@ -298,6 +489,7 @@ public class UrlUtil {
      *            the signature of the method that bypasses validation, for
      *            example {@code "setUnsafeHref(String)"}
      * @return the exception message
+     * @since 25.1.12
      */
     public static String getUnsafeUrlMessage(String type, String url,
             String unsafeMethod) {
@@ -341,6 +533,10 @@ public class UrlUtil {
             if (Character.isISOControl(trimmed.charAt(i))) {
                 return false;
             }
+        }
+        if (ABOUT_BLANK.equalsIgnoreCase(trimmed)) {
+            // Safe even though the about scheme in general isn't
+            return true;
         }
         String scheme = extractScheme(trimmed);
         if (scheme == null) {

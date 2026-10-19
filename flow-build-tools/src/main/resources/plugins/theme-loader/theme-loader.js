@@ -1,6 +1,6 @@
 import { getOptions } from 'loader-utils';
 import { dirname, basename, resolve } from 'path';
-import { rewriteCssUrls } from './theme-loader-utils';
+import { rewriteCssUrls } from './theme-loader-utils.js';
 
 /**
  * This custom loader handles rewriting urls for the application theme css files.
@@ -28,6 +28,6 @@ export default function (source, map) {
 
   logger.log("Using '", themeFolder, "' for the application theme base folder.");
 
-  source = rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, options);
-  this.callback(null, source, map);
+  const rewritten = rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, options);
+  this.callback(null, rewritten ? rewritten.code : source, map);
 }

@@ -23,6 +23,9 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.frontend.DevBundleJsModuleView")
 @JsModule("./test.ts")
 @JsModule("./js/test.js")
+// Pulls a module named like @vaadin/vaadin-usage-statistics into the bundle,
+// so that the build plugin that rewrites its dev mode comment runs
+@JsModule("./vaadin-usage-statistics-stub.js")
 public class DevBundleJsModuleView extends Div {
     static final String SPAN_ID = "test-js-module-frontend-span";
 

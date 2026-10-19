@@ -22,6 +22,12 @@ import com.vaadin.flow.dom.Element;
 /**
  * Base class for a {@link Component} that represents a single built-in HTML
  * element.
+ * <p>
+ * This base class provides no API for adding child components. Use
+ * {@link HtmlContainer} instead for an element that may contain any kind of
+ * content. For an element with a restricted content model, extend this class
+ * and add only the API that matches what the element accepts, for example
+ * {@link HasComponentsOfType} when all children are of the same type.
  *
  * @author Vaadin Ltd
  * @since 1.0
