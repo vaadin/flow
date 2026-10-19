@@ -38,23 +38,33 @@ jobs:
           java-version-file: .tool-versions
           cache: maven
 
+      # The shared step reconciles every module the checked-out branch builds:
+      # the root pom's <module> entries that have Java sources. Deriving the
+      # list from the branch keeps it right on branches that predate a module
+      # (e.g. flow-build-tools before 25.0) or carry one main no longer has.
+      # Excluded are modules whose sources are not public API (client-side
+      # code, test helpers, tooling) and the ones reconciled against their
+      # own index below.
+      - id: modules
+        name: List modules to reconcile
+        run: |
+          exclude=" flow-client flow-test-util flow-test-generic flow-devloop-daemon flow-polymer2lit vaadin-spring vaadin-cdi vaadin-quarkus "
+          shared=""
+          while read -r m; do
+            if [ -d "$m/src/main/java" ] && [[ "$exclude" != *" $m "* ]]; then
+              shared="$shared$m"$'\n'
+            fi
+          done < <(sed -n 's:.*<module>\(.*\)</module>.*:\1:p' pom.xml)
+          [ -n "$shared" ] || { echo "No modules to reconcile found in pom.xml"; exit 1; }
+          printf 'Shared index modules:\n%s' "$shared"
+          printf 'shared<<EOF\n%sEOF\n' "$shared" >> "$GITHUB_OUTPUT"
+
       - id: since
         uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
-          artifacts: |
-            flow-server
-            flow-data
-            flow-html-components
-            flow-polymer-template
-            flow-dnd
-            flow-webpush
-            flow-react
-            flow-lit-template
-            flow-html-components-testbench
-            flow-build-tools
-            vaadin-dev-server
+          artifacts: ${{ steps.modules.outputs.shared }}
 
       # vaadin-spring MUST reconcile against its own isolated index (index-dir),
       # never the shared one above. Why: the tool merges every listed module's
