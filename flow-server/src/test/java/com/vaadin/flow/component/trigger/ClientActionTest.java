@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.component.trigger;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -131,6 +137,38 @@ class ClientActionTest {
         assertEquals("Write permission denied.", failed.get(0).message());
     }
 
+    /**
+     * A view-like owner that keeps the handle in a field and whose callback
+     * reaches back to it, the usual shape in an application: the handle and its
+     * owner form a reference cycle.
+     */
+    private static class CopyOwner implements Serializable {
+        private final List<@Nullable String> copied = new ArrayList<>();
+        private final ClientAction copy = Clipboard.writeText(this::copied,
+                err -> {
+                });
+
+        private void copied(@Nullable String value) {
+            copied.add(value);
+        }
+    }
+
+    @Test
+    void handle_survivesSerialization_evenWhenItsCallbacksReachBackToIt()
+            throws Exception {
+        // Serialize from the handle, as when the renderer holding it is
+        // reached before the view that owns it.
+        ClientAction restored = serializeAndDeserialize(new CopyOwner().copy);
+
+        UI ui = new MockUI();
+        Div container = new Div();
+        ui.add(container);
+        RecordingSink sink = new RecordingSink();
+        restored.bindTo(container.getElement(), sink);
+
+        assertEquals(1, sink.installed.size());
+    }
+
     @Test
     void unarmedCheckPasses_andRegistrationDetachesTheBinding() {
         UI ui = new MockUI();
@@ -175,6 +213,19 @@ class ClientActionTest {
         // Text only: the html slot stays empty.
         assertEquals("return null",
                 ((JsFunction) write.getCaptures().get(1)).getBody());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends Serializable> T serializeAndDeserialize(T object)
+            throws IOException, ClassNotFoundException {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+            out.writeObject(object);
+        }
+        try (ObjectInputStream in = new ObjectInputStream(
+                new ByteArrayInputStream(bytes.toByteArray()))) {
+            return (T) in.readObject();
+        }
     }
 
     private static ArrayNode outcome(ObjectNode outcome) {

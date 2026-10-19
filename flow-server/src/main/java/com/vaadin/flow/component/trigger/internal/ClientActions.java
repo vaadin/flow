@@ -19,6 +19,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.trigger.ClientAction;
+import com.vaadin.flow.component.trigger.ClientActionSink;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Bridges the public {@link ClientAction} handle to the internal {@link Action}
@@ -45,10 +48,17 @@ public final class ClientActions implements Serializable {
      */
     public static ClientAction of(Action action) {
         Objects.requireNonNull(action, "action must not be null");
-        return (host, sink) -> {
-            SinkTrigger trigger = new SinkTrigger(host, sink);
-            trigger.triggers(action);
-            return trigger::remove;
+        // Do not convert to lambda: the handle is held by a renderer and its
+        // action's callbacks typically reach back to it through the owning
+        // view, and lambda deserialization cannot resolve that cycle
+        // (ClassCastException on the captured value).
+        return new ClientAction() {
+            @Override
+            public Registration bindTo(Element host, ClientActionSink sink) {
+                SinkTrigger trigger = new SinkTrigger(host, sink);
+                trigger.triggers(action);
+                return trigger::remove;
+            }
         };
     }
 }
