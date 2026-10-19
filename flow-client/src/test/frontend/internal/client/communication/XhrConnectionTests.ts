@@ -204,6 +204,22 @@ describe('XhrConnection', () => {
       expect(registry.calls).to.deep.equal(['invalidStatus']);
     });
 
+    it('keeps tracking a re-sent request when the earlier one completes', () => {
+      const registry = makeRegistry();
+      const connection = new XhrConnection(registry);
+      const first = fakeXhr({ stayOpened: true });
+      const second = fakeXhr({ stayOpened: true });
+      withFakeXhr(first, () => connection.send({ rpc: [] }));
+      withFakeXhr(second, () => connection.send({ rpc: [] }));
+
+      // The earlier request finally fails while the re-sent one still waits.
+      first.xhr.readyState = 4;
+      first.xhr.onreadystatechange?.();
+
+      expect(connection.abortActiveRequest()).to.be.true;
+      expect(second.xhr.readyState).to.equal(4);
+    });
+
     it('refuses to send a payload holding a dom node reference', () => {
       const registry = makeRegistry();
       const fake = fakeXhr({ status: 200 });
