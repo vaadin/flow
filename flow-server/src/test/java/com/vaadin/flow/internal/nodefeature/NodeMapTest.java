@@ -473,6 +473,33 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
     }
 
     @Test
+    void keySetGarbageCollected_registryEntryRemovedOnLaterRegistration()
+            throws InterruptedException {
+        // Only the map and the registry reference the generated key
+        WeakReference<String> keyRef = putGeneratedKeyAndClear();
+
+        boolean removed = false;
+        for (int i = 0; i < 10 && !removed; i++) {
+            System.gc();
+            // Any registration polls for key sets that have been collected
+            ElementStylePropertyMap otherMap = createFeature();
+            otherMap.put("evictTriggerA", "a");
+            otherMap.put("evictTriggerB", "b");
+            removed = TestUtil.isGarbageCollected(keyRef);
+        }
+        assertTrue(removed, "Registry entry was not removed");
+    }
+
+    private WeakReference<String> putGeneratedKeyAndClear() {
+        String key = new StringBuilder("generated").append("Key").toString();
+        ElementStylePropertyMap map = createFeature();
+        map.put(key, "a");
+        map.put("evictOther", "b");
+        map.clear();
+        return new WeakReference<>(key);
+    }
+
+    @Test
     void putAndRemove_allSizes_valuesKept() {
         List<String> keys = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
