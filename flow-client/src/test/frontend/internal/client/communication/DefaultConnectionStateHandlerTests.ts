@@ -4,6 +4,7 @@ import { type StateChangeHandler, UIState } from '../../../../../main/frontend/i
 import type { EventRemover } from '../../../../../main/frontend/internal/EventRemover';
 import { testRegistry } from '../testRegistry';
 import { DefaultConnectionStateHandler } from '../../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
+import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 import { XhrConnectionError } from '../../../../../main/frontend/internal/client/communication/XhrConnectionError';
 import type {
   VaadinRequestFailure,
@@ -28,55 +29,53 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
   const lifecycleHandlers: StateChangeHandler[] = [];
   let state: UIState = UIState.RUNNING;
   let heartbeatInterval = 300;
-  return {
-    log,
-    lifecycleHandlers,
-    registry: testRegistry({
-      UILifecycle: {
-        isRunning: () => state === UIState.RUNNING,
-        getState: () => state,
-        setState: (s: UIState) => {
-          state = s;
-          log.states.push(s);
-        },
-        addHandler: (handler: StateChangeHandler): EventRemover => {
-          lifecycleHandlers.push(handler);
-          return { remove: () => lifecycleHandlers.splice(lifecycleHandlers.indexOf(handler), 1) };
-        }
+  const registry = testRegistry({
+    UILifecycle: {
+      isRunning: () => state === UIState.RUNNING,
+      getState: () => state,
+      setState: (s: UIState) => {
+        state = s;
+        log.states.push(s);
       },
-      ReconnectConfiguration: {
-        getReconnectAttempts: () => reconnectAttempts,
-        getReconnectInterval: () => 5000,
-        getDialogText: () => null,
-        getDialogTextGaveUp: () => null
-      },
-      RequestResponseTracker: {
-        hasActiveRequest: () => false,
-        endRequest: () => {}
-      },
-      LoadingIndicatorStateHandler: { restoreLoading: () => {} },
-      Heartbeat: {
-        setInterval: (interval: number) => {
-          heartbeatInterval = interval;
-        },
-        getInterval: () => heartbeatInterval,
-        send: () => log.heartbeatSends++
-      },
-      ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
-      MessageSender: {
-        sendInvocationsToServer: () => {},
-        resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt),
-        failAttempt: (_payload: Record<string, unknown>, failure: VaadinRequestFailure) => log.requests.push(failure),
-        failPushAttempt: (failure: VaadinRequestFailure) => log.requests.push(failure),
-        settleRequest: (_payload: Record<string, unknown>, outcome: VaadinRequestOutcome) => log.requests.push(outcome),
-        discardSentRequests: () => {}
-      },
-      SystemErrorHandler: {
-        handleSessionExpiredError: () => log.sessionExpired++,
-        handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
+      addHandler: (handler: StateChangeHandler): EventRemover => {
+        lifecycleHandlers.push(handler);
+        return { remove: () => lifecycleHandlers.splice(lifecycleHandlers.indexOf(handler), 1) };
       }
-    })
-  };
+    },
+    ReconnectConfiguration: {
+      getReconnectAttempts: () => reconnectAttempts,
+      getReconnectInterval: () => 5000,
+      getDialogText: () => null,
+      getDialogTextGaveUp: () => null
+    },
+    RequestResponseTracker: {
+      hasActiveRequest: () => false,
+      endRequest: () => {}
+    },
+    Heartbeat: {
+      setInterval: (interval: number) => {
+        heartbeatInterval = interval;
+      },
+      getInterval: () => heartbeatInterval,
+      send: () => log.heartbeatSends++
+    },
+    ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
+    MessageSender: {
+      sendInvocationsToServer: () => {},
+      resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt),
+      failAttempt: (_payload: Record<string, unknown>, failure: VaadinRequestFailure) => log.requests.push(failure),
+      failPushAttempt: (failure: VaadinRequestFailure) => log.requests.push(failure),
+      settleRequest: (_payload: Record<string, unknown>, outcome: VaadinRequestOutcome) => log.requests.push(outcome),
+      discardSentRequests: () => {}
+    },
+    SystemErrorHandler: {
+      handleSessionExpiredError: () => log.sessionExpired++,
+      handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
+    }
+  });
+  // The real loading handler, which shows connected when a reconnect resolves.
+  registry.register('LoadingIndicatorStateHandler', new LoadingIndicatorStateHandler(registry));
+  return { log, lifecycleHandlers, registry };
 }
 
 // The handler listens on window for the browser's connectivity events.

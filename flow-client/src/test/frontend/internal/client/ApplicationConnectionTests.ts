@@ -85,6 +85,18 @@ describe('ApplicationConnection', () => {
     expect(registry.log.resynchronized).to.equal(0);
   });
 
+  it('does not reload on the initial, non-persisted pageshow', async () => {
+    new ApplicationConnection(makeRegistry().registry).start({ syncId: 0 });
+    // The browser fires this when the document is first shown, which can be
+    // after the client has started when a resource delays the load event.
+    const unloaded = new Promise<boolean>((resolve) => {
+      window.addEventListener('beforeunload', () => resolve(true), { once: true });
+      setTimeout(() => resolve(false), 100);
+    });
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: false }));
+    expect(await unloaded).to.be.false;
+  });
+
   it('isActive while the initial UIDL is not yet handled', () => {
     const connection = new ApplicationConnection(makeRegistry({ initialUidlHandled: false }).registry);
     expect(connection.isActive()).to.be.true;

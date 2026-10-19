@@ -51,6 +51,7 @@ interface ConnectionStateApi {
   loadingStarted(): void;
   loadingFinished(): void;
   loadingFailed(): void;
+  addStateChangeListener?(listener: (prevState: string, state: string) => void): void;
 }
 
 function vaadin(): {
@@ -98,6 +99,17 @@ export function setProperty(property: string, value: unknown): void {
   if (connectionIndicator) {
     connectionIndicator[property] = value;
   }
+}
+
+/**
+ * Adds a listener notified of every connection state change. A state change
+ * also resets the loading count of the connection state. Adding the same
+ * listener again has no effect.
+ *
+ * @param listener - the listener, called with the previous and the new state
+ */
+export function addStateChangeListener(listener: (prevState: string, state: string) => void): void {
+  vaadin().connectionState?.addStateChangeListener?.(listener);
 }
 
 /** Notifies the connection state that a loading operation has started. */

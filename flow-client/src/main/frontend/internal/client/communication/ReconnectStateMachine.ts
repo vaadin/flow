@@ -25,8 +25,8 @@
 
 import type { Registry } from '../Registry';
 import type { Command } from '../Command';
-import { CONNECTED, CONNECTION_LOST, LOADING, RECONNECTING, getState, setState } from '../ConnectionIndicator';
-import { ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
+import { CONNECTION_LOST, RECONNECTING, setState } from '../ConnectionIndicator';
+import { type ConnectionMessageType, isHigherPriorityThan } from './ConnectionMessageType';
 import { Console } from '../Console';
 
 /**
@@ -140,19 +140,12 @@ export class ReconnectStateMachine {
     this.#reconnectionCause = null;
     this.#reconnectAttempt = 0;
     this.#cancelScheduledReconnect();
-    if (type === ConnectionMessageType.HEARTBEAT) {
-      // Heartbeat never has loading indication. Show connected unless another
-      // party (Flow router, Hilla requests) started loading during the
-      // reconnect, as setting the state would drop its loading.
-      if (getState() !== LOADING) {
-        setState(CONNECTED);
-      }
-    } else {
-      // Let the loading indicator state handler leave the reconnecting state,
-      // showing a request still in progress without dropping the loading of
-      // other parties, and remove the prior loading indication if necessary.
-      this.#registry.getLoadingIndicatorStateHandler().restoreLoading();
-    }
+    // Let the loading indicator state handler leave the reconnecting state,
+    // showing a request still in progress without dropping the loading of
+    // other parties, and remove the prior loading indication if necessary. A
+    // request can be in progress also when a heartbeat failure started the
+    // reconnect.
+    this.#registry.getLoadingIndicatorStateHandler().restoreLoading();
     Console.debug('Re-established connection to server');
   }
 

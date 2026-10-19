@@ -21,7 +21,15 @@
 
 import type { Registry } from '../Registry';
 import { getScheduler } from '../TrackingScheduler';
-import { CONNECTED, LOADING, getState, loadingFinished, loadingStarted, setState } from '../ConnectionIndicator';
+import {
+  CONNECTED,
+  LOADING,
+  addStateChangeListener,
+  getState,
+  loadingFinished,
+  loadingStarted,
+  setState
+} from '../ConnectionIndicator';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 // High-frequency events whose RPC requests should not trigger loading
@@ -56,6 +64,16 @@ export class LoadingIndicatorStateHandler {
   #loading = false;
 
   #showLoading = false;
+
+  // Whether the connection state currently counts this handler's loading.
+  // Any state change resets that count, so it clears this flag.
+  #announced = false;
+
+  // A state change, e.g. to reconnecting or offline, drops the loading
+  // announced before it, whoever made the change.
+  readonly #stateChangeListener = (): void => {
+    this.#announced = false;
+  };
 
   /**
    * Creates a new instance connected to the given registry.
@@ -92,18 +110,25 @@ export class LoadingIndicatorStateHandler {
 
   /**
    * Restores the loading indication after a reconnect, which replaced it with
-   * the reconnecting state. Re-announces an ongoing loading indication, moving
-   * the state from reconnecting to loading in one transition, or adding to the
+   * the reconnecting state. Re-announces an ongoing loading indication unless
+   * a request started during the reconnect already announced it, moving the
+   * state from reconnecting to loading in one transition, or adding to the
    * loading started by another party (Flow router, Hilla requests) during the
-   * reconnect. Otherwise shows connected, also leaving a connection lost set
-   * by another party, unless another party is loading. Then stops the loading
-   * indication if no request remains active.
+   * reconnect, then stops it if no request remains active. Otherwise shows
+   * connected, also leaving a connection lost set by another party, unless
+   * another party is loading.
    */
   restoreLoading(): void {
-    if (this.#loading) {
-      loadingStarted();
-    } else if (getState() !== LOADING) {
-      setState(CONNECTED);
+    if (!this.#loading) {
+      // Nothing to stop. A message queued but not yet sent keeps its request
+      // for loading indication.
+      if (getState() !== LOADING) {
+        setState(CONNECTED);
+      }
+      return;
+    }
+    if (!this.#announced) {
+      this.#announce();
     }
     this.stopLoading();
   }
@@ -132,9 +157,19 @@ export class LoadingIndicatorStateHandler {
     // loadingStarted/loadingFinished are preferred over setState so as not to
     // interfere with other loading parties (Flow router, Hilla requests).
     if (this.#loading) {
-      loadingStarted();
-    } else {
+      this.#announce();
+    } else if (this.#announced) {
+      this.#announced = false;
       loadingFinished();
     }
+  }
+
+  #announce(): void {
+    // Subscribing again is a no-op for the same store, and also covers a
+    // store that did not exist yet when this handler was created.
+    addStateChangeListener(this.#stateChangeListener);
+    // After loadingStarted, as its change to loading clears the flag.
+    loadingStarted();
+    this.#announced = true;
   }
 }
