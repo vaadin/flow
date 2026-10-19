@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 
@@ -120,7 +121,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
             // project one, so removing only the latter would leave behind a
             // configuration that no longer resolves
             log().debug("Removing file {}", jarResourcesTsConfig);
-            FileIOUtils.deleteQuietly(jarResourcesTsConfig);
+            FileIOUtils.deleteFileQuietly(jarResourcesTsConfig);
         }
     }
 

@@ -135,7 +135,7 @@ class TaskGenerateJarResourcesTsConfig extends AbstractTaskClientGenerator {
         }
         tsConfigs.forEach(path -> {
             copiedFiles.remove(path);
-            FileIOUtils.deleteQuietly(new File(targetDirectory, path));
+            FileIOUtils.deleteFileQuietly(new File(targetDirectory, path));
         });
         LoggerFactory.getLogger(TaskGenerateJarResourcesTsConfig.class).warn(
                 "Discarded the TypeScript configuration files {} that came "
