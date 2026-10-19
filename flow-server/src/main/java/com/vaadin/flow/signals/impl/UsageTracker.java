@@ -139,10 +139,12 @@ public class UsageTracker {
          * Checking a usage of a cached signal may revalidate the cached value,
          * which runs its computation and acquires signal tree locks. This
          * method should therefore not be called while holding a lock that a
-         * signal change listener might also need. Exceptions from the
-         * revalidation are not thrown from this method; the usage is instead
-         * reported as changed so that the exception is thrown when the value is
-         * read again.
+         * signal change listener might also need. An exception thrown by the
+         * computation is stored and thrown when the value is read, and a
+         * computation that no longer reads any signal value is reported as a
+         * change so that the error is thrown when the value is read again.
+         * Other failures, e.g. while storing the recomputed value, are thrown
+         * from this method.
          *
          * @return <code>true</code> if the value has been changed,
          *         <code>false</code> if there is no change

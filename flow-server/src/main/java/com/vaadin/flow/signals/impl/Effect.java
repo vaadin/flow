@@ -394,8 +394,9 @@ public class Effect implements Serializable {
 
         // hasChanges() may run user code (e.g. revalidating a cached signal)
         // and acquire SignalTree locks, so it must be called without the
-        // monitor held. It does not throw: a failing revalidation is reported
-        // as a change, so the action re-runs and gets the exception.
+        // monitor held. A cached signal whose computation no longer reads any
+        // signal is reported as changed, so the action re-runs and gets the
+        // exception.
         boolean needsRevalidation = snapshot.isEmpty()
                 || snapshot.stream().anyMatch(UsageTracker.Usage::hasChanges);
 
