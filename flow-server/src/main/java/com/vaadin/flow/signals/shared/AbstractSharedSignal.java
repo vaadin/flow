@@ -188,18 +188,30 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
 
         /*
          * Extract value before registering since extracting sets up state that
-         * is used by registerDepedency in the case of computed signals. The
-         * usage is registered even if extracting throws, e.g. for a cached
-         * signal holding an exception, since the caller still depends on the
-         * value.
+         * is used by registerDepedency in the case of computed signals.
          */
+        T value;
         try {
-            return extractValue(data);
-        } finally {
+            value = extractValue(data);
+        } catch (RuntimeException e) {
+            /*
+             * The caller still depends on the value, e.g. for a cached signal
+             * holding an exception, so register the usage also in this case. A
+             * failing registration must not hide the original exception.
+             */
             if (UsageTracker.isActive()) {
-                UsageTracker.registerUsage(createUsage(transaction));
+                try {
+                    UsageTracker.registerUsage(createUsage(transaction));
+                } catch (RuntimeException registrationFailure) {
+                    e.addSuppressed(registrationFailure);
+                }
             }
+            throw e;
         }
+        if (UsageTracker.isActive()) {
+            UsageTracker.registerUsage(createUsage(transaction));
+        }
+        return value;
     }
 
     @SuppressWarnings("NullAway")

@@ -31,6 +31,7 @@ import java.util.concurrent.locks.LockSupport;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.signals.DeniedSignalUsageException;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
@@ -457,6 +458,26 @@ class ComputedSignalTest extends SignalTestBase {
 
         source.set(-1);
         assertEquals(-1, outer.peek());
+    }
+
+    @Test
+    void cached_readThrowsAndUsageDenied_originalExceptionPropagated() {
+        ValueSignal<Integer> source = new ValueSignal<>(-1);
+        Signal<Integer> cached = Signal.cached(() -> {
+            if (source.get() < 0) {
+                throw new ArithmeticException("negative");
+            }
+            return source.get();
+        });
+        DeniedSignalUsageException denied = new DeniedSignalUsageException(
+                "denied");
+
+        ArithmeticException thrown = assertThrows(ArithmeticException.class,
+                () -> UsageTracker.track(cached::get, usage -> {
+                    throw denied;
+                }));
+
+        assertEquals(List.of(denied), Arrays.asList(thrown.getSuppressed()));
     }
 
     @Test
