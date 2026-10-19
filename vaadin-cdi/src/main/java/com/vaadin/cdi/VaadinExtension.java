@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,6 +46,8 @@ import com.vaadin.cdi.util.DependentProvider;
 
 /**
  * CDI Extension needed to register Vaadin scopes to the runtime.
+ * 
+ * @since 10.0
  */
 public class VaadinExtension implements Extension {
 
@@ -54,6 +56,13 @@ public class VaadinExtension implements Extension {
     private UIScopedContext uiScopedContext;
     private RouteScopedContext routeScopedContext;
     private Set<BeanInfo> beanInfoSet = new HashSet<>();
+
+    /**
+     * Creates a new Vaadin CDI extension.
+     */
+    public VaadinExtension() {
+        // Nothing to initialize
+    }
 
     private void storeBeanValidationInfo(@Observes ProcessBean processBean) {
         beanInfoSet.add(new BeanInfo(processBean.getBean(),

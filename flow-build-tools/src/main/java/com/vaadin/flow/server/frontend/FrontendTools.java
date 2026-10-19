@@ -69,18 +69,20 @@ public class FrontendTools {
 
     /**
      * This is the version that is installed if there is no node installed or
-     * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
-     * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
+     * the installed version is older than {@link #SUPPORTED_NODE_VERSION}.
+     * <p>
+     * The downloaded archive is verified against checksums shipped with Flow,
+     * so run {@code scripts/updateNodeChecksums.sh} after changing this.
      * 
      * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v24.21.0";
+    public static final String DEFAULT_NODE_VERSION = "v26.12.0";
     /**
      * This is the version shipped with the default Node version.
      * 
      * @since 9.0
      */
-    public static final String DEFAULT_NPM_VERSION = "11.19.0";
+    public static final String DEFAULT_NPM_VERSION = "11.20.0";
 
     public static final String DEFAULT_PNPM_VERSION = "11.26.0";
 
@@ -106,30 +108,25 @@ public class FrontendTools {
     private static final List<@NonNull FrontendVersion> BAD_NPM_VERSIONS = Collections
             .singletonList(new FrontendVersion("9.2.0"));
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 24;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
     /**
      * Maximum supported Node.js major version. Versions with a higher major
      * version are not tested and may not be compatible.
      * 
      * @since 25.0
      */
-    public static final int MAX_SUPPORTED_NODE_MAJOR_VERSION = 24;
+    public static final int MAX_SUPPORTED_NODE_MAJOR_VERSION = 26;
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 11;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
 
-    public static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
-            SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
+    public static final FrontendVersion SUPPORTED_NODE_VERSION = FrontendUtils.MINIMUM_SUPPORTED_NODE_VERSION;
 
     /**
-     * Minimum Node.js version for auto-installed versions in ~/.vaadin. Global
-     * installations are accepted if they meet SUPPORTED_NODE_VERSION, but
-     * auto-installed versions must meet this higher threshold.
-     * 
+     * Minimum Node.js version for auto-installed versions in ~/.vaadin, which
+     * is the same minimum that a global installation has to meet.
+     *
      * @since 25.0
      */
-    public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = new FrontendVersion(
-            24, 10, 0);
+    public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = SUPPORTED_NODE_VERSION;
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
@@ -148,11 +145,11 @@ public class FrontendTools {
     static final FrontendVersion MIN_NPM_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
             11, 17, 0);
 
-    // Node.js 24.19.0 is the first release of the supported Node.js line that
+    // Node.js 26.4.0 is the first release of the supported Node.js line that
     // ships npm 11.17.0, which is what a global installation has to be
     // upgraded to. The Node.js version Vaadin installs itself is newer.
     static final FrontendVersion MIN_NODE_VERSION_FOR_RELEASE_AGE_EXCLUDE = new FrontendVersion(
-            24, 19, 0);
+            26, 4, 0);
 
     // pnpm 10.17.0 is the first version that supports the
     // minimumReleaseAgeExclude setting; pnpm 10.16 ignores it.

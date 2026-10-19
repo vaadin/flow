@@ -66,6 +66,8 @@ import org.slf4j.LoggerFactory;
  * e.g. {@link #cleanupFinalBeanManagers}). This is the only way to guarantee
  * that the right BeanManager is obtained in more complex Container scenarios.
  * </p>
+ * 
+ * @since 15.0
  */
 public class BeanManagerProvider implements Extension {
     private static final Logger LOG = LoggerFactory
@@ -144,6 +146,13 @@ public class BeanManagerProvider implements Extension {
      * </p>
      */
     private final Map<ClassLoader, BeanManagerInfo> bmInfos = new ConcurrentHashMap<>();
+
+    /**
+     * Creates a new bean manager provider.
+     */
+    public BeanManagerProvider() {
+        // Nothing to initialize
+    }
 
     /**
      * Indicates whether the {@link BeanManagerProvider} has been initialized.
@@ -303,6 +312,9 @@ public class BeanManagerProvider implements Extension {
      *
      * In EARs with multiple webapps, each WAR might get a different Extension.
      * This depends on the container used.
+     *
+     * @param adv
+     *            the after deployment validation event
      */
     public void cleanupFinalBeanManagers(
             @Observes AfterDeploymentValidation adv) {

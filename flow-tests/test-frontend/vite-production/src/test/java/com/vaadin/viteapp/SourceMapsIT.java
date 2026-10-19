@@ -24,8 +24,8 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 import org.junit.Test;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
+
+import com.vaadin.flow.testutil.SourceMapTestUtil;
 
 public class SourceMapsIT extends BundleAccess {
 
@@ -55,37 +55,13 @@ public class SourceMapsIT extends BundleAccess {
                 // Bundler runtime helpers are emitted without a sourcemap
                 continue;
             }
-            assertSourceMapUsable(bundle, JsonMapper.shared()
-                    .readTree(download(BUILD_PATH + matcher.group(1))));
+            SourceMapTestUtil.assertSourceMapUsable(bundle,
+                    download(BUILD_PATH + matcher.group(1)));
             checkedBundles++;
         }
 
         Assert.assertNotEquals("No bundle with a sourcemap was found", 0,
                 checkedBundles);
-    }
-
-    private void assertSourceMapUsable(String bundle, JsonNode sourceMap) {
-        JsonNode sources = sourceMap.get("sources");
-        JsonNode sourcesContent = sourceMap.get("sourcesContent");
-        Assert.assertNotEquals(bundle + " should have a sourcemap with sources",
-                0, sources.size());
-        Assert.assertNotEquals(
-                bundle + " should have a sourcemap with mappings", "",
-                sourceMap.get("mappings").asString());
-        Assert.assertEquals(
-                bundle + " should have the contents of every source in its "
-                        + "sourcemap",
-                sources.size(), sourcesContent.size());
-        for (int i = 0; i < sources.size(); i++) {
-            Assert.assertNotEquals(
-                    bundle + " should have a sourcemap referring to the "
-                            + "original files, was " + sources.get(i),
-                    "", sources.get(i).asString().trim());
-            Assert.assertNotEquals(
-                    bundle + " should have the contents of "
-                            + sources.get(i).asString() + " in its sourcemap",
-                    "", sourcesContent.get(i).asString().trim());
-        }
     }
 
     /**

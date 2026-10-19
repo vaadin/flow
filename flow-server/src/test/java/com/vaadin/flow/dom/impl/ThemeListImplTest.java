@@ -419,22 +419,65 @@ class ThemeListImplTest {
     }
 
     @Test
-    void addThemeNameContainingSpaces_throws() {
+    void addNullOrBlankThemeName_throws() {
         MockElement element = new MockElement();
         ThemeListImpl themeList = new ThemeListImpl(element);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> themeList.add("primary small"),
-                "A theme name containing spaces cannot be stored as a single theme name");
-        assertThrows(IllegalArgumentException.class,
-                () -> themeList.addAll(Arrays.asList("primary small")),
-                "A theme name containing spaces cannot be stored as a single theme name");
         assertThrows(IllegalArgumentException.class, () -> themeList.add(null),
                 "A null theme name should be rejected");
         assertThrows(IllegalArgumentException.class, () -> themeList.add(""),
                 "An empty theme name should be rejected");
+        assertThrows(IllegalArgumentException.class, () -> themeList.add(" "),
+                "A blank theme name should be rejected");
+        assertThrows(IllegalArgumentException.class,
+                () -> themeList.addAll(Arrays.asList("primary small")),
+                "Only add() accepts a space separated value");
         assertNull(element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
                 "A rejected theme name should not be written to the theme attribute");
+    }
+
+    @Test
+    void addThemeNameContainingSpaces_addsEachThemeName() {
+        MockElement element = new MockElement("dark");
+        ThemeListImpl themeList = new ThemeListImpl(element);
+        ThemeListImpl otherInstance = new ThemeListImpl(element);
+
+        assertTrue(themeList.add("badge success"),
+                "Adding a space separated value should modify the theme list");
+
+        assertEquals("dark badge success",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "Each theme name should be added, keeping the theme names already present");
+        assertEquals(Set.of("dark", "badge", "success"),
+                new HashSet<>(otherInstance),
+                "Another instance should see each of the added theme names");
+        assertTrue(themeList.contains("badge"),
+                "The individual theme names should be present");
+        assertTrue(themeList.contains("success"),
+                "The individual theme names should be present");
+
+        assertFalse(themeList.add("badge success"),
+                "Adding theme names that are all present should not modify the theme list");
+        assertTrue(themeList.add("badge pill"),
+                "Adding a value with one theme name missing should modify the theme list");
+        assertEquals("dark badge success pill",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "Only the missing theme name should be added");
+    }
+
+    @Test
+    void themeNameContainingSpaces_onlyAddSplitsIt() {
+        MockElement element = new MockElement();
+        ThemeListImpl themeList = new ThemeListImpl(element);
+        themeList.add("badge success");
+
+        assertFalse(themeList.contains("badge success"),
+                "Only add() interprets a space separated value");
+        assertFalse(themeList.remove("badge success"),
+                "Only add() interprets a space separated value");
+        assertEquals("badge success",
+                element.getAttribute(ThemeListImpl.THEME_ATTRIBUTE_NAME),
+                "The theme names should be left untouched");
     }
 
     @Test

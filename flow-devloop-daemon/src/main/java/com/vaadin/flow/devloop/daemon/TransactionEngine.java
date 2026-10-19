@@ -87,6 +87,12 @@ final class TransactionEngine {
         volatile boolean superseded;
         volatile int duplicates;
         volatile String hotswapDetail = "";
+        /**
+         * What the resource push reported. Kept apart from
+         * {@link #hotswapDetail}: the redefine runs after the push, so one
+         * shared field would report only the later leg.
+         */
+        volatile String pushDetail = "";
         volatile String escalation = "";
         volatile int resources;
         /** Classpath copies removed because their source is gone. */
@@ -178,6 +184,7 @@ final class TransactionEngine {
                     + ",\"classes\":" + Json.strings(classes)
                     + ",\"diagnostics\":" + Json.array(diag)
                     + ",\"actionsTaken\":\"" + Json.escape(hotswapDetail)
+                    + "\",\"resourcePush\":\"" + Json.escape(pushDetail)
                     + "\",\"escalation\":"
                     + (escalation.isEmpty() ? "null"
                             : "\"" + Json.escape(escalation) + "\"")
@@ -260,12 +267,26 @@ final class TransactionEngine {
     }
 
     /**
-     * The compile leg for the current module set, seeded from disk the moment
-     * it is built, so an untouched project reports "no changes" on its first
-     * apply. A changed module set - someone edited a pom - starts a new
-     * baseline rather than carrying stamps that describe a different build.
+     * The compile leg for the current module set, seeded the moment it is
+     * built, so an untouched project reports "no changes" on its first apply. A
+     * changed module set - someone edited a pom - starts a new baseline rather
+     * than carrying stamps that describe a different build.
      */
     private Compile compileFor(Launch.Project project, Launch.Log log) {
+        return compileFor(project, log, app.launchSnapshot());
+    }
+
+    /**
+     * The compile leg for the current module set, as
+     * {@link #compileFor(Launch.Project, Launch.Log)}, with a new one seeded
+     * from the given launch snapshot rather than from the running process's.
+     *
+     * @param launched
+     *            the snapshot of the launch whose application is running, or
+     *            empty when none is
+     */
+    private Compile compileFor(Launch.Project project, Launch.Log log,
+            Optional<Compile.Snapshot> launched) {
         Compile current = compile;
         if (current != null && current.modules().equals(project.modules())) {
             return current;
@@ -277,14 +298,16 @@ final class TransactionEngine {
         // was compiled against survives the hand-off: a module set changes
         // only because the application gained or lost a reactor dependency,
         // and that is the very move the compile leg has to see.
-        Compile fresh = new Compile(project, current);
-        // A baseline built while the app is already running must not swallow a
-        // frontend edit made since it started - that is exactly the "start,
+        Compile fresh = Compile.configured(project, current, launch);
+        log.line("compiler: " + fresh.compiler().label());
+        // A baseline built while the app is already running must not swallow
+        // an edit made since it was launched - that is exactly the "start,
         // edit, first apply" sequence, and answering "no changes" to it is the
-        // bug the frontend leg exists to fix. With no app running there is
-        // nothing to be newer than: starting it re-seeds through onConnector.
-        long started = app.startedAtMillis().orElse(Long.MAX_VALUE);
-        fresh.seedFromDisk(started, started);
+        // bug the frontend leg exists to fix. So it is seeded from what the
+        // launch stamped, not from the disk as it is now. With no app running
+        // there is nothing to be behind: starting it re-seeds through
+        // onConnector.
+        launched.ifPresentOrElse(fresh::seedFromDisk, fresh::seedFromDisk);
         // Said once per baseline rather than per apply: "why did apply not see
         // my edit?" is answerable from daemon.log only if the folder the daemon
         // decided on is written down somewhere.
@@ -627,6 +650,10 @@ final class TransactionEngine {
                 return tx;
             }
 
+            // What the redefine below hands the application, for the backend
+            // to record once it has been taken.
+            Compile.Result compiled = new Compile.Result(true, List.of(),
+                    List.of(), 0);
             if (!changes.modified().isEmpty()) {
                 tx.state = "compiling";
 
@@ -654,6 +681,16 @@ final class TransactionEngine {
                             started);
                 }
                 tx.classes = result.writtenClasses();
+                compiled = result;
+                if (!result.removedClasses().isEmpty()) {
+                    // The deletion leg's reasoning, for a class the compile
+                    // took away from a source that is still there - a nested
+                    // class taken out, say.
+                    String reason = classEscalation(result.removedClasses());
+                    escalate(tx, reason);
+                    log.line("compile: " + reason
+                            + "; only a restart can apply that");
+                }
                 if (bailIfSuperseded(tx, started)) {
                     return tx;
                 }
@@ -665,6 +702,24 @@ final class TransactionEngine {
             // So the runtime leg is skipped rather than attempted and undone.
             drift.ifPresent(detail -> escalate(tx,
                     "classpath changed (" + detail + ")"));
+
+            // A compile that changed no class - an edit to whitespace or a
+            // comment, or a Maven rebuild that wrote the same bytecode - leaves
+            // nothing to redefine, and a restart would load exactly what is
+            // already running. Anything else in the change-set that needs a
+            // restart has escalated by now, and then this does not apply.
+            if (!changes.modified().isEmpty() && tx.classes.isEmpty()
+                    && tx.escalation.isEmpty()
+                    && app.state() == AppProcess.State.RUNNING) {
+                compile.markSourcesApplied(changes.modified(), compiled);
+                Optional<String> broken = devServerFailure(tx);
+                if (broken.isPresent()) {
+                    return finish(tx, Outcome.FAILED,
+                            "dev server: " + detail(broken.get()), "hmr",
+                            DEV_SERVER_NEXT_ACTION, started);
+                }
+                return finish(tx, Outcome.STABLE, "", "unchanged", "", started);
+            }
 
             // --- runtime leg: attempt the atomic redefine, escalate if it
             // cannot
@@ -708,7 +763,8 @@ final class TransactionEngine {
                             // These sources are now live in the JVM, so the
                             // next
                             // apply should not offer them again.
-                            compile.markSourcesApplied(changes.modified());
+                            compile.markSourcesApplied(changes.modified(),
+                                    compiled);
                             // The Java half held; the dev server says the
                             // frontend half of the same change did not. Not an
                             // escalation - a restart cannot compile a broken
@@ -831,6 +887,12 @@ final class TransactionEngine {
      * The file is named when it is the only one, for the same reason a resource
      * is: "OrderView.java deleted" is the whole explanation and a count is not.
      */
+    private static String classEscalation(List<String> removed) {
+        String what = removed.size() == 1 ? removed.get(0) + " removed"
+                : removed.size() + " class(es) removed";
+        return what + " (a loaded class cannot be un-defined)";
+    }
+
     private String sourceEscalation(List<Path> deleted) {
         String what = deleted.size() == 1
                 ? compile.relative(deleted.get(0)) + " deleted"
@@ -1206,7 +1268,7 @@ final class TransactionEngine {
             }
             Map<String, String> fields = Connector.fields(reply.get());
             int pushed = parseInt(fields.get("pushed"));
-            tx.hotswapDetail = pushed > 0
+            tx.pushDetail = pushed > 0
                     ? "pushed " + pushed + " stylesheet(s) in place"
                     : "true".equals(fields.get("browserReload"))
                             ? "browser reload requested"
@@ -1254,7 +1316,17 @@ final class TransactionEngine {
         return true;
     }
 
-    void onConnector(Connector connector) {
+    /**
+     * Called when the in-app connector of a launch has registered.
+     *
+     * @param connector
+     *            the registered connector, or {@code null} to clear it
+     * @param launched
+     *            what the registering launch was spawned with - taken from its
+     *            own run, since the current one can already be gone or replaced
+     *            by the time this is handled
+     */
+    void onConnector(Connector connector, Compile.Snapshot launched) {
         this.connector = connector;
         if (connector == null) {
             return;
@@ -1275,25 +1347,31 @@ final class TransactionEngine {
             // Maven. A project that is mid-resolve leaves the baseline to the
             // first apply, exactly as before.
             //
-            // Seeded by compileFor as it is built, and deliberately not seeded
-            // again below: that seed carries the startup cutoff which keeps a
-            // frontend file edited while the application was starting visible
-            // to the first apply, and a second pass with no cutoff would
-            // declare it live and answer "no changes" over it.
+            // Seeded by compileFor as it is built, from the same launch
+            // snapshot the seed below would use.
             if (launch != null) {
-                launch.projectIfResolved().ifPresent(
-                        project -> compileFor(project, launch.log()));
+                launch.projectIfResolved()
+                        .ifPresent(project -> compileFor(project, launch.log(),
+                                Optional.of(launched)));
             }
             return;
         }
-        // An app that has just registered is running exactly what is on disk -
-        // for the frontend, which a restart re-reads whole, so the cutoff
-        // there is open. Not for the Java side: this is handled a moment after
-        // the command that waited for the registration returned, and a source
-        // written in that moment is not something the application started
-        // with.
-        current.seedFromDisk(app.startedAtMillis().orElse(Long.MAX_VALUE),
-                Long.MAX_VALUE);
+        // An app that has just registered is running what it was launched
+        // with, which is not what is on disk now: this is handled a moment
+        // after the command that waited for the registration returned, and a
+        // file written in that moment is not something the application
+        // started with. That holds for the frontend too: an edit made while
+        // the app was starting is reported, at the price of one restart more
+        // when a bundle had already folded it in.
+        //
+        // Once per launch, though. A connector that reconnects, or a server
+        // that redeploys inside the JVM, registers the same launch again, and
+        // seeding again from its spawn-time stamps would offer every edit
+        // applied since a second time - and restart the app for a bundled
+        // frontend file it has already folded in.
+        if (!current.isSeededFrom(launched)) {
+            current.seedFromDisk(launched);
+        }
     }
 
     /**
@@ -1313,6 +1391,10 @@ final class TransactionEngine {
 
     Connector connector() {
         return connector;
+    }
+
+    Compile compile() {
+        return compile;
     }
 
     /**
@@ -1585,6 +1667,19 @@ final class TransactionEngine {
                     + "): @JsModule and friends are read at startup"
                     + " (dev bundle rebuild)");
         }
+        // The same imports, reached the other way: a class that now extends or
+        // implements something else inherits whatever frontend annotations the
+        // new supertype carries, while declaring exactly what it declared
+        // before - so the field above stays empty and the import is in no
+        // chunk the client can load. An enhanced-redefinition JVM accepts a
+        // hierarchy change, so the redefine reports success and this is the
+        // only thing left to catch it.
+        String hierarchy = fields.getOrDefault("hierarchy", "-");
+        if (!"-".equals(hierarchy)) {
+            return Optional.of("class hierarchy changed (" + hierarchy
+                    + "): a new supertype or interface brings imports that are"
+                    + " read at startup (dev bundle rebuild)");
+        }
         // A bean the running application has never seen. Component scanning is
         // a startup act, and HotswapAgent's Spring plugin - which would rescan
         // - is disabled for stability (see Launch), so no mechanism short of a
@@ -1795,8 +1890,8 @@ final class TransactionEngine {
                     + " resource(s) removed from the classpath");
         }
         if ((tx.resources > 0 || tx.resourcesRemoved > 0)
-                && !tx.hotswapDetail.isEmpty()) {
-            clauses.add(tx.hotswapDetail);
+                && !tx.pushDetail.isEmpty()) {
+            clauses.add(tx.pushDetail);
         }
         if (tx.themeFiles > 0) {
             clauses.add(tx.themeFiles + " theme file(s) pushed in place");
@@ -1813,9 +1908,19 @@ final class TransactionEngine {
                     + " frontend file(s) served live, browser reloaded");
         }
         if (clauses.isEmpty()) {
-            return tx.resources + " resource(s) copied, " + tx.hotswapDetail;
+            return tx.resources + " resource(s) copied, " + tx.pushDetail;
         }
         return String.join(", ", clauses);
+    }
+
+    /**
+     * Whether this change-set had a frontend half at all. Read from the counts
+     * the legs set as they succeeded, never from the change-set, so no line can
+     * name work that was not done.
+     */
+    private static boolean hasFrontendHalf(Transaction tx) {
+        return tx.resources > 0 || tx.resourcesRemoved > 0 || tx.themeFiles > 0
+                || tx.servedLive > 0 || "vite".equals(tx.frontendMode);
     }
 
     /**
@@ -1877,8 +1982,20 @@ final class TransactionEngine {
             if ("hmr".equals(tx.classification)) {
                 lines.add("frontend → Stable   (" + seconds + ")");
                 lines.add("hmr: " + hmrDetail(tx));
+            } else if ("unchanged".equals(tx.classification)) {
+                lines.add("compiling → Stable   (" + seconds + ")");
+                if (hasFrontendHalf(tx)) {
+                    lines.add("hmr: " + hmrDetail(tx));
+                }
+                lines.add("compiled: no class changed, nothing to redefine");
             } else if ("hot-reload".equals(tx.classification)) {
                 lines.add("compiling → runtime → Stable   (" + seconds + ")");
+                // A mixed change-set pushed its frontend half first, and
+                // without this line "pushed" and "no browser connected" look
+                // the same. In the order the legs ran.
+                if (hasFrontendHalf(tx)) {
+                    lines.add("hmr: " + hmrDetail(tx));
+                }
                 lines.add("hot-reload: " + tx.hotswapDetail
                         + (tx.duplicates > 0 ? "; " + tx.duplicates
                                 + " duplicate class copy/copies also redefined"

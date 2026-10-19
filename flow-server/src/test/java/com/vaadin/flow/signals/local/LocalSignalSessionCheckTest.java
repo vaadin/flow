@@ -17,7 +17,6 @@ package com.vaadin.flow.signals.local;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
@@ -28,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class LocalSignalSessionCheckTest extends SignalTestBase {
 
@@ -47,7 +47,7 @@ class LocalSignalSessionCheckTest extends SignalTestBase {
 
     @Test
     void valueSignal_sameSession_get() {
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
         VaadinSession.setCurrent(session);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -57,7 +57,7 @@ class LocalSignalSessionCheckTest extends SignalTestBase {
 
     @Test
     void valueSignal_sameSession_allOperations() {
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
         VaadinSession.setCurrent(session);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -75,8 +75,8 @@ class LocalSignalSessionCheckTest extends SignalTestBase {
 
     @Test
     void valueSignal_differentSession_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
+        VaadinSession session1 = mock(VaadinSession.class);
+        VaadinSession session2 = mock(VaadinSession.class);
 
         VaadinSession.setCurrent(session1);
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -114,8 +114,8 @@ class LocalSignalSessionCheckTest extends SignalTestBase {
 
     @Test
     void valueSignal_differentSession_errorMessageContainsGuidance() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
+        VaadinSession session1 = mock(VaadinSession.class);
+        VaadinSession session2 = mock(VaadinSession.class);
 
         VaadinSession.setCurrent(session1);
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -136,7 +136,7 @@ class LocalSignalSessionCheckTest extends SignalTestBase {
 
     @Test
     void listSignal_sameSession_allOperations() {
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
         VaadinSession.setCurrent(session);
 
         ListSignal<String> signal = new ListSignal<>();
@@ -155,8 +155,8 @@ class LocalSignalSessionCheckTest extends SignalTestBase {
 
     @Test
     void listSignal_differentSession_throws() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
+        VaadinSession session1 = mock(VaadinSession.class);
+        VaadinSession session2 = mock(VaadinSession.class);
 
         VaadinSession.setCurrent(session1);
         ListSignal<String> signal = new ListSignal<>();
@@ -180,8 +180,8 @@ class LocalSignalSessionCheckTest extends SignalTestBase {
 
     @Test
     void listSignal_differentSession_errorMessageContainsGuidance() {
-        VaadinSession session1 = Mockito.mock(VaadinSession.class);
-        VaadinSession session2 = Mockito.mock(VaadinSession.class);
+        VaadinSession session1 = mock(VaadinSession.class);
+        VaadinSession session2 = mock(VaadinSession.class);
 
         VaadinSession.setCurrent(session1);
         ListSignal<String> signal = new ListSignal<>();

@@ -15,18 +15,26 @@
  */
 package com.vaadin.flow.devloop.daemon;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * The engine itself needs a running app, so what is unit-tested here are the
@@ -39,6 +47,70 @@ class TransactionEngineTest {
     private static final String VITE_ERROR = "14.32.37 [vite] Internal server"
             + " error: Transform failed with 1 error:";
 
+    /** What a run spawned from an empty project was launched with. */
+    private static final Compile.Snapshot NOTHING = new Compile.Snapshot(
+            List.of(), Map.of(), Map.of(), Map.of(), null, 0L);
+
+    @TempDir
+    Path root;
+
+    @Test
+    void onConnector_seedsFromTheRegisteringRunsSnapshot() throws Exception {
+        // A registration can be handled after a restart has already replaced
+        // the current run. Seeding from the current run's snapshot would then
+        // take the successor's files as the ones the registering app loaded,
+        // and an edit it never read would answer "no changes".
+        Path app = Files.createDirectories(root.resolve("app"));
+        Files.createDirectories(app.resolve("target/classes"));
+        Path view = app.resolve("src/main/frontend/views/main.ts");
+        Files.createDirectories(view.getParent());
+        Files.writeString(view, "export {};");
+        Reactor.Module module = Reactor.Module.of(app, "app");
+        String classpath = module.classesDir().toString();
+        Launch.Project project = new Launch.Project(List.of(module), classpath,
+                Map.of("app", classpath), OptionalInt.empty());
+        Compile.Snapshot registering = Compile.Snapshot.of(project);
+        Files.writeString(view, "export const edited = true;");
+        Compile.Snapshot current = Compile.Snapshot.of(project);
+
+        Launch launch = mock(Launch.class);
+        when(launch.projectIfResolved()).thenReturn(Optional.of(project));
+        when(launch.log()).thenReturn(line -> {
+        });
+        AppProcess process = new AppProcess(root, null);
+        Process alive = alive();
+        try {
+            process.beginRun(alive, root.resolve("app.log"), current);
+            TransactionEngine engine = new TransactionEngine(launch, process);
+
+            // The first registration builds the baseline, and has to take
+            // the registering run's stamps, not the current run's.
+            engine.onConnector(connector(), registering);
+            Compile.FrontendChanges changes = engine.compile().staleFrontend();
+            assertEquals(List.of(view), changes.modified());
+            engine.compile().markFrontendNotified(changes);
+
+            // The same launch registering again - a reconnect, a redeploy
+            // inside the JVM - keeps the baseline: the edit is live, and
+            // must not be offered a second time.
+            engine.onConnector(connector(), registering);
+            assertTrue(engine.compile().staleFrontend().isEmpty());
+
+            // A restart re-seeds, again from the registering run's stamps:
+            // by the time its registration is handled, yet another restart
+            // can have replaced it as the current run.
+            Compile.Snapshot restarted = Compile.Snapshot.of(project);
+            Files.writeString(view, "export const editedAgain = true;");
+            process.beginRun(alive, root.resolve("app.log"),
+                    Compile.Snapshot.of(project));
+            engine.onConnector(connector(), restarted);
+            assertEquals(List.of(view),
+                    engine.compile().staleFrontend().modified());
+        } finally {
+            alive.destroy();
+        }
+    }
+
     @Test
     void onConnectorClosed_willNotClearAConnectorARestartReplaced() {
         // The predecessor's socket closes on its own schedule, which can be
@@ -49,8 +121,8 @@ class TransactionEngineTest {
                 new PrintWriter(Writer.nullWriter()));
         Connector restarted = new Connector(
                 new PrintWriter(Writer.nullWriter()));
-        engine.onConnector(previous);
-        engine.onConnector(restarted);
+        engine.onConnector(previous, NOTHING);
+        engine.onConnector(restarted, NOTHING);
 
         engine.onConnectorClosed(previous);
 
@@ -91,6 +163,34 @@ class TransactionEngineTest {
 
         assertEquals(TransactionEngine.Outcome.FAILED, tx.outcome);
         assertEquals("compile", tx.reason);
+    }
+
+    @Test
+    void blockedReason_escalatesForAChangedClassHierarchy() {
+        // The import a class inherits rather than declares: adding "implements
+        // SomeMixin" leaves the declared imports identical, so frontendImports
+        // stays empty, and an enhanced-redefinition JVM accepts the change - so
+        // without this the apply reports Stable over a bundle the page cannot
+        // load the mixin's module from.
+        assertEquals(
+                Optional.of("class hierarchy changed (TaskListView): a new"
+                        + " supertype or interface brings imports that are read"
+                        + " at startup (dev bundle rebuild)"),
+                TransactionEngine.blockedReason(
+                        Connector.fields("OK entities=- frontendImports=-"
+                                + " hierarchy=TaskListView structural=-"),
+                        List.of()));
+        // An ordinary edit leaves it empty, and that must stay a hot reload.
+        assertTrue(TransactionEngine.blockedReason(
+                Connector.fields("OK entities=-"
+                        + " frontendImports=- hierarchy=- structural=-"),
+                List.of()).isEmpty());
+        // A connector too old to report the field says nothing either way, and
+        // "no field" is not "the hierarchy changed".
+        assertTrue(TransactionEngine.blockedReason(
+                Connector
+                        .fields("OK entities=- frontendImports=- structural=-"),
+                List.of()).isEmpty());
     }
 
     @Test
@@ -395,10 +495,78 @@ class TransactionEngineTest {
                 .replaceAll("\\s+", " ").strip());
     }
 
+    @Test
+    void render_reportsThePushAndTheRedefineWhenOneChangeSetCarriedBoth() {
+        // The resource leg runs first and the Java leg decides the outcome, so
+        // a mixed change-set used to print the redefine alone - leaving a
+        // stylesheet that reached the open page and one no page received
+        // looking exactly the same from the output.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
+        tx.resources = 1;
+        tx.pushDetail = "pushed 1 stylesheet(s) in place";
+        tx.hotswapDetail = "redefineClasses(1); onHotswap completed=true";
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hot-reload",
+                "", System.nanoTime());
+        List<String> lines = engine.render(tx);
+
+        // In the order the legs ran, and the push's own words unchanged: the
+        // frontend-only apply says exactly this about the same edit.
+        assertEquals("hmr: 1 resource(s) copied, pushed 1 stylesheet(s)"
+                + " in place", lines.get(1));
+        assertEquals("hot-reload: redefineClasses(1); onHotswap completed=true",
+                lines.get(2));
+        // Both halves are in --json too; one field each, for the same reason.
+        assertTrue(tx.json().contains(
+                "\"actionsTaken\":\"redefineClasses(1); onHotswap completed=true\""),
+                () -> "the redefine should be in the JSON: " + tx.json());
+        assertTrue(
+                tx.json().contains(
+                        "\"resourcePush\":\"pushed 1 stylesheet(s) in place\""),
+                () -> "the push should be in the JSON: " + tx.json());
+    }
+
+    @Test
+    void render_claimsNoFrontendWorkForAChangeSetThatWasOnlyJava() {
+        // The counts the legs set are what the line is guarded on, so a Java
+        // edit on its own cannot grow an "hmr:" line describing nothing.
+        TransactionEngine engine = new TransactionEngine(null, null);
+        TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
+        tx.hotswapDetail = "redefineClasses(1); onHotswap completed=true";
+
+        engine.finish(tx, TransactionEngine.Outcome.STABLE, "", "hot-reload",
+                "", System.nanoTime());
+        List<String> lines = engine.render(tx);
+
+        assertEquals(2, lines.size(), () -> "unexpected lines: " + lines);
+        assertEquals("hot-reload: redefineClasses(1); onHotswap completed=true",
+                lines.get(1));
+    }
+
     private static TransactionEngine.Transaction frontendChange() {
         TransactionEngine.Transaction tx = new TransactionEngine.Transaction(1);
         tx.frontendFiles = 1;
         return tx;
     }
 
+    private static Connector connector() {
+        return new Connector(new PrintWriter(Writer.nullWriter()));
+    }
+
+    /** A real, still-running child, so the current run is a live one. */
+    private Process alive() throws IOException {
+        Path source = root.resolve("Sleeper.java");
+        Files.writeString(source, """
+                public class Sleeper {
+                    public static void main(String[] args) throws Exception {
+                        Thread.sleep(600_000);
+                    }
+                }
+                """);
+        Path java = Path.of(System.getProperty("java.home"), "bin", "java");
+        return new ProcessBuilder(java.toString(), source.toString())
+                .redirectErrorStream(true)
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD).start();
+    }
 }

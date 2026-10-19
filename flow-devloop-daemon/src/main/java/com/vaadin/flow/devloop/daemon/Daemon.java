@@ -95,6 +95,15 @@ public final class Daemon {
         this.transactions = new TransactionEngine(launch, app);
     }
 
+    /**
+     * Starts the daemon for a project.
+     *
+     * @param args
+     *            the project root directory as the first argument; the current
+     *            working directory is used when no argument is given
+     * @throws Exception
+     *             if the daemon cannot be started
+     */
     public static void main(String[] args) throws Exception {
         Path root = Path.of(args.length > 0 ? args[0] : ".").toAbsolutePath()
                 .normalize();
@@ -248,7 +257,7 @@ public final class Daemon {
             return;
         }
         Connector connector = new Connector(out);
-        transactions.onConnector(connector);
+        transactions.onConnector(connector, registration.snapshot);
         out.println("> registered");
         // Issued off-thread: the reply is only readable once the pump below is
         // running, so asking inline would wait for a line nobody is reading.
@@ -343,7 +352,8 @@ public final class Daemon {
                 out.println("EXIT " + tx.outcome.exitCode);
             }
             case "start" -> {
-                AppProcess.Startup startup = app.start(log, "start");
+                AppProcess.Startup startup = app.start(log, "start",
+                        parseJvmArgsOption(args).orElse(null));
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -353,7 +363,8 @@ public final class Daemon {
             }
             case "restart" -> {
                 app.stop();
-                AppProcess.Startup startup = app.start(log, "restart");
+                AppProcess.Startup startup = app.start(log, "restart",
+                        parseJvmArgsOption(args).orElse(null));
                 startup.lines().forEach(log::line);
                 out.println("EXIT " + (startup.ok() ? 0 : 1));
             }
@@ -378,6 +389,32 @@ public final class Daemon {
         }
     }
 
+    /**
+     * The JVM flags a {@code start} or {@code restart} request carries.
+     * <p>
+     * The request line is split on whitespace, so the CLI splits
+     * {@code --jvm-args} on whitespace itself and sends a bare
+     * {@code --jvm-args} followed by one {@code --jvm-arg=<flag>} word per
+     * flag, in order. A flag arrives exactly as given, {@code |} and all,
+     * because nothing is joined that would have to be split again. The bare
+     * word is what says the flags were given: with no {@code --jvm-arg=} after
+     * it, it clears them.
+     *
+     * @param args
+     *            the request's words after the verb
+     * @return the flags, empty when the request has no {@code --jvm-args} -
+     *         which is not the same as an empty list, the answer that clears
+     *         them
+     */
+    static Optional<List<String>> parseJvmArgsOption(List<String> args) {
+        if (!args.contains("--jvm-args")) {
+            return Optional.empty();
+        }
+        String prefix = "--jvm-arg=";
+        return Optional.of(args.stream().filter(arg -> arg.startsWith(prefix))
+                .map(arg -> arg.substring(prefix.length())).toList());
+    }
+
     private List<String> statusText() {
         StringBuilder sb = new StringBuilder();
         sb.append(app.state().name().toLowerCase());
@@ -391,6 +428,8 @@ public final class Daemon {
         if (app.state() == AppProcess.State.RUNNING) {
             sb.append("  owner=daemon  registered=").append(app.isRegistered());
         }
+        runtimeName().ifPresent(name -> sb.append("  runtime=").append(name));
+        sb.append("  compiler=").append(compilerName());
         List<String> lines = new java.util.ArrayList<>();
         lines.add(sb.toString());
         modulesLine().ifPresent(lines::add);
@@ -501,7 +540,8 @@ public final class Daemon {
                 + "\",\"logErrors\":" + Json.strings(appLogErrors())
                 + "},\"modules\":" + modulesJson() + ",\"daemon\":{\"pid\":"
                 + ProcessHandle.current().pid() + ",\"port\":" + currentPort
-                + ",\"version\":\"" + VERSION + "\",\"uptimeSeconds\":"
+                + ",\"version\":\"" + VERSION + "\",\"compiler\":\""
+                + compilerName() + "\",\"uptimeSeconds\":"
                 + Duration.between(startedAt, Instant.now()).toSeconds()
                 + "},\"transaction\":{\"inFlight\":"
                 + transactions.current()
@@ -512,6 +552,40 @@ public final class Daemon {
                         .map(TransactionEngine.Transaction::json).orElse("null")
                 + "}}";
         return List.of(json);
+    }
+
+    /**
+     * Which compiler an apply compiles with, for {@code status}: the opt-in to
+     * Maven changes what an apply costs and what it can compile, so it is worth
+     * seeing without reading the daemon's command line. An unrecognised value
+     * is warned about where the compile leg is built, not on every status.
+     */
+    private static String compilerName() {
+        return Compile.Compiler.configured(text -> {
+        }).label();
+    }
+
+    /**
+     * How this project's application is started, for {@code status}.
+     * <p>
+     * Worth a word because it is a decision the daemon made about the
+     * developer's project rather than something they configured: a WAR run
+     * through its own build plugin and a Spring Boot jar launched directly look
+     * identical from outside, and when the daemon has guessed wrong this line
+     * is the only place that says so. Empty when the project looks like neither
+     * shape - {@code start} is where that is worth a full explanation, not
+     * here.
+     */
+    @SuppressWarnings("java:S106")
+    private Optional<String> runtimeName() {
+        try {
+            return Optional.of(launch.runtime().name());
+        } catch (IOException e) {
+            // Into daemon.log, which is where this daemon logs; start is
+            // where the same question gets a full answer.
+            System.out.println("runtime undecided: " + e.getMessage());
+            return Optional.empty();
+        }
     }
 
     /**

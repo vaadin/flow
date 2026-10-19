@@ -41,6 +41,7 @@ import org.springframework.security.config.annotation.web.configurers.ExceptionH
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -48,6 +49,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
 import org.springframework.security.web.access.RequestMatcherDelegatingAccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -57,6 +59,7 @@ import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -120,6 +123,9 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * <li>{@link AuthorizeHttpRequestsConfigurer} to permit internal framework
  * requests and other public endpoints (can be disabled with
  * {@link #enableAuthorizedRequestsConfiguration(boolean)})</li>
+ * <li>{@link SessionManagementConfigurer} to handle expired sessions in a way
+ * the Vaadin client understands (can be disabled with
+ * {@link #enableSessionManagementConfiguration(boolean)})</li>
  * </ul>
  *
  * <h2>Shared Objects</h2>
@@ -133,6 +139,8 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * <li>{@link VaadinDefaultRequestCache}</li>
  * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler}</li>
  * <li>{@link ClientRegistrationRepository}</li>
+ * <li>{@code OidcUserService}, when Keycloak role mapping is enabled with
+ * {@link #keycloakRoleMapping()}</li>
  * </ul>
  * 
  * @since 24.8
@@ -155,9 +163,15 @@ public final class VaadinSecurityConfigurer
 
     private boolean alwaysUseDefaultSuccessUrl;
 
+    private VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver successUrlResolver;
+
+    private AuthenticationFailureHandler failureHandler;
+
     private String logoutSuccessUrl;
 
     private String postLogoutRedirectUri;
+
+    private boolean keycloakRoleMapping = false;
 
     private boolean enableCsrfConfiguration = true;
 
@@ -168,6 +182,10 @@ public final class VaadinSecurityConfigurer
     private boolean enableExceptionHandlingConfiguration = true;
 
     private boolean enableAuthorizedRequestsConfiguration = true;
+
+    private boolean enableSessionManagementConfiguration = true;
+
+    private SessionInformationExpiredStrategy expiredSessionStrategy;
 
     private Consumer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestAuthorizeRule = AuthorizedUrl::denyAll;
 
@@ -317,6 +335,32 @@ public final class VaadinSecurityConfigurer
     }
 
     /**
+     * Enables mapping of Keycloak realm and client roles to Spring Security
+     * granted authorities (disabled by default).
+     * <p>
+     * Keycloak puts the roles of a user into the access token, so they are not
+     * part of the authenticated user by default. This opts in to decoding the
+     * access token and mapping its roles, which makes
+     * {@code @RolesAllowed("admin")} and {@code hasRole("admin")} match a
+     * Keycloak role named {@code admin}. See {@link KeycloakOidcUserMapper} for
+     * what exactly is mapped.
+     * <p>
+     * Works only together with {@link #oauth2LoginPage(String)} and its
+     * overloads, and sets the {@code OidcUserService} that this security filter
+     * chain uses to load the authenticated user. An application that has its
+     * own {@code OidcUserService} should leave this off and install the mapper
+     * on that service instead, as {@link KeycloakOidcUserMapper} shows.
+     *
+     * @return the current configurer instance for method chaining
+     * @see KeycloakOidcUserMapper
+     * @since 25.4
+     */
+    public VaadinSecurityConfigurer keycloakRoleMapping() {
+        this.keycloakRoleMapping = true;
+        return this;
+    }
+
+    /**
      * Sets the default success URL after authentication. Redirected only when
      * no protected page was previously accessed. Works only together with
      * {@link #loginView(String)} or {@link #oauth2LoginPage(String)} and their
@@ -352,6 +396,69 @@ public final class VaadinSecurityConfigurer
             boolean alwaysUse) {
         this.defaultSuccessUrl = defaultSuccessUrl;
         this.alwaysUseDefaultSuccessUrl = alwaysUse;
+        return this;
+    }
+
+    /**
+     * Sets the resolver for the URL to redirect to after authentication, for
+     * example to send users to a landing page that depends on their roles. When
+     * the resolver returns a URL, it takes precedence over both the previously
+     * accessed page and the {@link #defaultSuccessUrl(String) default success
+     * URL}. When it returns {@code null}, the user is redirected as if no
+     * resolver was set. Works only together with {@link #loginView(String)} or
+     * {@link #oauth2LoginPage(String)} and their variants.
+     * <p>
+     * Usage example:
+     *
+     * <pre>
+     * <code>
+     * configurer.loginView(LoginView.class).successUrlResolver(
+     *         (request, authentication, savedUrl) -&gt; authentication
+     *                 .getAuthorities().stream()
+     *                 .anyMatch(a -&gt; "ROLE_ADMIN".equals(a.getAuthority()))
+     *                         ? "/admin"
+     *                         : null);
+     * </code>
+     * </pre>
+     *
+     * @param successUrlResolver
+     *            the resolver for the URL to redirect to after authentication
+     * @return the current configurer instance for method chaining
+     * @see VaadinSavedRequestAwareAuthenticationSuccessHandler#setSuccessUrlResolver(VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver)
+     * @since 25.4
+     */
+    public VaadinSecurityConfigurer successUrlResolver(
+            VaadinSavedRequestAwareAuthenticationSuccessHandler.SuccessUrlResolver successUrlResolver) {
+        this.successUrlResolver = successUrlResolver;
+        return this;
+    }
+
+    /**
+     * Configures the handler for a failed authentication, for example to audit
+     * failed login attempts or to redirect to a custom error page.
+     * <p>
+     * This overrides the default behavior of redirecting back to the login view
+     * with an {@code error} parameter. Works only together with
+     * {@link #loginView(String)} or {@link #oauth2LoginPage(String)} and their
+     * variants.
+     * <p>
+     * If the handler redirects to a URL other than the login view, access to
+     * that URL must be permitted explicitly, as it is otherwise denied by the
+     * default authorization rules and the user ends up back on the login view
+     * without seeing the error.
+     * <p>
+     * For auditing only, listening to Spring Security's
+     * {@code AbstractAuthenticationFailureEvent} is an alternative that keeps
+     * the default behavior.
+     *
+     * @param failureHandler
+     *            the authentication failure handler
+     * @return the current configurer instance for method chaining
+     * @since 25.4
+     */
+    public VaadinSecurityConfigurer failureHandler(
+            AuthenticationFailureHandler failureHandler) {
+        this.failureHandler = failureHandler;
         return this;
     }
 
@@ -470,6 +577,56 @@ public final class VaadinSecurityConfigurer
     }
 
     /**
+     * Enables or disables automatic configuration of session management
+     * (enabled by default).
+     * <p>
+     * This configurer will automatically configure a
+     * {@link VaadinExpiredSessionStrategy}, so that a session expired by Spring
+     * Security concurrency control is handled in a way the Vaadin client
+     * understands. The strategy is only used by Spring Security when
+     * concurrency control is active, i.e. when the application sets a maximum
+     * number of sessions.
+     * <p>
+     * The strategy is only configured if the application has session management
+     * configured, which {@code @EnableWebSecurity} does by default through
+     * Spring Security's {@code HttpSecurityConfiguration}.
+     * <p>
+     * Note that the configured strategy replaces both a strategy and an expired
+     * URL set directly on {@link HttpSecurity}, since Spring Security uses the
+     * expired URL only when no strategy is set. Use
+     * {@link #expiredSessionStrategy(SessionInformationExpiredStrategy)} to
+     * configure a custom strategy, or disable this configuration.
+     *
+     * @param enableSessionManagementConfiguration
+     *            whether configuration of session management should be enabled
+     * @return the current configurer instance for method chaining
+     * @since 25.4
+     */
+    public VaadinSecurityConfigurer enableSessionManagementConfiguration(
+            boolean enableSessionManagementConfiguration) {
+        this.enableSessionManagementConfiguration = enableSessionManagementConfiguration;
+        return this;
+    }
+
+    /**
+     * Sets the strategy used when Spring Security concurrency control detects
+     * an expired session.
+     * <p>
+     * Defaults to {@link VaadinExpiredSessionStrategy}.
+     *
+     * @param expiredSessionStrategy
+     *            the strategy to use, or {@code null} to use the default one
+     * @return the current configurer instance for method chaining
+     * @see #enableSessionManagementConfiguration(boolean)
+     * @since 25.4
+     */
+    public VaadinSecurityConfigurer expiredSessionStrategy(
+            SessionInformationExpiredStrategy expiredSessionStrategy) {
+        this.expiredSessionStrategy = expiredSessionStrategy;
+        return this;
+    }
+
+    /**
      * Configures the access rule for any request not matching other configured
      * rules.
      * <p>
@@ -548,12 +705,33 @@ public final class VaadinSecurityConfigurer
             http.formLogin(configurer -> {
                 configurer.loginPage(formLoginPage).permitAll();
                 configurer.successHandler(getAuthenticationSuccessHandler());
+                if (failureHandler != null) {
+                    configurer.failureHandler(failureHandler);
+                }
             });
         } else if (oauth2LoginPage != null) {
             http.oauth2Login(configurer -> {
                 configurer.loginPage(oauth2LoginPage).permitAll();
                 configurer.successHandler(getAuthenticationSuccessHandler());
+                if (failureHandler != null) {
+                    configurer.failureHandler(failureHandler);
+                }
+                if (keycloakRoleMapping) {
+                    // The role prefix holder is only populated with the prefix
+                    // of the filter chain in configure(), which runs after
+                    // this, so the prefix is resolved when a user is mapped
+                    var rolePrefixHolder = getVaadinRolePrefixHolder();
+                    KeycloakRoleMapping.apply(configurer, getBuilder(),
+                            rolePrefixHolder != null
+                                    ? rolePrefixHolder::getRolePrefix
+                                    : () -> null);
+                }
             });
+        } else if (keycloakRoleMapping) {
+            LOGGER.warn(
+                    "Keycloak role mapping is enabled but no OAuth2 login page "
+                            + "is configured, so it has no effect. Configure "
+                            + "one with VaadinSecurityConfigurer.oauth2LoginPage().");
         }
         if (enableCsrfConfiguration) {
             http.csrf(this::customizeCsrf);
@@ -569,6 +747,16 @@ public final class VaadinSecurityConfigurer
         }
         if (enableAuthorizedRequestsConfiguration && !alreadyInitializedOnce) {
             http.authorizeHttpRequests(this::customizeAuthorizeHttpRequests);
+        }
+        if (enableSessionManagementConfiguration && !alreadyInitializedOnce
+                && http.getConfigurer(
+                        SessionManagementConfigurer.class) != null) {
+            // Session management is only customized when the application has
+            // it configured, which @EnableWebSecurity does by default through
+            // Spring Security's HttpSecurityConfiguration. Otherwise the
+            // filter chain has no session management at all, and there is no
+            // expired session to handle.
+            http.sessionManagement(this::customizeSessionManagement);
         }
 
         // The init method might be called multiple times if the configurer is
@@ -756,6 +944,7 @@ public final class VaadinSecurityConfigurer
         } else {
             handler.setDefaultTargetUrl(getRequestUtil().applyUrlMapping(""));
         }
+        handler.setSuccessUrlResolver(successUrlResolver);
         getSharedObject(RequestCache.class).ifPresent(handler::setRequestCache);
         getBuilder().setSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
@@ -896,6 +1085,14 @@ public final class VaadinSecurityConfigurer
                         new AccessDeniedHandlerImpl()));
         return new RequestMatcherDelegatingAccessDeniedHandler(requestHandlers,
                 new AccessDeniedHandlerImpl());
+    }
+
+    private void customizeSessionManagement(
+            SessionManagementConfigurer<HttpSecurity> configurer) {
+        configurer.sessionConcurrency(
+                concurrency -> concurrency.expiredSessionStrategy(
+                        Objects.requireNonNullElseGet(expiredSessionStrategy,
+                                VaadinExpiredSessionStrategy::new)));
     }
 
     private void customizeAuthorizeHttpRequests(

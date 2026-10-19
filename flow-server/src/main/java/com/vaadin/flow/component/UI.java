@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -38,6 +39,7 @@ import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.internal.UIInternalUpdater;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryJs;
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.trigger.internal.CallbackAction;
@@ -56,6 +58,8 @@ import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
@@ -80,6 +84,7 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.ErrorHandlingCommand;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
@@ -119,6 +124,12 @@ public class UI extends Component
 
     private static final String NULL_LISTENER = "Listener can not be 'null'";
 
+    public static final String CLIENT_NAVIGATE_TO = """
+            const url = new URL($0, document.baseURI);
+            url["clientNavigation"] = true;
+            window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
+            """;
+
     /**
      * The id of this UI, used to find the server side instance of the UI form
      * which a request originates. A negative value indicates that the UI id has
@@ -146,6 +157,26 @@ public class UI extends Component
      * generator.
      */
     private final String csrfToken = UUID.randomUUID().toString();
+
+    /**
+     * Reference to the client outlet element wrapper.
+     * <p>
+     * This field should not be set directly for any reason; assigning a new
+     * value has no effect on the application. It is maintained internally and
+     * will be removed in a future version.
+     *
+     * @deprecated Use {@link UIInternals#getWrapperElement()} through
+     *             {@code getInternals().getWrapperElement()} instead.
+     * @since 24.0
+     */
+    @Deprecated(forRemoval = true)
+    public Element wrapperElement;
+    private NavigationState clientViewNavigationState;
+    private boolean navigationInProgress = false;
+
+    private String forwardToClientUrl = null;
+
+    private boolean firstNavigation = true;
 
     /**
      * Creates a new empty UI.
@@ -193,6 +224,31 @@ public class UI extends Component
      */
     public VaadinSession getSession() {
         return internals.getSession();
+    }
+
+    /**
+     * Gets the VaadinSession to which this UI is attached, throwing an
+     * exception if the UI is not attached to a session.
+     * <p>
+     * Use this method when the code can only run while the UI is attached to a
+     * session, e.g. in an event listener. If the code has to work also before
+     * the UI is initialized or after it has been removed from its session, use
+     * {@link #getSession()} instead and check for null.
+     *
+     * @return the session this UI is attached to, never <code>null</code>
+     * @throws IllegalStateException
+     *             if this UI is not attached to a session
+     * @see #getSession()
+     * @since 25.4
+     */
+    public VaadinSession getSessionOrThrow() {
+        VaadinSession session = getSession();
+        if (session == null) {
+            throw new IllegalStateException(
+                    "UI is not attached to a VaadinSession. The UI has either not been initialized yet "
+                            + "or it has already been removed from its session.");
+        }
+        return session;
     }
 
     /**
@@ -372,6 +428,10 @@ public class UI extends Component
      * framework that the UI should be detached. Overriding it is not a reliable
      * way to catch UIs that are to be detached. Instead,
      * {@code #onDetach(DetachEvent)} should be overridden.
+     * <p>
+     * A UI that is serving an upload or download request is detached only once
+     * that request has been served, so that listeners and callbacks bound to
+     * this UI are still effective for the ongoing transfer.
      */
     public void close() {
         closing = true;
@@ -999,7 +1059,7 @@ public class UI extends Component
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
-        getPage().executeJs("document.dir = $0", direction.getClientName());
+        getPage().executeJs(UiJs.class).setDirection(direction.getClientName());
     }
 
     /**
@@ -1190,7 +1250,7 @@ public class UI extends Component
     public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getInternals().getRouter().getRegistry());
+                .forRegistry(getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
         return findCurrentNavigationTarget(navigationTarget);
     }
@@ -1293,12 +1353,11 @@ public class UI extends Component
             QueryParameters queryParameters) {
 
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getInternals().getRouter().getRegistry());
+                .forRegistry(getRouter().getRegistry());
         RouteParameters parameters = HasUrlParameterFormat
                 .getParameters(parameter);
         String url = configuration.getUrl(navigationTarget, parameters);
-        getInternals().getRouter().navigate(this,
-                new Location(url, queryParameters),
+        getRouter().navigate(this, new Location(url, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
     }
@@ -1352,10 +1411,9 @@ public class UI extends Component
             Class<? extends C> navigationTarget, RouteParameters routeParameter,
             QueryParameters queryParameters) {
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getInternals().getRouter().getRegistry());
+                .forRegistry(getRouter().getRegistry());
         String url = configuration.getUrl(navigationTarget, routeParameter);
-        getInternals().getRouter().navigate(this,
-                new Location(url, queryParameters),
+        getRouter().navigate(this, new Location(url, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
     }
@@ -1399,11 +1457,10 @@ public class UI extends Component
             QueryParameters queryParameters) {
 
         RouteConfiguration configuration = RouteConfiguration
-                .forRegistry(getInternals().getRouter().getRegistry());
+                .forRegistry(getRouter().getRegistry());
         String url = configuration.getUrl(navigationTarget,
                 RouteParameters.empty());
-        getInternals().getRouter().navigate(this,
-                new Location(url, queryParameters),
+        getRouter().navigate(this, new Location(url, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
         return (Optional<T>) findCurrentNavigationTarget(navigationTarget);
     }
@@ -1509,18 +1566,18 @@ public class UI extends Component
         try {
             Optional<NavigationState> navigationState = fragmentOnly
                     ? Optional.empty()
-                    : getInternals().getRouter()
-                            .resolveNavigationTarget(location);
+                    : getRouter().resolveNavigationTarget(location);
 
             if (navigationState.isPresent()) {
                 // Navigation can be done in server side without extra
                 // round-trip
                 handleNavigation(location, navigationState.get(),
                         NavigationTrigger.UI_NAVIGATE);
-                if (getForwardToClientUrl() != null) {
+                String forwardUrl = getForwardToClientUrl();
+                if (forwardUrl != null) {
                     // Server is forwarding to a client route from a
                     // BeforeEnter.
-                    navigateToClient(getForwardToClientUrl());
+                    navigateToClient(forwardUrl);
                 }
             } else {
                 // Server cannot resolve navigation, let client-side to
@@ -1539,6 +1596,13 @@ public class UI extends Component
      * This is the way to rebuild the view that is currently shown, since
      * {@link #navigate(Class) navigating} to the location that is already shown
      * does nothing.
+     * <p>
+     * Components with modality, such as open dialogs in either
+     * {@link ModalityMode#STRICT strict} or {@link ModalityMode#VISUAL visual}
+     * mode, are removed from the UI as part of the refresh, since they would
+     * otherwise keep showing outdated contents. If such components are present,
+     * the whole route chain is refreshed regardless of
+     * {@code refreshRouteChain}.
      * <p>
      * In development mode, local signal field values are automatically
      * transferred from the old component instance to the new one, preserving UI
@@ -1884,6 +1948,10 @@ public class UI extends Component
      * curtain or change the visible state of the components in the UI - that
      * should be handled by the component separately. Thus, this is purely a
      * server side feature.
+     * <p>
+     * Passing {@code false} also removes {@link ModalityMode#VISUAL} from a
+     * component. Components that use visual modality should use
+     * {@link #setChildComponentModal(Component, ModalityMode)} instead.
      *
      * @param childComponent
      *            the child component to change state for
@@ -1928,11 +1996,7 @@ public class UI extends Component
                             + "Add it first as a child of the UI so it is "
                             + "attached or just use addModal(component) when using ModalityMode.STRICT.");
         }
-        if (mode == ModalityMode.STRICT) {
-            getInternals().setChildModal(childComponent);
-        } else {
-            getInternals().setChildModeless(childComponent);
-        }
+        getInternals().setChildModal(childComponent, mode);
     }
 
     /**
@@ -1946,29 +2010,28 @@ public class UI extends Component
     }
 
     /**
-     * Add component as child to modal component if one is active. Else it will
-     * be added to the UI normally.
+     * Add component as child to the most recently set component with modality,
+     * either {@link ModalityMode#STRICT} or {@link ModalityMode#VISUAL}, if
+     * there is one. Else it will be added to the UI normally.
      * <p>
      * This is meant to be used with components that are not added as part of a
-     * layout, like dialog, so that they are interactive when a modal component
-     * opens up an overlay component.
+     * layout, like dialog, so that they are interactive when a component with
+     * modality opens up an overlay component.
      *
      * @param component
      *            component to add to modal component
      * @since 23.0
      */
     public void addToModalComponent(Component component) {
-        if (hasModalComponent()) {
-            final Component activeModalComponent = getInternals()
-                    .getActiveModalComponent();
-            if (activeModalComponent instanceof HasComponents) {
-                ((HasComponents) activeModalComponent).add(component);
-            } else {
-                activeModalComponent.getElement()
-                        .appendChild(component.getElement());
-            }
-        } else {
+        final Component activeModalComponent = getInternals()
+                .getActiveModalityComponent();
+        if (activeModalComponent == null) {
             add(component);
+        } else if (activeModalComponent instanceof HasComponents hasComponents) {
+            hasComponents.add(component);
+        } else {
+            activeModalComponent.getElement()
+                    .appendChild(component.getElement());
         }
     }
 
@@ -2011,33 +2074,6 @@ public class UI extends Component
     public List<HasElement> getActiveRouterTargetsChain() {
         return getInternals().getActiveRouterTargetsChain();
     }
-
-    static final String SERVER_CONNECTED = "this.serverConnected($0)";
-    public static final String CLIENT_NAVIGATE_TO = """
-            const url = new URL($0, document.baseURI);
-            url["clientNavigation"] = true;
-            window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
-            """;
-
-    /**
-     * Reference to the client outlet element wrapper.
-     * <p>
-     * This field should not be set directly for any reason; assigning a new
-     * value has no effect on the application. It is maintained internally and
-     * will be removed in a future version.
-     *
-     * @deprecated Use {@link UIInternals#getWrapperElement()} through
-     *             {@code getInternals().getWrapperElement()} instead.
-     * @since 24.0
-     */
-    @Deprecated(forRemoval = true)
-    public Element wrapperElement;
-    private NavigationState clientViewNavigationState;
-    private boolean navigationInProgress = false;
-
-    private String forwardToClientUrl = null;
-
-    private boolean firstNavigation = true;
 
     /**
      * Gets the new forward url.
@@ -2215,15 +2251,16 @@ public class UI extends Component
         }
 
         // true if the target is client-view and the push mode is disable
-        if (getForwardToClientUrl() != null) {
-            navigateToClient(getForwardToClientUrl());
+        String forwardUrl = getForwardToClientUrl();
+        if (forwardUrl != null) {
+            navigateToClient(forwardUrl);
             acknowledgeClient();
         } else if (isPostponed()) {
             serverPaused();
         } else {
             // acknowledge client, but cancel if session not open
             serverConnected(
-                    !getSession().getState().equals(VaadinSessionState.OPEN));
+                    getSessionOrThrow().getState() != VaadinSessionState.OPEN);
             replaceStateIfDiffersAndNoReplacePending(event.route, location);
         }
     }
@@ -2242,11 +2279,13 @@ public class UI extends Component
         boolean locationChanged = !location.getPath().equals(route)
                 && route.startsWith("/")
                 && !location.getPath().equals(route.substring(1));
-        boolean containsPendingReplace = !getInternals()
-                .containsPendingJavascript("window.history.replaceState")
-                && !getInternals().containsPendingJavascript(
-                        "'vaadin-navigate', { detail: { state: $0, url: $1, replace: true } }");
-        if (locationChanged && containsPendingReplace) {
+        // Recognized by the call rather than by the text of a script, which
+        // works the same for both routers
+        boolean replacePending = getInternals()
+                .containsPendingJsCall(HistoryJs.class, "replaceState")
+                || getInternals().containsPendingJsCall(HistoryJs.class,
+                        "navigateReplacing");
+        if (locationChanged && !replacePending) {
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }
@@ -2277,7 +2316,7 @@ public class UI extends Component
     }
 
     public void navigateToClient(String clientRoute) {
-        getPage().executeJs(CLIENT_NAVIGATE_TO, clientRoute);
+        getPage().executeJs(UiJs.class).navigateToClient(clientRoute);
     }
 
     private void acknowledgeClient() {
@@ -2289,17 +2328,16 @@ public class UI extends Component
     }
 
     private void serverPaused() {
-        internals.getWrapperElement().executeJs("this.serverPaused()");
+        internals.getWrapperElement().callJsFunction("serverPaused");
     }
 
     private void serverConnected(boolean cancel) {
-        internals.getWrapperElement().executeJs(SERVER_CONNECTED, cancel);
+        internals.getWrapperElement().callJsFunction("serverConnected", cancel);
     }
 
     private void navigateToPlaceholder(Location location) {
         if (clientViewNavigationState == null) {
-            clientViewNavigationState = new NavigationStateBuilder(
-                    getInternals().getRouter())
+            clientViewNavigationState = new NavigationStateBuilder(getRouter())
                     .withTarget(ClientViewPlaceholder.class).build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
@@ -2314,28 +2352,35 @@ public class UI extends Component
             return;
         }
         getInternals().setLastHandledNavigation(location);
-        Optional<NavigationState> navigationState = getInternals().getRouter()
+        Optional<NavigationState> navigationState = getRouter()
                 .resolveNavigationTarget(location);
         if (navigationState.isPresent()) {
             // There is a valid route in flow.
             handleNavigation(location, navigationState.get(), trigger);
         } else {
-            // When route does not exist, try to navigate to current route
-            // in order to check if current view can be left before showing
-            // the error page
-            navigateToPlaceholder(location);
-
-            if (!isPostponed()) {
-                // Route does not exist, and current view does not prevent
-                // navigation thus an error page is shown
-                NotFoundException notFoundException = new NotFoundException(
-                        "Couldn't find route for '" + location.getPath() + "'");
-                getInternals().getRouter().handleExceptionNavigation(this,
-                        location, notFoundException,
-                        NavigationTrigger.CLIENT_SIDE, null);
-            }
-
+            // Leaving the current view and showing the error page are one
+            // navigation for the navigation events
+            Router.observeNavigation(this, location,
+                    NavigationTrigger.CLIENT_SIDE,
+                    () -> renderNotFoundView(location));
         }
+    }
+
+    private int renderNotFoundView(Location location) {
+        // When route does not exist, try to navigate to current route
+        // in order to check if current view can be left before showing
+        // the error page
+        navigateToPlaceholder(location);
+
+        if (isPostponed()) {
+            return HttpStatusCode.OK.getCode();
+        }
+        // Route does not exist, and current view does not prevent
+        // navigation thus an error page is shown
+        NotFoundException notFoundException = new NotFoundException(
+                "Couldn't find route for '" + location.getPath() + "'");
+        return getRouter().handleExceptionNavigation(this, location,
+                notFoundException, NavigationTrigger.CLIENT_SIDE, null);
     }
 
     private boolean shouldHandleNavigation(Location location) {
@@ -2352,37 +2397,32 @@ public class UI extends Component
 
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
-        NavigationEvent navigationEvent = new NavigationEvent(
-                getInternals().getRouter(), location, this, trigger);
+        Router router = getRouter();
+        NavigationEvent navigationEvent = new NavigationEvent(router, location,
+                this, trigger);
 
         JavaScriptNavigationStateRenderer renderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
-        getInternals().getRouter().executeNavigation(this, location,
-                navigationEvent, renderer, (httpStatus) -> {
+        router.executeNavigation(this, location, navigationEvent, renderer,
+                httpStatus -> {
                     forwardToClientUrl = renderer.getClientForwardRoute();
-                    adjustPageTitle();
+                    getInternals().restoreAppShellTitleIfEmpty();
                 });
+    }
+
+    private Router getRouter() {
+        // Navigation is only used on a UI that supports it, which is when the
+        // UI has a router
+        return Objects.requireNonNull(getInternals().getRouter(),
+                "Navigation is not supported by this UI");
     }
 
     private boolean isPostponed() {
         return getInternals().getContinueNavigationAction() != null;
     }
 
-    private void adjustPageTitle() {
-        // new title is empty if the flow route does not have a title
-        String newTitle = getInternals().getTitle();
-        // app shell title is computed from the title tag in index.html
-        String appShellTitle = getInternals().getAppShellTitle();
-        // restore the app shell title when there is no one for the route
-        if ((newTitle == null || newTitle.isEmpty()) && appShellTitle != null
-                && !appShellTitle.isEmpty()) {
-            getInternals().cancelPendingTitleUpdate();
-            getInternals().setTitle(appShellTitle);
-        }
-    }
-
     private NavigationState getDefaultNavigationError() {
-        return new NavigationStateBuilder(getInternals().getRouter())
+        return new NavigationStateBuilder(getRouter())
                 .withTarget(RouteNotFoundError.class).build();
     }
 
@@ -2395,5 +2435,34 @@ public class UI extends Component
     @Tag(Tag.DIV)
     @AnonymousAllowed
     public static class ClientViewPlaceholder extends Component {
+    }
+
+    /**
+     * What this UI asks of the page it is shown on, as a JavaScript definition
+     * for {@link Page#executeJs(Class)}.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface UiJs extends Serializable {
+
+        /**
+         * Sets the direction the document is read in.
+         *
+         * @param direction
+         *            the direction as the browser names it
+         */
+        @JsExpression("document.dir = $0")
+        void setDirection(String direction);
+
+        /**
+         * Hands a route to the client side router, which navigates to it
+         * without asking the server first.
+         *
+         * @param clientRoute
+         *            the route to navigate to
+         */
+        @JsExpression(CLIENT_NAVIGATE_TO)
+        void navigateToClient(String clientRoute);
     }
 }

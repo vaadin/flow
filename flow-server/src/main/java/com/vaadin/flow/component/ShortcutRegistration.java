@@ -921,7 +921,7 @@ public class ShortcutRegistration implements Registration, Serializable {
             executionRegistration.remove();
         }
 
-        executionRegistration = lifecycleOwner.getUI().get()
+        executionRegistration = lifecycleOwner.getUIOrThrow()
                 .beforeClientResponse(lifecycleOwner,
                         beforeClientResponseConsumer);
     }

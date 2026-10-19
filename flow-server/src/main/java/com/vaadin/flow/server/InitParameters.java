@@ -419,10 +419,10 @@ public class InitParameters implements Serializable {
      * <p>
      * The packages Vaadin publishes itself ({@code @vaadin/*}) are exempt from
      * the check, so that a project can be built right after a Vaadin release.
-     * Excluding them requires npm &ge; 11.17.0, which Node.js &ge; 24.19.0
-     * ships with, or pnpm &ge; 10.17.0; bun cannot exclude packages on the
-     * command line, so with bun an installation may fail during the first day
-     * after a Vaadin release.
+     * Excluding them requires npm &ge; 11.17.0, which Node.js &ge; 26.4.0 ships
+     * with, or pnpm &ge; 10.17.0; bun cannot exclude packages on the command
+     * line, so with bun an installation may fail during the first day after a
+     * Vaadin release.
      *
      * @since 25.1.6
      */
@@ -460,5 +460,20 @@ public class InitParameters implements Serializable {
      */
     @Deprecated
     public static final String URL_SAFE_SCHEMES_LEGACY = "com.vaadin.safeUrlSchemes";
+
+    /**
+     * Configuration name for letting the theme style plain HTML elements, such
+     * as a <code>&lt;table&gt;</code>, across the whole application. When
+     * enabled, the {@code <body>} of the application page carries the
+     * {@link Constants#THEMED_HTML_CLASS_NAME} class name, which the Aura and
+     * Lumo themes style the native elements under. A single element opts out
+     * with the {@link Constants#UNTHEMED_HTML_CLASS_NAME} class name.
+     * <p>
+     * Disabled by default, so that upgrading does not change how an existing
+     * application looks. The default is planned to become enabled in Vaadin 26.
+     * 
+     * @since 25.3.1
+     */
+    public static final String THEMED_HTML = "themedHtml";
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,8 @@ import java.lang.annotation.Target;
  * <p>
  * Injecting with this annotation will create a proxy for the contextual
  * instance rather than provide the contextual instance itself.
+ * 
+ * @since 10.0
  */
 @NormalScope
 @Inherited

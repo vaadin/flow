@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -64,6 +65,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class BundleValidationTest {
 
@@ -128,23 +137,22 @@ class BundleValidationTest {
 
     @BeforeEach
     void init() {
-        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+        finder = spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
-        depScanner = Mockito.mock(FrontendDependenciesScanner.class);
+        depScanner = mock(FrontendDependenciesScanner.class);
         options = new MockOptions(finder, temporaryFolder)
                 .withBuildDirectory("target")
                 .withFrontendDependenciesScanner(depScanner);
         options.copyResources(Collections.emptySet());
-        frontendBuildUtils = Mockito.mockStatic(FrontendBuildUtils.class,
+        frontendBuildUtils = mockStatic(FrontendBuildUtils.class,
                 Mockito.CALLS_REAL_METHODS);
-        devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
+        devBundleUtils = mockStatic(DevBundleUtils.class,
                 Mockito.CALLS_REAL_METHODS);
-        prodBundleUtils = Mockito.mockStatic(ProdBundleUtils.class,
+        prodBundleUtils = mockStatic(ProdBundleUtils.class,
                 Mockito.CALLS_REAL_METHODS);
-        bundleUtils = Mockito.mockStatic(BundleValidationUtil.class,
+        bundleUtils = mockStatic(BundleValidationUtil.class,
                 Mockito.CALLS_REAL_METHODS);
-        ioUtils = Mockito.mockStatic(FileIOUtils.class,
-                Mockito.CALLS_REAL_METHODS);
+        ioUtils = mockStatic(FileIOUtils.class, Mockito.CALLS_REAL_METHODS);
     }
 
     private void setupMode(Mode mode) {
@@ -203,6 +211,14 @@ class BundleValidationTest {
         frontendHashes.put("theme-util.js",
                 BundleValidationUtil.calculateHash(THEME_UTIL_JS));
         jarResources.put("theme-util.js", THEME_UTIL_JS);
+        // A bundle carries the JavaScript declared by the JavaScript
+        // definitions
+        frontendHashes.put(
+                FrontendUtils.GENERATED
+                        + FrontendUtils.JS_DEFINITIONS_FILE_NAME,
+                BundleValidationUtil
+                        .calculateHash(new TaskGenerateJsDefinitions(options)
+                                .getFileContent()));
         return stats;
     }
 
@@ -220,8 +236,8 @@ class BundleValidationTest {
     @MethodSource("modes")
     void devBundleStatsJsonMissing_bundleCompilationRequires(Mode mode) {
         setupMode(mode);
-        devBundleUtils.when(() -> DevBundleUtils
-                .getDevBundleFolder(Mockito.any(), Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(any(), any()))
                 .thenReturn(temporaryFolder);
         devBundleUtils.when(() -> DevBundleUtils
                 .findBundleStatsJson(temporaryFolder, "target"))
@@ -252,8 +268,8 @@ class BundleValidationTest {
         setupMode(mode);
         setupMatchingBundle();
 
-        Mockito.doReturn(Collections.singleton(NpmPackageTemplate.class))
-                .when(finder).getSubTypesOf(Template.class);
+        doReturn(Collections.singleton(NpmPackageTemplate.class)).when(finder)
+                .getSubTypesOf(Template.class);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -269,8 +285,8 @@ class BundleValidationTest {
         setupMode(mode);
         setupMatchingBundle();
 
-        Mockito.doReturn(Collections.singleton(NpmPackageTemplate.class))
-                .when(finder).getSubTypesOf(Template.class);
+        doReturn(Collections.singleton(NpmPackageTemplate.class)).when(finder)
+                .getSubTypesOf(Template.class);
         givenTemplateInBundle(NPM_PACKAGE_TEMPLATE);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -291,8 +307,8 @@ class BundleValidationTest {
         FileUtils.forceMkdir(templateFile.getParentFile());
         templateFile.createNewFile();
 
-        Mockito.doReturn(Collections.singleton(ProjectTemplate.class))
-                .when(finder).getSubTypesOf(Template.class);
+        doReturn(Collections.singleton(ProjectTemplate.class)).when(finder)
+                .getSubTypesOf(Template.class);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -309,8 +325,8 @@ class BundleValidationTest {
         setupMatchingBundle();
 
         jarResources.put(JAR_PACKAGED_TEMPLATE, "export {}");
-        Mockito.doReturn(Collections.singleton(JarPackagedTemplate.class))
-                .when(finder).getSubTypesOf(Template.class);
+        doReturn(Collections.singleton(JarPackagedTemplate.class)).when(finder)
+                .getSubTypesOf(Template.class);
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
@@ -327,8 +343,7 @@ class BundleValidationTest {
                 + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -340,9 +355,10 @@ class BundleValidationTest {
     private void givenTemplateInBundle(String jsModule) throws IOException {
         String bundleFile = Constants.TEMPLATE_DIRECTORY + jsModule;
         if (mode.isProduction()) {
-            prodBundleUtils.when(() -> ProdBundleUtils.hasBundleFile(
-                    Mockito.any(File.class), Mockito.any(ClassFinder.class),
-                    Mockito.eq(bundleFile))).thenReturn(true);
+            prodBundleUtils
+                    .when(() -> ProdBundleUtils.hasBundleFile(any(File.class),
+                            any(ClassFinder.class), eq(bundleFile)))
+                    .thenReturn(true);
         } else {
             // The dev bundle folder is mocked to the temporary folder
             File templateFile = new File(temporaryFolder, bundleFile);
@@ -365,8 +381,7 @@ class BundleValidationTest {
                 + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -374,8 +389,7 @@ class BundleValidationTest {
 
         setupFrontendUtilsMock(stats);
 
-        Mockito.when(
-                finder.getAnnotatedClasses(LoadDependenciesOnStartup.class))
+        when(finder.getAnnotatedClasses(LoadDependenciesOnStartup.class))
                 .thenReturn(Collections.singleton(AllEagerAppConf.class));
 
         final boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -400,7 +414,7 @@ class BundleValidationTest {
         Map<String, String> packages = new HashMap<>();
         packages.put("@vaadin/router", "1.7.5");
         packages.put("@vaadin/text", "1.0.0");
-        Mockito.when(depScanner.getPackages()).thenReturn(packages);
+        when(depScanner.getPackages()).thenReturn(packages);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -434,8 +448,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -462,7 +475,7 @@ class BundleValidationTest {
                 + "\"@vaadin/router\": \"1.7.5\"}, \"vaadin\": { \"hash\": \"aHash\"} }",
                 StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
+        when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         ObjectNode stats = getBasicStats();
@@ -516,7 +529,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         ObjectNode stats = getBasicStats();
@@ -555,7 +568,7 @@ class BundleValidationTest {
         Map<String, String> packages = new HashMap<>();
         packages.put("@vaadin/router", "1.9.2");
         packages.put("@vaadin/text", "2.1.0");
-        Mockito.when(depScanner.getPackages()).thenReturn(packages);
+        when(depScanner.getPackages()).thenReturn(packages);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -591,7 +604,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
+        when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         ObjectNode stats = getBasicStats();
@@ -632,7 +645,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
+        when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         ObjectNode stats = getBasicStats();
@@ -667,8 +680,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -702,8 +714,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -745,8 +756,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -793,8 +803,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -815,7 +824,7 @@ class BundleValidationTest {
     void noPackageJson_defaultPackagesAndModulesInStats_noBuildNeeded(
             Mode mode) {
         setupMode(mode);
-        Mockito.when(depScanner.getPackages())
+        when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         String defaultHash = BundleValidationUtil
@@ -843,7 +852,7 @@ class BundleValidationTest {
     void noPackageJson_defaultPackagesInStats_missingNpmModules_buildNeeded(
             Mode mode) {
         setupMode(mode);
-        Mockito.when(depScanner.getPackages())
+        when(depScanner.getPackages())
                 .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
 
         String defaultHash = BundleValidationUtil
@@ -868,8 +877,7 @@ class BundleValidationTest {
     @MethodSource("modes")
     void noPackageJson_defaultPackagesInStats_noBuildNeeded(Mode mode) {
         setupMode(mode);
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         String defaultHash = BundleValidationUtil
                 .getDefaultPackageJson(options, depScanner, null)
@@ -909,12 +917,10 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(depScanner.getModules())
-                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
-                        Collections.singletonList(
-                                "@polymer/paper-checkbox/paper-checkbox.js")));
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
+        when(depScanner.getModules()).thenReturn(Collections
+                .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
+                        "@polymer/paper-checkbox/paper-checkbox.js")));
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -953,12 +959,10 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(depScanner.getModules())
-                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
-                        Collections.singletonList(
-                                "@polymer/paper-checkbox/paper-checkbox.js")));
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
+        when(depScanner.getModules()).thenReturn(Collections
+                .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
+                        "@polymer/paper-checkbox/paper-checkbox.js")));
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -998,12 +1002,11 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
-                        .singletonList("@vaadin/grid/src/vaadin-grid.js")));
-        Mockito.when(depScanner.getTheme())
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
+        when(depScanner.getModules()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL,
+                Collections.singletonList("@vaadin/grid/src/vaadin-grid.js")));
+        when(depScanner.getTheme())
                 .thenReturn(new NodeTestComponents.LumoTest());
 
         ObjectNode stats = getBasicStats();
@@ -1044,7 +1047,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getModules()).thenReturn(Collections
+        when(depScanner.getModules()).thenReturn(Collections
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
@@ -1058,13 +1061,47 @@ class BundleValidationTest {
         jarResources.put("TodoTemplate.js", fileContent);
 
         setupFrontendUtilsMock(stats);
-        devBundleUtils.when(() -> DevBundleUtils
-                .getDevBundleFolder(Mockito.any(), Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(any(), any()))
                 .thenReturn(temporaryFolder);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         assertFalse(needsBuild, "Jar fronted file content hash should match.");
+    }
+
+    static Stream<Arguments> modesAndBundleHashes() {
+        // What the stats say the bundle was built with: a hash the declarations
+        // do not produce, so it was built with another version of them, and no
+        // hash at all, as in a bundle built before any definition existed
+        return modes().flatMap(mode -> Stream.of(
+                Arguments.of(mode,
+                        "not the hash of what the interfaces declare"),
+                Arguments.of(mode, null)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("modesAndBundleHashes")
+    void jsDefinitionJavaScriptNotInTheBundle_bundleRebuild(Mode mode,
+            String bundleHash) {
+        setupMode(mode);
+
+        ObjectNode stats = getBasicStats();
+        ObjectNode hashes = (ObjectNode) stats.get(FRONTEND_HASHES);
+        String generatedFile = FrontendUtils.GENERATED
+                + FrontendUtils.JS_DEFINITIONS_FILE_NAME;
+        if (bundleHash == null) {
+            hashes.remove(generatedFile);
+        } else {
+            hashes.put(generatedFile, bundleHash);
+        }
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+
+        assertTrue(needsBuild,
+                "JavaScript declared by a JavaScript definition that the bundle was not built with should trigger a rebuild, whether the bundle carries another version of it or none at all");
     }
 
     @ParameterizedTest
@@ -1087,7 +1124,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getModules()).thenReturn(Collections
+        when(depScanner.getModules()).thenReturn(Collections
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
@@ -1097,13 +1134,12 @@ class BundleValidationTest {
         ((ArrayNode) stats.get(BUNDLE_IMPORTS))
                 .add("Frontend/generated/jar-resources/TodoTemplate.js");
 
-        devBundleUtils.when(() -> DevBundleUtils
-                .getDevBundleFolder(Mockito.any(), Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(any(), any()))
                 .thenReturn(temporaryFolder);
         frontendBuildUtils
                 .when(() -> FrontendBuildUtils.getJarResourceString(
-                        Mockito.eq("TodoTemplate.js"),
-                        Mockito.any(ClassFinder.class)))
+                        eq("TodoTemplate.js"), any(ClassFinder.class)))
                 .thenReturn(fileContent);
         devBundleUtils.when(() -> DevBundleUtils
                 .findBundleStatsJson(temporaryFolder, "target"))
@@ -1134,7 +1170,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getModules()).thenReturn(Collections
+        when(depScanner.getModules()).thenReturn(Collections
                 .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
                         "Frontend/generated/jar-resources/TodoTemplate.js")));
 
@@ -1146,13 +1182,12 @@ class BundleValidationTest {
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put("TodoTemplate.js",
                 "wrongHash");
 
-        devBundleUtils.when(() -> DevBundleUtils
-                .getDevBundleFolder(Mockito.any(), Mockito.any()))
+        devBundleUtils
+                .when(() -> DevBundleUtils.getDevBundleFolder(any(), any()))
                 .thenReturn(temporaryFolder);
         frontendBuildUtils
                 .when(() -> FrontendBuildUtils.getJarResourceString(
-                        Mockito.eq("TodoTemplate.js"),
-                        Mockito.any(ClassFinder.class)))
+                        eq("TodoTemplate.js"), any(ClassFinder.class)))
                 .thenReturn(fileContent);
         devBundleUtils.when(() -> DevBundleUtils
                 .findBundleStatsJson(temporaryFolder, "target"))
@@ -1179,9 +1214,9 @@ class BundleValidationTest {
         FileUtils.write(stylesheetFile, "body{color:yellow}",
                 StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
-                        .singletonList("Frontend/my-styles.css?inline")));
+        when(depScanner.getModules()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL,
+                Collections.singletonList("Frontend/my-styles.css?inline")));
 
         ObjectNode stats = getBasicStats();
         ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
@@ -1205,9 +1240,9 @@ class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectFrontendFileStub();
 
-        Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
-                        .singletonList("Frontend/views/lit-view.ts")));
+        when(depScanner.getModules()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL,
+                Collections.singletonList("Frontend/views/lit-view.ts")));
 
         ObjectNode stats = getBasicStats();
         ((ArrayNode) stats.get(BUNDLE_IMPORTS))
@@ -1231,9 +1266,9 @@ class BundleValidationTest {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
         createProjectFrontendFileStub();
 
-        Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
-                        .singletonList("Frontend/views/lit-view.ts")));
+        when(depScanner.getModules()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL,
+                Collections.singletonList("Frontend/views/lit-view.ts")));
 
         ObjectNode stats = getBasicStats();
         ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
@@ -1256,9 +1291,9 @@ class BundleValidationTest {
         setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        Mockito.when(depScanner.getModules()).thenReturn(
-                Collections.singletonMap(ChunkInfo.GLOBAL, Collections
-                        .singletonList("Frontend/views/lit-view.ts")));
+        when(depScanner.getModules()).thenReturn(Collections.singletonMap(
+                ChunkInfo.GLOBAL,
+                Collections.singletonList("Frontend/views/lit-view.ts")));
 
         ObjectNode stats = getBasicStats();
         ((ArrayNode) stats.get(BUNDLE_IMPORTS))
@@ -1437,11 +1472,9 @@ class BundleValidationTest {
         createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
                 "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
         stats.remove(THEME_JSON_CONTENTS);
@@ -1465,11 +1498,9 @@ class BundleValidationTest {
         new File(temporaryFolder,
                 DEFAULT_FRONTEND_DIR + "themes/my-parent-theme").mkdirs();
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
@@ -1490,11 +1521,9 @@ class BundleValidationTest {
         setupMode(mode);
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
         new File(temporaryFolder, DEFAULT_FRONTEND_DIR + "themes/my-theme")
                 .mkdirs();
 
@@ -1528,11 +1557,9 @@ class BundleValidationTest {
                 }
                 """, "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put("my-theme", """
@@ -1580,11 +1607,9 @@ class BundleValidationTest {
                         """,
                 "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
@@ -1620,11 +1645,9 @@ class BundleValidationTest {
                 }
                 """, "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
@@ -1658,11 +1681,9 @@ class BundleValidationTest {
         createProjectThemeJsonStub("{\"lumoImports\": [\"typography\"]}",
                 "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
 
@@ -1686,11 +1707,9 @@ class BundleValidationTest {
         createProjectThemeJsonStub("{\"parent\": \"parent-theme\"}",
                 "my-theme");
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation, "{}");
@@ -1902,11 +1921,9 @@ class BundleValidationTest {
         FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
                 StandardCharsets.UTF_8);
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
         setupFrontendUtilsMock(stats);
@@ -2113,7 +2130,7 @@ class BundleValidationTest {
         CssData cssData = new CssData("./addons-styles/my-styles.css", null,
                 null, null);
 
-        Mockito.when(depScanner.getCss()).thenReturn(Collections.singletonMap(
+        when(depScanner.getCss()).thenReturn(Collections.singletonMap(
                 ChunkInfo.GLOBAL, Collections.singletonList(cssData)));
 
         ObjectNode stats = getBasicStats();
@@ -2248,8 +2265,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
@@ -2297,12 +2313,10 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(depScanner.getModules())
-                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
-                        Collections.singletonList(
-                                "@polymer/paper-checkbox/paper-checkbox.js")));
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
+        when(depScanner.getModules()).thenReturn(Collections
+                .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
+                        "@polymer/paper-checkbox/paper-checkbox.js")));
 
         File bundleSourceFolder = newFolder(temporaryFolder, "compiled");
 
@@ -2350,12 +2364,10 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(depScanner.getModules())
-                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
-                        Collections.singletonList(
-                                "@polymer/paper-checkbox/paper-checkbox.js")));
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
+        when(depScanner.getModules()).thenReturn(Collections
+                .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
+                        "@polymer/paper-checkbox/paper-checkbox.js")));
 
         File bundleSourceFolder = newFolder(temporaryFolder, "compiled");
 
@@ -2401,12 +2413,10 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages())
-                .thenReturn(Collections.emptyMap());
-        Mockito.when(depScanner.getModules())
-                .thenReturn(Collections.singletonMap(ChunkInfo.GLOBAL,
-                        Collections.singletonList(
-                                "@polymer/paper-checkbox/paper-checkbox.js")));
+        when(depScanner.getPackages()).thenReturn(Collections.emptyMap());
+        when(depScanner.getModules()).thenReturn(Collections
+                .singletonMap(ChunkInfo.GLOBAL, Collections.singletonList(
+                        "@polymer/paper-checkbox/paper-checkbox.js")));
 
         File bundleSourceFolder = newFolder(temporaryFolder, "compiled");
 
@@ -2428,13 +2438,11 @@ class BundleValidationTest {
 
         if (mode.isProduction()) {
             ProdBundleUtils.compressBundle(temporaryFolder, bundleSourceFolder);
-            Mockito.when(finder
-                    .getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+            when(finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                     .thenReturn(null);
         } else {
             DevBundleUtils.compressBundle(temporaryFolder, bundleSourceFolder);
-            Mockito.when(finder
-                    .getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
+            when(finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
                     .thenReturn(null);
         }
 
@@ -2459,9 +2467,8 @@ class BundleValidationTest {
 
         ObjectNode stats = getBasicStats();
 
-        URL url = Mockito.mock(URL.class);
-        Mockito.when(
-                finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
+        URL url = mock(URL.class);
+        when(finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
@@ -2497,9 +2504,8 @@ class BundleValidationTest {
 
         ObjectNode stats = getBasicStats();
 
-        URL url = Mockito.mock(URL.class);
-        Mockito.when(
-                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+        URL url = mock(URL.class);
+        when(finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
@@ -2515,8 +2521,8 @@ class BundleValidationTest {
             Mode mode) throws IOException {
         setupMode(mode);
         assumeTrue(mode.isProduction());
-        frontendBuildUtils.when(
-                () -> FrontendBuildUtils.isReactModuleAvailable(Mockito.any()))
+        frontendBuildUtils
+                .when(() -> FrontendBuildUtils.isReactModuleAvailable(any()))
                 .thenAnswer(q -> true);
 
         File packageJson = new File(temporaryFolder, "package.json");
@@ -2535,7 +2541,7 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(depScanner.getPackages()).thenReturn(
+        when(depScanner.getPackages()).thenReturn(
                 Collections.singletonMap("@vaadin/button", "2.0.0"));
 
         File versionsFolder = new File(temporaryFolder, "versions");
@@ -2562,16 +2568,15 @@ class BundleValidationTest {
                 }
                 """, StandardCharsets.UTF_8);
 
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(PACKAGE_JSON_DEPENDENCIES))
                 .put("@vaadin/react-components", "24.4.0");
 
-        URL url = Mockito.mock(URL.class);
-        Mockito.when(
-                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+        URL url = mock(URL.class);
+        when(finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
@@ -2597,9 +2602,8 @@ class BundleValidationTest {
 
         ObjectNode stats = getBasicStats();
 
-        URL url = Mockito.mock(URL.class);
-        Mockito.when(
-                finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
+        URL url = mock(URL.class);
+        when(finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
         ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
@@ -2750,7 +2754,7 @@ class BundleValidationTest {
     void offlinePathAdded_statsWithoutOfflinePath_compilationRequired(Mode mode)
             throws IOException {
         setupMode(mode);
-        Mockito.when(depScanner.getPwaConfiguration())
+        when(depScanner.getPwaConfiguration())
                 .thenReturn(pwaWithOfflinePath("offline.html"));
 
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -2768,7 +2772,7 @@ class BundleValidationTest {
     void defaultOfflinePath_statsWithoutOfflinePath_noCompilationRequired(
             Mode mode) throws IOException {
         setupMode(mode);
-        Mockito.when(depScanner.getPwaConfiguration())
+        when(depScanner.getPwaConfiguration())
                 .thenReturn(pwaWithOfflinePath(""));
 
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -2785,7 +2789,7 @@ class BundleValidationTest {
     @MethodSource("modes")
     void offlinePathChanged_compilationRequired(Mode mode) throws IOException {
         setupMode(mode);
-        Mockito.when(depScanner.getPwaConfiguration())
+        when(depScanner.getPwaConfiguration())
                 .thenReturn(pwaWithOfflinePath("offline.html"));
 
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -2804,7 +2808,7 @@ class BundleValidationTest {
     void offlinePathUnchanged_noCompilationRequired(Mode mode)
             throws IOException {
         setupMode(mode);
-        Mockito.when(depScanner.getPwaConfiguration())
+        when(depScanner.getPwaConfiguration())
                 .thenReturn(pwaWithOfflinePath("offline.html"));
 
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -2823,7 +2827,7 @@ class BundleValidationTest {
     void offlineEnabled_statsBuiltWithoutOfflineSupport_compilationRequired(
             Mode mode) throws IOException {
         setupMode(mode);
-        Mockito.when(depScanner.getPwaConfiguration())
+        when(depScanner.getPwaConfiguration())
                 .thenReturn(pwaConfiguration("", true));
 
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -2843,7 +2847,7 @@ class BundleValidationTest {
     void offlineDisabled_offlinePathDiffers_noCompilationRequired(Mode mode)
             throws IOException {
         setupMode(mode);
-        Mockito.when(depScanner.getPwaConfiguration())
+        when(depScanner.getPwaConfiguration())
                 .thenReturn(pwaConfiguration("offline.html", false));
 
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
@@ -2905,12 +2909,11 @@ class BundleValidationTest {
         if (mode.isProduction()) {
             prodBundleUtils
                     .when(() -> ProdBundleUtils.findBundleStatsJson(
-                            Mockito.any(File.class),
-                            Mockito.any(ClassFinder.class)))
+                            any(File.class), any(ClassFinder.class)))
                     .thenReturn(stats.toString());
         } else {
-            devBundleUtils.when(() -> DevBundleUtils
-                    .getDevBundleFolder(Mockito.any(), Mockito.any()))
+            devBundleUtils
+                    .when(() -> DevBundleUtils.getDevBundleFolder(any(), any()))
                     .thenReturn(temporaryFolder);
             devBundleUtils
                     .when(() -> DevBundleUtils
@@ -2918,12 +2921,12 @@ class BundleValidationTest {
                     .thenAnswer(q -> stats.toString());
         }
         frontendBuildUtils
-                .when(() -> FrontendBuildUtils.getJarResourceString(
-                        Mockito.anyString(), Mockito.any(ClassFinder.class)))
+                .when(() -> FrontendBuildUtils.getJarResourceString(anyString(),
+                        any(ClassFinder.class)))
                 .thenAnswer(q -> jarResources.get(q.getArgument(0)));
         frontendBuildUtils
-                .when(() -> FrontendBuildUtils.getJarResource(
-                        Mockito.anyString(), Mockito.any(ClassFinder.class)))
+                .when(() -> FrontendBuildUtils.getJarResource(anyString(),
+                        any(ClassFinder.class)))
                 .thenAnswer(q -> jarResources.containsKey(q.getArgument(0))
                         ? new File(temporaryFolder, q.getArgument(0).toString())
                                 .toURI().toURL()
@@ -3006,11 +3009,9 @@ class BundleValidationTest {
         FileUtils.write(stylesheetFile, String.format(cssTemplate, "blue"),
                 StandardCharsets.UTF_8);
 
-        final ThemeDefinition themeDefinition = Mockito
-                .mock(ThemeDefinition.class);
-        Mockito.when(themeDefinition.getName()).thenReturn("my-theme");
-        Mockito.when(depScanner.getThemeDefinition())
-                .thenReturn(themeDefinition);
+        final ThemeDefinition themeDefinition = mock(ThemeDefinition.class);
+        when(themeDefinition.getName()).thenReturn("my-theme");
+        when(depScanner.getThemeDefinition()).thenReturn(themeDefinition);
 
         ObjectNode stats = getBasicStats();
         if (useParentTheme) {

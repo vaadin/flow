@@ -31,12 +31,10 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -62,6 +60,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceEventBus;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -69,13 +68,17 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Isolated
 public class RouterTest extends RoutingTestBase {
@@ -85,10 +88,10 @@ public class RouterTest extends RoutingTestBase {
 
     private UI ui;
 
-    private VaadinService service = Mockito.mock(VaadinService.class);
+    private VaadinService service = mock(VaadinService.class);
 
-    private DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+    private DeploymentConfiguration configuration = mock(
+            DeploymentConfiguration.class);
 
     @Route("")
     @Tag(Tag.DIV)
@@ -1879,12 +1882,11 @@ public class RouterTest extends RoutingTestBase {
 
         VaadinService.setCurrent(service);
 
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(service.getRouter()).thenReturn(router);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        when(service.getRouter()).thenReturn(router);
 
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(configuration.getUrlSafeSchemes())
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.getUrlSafeSchemes())
                 .thenReturn(Constants.DEFAULT_URL_SAFE_SCHEMES);
     }
 
@@ -1990,8 +1992,8 @@ public class RouterTest extends RoutingTestBase {
                 new Location("navigation-target-with-dynamic-title"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        MatcherAssert.assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is(DYNAMIC_TITLE));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is(DYNAMIC_TITLE));
     }
 
     @Test
@@ -2002,8 +2004,8 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("url/hello"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        MatcherAssert.assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is("hello"));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is("hello"));
     }
 
     @Test
@@ -2015,8 +2017,8 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("url"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        MatcherAssert.assertThat("Dynamic title is wrong",
-                ui.getInternals().getTitle(), is("ACTIVATING"));
+        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
+                is("ACTIVATING"));
     }
 
     @Test
@@ -3191,7 +3193,7 @@ public class RouterTest extends RoutingTestBase {
     public void postpone_forever_on_before_navigation_event()
             throws InvalidRouteConfigurationException {
         RootNavigationTarget.events.clear();
-        PostponingAndResumingNavigationTarget.events.clear();
+        PostponingForeverNavigationTarget.events.clear();
         setNavigationTargets(RootNavigationTarget.class,
                 PostponingForeverNavigationTarget.class);
 
@@ -3899,12 +3901,10 @@ public class RouterTest extends RoutingTestBase {
     public void optional_parameter_non_existing_route()
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(configuration.getFrontendFolder())
-                .thenReturn(new File("front"));
-        Mockito.when(configuration.getProjectFolder())
-                .thenReturn(new File("./"));
-        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
+        when(configuration.isProductionMode()).thenReturn(false);
+        when(configuration.getFrontendFolder()).thenReturn(new File("front"));
+        when(configuration.getProjectFolder()).thenReturn(new File("./"));
+        when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(OptionalParameter.class);
 
         String locationString = "optional/doesnotExist/parameter";
@@ -3931,12 +3931,10 @@ public class RouterTest extends RoutingTestBase {
     public void without_optional_parameter()
             throws InvalidRouteConfigurationException {
         OptionalParameter.events.clear();
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(configuration.getFrontendFolder())
-                .thenReturn(new File("front"));
-        Mockito.when(configuration.getProjectFolder())
-                .thenReturn(new File("./"));
-        Mockito.when(configuration.getBuildFolder()).thenReturn("build");
+        when(configuration.isProductionMode()).thenReturn(false);
+        when(configuration.getFrontendFolder()).thenReturn(new File("front"));
+        when(configuration.getProjectFolder()).thenReturn(new File("./"));
+        when(configuration.getBuildFolder()).thenReturn("build");
         setNavigationTargets(WithoutOptionalParameter.class);
 
         String locationString = "optional";
@@ -4013,11 +4011,10 @@ public class RouterTest extends RoutingTestBase {
                 .getExtendedClientDetails();
 
         // Used with PreserveOnRefresh.
-        ExtendedClientDetails clientDetails = Mockito
-                .mock(ExtendedClientDetails.class);
+        ExtendedClientDetails clientDetails = mock(ExtendedClientDetails.class);
         ui.getInternals().setExtendedClientDetails(clientDetails);
 
-        Mockito.when(clientDetails.getWindowName()).thenReturn("mock");
+        when(clientDetails.getWindowName()).thenReturn("mock");
 
         setNavigationTargets(ProcessEventsFruit.class);
 
@@ -4812,6 +4809,246 @@ public class RouterTest extends RoutingTestBase {
         } else {
             return routeNotFoundError.getElement().getText();
         }
+    }
+
+    @Test
+    public void navigate_firesStartedAndCompletedEventsOnce() {
+        setNavigationTargets(FooNavigationTarget.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("foo");
+
+        assertEquals(2, events.size());
+        NavigationStartedEvent started = (NavigationStartedEvent) events.get(0);
+        assertEquals("foo", started.getLocation().getPath());
+        assertEquals(NavigationTrigger.PROGRAMMATIC, started.getTrigger());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertEquals("foo", ended.getLocation().getPath());
+        assertEquals(
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class,
+                        RouteParameters.empty()),
+                ended.getOutcome());
+        assertEquals(200, ended.getStatusCode());
+    }
+
+    @Test
+    public void navigate_reroute_firesOnePairWithFinalTarget() {
+        setNavigationTargets(SecurityDocument.class, SecurityLogin.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("security/document");
+
+        assertEquals(2, events.size());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertEquals("security/document", ended.getLocation().getPath());
+        assertEquals(new NavigationEndedEvent.Completed(SecurityLogin.class,
+                RouteParameters.empty()), ended.getOutcome());
+    }
+
+    @Test
+    public void navigate_rerouteWithParameter_completedHasFinalParameters() {
+        setNavigationTargets(RouteWithParameter.class,
+                RerouteToRouteWithParam.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("redirect/to/param");
+
+        assertEquals(2, events.size());
+        assertEquals(
+                new NavigationEndedEvent.Completed(RouteWithParameter.class,
+                        HasUrlParameterFormat.getParameters("hello")),
+                ((NavigationEndedEvent) events.get(1)).getOutcome());
+    }
+
+    @Test
+    public void navigate_postponed_firesPostponedOutcome() {
+        setNavigationTargets(RootNavigationTarget.class,
+                PostponingForeverNavigationTarget.class);
+        navigate("postpone");
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("");
+
+        assertEquals(2, events.size());
+        assertEquals(new NavigationEndedEvent.Postponed(),
+                ((NavigationEndedEvent) events.get(1)).getOutcome());
+    }
+
+    @Test
+    public void navigate_errorView_firesOnePairWithFailedOutcome() {
+        setNavigationTargets(FooNavigationTarget.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("missing");
+
+        assertEquals(2, events.size());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) ended.getOutcome()).error());
+        assertEquals(404, ended.getStatusCode());
+    }
+
+    @Test
+    public void navigate_throws_firesFailedOutcomeWithoutStatusCode() {
+        setNavigationTargets(ThrowingErrorTarget.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        // Only exceptions are turned into an error view, so an error escapes
+        assertThrows(NavigationError.class, () -> navigate("throwing"));
+
+        assertEquals(2, events.size());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertInstanceOf(NavigationError.class,
+                ((NavigationEndedEvent.Failed) ended.getOutcome()).error());
+        assertEquals(-1, ended.getStatusCode());
+    }
+
+    @Test
+    public void navigate_rerouteToError_firesFailedOutcome() {
+        setNavigationTargets(RedirectToNotFoundInHasParam.class);
+        List<EventObject> events = recordNavigationEvents();
+
+        navigate("toNotFound/error");
+
+        assertEquals(2, events.size());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) ended.getOutcome()).error());
+        assertEquals(404, ended.getStatusCode());
+    }
+
+    @Test
+    public void proceed_firesPairWithOutcomeOfResumedNavigation() {
+        setNavigationTargets(PostponingOnceNavigationTarget.class,
+                FooNavigationTarget.class);
+        PostponingOnceNavigationTarget.postpone = null;
+        navigate("postpone-once");
+        // Postponed in beforeLeave
+        router.navigate(ui, new Location("foo"), NavigationTrigger.ROUTER_LINK);
+        List<EventObject> events = recordNavigationEvents();
+
+        PostponingOnceNavigationTarget.postpone.proceed();
+
+        assertEquals(2, events.size());
+        NavigationStartedEvent started = (NavigationStartedEvent) events.get(0);
+        assertEquals("foo", started.getLocation().getPath());
+        assertEquals(NavigationTrigger.ROUTER_LINK, started.getTrigger());
+        NavigationEndedEvent ended = (NavigationEndedEvent) events.get(1);
+        assertEquals("foo", ended.getLocation().getPath());
+        assertEquals(
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class,
+                        RouteParameters.empty()),
+                ended.getOutcome());
+    }
+
+    @Test
+    public void proceedIntoRerouteToError_firesFailedOutcomeOnlyForResumed() {
+        setNavigationTargets(PostponingOnceNavigationTarget.class,
+                RedirectToNotFoundInHasParam.class, FooNavigationTarget.class);
+        PostponingOnceNavigationTarget.postpone = null;
+        navigate("postpone-once");
+        // Postponed in beforeLeave
+        navigate("toNotFound/error");
+        List<EventObject> events = recordNavigationEvents();
+
+        PostponingOnceNavigationTarget.postpone.proceed();
+        assertEquals(RouteNotFoundError.class, getUIComponentClass());
+        assertEquals(2, events.size());
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) ((NavigationEndedEvent) events
+                        .get(1)).getOutcome()).error());
+
+        navigate("foo");
+
+        assertEquals(4, events.size());
+        assertEquals(
+                new NavigationEndedEvent.Completed(FooNavigationTarget.class,
+                        RouteParameters.empty()),
+                ((NavigationEndedEvent) events.get(3)).getOutcome());
+    }
+
+    @Test
+    public void proceedIntoPostponeAgain_firesPostponedOutcome() {
+        setNavigationTargets(RootNavigationTarget.class,
+                FooNavigationTarget.class);
+        navigate("");
+        List<ContinueNavigationAction> postpones = new ArrayList<>();
+        // Resuming runs the leave observers after the one that postponed, so
+        // the second one postpones the resumed navigation again
+        for (int i = 0; i < 2; i++) {
+            ui.addBeforeLeaveListener(event -> {
+                if (postpones.size() < 2) {
+                    postpones.add(event.postpone());
+                }
+            });
+        }
+        navigate("foo");
+        List<EventObject> events = recordNavigationEvents();
+
+        postpones.get(0).proceed();
+
+        assertEquals(2, postpones.size());
+        assertEquals(RootNavigationTarget.class, getUIComponentClass());
+        assertEquals(2, events.size());
+        assertEquals(new NavigationEndedEvent.Postponed(),
+                ((NavigationEndedEvent) events.get(1)).getOutcome());
+    }
+
+    @Test
+    public void proceedIntoThrowingView_firesFailedOutcomeAndPropagates() {
+        setNavigationTargets(PostponingOnceNavigationTarget.class,
+                FailOnException.class);
+        PostponingOnceNavigationTarget.postpone = null;
+        navigate("postpone-once");
+        navigate("exception");
+        List<EventObject> events = recordNavigationEvents();
+
+        // Unlike a regular navigation, no error view is rendered for an
+        // exception thrown while resuming
+        assertThrows(RuntimeException.class,
+                () -> PostponingOnceNavigationTarget.postpone.proceed());
+
+        assertEquals(2, events.size());
+        assertInstanceOf(RuntimeException.class,
+                ((NavigationEndedEvent.Failed) ((NavigationEndedEvent) events
+                        .get(1)).getOutcome()).error());
+    }
+
+    @Route("postpone-once")
+    @Tag(Tag.DIV)
+    public static class PostponingOnceNavigationTarget extends Component
+            implements BeforeLeaveObserver {
+
+        private static ContinueNavigationAction postpone;
+
+        @Override
+        public void beforeLeave(BeforeLeaveEvent event) {
+            if (postpone == null) {
+                postpone = event.postpone();
+            }
+        }
+    }
+
+    private static class NavigationError extends Error {
+    }
+
+    @Route("throwing")
+    @Tag(Tag.DIV)
+    public static class ThrowingErrorTarget extends Component
+            implements BeforeEnterObserver {
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            throw new NavigationError();
+        }
+    }
+
+    private List<EventObject> recordNavigationEvents() {
+        List<EventObject> events = new ArrayList<>();
+        VaadinServiceEventBus eventBus = ui.getSession().getService()
+                .getEventBus();
+        eventBus.addListener(NavigationStartedEvent.class, events::add);
+        eventBus.addListener(NavigationEndedEvent.class, events::add);
+        return events;
     }
 
     private void navigate(String url) {

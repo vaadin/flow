@@ -49,9 +49,15 @@ import static jakarta.enterprise.event.Reception.IF_EXISTS;
 
 /**
  * Context for {@link RouteScoped @RouteScoped} beans.
+ * 
+ * @since 10.0
  */
 public class RouteScopedContext extends AbstractContext {
 
+    /**
+     * Manages the contextual storages of route scoped beans within a Vaadin
+     * session.
+     */
     @VaadinSessionScoped
     public static class ContextualStorageManager
             extends AbstractContextualStorageManager<RouteStorageKey> {
@@ -67,6 +73,9 @@ public class RouteScopedContext extends AbstractContext {
          */
         private static final String WINDOW_STORE_ID_PREFIX = "win-";
 
+        /**
+         * Creates a new storage manager.
+         */
         public ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
             // getting the session attribute.
@@ -75,7 +84,7 @@ public class RouteScopedContext extends AbstractContext {
 
         @Override
         protected ContextualStorage newContextualStorage(RouteStorageKey key) {
-            UI.getCurrent().addDetachListener(
+            UI.getCurrentOrThrow().addDetachListener(
                     event -> handleUIDetach(event.getUI(), key));
             return super.newContextualStorage(key);
         }
@@ -136,7 +145,7 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private UI findPreservingUI(UI ui) {
-            VaadinSession session = ui.getSession();
+            VaadinSession session = ui.getSessionOrThrow();
             String windowName = getWindowName(ui);
             for (UI sessionUi : session.getUIs()) {
                 if (sessionUi != ui && windowName != null
@@ -202,7 +211,7 @@ public class RouteScopedContext extends AbstractContext {
         }
 
         private List<ContextualStorage> getActiveContextualStorages() {
-            Set<String> uiStoreIds = getUIStoreIds(UI.getCurrent());
+            Set<String> uiStoreIds = getUIStoreIds(UI.getCurrentOrThrow());
             return getKeySet().stream()
                     .filter(key -> uiStoreIds.contains(key.getUIId()))
                     .map(key -> getContextualStorage(key, false))
@@ -324,10 +333,25 @@ public class RouteScopedContext extends AbstractContext {
     private Supplier<Boolean> isUIContextActive;
     private BeanManager beanManager;
 
+    /**
+     * Creates a new route scoped context.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public RouteScopedContext(BeanManager beanManager) {
         super(beanManager);
     }
 
+    /**
+     * Initializes the context by looking up its storage manager.
+     *
+     * @param beanManager
+     *            the bean manager
+     * @param isUIContextActive
+     *            supplier telling whether the UI context is active, used to
+     *            determine whether this context is active
+     */
     public void init(BeanManager beanManager,
             Supplier<Boolean> isUIContextActive) {
         contextManager = BeanProvider.getContextualReference(beanManager,
@@ -355,7 +379,7 @@ public class RouteScopedContext extends AbstractContext {
     protected ContextualStorage getContextualStorage(Contextual<?> contextual,
             boolean createIfNotExist) {
         Bean<?> bean = getBean(contextual);
-        UI ui = UI.getCurrent();
+        UI ui = UI.getCurrentOrThrow();
         Class<?> owner = getOwner(ui, bean);
         if (!navigationChainHasOwner(ui, owner) && createIfNotExist) {
             throw new IllegalStateException(String.format(

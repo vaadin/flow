@@ -32,8 +32,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Tag;
@@ -53,6 +51,9 @@ import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.Registration;
 
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -1701,20 +1702,18 @@ public class StateNodeTest {
 
         if (visibilityChanged) {
             assertEquals(1, tree.dirtyNodes.size());
-            MatcherAssert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(stateNode));
+            assertThat(tree.dirtyNodes, hasItem(stateNode));
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> MatcherAssert
-                    .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
+            stateNode.visitNodeTree(
+                    node -> assertThat(tree.dirtyNodes, hasItem(node)));
         }
 
         assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(NodeAttachChange.class));
+        assertThat(changes.get(0), instanceOf(NodeAttachChange.class));
         // tag update (ElementData is reported feature) and possible active
         // state update
         Optional<MapPutChange> tagFound = changes.stream()
@@ -1726,8 +1725,7 @@ public class StateNodeTest {
 
         MapPutChange change = (MapPutChange) changes.get(1);
         if (visibilityChanged) {
-            MatcherAssert.assertThat(changes.get(2),
-                    CoreMatchers.instanceOf(MapPutChange.class));
+            assertThat(changes.get(2), instanceOf(MapPutChange.class));
             change = tagChange.equals(change) ? (MapPutChange) changes.get(2)
                     : change;
         }
@@ -1751,8 +1749,7 @@ public class StateNodeTest {
         assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
         // property updates and possible visibility update
-        MatcherAssert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(MapPutChange.class));
+        assertThat(changes.get(1), instanceOf(MapPutChange.class));
 
         Optional<MapPutChange> visibilityChange = changes.stream()
                 .filter(MapPutChange.class::isInstance)
@@ -1799,11 +1796,9 @@ public class StateNodeTest {
 
         assertEquals(2, changes.size());
         // node is attached event
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(NodeAttachChange.class));
+        assertThat(changes.get(0), instanceOf(NodeAttachChange.class));
         // the property update event
-        MatcherAssert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(MapPutChange.class));
+        assertThat(changes.get(1), instanceOf(MapPutChange.class));
 
         changes.clear();
 
@@ -1832,18 +1827,16 @@ public class StateNodeTest {
         MapPutChange change;
         if (visibilityChanged) {
             assertEquals(1, tree.dirtyNodes.size());
-            MatcherAssert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(stateNode));
-            MatcherAssert.assertThat(changes.get(0),
-                    CoreMatchers.instanceOf(MapPutChange.class));
+            assertThat(tree.dirtyNodes, hasItem(stateNode));
+            assertThat(changes.get(0), instanceOf(MapPutChange.class));
             change = (MapPutChange) changes.get(0);
             assertEquals(ElementData.class, change.getFeature());
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> MatcherAssert
-                    .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
+            stateNode.visitNodeTree(
+                    node -> assertThat(tree.dirtyNodes, hasItem(node)));
         }
 
         changes.clear();
@@ -1856,8 +1849,7 @@ public class StateNodeTest {
         // Two possible changes: probable visibility value change and property
         // update change
         assertEquals(visibilityChanged ? 2 : 1, changes.size());
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(MapPutChange.class));
+        assertThat(changes.get(0), instanceOf(MapPutChange.class));
         change = (MapPutChange) changes.get(0);
 
         MapPutChange propertyChange;
@@ -1926,7 +1918,7 @@ public class StateNodeTest {
     }
 
     @Test
-    void describe_component_componentClassIncluded() {
+    void describe_componentWithoutTrackingInformation_classAndToStringIncluded() {
         UI ui = new UI();
         TestDescribedComponent component = new TestDescribedComponent();
         ui.getElement().appendChild(component.getElement());
@@ -1935,9 +1927,10 @@ public class StateNodeTest {
 
         assertTrue(description.contains(TestDescribedComponent.class.getName()),
                 description);
-        // The creation location is not asserted here since ComponentTracker
-        // ignores stack frames from framework packages, which is where a
-        // component created by this test comes from
+        // ComponentTracker ignores stack frames from framework packages, which
+        // is where a component created by this test comes from, so the
+        // description falls back to what the component says about itself
+        assertTrue(description.contains(component.toString()), description);
     }
 
     @Test
@@ -1948,20 +1941,39 @@ public class StateNodeTest {
     }
 
     @Test
-    void describe_applicationCodeThrows_failureDescribedWithDetailsSoFar() {
-        UI ui = new UI();
-        BrokenParentComponent component = new BrokenParentComponent();
-        ui.getElement().appendChild(component.getElement());
-        component.broken = true;
+    void describe_getParentThrows_failureDescribedWithDetailsSoFar() {
+        String description = describeBrokenComponent(
+                component -> component.brokenGetParent = true);
 
-        String description = component.getElement().getNode().describe();
-
-        assertTrue(description.contains(BrokenParentComponent.class.getName()),
+        assertTrue(description.contains(BrokenComponent.class.getName()),
                 description);
         assertTrue(
                 description.contains(
                         UnsupportedOperationException.class.getName()),
                 description);
+    }
+
+    @Test
+    void describe_toStringThrows_failureDescribedWithDetailsSoFar() {
+        String description = describeBrokenComponent(
+                component -> component.brokenToString = true);
+
+        assertTrue(description.contains(BrokenComponent.class.getName()),
+                description);
+        assertTrue(
+                description.contains(
+                        UnsupportedOperationException.class.getName()),
+                description);
+    }
+
+    private String describeBrokenComponent(Consumer<BrokenComponent> breaker) {
+        UI ui = new UI();
+        BrokenComponent component = new BrokenComponent();
+        ui.getElement().appendChild(component.getElement());
+        // Broken only after attaching, so that the attach itself succeeds
+        breaker.accept(component);
+
+        return component.getElement().getNode().describe();
     }
 
     @Tag("div")
@@ -1970,16 +1982,25 @@ public class StateNodeTest {
     }
 
     @Tag("div")
-    private static class BrokenParentComponent
+    private static class BrokenComponent
             extends com.vaadin.flow.component.Component {
-        private boolean broken;
+        private boolean brokenGetParent;
+        private boolean brokenToString;
 
         @Override
         public Optional<com.vaadin.flow.component.Component> getParent() {
-            if (broken) {
+            if (brokenGetParent) {
                 throw new UnsupportedOperationException("broken getParent");
             }
             return super.getParent();
+        }
+
+        @Override
+        public String toString() {
+            if (brokenToString) {
+                throw new UnsupportedOperationException("broken toString");
+            }
+            return super.toString();
         }
     }
 }

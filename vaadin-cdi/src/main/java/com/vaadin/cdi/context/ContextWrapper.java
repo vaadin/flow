@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,12 +28,21 @@ import com.vaadin.cdi.util.AbstractContext;
  * all context-related operations to it's underlying instance, apart from
  * getting the scope of the context.
  *
+ * @since 10.0
  */
 public class ContextWrapper implements AlterableContext {
 
     private final AbstractContext context;
     private final Class<? extends Annotation> scope;
 
+    /**
+     * Creates a new wrapper binding the given scope to the given context.
+     *
+     * @param context
+     *            the context to delegate to
+     * @param scope
+     *            the scope annotation to report for this context
+     */
     public ContextWrapper(AbstractContext context,
             Class<? extends Annotation> scope) {
         this.context = context;

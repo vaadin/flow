@@ -125,6 +125,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-generic</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -154,7 +160,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.3</version>
         <executions>
           <execution>
             <id>npm-install</id>

@@ -28,6 +28,12 @@ import java.security.PrivilegedAction;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+/**
+ * Utility methods for loading classes and inspecting classes and methods via
+ * reflection.
+ *
+ * @since 15.0
+ */
 @Typed()
 public abstract class ClassUtils {
     /**
@@ -97,6 +103,7 @@ public abstract class ClassUtils {
      * CDI spec unproxyable bean types</a>
      *
      * @param type
+     *            the type to check
      * @return {@code true} if all proxy conditions are met, {@code false}
      *         otherwise
      */
@@ -427,9 +434,12 @@ public abstract class ClassUtils {
      * {@code null} if no such visible method exists on the given class.
      *
      * @param clazz
+     *            the class to look up the method from, may be {@code null}
      * @param methodName
+     *            the name of the method
      * @param parameterTypes
-     * @return
+     *            the parameter types of the method
+     * @return the method, or {@code null} if no such visible method exists
      */
     public static Method extractMethod(Class<?> clazz, String methodName,
             Class<?>... parameterTypes) {
@@ -446,7 +456,9 @@ public abstract class ClassUtils {
      * to account generic types
      * 
      * @param targetClass
+     *            the class to check
      * @param method
+     *            the method whose signature to look for
      * @return if it contains a method with the same signature.
      */
     public static boolean containsPossiblyGenericMethod(Class<?> targetClass,
@@ -512,6 +524,17 @@ public abstract class ClassUtils {
         return true;
     }
 
+    /**
+     * Checks whether the return type of the given method is assignable from the
+     * given class.
+     *
+     * @param method
+     *            the method to check
+     * @param clazz
+     *            the class to compare the return type with
+     * @return {@code true} if the return type of the method is assignable from
+     *         the given class, {@code false} otherwise
+     */
     public static boolean returns(Method method, Class<?> clazz) {
         return method.getReturnType().isAssignableFrom(clazz);
     }
