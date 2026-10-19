@@ -178,6 +178,19 @@ class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void cached_constantCallbackReadInEffect_effectCreationThrows() {
+        Signal<String> signal = Signal.cached(() -> "const");
+
+        MissingSignalUsageException thrown = assertThrows(
+                MissingSignalUsageException.class,
+                () -> new Effect(() -> signal.get(), Runnable::run));
+        assertEquals("Effect action must read at least one signal value.",
+                thrown.getMessage());
+        // The exception from reading the cached signal inside the action
+        assertUncaughtException(MissingSignalUsageException.class);
+    }
+
+    @Test
     void cached_constantCallback_runOnceAndConstantSignalValue() {
         var dependency = createDependency();
         AtomicInteger count = new AtomicInteger();
@@ -444,13 +457,14 @@ class ComputedSignalTest extends SignalTestBase {
     @Test
     void cached_dependsOnCachedWithoutSignalUsage_exceptionHandledInComputation() {
         ValueSignal<Integer> source = new ValueSignal<>(1);
+        ValueSignal<Integer> fallback = new ValueSignal<>(-1);
         Signal<Integer> inner = Signal
                 .cached(() -> source.peek() > 0 ? source.get() : 0);
         Signal<Integer> outer = Signal.cached(() -> {
             try {
                 return inner.get();
             } catch (MissingSignalUsageException e) {
-                return -1;
+                return fallback.get();
             }
         });
 
