@@ -78,7 +78,8 @@ public abstract class LitTemplate extends Component
      * @see Instantiator#getOrCreate(Class)
      */
     protected LitTemplate() {
-        this(getParser(VaadinService.getCurrent()), VaadinService.getCurrent());
+        this(getParser(VaadinService.getCurrentOrThrow()),
+                VaadinService.getCurrentOrThrow());
     }
 
     /**

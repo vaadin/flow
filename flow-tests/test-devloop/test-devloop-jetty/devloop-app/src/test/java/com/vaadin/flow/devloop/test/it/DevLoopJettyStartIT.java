@@ -18,6 +18,7 @@ package com.vaadin.flow.devloop.test.it;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -47,22 +48,35 @@ class DevLoopJettyStartIT extends AbstractDevLoopIT {
     @Test
     void hotswapAgentIsToldWhichPluginsToLeaveAlone() throws IOException {
         // -DdisabledPlugins never reaches a webapp class loader: HotswapAgent
-        // asks the PluginConfiguration of the class's own loader, and builds
-        // one per loader from a hotswap-agent.properties found on it. Left at
-        // the system property, its Vaadin plugin went on transforming Flow's
-        // own classes - a second driver of page reloads, competing with every
-        // apply - and the transforms failed because that loader cannot see
-        // HotswapAgent either, which apply then read as the app throwing.
+        // asks the PluginConfiguration of the class's own loader, and every
+        // loader but the system one re-reads the empty disabledPlugins= in
+        // HotswapAgent's own jar. Left at that, its Vaadin plugin went on
+        // transforming Flow's own classes - a second driver of page reloads,
+        // competing with every apply. -Dhotswapagent.disablePlugin is read
+        // once, for every loader, and a plugin it names is never even
+        // discovered - which is what HotswapAgent's own log shows.
+        String log = Files.readString(
+                APP.resolve("target").resolve("devloop").resolve("app.log"));
+        String discovered = log.lines()
+                .filter(line -> line.contains("Discovered plugins:"))
+                .findFirst().orElseThrow(() -> new AssertionError(
+                        "HotswapAgent logged no plugin discovery: " + log));
+
+        List<String> plugins = List
+                .of(discovered.substring(discovered.indexOf('[') + 1,
+                        discovered.lastIndexOf(']')).split(",\\s*"));
+
+        assertFalse(plugins.contains("Vaadin"), discovered);
+        assertFalse(plugins.contains("JacksonPlugin"), discovered);
+        // A list that parsed to nothing would pass the two above vacuously.
+        assertTrue(plugins.contains("Hotswapper"), discovered);
+        // And the jar itself, so that the plugins left enabled can find the
+        // rest of HotswapAgent from the webapp class loader.
         Path properties = APP.resolve("target").resolve("classes")
                 .resolve("hotswap-agent.properties");
-
         assertTrue(Files.isRegularFile(properties),
                 () -> "expected " + properties);
         String content = Files.readString(properties);
-        assertTrue(content.contains("disabledPlugins="), content);
-        assertTrue(content.contains("Vaadin"), content);
-        // And the jar itself, so that the plugins left enabled can find the
-        // rest of HotswapAgent from the webapp class loader.
         assertTrue(content.contains("extraClasspath="), content);
     }
 

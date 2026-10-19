@@ -185,11 +185,8 @@ public class TableHeaderCell extends TableCell
      * @see Scope
      */
     public void setScope(@Nullable Scope scope) {
-        if (scope == null) {
-            getElement().removeAttribute(ATTRIBUTE_SCOPE);
-        } else {
-            getElement().setAttribute(ATTRIBUTE_SCOPE, scope.getValue());
-        }
+        getElement().setAttribute(ATTRIBUTE_SCOPE,
+                scope == null ? null : scope.getValue());
     }
 
     /**

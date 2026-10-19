@@ -300,16 +300,17 @@ class MavenGoalRuntimeTest {
             throws IOException {
         Path file = dir.resolve("payara-args.txt");
 
-        List<String> passed = MavenGoalRuntime
-                .withCommasInArgFile(List.of("-javaagent:/ha.jar",
-                        "-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty",
-                        "-XX:+AllowEnhancedClassRedefinition"), file);
+        List<String> passed = MavenGoalRuntime.withCommasInArgFile(List.of(
+                "-javaagent:/ha.jar",
+                "-Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin",
+                "-XX:+AllowEnhancedClassRedefinition"), file);
 
         assertEquals(
                 List.of("-javaagent:/ha.jar",
                         "-XX:+AllowEnhancedClassRedefinition", "@" + file),
                 passed);
-        assertEquals("\"-DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty\"\n",
+        assertEquals(
+                "\"-Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin\"\n",
                 Files.readString(file));
     }
 
@@ -324,11 +325,11 @@ class MavenGoalRuntimeTest {
         assertEquals(List.of("-Dliberty.jvm.devloop0=-javaagent:/ha.jar",
                 "-Dliberty.jvm.devloop1="
                         + "-XX:+AllowEnhancedClassRedefinition",
-                "-Dliberty.jvm.devloop2=-DdisabledPlugins=Vaadin,Spring"),
+                "-Dliberty.jvm.devloop2=-Dhotswapagent.disablePlugin=Vaadin,Spring"),
                 MavenGoalRuntime.flagProperties("liberty.jvm.devloop",
                         List.of("-javaagent:/ha.jar",
                                 "-XX:+AllowEnhancedClassRedefinition",
-                                "-DdisabledPlugins=Vaadin,Spring")));
+                                "-Dhotswapagent.disablePlugin=Vaadin,Spring")));
     }
 
     /**
@@ -349,16 +350,21 @@ class MavenGoalRuntimeTest {
      * An embedded server is Maven's own JVM, so the loop's flags ride in
      * {@code MAVEN_OPTS} and the system properties go on the command line, each
      * as an argument of its own. Its webapp loader is where HotswapAgent has to
-     * find itself, which is what the extra class path is for.
+     * find itself, which is what the extra class path is for. The flags are the
+     * ones a launch hands it, the runtime's own extras included, and they stay
+     * inline where the start output shows them.
      */
     @Test
     void invocation_embeddedServer_flagsGoToMavensOwnJvm() throws IOException {
         Path agent = Files.writeString(repo.resolve("ha.jar"), "");
         setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, agent.toString());
         Launch launch = launchOf(module("jetty-app", JETTY));
+        MavenGoalRuntime runtime = runtimeOf(launch);
+        List<String> flags = new ArrayList<>(NEEDED);
+        flags.addAll(runtime.extraJvmFlags());
 
-        AppRuntime.Invocation invocation = runtimeOf(launch).invocation(
-                projectOf(launch), NEEDED, List.of("-Dvaadin.x=a b"));
+        AppRuntime.Invocation invocation = runtime.invocation(projectOf(launch),
+                flags, List.of("-Dvaadin.x=a b"));
 
         List<String> command = invocation.command();
         assertTrue(command.contains("-Dvaadin.x=a b"), command.toString());
@@ -366,10 +372,36 @@ class MavenGoalRuntimeTest {
         // A module of its own compiles nothing for a sibling, so there is no
         // phase to name.
         assertFalse(command.contains("compile"), command.toString());
-        assertTrue(invocation.environment().get("MAVEN_OPTS")
-                .endsWith(String.join(" ", NEEDED)));
+        String opts = invocation.environment().get("MAVEN_OPTS");
+        assertTrue(opts.endsWith(String.join(" ", flags)), opts);
+        assertFalse(Files.exists(Launch.workDir(launch.reactor().app().dir())
+                .resolve("maven-opts-args.txt")));
         assertTrue(hotswapAgentProperties(launch)
                 .contains("extraClasspath=" + agent.toUri()));
+    }
+
+    /**
+     * mvn.cmd pastes MAVEN_OPTS into its java line unquoted, so a {@code |}
+     * from {@code --jvm-args} would be a pipe to cmd. Every flag goes to an
+     * argument file, in order, so the developer's still come last.
+     */
+    @Test
+    void invocation_embeddedServer_launcherSyntaxMovesTheFlagsToAnArgFile()
+            throws IOException {
+        Launch launch = launchOf(module("jetty-app", JETTY));
+        Path file = Launch.workDir(launch.reactor().app().dir())
+                .resolve("maven-opts-args.txt");
+
+        AppRuntime.Invocation invocation = runtimeOf(launch).invocation(
+                projectOf(launch),
+                List.of("-javaagent:/ha.jar", "-Dpattern=a|b", "-Xmx1g"),
+                List.of());
+
+        String opts = invocation.environment().get("MAVEN_OPTS");
+        assertTrue(opts.endsWith("@" + file), opts);
+        assertFalse(opts.contains("-Dpattern"), opts);
+        assertEquals("\"-javaagent:/ha.jar\"\n\"-Dpattern=a|b\"\n\"-Xmx1g\"\n",
+                Files.readString(file));
     }
 
     /**
@@ -413,7 +445,8 @@ class MavenGoalRuntimeTest {
                         .startsWith(launch.appJvm().home().resolve("bin")
                                 + File.pathSeparator),
                 invocation.environment().get("PATH"));
-        assertFalse(hotswapAgentProperties(launch).contains("extraClasspath"));
+        assertFalse(Files.exists(launch.reactor().app().classesDir()
+                .resolve("hotswap-agent.properties")));
     }
 
     /**

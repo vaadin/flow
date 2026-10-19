@@ -895,11 +895,11 @@ class AppRuntimeTest {
      * comma split with no escaping available. The mojo then makes a key and a
      * value of each piece at its first {@code =} and drops any piece with none,
      * so the loop's own
-     * {@code -DdisabledPlugins=Vaadin,Spring,SpringBoot,Jetty} would arrive as
-     * {@code -DdisabledPlugins=Vaadin} and nothing would say so. Micro's is a
-     * plain string read straight off the user properties and split on
-     * whitespace alone, so it has no such problem and must not pay the cost of
-     * an argument file for it.
+     * {@code -Dhotswapagent.disablePlugin=Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin}
+     * would arrive as {@code -Dhotswapagent.disablePlugin=Vaadin} and nothing
+     * would say so. Micro's is a plain string read straight off the user
+     * properties and split on whitespace alone, so it has no such problem and
+     * must not pay the cost of an argument file for it.
      */
     @Test
     void onlyTheListValuedChannelIsSplitOnCommas() {

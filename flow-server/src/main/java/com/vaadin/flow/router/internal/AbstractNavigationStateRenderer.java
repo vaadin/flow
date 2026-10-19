@@ -148,7 +148,8 @@ public abstract class AbstractNavigationStateRenderer
 
         if (forceInstantiation
                 && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE
-                && !ui.getSession().getConfiguration().isProductionMode()) {
+                && !ui.getSessionOrThrow().getConfiguration()
+                        .isProductionMode()) {
             findActiveRouteTarget(event, isRouteTargetType)
                     .ifPresent(oldInstance -> SignalFieldTransfer
                             .transferLocalSignalValues(oldInstance,
@@ -307,7 +308,7 @@ public abstract class AbstractNavigationStateRenderer
                 ExtendedClientDetails details = ui.getInternals()
                         .getExtendedClientDetails();
                 if (details.getWindowName() == null) {
-                    PreservedComponentCache cache = ui.getSession()
+                    PreservedComponentCache cache = ui.getSessionOrThrow()
                             .getAttribute(PreservedComponentCache.class);
                     if (cache != null && !cache.isEmpty()) {
                         // As there is a cached chain we get the client details
@@ -319,7 +320,7 @@ public abstract class AbstractNavigationStateRenderer
                     }
                 } else {
                     Optional<List<HasElement>> partialChain = getWindowPreservedChain(
-                            ui.getSession(), details.getWindowName());
+                            ui.getSessionOrThrow(), details.getWindowName());
                     if (partialChain.isPresent()) {
                         List<HasElement> oldChain = partialChain.get();
                         disconnectElements(oldChain, ui);
@@ -368,21 +369,28 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
-     * If a route refresh has been requested, remove all modal components. This
-     * is necessary because maintaining the correct modality cardinality and
-     * order is not feasible without knowing who opened them and when.
+     * If a route refresh has been requested, remove all components with
+     * modality, that is both strictly and visually modal components. This is
+     * necessary because maintaining the correct modality cardinality and order
+     * is not feasible without knowing who opened them and when.
+     * <p>
+     * Components with modality, such as dialogs, are usually attached to the UI
+     * instead of the route they are opened from, so they would otherwise
+     * survive the refresh and keep showing outdated contents.
      *
      * @param event
      *            navigation event
      */
     private static void cleanModalComponents(NavigationEvent event) {
-        if (event.getUI().hasModalComponent()
-                && event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
-            Component modalComponent;
-            while ((modalComponent = event.getUI().getInternals()
-                    .getActiveModalComponent()) != null) {
-                modalComponent.removeFromParent();
-            }
+        if (event.getTrigger() == NavigationTrigger.REFRESH_ROUTE) {
+            List<Component> modalityComponents = event.getUI().getInternals()
+                    .getModalityComponents();
+            // Components with modality nested inside another one go away
+            // together with it, and must stay in their parent. The rest are
+            // removed most recently set first.
+            modalityComponents.stream().filter(component -> component
+                    .findAncestor(modalityComponents::contains).isEmpty())
+                    .forEachOrdered(Component::removeFromParent);
         }
     }
 
@@ -1037,7 +1045,7 @@ public abstract class AbstractNavigationStateRenderer
             NavigationEvent event) {
         final Location location = event.getLocation();
         final UI ui = event.getUI();
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
 
         final ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
@@ -1098,7 +1106,7 @@ public abstract class AbstractNavigationStateRenderer
 
         final Location location = event.getLocation();
         final UI ui = event.getUI();
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
 
         final ExtendedClientDetails extendedClientDetails = ui.getInternals()
                 .getExtendedClientDetails();
@@ -1148,7 +1156,7 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget, String route, RouteParameters parameters) {
-        Instantiator instantiator = navigationEvent.getUI().getSession()
+        Instantiator instantiator = navigationEvent.getUI().getSessionOrThrow()
                 .getService().getInstantiator();
         QueryParameters queryParameters = navigationEvent.getLocation()
                 .getQueryParameters();
@@ -1252,7 +1260,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static void clearAllPreservedChains(UI ui) {
-        final VaadinSession session = ui.getSession();
+        final VaadinSession session = ui.getSessionOrThrow();
         // Note that this check is always false if @PreserveOnRefresh has not
         // been used at all, avoiding the round-trip overhead.
         if (hasPreservedChain(session)) {
@@ -1282,7 +1290,7 @@ public abstract class AbstractNavigationStateRenderer
             throw new IllegalStateException(
                     "Cannot purge preserved chain cache for an active UI");
         }
-        final VaadinSession session = inactiveUI.getSession();
+        final VaadinSession session = inactiveUI.getSessionOrThrow();
         final PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
         if (cache != null && !cache.isEmpty()) {

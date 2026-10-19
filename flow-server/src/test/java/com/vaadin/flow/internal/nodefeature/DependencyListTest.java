@@ -261,6 +261,25 @@ class DependencyListTest {
     }
 
     @Test
+    void addSameStyleSheetInDifferentModes_keepsFirstLayer() {
+        String url = "foo/bar.css";
+        deps.add(new Dependency(Type.STYLESHEET, url, LoadMode.LAZY, null,
+                "theme"));
+        deps.add(new Dependency(Type.STYLESHEET, url, LoadMode.EAGER, null,
+                "other"));
+
+        Collection<Dependency> pendingSendToClient = deps
+                .getPendingSendToClient();
+        assertEquals(1, pendingSendToClient.size(),
+                "Expected to have only one dependency");
+        Dependency dependency = pendingSendToClient.iterator().next();
+        assertEquals(LoadMode.EAGER, dependency.getLoadMode(),
+                "Wrong load mode resolved");
+        assertEquals("theme", dependency.getLayer(),
+                "Expected the layer of the first added dependency");
+    }
+
+    @Test
     void addDependencyPerformance() {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {

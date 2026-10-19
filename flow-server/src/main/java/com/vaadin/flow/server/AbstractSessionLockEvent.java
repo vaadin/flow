@@ -74,6 +74,7 @@ public abstract class AbstractSessionLockEvent extends EventObject {
      * @param session
      *            the Vaadin session the lock belongs to, or {@code null} if it
      *            is not known
+     * @since 25.4
      */
     protected AbstractSessionLockEvent(VaadinService service,
             VaadinSession session) {
@@ -109,6 +110,7 @@ public abstract class AbstractSessionLockEvent extends EventObject {
      * since the lock does not keep a removed session in memory.
      *
      * @return the Vaadin session, or an empty optional if it is not known
+     * @since 25.4
      */
     public Optional<VaadinSession> getSession() {
         return Optional.ofNullable(session);

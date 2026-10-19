@@ -276,8 +276,7 @@ class PrepareFrontendMojoTest {
                 "@polymer/polymer");
 
         assertContainsPackage(packageJsonObject.get("devDependencies"), "vite",
-                "@rollup/plugin-replace", "rollup-plugin-brotli",
-                "vite-plugin-checker");
+                "rollup-plugin-brotli", "vite-plugin-checker");
     }
 
     @Test
