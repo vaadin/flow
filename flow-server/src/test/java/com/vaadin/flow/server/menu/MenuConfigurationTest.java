@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -240,19 +241,26 @@ class MenuConfigurationTest {
 
         List<MenuEntry> tree = MenuConfiguration.getMenuEntriesTree();
 
-        assertEquals(1, tree.size());
+        assertEquals(List.of("/"), tree.stream().map(MenuEntry::path).toList());
         MenuEntry dashboard = tree.get(0);
-        assertEquals("Dashboard", dashboard.title());
-        assertEquals("/", dashboard.path());
-
+        assertEquals(List.of("/settings"),
+                dashboard.children().stream().map(MenuEntry::path).toList());
         MenuEntry settings = dashboard.children().get(0);
-        assertEquals("/settings", settings.path());
-
+        assertEquals(List.of("/billing"),
+                settings.children().stream().map(MenuEntry::path).toList());
         MenuEntry billing = settings.children().get(0);
-        assertEquals("Billing", billing.title());
-        assertEquals("/billing", billing.path());
         assertTrue(billing.children().isEmpty(),
                 "A leaf entry is expected to have no children");
+
+        // Apart from children, tree entries carry the same data as the flat
+        // entries
+        List<MenuEntry> flat = MenuConfiguration.getMenuEntries();
+        assertEquals(flat,
+                Stream.of(dashboard, settings, billing)
+                        .map(entry -> new MenuEntry(entry.path(), entry.title(),
+                                entry.order(), entry.icon(), entry.menuClass()))
+                        .toList());
+        assertEquals(MenuRegistryTest.TreeBilling.class, billing.menuClass());
     }
 
     @Test
