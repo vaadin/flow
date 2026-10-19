@@ -225,8 +225,8 @@ class MenuConfigurationTest {
         children.clear();
         assertEquals(1, entry.children().size(),
                 "Changes to the given list should not affect the entry");
-        assertThrows(UnsupportedOperationException.class,
-                () -> entry.children().clear());
+        List<MenuEntry> entryChildren = entry.children();
+        assertThrows(UnsupportedOperationException.class, entryChildren::clear);
     }
 
     @Test
