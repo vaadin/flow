@@ -75,6 +75,16 @@ final class Launch {
     static final Pattern HELP_TAIL = Pattern
             .compile("\\s*+->\\s*+\\[Help \\d++\\]$");
 
+    /**
+     * The daemon property carrying the developer's own flags for the app JVM;
+     * see {@link #readConfiguredJvmFlags()}.
+     */
+    static final String JVM_ARGS_PROPERTY = "vaadin.dev.jvmArgs";
+
+    /** What separates the flags in {@value #JVM_ARGS_PROPERTY}. */
+    private static final Pattern JVM_ARGS_SEPARATOR = Pattern
+            .compile("[\\s|]+");
+
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
             "java.base/java.util", "java.desktop/java.beans");
@@ -104,6 +114,10 @@ final class Launch {
      * breaking.
      */
     private volatile Project project;
+
+    /** See {@link #requestJvmFlags}. */
+    private final AtomicReference<List<String>> requestedJvmFlags = new AtomicReference<>(
+            List.of());
 
     /**
      * Why the last resolution failed, when it failed and there was no earlier
@@ -794,7 +808,7 @@ final class Launch {
      *
      * @return the argument, or nothing when there is no jar
      */
-    private List<String> buildExtension() {
+    List<String> buildExtension() {
         return agentJar().filter(Files::isRegularFile)
                 .map(jar -> List.of("-Dmaven.ext.class.path=" + jar))
                 .orElseGet(List::of);
@@ -808,7 +822,8 @@ final class Launch {
         return List.of(configured.trim().split("\\s+"));
     }
 
-    private record Attempt(boolean ok, String output) {
+    /** How one Maven run ended, and everything it printed. */
+    record Attempt(boolean ok, String output) {
     }
 
     private Attempt attempt(List<String> base, boolean offline)
@@ -817,7 +832,26 @@ final class Launch {
         // After the wrapper, before the goals: Maven accepts options anywhere,
         // and inserting here keeps the goals last where a reader expects them.
         command.addAll(1, offline ? List.of("-o") : List.of("-nsu"));
-        Path directory = reactor.root();
+        return runMavenCommand(command, reactor.root());
+    }
+
+    /**
+     * Runs one Maven command from the reactor root and waits for it.
+     * <p>
+     * Shared by the resolve and by the compile leg's Maven backend (see
+     * {@link MavenCompile}), which need the same process set-up for the same
+     * reasons.
+     *
+     * @param command
+     *            the command line, Maven itself first
+     * @param directory
+     *            the reactor root
+     * @return how the run ended, with its merged output
+     * @throws IOException
+     *             if Maven could not be started, or the wait was interrupted
+     */
+    static Attempt runMavenCommand(List<String> command, Path directory)
+            throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command)
                 .directory(directory.toFile()).redirectErrorStream(true);
         // The distribution's launcher derives maven.multiModuleProjectDirectory
@@ -835,7 +869,7 @@ final class Launch {
             return new Attempt(process.waitFor() == 0, output);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("classpath resolution interrupted", e);
+            throw new IOException("Maven run interrupted", e);
         }
     }
 
@@ -1039,7 +1073,7 @@ final class Launch {
      * the line after it is the one that names the artifact it could not
      * resolve.
      */
-    private static String failureReason(String output) {
+    static String failureReason(String output) {
         List<String> errors = output.lines().map(String::strip)
                 .filter(line -> line.startsWith("[ERROR]"))
                 .map(line -> line.substring("[ERROR]".length()).strip())
@@ -1132,12 +1166,13 @@ final class Launch {
      *            or {@code apply}. The three produce a process that is
      *            otherwise identical, so the app can only tell them apart if
      *            the daemon says which it is.
-     * @return the invocation, ready for a {@link ProcessBuilder}
+     * @return the invocation, ready for a {@link ProcessBuilder}, and the
+     *         resolved build it runs
      * @throws IOException
      *             if the launch cannot be composed
      */
-    AppRuntime.Invocation invocation(int daemonPort, String token,
-            String launchKind, Log progress) throws IOException {
+    Composed invocation(int daemonPort, String token, String launchKind,
+            Log progress) throws IOException {
         // Teed, for the same reason project(Log) is: every warning below is
         // one only the developer can act on - a pom setting the daemon cannot
         // override, a path it cannot unbreak, a missing agent jar - and a
@@ -1159,8 +1194,8 @@ final class Launch {
                             + resolutionError);
         }
         AppRuntime appRuntime = runtime();
-        List<String> jvmFlags = new ArrayList<>(jvmFlags(tee));
-        jvmFlags.addAll(appRuntime.extraJvmFlags());
+        List<String> jvmFlags = composeJvmFlags(tee,
+                appRuntime.extraJvmFlags());
         // Only a runtime that hands these to a string something else splits
         // can be defeated by a space in one of them, and only it knows which
         // string that is; see MavenGoalRuntime.unsplittable.
@@ -1174,7 +1209,43 @@ final class Launch {
         // because the question it answers - is the running app still the app
         // the poms describe? - is the same either way.
         launchedClasspath = resolved.appClasspath();
-        return invocation;
+        return new Composed(invocation, resolved);
+    }
+
+    /**
+     * A composed launch: what to spawn, and the resolved build it runs - the
+     * module set whose files {@link Compile.Snapshot} stamps as it is spawned.
+     *
+     * @param invocation
+     *            the invocation, ready for a {@link ProcessBuilder}
+     * @param project
+     *            the resolved build the invocation runs
+     */
+    record Composed(AppRuntime.Invocation invocation, Project project) {
+    }
+
+    /**
+     * Every flag the app JVM starts with, in the order it gets them: the loop's
+     * own, then the runtime's, then the developer's from
+     * {@link #readConfiguredJvmFlags()} and from {@code --jvm-args}. The
+     * developer's are last so that where the JVM takes the last value of a
+     * repeated flag theirs wins - and of theirs, the command line's.
+     *
+     * @param tee
+     *            where a warning about the loop's own flags goes
+     * @param runtimeFlags
+     *            what the runtime adds, see {@link AppRuntime#extraJvmFlags()}
+     * @return the flags
+     * @throws IOException
+     *             if the loop's own flags cannot be composed
+     */
+    List<String> composeJvmFlags(Log tee, List<String> runtimeFlags)
+            throws IOException {
+        List<String> flags = new ArrayList<>(jvmFlags(tee));
+        flags.addAll(runtimeFlags);
+        flags.addAll(readConfiguredJvmFlags());
+        flags.addAll(requestedJvmFlags.get());
+        return flags;
     }
 
     /**
@@ -1263,6 +1334,63 @@ final class Launch {
     }
 
     /**
+     * The developer's own flags for the app JVM, from
+     * {@value #JVM_ARGS_PROPERTY}: {@code --add-exports}, {@code -Xmx},
+     * {@code -XX:...} and the like, which the {@code -D} forwarding of
+     * {@link #forwardedToApp} cannot carry. They reach the app JVM alone,
+     * unlike {@code JDK_JAVA_OPTIONS}, which also reaches the daemon and every
+     * Maven run.
+     * <p>
+     * Split on whitespace and on {@code |}. Whitespace matches
+     * {@code vaadin.dev.mavenArgs}; the {@code |} is there because the CLI
+     * splits {@code VAADIN_DEV_DAEMON_OPTS} on whitespace itself, without
+     * honouring quotes, so a value that comes that way can hold several flags
+     * only as {@code -Xmx2g|--add-exports=java.base/x=ALL-UNNAMED}. A comma
+     * would not do, being part of {@code --add-exports} targets. Either way an
+     * argument cannot contain a space, and no flag this is for does. A flag
+     * that needs a literal {@code |} has to come through {@code --jvm-args},
+     * which carries each flag as given.
+     * <p>
+     * Nothing stops these from overriding a flag the loop needs; they are
+     * applied as given.
+     *
+     * @return the flags, empty when the property is not set
+     */
+    static List<String> readConfiguredJvmFlags() {
+        String configured = System.getProperty(JVM_ARGS_PROPERTY);
+        if (configured == null || configured.isBlank()) {
+            return List.of();
+        }
+        return JVM_ARGS_SEPARATOR.splitAsStream(configured)
+                .filter(flag -> !flag.isEmpty()).toList();
+    }
+
+    /**
+     * Sets the flags a {@code start} or {@code restart} asked for with
+     * {@code --jvm-args}. They are added after
+     * {@link #readConfiguredJvmFlags()} and kept for every later launch - a
+     * plain {@code restart}, and an apply that escalates to one - until another
+     * {@code --jvm-args} replaces them or the daemon shuts down. An app that
+     * lost its {@code --add-exports} on the first escalated apply would fail in
+     * a way that has nothing to do with the change being applied.
+     *
+     * @param flags
+     *            the flags, empty to clear them
+     */
+    void requestJvmFlags(List<String> flags) {
+        requestedJvmFlags.set(List.copyOf(flags));
+    }
+
+    /**
+     * The flags last set by {@link #requestJvmFlags}.
+     *
+     * @return the flags, empty when none were asked for
+     */
+    List<String> requestedJvmFlags() {
+        return requestedJvmFlags.get();
+    }
+
+    /**
      * The {@code -D} settings the application itself reads.
      */
     private List<String> systemProperties(int daemonPort, String token,
@@ -1320,13 +1448,18 @@ final class Launch {
      * devtools restart is the one that matters: two things restarting the
      * application on their own schedules is what the transaction model exists
      * to prevent.
+     * <p>
+     * {@value #JVM_ARGS_PROPERTY} is held back as well: the app gets those
+     * flags themselves, and a copy of the raw value would only carry its
+     * {@code |} separators into {@code MAVEN_OPTS}, where {@code mvn.cmd} reads
+     * them as pipes.
      *
      * @param name
      *            a system property name
      * @return {@code true} if the app JVM is given it too
      */
     static boolean forwardedToApp(String name) {
-        if (LOOP_OWNED.contains(name)) {
+        if (LOOP_OWNED.contains(name) || JVM_ARGS_PROPERTY.equals(name)) {
             return false;
         }
         return name.startsWith("vaadin.") || name.startsWith("spring.");

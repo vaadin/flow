@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
@@ -67,6 +66,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class LookupInitializerTest {
 
@@ -117,13 +121,12 @@ class LookupInitializerTest {
         StaticFileHandlerFactory factory = lookup
                 .lookup(StaticFileHandlerFactory.class);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        ClassLoader loader = Mockito.mock(ClassLoader.class);
-        Mockito.when(service.getClassLoader()).thenReturn(loader);
+        VaadinService service = mock(VaadinService.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        ClassLoader loader = mock(ClassLoader.class);
+        when(service.getClassLoader()).thenReturn(loader);
 
         StaticFileHandler handler = factory.createHandler(service);
         assertNotNull(handler);
@@ -133,7 +136,7 @@ class LookupInitializerTest {
     @Test
     void initialize_StaticFileHandlerFactoryIdDelegatedToEnsureService()
             throws ServletException {
-        Map mock = Mockito.mock(Map.class);
+        Map mock = mock(Map.class);
         AtomicBoolean factoryIsPassed = new AtomicBoolean();
         initializer = new LookupInitializer() {
 
@@ -316,21 +319,20 @@ class LookupInitializerTest {
     @SuppressWarnings("unchecked")
     @Test
     void initialize_callEnsureMethodsAndBootstrap() throws ServletException {
-        LookupInitializer initializer = Mockito.spy(LookupInitializer.class);
-        Map<Class<?>, Collection<Class<?>>> services = Mockito
-                .mock(HashMap.class);
-        VaadinApplicationInitializationBootstrap bootstrap = Mockito
-                .mock(VaadinApplicationInitializationBootstrap.class);
+        LookupInitializer initializer = spy(LookupInitializer.class);
+        Map<Class<?>, Collection<Class<?>>> services = mock(HashMap.class);
+        VaadinApplicationInitializationBootstrap bootstrap = mock(
+                VaadinApplicationInitializationBootstrap.class);
         initializer.initialize(null, services, bootstrap);
 
-        Mockito.verify(initializer).ensureService(services,
-                ResourceProvider.class, ResourceProviderImpl.class);
-        Mockito.verify(initializer).ensureService(services,
+        verify(initializer).ensureService(services, ResourceProvider.class,
+                ResourceProviderImpl.class);
+        verify(initializer).ensureService(services,
                 ApplicationConfigurationFactory.class,
                 DefaultApplicationConfigurationFactory.class);
-        Mockito.verify(initializer).ensureService(services,
-                AppShellPredicate.class, AppShellPredicateImpl.class);
-        Mockito.verify(bootstrap).bootstrap(Mockito.any());
+        verify(initializer).ensureService(services, AppShellPredicate.class,
+                AppShellPredicateImpl.class);
+        verify(bootstrap).bootstrap(any());
     }
 
     @Test

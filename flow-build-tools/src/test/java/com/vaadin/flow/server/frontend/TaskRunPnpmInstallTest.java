@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -45,6 +44,9 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 @Tag("com.vaadin.flow.testcategory.SlowTests")
@@ -399,13 +401,13 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         getNodeUpdater().modified = false;
 
         task.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
 
         deleteDirectory(nodeModules);
 
         TaskRunNpmInstall ciTask = createCiTask();
         ciTask.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -417,8 +419,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         task.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(
-                Mockito.eq("using '{}' for frontend package installation"),
+        verify(logger).info(eq("using '{}' for frontend package installation"),
                 captor.capture());
         assertTrue(captor.getValue().contains("--no-frozen-lockfile"),
                 "pnpm install in dev mode should use --no-frozen-lockfile");
@@ -433,8 +434,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         ciTask.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(
-                Mockito.eq("using '{}' for frontend package installation"),
+        verify(logger).info(eq("using '{}' for frontend package installation"),
                 captor.capture());
         String command = captor.getValue();
         assertTrue(command.contains("--frozen-lockfile"),
@@ -452,8 +452,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         task.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(
-                Mockito.eq("using '{}' for frontend package installation"),
+        verify(logger).info(eq("using '{}' for frontend package installation"),
                 captor.capture());
         assertTrue(
                 captor.getValue().contains(
@@ -529,8 +528,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     private JsonNode getGeneratedVersionsContent(File versions,
             File packageJsonFile) throws IOException {
         ClassFinder classFinder = getClassFinder();
-        Mockito.when(
-                classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        when(classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versions.getParentFile().toURI().toURL()));
 
         ObjectNode packageJson = JacksonUtils

@@ -57,6 +57,13 @@ public class VaadinExtension implements Extension {
     private RouteScopedContext routeScopedContext;
     private Set<BeanInfo> beanInfoSet = new HashSet<>();
 
+    /**
+     * Creates a new Vaadin CDI extension.
+     */
+    public VaadinExtension() {
+        // Nothing to initialize
+    }
+
     private void storeBeanValidationInfo(@Observes ProcessBean processBean) {
         beanInfoSet.add(new BeanInfo(processBean.getBean(),
                 processBean.getAnnotated()));

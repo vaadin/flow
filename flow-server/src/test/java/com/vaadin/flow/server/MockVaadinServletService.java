@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Instantiator;
@@ -34,6 +33,9 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -143,8 +145,8 @@ public class MockVaadinServletService extends VaadinServletService {
             }
             if (lookup == null
                     && getContext().getAttribute(Lookup.class) == null) {
-                lookup = Mockito.mock(Lookup.class);
-                Mockito.when(lookup.lookup(RoutePathProvider.class))
+                lookup = mock(Lookup.class);
+                when(lookup.lookup(RoutePathProvider.class))
                         .thenReturn(new DefaultRoutePathProvider());
                 instrumentMockLookup(lookup);
                 getContext().setAttribute(Lookup.class, lookup);

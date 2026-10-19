@@ -47,6 +47,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -284,6 +285,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             return;
         }
 
+        // Caches needed up to date by hotswappers must be cleared before they
+        // run; all other reflection caches are cleared by
+        // ReflectionCacheHotswapper after them
+        classes.forEach(ReflectionCache::clearBeforeHotswap);
+
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 redefined);
         for (VaadinHotswapper hotSwapper : hotSwappers) {
@@ -465,9 +471,12 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 .distinct().toList();
 
         if (redefined) {
-            // A full chain refresh should be triggered if there are modal
-            // components, since they could be attached to UI or parent layouts
-            if (ui.hasModalComponent()) {
+            // A full chain refresh should be triggered if there are components
+            // with modality, since they could be attached to UI or parent
+            // layouts. Both strictly and visually modal components are taken
+            // into account, as for example dialogs are visually modal by
+            // default.
+            if (ui.getInternals().hasModalityComponent()) {
                 refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
             } else if (!targetChainChangedItems.isEmpty()) {
                 refreshStrategy = targetChainChangedItems.stream()

@@ -17,11 +17,12 @@ package com.vaadin.tests.util;
 
 import java.io.File;
 
-import org.mockito.Mockito;
-
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Mocked Options that creates a lookup mock and class finder mock, if it's not
@@ -38,10 +39,9 @@ public class MockOptions extends Options {
      *            project base folder
      */
     public MockOptions(ClassFinder classFinder, File projectFolder) {
-        super(Mockito.mock(Lookup.class), classFinder, projectFolder);
+        super(mock(Lookup.class), classFinder, projectFolder);
 
-        Mockito.when(getLookup().lookup(ClassFinder.class))
-                .thenReturn(classFinder);
+        when(getLookup().lookup(ClassFinder.class)).thenReturn(classFinder);
     }
 
     /**
@@ -51,6 +51,6 @@ public class MockOptions extends Options {
      *            project base folder
      */
     public MockOptions(File projectFolder) {
-        this(Mockito.mock(ClassFinder.class), projectFolder);
+        this(mock(ClassFinder.class), projectFolder);
     }
 }

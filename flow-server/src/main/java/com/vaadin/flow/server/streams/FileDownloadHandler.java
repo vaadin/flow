@@ -86,9 +86,9 @@ public class FileDownloadHandler
                 downloadEvent.setFileName(resourceName);
             }
             downloadEvent
-                    .setContentType(getContentType(resourceName, response));
+                    .setContentType(resolveContentType(resourceName, response));
             transferContent(downloadEvent, inputStream, outputStream,
-                    file.length(), file);
+                    file.length(), SeekableContent.ofFile(file));
         } catch (RangeRequestException e) {
             // Not reported again: a cancel is not an error, and a smaller
             // range was never reported as started
@@ -102,6 +102,18 @@ public class FileDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Range requests are always answered for a file.
+     * 
+     * @since 25.4
+     */
+    @Override
+    public boolean isRangeRequestsEnabled() {
+        return true;
     }
 
     @Override
