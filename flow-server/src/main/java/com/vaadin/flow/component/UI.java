@@ -781,7 +781,7 @@ public class UI extends Component
      *         handler, possibly asynchronously
      * @since 1.3
      */
-    public <T> SerializableConsumer<T> accessLater(
+    public <T extends @Nullable Object> SerializableConsumer<T> accessLater(
             SerializableConsumer<T> accessTask,
             @Nullable SerializableRunnable detachHandler) {
         Objects.requireNonNull(accessTask, "Access task cannot be null");
