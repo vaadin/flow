@@ -49,6 +49,7 @@ public class CdiInstantiator extends AbstractCdiInstantiator {
      *            the bean manager used for looking up CDI beans
      * @param service
      *            the Vaadin service the instantiator is created for
+     * @since 15.0
      */
     public CdiInstantiator(BeanManager beanManager, VaadinService service) {
         this.beanManager = beanManager;
