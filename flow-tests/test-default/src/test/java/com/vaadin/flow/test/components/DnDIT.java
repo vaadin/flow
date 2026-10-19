@@ -286,8 +286,7 @@ public class DnDIT extends AbstractDefaultIT {
     private void assertDragImage(TestBenchElement eventlog, String prefix,
             String suffix, String... fragments) {
         String text = eventlog.getText();
-        Assertions.assertTrue(
-                text.startsWith(prefix) && text.endsWith(suffix),
+        Assertions.assertTrue(text.startsWith(prefix) && text.endsWith(suffix),
                 "Invalid drag image: " + text);
         int expectedLength = prefix.length() + suffix.length();
         for (String fragment : fragments) {
