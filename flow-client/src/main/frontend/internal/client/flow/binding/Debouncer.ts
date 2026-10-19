@@ -1,0 +1,291 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+// TypeScript port of com.vaadin.client.flow.binding.Debouncer, built alongside
+// the Java version. The GWT elemental Timer is mapped to setTimeout (one-shot,
+// schedule) / setInterval (scheduleRepeating).
+
+import { JsonConstants } from '../../../flow/shared/JsonConstants';
+import { MapProperty } from '../nodefeature/MapProperty';
+
+// com.vaadin.flow.shared.JsonConstants event phases, referenced by name rather
+// than re-declaring their literal values.
+const EVENT_PHASE_LEADING = JsonConstants.EVENT_PHASE_LEADING;
+const EVENT_PHASE_INTERMEDIATE = JsonConstants.EVENT_PHASE_INTERMEDIATE;
+const EVENT_PHASE_TRAILING = JsonConstants.EVENT_PHASE_TRAILING;
+
+import { Timer } from '../../../Timer';
+
+type SendCommand = (phase: string) => void;
+type Command = () => void;
+
+/**
+ * Manages debouncing of events. Use {@link Debouncer.getOrCreate} to either
+ * create a new instance or get an existing instance that currently tracks a
+ * sequence of similar events.
+ */
+export class Debouncer {
+  static readonly #debouncers = new Map<Node, Map<string, Map<number, Debouncer>>>();
+
+  readonly #timeout: number;
+
+  readonly #element: Node;
+
+  readonly #identifier: string;
+
+  #idleTimer: Timer | null = null;
+
+  #intermediateTimer: Timer | null = null;
+
+  #bufferedSendCommand: SendCommand | null = null;
+
+  #bufferedCommands: Map<string, Command> | null = null;
+
+  #previousBufferedNonExecutedCommands: Map<string, Command> | null = null;
+
+  #potentialTrailingWithBothTrailingAndIntermediate: SendCommand | null = null;
+
+  #potentialTrailingWithBothTrailingAndIntermediateBufferedCommands: Map<string, Command> | null = null;
+
+  private constructor(element: Node, identifier: string, timeout: number) {
+    this.#element = element;
+    this.#identifier = identifier;
+    this.#timeout = timeout;
+  }
+
+  /**
+   * Informs this debouncer that an event has occurred.
+   *
+   * @param phases - a set of strings identifying the phases for which the
+   *            triggered event should be considered.
+   * @param command - a consumer that will may be asynchronously invoked with a
+   *            phase code if an associated phase is triggered
+   * @param commands - individual commands executed just before the given send
+   *            command
+   *
+   * @returns `true` if the event should be processed as-is without
+   *         delaying
+   */
+  trigger(phases: Set<string>, command: SendCommand, commands: Map<string, Command>): boolean {
+    // If "leading" events are requested and no timers created yet, this is the
+    // leading event, triggered immediately and not saved.
+    const triggerImmediately =
+      phases.has(EVENT_PHASE_LEADING) && this.#idleTimer === null && this.#intermediateTimer === null;
+
+    if (!triggerImmediately && (phases.has(EVENT_PHASE_TRAILING) || phases.has(EVENT_PHASE_INTERMEDIATE))) {
+      // last command is saved for timers unless this is a "leading" event
+      this.#bufferedSendCommand = command;
+      this.#bufferedCommands = commands;
+      if (
+        !phases.has(EVENT_PHASE_INTERMEDIATE) &&
+        (this.#idleTimer === null || this.#previousBufferedNonExecutedCommands === null)
+      ) {
+        this.#previousBufferedNonExecutedCommands = commands;
+      }
+      this.#potentialTrailingWithBothTrailingAndIntermediate = null;
+      this.#potentialTrailingWithBothTrailingAndIntermediateBufferedCommands = null;
+    }
+
+    if (phases.has(EVENT_PHASE_LEADING) || phases.has(EVENT_PHASE_TRAILING)) {
+      if (this.#idleTimer === null) {
+        this.#idleTimer = new Timer(() => {
+          if (this.#bufferedSendCommand !== null) {
+            Debouncer.#runCommands(
+              EVENT_PHASE_TRAILING,
+              this.#bufferedSendCommand,
+              this.#bufferedCommands!,
+              this.#previousBufferedNonExecutedCommands
+            );
+            this.#bufferedSendCommand = null;
+            this.#bufferedCommands = null;
+            this.#previousBufferedNonExecutedCommands = null;
+          } else if (this.#potentialTrailingWithBothTrailingAndIntermediate !== null) {
+            // Both trailing & intermediate configured and e.g. typing stopped:
+            // after one more timeout with no new commands, re-post the same
+            // event to the server.
+            Debouncer.#runCommands(
+              EVENT_PHASE_TRAILING,
+              this.#potentialTrailingWithBothTrailingAndIntermediate,
+              this.#potentialTrailingWithBothTrailingAndIntermediateBufferedCommands!,
+              null
+            );
+          }
+          this.#unregister(); // release memory
+        });
+      }
+      this.#idleTimer.cancel();
+      this.#idleTimer.schedule(Math.trunc(this.#timeout));
+    }
+
+    if (this.#intermediateTimer === null && phases.has(EVENT_PHASE_INTERMEDIATE)) {
+      this.#intermediateTimer = new Timer(() => {
+        if (this.#bufferedSendCommand !== null) {
+          Debouncer.#runCommands(EVENT_PHASE_INTERMEDIATE, this.#bufferedSendCommand, this.#bufferedCommands!, null);
+          if (phases.has(EVENT_PHASE_TRAILING)) {
+            this.#potentialTrailingWithBothTrailingAndIntermediate = this.#bufferedSendCommand;
+            this.#potentialTrailingWithBothTrailingAndIntermediateBufferedCommands = this.#bufferedCommands;
+          }
+          this.#bufferedSendCommand = null;
+          this.#bufferedCommands = null;
+        } else {
+          // no new last command during the period, stop and unregister
+          this.#unregister();
+        }
+      });
+      this.#intermediateTimer.scheduleRepeating(Math.trunc(this.#timeout));
+    }
+
+    return triggerImmediately;
+  }
+
+  static #runCommands(
+    phase: string,
+    sendCommand: SendCommand,
+    commands: Map<string, Command>,
+    previousCommands: Map<string, Command> | null
+  ): void {
+    if (phase === EVENT_PHASE_TRAILING) {
+      commands.forEach((command, property) => {
+        if (command === MapProperty.NO_OP && Debouncer.#hasPreviousCommand(previousCommands, property)) {
+          previousCommands!.get(property)!();
+        } else {
+          command();
+        }
+      });
+    } else {
+      commands.forEach((command) => command());
+    }
+    sendCommand(phase);
+  }
+
+  static #hasPreviousCommand(previousCommands: Map<string, Command> | null, property: string): boolean {
+    // Java also guards property != null; property is typed non-null here, so that
+    // conjunct is unreachable and dropped.
+    return previousCommands !== null && previousCommands.has(property);
+  }
+
+  #unregister(): void {
+    if (this.#intermediateTimer !== null) {
+      this.#intermediateTimer.cancel();
+      this.#intermediateTimer = null;
+    }
+    if (this.#idleTimer !== null) {
+      this.#idleTimer.cancel();
+      this.#idleTimer = null;
+    }
+    const elementMap = Debouncer.#debouncers.get(this.#element);
+    if (elementMap === undefined) {
+      return;
+    }
+    const identifierMap = elementMap.get(this.#identifier);
+    if (identifierMap === undefined) {
+      return;
+    }
+    identifierMap.delete(this.#timeout);
+    if (identifierMap.size === 0) {
+      elementMap.delete(this.#identifier);
+      if (elementMap.size === 0) {
+        Debouncer.#debouncers.delete(this.#element);
+      }
+    }
+  }
+
+  /**
+   * Gets an existing debouncer or creates a new one associated with the given
+   * DOM node, identifier and debounce timeout.
+   *
+   * @param element - the DOM node to which this debouncer is bound
+   * @param identifier - a unique identifier string in the scope of the provided
+   *            element
+   * @param debounce - the debounce timeout
+   * @returns a debouncer instance
+   */
+  static getOrCreate(element: Node, identifier: string, debounce: number): Debouncer {
+    let elementMap = Debouncer.#debouncers.get(element);
+    if (elementMap === undefined) {
+      elementMap = new Map();
+      Debouncer.#debouncers.set(element, elementMap);
+    }
+    let identifierMap = elementMap.get(identifier);
+    if (identifierMap === undefined) {
+      identifierMap = new Map();
+      elementMap.set(identifier, identifierMap);
+    }
+    let debouncer = identifierMap.get(debounce);
+    if (debouncer === undefined) {
+      debouncer = new Debouncer(element, identifier, debounce);
+      identifierMap.set(debounce, debouncer);
+    }
+    return debouncer;
+  }
+
+  /**
+   * Flushes all pending changes.
+   *
+   * After command execution, Debouncer idle timers are rescheduled.
+   *
+   * @returns the list command executed during flush operation.
+   */
+  static flushAll(): SendCommand[] {
+    const executedCommands: SendCommand[] = [];
+    Debouncer.#debouncers.forEach((elementMap) => {
+      elementMap.forEach((identifierMap) => {
+        identifierMap.forEach((debouncer) => {
+          if (debouncer.#idleTimer !== null) {
+            if (debouncer.#bufferedSendCommand !== null) {
+              // trailing timer present: treat as an extra trailing event
+              Debouncer.#runCommands(
+                EVENT_PHASE_TRAILING,
+                debouncer.#bufferedSendCommand,
+                debouncer.#bufferedCommands!,
+                null
+              );
+            }
+            // else: in queue with no command, likely a leading-only subscription
+          } else if (debouncer.#bufferedSendCommand !== null) {
+            // otherwise an extra intermediate event; comes a bit early but
+            // better than out of order.
+            //
+            // Deviation from Debouncer.java, which runs the commands here
+            // unconditionally. An intermediate-only debouncer has no idle timer
+            // and clears its buffered command on every tick, so between two
+            // ticks it reaches this branch with a null command and a null
+            // command map -- and Java dereferences both, throwing a
+            // NullPointerException that aborts the whole flush. The guard keeps
+            // the flush going for the other debouncers; the timer restart below
+            // is moot with nothing to fire.
+            Debouncer.#runCommands(
+              EVENT_PHASE_INTERMEDIATE,
+              debouncer.#bufferedSendCommand,
+              debouncer.#bufferedCommands!,
+              null
+            );
+            // restart so we don't fire more than one event quicker than ordered
+            debouncer.#intermediateTimer!.scheduleRepeating(Math.trunc(debouncer.#timeout));
+          }
+          if (debouncer.#bufferedSendCommand !== null) {
+            executedCommands.push(debouncer.#bufferedSendCommand);
+            // clean so the idle timer can't fire it again
+            debouncer.#bufferedSendCommand = null;
+            debouncer.#bufferedCommands = null;
+            debouncer.#previousBufferedNonExecutedCommands = null;
+          }
+        });
+      });
+    });
+    return executedCommands;
+  }
+}

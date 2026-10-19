@@ -49,6 +49,7 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  *
  * @param <T>
  *            the value type
+ * @since 25.1
  */
 public class CachedSignal<T extends @Nullable Object>
         extends AbstractSharedSignal<T> {
@@ -66,6 +67,26 @@ public class CachedSignal<T extends @Nullable Object>
 
     private int dependentCount = 0;
     private @Nullable Registration dependencyRegistration;
+
+    /*
+     * Identifies the latest attempt to (re)listen to the dependencies. Every
+     * revalidation and every teardown of the last external listener bumps it
+     * while holding the monitor. Because dependency listeners are
+     * (un)registered without the monitor held -- to avoid an ABBA deadlock
+     * between this signal's monitor and a dependency's SignalTree lock (see
+     * #25166) -- several attempts can run concurrently; only the one whose
+     * captured generation still matches is allowed to install its registration,
+     * so the most recent attempt always wins and stale attempts remove their
+     * registration instead of leaking it.
+     */
+    private long generation = 0;
+
+    /*
+     * Guards dependentCount, dependencyRegistration and generation. A leaf lock
+     * so that the invariant "never hold it while calling into a signal tree" is
+     * enforced (see LeafLock and #25166).
+     */
+    private final LeafLock lock = new LeafLock("CachedSignal");
 
     /**
      * Creates a new cached signal with the provided inner signal.
@@ -95,13 +116,34 @@ public class CachedSignal<T extends @Nullable Object>
      * that our internal listener is active if and only if there's at least one
      * active external listener.
      */
-    private synchronized void revalidateAndListen() {
-        // Clear listeners on old dependencies
-        if (dependencyRegistration != null) {
-            dependencyRegistration.remove();
+    private void revalidateAndListen() {
+        Registration staleRegistration;
+        long myGeneration;
+        try (var ignored = lock.lock()) {
+            if (dependentCount == 0) {
+                // Nobody is listening anymore; the un-count path owns teardown.
+                return;
+            }
+            // This attempt becomes the latest one; any concurrent attempt that
+            // captured an earlier generation discards its registration.
+            myGeneration = ++generation;
+            // Capture and clear listeners on old dependencies, but remove them
+            // outside the monitor (see below).
+            staleRegistration = dependencyRegistration;
+            dependencyRegistration = null;
         }
 
-        // Read inner value to get new dependencies
+        // Clear listeners on old dependencies. Removal acquires the
+        // dependency's SignalTree lock, so it must run without the monitor held
+        // to avoid an ABBA deadlock with a thread committing a change to a
+        // dependency while holding that lock (see #25166).
+        if (staleRegistration != null) {
+            staleRegistration.remove();
+        }
+
+        // Read inner value to get new dependencies. Reading dependencies (and
+        // possibly submitting the refreshed cache value) acquires tree locks,
+        // so this must likewise run without the monitor held.
         CacheState state = getValidState(data(Transaction.getCurrent()));
 
         // avoid lambda to allow proper deserialization
@@ -112,8 +154,24 @@ public class CachedSignal<T extends @Nullable Object>
                 return false;
             }
         };
-        // Listen to the new dependencies
-        dependencyRegistration = state.dependencies.onNextChange(usageListener);
+        // Listen to the new dependencies. onNextChange also acquires the
+        // dependency tree locks and thus runs without the monitor held.
+        Registration newRegistration = state.dependencies
+                .onNextChange(usageListener);
+
+        boolean superseded;
+        try (var ignored = lock.lock()) {
+            // Discard if nobody is listening anymore or a newer attempt
+            // superseded this one. Removing the listener we just registered
+            // avoids leaking it on the dependency trees.
+            superseded = dependentCount == 0 || generation != myGeneration;
+            if (!superseded) {
+                dependencyRegistration = newRegistration;
+            }
+        }
+        if (superseded) {
+            newRegistration.remove();
+        }
     }
 
     /**
@@ -122,8 +180,14 @@ public class CachedSignal<T extends @Nullable Object>
      *
      * @return a callback to count back down again, not <code>null</code>
      */
-    private synchronized Registration countActiveExternalListener() {
-        if (dependentCount++ == 0) {
+    private Registration countActiveExternalListener() {
+        boolean startListening;
+        try (var ignored = lock.lock()) {
+            startListening = dependentCount++ == 0;
+        }
+        // Start listening outside the monitor: revalidateAndListen acquires
+        // dependency tree locks (see #25166).
+        if (startListening) {
             revalidateAndListen();
         }
 
@@ -132,18 +196,25 @@ public class CachedSignal<T extends @Nullable Object>
 
         return () -> {
             if (!removed.getAndSet(true)) {
-                synchronized (CachedSignal.this) {
-                    /*
-                     * Decrease the number of active external listeners and stop
-                     * listening to our dependencies if there are no more
-                     * external listeners.
-                     */
+                /*
+                 * Decrease the number of active external listeners and stop
+                 * listening to our dependencies if there are no more external
+                 * listeners. The registration is captured under the monitor but
+                 * removed outside it, since removal acquires the dependency's
+                 * SignalTree lock (see #25166).
+                 */
+                Registration toRemove = null;
+                try (var ignored = lock.lock()) {
                     if (--dependentCount == 0) {
-                        if (dependencyRegistration != null) {
-                            dependencyRegistration.remove();
-                            dependencyRegistration = null;
-                        }
+                        // Supersede any revalidation in flight so it discards
+                        // its registration instead of installing it.
+                        ++generation;
+                        toRemove = dependencyRegistration;
+                        dependencyRegistration = null;
                     }
+                }
+                if (toRemove != null) {
+                    toRemove.remove();
                 }
             }
         };

@@ -41,9 +41,15 @@ import com.vaadin.flow.shared.Registration;
 
 /**
  * The websocket endpoint for Vite.
+ * 
+ * @since 24.0
  */
 public class ViteWebsocketEndpoint extends Endpoint {
 
+    /**
+     * Key the {@code ViteHandler} is stored under in the user properties of the
+     * endpoint configuration.
+     */
     public static final String VITE_HANDLER = "viteServer";
     static final String TRACKER_KEY = "viteSessionTracker";
     private static final String HTTP_SESSION_ID = "httpSessionId";
@@ -52,12 +58,29 @@ public class ViteWebsocketEndpoint extends Endpoint {
     private Registration listenerRegistration;
 
     /**
+     * Creates the endpoint. The websocket container instantiates it.
+     */
+    public ViteWebsocketEndpoint() {
+        // Default constructor
+    }
+
+    /**
      * Configurator that captures the HTTP session ID during the WebSocket
      * handshake. This allows tracking which WebSocket sessions are associated
      * with which HTTP sessions.
+     * 
+     * @since 25.0.6
      */
     public static class HttpSessionConfigurator
             extends ServerEndpointConfig.Configurator {
+
+        /**
+         * Creates the configurator.
+         */
+        public HttpSessionConfigurator() {
+            // Default constructor
+        }
+
         @Override
         public void modifyHandshake(ServerEndpointConfig config,
                 HandshakeRequest request, HandshakeResponse response) {

@@ -159,6 +159,13 @@ export abstract class ReactAdapterElement extends HTMLElement {
 
         await this.#unmounting;
 
+        // The element may have been disconnected, or disconnected and
+        // reconnected, while waiting. Only a connected element without a root
+        // gets one, so that a quick reconnect never creates a second root.
+        if (!this.isConnected || this.#root) {
+            return;
+        }
+
         this.#root = createRoot(this);
         this.#maybeRenderRoot();
         this.#root.render(this.#rendering);
@@ -194,6 +201,11 @@ export abstract class ReactAdapterElement extends HTMLElement {
         } else {
             this.#unmounting = Promise.resolve();
             await this.#unmounting;
+            // Keep the root if the element was reconnected while waiting, or
+            // stop if an earlier disconnect has already unmounted it.
+            if (this.isConnected || !this.#root) {
+                return;
+            }
             this.#root.unmount();
             this.#root = undefined;
         }

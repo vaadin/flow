@@ -1,0 +1,215 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.quarkus;
+
+import jakarta.servlet.http.HttpSession;
+import jakarta.websocket.server.ServerContainer;
+
+import java.security.Principal;
+import java.util.Optional;
+import java.util.concurrent.Executor;
+
+import io.quarkus.runtime.annotations.Recorder;
+import io.quarkus.vertx.http.runtime.security.QuarkusHttpUser;
+import io.quarkus.websockets.client.runtime.ExecutorSupplier;
+import io.quarkus.websockets.client.runtime.WebSocketPrincipal;
+import io.undertow.httpcore.HttpExchange;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.session.SessionAttachmentHandler;
+import io.undertow.server.session.SessionConfig;
+import io.undertow.server.session.SessionManager;
+import io.undertow.servlet.api.Deployment;
+import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.servlet.handlers.ServletPathMatch;
+import io.undertow.servlet.handlers.ServletPathMatches;
+import io.undertow.servlet.handlers.ServletRequestContext;
+import io.undertow.servlet.spec.HttpServletRequestImpl;
+import io.undertow.servlet.spec.HttpServletResponseImpl;
+import io.undertow.servlet.spec.HttpSessionImpl;
+import io.undertow.servlet.spec.ServletContextImpl;
+import io.undertow.vertx.VertxHttpExchange;
+import io.undertow.websockets.ServerWebSocketContainer;
+import io.undertow.websockets.WebSocketDeploymentInfo;
+import io.undertow.websockets.vertx.VertxWebSocketHandler;
+import io.undertow.websockets.vertx.VertxWebSocketHttpExchange;
+import io.vertx.core.Handler;
+import io.vertx.ext.web.RoutingContext;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.shared.ApplicationConstants;
+
+/**
+ * Attaches the HTTP session of the upgrade request to WebSocket connections, so
+ * that Vaadin Push over WebSocket finds the Vaadin session.
+ *
+ * @since 1.1
+ */
+@Recorder
+public class WebsocketHttpSessionAttachRecorder {
+
+    /**
+     * Gets an adapted version of VertxWebSocketHandler that attaches upgrade
+     * request HTTP session to the Undertow WebSocket HttpExchange.
+     *
+     * <p>
+     * The WebSocket container is the one Quarkus registers as the
+     * {@link ServerContainer} servlet context attribute. The handler reads only
+     * the executor and the server extensions from the deployment info, so a new
+     * info with the same executor Quarkus uses is enough: Quarkus adds no
+     * server extensions.
+     *
+     * @param deploymentManager
+     *            deployment manager
+     * @return an adapted version of VertxWebSocketHandler
+     */
+    public Handler<RoutingContext> createWebSocketHandler(
+            DeploymentManager deploymentManager) {
+
+        Deployment deployment = deploymentManager.getDeployment();
+
+        UpgradeRequestSessionAttachmentHandler handler = new UpgradeRequestSessionAttachmentHandler(
+                deployment);
+
+        ServerWebSocketContainer container = (ServerWebSocketContainer) deployment
+                .getServletContext()
+                .getAttribute(ServerContainer.class.getName());
+        WebSocketDeploymentInfo info = new WebSocketDeploymentInfo()
+                .setExecutor(new ExecutorSupplier());
+
+        return new VertxWebSocketHandler(container, info) {
+
+            @Override
+            public void handle(RoutingContext event) {
+                // Only handle Vaadin PUSH requests
+                if (HandlerHelper.RequestType.PUSH.getIdentifier()
+                        .equals(event.request().getParam(
+                                ApplicationConstants.REQUEST_TYPE_PARAMETER))) {
+                    super.handle(event);
+                } else {
+                    event.next();
+                }
+            }
+
+            @Override
+            protected VertxWebSocketHttpExchange createHttpExchange(
+                    RoutingContext event) {
+
+                VertxHttpExchange delegate = new VertxHttpExchange(
+                        event.request(), null, executor, null, null);
+                return handler.extractSession(event, delegate)
+                        .<VertxWebSocketHttpExchange> map(
+                                sess -> new QuarkusVertxWebSocketHttpExchange(
+                                        executor, event, sess))
+                        .orElseGet(() -> super.createHttpExchange(event));
+            }
+        };
+    }
+
+    // Extract of logics from Undertow ServletInitialHandler to apply
+    // SessionAttachmentHandler and get HTTP session for the current request
+    private static final class UpgradeRequestSessionAttachmentHandler {
+
+        private final Deployment deployment;
+        private final SessionAttachmentHandler sessionAttachmentHandler;
+
+        private UpgradeRequestSessionAttachmentHandler(Deployment deployment) {
+            this.deployment = deployment;
+            sessionAttachmentHandler = new SessionAttachmentHandler(
+                    exchange -> {
+                    }, deployment.getSessionManager(),
+                    deployment.getServletContext().getSessionConfig());
+        }
+
+        private void handleRequest(HttpServerExchange exchange)
+                throws Exception {
+            ServletContextImpl servletContext = deployment.getServletContext();
+            final ServletPathMatch pathMatch = new ServletPathMatches(
+                    deployment)
+                    .getServletHandlerByPath(exchange.getRelativePath());
+            final HttpServletResponseImpl response = new HttpServletResponseImpl(
+                    exchange, servletContext);
+            final HttpServletRequestImpl request = new HttpServletRequestImpl(
+                    exchange, servletContext);
+            final ServletRequestContext servletRequestContext = new ServletRequestContext(
+                    servletContext.getDeployment(), request, response,
+                    pathMatch);
+            exchange.putAttachment(ServletRequestContext.ATTACHMENT_KEY,
+                    servletRequestContext);
+            sessionAttachmentHandler.handleRequest(exchange);
+        }
+
+        private Optional<HttpSession> extractSession(RoutingContext event,
+                HttpExchange httpExchange) {
+
+            HttpServerExchange serverExchange = new HttpServerExchange(
+                    httpExchange, -1);
+            serverExchange.setRelativePath(event.request().path());
+            serverExchange.setDispatchExecutor(Runnable::run);
+
+            try {
+                handleRequest(serverExchange);
+            } catch (Exception e) {
+                // proceed without a session, as for a request that has none
+                LoggerFactory
+                        .getLogger(UpgradeRequestSessionAttachmentHandler.class)
+                        .debug("Cannot attach the HTTP session to the WebSocket upgrade request",
+                                e);
+                return Optional.empty();
+            }
+            SessionManager sessionManager = deployment.getSessionManager();
+            SessionConfig sessionConfig = deployment.getServletContext()
+                    .getSessionConfig();
+            ServletContextImpl servletContext = deployment.getServletContext();
+            return Optional
+                    .ofNullable(sessionManager.getSession(serverExchange,
+                            sessionConfig))
+                    .map(sess -> HttpSessionImpl.forSession(sess,
+                            servletContext, false));
+
+        }
+    }
+
+    // Copy of WebsocketServerRecorder$QuarkusVertxWebSocketHttpExchange
+    // modified to return HTTP session
+    private static class QuarkusVertxWebSocketHttpExchange
+            extends VertxWebSocketHttpExchange {
+
+        private final RoutingContext routingContext;
+        private final HttpSession session;
+
+        public QuarkusVertxWebSocketHttpExchange(Executor executor,
+                RoutingContext routingContext, HttpSession session) {
+            super(executor, routingContext);
+            this.routingContext = routingContext;
+            this.session = session;
+        }
+
+        @Override
+        public Object getSession() {
+            return session;
+        }
+
+        @Override
+        public Principal getUserPrincipal() {
+            QuarkusHttpUser user = (QuarkusHttpUser) routingContext.user();
+            if (user != null) {
+                return new WebSocketPrincipal(user.getSecurityIdentity());
+            }
+            return null;
+        }
+    }
+}

@@ -48,6 +48,7 @@ import com.vaadin.flow.server.VaadinSession;
  * @param exception
  *            An exception that occurred during the transfer, or
  *            <code>null</code>.
+ * @since 24.8
  */
 public record TransferContext(VaadinRequest request, VaadinResponse response,
         VaadinSession session, String fileName, Element owningElement,
@@ -72,6 +73,7 @@ public record TransferContext(VaadinRequest request, VaadinResponse response,
      *            the total number of bytes to be transferred or <code>-1</code>
      *            if total number is unknown in advance, e.g. when reading from
      *            an input stream
+     * @since 24.9
      */
     public TransferContext(VaadinRequest request, VaadinResponse response,
             VaadinSession session, String fileName, Element owningElement,

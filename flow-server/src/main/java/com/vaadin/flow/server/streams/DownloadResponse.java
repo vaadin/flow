@@ -52,8 +52,9 @@ public class DownloadResponse implements Serializable {
      *            Content-Disposition header to 'attachment' if the value is not
      *            <code>null</code>, otherwise the header is not set
      * @param contentType
-     *            content type or a value determined from fileName if
-     *            {@code null}
+     *            content type, or {@code null} for the one set with
+     *            {@link AbstractDownloadHandler#withContentType(String)} on the
+     *            handler, or else a value determined from fileName
      * @param contentLength
      *            byte size of a stream or <code>-1</code> if unknown
      */
@@ -88,9 +89,10 @@ public class DownloadResponse implements Serializable {
     /**
      * Get the content type.
      * <p>
-     * For a {@code null} value the type should be gotten from
-     * {@code VaadinService.getMimeType(fileName)} or be set to default value
-     * {@code application/octet-stream}
+     * For a {@code null} value the type should be the one set with
+     * {@link AbstractDownloadHandler#withContentType(String)} on the handler,
+     * or else be gotten from {@code VaadinService.getMimeType(fileName)} or be
+     * set to default value {@code application/octet-stream}
      *
      * @return content type
      */
@@ -129,6 +131,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(int statusCode, Exception exception) {
         DownloadResponse downloadResponse = new DownloadResponse(null, null,
@@ -163,6 +166,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(int statusCode, String message,
             Exception exception) {
@@ -194,6 +198,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(HttpStatusCode statusCode,
             Exception exception) {
@@ -230,6 +235,7 @@ public class DownloadResponse implements Serializable {
      * @param exception
      *            exception that caused the error
      * @return DownloadResponse for request
+     * @since 24.9
      */
     public static DownloadResponse error(HttpStatusCode statusCode,
             String message, Exception exception) {
@@ -265,6 +271,7 @@ public class DownloadResponse implements Serializable {
      *            error code
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(int error, Exception exception) {
         this.error = error;
@@ -293,6 +300,7 @@ public class DownloadResponse implements Serializable {
      *            error message
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(int error, String errorMessage, Exception exception) {
         setError(error, errorMessage);
@@ -316,6 +324,7 @@ public class DownloadResponse implements Serializable {
      *            error code
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(HttpStatusCode error, Exception exception) {
         this.error = error.getCode();
@@ -344,6 +353,7 @@ public class DownloadResponse implements Serializable {
      *            error message
      * @param exception
      *            exception that caused the error
+     * @since 24.9
      */
     public void setError(HttpStatusCode error, String errorMessage,
             Exception exception) {
@@ -377,6 +387,7 @@ public class DownloadResponse implements Serializable {
      *
      * @return the exception or null if no exception occurred
      * @see TransferContext#exception()
+     * @since 24.9
      */
     public Exception getException() {
         return exception;

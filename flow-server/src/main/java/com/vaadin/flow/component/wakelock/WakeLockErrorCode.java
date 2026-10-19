@@ -25,27 +25,23 @@ package com.vaadin.flow.component.wakelock;
 public enum WakeLockErrorCode {
     /**
      * The Screen Wake Lock API is unusable in this context — the browser does
-     * not implement it, or the page is served over an insecure connection.
-     * Matches the {@link WakeLockAvailability#UNSUPPORTED} signal value and is
-     * delivered without a server-to-client round-trip when the bootstrap probe
-     * already established unavailability.
+     * not implement it, or the page is served over an insecure connection (not
+     * HTTPS or {@code localhost}). This matches the
+     * {@link WakeLockAvailability#UNSUPPORTED} availability hint, so you can
+     * hide wake-lock controls up front rather than letting the request fail.
      */
     UNSUPPORTED,
 
     /**
-     * The browser refused the request — usually because the tab is currently
-     * hidden, the feature policy blocks wake lock in this frame, or the user's
-     * operating-system power-management settings prevent it. Corresponds to a
-     * {@code NotAllowedError} DOMException from
-     * {@code navigator.wakeLock.request('screen')}.
+     * The browser refused the request, usually because the tab is currently
+     * hidden, a permissions policy blocks wake lock in this frame, or the
+     * operating system's power-management settings prevent it.
      */
     NOT_ALLOWED,
 
     /**
-     * The browser rejected the request for a reason that does not match a more
-     * specific code, or the executeJs round-trip itself failed. The
-     * {@link WakeLockError#message()} carries the underlying message for
-     * diagnostics.
+     * The request failed for a reason that does not match a more specific code.
+     * See {@link WakeLockError#message()} for the underlying browser message.
      */
     UNKNOWN
 }

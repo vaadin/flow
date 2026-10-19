@@ -51,6 +51,8 @@ import com.vaadin.flow.function.SerializableRunnable;
  * browser's error name and message.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class WriteToClipboardAction extends PromiseAction<String> {
 

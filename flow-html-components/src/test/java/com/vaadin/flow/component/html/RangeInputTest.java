@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RangeInputTest extends ComponentTest {
 
@@ -57,6 +58,16 @@ class RangeInputTest extends ComponentTest {
     @Override
     protected void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
+    }
+
+    @Test
+    void newRangeInput_valuePropertyReflectedToDom() {
+        // A value-less range input defaults to the midpoint of min/max on the
+        // client, so the initial value must be present on the element.
+        final RangeInput rangeInput = new RangeInput();
+        assertEquals(0.0, rangeInput.getValue());
+        assertTrue(rangeInput.getElement().hasProperty("value"));
+        assertEquals(0.0, rangeInput.getElement().getProperty("value", -1.0));
     }
 
     @Test

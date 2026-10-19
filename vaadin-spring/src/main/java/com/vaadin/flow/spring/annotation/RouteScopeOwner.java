@@ -35,6 +35,7 @@ import com.vaadin.flow.router.RouterLayout;
  *
  * @author Vaadin Ltd
  *
+ * @since 18.0
  */
 @Qualifier
 @Retention(RetentionPolicy.RUNTIME)

@@ -40,7 +40,7 @@ import com.vaadin.flow.function.ValueProvider;
  *
  * @param <V>
  *            the value type
- * @since 23.2
+ * @since 23.1.2
  *
  * @see HasValidator
  * @see com.vaadin.flow.data.binder.Binder.BindingBuilderImpl#bind(ValueProvider,

@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
+import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementDetachEvent;
 import com.vaadin.flow.dom.Node;
@@ -48,8 +49,10 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -91,6 +94,7 @@ import com.vaadin.tests.util.MockUI;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -151,6 +155,10 @@ public class UITest {
         }
     }
 
+    private static class ContainerComponent extends AttachableComponent
+            implements HasComponents {
+    }
+
     private static class AttachedElementStateProvider
             extends AbstractTextElementStateProvider {
 
@@ -181,6 +189,15 @@ public class UITest {
     @AfterEach
     public void tearDown() {
         CurrentInstance.clearAll();
+    }
+
+    @Test
+    public void getLastUpdateSentTimestamp_delegatesToInternals() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        assertEquals(ui.getInternals().getLastUpdateSentTimestamp(),
+                ui.getLastUpdateSentTimestamp());
     }
 
     @Test
@@ -298,6 +315,150 @@ public class UITest {
     }
 
     @Test
+    public void navigateWithQueryStringAndFragmentInLocation_bothAreParsed()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate("foo/bar?t=abc&t=def#total");
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals(List.of("abc", "def"),
+                location.getQueryParameters().getParameters().get("t"));
+        assertEquals("foo/bar?t=abc&t=def#total",
+                location.getPathWithQueryParameters());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateWithQuestionMarkInFragment_fragmentKeptIntact()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        // '?' is a legal fragment character and does not start a query string
+        ui.navigate("foo/bar#a?b");
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals(Collections.emptyMap(),
+                location.getQueryParameters().getParameters());
+        assertEquals("foo/bar#a?b", location.getPathWithQueryParameters());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToFragmentOnly_leftToClientRouter()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        ui.navigate("foo/bar");
+        dumpClientNavigations(ui);
+
+        // A fragment must not be resolved to the "" route
+        ui.navigate("#total");
+
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+        assertEquals("foo/bar", ui.getInternals().getActiveViewLocation()
+                .getPathWithQueryParameters());
+        assertEquals(List.of("#total"), dumpClientNavigations(ui),
+                "The fragment should have been handed to the client router");
+    }
+
+    @Test
+    public void navigateToQueryStringWithFragment_resolvedToRootRoute()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+        ui.navigate("foo/bar");
+        dumpClientNavigations(ui);
+
+        // A query string identifies the "" route just like it does without a
+        // fragment, so only the fragment is left for the client
+        ui.navigate("?tab=items#total");
+
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(RootNavigationTarget.class));
+        assertEquals("?tab=items#total", ui.getInternals()
+                .getActiveViewLocation().getPathWithQueryParameters());
+        assertEquals(List.of(), dumpClientNavigations(ui));
+    }
+
+    private static List<String> dumpClientNavigations(UI ui) {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(PendingJavaScriptInvocation::getInvocation)
+                .filter(invocation -> UI.CLIENT_NAVIGATE_TO
+                        .equals(invocation.getExpression()))
+                .map(invocation -> (String) invocation.getParameters().get(0))
+                .toList();
+    }
+
+    @Test
+    public void navigateWithSeparateQueryParameters_parametersAreApplied()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        ui.navigate("foo/bar", QueryParameters.of("t", "abc"));
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("t=abc", location.getQueryParameters().getQueryString());
+        MatcherAssert.assertThat(ui.getCurrentView(),
+                CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToClassWithQueryParameters_parametersAreApplied()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        assertEquals(
+                FooBarNavigationTarget.class, ui
+                        .navigate(FooBarNavigationTarget.class,
+                                QueryParameters.of("t", "abc"))
+                        .get().getClass());
+
+        Location location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo/bar", location.getPath());
+        assertEquals("t=abc", location.getQueryParameters().getQueryString());
+
+        assertEquals(
+                Parameterized.class, ui
+                        .navigate(Parameterized.class, "baz",
+                                QueryParameters.of("t", "def"))
+                        .get().getClass());
+
+        location = ui.getInternals().getActiveViewLocation();
+        assertEquals("foo-bar/baz", location.getPath());
+        assertEquals("t=def", location.getQueryParameters().getQueryString());
+    }
+
+    @Test
+    public void navigateWithQueryStringOrFragmentAndQueryParameters_throws()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        QueryParameters parameters = QueryParameters.of("t", "def");
+        for (String locationString : List.of("foo/bar?t=abc", "foo/bar#total",
+                "foo/bar#a?b")) {
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> ui.navigate(locationString, parameters));
+            assertTrue(exception.getMessage().contains("navigate(String)"),
+                    "The message should name the overload to use instead: "
+                            + exception.getMessage());
+        }
+    }
+
+    @Test
     public void locationAfterServerNavigation()
             throws InvalidRouteConfigurationException {
         UI ui = new UI();
@@ -313,6 +474,29 @@ public class UITest {
         Component currentRoute = ui.getCurrentView();
         MatcherAssert.assertThat(currentRoute,
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
+    }
+
+    @Test
+    public void navigateToShownView_notReinstantiated_shownInstanceReturned()
+            throws InvalidRouteConfigurationException {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        FooBarNavigationTarget shownView = ui
+                .navigate(FooBarNavigationTarget.class).orElseThrow();
+
+        // Navigating to the location that is already shown does nothing, so
+        // the returned Optional holds the view that is already shown
+        FooBarNavigationTarget sameView = ui
+                .navigate(FooBarNavigationTarget.class).orElseThrow();
+
+        assertSame(shownView, sameView,
+                "Navigating to the shown view should not re-instantiate it");
+
+        ui.refreshCurrentRoute(false);
+
+        assertNotSame(shownView, ui.getCurrentView(),
+                "refreshCurrentRoute should re-instantiate the shown view");
     }
 
     @Test
@@ -1005,6 +1189,23 @@ public class UITest {
     }
 
     @Test
+    public void navigate_navigationNotSupported_throws() {
+        UI ui = new UI() {
+            @Override
+            public boolean isNavigationSupported() {
+                return false;
+            }
+        };
+        RouteParameters parameters = RouteParameters.empty();
+
+        NullPointerException exception = assertThrows(
+                NullPointerException.class,
+                () -> ui.navigate(FooBarNavigationTarget.class, parameters));
+        assertEquals("Navigation is not supported by this UI",
+                exception.getMessage());
+    }
+
+    @Test
     public void accessLaterRunnable_detachedUi_detachHandlerCalled() {
         AtomicInteger runCount = new AtomicInteger();
 
@@ -1050,6 +1251,17 @@ public class UITest {
             assertTrue(e.getMessage().contains("UI.access()"),
                     "Exception message should mention UI.access()");
         }
+    }
+
+    @Test
+    public void getSessionOrThrow_withSession_returnsSession_withoutSession_throws() {
+        MockUI ui = createAccessableTestUI();
+        assertSame(ui.getSession(), ui.getSessionOrThrow());
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, new UI()::getSessionOrThrow);
+        assertTrue(exception.getMessage()
+                .startsWith("UI is not attached to a VaadinSession"));
     }
 
     @Test
@@ -1248,12 +1460,101 @@ public class UITest {
         final TestFixture fixture = new TestFixture();
         assertTrue(fixture.ui.hasModalComponent(),
                 "Fixture should have set a modal component");
+        fixture.collectUiChanges();
+        verifyInert(fixture.routingComponent, true);
 
         fixture.ui.setChildComponentModal(fixture.modalComponent,
                 ModalityMode.VISUAL);
 
         assertFalse(fixture.ui.hasModalComponent(),
                 "Setting modal to VISUAL should have removed all server side modality");
+        assertTrue(fixture.ui.getInternals().hasModalityComponent(),
+                "VISUAL component should still be tracked as a component with modality");
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "VISUAL component should be reported as a component with modality");
+        fixture.collectUiChanges();
+        verifyInert(fixture.routingComponent, false);
+
+        // re-applying the same modality should not track the component twice
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "VISUAL component should be reported only once");
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+
+        assertFalse(fixture.ui.getInternals().hasModalityComponent(),
+                "Setting modal to false should remove VISUAL modality");
+    }
+
+    @Test
+    public void modalityComponents_modalAndVisual_reportedMostRecentFirst() {
+        final TestFixture fixture = new TestFixture();
+        Component visualComponent = new AttachableComponent();
+        fixture.ui.add(visualComponent);
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.VISUAL);
+
+        assertEquals(List.of(visualComponent, fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "Components with modality should be reported most recently set first");
+        fixture.collectUiChanges();
+        assertEquals(fixture.modalComponent,
+                fixture.ui.getInternals().getActiveModalComponent(),
+                "STRICT component below a VISUAL one should stay the active modal component");
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.STRICT);
+
+        assertEquals(List.of(visualComponent, fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "Switching from VISUAL to STRICT should not report the component twice");
+        assertEquals(visualComponent,
+                fixture.ui.getInternals().getActiveModalComponent(),
+                "Component should have become the active modal component");
+        fixture.collectUiChanges();
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(visualComponent, false);
+
+        fixture.ui.setChildComponentModal(visualComponent,
+                ModalityMode.MODELESS);
+
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents(),
+                "Setting MODELESS should have removed the component from the modality components");
+    }
+
+    @Test
+    public void modalVisualComponent_removedFromUI_notReportedAsModalityComponent() {
+        final TestFixture fixture = new TestFixture();
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        fixture.modalComponent.removeFromParent();
+
+        assertFalse(fixture.ui.getInternals().hasModalityComponent(),
+                "Detached component should not be tracked as a component with modality");
+        assertTrue(fixture.ui.getInternals().getModalityComponents().isEmpty(),
+                "Detached component should not be reported as a component with modality");
+
+        // Re-attaching and setting modality again tracks the component anew,
+        // also when switching the mode before detaching
+        fixture.ui.add(fixture.modalComponent);
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.STRICT);
+        assertTrue(fixture.ui.getInternals().hasModalityComponent(),
+                "Re-attached component should be tracked as a component with modality");
+
+        fixture.modalComponent.removeFromParent();
+        fixture.collectUiChanges();
+        assertFalse(fixture.ui.getInternals().hasModalityComponent(),
+                "Component detached again should not be tracked as a component with modality");
+        verifyInert(fixture.routingComponent, false);
     }
 
     @Test
@@ -1292,6 +1593,81 @@ public class UITest {
     }
 
     @Test
+    public void addToModalComponent_hasComponentsModal_addedToModal() {
+        final TestFixture fixture = new TestFixture();
+        ContainerComponent modal = new ContainerComponent();
+        fixture.ui.addModal(modal);
+        Component test = new AttachableComponent();
+        fixture.ui.addToModalComponent(test);
+
+        assertEquals(Optional.of(modal), test.getParent(),
+                "test component should have been added to the modal container");
+    }
+
+    @Test
+    public void addToModalComponent_onlyVisualModalityComponent_addedToVisualComponent() {
+        final TestFixture fixture = new TestFixture();
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+        Component test = new AttachableComponent();
+        fixture.ui.addToModalComponent(test);
+
+        assertEquals(Optional.of(fixture.modalComponent), test.getParent(),
+                "test component should have been added to the VISUAL component");
+    }
+
+    @Test
+    public void addToModalComponent_strictAndVisualModalityInterleaved_addedToMostRecentlySet() {
+        final TestFixture fixture = new TestFixture();
+        Component visualComponent = new AttachableComponent();
+        fixture.ui.addToModalComponent(visualComponent);
+        fixture.ui.setChildComponentModal(visualComponent, ModalityMode.VISUAL);
+
+        Component overlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(overlay);
+
+        assertEquals(Optional.of(visualComponent), overlay.getParent(),
+                "Component should have been added to the VISUAL component opened on top of the STRICT one");
+
+        Component strictComponent = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictComponent);
+        fixture.ui.setChildComponentModal(strictComponent, ModalityMode.STRICT);
+        Component strictOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictOverlay);
+        fixture.collectUiChanges();
+
+        assertEquals(Optional.of(visualComponent), strictComponent.getParent(),
+                "STRICT component should have been added to the VISUAL component");
+        assertEquals(Optional.of(strictComponent), strictOverlay.getParent(),
+                "Component should have been added to the STRICT component opened on top of the VISUAL one");
+        verifyInert(strictOverlay, false);
+
+        strictComponent.removeFromParent();
+        Component nextOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(nextOverlay);
+
+        assertEquals(Optional.of(visualComponent), nextOverlay.getParent(),
+                "Component should have been added to the VISUAL component once the STRICT one is removed");
+
+        visualComponent.removeFromParent();
+        Component strictModalOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(strictModalOverlay);
+        fixture.collectUiChanges();
+
+        assertEquals(Optional.of(fixture.modalComponent),
+                strictModalOverlay.getParent(),
+                "Component should have been added to the STRICT component once the VISUAL one on top of it is removed");
+        verifyInert(strictModalOverlay, false);
+
+        fixture.modalComponent.removeFromParent();
+        Component uiOverlay = new AttachableComponent();
+        fixture.ui.addToModalComponent(uiOverlay);
+
+        assertEquals(Optional.of(fixture.ui), uiOverlay.getParent(),
+                "Component should have been added to the UI once no component with modality is left");
+    }
+
+    @Test
     public void routingComponentVisible_modalComponentAdded_routingComponentInert() {
         final TestFixture fixture = new TestFixture();
 
@@ -1318,6 +1694,29 @@ public class UITest {
         verifyInert(fixture.ui, true);
         verifyInert(fixture.routingComponent, true);
         verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void pollListener_uiInertDueToModalComponent_listenerStillInvoked() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges(); // the modal add makes the UI inert
+        verifyInert(fixture.ui, true);
+
+        AtomicInteger count = new AtomicInteger();
+        fixture.ui.addPollListener(event -> count.incrementAndGet());
+
+        firePollEvent(fixture.ui);
+
+        assertEquals(1, count.get(),
+                "Poll listener should be invoked even while the UI is inert "
+                        + "because of an open modal component");
+    }
+
+    private void firePollEvent(UI ui) {
+        DomEvent pollEvent = new DomEvent(ui.getElement(),
+                PollEvent.DOM_EVENT_NAME, JacksonUtils.createObjectNode());
+        ui.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(pollEvent);
     }
 
     @Test
@@ -1530,6 +1929,32 @@ public class UITest {
         verifyInert(fixture.routingComponent, true);
         verifyInert(fixture.modalComponent, false);
         verifyInert(secondModal, true);
+    }
+
+    @Test
+    public void twoModalComponents_topComponentVisual_lowerComponentActive() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        fixture.ui.setChildComponentModal(secondModal, ModalityMode.VISUAL);
+        fixture.collectUiChanges();
+
+        assertEquals(fixture.modalComponent,
+                fixture.ui.getInternals().getActiveModalComponent());
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+        verifyInert(secondModal, true);
+
+        fixture.ui.remove(secondModal);
+        fixture.collectUiChanges();
+
+        assertEquals(List.of(fixture.modalComponent),
+                fixture.ui.getInternals().getModalityComponents());
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
     }
 
     @Test

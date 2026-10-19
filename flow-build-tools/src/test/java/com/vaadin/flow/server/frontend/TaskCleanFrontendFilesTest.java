@@ -176,6 +176,35 @@ class TaskCleanFrontendFilesTest {
                 "target/frontend/generated/file-routes.json"));
     }
 
+    @Test
+    void pnpmWorkspaceYaml_whenGeneratedDuringBuild_isRemoved()
+            throws IOException, ExecutionFailedException {
+        // Not present when the task snapshots existing files...
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+
+        // ...then generated during the build.
+        createFiles(Collections.singleton(PnpmWorkspaceFile.WORKSPACE_FILE));
+
+        clean.execute();
+
+        assertFilesNotExist(
+                Collections.singleton(PnpmWorkspaceFile.WORKSPACE_FILE));
+    }
+
+    @Test
+    void existingPnpmWorkspaceYaml_isKept()
+            throws IOException, ExecutionFailedException {
+        // Present before the build -> user-owned -> must survive cleanup.
+        createFiles(Collections.singleton(PnpmWorkspaceFile.WORKSPACE_FILE));
+
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+
+        clean.execute();
+
+        assertFilesExist(
+                Collections.singleton(PnpmWorkspaceFile.WORKSPACE_FILE));
+    }
+
     private void createFiles(Set<String> filesToCreate) throws IOException {
         for (String file : filesToCreate) {
             File f = new File(rootFolder, file);

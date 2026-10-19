@@ -52,7 +52,7 @@ import com.vaadin.flow.server.VaadinService;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 25.0
+ * @since 25.1
  */
 public class HotswapResourceEvent extends HotswapEvent {
 
@@ -73,6 +73,11 @@ public class HotswapResourceEvent extends HotswapEvent {
                 changedResources, "Changed resources cannot be null"));
     }
 
+    /**
+     * Gets the resources that have changed.
+     *
+     * @return the changed resources, never {@code null}
+     */
     public Set<URI> getChangedResources() {
         return changedResources;
     }

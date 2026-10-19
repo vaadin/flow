@@ -40,6 +40,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  *
  * @param <T>
  *            the type the signal holds and the JSON value is decoded to
+ * @since 25.2
  */
 public class SetSignalAction<T> extends CallbackAction<T> {
 

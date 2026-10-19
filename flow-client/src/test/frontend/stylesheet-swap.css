@@ -1,0 +1,6 @@
+/* Loaded by the stylesheet swap case in MessageHandlerTests. The rule is never
+   applied to anything, the file only has to exist so that the swapped URL
+   resolves rather than being reported as a 404 request. */
+.vaadin-stylesheet-swap-fixture {
+  display: none;
+}

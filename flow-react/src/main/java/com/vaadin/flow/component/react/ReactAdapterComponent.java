@@ -150,6 +150,7 @@ public abstract class ReactAdapterComponent extends Component {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     protected static <T> T readFromJson(JsonNode jsonValue,
             Class<T> typeClass) {
@@ -166,6 +167,7 @@ public abstract class ReactAdapterComponent extends Component {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     protected static <T> T readFromJson(JsonNode jsonValue,
             TypeReference<T> typeReference) {
@@ -178,6 +180,7 @@ public abstract class ReactAdapterComponent extends Component {
      * @param object
      *            Java object to convert
      * @return converted JSON value
+     * @since 24.8
      */
     protected static BaseJsonNode writeToJson(Object object) {
         return JacksonUtils.writeValue(object);
@@ -190,6 +193,7 @@ public abstract class ReactAdapterComponent extends Component {
      * @param name
      *            the name attribute for the container element
      * @return Element for the Flow container under ReactAdapter element
+     * @since 24.5
      */
     protected Element getContentElement(String name) {
         if (contentMap == null) {

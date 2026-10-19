@@ -255,6 +255,7 @@ public class ElementUtil {
      * @param node
      *            JSoup node to convert
      * @return element with the matching hierarchy as the given node, or empty
+     * @since 2.2
      */
     public static Optional<Element> fromJsoup(Node node) {
         Element ret;
@@ -320,6 +321,7 @@ public class ElementUtil {
      *            {@code true} for ignoring parent inert, {@code false} for not
      *            ignoring
      * @see #setInert(Element, boolean)
+     * @since 23.0
      */
     public static void setIgnoreParentInert(Element element,
             boolean ignoreParentInert) {
@@ -346,6 +348,7 @@ public class ElementUtil {
      * @param inert
      *            {@code true} for inert
      * @see #setIgnoreParentInert(Element, boolean)
+     * @since 23.0
      */
     public static void setInert(Element element, boolean inert) {
         final Optional<InertData> optionalInertData = element.getNode()
@@ -367,6 +370,7 @@ public class ElementUtil {
      *            the state node, not <code>null</code>
      * @return the element for the node, or an empty Optional if the state node
      *         is not mapped to any particular element.
+     * @since 24.2.4
      */
     public static Optional<Element> from(StateNode node) {
         assert node != null;

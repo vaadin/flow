@@ -1011,6 +1011,29 @@ class AbstractListDataViewTest {
     }
 
     @Test
+    void addFilter_beforeSettingDataProvider_callbackNotInvoked() {
+        DataCommunicator<String> dataCommunicator = new DataCommunicator<>(
+                (item, jsonObject) -> {
+                }, null, null, component.getElement().getNode());
+
+        AtomicInteger callbackInvocations = new AtomicInteger();
+
+        AbstractListDataView<String> dataView = new AbstractListDataView<String>(
+                dataCommunicator::getDataProvider, component,
+                (filter, sorting) -> callbackInvocations.incrementAndGet()) {
+        };
+
+        dataView.addFilter(item -> item.contains("test"));
+
+        assertEquals(0, callbackInvocations.get());
+
+        dataCommunicator.setDataProvider(DataProvider.ofItems("test"), null);
+        dataView.addFilter(item -> item.startsWith("t"));
+
+        assertEquals(1, callbackInvocations.get());
+    }
+
+    @Test
     void createListDataProviderFromArrayOfItems_addingOneItem_itemCountShouldBeIncreasedByOne() {
         ListDataProvider<Item> localListDataProvider = DataProvider
                 .ofItems(new Item(1L, "First"), new Item(2L, "Second"));

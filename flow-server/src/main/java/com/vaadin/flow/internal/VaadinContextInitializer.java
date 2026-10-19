@@ -33,6 +33,7 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0
  */
 @FunctionalInterface
 public interface VaadinContextInitializer {

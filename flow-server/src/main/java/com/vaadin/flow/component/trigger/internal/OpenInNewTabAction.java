@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Opens a URL in a new browser tab or window via {@code window.open(url,
@@ -31,9 +32,10 @@ import com.vaadin.flow.dom.JsFunction;
  * <p>
  * Two axes of configuration:
  * <ul>
- * <li><b>URL</b> — either a known {@link String} or an {@link Action.Input} of
- * {@code String} resolved on the client at fire time (e.g. the current value of
- * an input field, or a {@code blob:} URL the client just minted).</li>
+ * <li><b>URL</b> — a known {@link String}, a {@link DownloadHandler} for
+ * server-generated content, or an {@link Action.Input} of {@code String}
+ * resolved on the client at fire time (e.g. the current value of an input
+ * field, or a {@code blob:} URL the client just minted).</li>
  * <li><b>Features</b> — the third argument to {@code window.open}, controlling
  * popup characteristics such as opener access (the standard {@code "noopener"}
  * / {@code "noreferrer"} tokens) and window sizing
@@ -81,6 +83,8 @@ import com.vaadin.flow.dom.JsFunction;
  * }</pre>
  *
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.2
  */
 public class OpenInNewTabAction extends Action {
 
@@ -148,6 +152,24 @@ public class OpenInNewTabAction extends Action {
      */
     public OpenInNewTabAction(String url, String features) {
         this(urlLiteral(url), literal(features, "features"));
+    }
+
+    /**
+     * Opens the content of a {@link DownloadHandler} in a new tab with the
+     * default features ({@value #DEFAULT_FEATURES}). The handler is registered
+     * as a stream resource scoped to the trigger host element, with the same
+     * lifecycle as in {@link DownloadAction#DownloadAction(DownloadHandler)}.
+     * The browser shows the content only if the handler serves it inline;
+     * content served as an attachment is downloaded instead.
+     *
+     * @param handler
+     *            produces the response when the URL is fetched, not
+     *            {@code null}
+     */
+    public OpenInNewTabAction(DownloadHandler handler) {
+        this(new DownloadHandlerInput(
+                Objects.requireNonNull(handler, "handler must not be null")),
+                new LiteralInput<>(DEFAULT_FEATURES));
     }
 
     /**

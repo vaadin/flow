@@ -40,22 +40,31 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * {@link com.vaadin.flow.component.dependency.JsModule} and before
  * {@link com.vaadin.flow.component.dependency.CssImport}.
  * <p>
- * NOTE: Currently all frontend resources are bundled together into one big
- * bundle. This means, that JavaScript files loaded by one class will be present
- * on a view constructed by another class. For example, if there are two classes
+ * NOTE: Bundled frontend resources are combined into one big bundle. This
+ * means, that a bundled JavaScript file loaded by one class will be present on
+ * a view constructed by another class. For example, if there are two classes
  * {@code RootRoute} annotated with {@code @Route("")}, and another class
  * {@code RouteA} annotated with {@code @Route("route-a")} and
  * {@code @JavaScript("./src/javascript.js")}, the {@code javascript.js} will be
- * run on the root route as well.
+ * run on the root route as well. This does not apply to resources loaded at
+ * runtime, such as a {@code @JavaScript} with {@link #type()} set to
+ * {@link Type#MODULE}, which are loaded per page and never bundled.
  * <p>
  * External JavaScript dependencies (e.g. "http://example.com/some.js") are
  * added in the same way as {@link Page#addJavaScript(String)} and the result is
- * just adding a classic {@code javscript} element to the page. Other paths used
- * in the {@link JavaScript#value()} method are considered as relative to
- * {@code frontend} directory and they are added to the page as a JavaScript
- * module (a {@code javscript} element with {@code type="module"}). In this case
- * a {@link JavaScript} annotation behaves exactly as a {@link JsModule}
- * annotation.
+ * just adding a classic {@code script} element to the page. Other paths used in
+ * the {@link JavaScript#value()} method are considered as relative to
+ * {@code frontend} directory and they are bundled and added to the page as a
+ * JavaScript module (a {@code script} element with {@code type="module"}). In
+ * this case a {@link JavaScript} annotation behaves exactly as a
+ * {@link JsModule} annotation.
+ * <p>
+ * Setting {@link #type()} to {@link Type#MODULE} opts out of that bundling: the
+ * file is then always loaded at runtime as a {@code script} element with
+ * {@code type="module"}, even when the value is a bare relative path, which is
+ * resolved against the servlet context root. Use it for hand-authored or
+ * CDN-hosted ES modules that should not go through Vite; for build-time bundled
+ * ES modules use {@link JsModule} instead.
  * <p>
  * It's not possible to execute a function defined in JavaScript module via
  *
@@ -75,6 +84,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @author Vaadin Ltd
  * @since 1.0
  * @see Page#addJavaScript(String)
+ * @see Page#addJavaScript(String, LoadMode, Type)
  * @see JsModule
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -101,6 +111,11 @@ public @interface JavaScript {
          * path. Use this for hand-authored or CDN-hosted modules that should
          * not go through Vite. For build-time bundled ES modules use
          * {@link JsModule} instead.
+         * <p>
+         * {@link LoadMode#EAGER} and {@link LoadMode#LAZY} are supported;
+         * {@link LoadMode#INLINE} is not, as the browser cannot be given the
+         * contents of a module without also losing the module's identity. Use
+         * {@link #SCRIPT} if the contents must be inlined into the page.
          */
         MODULE
     }
@@ -139,6 +154,7 @@ public @interface JavaScript {
      * instead.
      *
      * @return the kind of script tag to render
+     * @since 25.4
      */
     Type type() default Type.SCRIPT;
 
@@ -151,12 +167,17 @@ public @interface JavaScript {
      *
      * @return {@code true} to load the script only in development mode,
      *         {@code false} to always load it
+     * @since 24.2
      */
     boolean developmentOnly() default false;
 
     /**
      * Determines the dependency load mode. Refer to {@link LoadMode} for the
      * details.
+     * <p>
+     * {@link LoadMode#INLINE} cannot be combined with {@link Type#MODULE}; such
+     * a combination is rejected with an {@link IllegalArgumentException} when
+     * the dependency is added to the page.
      *
      * @return load mode for the dependency
      */

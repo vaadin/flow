@@ -15,9 +15,18 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -31,16 +40,25 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.communication.ReturnChannelHandler;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReturnChannelHandlerTest {
+    /**
+     * Stands for whatever the application reads from the browser, which can be
+     * data that doesn't belong in a log file.
+     */
+    private static final String CLIENT_VALUE = "account-FI7654321000000";
+
     private MockUI ui = new MockUI();
 
     private AtomicReference<JsonNode> observedArguments = new AtomicReference<>();
@@ -146,6 +164,195 @@ class ReturnChannelHandlerTest {
                 "Channel handler should not be called");
     }
 
+    @Test
+    void disabledElement_warningIdentifiesElementComponentAndRoutingTarget() {
+        Widget widget = addWidgetToOrdersView();
+        ReturnChannelRegistration registration = registerChannel(widget);
+
+        widget.getElement().setEnabled(false);
+
+        String warning = handleMessageAndGetOnlyWarning(registration);
+
+        assertTrue(warning.contains("my-widget"),
+                () -> "The warning should name the element tag: " + warning);
+        assertTrue(warning.contains(Widget.class.getName()),
+                () -> "The warning should name the component class: "
+                        + warning);
+        assertTrue(warning.contains(OrdersView.class.getName()),
+                () -> "The warning should name the routing target the "
+                        + "component is used in: " + warning);
+        assertTrue(warning.contains("The target itself is disabled"),
+                () -> "The warning should tell that the target itself is the "
+                        + "disabled one: " + warning);
+        assertFalse(warning.contains("through its ancestor"),
+                () -> "No ancestor is disabled, so none should be blamed: "
+                        + warning);
+    }
+
+    @Test
+    void disabledAncestor_warningIdentifiesTheDisabledAncestor() {
+        Widget widget = addWidgetToOrdersView();
+        ReturnChannelRegistration registration = registerChannel(widget);
+
+        // The widget itself is enabled, it is the view that is disabled
+        widget.getParent().orElseThrow().getElement().setEnabled(false);
+
+        String warning = handleMessageAndGetOnlyWarning(registration);
+
+        assertTrue(
+                warning.contains("through its ancestor")
+                        && warning.contains(OrdersView.class.getName()),
+                () -> "The warning should name the ancestor that is actually "
+                        + "disabled: " + warning);
+    }
+
+    @Test
+    void disabledElement_clientArgumentsLoggedOnlyOnDebugLevel() {
+        Widget widget = addWidgetToOrdersView();
+        ReturnChannelRegistration registration = registerChannel(widget);
+
+        args.add(CLIENT_VALUE);
+        widget.getElement().setEnabled(false);
+
+        LoggedMessages logged = handleMessageCapturingLogs(registration);
+
+        assertEquals(1, logged.warnings().size(),
+                () -> "Exactly one warning expected, got: "
+                        + logged.warnings());
+        assertFalse(logged.warnings().get(0).contains(CLIENT_VALUE),
+                () -> "The warning should not contain what the client sent: "
+                        + logged.warnings().get(0));
+        assertTrue(
+                logged.debugMessages().stream()
+                        .anyMatch(message -> message.contains(CLIENT_VALUE)),
+                () -> "The payload should still be available on debug level: "
+                        + logged.debugMessages());
+    }
+
+    @Test
+    void noReturnChannelMap_warningIdentifiesTarget() {
+        StateNode nodeWithoutMap = new StateNode();
+
+        ui.getElement().getNode().getFeature(ElementChildrenList.class).add(0,
+                nodeWithoutMap);
+        args.add(CLIENT_VALUE);
+
+        String warning = handleMessageAndGetOnlyWarning(nodeWithoutMap.getId(),
+                0);
+
+        assertTrue(warning.contains("cannot have return channels"),
+                () -> "Unexpected warning: " + warning);
+        assertTrue(warning.contains("node id=" + nodeWithoutMap.getId()),
+                () -> "The warning should identify the node: " + warning);
+        assertFalse(warning.contains(CLIENT_VALUE),
+                () -> "The warning should not contain what the client sent: "
+                        + warning);
+    }
+
+    @Test
+    void unregisteredChannel_warningIdentifiesTarget() {
+        Widget widget = addWidgetToOrdersView();
+        ReturnChannelRegistration registration = registerChannel(widget);
+        registration.remove();
+        args.add(CLIENT_VALUE);
+
+        String warning = handleMessageAndGetOnlyWarning(registration);
+
+        assertTrue(warning.contains("not found"),
+                () -> "Unexpected warning: " + warning);
+        assertTrue(warning.contains("my-widget"),
+                () -> "The warning should name the element tag: " + warning);
+        assertFalse(warning.contains(CLIENT_VALUE),
+                () -> "The warning should not contain what the client sent: "
+                        + warning);
+    }
+
+    private Widget addWidgetToOrdersView() {
+        OrdersView view = new OrdersView();
+        Widget widget = new Widget();
+
+        ui.getElement().appendChild(view.getElement());
+        view.getElement().appendChild(widget.getElement());
+
+        return widget;
+    }
+
+    private ReturnChannelRegistration registerChannel(Component component) {
+        return component.getElement().getNode()
+                .getFeature(ReturnChannelMap.class)
+                .registerChannel(observingConsumer);
+    }
+
+    private String handleMessageAndGetOnlyWarning(
+            ReturnChannelRegistration registration) {
+        return handleMessageAndGetOnlyWarning(registration.getStateNodeId(),
+                registration.getChannelId());
+    }
+
+    private String handleMessageAndGetOnlyWarning(int nodeId, int channelId) {
+        List<String> warnings = handleMessageCapturingLogs(nodeId, channelId)
+                .warnings();
+
+        assertEquals(1, warnings.size(),
+                () -> "Exactly one warning expected, got: " + warnings);
+
+        return warnings.get(0);
+    }
+
+    private LoggedMessages handleMessageCapturingLogs(
+            ReturnChannelRegistration registration) {
+        return handleMessageCapturingLogs(registration.getStateNodeId(),
+                registration.getChannelId());
+    }
+
+    private LoggedMessages handleMessageCapturingLogs(int nodeId,
+            int channelId) {
+        List<String> warnings = new ArrayList<>();
+        List<String> debugMessages = new ArrayList<>();
+        Logger logger = Mockito.mock(Logger.class,
+                invocation -> record(invocation, warnings, debugMessages));
+
+        // Only the handler's own logger is mocked. Invoking a channel runs
+        // application and framework code that may log or cache a logger of its
+        // own, so everything else keeps using the real logger factory.
+        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
+                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+            loggerFactory
+                    .when(() -> LoggerFactory
+                            .getLogger(ReturnChannelHandler.class.getName()))
+                    .thenReturn(logger);
+
+            handleMessage(nodeId, channelId);
+        }
+
+        return new LoggedMessages(warnings, debugMessages);
+    }
+
+    private static Object record(InvocationOnMock invocation,
+            List<String> warnings, List<String> debugMessages)
+            throws Throwable {
+        String method = invocation.getMethod().getName();
+        if (method.startsWith("is") && method.endsWith("Enabled")) {
+            // All levels are enabled, so that a level check doesn't make the
+            // handler skip logging something that these tests are looking for
+            return true;
+        }
+        if ("warn".equals(method) || "debug".equals(method)) {
+            // Mockito has already expanded the varargs of the logging method
+            Object[] arguments = invocation.getArguments();
+            String message = MessageFormatter
+                    .arrayFormat((String) arguments[0],
+                            Arrays.copyOfRange(arguments, 1, arguments.length))
+                    .getMessage();
+            ("warn".equals(method) ? warnings : debugMessages).add(message);
+        }
+        return Mockito.RETURNS_DEFAULTS.answer(invocation);
+    }
+
+    private record LoggedMessages(List<String> warnings,
+            List<String> debugMessages) {
+    }
+
     private void handleMessage(ReturnChannelRegistration registration) {
         handleMessage(registration.getStateNodeId(),
                 registration.getChannelId());
@@ -176,5 +383,14 @@ class ReturnChannelHandlerTest {
 
     @Tag("div")
     private class Div extends Component {
+    }
+
+    @Tag("div")
+    @Route("orders")
+    private static class OrdersView extends Component {
+    }
+
+    @Tag("my-widget")
+    private static class Widget extends Component {
     }
 }

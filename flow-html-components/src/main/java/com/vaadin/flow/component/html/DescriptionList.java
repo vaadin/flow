@@ -27,7 +27,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;dl&gt;</code> element.
+ * <p>
+ * A list of terms and their descriptions, using Term (<code>&lt;dt&gt;</code>)
+ * and Description (<code>&lt;dd&gt;</code>) children.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dl">MDN:
+ *      &lt;dl&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -37,9 +43,14 @@ public class DescriptionList extends HtmlContainer
 
     /**
      * Component representing a <code>&lt;dt&gt;</code> element.
+     * <p>
+     * A term in a description list. Follow it with one or more Description
+     * children.
      *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dt">MDN:
+     *      &lt;dt&gt;</a>
      * @author Vaadin Ltd
-     * @since 1.0
      */
     @Tag(Tag.DT)
     public static class Term extends HtmlContainer
@@ -76,9 +87,13 @@ public class DescriptionList extends HtmlContainer
 
     /**
      * Component representing a <code>&lt;dd&gt;</code> element.
+     * <p>
+     * The description of the preceding Term in a description list.
      *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dd">MDN:
+     *      &lt;dd&gt;</a>
      * @author Vaadin Ltd
-     * @since 1.0
      */
     @Tag(Tag.DD)
     public static class Description extends HtmlContainer
@@ -119,6 +134,7 @@ public class DescriptionList extends HtmlContainer
          * @param textSignal
          *            the signal to bind, not {@code null}
          * @see #bindText(Signal)
+         * @since 25.1
          */
         public Description(Signal<String> textSignal) {
             Objects.requireNonNull(textSignal, "textSignal must not be null");

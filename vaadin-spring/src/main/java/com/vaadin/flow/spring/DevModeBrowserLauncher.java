@@ -35,10 +35,21 @@ import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Utilities for launching a browser when running in development mode.
+ * 
+ * @since 19.0
  */
 public class DevModeBrowserLauncher
         implements SpringApplicationRunListener, Serializable {
 
+    /**
+     * Creates a run listener for the given application. Spring Boot
+     * instantiates it through this constructor.
+     *
+     * @param application
+     *            the application that is starting
+     * @param arguments
+     *            the arguments the application was started with
+     */
     public DevModeBrowserLauncher(SpringApplication application,
             String[] arguments) {
     }

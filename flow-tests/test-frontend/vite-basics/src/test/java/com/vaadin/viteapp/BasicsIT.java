@@ -15,9 +15,17 @@
  */
 package com.vaadin.viteapp;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
 
@@ -36,8 +44,53 @@ public class BasicsIT extends ViteDevModeIT {
         Assert.assertEquals("good", executeScript("return window.bad()"));
         Thread.sleep(2000); // Checking is async so it sometimes needs some time
         Assert.assertFalse("There should be no error overlay",
-                $("vite-plugin-checker-error-overlay").first().$("main")
-                        .exists());
+                hasTypescriptErrorOverlay());
+    }
+
+    @Test
+    public void typescriptErrorInProjectFile_errorOverlayIsShown()
+            throws IOException {
+        Path launches = Path.of(System.getProperty("user.dir", "."),
+                "target/compiler-launches.jsonl");
+        waitUntil(driver -> {
+            try {
+                String launch = Files.readString(launches);
+                return launch.contains("@typescript/native/bin/tsc")
+                        && launch.contains("\"typescriptVersion\":\"6.")
+                        && launch.contains("\"hasCompilerApi\":true");
+            } catch (IOException e) {
+                return false;
+            }
+        }, 60);
+        // The checker is a separate tsc process which can fail to start
+        // without failing the build, in which case type errors are never
+        // reported at all and noTypescriptErrors passes for the wrong
+        // reason. Adding a real error must surface an overlay.
+        File typeErrorFile = new File(
+                new File(System.getProperty("user.dir", ".")),
+                FrontendUtils.DEFAULT_FRONTEND_DIR + "typeerror.ts");
+        try {
+            FileUtils.write(typeErrorFile,
+                    "export const notANumber: number = 'string';\n",
+                    StandardCharsets.UTF_8);
+            waitUntil(driver -> $("vite-plugin-checker-error-overlay").all()
+                    .stream()
+                    .anyMatch(overlay -> overlay.$("main").exists()
+                            && overlay.$("main").first().getText()
+                                    .contains("typeerror.ts")
+                            && overlay.$("main").first().getText()
+                                    .contains("TS2322")),
+                    60);
+        } finally {
+            FileUtils.deleteQuietly(typeErrorFile);
+            // Leave the checker without errors for the other tests
+            waitUntil(driver -> !hasTypescriptErrorOverlay(), 60);
+        }
+    }
+
+    private boolean hasTypescriptErrorOverlay() {
+        return $("vite-plugin-checker-error-overlay").all().stream()
+                .anyMatch(overlay -> overlay.$("main").exists());
     }
 
     @Test
