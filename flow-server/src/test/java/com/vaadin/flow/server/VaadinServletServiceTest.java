@@ -319,8 +319,13 @@ class VaadinServletServiceTest {
         when(request.getServletPath()).thenReturn("/vaadin");
         assertTrue(service.requestCanCreateSession(request));
 
-        // Without the handler, nothing answers the favicon without a session
+        // Below a context path as well
         when(request.getServletPath()).thenReturn("");
+        when(request.getContextPath()).thenReturn("/ctx");
+        assertTrue(service.requestCanCreateSession(request));
+
+        // Without the handler, nothing answers the favicon without a session
+        when(request.getContextPath()).thenReturn("");
         service.getRequestHandlers().removeIf(FaviconHandler.class::isInstance);
         assertTrue(service.requestCanCreateSession(request));
     }
@@ -338,6 +343,12 @@ class VaadinServletServiceTest {
         service.handleSessionExpired(request, response);
 
         verify(customHandler, never()).handleSessionExpired(any(), any());
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+
+        // Without the handler, the custom handlers answer it
+        service.getRequestHandlers().removeIf(FaviconHandler.class::isInstance);
+        service.handleSessionExpired(request, response);
+        verify(customHandler).handleSessionExpired(request, response);
         verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
