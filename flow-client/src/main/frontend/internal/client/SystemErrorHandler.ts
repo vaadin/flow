@@ -277,12 +277,16 @@ function recreateNodes(elementName: string): void {
   // Snapshot the live collection before mutating it.
   const elements = Array.from(document.getElementsByTagName(elementName)) as Array<
     Element & {
-      $server: { disconnected: () => void };
+      $server?: { disconnected: () => void };
     }
   >;
   for (const elem of elements) {
-    // Mock the disconnected callback so it does not throw a TypeError.
-    elem.$server.disconnected = () => {};
+    // Mock the disconnected callback so it does not throw a TypeError. An
+    // element whose connection to the server never completed has no $server
+    // yet, so there is nothing to mock.
+    if (elem.$server) {
+      elem.$server.disconnected = () => {};
+    }
     // Java dereferences parentNode unguarded, so a detached element fails here
     // rather than silently keeping the stale node.
     elem.parentNode!.replaceChild(elem.cloneNode(false), elem);

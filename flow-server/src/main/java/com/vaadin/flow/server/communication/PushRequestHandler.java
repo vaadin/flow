@@ -17,10 +17,8 @@ package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRegistration;
 
 import java.io.IOException;
-import java.util.Optional;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
@@ -37,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.InitParameters;
@@ -231,29 +228,16 @@ public class PushRequestHandler
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
 
-        String pushServletMapping = BootstrapHandlerHelper
-                .getCleanedPushServletMapping(
-                        vaadinServletConfig.getInitParameter(
-                                InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING));
-
-        if (pushServletMapping != null) {
+        String pushEndpointPath = BootstrapHandlerHelper
+                .getPushEndpointPath(vaadinServletConfig);
+        if (pushEndpointPath != null) {
             atmosphere.addInitParameter(ApplicationConfig.JSR356_MAPPING_PATH,
-                    pushServletMapping + Constants.PUSH_MAPPING);
+                    pushEndpointPath);
         } else {
-            Optional<ServletRegistration> servletRegistration = BootstrapHandlerHelper
-                    .getServletRegistration(vaadinServletConfig);
-            if (servletRegistration.isPresent()) {
-                atmosphere.addInitParameter(
-                        ApplicationConfig.JSR356_MAPPING_PATH,
-                        BootstrapHandlerHelper
-                                .findFirstUrlMapping(servletRegistration.get())
-                                + Constants.PUSH_MAPPING);
-            } else {
-                getLogger().debug(
-                        "Unable to determine servlet registration for {}. "
-                                + "Using root mapping for push",
-                        vaadinServletConfig.getServletName());
-            }
+            getLogger().debug(
+                    "Unable to determine servlet registration for {}. "
+                            + "Using root mapping for push",
+                    vaadinServletConfig.getServletName());
         }
 
         atmosphere.addInitParameter(

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
@@ -28,6 +27,8 @@ import com.vaadin.flow.internal.StateNode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class AttachExistingElementFeatureTest {
 
@@ -37,14 +38,13 @@ class AttachExistingElementFeatureTest {
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);
 
-        Element element = Mockito.mock(Element.class);
-        StateNode child = Mockito.mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
-        Node<?> parent = Mockito.mock(Node.class);
+        Element element = mock(Element.class);
+        StateNode child = mock(StateNode.class);
+        ChildElementConsumer callback = mock(ChildElementConsumer.class);
+        Node<?> parent = mock(Node.class);
         feature.register(parent, element, child, callback);
 
-        Mockito.verify(child).setParent(node);
+        verify(child).setParent(node);
 
         assertEquals(callback, feature.getCallback(child));
         assertEquals(parent, feature.getParent(child));
@@ -57,11 +57,10 @@ class AttachExistingElementFeatureTest {
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);
 
-        Element element = Mockito.mock(Element.class);
-        StateNode child = Mockito.mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
-        Node<?> parent = Mockito.mock(Node.class);
+        Element element = mock(Element.class);
+        StateNode child = mock(StateNode.class);
+        ChildElementConsumer callback = mock(ChildElementConsumer.class);
+        Node<?> parent = mock(Node.class);
         feature.register(parent, element, child, callback);
 
         List<StateNode> children = new ArrayList<>(1);
@@ -76,11 +75,10 @@ class AttachExistingElementFeatureTest {
         AttachExistingElementFeature feature = new AttachExistingElementFeature(
                 node);
 
-        Element element = Mockito.mock(Element.class);
-        StateNode child = Mockito.mock(StateNode.class);
-        ChildElementConsumer callback = Mockito
-                .mock(ChildElementConsumer.class);
-        Node<?> parent = Mockito.mock(Node.class);
+        Element element = mock(Element.class);
+        StateNode child = mock(StateNode.class);
+        ChildElementConsumer callback = mock(ChildElementConsumer.class);
+        Node<?> parent = mock(Node.class);
         feature.register(parent, element, child, callback);
 
         feature.unregister(child);

@@ -16,7 +16,9 @@
 package com.vaadin.flow.server;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 class VaadinRequestTest {
 
@@ -26,9 +28,9 @@ class VaadinRequestTest {
 
     @Test
     void getContentLengthLong_delegateToGetContentLength() {
-        TestVaadinRequest request = Mockito.spy(TestVaadinRequest.class);
+        TestVaadinRequest request = spy(TestVaadinRequest.class);
         request.getContentLengthLong();
-        Mockito.verify(request).getContentLength();
+        verify(request).getContentLength();
     }
 
 }

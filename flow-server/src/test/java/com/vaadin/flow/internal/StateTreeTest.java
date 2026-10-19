@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Tag;
@@ -61,6 +60,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class StateTreeTest {
 
@@ -612,8 +614,8 @@ class StateTreeTest {
             throw new IllegalStateException("Throw before client response");
         });
         assertNull(tree.getUI().getSession());
-        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
-        Mockito.when(mockSession.getErrorHandler()).thenReturn(null);
+        VaadinSession mockSession = mock(VaadinSession.class);
+        when(mockSession.getErrorHandler()).thenReturn(null);
         try {
             tree.getUI().getInternals().setSession(mockSession);
             tree.beforeClientResponse(rootNode, context -> {
@@ -679,11 +681,11 @@ class StateTreeTest {
 
     @Test
     void collectChanges_updateActiveState() {
-        StateNode node1 = Mockito.mock(StateNode.class);
-        StateNode node2 = Mockito.mock(StateNode.class);
+        StateNode node1 = mock(StateNode.class);
+        StateNode node2 = mock(StateNode.class);
 
-        Mockito.when(node1.getOwner()).thenReturn(tree);
-        Mockito.when(node2.getOwner()).thenReturn(tree);
+        when(node1.getOwner()).thenReturn(tree);
+        when(node2.getOwner()).thenReturn(tree);
 
         tree.markAsDirty(node1);
         tree.markAsDirty(node2);
@@ -691,8 +693,8 @@ class StateTreeTest {
         tree.collectChanges(node -> {
         });
 
-        Mockito.verify(node1).updateActiveState();
-        Mockito.verify(node2).updateActiveState();
+        verify(node1).updateActiveState();
+        verify(node2).updateActiveState();
     }
 
     @Test
@@ -774,7 +776,7 @@ class StateTreeTest {
     @Test
     void pendingJavascriptExecutionForInitiallyInvisibleNode() {
         UI ui = new UI();
-        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        VaadinSession mockSession = mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);
         StateTree initialTree = ui.getInternals().getStateTree();
 
@@ -799,7 +801,7 @@ class StateTreeTest {
     @Test
     void pendingJavascriptExecutionForVisibleAndInvisibleNode() {
         UI ui = new UI();
-        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        VaadinSession mockSession = mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);
         StateTree initialTree = ui.getInternals().getStateTree();
 
@@ -830,7 +832,7 @@ class StateTreeTest {
     @Test
     void pendingJavascriptExecutionForVisibleAndInvisibleParentNode() {
         UI ui = new UI();
-        VaadinSession mockSession = Mockito.mock(VaadinSession.class);
+        VaadinSession mockSession = mock(VaadinSession.class);
         ui.getInternals().setSession(mockSession);
         StateTree initialTree = ui.getInternals().getStateTree();
 

@@ -70,6 +70,9 @@ public class ContextualStorage implements Serializable {
     }
 
     /**
+     * Creates a contextual instance of the given bean and stores it. In a
+     * concurrent storage, the instance another thread already created for the
+     * bean is returned instead.
      *
      * @param bean
      *            the contextual type
