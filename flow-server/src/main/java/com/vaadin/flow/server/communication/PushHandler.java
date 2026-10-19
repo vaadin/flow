@@ -154,7 +154,7 @@ public class PushHandler {
         resource.getResponse().setContentType("text/plain; charset=UTF-8");
 
         // The push id has already been validated in callWithUi, before the
-        // session was locked
+        // session was locked for the UI lookup
 
         suspend(resource);
 
@@ -348,10 +348,10 @@ public class PushHandler {
 
             if (callback == establishCallback && !isPushIdValid(session,
                     req.getParameter(ApplicationConstants.PUSH_ID_PARAMETER))) {
-                // Answered before the session is locked, so that a request
-                // that is not allowed to open a connection is not left waiting
-                // for the lock behind the legitimate requests of that session,
-                // and does not hold it while being rejected
+                // Answered before the session is locked for the UI lookup, so
+                // that a request that is not allowed to open a connection does
+                // not hold the session lock while it is being rejected. The
+                // session lookup above still briefly takes the lock.
                 getLogger().warn(
                         "Invalid identifier in new connection received from {}",
                         req.getRemoteHost());

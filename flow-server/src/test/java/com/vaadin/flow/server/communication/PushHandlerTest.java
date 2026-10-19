@@ -805,9 +805,7 @@ class PushHandlerTest {
 
         assertEquals(0, outcome.lockCountWhenAnswered(),
                 "A connection with an invalid push id should be answered "
-                        + "without first acquiring the session lock, so that "
-                        + "it is not left waiting behind the legitimate "
-                        + "requests of that session");
+                        + "before the session is locked for the UI lookup");
         assertFalse(outcome.uiWasResolved(),
                 "The UI should not be looked up for a connection with an invalid push id");
         verify(outcome.resource(), never()).suspend(anyLong());
@@ -827,8 +825,9 @@ class PushHandlerTest {
 
     /**
      * @param lockCountWhenAnswered
-     *            how many times the session had been locked when the client was
-     *            first written to, or -1 if it was not written to at all
+     *            how many times VaadinSession.lock() had been called when the
+     *            client was first written to, or -1 if it was not written to at
+     *            all
      */
     private record EstablishOutcome(AtmosphereResource resource,
             int lockCountWhenAnswered, boolean uiWasResolved) {
