@@ -439,6 +439,13 @@ describe('MessageHandler', () => {
 
     describe('view transition', () => {
       const original = Object.getOwnPropertyDescriptor(document, 'startViewTransition');
+      let flushes: number;
+      let pendingUpdate: (() => void) | null;
+
+      beforeEach(() => {
+        flushes = 0;
+        pendingUpdate = null;
+      });
 
       afterEach(() => {
         if (original) {
@@ -448,38 +455,77 @@ describe('MessageHandler', () => {
         }
       });
 
-      // Handles a message and reports when the changes were flushed relative to
-      // any view transition the handler started.
-      function handleMessage(supported: boolean, meta?: Record<string, unknown>): string[] {
-        const events: string[] = [];
+      // Like the real API, the stub returns before running the update callback;
+      // the test runs it through pendingUpdate once the snapshot would be taken.
+      function stubStartViewTransition(supported: boolean): void {
         const value = supported
           ? (callback: () => void) => {
-              events.push('transition-start');
-              callback();
-              events.push('transition-end');
+              pendingUpdate = callback;
             }
           : undefined;
         Object.defineProperty(document, 'startViewTransition', { configurable: true, writable: true, value });
-        Reactive.addFlushListener(() => events.push('flush'));
-
-        new MessageHandler(makeRegistry().registry).handleMessage({ syncId: 0, ...(meta ? { meta } : {}) });
-        return events;
       }
 
-      it('flushes the changes inside a view transition when the server requests one', () => {
-        expect(handleMessage(true, { viewTransition: true })).to.deep.equal([
-          'transition-start',
-          'flush',
-          'transition-end'
-        ]);
+      function handle(handler: MessageHandler, message: Record<string, unknown>): void {
+        Reactive.addFlushListener(() => flushes++);
+        handler.handleMessage(message);
+      }
+
+      it('applies the changes and ends the request only once the view transition runs its update', () => {
+        stubStartViewTransition(true);
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+
+        handle(handler, { syncId: 0, meta: { viewTransition: true } });
+
+        expect(pendingUpdate).to.not.equal(null);
+        expect(flushes).to.equal(0);
+        expect(registry.log.endRequests).to.equal(0);
+        expect(registry.log.stopLoadings).to.equal(0);
+
+        pendingUpdate!();
+
+        expect(flushes).to.equal(1);
+        expect(registry.log.endRequests).to.equal(1);
+        expect(registry.log.stopLoadings).to.equal(1);
       });
 
-      it('flushes the changes directly when no view transition is requested', () => {
-        expect(handleMessage(true)).to.deep.equal(['flush']);
+      it('holds back the next message until the view transition has applied the changes', () => {
+        stubStartViewTransition(true);
+        const registry = makeRegistry();
+        const handler = new MessageHandler(registry.registry);
+
+        handle(handler, { syncId: 0, meta: { viewTransition: true } });
+        // e.g. a push message arriving while the transition is pending
+        handle(handler, { syncId: 1, meta: { async: true } });
+
+        expect(handler.getLastSeenServerSyncId()).to.equal(0);
+        expect(flushes).to.equal(0);
+
+        pendingUpdate!();
+
+        expect(handler.getLastSeenServerSyncId()).to.equal(1);
       });
 
-      it('flushes the changes directly when the browser does not support view transitions', () => {
-        expect(handleMessage(false, { viewTransition: true })).to.deep.equal(['flush']);
+      it('applies the changes directly when no view transition is requested', () => {
+        stubStartViewTransition(true);
+        const registry = makeRegistry();
+
+        handle(new MessageHandler(registry.registry), { syncId: 0 });
+
+        expect(pendingUpdate).to.equal(null);
+        expect(flushes).to.equal(1);
+        expect(registry.log.endRequests).to.equal(1);
+      });
+
+      it('applies the changes directly when the browser does not support view transitions', () => {
+        stubStartViewTransition(false);
+        const registry = makeRegistry();
+
+        handle(new MessageHandler(registry.registry), { syncId: 0, meta: { viewTransition: true } });
+
+        expect(flushes).to.equal(1);
+        expect(registry.log.endRequests).to.equal(1);
       });
     });
 

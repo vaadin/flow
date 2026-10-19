@@ -948,7 +948,9 @@ public class UI extends Component
      * <p>
      * The view transition is applied on a best-effort basis: if the browser
      * does not support the View Transitions API, the changes are applied
-     * without any transition.
+     * without any transition. Among the supported browsers, this is the case
+     * for Safari 17 (the API is available from Safari 18) and for Firefox
+     * versions before 144, including the current Firefox ESR.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/View_Transition_API">View
