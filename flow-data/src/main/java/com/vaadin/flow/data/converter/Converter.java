@@ -179,9 +179,18 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * <ul>
      * <li>If the model value is null, the converter returns null. Otherwise, it
      * delegates to the wrapped converter.</li>
-     * <li>If the presentation value is null, the converter returns null.
-     * Otherwise, it delegates to the wrapped converter.</li>
+     * <li>If the presentation value is null, or equal to the
+     * {@link com.vaadin.flow.component.HasValue#getEmptyValue() empty value} of
+     * the field available through {@link ValueContext#getHasValue()}, the
+     * converter returns null. Otherwise, it delegates to the wrapped
+     * converter.</li>
      * </ul>
+     * This means that the wrapped converter never sees a null value, nor an
+     * empty field value such as an empty string from a text field. A null model
+     * value is converted to a null presentation value, so if the field does not
+     * accept null, configure a null representation for the binding with
+     * {@link BindingBuilder#withNullRepresentation(Object)}.
+     * <p>
      * Example use:
      * 
      * <pre>
@@ -206,8 +215,12 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
         return new Converter<P, M>() {
             @Override
             public Result<M> convertToModel(P value, ValueContext context) {
-                return value == null ? Result.ok(null)
-                        : converter.convertToModel(value, context);
+                if (value == null || context.getHasValue()
+                        .map(field -> value.equals(field.getEmptyValue()))
+                        .orElse(false)) {
+                    return Result.ok(null);
+                }
+                return converter.convertToModel(value, context);
             }
 
             @Override
