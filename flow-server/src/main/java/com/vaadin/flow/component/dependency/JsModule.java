@@ -85,11 +85,6 @@ public @interface JsModule {
      * (e.g. {@code "@scope/pkg/foo.js"}), or an alias. The bundler resolves
      * these against the configured frontend directory.
      * <p>
-     * Values with a runtime URL prefix ({@code http://}, {@code https://},
-     * {@code //}, {@code context://}, {@code base://}, or a leading {@code /})
-     * are deprecated; they are excluded from the bundle and emit a build-time
-     * warning. Migrate them to {@link JavaScript}.
-     * <p>
      * NOTE: In the case of using JsModule with LitTemplate, the value needs to
      * point to a real file as it will be copied to the templates folder under
      * target folder. An exported alias from the package will not work.
