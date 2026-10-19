@@ -157,8 +157,11 @@ class ClientActionTest {
         Div container = new Div();
         ui.add(container);
 
-        assertThrows(NullPointerException.class, () -> Clipboard.writeText()
-                .bindTo(container.getElement(), action -> null));
+        ClientAction copy = Clipboard.writeText();
+        Element host = container.getElement();
+
+        assertThrows(NullPointerException.class,
+                () -> copy.bindTo(host, action -> null));
     }
 
     private static void assertCopiesFirstTemplateArgument(JsFunction write) {
