@@ -83,14 +83,7 @@ class ClientActionTest {
         // The renderer calls the function from its own event binding and
         // supplies the template's call arguments in the context argument.
         assertEquals(List.of("event", "context"), action.getArgumentNames());
-        assertEquals(
-                "return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))",
-                action.getBody());
-
-        JsFunction text = (JsFunction) action.getCaptures().get(0);
-        assertEquals(List.of("event", "context"), text.getArgumentNames());
-        assertEquals("return context?.[$0]?.[$1] ?? null", text.getBody());
-        assertEquals(List.of("args", "0"), text.getCaptures());
+        assertCopiesFirstTemplateArgument(action);
     }
 
     @Test
@@ -114,6 +107,10 @@ class ClientActionTest {
                 .map(ReturnChannelRegistration.class::cast).toList();
         assertEquals(1, channels.size());
         ReturnChannelRegistration channel = channels.get(0);
+
+        // The outcome wrapper calls the same write as the plain overload.
+        assertCopiesFirstTemplateArgument(
+                (JsFunction) sink.installed.get(0).getCaptures().get(1));
 
         ObjectNode ok = JacksonUtils.createObjectNode();
         ok.put("ok", true);
@@ -162,6 +159,19 @@ class ClientActionTest {
 
         assertThrows(NullPointerException.class, () -> Clipboard.writeText()
                 .bindTo(container.getElement(), action -> null));
+    }
+
+    private static void assertCopiesFirstTemplateArgument(JsFunction write) {
+        assertEquals(
+                "return window.Vaadin.Flow.clipboard.writePayload($0(event, context), $1(event, context), $2(event, context))",
+                write.getBody());
+        JsFunction text = (JsFunction) write.getCaptures().get(0);
+        assertEquals(List.of("event", "context"), text.getArgumentNames());
+        assertEquals("return context?.[$0]?.[$1] ?? null", text.getBody());
+        assertEquals(List.of("args", "0"), text.getCaptures());
+        // Text only: the html slot stays empty.
+        assertEquals("return null",
+                ((JsFunction) write.getCaptures().get(1)).getBody());
     }
 
     private static ArrayNode outcome(ObjectNode outcome) {
