@@ -117,6 +117,11 @@ class RuntimeJavaScriptDependencyTest {
     private static class ProductionRelativeScript extends Component {
     }
 
+    @Tag("div")
+    @JavaScript(value = "/dev-helper.js", developmentOnly = true)
+    private static class DevelopmentOnlyAbsoluteScript extends Component {
+    }
+
     @AfterEach
     void after() {
         UI.setCurrent(null);
@@ -230,6 +235,29 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
+    void developmentOnlyAbsoluteScript_addedInDevelopmentMode() {
+        assertSingleDependency(DevelopmentOnlyAbsoluteScript.class,
+                Dependency.Type.JAVASCRIPT, "/dev-helper.js", LoadMode.EAGER);
+    }
+
+    @Test
+    void productionMode_developmentOnlyAbsoluteScript_notAdded()
+            throws Exception {
+        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
+        mocks.setProductionMode(true);
+        try {
+            UIInternals internals = new MockUI(mocks.getSession())
+                    .getInternals();
+            internals.addComponentDependencies(
+                    DevelopmentOnlyAbsoluteScript.class);
+
+            assertEquals(List.of(), nonChunkDependencies(internals));
+        } finally {
+            mocks.cleanup();
+        }
+    }
+
+    @Test
     void externalJsModule_stillAddedAsRuntimeJsModule() {
         assertSingleDependency(ExternalJsModule.class,
                 Dependency.Type.JS_MODULE, "https://example.net/module.js",
@@ -292,7 +320,11 @@ class RuntimeJavaScriptDependencyTest {
             Class<? extends Component> componentType) {
         UIInternals internals = new MockUI().getInternals();
         internals.addComponentDependencies(componentType);
+        return nonChunkDependencies(internals);
+    }
 
+    private static List<Dependency> nonChunkDependencies(
+            UIInternals internals) {
         Collection<Dependency> pending = internals.getDependencyList()
                 .getPendingSendToClient();
         // Chunk loading adds a dynamic import for every component class
