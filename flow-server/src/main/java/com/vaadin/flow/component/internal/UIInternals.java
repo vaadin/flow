@@ -49,6 +49,7 @@ import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
@@ -1499,13 +1500,12 @@ public class UIInternals implements Serializable {
         // type=MODULE values are deliberately kept out of the bundle and are
         // loaded at runtime instead, so their absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
-                .filter(js -> !isRuntimeJavaScript(js)).map(dep -> dep.value())
+                .filter(js -> !isRuntimeJavaScript(js)).map(JavaScript::value)
                 .collect(Collectors.toList()));
-        jsDeps.addAll(
-                dependencies.getJsModules().stream().map(dep -> dep.value())
-                        .filter(src -> !FrontendDependencyUrlResolver
-                                .isRuntimeDependencyUrl(src))
-                        .collect(Collectors.toList()));
+        jsDeps.addAll(dependencies.getJsModules().stream().map(JsModule::value)
+                .filter(src -> !FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(src))
+                .collect(Collectors.toList()));
 
         if (!jsDeps.isEmpty()) {
             maybeWarnAboutDependencies(componentClass, jsDeps);
