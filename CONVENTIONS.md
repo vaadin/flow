@@ -249,18 +249,41 @@ Assert concrete outputs, not just "not null". Verify JSON structure and content
 for serialization, and cover the edge cases that the change actually
 introduces.
 
+Assert the observable outcome — DOM state, response, emitted event, public API
+result — not how it is produced. A test must fail when the behavior breaks and
+keep passing through a refactor that preserves it.
+
+Test the logic of the code under change, not framework behavior that is already
+covered elsewhere.
+
 Static-import the test helpers and call them unqualified —
 `assertEquals(…)`, not `Assertions.assertEquals(…)`, and `mock(…)`, not
 `Mockito.mock(…)`. This covers the JUnit assertions, Hamcrest `assertThat`
 and its matchers, and the Mockito core methods (`mock`, `when`, `verify`,
-`spy`, `doReturn`, …) that Sonar flags with `java:S8924`. It applies to new
-tests and to the calls you are already changing: do not mass-convert an
-unrelated file, and leave the remaining JUnit 4 tests until they are migrated.
-Within a file you are changing, convert the rest of its calls too rather than
-leaving two styles behind.
+`spy`, `doReturn`, …) that Sonar flags with `java:S8924`. All JUnit 5 tests
+already follow this; leave the remaining JUnit 4 tests until they are migrated.
+Keep a call qualified only when the test class declares or inherits a method
+with the same name, which hides the static import — TestBench browser tests
+inherit `assertEquals(WebElement, WebElement)`, so they keep
+`Assertions.assertEquals(…)`.
 
-Add an integration test view under `flow-tests/test-root-context/` for
-browser-facing features, and exercise both the happy path and the error branch.
+Add an integration test only when the behavior needs a browser and a server
+round trip; client-only logic belongs in the client-side tests in
+`flow-client/src/test/frontend/` (run with `npm test` in `flow-client`). Before
+adding an integration test view or class, look for an existing one that
+exercises the same area and extend it. Put a new one in the module
+[flow-tests/README.md](flow-tests/README.md) selects — `flow-tests/test-default/`
+for the default configuration. Exercise both the happy path and the error
+branch.
+
+In an integration test, wait for the expected state with `waitUntil(...)` or
+`waitForElementPresent(...)` after an action that updates the page
+asynchronously — a server round trip, a React or Lit re-render, a `setTimeout`
+or `requestAnimationFrame` — instead of asserting right away, and never use a
+fixed `Thread.sleep` to wait for a state the test can poll for. When an
+assertion becomes a wait, catch `TimeoutException` and fail with the message
+and the expected and actual values. Call `checkLogsForErrors()` right after
+each step that could log a browser error, not only at the end of the test.
 
 Debug a failing integration test with Playwright before guessing. Look at what
 the browser is actually doing.
@@ -279,6 +302,14 @@ what a collaborator does, the case belongs in that collaborator's test class.
 
 Make a value that only has to differ look arbitrary. A byte-exact copy of real
 data reads as a contract that the code does not have.
+
+When changing the setup of an existing test, keep every case it already
+covered. Replacing a mock or a fixture must not drop assertions that still
+apply.
+
+Do not depend on JVM defaults such as locale, time zone or charset. Set them
+explicitly, or pick a value that differs from the default, so the case cannot
+pass without exercising the code.
 
 Build the state a case needs directly. Setup that writes a file, deletes it and
 writes it again through another path hides what the case is about.

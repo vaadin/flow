@@ -26,7 +26,6 @@ import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InterceptorBinding;
 import jakarta.interceptor.InvocationContext;
-import jakarta.servlet.ServletException;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -38,11 +37,9 @@ import java.util.Locale;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -56,6 +53,13 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
 import com.vaadin.quarkus.context.ServiceUnderTestContext;
+
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @QuarkusTest
 public class QuarkusInstantiatorTest {
@@ -90,7 +94,7 @@ public class QuarkusInstantiatorTest {
 
         @MyBinding
         public void exec() {
-
+            // only the interception matters, not what the method does
         }
     }
 
@@ -145,7 +149,7 @@ public class QuarkusInstantiatorTest {
         @Override
         public void setPopulateClientSideMenu(
                 PopulateClientMenu populateClientSideMenu) {
-
+            // the tests only look up this bean, they do not configure it
         }
 
         @Override
@@ -229,117 +233,110 @@ public class QuarkusInstantiatorTest {
     @Test
     public void getI18NProvider_beanEnabled_instanceReturned() {
         I18NProvider i18NProvider = instantiator.getI18NProvider();
-        Assertions.assertNotNull(i18NProvider);
-        Assertions.assertTrue(i18NProvider instanceof I18NTestProvider);
+        assertNotNull(i18NProvider);
+        assertTrue(i18NProvider instanceof I18NTestProvider);
     }
 
     @Test
     public void getMenuAccessControl_beanProvided_instanceReturned() {
         MenuAccessControl menuAccessControl = instantiator
                 .getMenuAccessControl();
-        Assertions.assertNotNull(menuAccessControl);
-        Assertions
-                .assertTrue(menuAccessControl instanceof TestMenuAccessControl);
+        assertNotNull(menuAccessControl);
+        assertTrue(menuAccessControl instanceof TestMenuAccessControl);
     }
 
     @Test
     public void getPageTitleGenerator_beanProvided_instanceReturned() {
         PageTitleGenerator pageTitleGenerator = instantiator
                 .getPageTitleGenerator();
-        Assertions.assertNotNull(pageTitleGenerator);
-        Assertions.assertTrue(
-                pageTitleGenerator instanceof TestPageTitleGenerator);
+        assertNotNull(pageTitleGenerator);
+        assertTrue(pageTitleGenerator instanceof TestPageTitleGenerator);
     }
 
     @Test
     public void getServiceInitListeners_CDIBeanListenerExists_containsCDIBeanListener() {
-        Assertions.assertTrue(instantiator.getServiceInitListeners().anyMatch(
-                listener -> listener instanceof CdiBeanServiceInitListener));
+        assertTrue(instantiator.getServiceInitListeners()
+                .anyMatch(CdiBeanServiceInitListener.class::isInstance));
     }
 
     @Test
     public void getServiceInitListeners_eventFired_cdiObserverCalled() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         ServiceInitEvent event = new ServiceInitEvent(service);
         instantiator.getServiceInitListeners()
                 .filter(listener -> listener.getClass().getPackage()
                         .equals(QuarkusInstantiator.class.getPackage()))
                 .forEach(listener -> listener.serviceInit(event));
-        Assertions.assertSame(event, serviceInitObserver.getEvent());
+        assertSame(event, serviceInitObserver.getEvent());
     }
 
     @Test
     public void getOrCreate_beanSingleton_sameInstanceReturned() {
-        Assertions.assertSame(singleton,
-                instantiator.getOrCreate(SomeCdiBean.class));
+        assertSame(singleton, instantiator.getOrCreate(SomeCdiBean.class));
     }
 
     @Test
     @Disabled("Unmanaged instance are currently not supported in Quarkus add-on, see comments in QuarkusInstantiator.getOrCreate")
     public void getOrCreate_beanUnsatisfied_instantiatedAndInjectionOccurred() {
         NotACdiBean instance = instantiator.getOrCreate(NotACdiBean.class);
-        Assertions.assertNotNull(instance);
-        Assertions.assertNotNull(instance.getBm());
+        assertNotNull(instance);
+        assertNotNull(instance.getBm());
     }
 
     @Test
     @Disabled("Unmanaged instance are currently not supported in Quarkus add-on, see comments in QuarkusInstantiator.getOrCreate")
     public void getOrCreate_beanAmbiguous_instantiatedAndInjectionOccurred() {
         ParentBean instance = instantiator.getOrCreate(ParentBean.class);
-        Assertions.assertNotNull(instance);
-        Assertions.assertNotNull(instance.getBm());
+        assertNotNull(instance);
+        assertNotNull(instance.getBm());
     }
 
     @Test
     public void createComponent_componentIsCreated() {
         CdiComponent component = instantiator
                 .createComponent(CdiComponent.class);
-        Assertions.assertNotNull(component);
-        Assertions.assertNotNull(component.beanManager);
+        assertNotNull(component);
+        assertNotNull(component.beanManager);
     }
 
     @Test
-    public void createComponent_componentIsCreatedOnEveryCall()
-            throws ServletException {
+    public void createComponent_componentIsCreatedOnEveryCall() {
         CdiComponent component = instantiator
                 .createComponent(CdiComponent.class);
-        Assertions.assertNotNull(component);
+        assertNotNull(component);
 
         CdiComponent anotherComponent = instantiator
                 .createComponent(CdiComponent.class);
-        Assertions.assertNotEquals(component, anotherComponent);
+        assertNotEquals(component, anotherComponent);
     }
 
     @Test
-    public void getApplicationClass_regularClass_getsSameClass()
-            throws ServletException {
+    public void getApplicationClass_regularClass_getsSameClass() {
         SomeCdiBean instance = instantiator.getOrCreate(SomeCdiBean.class);
-        Assertions.assertSame(SomeCdiBean.class,
+        assertSame(SomeCdiBean.class,
                 instantiator.getApplicationClass(instance));
-        Assertions.assertSame(SomeCdiBean.class,
+        assertSame(SomeCdiBean.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
     @Test
-    public void getApplicationClass_scopedBean_getsApplicationClass()
-            throws ServletException {
+    public void getApplicationClass_scopedBean_getsApplicationClass() {
         ScopedCdiBean instance = instantiator.getOrCreate(ScopedCdiBean.class);
-        Assertions.assertSame(ScopedCdiBean.class,
+        assertSame(ScopedCdiBean.class,
                 instantiator.getApplicationClass(instance));
-        Assertions.assertSame(ScopedCdiBean.class,
+        assertSame(ScopedCdiBean.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
     @Test
-    public void getApplicationClass_proxiedBean_getsApplicationClass()
-            throws ServletException {
+    public void getApplicationClass_proxiedBean_getsApplicationClass() {
         InterceptedCdiBean instance = instantiator
                 .getOrCreate(InterceptedCdiBean.class);
         instance.exec();
-        Assertions.assertNotSame(InterceptedCdiBean.class, instance.getClass());
-        Assertions.assertSame(InterceptedCdiBean.class,
+        assertNotSame(InterceptedCdiBean.class, instance.getClass());
+        assertSame(InterceptedCdiBean.class,
                 instantiator.getApplicationClass(instance));
-        Assertions.assertSame(InterceptedCdiBean.class,
+        assertSame(InterceptedCdiBean.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 

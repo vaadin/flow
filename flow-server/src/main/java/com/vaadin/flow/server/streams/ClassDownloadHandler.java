@@ -112,8 +112,8 @@ public class ClassDownloadHandler
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = connection.getInputStream()) {
             String resourceName = getUrlPostfix();
-            downloadEvent.setContentType(
-                    getContentType(resourceName, downloadEvent.getResponse()));
+            downloadEvent.setContentType(resolveContentType(resourceName,
+                    downloadEvent.getResponse()));
             if (isInline()) {
                 downloadEvent.inline(resourceName);
             } else {
@@ -151,6 +151,7 @@ public class ClassDownloadHandler
      * is costly for large media that a player fetches in many small ranges.
      *
      * @return this instance for method chaining
+     * @since 25.4
      */
     public ClassDownloadHandler enableRangeRequests() {
         rangeRequestsEnabled = true;
@@ -161,6 +162,8 @@ public class ClassDownloadHandler
      * {@inheritDoc}
      * <p>
      * Range requests are answered after {@link #enableRangeRequests()}.
+     * 
+     * @since 25.4
      */
     @Override
     public boolean isRangeRequestsEnabled() {

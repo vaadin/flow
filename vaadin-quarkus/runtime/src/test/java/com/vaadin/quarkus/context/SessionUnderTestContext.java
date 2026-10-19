@@ -19,15 +19,17 @@ import jakarta.enterprise.inject.spi.CDI;
 
 import java.util.Properties;
 
-import org.mockito.Mockito;
-
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 public class SessionUnderTestContext implements UnderTestContext {
 
@@ -40,30 +42,27 @@ public class SessionUnderTestContext implements UnderTestContext {
                     CDI.current().getBeanManager());
             serviceUnderTestContext.activate();
         }
-        session = Mockito.mock(TestSession.class,
-                Mockito.withSettings().useConstructor());
-        doCallRealMethod().when(session).setAttribute(Mockito.any(String.class),
-                Mockito.any());
-        doCallRealMethod().when(session)
-                .getAttribute(Mockito.any(String.class));
+        session = mock(TestSession.class, withSettings().useConstructor());
+        doCallRealMethod().when(session).setAttribute(any(String.class), any());
+        doCallRealMethod().when(session).getAttribute(any(String.class));
         doCallRealMethod().when(session).getService();
 
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
         when(session.hasLock()).thenReturn(true);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         when(session.getConfiguration()).thenReturn(configuration);
         Properties props = new Properties();
         when(configuration.getInitParameters()).thenReturn(props);
 
-        doCallRealMethod().when(session).addUI(Mockito.any());
+        doCallRealMethod().when(session).addUI(any());
         doCallRealMethod().when(session).getUIs();
 
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             invocation.getArgument(0, Command.class).execute();
             return null;
-        }).when(session).access(Mockito.any());
+        }).when(session).access(any());
     }
 
     @Override

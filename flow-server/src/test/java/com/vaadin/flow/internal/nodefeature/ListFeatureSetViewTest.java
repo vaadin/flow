@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.AbstractListChange;
@@ -32,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class ListFeatureSetViewTest {
 
@@ -42,7 +42,7 @@ class ListFeatureSetViewTest {
         private final ArrayList<AbstractListChange<String>> changes = new ArrayList<>();
 
         public TestFeature() {
-            super(Mockito.mock(StateNode.class));
+            super(mock(StateNode.class));
         }
 
         @Override
