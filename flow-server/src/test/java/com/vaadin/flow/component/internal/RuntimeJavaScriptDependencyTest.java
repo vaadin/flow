@@ -103,6 +103,21 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JsModule("https://example.net/pkg/../dist/module.js")
+    private static class ExternalJsModuleWithParentPath extends Component {
+    }
+
+    @Tag("div")
+    @JsModule("context://module.js")
+    private static class ContextJsModule extends Component {
+    }
+
+    @Tag("div")
+    @JsModule("/absolute-module.js")
+    private static class AbsoluteJsModule extends Component {
+    }
+
+    @Tag("div")
     @JavaScript(value = "not-bundled-module.js", type = JavaScript.Type.MODULE)
     private static class ProductionRelativeModule extends Component {
     }
@@ -212,6 +227,26 @@ class RuntimeJavaScriptDependencyTest {
     void externalJsModule_stillAddedAsRuntimeJsModule() {
         assertSingleDependency(ExternalJsModule.class,
                 Dependency.Type.JS_MODULE, "https://example.net/module.js",
+                LoadMode.EAGER);
+    }
+
+    @Test
+    void externalJsModuleWithParentPath_urlPassedThroughUntouched() {
+        assertSingleDependency(ExternalJsModuleWithParentPath.class,
+                Dependency.Type.JS_MODULE,
+                "https://example.net/pkg/../dist/module.js", LoadMode.EAGER);
+    }
+
+    @Test
+    void contextJsModule_addedAsRuntimeJsModule() {
+        assertSingleDependency(ContextJsModule.class, Dependency.Type.JS_MODULE,
+                "context://module.js", LoadMode.EAGER);
+    }
+
+    @Test
+    void absoluteJsModule_addedAsRuntimeJsModule() {
+        assertSingleDependency(AbsoluteJsModule.class,
+                Dependency.Type.JS_MODULE, "/absolute-module.js",
                 LoadMode.EAGER);
     }
 

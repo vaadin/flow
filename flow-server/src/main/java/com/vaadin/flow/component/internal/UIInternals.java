@@ -1558,8 +1558,7 @@ public class UIInternals implements Serializable {
                 .filter(js -> FrontendDependencyUrlResolver
                         .isRuntimeDependencyUrl(js.value()))
                 .forEach(js -> {
-                    String resolved = FrontendDependencyUrlResolver
-                            .resolveToContextRoot(js.value());
+                    String resolved = resolveRuntimeJavaScript(js.value());
                     if (resolved == null) {
                         return;
                     }
@@ -1575,8 +1574,9 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Normalizes a runtime {@link JavaScript} annotation value so that the
-     * bootstrap URI resolver can expand it.
+     * Normalizes a runtime {@link JavaScript} or
+     * {@link com.vaadin.flow.component.dependency.JsModule} annotation value so
+     * that the bootstrap URI resolver can expand it.
      * <p>
      * Values with a protocol (external URLs but also {@code context://} and
      * {@code base://}) are passed through untouched, the same way they were
