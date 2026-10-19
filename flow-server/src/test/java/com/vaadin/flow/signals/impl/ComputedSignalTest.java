@@ -31,12 +31,10 @@ import java.util.concurrent.locks.LockSupport;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
-import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSharedSignal;
@@ -46,7 +44,6 @@ import com.vaadin.flow.signals.shared.SharedValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -282,133 +279,13 @@ class ComputedSignalTest extends SignalTestBase {
     @Test
     void cached_nestedCachedWithoutListeners_outerUpdatedOnTransitiveChange() {
         ValueSignal<Integer> source = new ValueSignal<>(1);
-        AtomicInteger outerCount = new AtomicInteger();
-
-        Signal<Integer> inner = Signal.cached(source.map(value -> value % 10));
-        Signal<Integer> outer = Signal.cached(() -> {
-            outerCount.incrementAndGet();
-            return inner.get() + 1;
-        });
-
-        assertEquals(2, outer.peek());
-        assertEquals(1, outerCount.intValue());
-
-        source.set(2);
-        assertEquals(3, outer.peek());
-        assertEquals(2, outerCount.intValue());
-
-        // Inner is recomputed but produces the same value
-        source.set(12);
-        assertEquals(3, outer.peek());
-        assertEquals(2, outerCount.intValue());
-    }
-
-    @Test
-    void cached_diamondOfNestedCached_eachDependencyCheckedOncePerRead() {
-        AtomicInteger sourceChecks = new AtomicInteger();
-        SharedValueSignal<Integer> source = new SharedValueSignal<>(1) {
-            @Override
-            protected Usage createUsage(Transaction transaction) {
-                Usage usage = super.createUsage(transaction);
-                return new Usage() {
-                    @Override
-                    public boolean hasChanges() {
-                        sourceChecks.incrementAndGet();
-                        return usage.hasChanges();
-                    }
-
-                    @Override
-                    public Registration onNextChange(
-                            TransientListener listener) {
-                        return usage.onNextChange(listener);
-                    }
-                };
-            }
-        };
-
-        // Each level reads the level below twice, so there are 2^20 paths
-        // from the top level to the source
-        Signal<Integer> level = Signal.cached(source.map(value -> value));
-        for (int i = 0; i < 20; i++) {
-            Signal<Integer> below = level;
-            level = Signal.cached(() -> below.get() + below.get());
-        }
-        Signal<Integer> top = level;
-
-        top.peek();
-        sourceChecks.set(0);
-        top.peek();
-        assertEquals(1, sourceChecks.get());
-
-        source.set(2);
-        sourceChecks.set(0);
-        assertEquals(2 << 20, top.peek());
-        assertTrue(sourceChecks.get() <= 21 * 2,
-                "Source checked " + sourceChecks.get() + " times");
-    }
-
-    @Test
-    void cached_readAgainInTransactionDuringRead_transactionValueSeen() {
-        SharedValueSignal<Integer> source = new SharedValueSignal<>(1);
-        Signal<Integer> inner = Signal.cached(source.map(value -> value));
-        AtomicInteger valueInTransaction = new AtomicInteger();
-
-        Signal<Integer> outer = Signal.cached(() -> {
-            int value = inner.get();
-            Transaction.runInTransaction(() -> {
-                source.set(5);
-                valueInTransaction.set(inner.get());
-            });
-            return value;
-        });
-
-        outer.peek();
-        assertEquals(5, valueInTransaction.get());
-    }
-
-    @Test
-    void cached_nestedCachedFailsOnRevalidation_outerComputationHandlesError() {
-        ValueSignal<Integer> source = new ValueSignal<>(1);
-        ValueSignal<Integer> other = new ValueSignal<>(100);
-        AtomicInteger innerCount = new AtomicInteger();
-
-        // Reads no signal when run again, which fails revalidation
-        Signal<Integer> inner = Signal.cached(
-                () -> innerCount.getAndIncrement() == 0 ? source.get() : 0);
-        Signal<Integer> outer = Signal.cached(() -> {
-            int value;
-            try {
-                value = inner.get();
-            } catch (MissingSignalUsageException e) {
-                value = -1;
-            }
-            return value + other.get();
-        });
-
-        assertEquals(101, outer.peek());
-
-        source.set(2);
-        assertEquals(99, outer.peek());
-    }
-
-    @Test
-    void cached_nestedCachedComputationThrows_exceptionRethrownFromOuter() {
-        ValueSignal<Integer> source = new ValueSignal<>(1);
-        IllegalStateException expected = new IllegalStateException();
-
-        Signal<Integer> inner = Signal.cached(() -> {
-            if (source.get() > 1) {
-                throw expected;
-            }
-            return source.get();
-        });
+        Signal<Integer> inner = Signal.cached(source.map(value -> value * 10));
         Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
 
-        assertEquals(2, outer.peek());
+        assertEquals(11, outer.peek());
 
         source.set(2);
-        assertSame(expected,
-                assertThrows(IllegalStateException.class, outer::peek));
+        assertEquals(21, outer.peek());
     }
 
     @Test

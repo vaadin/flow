@@ -687,60 +687,6 @@ class EffectTest extends SignalTestBase {
     }
 
     @Test
-    void passivateActivate_nestedCachedSignal_transitiveChangeDetected() {
-        TestExecutor dispatcher = useTestEffectDispatcher();
-        ValueSignal<Integer> source = new ValueSignal<>(1);
-        Signal<Integer> inner = Signal.cached(source.map(value -> value % 10));
-        Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
-        ArrayList<Integer> invocations = new ArrayList<>();
-
-        Effect effect = new Effect(() -> {
-            invocations.add(outer.get());
-        });
-        dispatcher.runPendingTasks();
-        assertEquals(List.of(2), invocations);
-
-        // Inner is recomputed but produces the same value
-        effect.passivate();
-        source.set(11);
-        effect.activate();
-        assertEquals(0, dispatcher.countPendingTasks());
-        assertEquals(List.of(2), invocations);
-
-        effect.passivate();
-        source.set(12);
-        effect.activate();
-        assertEquals(List.of(2, 3), invocations);
-    }
-
-    @Test
-    void passivateActivate_cachedSignalFailsOnRevalidation_actionGetsError() {
-        ValueSignal<Integer> source = new ValueSignal<>(1);
-        ValueSignal<Integer> other = new ValueSignal<>(100);
-        AtomicInteger innerCount = new AtomicInteger();
-
-        // Reads no signal when run again, which fails revalidation
-        Signal<Integer> cached = Signal.cached(
-                () -> innerCount.getAndIncrement() == 0 ? source.get() : 0);
-        ArrayList<Integer> invocations = new ArrayList<>();
-
-        Effect effect = new Effect(() -> {
-            try {
-                invocations.add(cached.get());
-            } catch (MissingSignalUsageException e) {
-                invocations.add(-1);
-            }
-            other.get();
-        });
-        assertEquals(List.of(1), invocations);
-
-        effect.passivate();
-        source.set(2);
-        effect.activate();
-        assertEquals(List.of(1, -1), invocations);
-    }
-
-    @Test
     void passivateActivate_noChanges_nextChangeIsNotInitialRun() {
         SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<Boolean> initialRuns = new ArrayList<>();

@@ -16,8 +16,6 @@
 package com.vaadin.flow.signals.impl;
 
 import java.io.Serializable;
-import java.util.IdentityHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -64,20 +62,6 @@ public class CachedSignal<T extends @Nullable Object>
             @Nullable RuntimeException exception,
             Usage dependencies) implements Serializable {
     }
-
-    /*
-     * Cached signals that have already been revalidated during the ongoing
-     * top-level read on this thread, mapped to the transaction they were
-     * revalidated in. Revalidating a cached signal checks its dependencies,
-     * which in turn revalidates any cached signals among them. Without this
-     * memo, a cached signal reachable through several paths in the dependency
-     * graph would be checked once per path, making the cost of a single read
-     * grow exponentially with the depth of the graph. Storing a recomputed
-     * value during a read does not notify any listeners that could change
-     * already validated signals: a cached signal with active listeners is
-     * revalidated as soon as a dependency changes rather than when read.
-     */
-    private static final ThreadLocal<@Nullable Map<CachedSignal<?>, Transaction>> validatedInCurrentRead = new ThreadLocal<>();
 
     private final Signal<T> inner;
 
@@ -160,7 +144,7 @@ public class CachedSignal<T extends @Nullable Object>
         // Read inner value to get new dependencies. Reading dependencies (and
         // possibly submitting the refreshed cache value) acquires tree locks,
         // so this must likewise run without the monitor held.
-        CacheState state = requireValidState(data(Transaction.getCurrent()));
+        CacheState state = getValidState(data(Transaction.getCurrent()));
 
         // avoid lambda to allow proper deserialization
         TransientListener usageListener = new TransientListener() {
@@ -255,19 +239,13 @@ public class CachedSignal<T extends @Nullable Object>
                 /*
                  * Without active listeners, the cached value is only
                  * revalidated when read, so the stored value may be stale even
-                 * though a dependency has changed. Revalidate before comparing
-                 * so that an outer cached signal sees transitive changes.
+                 * though a dependency has changed. Check the dependencies of
+                 * the stored value as well so that an outer cached signal sees
+                 * transitive changes.
                  */
-                if (getValidState(data(Transaction.getCurrent())) == null) {
-                    /*
-                     * The computation read no signal value. Report a change so
-                     * that the caller reads the value again, which throws in a
-                     * context where the caller can handle it, e.g. inside the
-                     * computation of an outer cached signal.
-                     */
-                    return true;
-                }
-                return superUsage.hasChanges();
+                CacheState state = readState(data(Transaction.getCurrent()));
+                return (state != null && state.dependencies.hasChanges())
+                        || superUsage.hasChanges();
             }
 
             @Override
@@ -297,52 +275,7 @@ public class CachedSignal<T extends @Nullable Object>
         };
     }
 
-    private CacheState requireValidState(@Nullable Data data) {
-        CacheState state = getValidState(data);
-        if (state == null) {
-            throw new MissingSignalUsageException(
-                    "A computing inner signal must read at least one other signal value.");
-        }
-        return state;
-    }
-
-    /*
-     * Returns null if the inner signal had to be computed again but did not
-     * read any signal value.
-     */
-    private @Nullable CacheState getValidState(@Nullable Data data) {
-        Map<CachedSignal<?>, Transaction> validated = validatedInCurrentRead
-                .get();
-        if (validated == null) {
-            validated = new IdentityHashMap<>();
-            validatedInCurrentRead.set(validated);
-            try {
-                return getValidState(data, validated);
-            } finally {
-                validatedInCurrentRead.remove();
-            }
-        }
-        return getValidState(data, validated);
-    }
-
-    private @Nullable CacheState getValidState(@Nullable Data data,
-            Map<CachedSignal<?>, Transaction> validated) {
-        Transaction transaction = Transaction.getCurrent();
-        if (validated.get(this) == transaction) {
-            CacheState state = readState(data);
-            if (state != null) {
-                return state;
-            }
-        }
-
-        CacheState state = revalidate(data);
-        if (state != null) {
-            validated.put(this, transaction);
-        }
-        return state;
-    }
-
-    private @Nullable CacheState revalidate(@Nullable Data data) {
+    private CacheState getValidState(@Nullable Data data) {
         CacheState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
@@ -356,7 +289,8 @@ public class CachedSignal<T extends @Nullable Object>
                 }
             });
             if (dependencies == UsageTracker.NO_USAGE) {
-                return null;
+                throw new MissingSignalUsageException(
+                        "A computing inner signal must read at least one other signal value.");
             }
             @Nullable
             Object value = holder[0];
@@ -402,7 +336,7 @@ public class CachedSignal<T extends @Nullable Object>
 
     @Override
     protected @Nullable T extractValue(@Nullable Data data) {
-        CacheState state = requireValidState(data);
+        CacheState state = getValidState(data);
 
         if (state.exception != null) {
             throw state.exception;
