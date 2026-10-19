@@ -407,21 +407,37 @@ class ComputedSignalTest extends SignalTestBase {
     @Test
     void cached_dependsOnCachedThatThrows_exceptionRethrownAndRecovered() {
         ValueSignal<Integer> source = new ValueSignal<>(1);
-        Signal<Integer> inner = Signal.cached(() -> {
-            if (source.get() < 0) {
-                throw new ArithmeticException("negative");
+        Signal<@Nullable Integer> inner = Signal.cached(() -> {
+            int value = source.get();
+            if (value < 0) {
+                throw new ArithmeticException("negative " + value);
             }
-            return source.get();
+            return value == 0 ? null : value;
         });
-        Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
+        Signal<@Nullable Integer> outer = Signal.cached(() -> inner.get());
 
-        assertEquals(2, outer.peek());
+        assertEquals(1, outer.peek());
 
         source.set(-1);
-        assertThrows(ArithmeticException.class, outer::peek);
+        assertEquals("negative -1",
+                assertThrows(ArithmeticException.class, outer::peek)
+                        .getMessage());
+
+        source.set(0);
+        assertNull(outer.peek());
+
+        source.set(-2);
+        assertEquals("negative -2",
+                assertThrows(ArithmeticException.class, outer::peek)
+                        .getMessage());
+
+        source.set(-3);
+        assertEquals("negative -3",
+                assertThrows(ArithmeticException.class, outer::peek)
+                        .getMessage());
 
         source.set(5);
-        assertEquals(6, outer.peek());
+        assertEquals(5, outer.peek());
     }
 
     @Test

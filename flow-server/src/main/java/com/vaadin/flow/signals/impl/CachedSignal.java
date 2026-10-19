@@ -401,7 +401,13 @@ public class CachedSignal<T extends @Nullable Object>
         if (value == null) {
             return null;
         }
-        return extractState(value).value;
+        /*
+         * Compare the exception when there is one, since the value is null both
+         * while throwing and when the computation returns null. Exceptions are
+         * compared by identity, so each new exception is a change.
+         */
+        CacheState state = extractState(value);
+        return state.exception != null ? state.exception : state.value;
     }
 
     @Override
