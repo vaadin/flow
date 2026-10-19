@@ -160,24 +160,12 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
-    void externalScript_addedAsRuntimeJavaScript() {
-        assertSingleDependency(ExternalScript.class, Dependency.Type.JAVASCRIPT,
-                "https://example.net/script.js", LoadMode.EAGER);
-    }
-
-    @Test
     void externalScriptWithParentPath_urlPassedThroughUntouched() {
         // External URLs are not normalized, so a '..' segment inside one must
         // not cause the dependency to be dropped
         assertSingleDependency(ExternalScriptWithParentPath.class,
                 Dependency.Type.JAVASCRIPT,
                 "https://example.net/pkg/../dist/script.js", LoadMode.EAGER);
-    }
-
-    @Test
-    void contextModule_urlPassedThroughUntouched() {
-        assertSingleDependency(ContextModule.class, Dependency.Type.JS_MODULE,
-                "context://module.js", LoadMode.EAGER);
     }
 
     @Test
@@ -237,15 +225,14 @@ class RuntimeJavaScriptDependencyTest {
                         + log);
     }
 
-    @Test
-    void externalJsModule_stillAddedAsRuntimeJsModule() {
-        assertSingleDependency(ExternalJsModule.class,
-                Dependency.Type.JS_MODULE, "https://example.net/module.js",
-                LoadMode.EAGER);
-    }
-
     static Stream<Arguments> runtimePrefixedValues() {
         return Stream.of(
+                Arguments.of(ExternalScript.class, Dependency.Type.JAVASCRIPT,
+                        "https://example.net/script.js"),
+                Arguments.of(ContextModule.class, Dependency.Type.JS_MODULE,
+                        "context://module.js"),
+                Arguments.of(ExternalJsModule.class, Dependency.Type.JS_MODULE,
+                        "https://example.net/module.js"),
                 Arguments.of(ContextJsModule.class, Dependency.Type.JS_MODULE,
                         "context://module.js"),
                 Arguments.of(AbsoluteJsModule.class, Dependency.Type.JS_MODULE,
