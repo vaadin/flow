@@ -2,8 +2,8 @@
   "private": true,
   "description": "A list of Flow dependencies when using React 19",
   "dependencies": {
-    "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
     "@types/react": "19.3.0",
