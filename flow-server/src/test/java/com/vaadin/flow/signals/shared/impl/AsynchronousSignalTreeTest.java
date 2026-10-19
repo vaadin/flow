@@ -256,7 +256,7 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
 
         // Drain the pending access queue so the deferred effect runs.
         VaadinService.getCurrent()
-                .runPendingAccessTasks(VaadinSession.getCurrent());
+                .runPendingAccessTasks(VaadinSession.getCurrentOrThrow());
 
         // After draining, the effect has recovered its observer.
         signal.set(200.0);
