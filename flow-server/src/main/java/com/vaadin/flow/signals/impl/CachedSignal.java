@@ -346,8 +346,18 @@ public class CachedSignal<T extends @Nullable Object>
             Set<CachedSignal<?>> refreshed) {
         for (CachedSignal<?> dependency : state.cachedDependencies) {
             if (refreshed.add(dependency)) {
-                dependency.getValidState(
-                        dependency.data(Transaction.getCurrent()), refreshed);
+                try {
+                    dependency.getValidState(
+                            dependency.data(Transaction.getCurrent()),
+                            refreshed);
+                } catch (MissingSignalUsageException e) {
+                    /*
+                     * Recompute so that reading the dependency throws the same
+                     * exception inside the computation, where it can be handled
+                     * like other exceptions from the dependency.
+                     */
+                    return true;
+                }
                 if (state.dependencies.hasChanges()) {
                     return true;
                 }

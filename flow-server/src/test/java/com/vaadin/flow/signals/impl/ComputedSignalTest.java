@@ -441,6 +441,25 @@ class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void cached_dependsOnCachedWithoutSignalUsage_exceptionHandledInComputation() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        Signal<Integer> inner = Signal
+                .cached(() -> source.peek() > 0 ? source.get() : 0);
+        Signal<Integer> outer = Signal.cached(() -> {
+            try {
+                return inner.get();
+            } catch (MissingSignalUsageException e) {
+                return -1;
+            }
+        });
+
+        assertEquals(1, outer.peek());
+
+        source.set(-1);
+        assertEquals(-1, outer.peek());
+    }
+
+    @Test
     void cached_dependsOnCachedInAbortedTransaction_valueRestoredAfterRejection() {
         SharedValueSignal<Integer> source = new SharedValueSignal<>(1);
         Signal<Integer> inner = Signal.cached(source.map(value -> value * 10));
