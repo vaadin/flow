@@ -292,10 +292,11 @@ class PublishedServerEventHandlerRpcHandlerTest {
         // Only the interface declaration is annotated, so the implementation
         // is not published
         ComponentWithDefaultClientCallable component = new ComponentWithDefaultClientCallable();
+        ArrayNode args = JacksonUtils.createArrayNode();
         assertThrows(IllegalStateException.class,
                 () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
-                        component, component.getClass(), "abstractMethod",
-                        JacksonUtils.createArrayNode(), -1));
+                        component, ComponentWithDefaultClientCallable.class,
+                        "abstractMethod", args, -1));
 
         assertFalse(component.isInvoked);
     }
