@@ -121,8 +121,8 @@ final class FrontendClassVisitor extends ClassVisitor {
                     // @JavaScript with a runtime prefix: load at runtime, not
                     // bundled. No deprecation — this is the recommended form.
                 } else if (!isJavaScriptAnnotation && runtimeUrl) {
-                    // @JsModule with a runtime URL: keep working at runtime
-                    // via Page.addJsModule, but skip from the bundle and warn
+                    // @JsModule with a runtime URL: keep loading it at runtime
+                    // as a script module, but skip it from the bundle and warn
                     // users to migrate to @JavaScript.
                     if (deprecatedRuntimeTarget != null) {
                         deprecatedRuntimeTarget.add(currentModule);

@@ -236,40 +236,46 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private void warnAboutDeprecatedJavaScriptUses() {
-        Set<String> warnedJavaScriptKeys = new LinkedHashSet<>();
-        Set<String> warnedJsModuleKeys = new LinkedHashSet<>();
+        Set<String> usages = new LinkedHashSet<>();
+        Set<String> runtimeModuleUsages = new LinkedHashSet<>();
         for (Entry<String, ClassInfo> entry : visitedClasses.entrySet()) {
-            String className = entry.getKey();
             ClassInfo classInfo = entry.getValue();
             if (classInfo == null) {
                 continue;
             }
-            for (String value : classInfo.scripts) {
-                if (warnedJavaScriptKeys.add(className + ':' + value)) {
-                    log().warn(
-                            "@JavaScript on {} with value \"{}\" uses the deprecated bundled interpretation. "
-                                    + "Prepend context:// for a runtime <script> tag, set type=Type.MODULE for a runtime <script type=\"module\"> tag, or migrate to @JsModule for bundling.",
-                            className, value);
-                }
-            }
-            for (String value : classInfo.scriptsDevelopmentOnly) {
-                if (warnedJavaScriptKeys.add(className + ':' + value)) {
-                    log().warn(
-                            "@JavaScript on {} with value \"{}\" uses the deprecated bundled interpretation. "
-                                    + "Prepend context:// for a runtime <script> tag, set type=Type.MODULE for a runtime <script type=\"module\"> tag, or migrate to @JsModule for bundling.",
-                            className, value);
-                }
-            }
-            for (String value : classInfo.deprecatedRuntimeModules) {
-                if (warnedJsModuleKeys.add(className + ':' + value)) {
-                    log().warn(
-                            "@JsModule on {} with value \"{}\" is a runtime URL. "
-                                    + "@JsModule is for build-time bundle sources only; "
-                                    + "use @JavaScript(value=\"{}\", type=Type.MODULE) for a runtime <script type=\"module\"> tag.",
-                            className, value, value);
-                }
-            }
+            Stream.concat(classInfo.scripts.stream(),
+                    classInfo.scriptsDevelopmentOnly.stream())
+                    .map(value -> entry.getKey() + ": \"" + value + "\"")
+                    .forEach(usages::add);
+            classInfo.deprecatedRuntimeModules.stream()
+                    .map(value -> entry.getKey() + ": \"" + value + "\"")
+                    .forEach(runtimeModuleUsages::add);
         }
+        // Logged once per scan rather than per usage, as annotations coming
+        // from add-ons cannot be changed by the application developer
+        if (!usages.isEmpty()) {
+            log().warn("Found @JavaScript values that are bundled. "
+                    + "This bundled interpretation of @JavaScript is deprecated.{}"
+                    + "\nTo keep bundling a file, replace @JavaScript with @JsModule using the same value. "
+                    + "To load a file from the frontend directory at runtime instead, move it to a statically served location "
+                    + "(e.g. src/main/resources/META-INF/resources) and reference it with a context:// prefix, "
+                    + "or set type = JavaScript.Type.MODULE for an ES module. "
+                    + "Usages in add-ons need to be updated by the add-on maintainer.",
+                    formatUsages(usages));
+        }
+        if (!runtimeModuleUsages.isEmpty()) {
+            log().warn("Found @JsModule values with a runtime URL. "
+                    + "These are loaded at runtime and not bundled, which is deprecated for @JsModule.{}"
+                    + "\n@JsModule is for build-time bundle sources only. "
+                    + "Replace these with @JavaScript(value = ..., type = JavaScript.Type.MODULE) using the same value. "
+                    + "Usages in add-ons need to be updated by the add-on maintainer.",
+                    formatUsages(runtimeModuleUsages));
+        }
+    }
+
+    private static String formatUsages(Set<String> usages) {
+        return usages.stream().map(usage -> "\n  - " + usage)
+                .collect(Collectors.joining());
     }
 
     Set<String> collectReachableClasses(EntryPointData entryPointData) {

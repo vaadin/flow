@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -398,6 +399,15 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                     // type=MODULE values are loaded at runtime
                                     // as <script type="module"> and must not
                                     // enter the bundle
+                                    return;
+                                }
+
+                                if (FrontendDependencyUrlResolver
+                                        .isRuntimeDependencyUrl(value)) {
+                                    // Values with a runtime prefix are loaded
+                                    // at runtime as <script> or <script
+                                    // type="module"> and must not enter the
+                                    // bundle
                                     return;
                                 }
 

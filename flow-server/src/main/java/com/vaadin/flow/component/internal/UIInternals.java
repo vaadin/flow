@@ -49,6 +49,7 @@ import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
@@ -1496,17 +1497,16 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
-        // Runtime values (type=MODULE or a runtime URL) are deliberately kept
-        // out of the bundle and are loaded at runtime instead, so their
+        // type=MODULE values and values with a runtime prefix are deliberately
+        // kept out of the bundle and are loaded at runtime instead, so their
         // absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
-                .filter(js -> !isRuntimeJavaScript(js)).map(dep -> dep.value())
+                .filter(js -> !isRuntimeJavaScript(js)).map(JavaScript::value)
                 .collect(Collectors.toList()));
-        jsDeps.addAll(
-                dependencies.getJsModules().stream().map(dep -> dep.value())
-                        .filter(src -> !FrontendDependencyUrlResolver
-                                .isRuntimeDependencyUrl(src))
-                        .collect(Collectors.toList()));
+        jsDeps.addAll(dependencies.getJsModules().stream().map(JsModule::value)
+                .filter(src -> !FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(src))
+                .collect(Collectors.toList()));
 
         if (!jsDeps.isEmpty()) {
             maybeWarnAboutDependencies(componentClass, jsDeps);
@@ -1536,7 +1536,10 @@ public class UIInternals implements Serializable {
             Class<? extends Component> componentClass,
             DependencyInfo dependency) {
         Page page = ui.getPage();
+        boolean productionMode = ui.getSession() != null
+                && ui.getSession().getConfiguration().isProductionMode();
         dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+                .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> {
                     // Checked before resolving the value so that an
                     // unsupported combination is reported even when the value
@@ -1574,14 +1577,13 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Normalizes a runtime {@link JavaScript} or
-     * {@link com.vaadin.flow.component.dependency.JsModule} annotation value so
-     * that the bootstrap URI resolver can expand it.
+     * Normalizes a runtime {@link JavaScript} annotation value so that the
+     * bootstrap URI resolver can expand it.
      * <p>
      * Values with a protocol (external URLs but also {@code context://} and
      * {@code base://}) are passed through untouched, the same way they were
-     * before {@link JavaScript.Type#MODULE} existed. Other values are
-     * normalized by
+     * before {@link JavaScript.Type#MODULE} existed. All other values, such as
+     * absolute paths or bare relative {@code Type.MODULE} values, go through
      * {@link FrontendDependencyUrlResolver#resolveToContextRoot(String)}.
      *
      * @return the normalized value, or {@code null} if the value was rejected
