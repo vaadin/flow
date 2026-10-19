@@ -1,0 +1,51 @@
+import java.nio.file.*;
+
+logFile = basedir.toPath().resolve("build.log");
+if (!Files.exists(logFile, new LinkOption[0])) {
+    throw new RuntimeException("build.log not found");
+}
+
+logs = Files.readString(logFile);
+
+// Scenario 1: old property only (node.download.root) should produce deprecation warning
+if (!logs.contains("'node.download.root' is deprecated")) {
+    throw new RuntimeException(
+            "Expected deprecation warning for 'node.download.root' but not found in logs.\n\n" + logs);
+}
+if (!logs.contains("'vaadin.node.download.root' instead")) {
+    throw new RuntimeException(
+            "Expected suggestion to use 'vaadin.node.download.root' but not found in logs.\n\n" + logs);
+}
+
+// Scenario 2: old property via POM <properties> (node.version) should produce deprecation warning
+if (!logs.contains("'node.version' is deprecated")) {
+    throw new RuntimeException(
+            "Expected deprecation warning for project property 'node.version' but not found in logs.\n\n" + logs);
+}
+if (!logs.contains("'vaadin.node.version' instead")) {
+    throw new RuntimeException(
+            "Expected suggestion to use 'vaadin.node.version' but not found in logs.\n\n" + logs);
+}
+
+// Scenario 3: new property only (vaadin.pnpm.enable) should NOT produce a warning
+if (logs.contains("'pnpm.enable' is deprecated")) {
+    throw new RuntimeException(
+            "Unexpected deprecation warning for 'pnpm.enable' when only vaadin.pnpm.enable was set.\n\n" + logs);
+}
+
+// Scenario 4: both old and new (build.folder + vaadin.build.folder) should warn old is ignored
+if (!logs.contains("'build.folder' will be ignored")) {
+    throw new RuntimeException(
+            "Expected 'will be ignored' warning for 'build.folder' but not found in logs.\n\n" + logs);
+}
+
+// Scenario 5: -Dskip=true must not skip the goal (vaadin.skip was always prefixed, not migrated)
+if (logs.contains("Skipping Vaadin build")) {
+    throw new RuntimeException(
+            "Goal was skipped by -Dskip=true but vaadin.skip was not set. "
+            + "The non-prefixed 'skip' property should not be recognized.\n\n" + logs);
+}
+if (logs.contains("'skip' is deprecated")) {
+    throw new RuntimeException(
+            "Unexpected deprecation warning for 'skip' which was never a valid Vaadin property.\n\n" + logs);
+}

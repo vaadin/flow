@@ -22,10 +22,21 @@ import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving an input stream for client download.
+ * <p>
+ * Byte range requests, which media players use to seek and browsers use to
+ * resume a download, are not answered by default. Every range request calls the
+ * callback again for a new stream, and the stream has to be read from its start
+ * up to the range: unless the stream can seek, such as a
+ * {@link java.io.FileInputStream}, each seek or resume reads all the bytes
+ * before it again, which adds up for large media that a player fetches in many
+ * small ranges. Ranges are also only correct if the callback returns the same
+ * content every time, which only the application knows. Call
+ * {@link #enableRangeRequests()} when that holds, or use
+ * {@link DownloadHandler#forFile(java.io.File)}, which answers ranges by
+ * seeking in the file.
  *
  * @since 24.8
  */
@@ -33,6 +44,8 @@ public class InputStreamDownloadHandler
         extends AbstractDownloadHandler<InputStreamDownloadHandler> {
 
     private final InputStreamDownloadCallback callback;
+    private String fileNameOverride;
+    private boolean rangeRequestsEnabled;
 
     /**
      * Create an input stream download handler for given event -> response
@@ -45,6 +58,27 @@ public class InputStreamDownloadHandler
         this.callback = callback;
     }
 
+    /**
+     * Create an input stream download handler for given event -> response
+     * function.
+     * <p>
+     * The downloaded file fileNameOverride and download URL postfix will be set
+     * to <code>fileNameOverride</code>.
+     *
+     * @param callback
+     *            serializable function for handling download
+     * @param fileNameOverride
+     *            used as a downloaded file name as a download request URL
+     *            postfix, e.g.
+     *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
+     * @since 25.2
+     */
+    public InputStreamDownloadHandler(InputStreamDownloadCallback callback,
+            String fileNameOverride) {
+        this.callback = callback;
+        this.fileNameOverride = fileNameOverride;
+    }
+
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
@@ -52,6 +86,12 @@ public class InputStreamDownloadHandler
         setTransferUI(downloadEvent.getUI());
         DownloadResponse download;
         try {
+            String resourceName = getUrlPostfix();
+            if (isInline()) {
+                downloadEvent.inline(resourceName);
+            } else {
+                downloadEvent.setFileName(resourceName);
+            }
             download = callback.complete(downloadEvent);
         } catch (IOException | RuntimeException e) {
             // Set status before output is closed (see #8740)
@@ -86,10 +126,9 @@ public class InputStreamDownloadHandler
 
         String downloadName = download.getFileName();
         String contentType = download.getContentType() == null
-                ? getContentType(downloadName, response)
+                ? resolveContentType(downloadName, response)
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
-        downloadEvent.setContentLength(download.getContentLength());
 
         if (isInline()) {
             downloadEvent.inline(downloadName);
@@ -99,8 +138,17 @@ public class InputStreamDownloadHandler
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
-            TransferUtil.transfer(inputStream, outputStream,
-                    getTransferContext(downloadEvent), getListeners());
+            transferContent(downloadEvent, inputStream, outputStream,
+                    download.getContentLength(),
+                    rangeRequestsEnabled
+                            ? new SeekableContent(downloadName, null, null)
+                            : null);
+        } catch (RangeRequestException e) {
+            // Not reported again: a cancel is not an error, and a smaller
+            // range was never reported as started
+            if (!e.isCancelled()) {
+                throw e;
+            }
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
@@ -108,5 +156,41 @@ public class InputStreamDownloadHandler
             notifyError(downloadEvent, ioe);
             throw ioe;
         }
+    }
+
+    /**
+     * Enables answering byte range requests, which media players use to seek
+     * and browsers use to resume a download. Safari does not play audio or
+     * video without them.
+     * <p>
+     * Only enable them if the callback returns the same content on every call,
+     * with a known content length: the callback is called for every range
+     * request, and a range that a client joins with a range of other content
+     * ends up as corrupt data. The bytes before a range are skipped from the
+     * returned stream, which is a seek for a stream that supports it, such as a
+     * {@link java.io.FileInputStream}, but reads them for other streams.
+     *
+     * @return this instance for method chaining
+     */
+    public InputStreamDownloadHandler enableRangeRequests() {
+        rangeRequestsEnabled = true;
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Range requests are answered after {@link #enableRangeRequests()}, but
+     * only for a {@link DownloadResponse} with a known content length. When the
+     * callback reports the length as {@code -1}, the whole content is sent.
+     */
+    @Override
+    public boolean isRangeRequestsEnabled() {
+        return rangeRequestsEnabled;
+    }
+
+    @Override
+    public String getUrlPostfix() {
+        return fileNameOverride;
     }
 }

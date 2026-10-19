@@ -39,6 +39,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Answers;
 import org.mockito.InOrder;
@@ -79,6 +81,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class BuildFrontendUtilTest {
 
@@ -99,19 +113,19 @@ class BuildFrontendUtilTest {
         File frontendOutput = Files
                 .createDirectories(tmpDir.resolve("frontend-output")).toFile();
 
-        adapter = Mockito.mock(PluginAdapterBuild.class);
-        Mockito.when(adapter.frontendOutputDirectory())
-                .thenReturn(frontendOutput);
-        Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
-        Mockito.when(adapter.generatedTsFolder())
+        adapter = mock(PluginAdapterBuild.class);
+        when(adapter.frontendOutputDirectory()).thenReturn(frontendOutput);
+        when(adapter.npmFolder()).thenReturn(baseDir);
+        when(adapter.generatedTsFolder())
                 .thenReturn(new File(baseDir, "src/main/frontend/generated"));
-        Mockito.when(adapter.projectBaseDirectory()).thenReturn(tmpDir);
-        Mockito.when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
+        when(adapter.projectBaseDirectory()).thenReturn(tmpDir);
+        when(adapter.applicationIdentifier()).thenReturn("TEST_APP_ID");
+        when(adapter.optimizeBundle()).thenReturn(true);
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 getClass().getClassLoader());
-        lookup = Mockito.spy(new LookupImpl(classFinder));
-        Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
-        Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
+        lookup = spy(new LookupImpl(classFinder));
+        when(adapter.createLookup(any())).thenReturn(lookup);
+        doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
 
         // setup: mock a vite executable
         File viteBin = new File(baseDir, "node_modules/vite/bin");
@@ -120,7 +134,7 @@ class BuildFrontendUtilTest {
         assertTrue(viteExecutableMock.createNewFile());
 
         resourceOutput = new File(baseDir, "resOut");
-        Mockito.when(adapter.servletResourceOutputDirectory())
+        when(adapter.servletResourceOutputDirectory())
                 .thenReturn(resourceOutput);
         statsJson = new File(new File(resourceOutput, "config"), "stats.json");
         statsJson.getParentFile().mkdirs();
@@ -136,18 +150,15 @@ class BuildFrontendUtilTest {
 
         File openApiJsonFile = new File(new File(baseDir, Constants.TARGET),
                 "classes/com/vaadin/hilla/openapi.json");
-        Mockito.when(adapter.openApiJsonFile()).thenReturn(openApiJsonFile);
+        when(adapter.openApiJsonFile()).thenReturn(openApiJsonFile);
 
         BuildFrontendUtil.prepareFrontend(adapter);
 
         // no hilla no lookup call
-        Mockito.verify(lookup, Mockito.never())
-                .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.verify(lookup, Mockito.never())
-                .lookup(TaskGenerateOpenAPI.class);
-        Mockito.verify(lookup, Mockito.never())
-                .lookup(TaskGenerateEndpoint.class);
-        Mockito.verify(adapter, Mockito.never()).openApiJsonFile();
+        verify(lookup, never()).lookup(EndpointGeneratorTaskFactory.class);
+        verify(lookup, never()).lookup(TaskGenerateOpenAPI.class);
+        verify(lookup, never()).lookup(TaskGenerateEndpoint.class);
+        verify(adapter, never()).openApiJsonFile();
     }
 
     @Test
@@ -155,47 +166,44 @@ class BuildFrontendUtilTest {
             throws URISyntaxException, ExecutionFailedException {
         setupPluginAdapterDefaults();
 
-        MockedConstruction<TaskRunNpmInstall> construction = Mockito
-                .mockConstruction(TaskRunNpmInstall.class);
+        MockedConstruction<TaskRunNpmInstall> construction = mockConstruction(
+                TaskRunNpmInstall.class);
 
-        final EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = Mockito
-                .mock(EndpointGeneratorTaskFactory.class);
-        Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
+        final EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = mock(
+                EndpointGeneratorTaskFactory.class);
+        doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        final TaskGenerateOpenAPI taskGenerateOpenAPI = Mockito
-                .mock(TaskGenerateOpenAPI.class);
-        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
-                .createTaskGenerateOpenAPI(Mockito.any());
+        final TaskGenerateOpenAPI taskGenerateOpenAPI = mock(
+                TaskGenerateOpenAPI.class);
+        doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateOpenAPI(any());
 
-        final TaskGenerateEndpoint taskGenerateEndpoint = Mockito
-                .mock(TaskGenerateEndpoint.class);
-        Mockito.doReturn(taskGenerateEndpoint)
-                .when(endpointGeneratorTaskFactory)
-                .createTaskGenerateEndpoint(Mockito.any());
+        final TaskGenerateEndpoint taskGenerateEndpoint = mock(
+                TaskGenerateEndpoint.class);
+        doReturn(taskGenerateEndpoint).when(endpointGeneratorTaskFactory)
+                .createTaskGenerateEndpoint(any());
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        Mockito.when(frontendDependencies.getPwaConfiguration())
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
+        when(frontendDependencies.getPwaConfiguration())
                 .thenReturn(new PwaConfiguration());
-        try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+        try (MockedStatic<FrontendBuildUtils> util = mockStatic(
                 FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+            util.when(() -> FrontendBuildUtils.isHillaUsed(any(), any()))
+                    .thenReturn(true);
             BuildFrontendUtil.runNodeUpdater(adapter, frontendDependencies);
         }
 
-        Mockito.verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.verify(lookup, Mockito.never())
-                .lookup(TaskGenerateOpenAPI.class);
-        Mockito.verify(lookup, Mockito.never())
-                .lookup(TaskGenerateEndpoint.class);
+        verify(lookup).lookup(EndpointGeneratorTaskFactory.class);
+        verify(lookup, never()).lookup(TaskGenerateOpenAPI.class);
+        verify(lookup, never()).lookup(TaskGenerateEndpoint.class);
 
         // Hilla Engine requires npm install, the order of execution is critical
         final TaskRunNpmInstall taskRunNpmInstall = construction.constructed()
                 .get(0);
-        InOrder inOrder = Mockito.inOrder(taskRunNpmInstall,
-                taskGenerateOpenAPI, taskGenerateEndpoint);
+        InOrder inOrder = inOrder(taskRunNpmInstall, taskGenerateOpenAPI,
+                taskGenerateEndpoint);
         inOrder.verify(taskRunNpmInstall).execute();
         inOrder.verify(taskGenerateOpenAPI).execute();
         inOrder.verify(taskGenerateEndpoint).execute();
@@ -204,20 +212,20 @@ class BuildFrontendUtilTest {
     @Test
     void detectsUsedCommercialComponents() {
 
-        final FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
+        final FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
         Map<String, String> packages = new HashMap<>();
         packages.put("comm-component", "4.6.5");
         packages.put("comm-component2", "4.6.5");
         packages.put("@vaadin/button", "1.2.1");
         String statsJsonContents = statsJsonWithCommercialComponents();
-        Mockito.when(scanner.getPackages()).thenReturn(packages);
+        when(scanner.getPackages()).thenReturn(packages);
 
         List<String> modules = new ArrayList<>();
         modules.add("comm-component/foo.js");
         Map<ChunkInfo, List<String>> modulesMap = Collections
                 .singletonMap(ChunkInfo.GLOBAL, modules);
-        Mockito.when(scanner.getModules()).thenReturn(modulesMap);
+        when(scanner.getModules()).thenReturn(modulesMap);
 
         List<Product> components = BuildFrontendUtil
                 .findCommercialFrontendComponents(scanner, statsJsonContents);
@@ -240,7 +248,7 @@ class BuildFrontendUtilTest {
         long lastModified = tokenFile.lastModified();
 
         Thread.sleep(100);
-        Mockito.when(adapter.nodeVersion()).thenReturn("v1.0.0");
+        when(adapter.nodeVersion()).thenReturn("v1.0.0");
         BuildFrontendUtil.propagateBuildInfo(adapter);
 
         assertNotEquals(lastModified, tokenFile.lastModified(),
@@ -265,8 +273,7 @@ class BuildFrontendUtilTest {
         fillAdapter();
         File frontendGeneratedFolder = new File(
                 new File(tmpDir.toFile(), "frontend"), "generated");
-        Mockito.when(adapter.generatedTsFolder())
-                .thenReturn(frontendGeneratedFolder);
+        when(adapter.generatedTsFolder()).thenReturn(frontendGeneratedFolder);
 
         // First run to create generated files
         BuildFrontendUtil.prepareFrontend(adapter);
@@ -311,20 +318,30 @@ class BuildFrontendUtilTest {
     @Test
     void updateBuildFile_tokenExisting_developmentEntriesRemoved()
             throws Exception {
+        // make prepare-frontend write every optional development entry as well
+        when(adapter.nodeFolder()).thenReturn("/home/somebody/node");
+        when(adapter.isPrepareFrontendCacheDisabled()).thenReturn(true);
+        when(adapter.isFrontendHotdeploy()).thenReturn(true);
+        when(adapter.isNpmExcludeWebComponents()).thenReturn(true);
+        when(adapter.frontendExtraFileExtensions()).thenReturn(List.of("svg"));
+
         File tokenFile = prepareAndAssertTokenFile();
-        JsonNode buildInfoJsonDev = JacksonUtils
-                .readTree(Files.readString(tokenFile.toPath()));
 
         BuildFrontendUtil.updateBuildFile(adapter, false, false);
         assertTrue(tokenFile.exists(), "Token file should still exist");
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
 
-        Set<String> removedKeys = JacksonUtils.getKeys(buildInfoJsonDev)
-                .stream().filter(key -> !buildInfoJsonProd.has(key))
-                .collect(Collectors.toSet());
-        assertFalse(removedKeys.isEmpty(),
-                "Development entries have not been removed from token file");
+        // The production token file is packaged into the application artifact,
+        // so it must contain only entries the runtime uses in production mode,
+        // and in particular no path from the machine that ran the build.
+        assertEquals(
+                Set.of(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
+                        InitParameters.SERVLET_PARAMETER_INITIAL_UIDL,
+                        InitParameters.REACT_ENABLE,
+                        InitParameters.APPLICATION_IDENTIFIER),
+                new HashSet<>(JacksonUtils.getKeys(buildInfoJsonProd)),
+                "Unexpected entries in the production token file");
     }
 
     @Test
@@ -433,7 +450,7 @@ class BuildFrontendUtilTest {
                 BuildFrontendUtilTest.class.getClassLoader());
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 classLoader);
-        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
+        when(adapter.getClassFinder()).thenReturn(classFinder);
 
         withMockedLicenseChecker(true, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true, false);
@@ -469,7 +486,7 @@ class BuildFrontendUtilTest {
     @Test
     void updateBuildFile_tokenExisting_commercialBannerBuildRequiredAndIsPremiumLike_premiumFeaturesFlagAdded()
             throws Exception {
-        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         addPremiumFeatureAndDAUFlagTrue(tokenFile);
@@ -480,7 +497,7 @@ class BuildFrontendUtilTest {
                 BuildFrontendUtilTest.class.getClassLoader());
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 classLoader);
-        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
+        when(adapter.getClassFinder()).thenReturn(classFinder);
 
         withMockedLicenseChecker(false, () -> {
             BuildFrontendUtil.updateBuildFile(adapter, true, true);
@@ -498,7 +515,7 @@ class BuildFrontendUtilTest {
     @Test
     void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildEnabled_commercialBannerFlagAdded()
             throws Exception {
-        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, true, true);
@@ -513,7 +530,7 @@ class BuildFrontendUtilTest {
     @Test
     void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildNotEnabled_throws()
             throws Exception {
-        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
+        when(adapter.isCommercialBannerEnabled()).thenReturn(false);
         prepareAndAssertTokenFile();
 
         // If commercial banner is required but not enabled, it means there's an
@@ -526,7 +543,7 @@ class BuildFrontendUtilTest {
     @Test
     void updateBuildFile_tokenExisting_commercialBannerBuildNotRequired_commercialBannerBuildEnabled_commercialBannerFlagNotAdded()
             throws Exception {
-        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, true, false);
@@ -541,7 +558,7 @@ class BuildFrontendUtilTest {
     @Test
     void updateBuildFile_tokenExisting_licenseNotRequired_commercialBannerBuildRequired_commercialBannerFlagNotAdded()
             throws Exception {
-        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, false, true);
@@ -556,7 +573,7 @@ class BuildFrontendUtilTest {
     @Test
     void validateLicense_commercialProducts_noLocalKeys_buildWithCommercialBannerDisabled_failsWithCommercialBannerSuggestion()
             throws Exception {
-        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
+        when(adapter.isCommercialBannerEnabled()).thenReturn(false);
 
         Files.createDirectories(statsJson.toPath().getParent());
         Map<String, String> packages = new HashMap<>();
@@ -575,10 +592,10 @@ class BuildFrontendUtilTest {
         Map<ChunkInfo, List<String>> modulesMap = Collections
                 .singletonMap(ChunkInfo.GLOBAL, modules);
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
-        Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getModules()).thenReturn(modulesMap);
 
         withMockedLicenseChecker(false, () -> {
             LicenseException exception = assertThrows(LicenseException.class,
@@ -600,7 +617,7 @@ class BuildFrontendUtilTest {
     @Test
     void validateLicense_commercialFrontendProducts_noLocalKeys_buildWithCommercialBannerEnabled_propagateMissingKeyException()
             throws Exception {
-        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         Files.createDirectories(statsJson.toPath().getParent());
         Map<String, String> packages = new HashMap<>();
         packages.put("comm-component", "4.6.5");
@@ -614,10 +631,97 @@ class BuildFrontendUtilTest {
         Map<ChunkInfo, List<String>> modulesMap = Collections
                 .singletonMap(ChunkInfo.GLOBAL, modules);
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
-        Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getModules()).thenReturn(modulesMap);
+
+        withMockedLicenseChecker(false, () -> {
+            assertThrows(MissingLicenseKeyException.class,
+                    () -> BuildFrontendUtil.validateLicenses(adapter,
+                            frontendDependencies));
+            assertTrue(adapter.frontendOutputDirectory().exists(),
+                    "Expected output directory to be preserved but was not");
+        });
+    }
+
+    @Test
+    void validateLicense_commercialProducts_optimizeBundleDisabled_commercialBannerDisabled_failsWithOptimizeBundleAwareMessage()
+            throws Exception {
+        when(adapter.isCommercialBannerEnabled()).thenReturn(false);
+        when(adapter.optimizeBundle()).thenReturn(false);
+
+        Files.createDirectories(statsJson.toPath().getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Set<String> commercialProducts = new HashSet<>();
+        commercialProducts.add("comm-comp");
+        commercialProducts.add("comm-comp2");
+
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
+        List<String> modules = List.of("comm-component/foo.js",
+                "comm-component2/bar.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getModules()).thenReturn(modulesMap);
+
+        withMockedLicenseChecker(false, () -> {
+            LicenseException exception = assertThrows(LicenseException.class,
+                    () -> BuildFrontendUtil.validateLicenses(adapter,
+                            frontendDependencies));
+            commercialProducts.forEach(product -> assertTrue(
+                    exception.getMessage().contains(product),
+                    "Exception should list all commercial products but "
+                            + product + " is missing"));
+            String message = exception.getMessage();
+            assertTrue(message.contains("optimizeBundle"),
+                    "Expected message to mention the optimizeBundle property but was: "
+                            + message);
+            assertTrue(message.contains("vaadin-core"),
+                    "Expected message to suggest switching to vaadin-core but was: "
+                            + message);
+            assertTrue(message.contains("provided"),
+                    "Expected message to mention provided scope for add-on authors but was: "
+                            + message);
+            assertTrue(message.contains(InitParameters.COMMERCIAL_WITH_BANNER),
+                    "Expected message to still suggest the commercial banner build but was: "
+                            + message);
+            assertFalse(adapter.frontendOutputDirectory().exists(),
+                    "Expected output directory to be deleted but was not");
+        });
+    }
+
+    @Test
+    void validateLicense_commercialProducts_optimizeBundleDisabled_commercialBannerEnabled_propagateMissingKeyExceptionUnchanged()
+            throws Exception {
+        when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        when(adapter.optimizeBundle()).thenReturn(false);
+
+        Files.createDirectories(statsJson.toPath().getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
+        List<String> modules = List.of("comm-component/foo.js",
+                "comm-component2/bar.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
+        when(frontendDependencies.getPackages()).thenReturn(packages);
+        when(frontendDependencies.getModules()).thenReturn(modulesMap);
 
         withMockedLicenseChecker(false, () -> {
             assertThrows(MissingLicenseKeyException.class,
@@ -630,16 +734,14 @@ class BuildFrontendUtilTest {
 
     private void withMockedLicenseChecker(boolean isValidLicense,
             ThrowingRunnable test) throws IOException {
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class, Answers.RETURNS_MOCKS)) {
-            licenseChecker
-                    .when(() -> LicenseChecker.isValidLicense(Mockito.any(),
-                            Mockito.any(), Mockito.any()))
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class, Answers.RETURNS_MOCKS)) {
+            licenseChecker.when(
+                    () -> LicenseChecker.isValidLicense(any(), any(), any()))
                     .thenReturn(isValidLicense);
             licenseChecker
-                    .when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
-                            Mockito.anyString(), Mockito.any(BuildType.class),
-                            Mockito.isNull()))
+                    .when(() -> LicenseChecker.checkLicense(anyString(),
+                            anyString(), any(BuildType.class), isNull()))
                     .then(i -> {
                         if (!isValidLicense) {
                             throw new MissingLicenseKeyException(
@@ -692,14 +794,14 @@ class BuildFrontendUtilTest {
                 BuildFrontendUtilTest.class.getClassLoader());
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 classLoader);
-        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
-        lookup = Mockito.spy(new LookupImpl(classFinder));
-        Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
-        Mockito.doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
+        when(adapter.getClassFinder()).thenReturn(classFinder);
+        lookup = spy(new LookupImpl(classFinder));
+        when(adapter.createLookup(any())).thenReturn(lookup);
+        doReturn(classFinder).when(lookup).lookup(ClassFinder.class);
 
-        FrontendDependenciesScanner frontendDependencies = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        Mockito.when(frontendDependencies.getPwaConfiguration())
+        FrontendDependenciesScanner frontendDependencies = mock(
+                FrontendDependenciesScanner.class);
+        when(frontendDependencies.getPwaConfiguration())
                 .thenReturn(new PwaConfiguration());
         BuildFrontendUtil.runNodeUpdater(adapter, frontendDependencies);
 
@@ -716,20 +818,20 @@ class BuildFrontendUtilTest {
     }
 
     private void fillAdapter() throws URISyntaxException {
-        Mockito.when(adapter.nodeDownloadRoot())
+        when(adapter.nodeDownloadRoot())
                 .thenReturn(URI.create("http://something/node/"));
-        Mockito.when(adapter.nodeVersion()).thenReturn("v0.0.0");
-        Mockito.when(adapter.frontendDirectory())
+        when(adapter.nodeVersion()).thenReturn("v0.0.0");
+        when(adapter.frontendDirectory())
                 .thenReturn(tmpDir.resolve("frontend").toFile());
-        Mockito.when(adapter.javaSourceFolder())
+        when(adapter.javaSourceFolder())
                 .thenReturn(tmpDir.resolve("src/main/java").toFile());
-        Mockito.when(adapter.javaResourceFolder())
+        when(adapter.javaResourceFolder())
                 .thenReturn(tmpDir.resolve("src/main/resources").toFile());
-        Mockito.when(adapter.applicationProperties()).thenReturn(tmpDir
+        when(adapter.applicationProperties()).thenReturn(tmpDir
                 .resolve("src/main/resources/application.properties").toFile());
-        Mockito.when(adapter.openApiJsonFile()).thenReturn(tmpDir
+        when(adapter.openApiJsonFile()).thenReturn(tmpDir
                 .resolve("target/generated-resources/openapi.json").toFile());
-        Mockito.when(adapter.buildFolder()).thenReturn("target");
+        when(adapter.buildFolder()).thenReturn("target");
     }
 
     private void writePackageJson(File nodeModulesFolder, String name,
@@ -751,28 +853,27 @@ class BuildFrontendUtilTest {
     }
 
     private void setupPluginAdapterDefaults() throws URISyntaxException {
-        Mockito.when(adapter.nodeVersion())
+        when(adapter.nodeVersion())
                 .thenReturn(FrontendTools.DEFAULT_NODE_VERSION);
-        Mockito.when(adapter.nodeDownloadRoot()).thenReturn(
+        when(adapter.nodeDownloadRoot()).thenReturn(
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
-        Mockito.when(adapter.frontendDirectory()).thenReturn(
+        when(adapter.frontendDirectory()).thenReturn(
                 new File(baseDir, FrontendUtils.DEFAULT_FRONTEND_DIR));
-        Mockito.when(adapter.buildFolder()).thenReturn(Constants.TARGET);
-        Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
+        when(adapter.buildFolder()).thenReturn(Constants.TARGET);
+        when(adapter.npmFolder()).thenReturn(baseDir);
         File javaSourceFolder = new File(baseDir, "src/main/java");
         assertTrue(javaSourceFolder.mkdirs());
-        Mockito.when(adapter.javaSourceFolder()).thenReturn(javaSourceFolder);
+        when(adapter.javaSourceFolder()).thenReturn(javaSourceFolder);
         File javaResourceFolder = new File(baseDir, "src/main/resources");
         assertTrue(javaResourceFolder.mkdirs());
-        Mockito.when(adapter.javaResourceFolder())
-                .thenReturn(javaResourceFolder);
-        Mockito.when(adapter.openApiJsonFile())
+        when(adapter.javaResourceFolder()).thenReturn(javaResourceFolder);
+        when(adapter.openApiJsonFile())
                 .thenReturn(new File(new File(baseDir, Constants.TARGET),
                         "classes/com/vaadin/hilla/openapi.json"));
-        Mockito.when(adapter.getClassFinder())
+        when(adapter.getClassFinder())
                 .thenReturn(new ClassFinder.DefaultClassFinder(
                         this.getClass().getClassLoader()));
-        Mockito.when(adapter.runNpmInstall()).thenReturn(true);
+        when(adapter.runNpmInstall()).thenReturn(true);
     }
 
     private void addPremiumFeatureAndDAUFlagTrue(File tokenFile)
@@ -787,6 +888,41 @@ class BuildFrontendUtilTest {
 
         FileIOUtils.writeIfChanged(tokenFile,
                 buildInfo.toPrettyString() + "\n");
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    void runVite_nonZeroExit_doesNotLeakEnvironment() throws Exception {
+        File fakeNode = new File(baseDir, "fake-node.sh");
+        Files.writeString(fakeNode.toPath(), """
+                #!/bin/sh
+                echo TEST_OUTPUT_LINE
+                exit 7
+                """);
+        assertTrue(fakeNode.setExecutable(true));
+
+        File viteJs = new File(baseDir, "node_modules/vite/bin/vite.js");
+
+        FrontendTools frontendTools = mock(FrontendTools.class);
+        when(frontendTools.getNodeExecutable())
+                .thenReturn(fakeNode.getAbsolutePath());
+        when(frontendTools.getNpmPackageExecutable("vite", "vite", baseDir))
+                .thenReturn(viteJs.toPath());
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> BuildFrontendUtil.runVite(adapter, frontendTools));
+
+        String message = ex.getMessage();
+        assertTrue(message.contains("exited with non-zero exit code 7"),
+                () -> "missing exit code in: " + message);
+        assertTrue(message.contains("TEST_OUTPUT_LINE"),
+                () -> "missing process output in: " + message);
+        // zt-exec exception messages started with "with environment {…}" —
+        // proving its absence proves we are off the leak path.
+        assertFalse(message.contains("with environment"),
+                () -> "leaked env marker in: " + message);
+        // No zt-exec exception should be chained as cause.
+        assertEquals(null, ex.getCause());
     }
 
     private static String statsJsonWithCommercialComponents() {

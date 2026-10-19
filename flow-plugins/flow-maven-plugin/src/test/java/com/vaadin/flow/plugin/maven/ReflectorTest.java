@@ -20,6 +20,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -38,8 +39,6 @@ import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +46,11 @@ import com.vaadin.flow.utils.FlowFileUtils;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getClassPath;
 import static com.vaadin.flow.utils.FlowFileUtils.convertToUrl;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasToString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -86,20 +90,18 @@ class ReflectorTest {
         MyMojo source = new MyMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
-        MatcherAssert.assertThat("foo field", target,
-                Matchers.hasProperty("foo", Matchers.equalTo(source.foo)));
-        MatcherAssert.assertThat("bar field", target,
-                Matchers.hasProperty("bar", Matchers.equalTo(source.bar)));
-        MatcherAssert.assertThat("notAnnotated field", target,
-                Matchers.hasProperty("notAnnotated",
-                        Matchers.equalTo(source.notAnnotated)));
-        MatcherAssert.assertThat("mojoExecution field", target,
-                Matchers.hasProperty("mojoExecution",
-                        Matchers.equalTo(source.mojoExecution)));
-        MatcherAssert.assertThat("maven project field", target, Matchers
-                .hasProperty("project", Matchers.equalTo(source.project)));
-        MatcherAssert.assertThat("classFinder field", target,
-                Matchers.hasProperty("classFinder", Matchers.notNullValue()));
+        assertThat("foo field", target,
+                hasProperty("foo", equalTo(source.foo)));
+        assertThat("bar field", target,
+                hasProperty("bar", equalTo(source.bar)));
+        assertThat("notAnnotated field", target,
+                hasProperty("notAnnotated", equalTo(source.notAnnotated)));
+        assertThat("mojoExecution field", target,
+                hasProperty("mojoExecution", equalTo(source.mojoExecution)));
+        assertThat("maven project field", target,
+                hasProperty("project", equalTo(source.project)));
+        assertThat("classFinder field", target,
+                hasProperty("classFinder", notNullValue()));
     }
 
     @Test
@@ -107,23 +109,20 @@ class ReflectorTest {
         SubClassMojo source = new SubClassMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
-        MatcherAssert.assertThat("foo field", target,
-                Matchers.hasProperty("foo", Matchers.equalTo(source.foo)));
-        MatcherAssert.assertThat("bar field", target,
-                Matchers.hasProperty("bar", Matchers.equalTo(source.bar)));
-        MatcherAssert.assertThat("childProperty field", target,
-                Matchers.hasProperty("childProperty",
-                        Matchers.equalTo(source.childProperty)));
-        MatcherAssert.assertThat("notAnnotated field", target,
-                Matchers.hasProperty("notAnnotated",
-                        Matchers.equalTo(source.notAnnotated)));
-        MatcherAssert.assertThat("mojoExecution field", target,
-                Matchers.hasProperty("mojoExecution",
-                        Matchers.equalTo(source.mojoExecution)));
-        MatcherAssert.assertThat("maven project field", target, Matchers
-                .hasProperty("project", Matchers.equalTo(source.project)));
-        MatcherAssert.assertThat("classFinder field", target,
-                Matchers.hasProperty("classFinder", Matchers.notNullValue()));
+        assertThat("foo field", target,
+                hasProperty("foo", equalTo(source.foo)));
+        assertThat("bar field", target,
+                hasProperty("bar", equalTo(source.bar)));
+        assertThat("childProperty field", target,
+                hasProperty("childProperty", equalTo(source.childProperty)));
+        assertThat("notAnnotated field", target,
+                hasProperty("notAnnotated", equalTo(source.notAnnotated)));
+        assertThat("mojoExecution field", target,
+                hasProperty("mojoExecution", equalTo(source.mojoExecution)));
+        assertThat("maven project field", target,
+                hasProperty("project", equalTo(source.project)));
+        assertThat("classFinder field", target,
+                hasProperty("classFinder", notNullValue()));
     }
 
     @Test
@@ -144,16 +143,14 @@ class ReflectorTest {
         CloneableFieldsMojo source = new CloneableFieldsMojo();
         source.fillFields();
         Mojo target = reflector.createMojo(source);
-        MatcherAssert.assertThat("cloneable field", target, Matchers
-                .hasProperty("cloneableField", Matchers.notNullValue()));
-        MatcherAssert.assertThat("cloneable field value", target,
-                Matchers.hasProperty("cloneableField",
-                        Matchers.hasToString("TEST-CLONEABLE-FIELD")));
-        MatcherAssert.assertThat("cloneable type", target,
-                Matchers.hasProperty("cloneableType", Matchers.notNullValue()));
-        MatcherAssert.assertThat("cloneable type value", target,
-                Matchers.hasProperty("cloneableType",
-                        Matchers.hasToString("TEST-CLONEABLE-TYPE")));
+        assertThat("cloneable field", target,
+                hasProperty("cloneableField", notNullValue()));
+        assertThat("cloneable field value", target, hasProperty(
+                "cloneableField", hasToString("TEST-CLONEABLE-FIELD")));
+        assertThat("cloneable type", target,
+                hasProperty("cloneableType", notNullValue()));
+        assertThat("cloneable type value", target, hasProperty("cloneableType",
+                hasToString("TEST-CLONEABLE-TYPE")));
     }
 
     @Test
@@ -295,6 +292,54 @@ class ReflectorTest {
                 "com.vaadin-flow-server-1.0.jar");
         assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
                 expectedArtifacts);
+    }
+
+    @Test
+    void close_isIdempotent() {
+        reflector.close();
+        reflector.close(); // second close should not throw
+    }
+
+    @Test
+    void getResource_jarUrlDisablesCaching() throws Exception {
+        // The reflector's isolated classloader delegates to maven.api realm
+        // which contains the test JAR
+        MavenProject project = new MavenProject();
+        project.setGroupId("com.vaadin.test");
+        project.setArtifactId("reflector-tests");
+        project.setBuild(new Build());
+        project.getBuild().setOutputDirectory(PROJECT_TARGET_FOLDER);
+        project.setArtifacts(Set.of());
+
+        MojoExecution exec = new MojoExecution(new MojoDescriptor());
+        PluginDescriptor pluginDescriptor = new PluginDescriptor();
+        exec.getMojoDescriptor().setPluginDescriptor(pluginDescriptor);
+        pluginDescriptor.setGroupId("com.vaadin.test");
+        pluginDescriptor.setArtifactId("test-plugin");
+        pluginDescriptor.setArtifacts(List.of());
+        ClassWorld classWorld = new ClassWorld("maven.api", null);
+        classWorld.getRealm("maven.api")
+                .addURL(Path
+                        .of("src", "test", "resources",
+                                "jar-without-frontend-resources.jar")
+                        .toUri().toURL());
+        pluginDescriptor.setClassRealm(classWorld.newRealm("maven-plugin"));
+
+        Reflector execReflector = Reflector.of(project, exec, null);
+        try {
+            URL resource = execReflector.getIsolatedClassLoader()
+                    .getResource("org/json/CookieList.class");
+            assertNotNull(resource, "Resource should be found in JAR");
+            assertEquals("jar", resource.getProtocol());
+
+            URLConnection conn = resource.openConnection();
+            assertFalse(conn.getUseCaches(),
+                    "jar: URL connections should have caching disabled "
+                            + "to prevent stale JarFileFactory entries "
+                            + "under mvnd");
+        } finally {
+            execReflector.close();
+        }
     }
 
     @Test

@@ -38,7 +38,7 @@ import com.vaadin.flow.internal.Pair;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 1.2
+ * @since 2.0
  */
 public class FrontendToolsLocator implements Serializable {
     private static final String FAILED_WITH_EXIT_CODE_MSG = "Command '{}' failed with exit code '{}'";
@@ -83,7 +83,7 @@ public class FrontendToolsLocator implements Serializable {
                 .map(this::omitErrorResult).map(CommandResult::getStdout)
                 .orElseGet(() -> Arrays.asList(
                         // Add most common paths in unix #5611
-                        "/usr/local/bin/" + toolName,
+                        "/usr/bin/" + toolName, "/usr/local/bin/" + toolName,
                         "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
 
         for (String candidateLocation : candidateLocations) {

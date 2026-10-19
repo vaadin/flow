@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -56,6 +55,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class FrontendUtilsTest {
 
@@ -249,18 +253,16 @@ class FrontendUtilsTest {
 
     @Test
     void should_getUnixRelativePath_when_givenTwoPaths() {
-        Path sourcePath = Mockito.mock(Path.class);
-        Path relativePath = Mockito.mock(Path.class);
-        Mockito.when(sourcePath.relativize(Mockito.any()))
-                .thenReturn(relativePath);
-        Mockito.when(relativePath.toString())
-                .thenReturn("this\\is\\windows\\path");
+        Path sourcePath = mock(Path.class);
+        Path relativePath = mock(Path.class);
+        when(sourcePath.relativize(any())).thenReturn(relativePath);
+        when(relativePath.toString()).thenReturn("this\\is\\windows\\path");
 
         String relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
                 tmpDir.toPath());
         assertEquals("this/is/windows/path", relativeUnixPath,
                 "Should replace windows path separator with unix path separator");
-        Mockito.when(relativePath.toString()).thenReturn("this/is/unix/path");
+        when(relativePath.toString()).thenReturn("this/is/unix/path");
 
         relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
                 tmpDir.toPath());
@@ -420,10 +422,11 @@ class FrontendUtilsTest {
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toString(), StandardCharsets.UTF_8);
 
-        Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
-        Options options = new MockOptions(npmFolder).withBuildDirectory(TARGET);
-        NodeUpdater nodeUpdater = new NodeUpdater(
-                Mockito.mock(FrontendDependencies.class), options) {
+        Logger logger = spy(LoggerFactory.getLogger(NodeUpdater.class));
+        Options options = new MockOptions(npmFolder).withBuildDirectory(TARGET)
+                .withFrontendDependenciesScanner(
+                        mock(FrontendDependencies.class));
+        NodeUpdater nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // no need to execute logic for this test
@@ -680,13 +683,16 @@ class FrontendUtilsTest {
     void platformVersion_returnsExpectedVersion() throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        File versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        File versionJsonFile = new File(versionsFolder, "versions.json");
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
         String versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"21.0.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -694,7 +700,7 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         Optional<String> vaadinVersion = FrontendBuildUtils
-                .getVaadinVersion(finder);
+                .getVaadinVersion(new MockOptions(finder, npmFolder));
 
         assertTrue(vaadinVersion.isPresent(),
                 "versions.json should have had the platform field");
@@ -706,7 +712,8 @@ class FrontendUtilsTest {
         //@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
-        vaadinVersion = FrontendBuildUtils.getVaadinVersion(finder);
+        vaadinVersion = FrontendBuildUtils
+                .getVaadinVersion(new MockOptions(finder, npmFolder));
 
         assertFalse(vaadinVersion.isPresent(),
                 "versions.json should not contain platform version");
@@ -716,16 +723,12 @@ class FrontendUtilsTest {
     void noVersionsJson_getVersionsDoesntThrow() throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
-
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(null);
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
 
         Optional<String> vaadinVersion = FrontendBuildUtils
-                .getVaadinVersion(finder);
+                .getVaadinVersion(new MockOptions(finder, npmFolder));
 
         assertFalse(vaadinVersion.isPresent(),
                 "versions.json should not contain platform version");
@@ -736,13 +739,16 @@ class FrontendUtilsTest {
             throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        File versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        File versionJsonFile = new File(versionsFolder, "versions.json");
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
         String versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -762,12 +768,14 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertFalse(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, npmFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, npmFolder),
                 "Change in minor version should return false");
 
         //@formatter:off
         versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"22.0.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -775,8 +783,9 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertTrue(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, npmFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, npmFolder),
                 "Change in major version should return true");
     }
 
@@ -785,13 +794,16 @@ class FrontendUtilsTest {
             throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        File versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        File versionJsonFile = new File(versionsFolder, "versions.json");
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
         String versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -813,12 +825,14 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertFalse(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, buildFolder),
                 "Change in minor version should return false");
 
         //@formatter:off
         versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"22.0.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -826,8 +840,9 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertTrue(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, buildFolder),
                 "Change in major version should return true");
     }
 
@@ -836,13 +851,16 @@ class FrontendUtilsTest {
             throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        File versionJsonFile = new File(npmFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
+        File versionsFolder = new File(npmFolder, "versions");
+        versionsFolder.mkdirs();
+        File versionJsonFile = new File(versionsFolder, "versions.json");
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
         String versionJsonString = "{"
+                + "  \"core\": { \"vaadin-core\": { \"npmName\": \"@vaadin/vaadin-core\", \"jsVersion\": \"1.0.0\" } },\n"
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
@@ -875,15 +893,16 @@ class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         assertFalse(
-                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
-                        npmFolder, nodeModules, buildFolder),
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(
+                        new MockOptions(finder, npmFolder), npmFolder,
+                        nodeModules, buildFolder),
                 "Change in minor version should return false");
     }
 
     @Test
     void isTailwindCssEnabled_withOptions() throws IOException {
-        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        Mockito.doReturn(true).when(featureFlags)
+        FeatureFlags featureFlags = mock(FeatureFlags.class);
+        doReturn(true).when(featureFlags)
                 .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();

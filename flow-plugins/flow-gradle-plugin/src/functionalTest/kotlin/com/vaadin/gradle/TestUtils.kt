@@ -24,6 +24,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.PathMatcher
 import java.util.zip.ZipInputStream
+import kotlin.io.path.createTempDirectory
 import kotlin.test.expect
 import kotlin.test.fail
 
@@ -103,6 +104,18 @@ private fun File.zipListAllFiles(): List<String> =
         }
 
 /**
+ * Reads the content of a single entry from this zip archive.
+ * @param entryPath the path inside the archive, e.g. `META-INF/VAADIN/config/flow-build-info.json`
+ * @return the entry content as a String, or null if not found
+ */
+fun File.zipReadEntry(entryPath: String): String? =
+        ZipInputStream(this.inputStream().buffered()).use { zin ->
+            generateSequence { zin.nextEntry }
+                .firstOrNull { it.name == entryPath }
+                ?.let { zin.readBytes().toString(Charsets.UTF_8) }
+        }
+
+/**
  * Expects that given archive contains at least one file matching every glob in the [globs] list.
  * @param archiveProvider returns the zip file to examine.
  */
@@ -139,10 +152,10 @@ fun expectArchiveContainsVaadinBundle(
 ) {
     val isWar: Boolean = archive.name.endsWith(".war", true)
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
-    val resourcePackaging: String = when {
-        isWar -> "WEB-INF/classes/"
-        else -> ""
-    }
+    // The bundle is packaged as source set output: a War routes it to
+    // WEB-INF/classes, while a plain or Spring Boot executable jar keeps it at
+    // the archive root. (Spring Boot dependency jars still go to BOOT-INF/lib.)
+    val resourcePackaging: String = if (isWar) "WEB-INF/classes/" else ""
     expectArchiveContains(
             "${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json",
             "${resourcePackaging}META-INF/VAADIN/config/stats.json",
@@ -164,18 +177,20 @@ fun expectArchiveContainsVaadinBundle(
 /**
  * Asserts that given archive (jar/war) doesn't contain the Vaadin bundle:
  * the `META-INF/VAADIN/build/` directory.
+ *
+ * Since Vaadin 25, `vaadinPrepareFrontend` is no longer auto-triggered in
+ * development mode, so the token file (`flow-build-info.json`) is not
+ * expected in the archive.
  */
 fun expectArchiveDoesntContainVaadinBundle(archive: File,
                                            isSpringBootJar: Boolean) {
     val isWar: Boolean = archive.name.endsWith(".war", true)
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
-    val resourcePackaging: String = when {
-        isWar -> "WEB-INF/classes/"
-        isSpringBootJar -> "BOOT-INF/classes/"
-        else -> ""
-    }
-    expectArchiveContains("${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json") { archive }
-    expectArchiveDoesntContain("${resourcePackaging}META-INF/VAADIN/config/stats.json",
+    // See expectArchiveContainsVaadinBundle: War → WEB-INF/classes, plain and
+    // Spring Boot executable jars keep the bundle at the archive root.
+    val resourcePackaging: String = if (isWar) "WEB-INF/classes/" else ""
+    expectArchiveDoesntContain("${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json",
+            "${resourcePackaging}META-INF/VAADIN/config/stats.json",
             "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.gz",
             "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.js"
     ) { archive }
@@ -183,12 +198,6 @@ fun expectArchiveDoesntContainVaadinBundle(archive: File,
     if (!isStandaloneJar) {
         val libPrefix: String = if (isSpringBootJar) "BOOT-INF/lib" else "WEB-INF/lib"
         expectArchiveContains("$libPrefix/*.jar") { archive }
-    }
-
-    // make sure there is only one flow-build-info.json
-    val allFiles: List<String> = archive.zipListAllFiles()
-    expect(1, "Multiple flow-build-info.json found: ${allFiles.joinToString("\n")}") {
-        allFiles.count { it.contains("flow-build-info.json") }
     }
 }
 
@@ -214,7 +223,7 @@ class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTE
     /**
      * The project root dir.
      */
-    val dir: File = createTempDir("junit-vaadin-gradle-plugin")
+    val dir: File = createTempDirectory("junit-vaadin-gradle-plugin").toFile()
 
     /**
      * The main `build.gradle` file.

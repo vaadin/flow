@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -27,6 +28,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 /**
  * Test for {@link AbstractDeploymentConfiguration}
@@ -51,6 +53,47 @@ class AbstractDeploymentConfigurationTest {
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
         assertEquals(classLoader, config.getClassLoaderName(),
                 "Unexpected classLoader configuration option value");
+    }
+
+    @Test
+    void getUrlSafeSchemes_propertyNotSet_returnsDefault() {
+        DeploymentConfiguration config = getConfig(null, null);
+        assertEquals(Constants.DEFAULT_URL_SAFE_SCHEMES,
+                config.getUrlSafeSchemes());
+    }
+
+    @Test
+    void getUrlSafeSchemes_commaSeparated_isTrimmedAndLowerCased() {
+        DeploymentConfiguration config = getConfig(
+                InitParameters.URL_SAFE_SCHEMES, " HTTPS , MyApp ");
+        assertEquals(Set.of("https", "myapp"), config.getUrlSafeSchemes());
+    }
+
+    @Test
+    void getUrlSafeSchemes_legacyPropertyName_stillSupported() {
+        DeploymentConfiguration config = getConfig(
+                InitParameters.URL_SAFE_SCHEMES_LEGACY, " HTTPS , MyApp ");
+        assertEquals(Set.of("https", "myapp"), config.getUrlSafeSchemes());
+    }
+
+    @Test
+    void getUrlSafeSchemes_newPropertyNameTakesPrecedenceOverLegacy() {
+        Properties props = new Properties();
+        props.put(InitParameters.URL_SAFE_SCHEMES, "current");
+        props.put(InitParameters.URL_SAFE_SCHEMES_LEGACY, "legacy");
+        DeploymentConfiguration config = new DeploymentConfigImpl(props);
+        assertEquals(Set.of("current"), config.getUrlSafeSchemes());
+    }
+
+    @Test
+    void getUrlSafeSchemes_memoizedAcrossCalls() {
+        DeploymentConfiguration config = getConfig(
+                InitParameters.URL_SAFE_SCHEMES, "custom");
+        Set<String> first = config.getUrlSafeSchemes();
+        Set<String> second = config.getUrlSafeSchemes();
+        assertEquals(Set.of("custom"), first);
+        assertSame(first, second,
+                "Subsequent calls should return the cached instance");
     }
 
     private DeploymentConfiguration getConfig(String property, String value) {
@@ -94,6 +137,11 @@ class AbstractDeploymentConfigurationTest {
         @Override
         public int getHeartbeatInterval() {
             return 0;
+        }
+
+        @Override
+        public long getMaxRequestBodySize() {
+            return -1;
         }
 
         @Override

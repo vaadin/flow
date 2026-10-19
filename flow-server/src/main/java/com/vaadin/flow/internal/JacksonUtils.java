@@ -31,10 +31,12 @@ import java.util.stream.Collector;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.json.JsonReadFeature;
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.core.util.DefaultIndenter;
 import tools.jackson.core.util.DefaultPrettyPrinter;
 import tools.jackson.core.util.Separators;
 import tools.jackson.core.util.Separators.Spacing;
@@ -86,6 +88,41 @@ public final class JacksonUtils {
     }
 
     /**
+     * Checks that the Jackson version on the classpath is compatible with this
+     * version of Vaadin by verifying that expected API methods are available.
+     *
+     * @throws IllegalStateException
+     *             if the Jackson version is not compatible
+     * @since 25.1.1
+     */
+    public static void checkJacksonCompatibility() {
+        try {
+            ObjectMapper.class.getMethod("treeToValue", JsonNode.class,
+                    Class.class);
+        } catch (NoSuchMethodException e) {
+            String jacksonVersion = "unknown";
+            try {
+                jacksonVersion = ObjectMapper.class.getPackage()
+                        .getImplementationVersion();
+            } catch (Exception ignored) {
+                // ignore, we'll report "unknown"
+            }
+            throw new IllegalStateException(
+                    "The Jackson version on the classpath (" + jacksonVersion
+                            + ") is not compatible with this version of"
+                            + " Vaadin. If you are using Spring Boot, make"
+                            + " sure it is version 4.0.4 or newer (using"
+                            + " Jackson 3.1). If you have a Jackson 3.0"
+                            + " dependency, upgrade it to 3.1. If you have"
+                            + " a Jackson 2 dependency, upgrade it to 2.21"
+                            + " or later. In other cases, check"
+                            + " https://github.com/vaadin/platform/"
+                            + "releases/tag/25.1.0 for more details.",
+                    e);
+        }
+    }
+
+    /**
      * Create a new ObjectNode.
      *
      * @return ObjectNode
@@ -107,6 +144,7 @@ public final class JacksonUtils {
      * Create a nullNode for null value.
      *
      * @return NullNode
+     * @since 24.8
      */
     public static ValueNode nullNode() {
         return (ValueNode) objectMapper.nullNode();
@@ -463,6 +501,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readToObject(JsonNode jsonObject, Class<T> tClass) {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
@@ -484,6 +523,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readValue(JsonNode jsonValue, Class<T> tClass) {
         return readToObject(jsonValue, tClass);
@@ -499,6 +539,7 @@ public final class JacksonUtils {
      * @return converted object instance
      * @param <T>
      *            type of result instance
+     * @since 24.8
      */
     public static <T> T readValue(JsonNode jsonValue,
             TypeReference<T> typeReference) {
@@ -539,11 +580,119 @@ public final class JacksonUtils {
         DefaultPrettyPrinter filePrinter = new DefaultPrettyPrinter(
                 Separators.createDefaultInstance()
                         .withObjectNameValueSpacing(Spacing.AFTER));
+        // Force LF line endings so output (and any hash derived from it) is
+        // identical across platforms; Jackson's default object indenter uses
+        // the system line separator (\r\n on Windows, \n elsewhere).
+        filePrinter.indentObjectsWith(new DefaultIndenter("  ", "\n"));
         return objectMapper.writer().with(filePrinter).writeValueAsString(node);
     }
 
     /**
+     * Retrieves a nested JSON key from an object node based on a provided path.
+     *
+     * @param objectNode
+     *            the root object node to search within
+     * @param keyPath
+     *            the nested key path
+     * @return the value of the last key found, or {@code null}
+     * @since 25.1.2
+     */
+    public static @Nullable JsonNode getNestedKey(ObjectNode objectNode,
+            List<String> keyPath) {
+        if (keyPath.isEmpty()) {
+            return null;
+        }
+        final String firstKey = keyPath.getFirst();
+        final JsonNode value = objectNode.get(firstKey);
+        if (keyPath.size() == 1) {
+            return value;
+        } else if (value instanceof ObjectNode nestedObjectNode) {
+            return getNestedKey(nestedObjectNode,
+                    keyPath.subList(1, keyPath.size()));
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Sets a nested JSON key path in an {@code ObjectNode} with the provided
+     * value.
+     * <p>
+     * This method handles both direct and nested key assignments. If the
+     * current node at the specified top-level key does not exist not an
+     * {@code ObjectNode}, it converts it to one using the provided converter
+     * function, before proceeding with the remaining keys in the path.
+     *
+     * @param objectNode
+     *            the root object where the key path will be set
+     * @param keyPath
+     *            the nested key path
+     * @param valueNode
+     *            the value to be assigned
+     * @param plainValueConverter
+     *            a function that converts intermediate {@code null} and
+     *            non-{@code ObjectNode} values into {@code ObjectNode}s when
+     *            necessary for recursive traversal
+     * @since 25.1.2
+     */
+    public static void setNestedKey(ObjectNode objectNode, List<String> keyPath,
+            JsonNode valueNode,
+            Function<? super JsonNode, ? extends ObjectNode> plainValueConverter) {
+        if (keyPath.isEmpty()) {
+            return;
+        }
+        final String key = keyPath.getFirst();
+        if (keyPath.size() == 1) {
+            objectNode.set(key, valueNode);
+            return;
+        }
+        final JsonNode currentValueNode = objectNode.get(key);
+        final ObjectNode nestedObjectNode;
+        if (currentValueNode instanceof ObjectNode currentObjectNode) {
+            nestedObjectNode = currentObjectNode;
+        } else {
+            nestedObjectNode = plainValueConverter.apply(currentValueNode);
+            objectNode.set(key, nestedObjectNode);
+        }
+        setNestedKey(nestedObjectNode, keyPath.subList(1, keyPath.size()),
+                valueNode, plainValueConverter);
+    }
+
+    /**
+     * Removes a nested key from an {@code ObjectNode} based on the provided
+     * path. Also removes nested objects, if they become empty after key
+     * removal.
+     *
+     * @param objectNode
+     *            the root object containing to process
+     * @param keyPath
+     *            the nested key path
+     * @since 25.1.2
+     */
+    public static void removeNestedKey(ObjectNode objectNode,
+            List<String> keyPath) {
+        if (keyPath.isEmpty()) {
+            return;
+        }
+        final String key = keyPath.getFirst();
+        if (keyPath.size() == 1) {
+            objectNode.remove(key);
+            return;
+        }
+        final JsonNode currentValueNode = objectNode.get(key);
+        if (currentValueNode instanceof ObjectNode nestedObjectNode) {
+            removeNestedKey(nestedObjectNode,
+                    keyPath.subList(1, keyPath.size()));
+            if (nestedObjectNode.isEmpty()) {
+                objectNode.remove(key);
+            }
+        }
+    }
+
+    /**
      * Custom Jackson serializer for Component that delegates to NodeSerializer.
+     * 
+     * @since 25.0
      */
     public static class ComponentSerializer extends ValueSerializer<Component> {
         private final NodeSerializer nodeSerializer = new NodeSerializer();
@@ -569,6 +718,8 @@ public final class JacksonUtils {
      * Custom Jackson serializer for Node types (Element, ShadowRoot) that
      * serializes attached nodes as @v-node references for client-side DOM
      * manipulation.
+     * 
+     * @since 25.0
      */
     @SuppressWarnings("rawtypes")
     public static class NodeSerializer extends ValueSerializer<Node> {

@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.tests.util.MockOptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -150,26 +151,51 @@ class TaskRemoveOldFrontendGeneratedFilesTest {
 
     @Test
     void execute_knownFiles_notDeleted() throws Exception {
+        Path hillaGeneratedFilesIndex = generatedFolder.toPath()
+                .resolve("generated-file-list.txt");
+
         Set<File> knownFiles = Set.of(generatedFolder.toPath()
-                .resolve(Path.of("flow", "generated-flow-imports.js")).toFile(),
+                .resolve(Path.of("flow", FrontendUtils.IMPORTS_NAME)).toFile(),
                 generatedFolder.toPath()
-                        .resolve(Path.of("flow", "generated-flow-imports.d.ts"))
+                        .resolve(Path.of("flow",
+                                FrontendUtils.IMPORTS_D_TS_NAME))
                         .toFile(),
                 generatedFolder.toPath()
                         .resolve(Path.of("flow",
-                                "generated-flow-webcomponent-imports.js"))
+                                FrontendUtils.IMPORTS_WEB_COMPONENT_NAME))
                         .toFile(),
-                new File(generatedFolder, "routes.tsx"),
-                new File(generatedFolder, "routes.ts"),
+                new File(generatedFolder, FrontendUtils.ROUTES_TSX),
+                new File(generatedFolder, FrontendUtils.ROUTES_TS),
                 generatedFolder.toPath().resolve(Path.of("flow", "Flow.tsx"))
                         .toFile(),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_DEV_RUNTIME),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_RUNTIME),
+                new File(generatedFolder,
+                        TaskGenerateReactFiles.JSX_TRANSFORM_INDEX),
+                new File(generatedFolder,
+                        FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME),
+                new File(generatedFolder, FrontendUtils.APP_SHELL_IMPORTS_NAME),
                 new File(generatedFolder, "file-routes.ts"),
+                new File(generatedFolder, "file-routes.json"),
                 new File(generatedFolder, "css.generated.js"),
-                new File(generatedFolder, "css.generated.d.ts"));
+                new File(generatedFolder, "css.generated.d.ts"),
+                hillaGeneratedFilesIndex.toFile(),
+                new File(generatedFolder, "hilla-1.js"),
+                new File(generatedFolder, "hilla-2.js"),
+                generatedFolder.toPath().resolve(Path.of("sub", "hilla-3.js"))
+                        .toFile());
+
         for (File file : knownFiles) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");
         }
+        Files.writeString(hillaGeneratedFilesIndex, """
+                hilla-1.js
+                hilla-2.js
+                sub/hilla-3.js
+                """);
 
         TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
                 options);
@@ -208,6 +234,42 @@ class TaskRemoveOldFrontendGeneratedFilesTest {
 
         assertOnlyExpectedGeneratedFilesExists(
                 generatedFiles.toArray(File[]::new));
+    }
+
+    @Test
+    void execute_entriesInFlowGeneratedFilesList_notDeleted() throws Exception {
+        // Files generated only by a previous full generation run (e.g. dev
+        // server hot deploy) and recorded in the Flow manifest.
+        Set<File> devServerFiles = Set
+                .of(new File(generatedFolder, FrontendUtils.VITE_DEVMODE_TS),
+                        new File(generatedFolder, FrontendUtils.INDEX_TSX),
+                        new File(generatedFolder, "vaadin-react.tsx"),
+                        new File(generatedFolder, "layouts.json"),
+                        generatedFolder.toPath()
+                                .resolve(Path.of("flow", "ReactAdapter.tsx"))
+                                .toFile());
+        File staleFile = new File(generatedFolder, "stale.tsx");
+        for (File file : devServerFiles) {
+            file.getParentFile().mkdirs();
+            Files.writeString(file.toPath(), "TEST");
+        }
+        Files.writeString(staleFile.toPath(), "TEST");
+
+        File manifest = new File(generatedFolder,
+                FrontendUtils.GENERATED_FILES_LIST_NAME);
+        Files.writeString(manifest.toPath(), devServerFiles.stream()
+                .map(file -> generatedFolder.toPath().relativize(file.toPath()))
+                .map(Path::toString)
+                .collect(Collectors.joining(System.lineSeparator())));
+
+        TaskRemoveOldFrontendGeneratedFiles task = new TaskRemoveOldFrontendGeneratedFiles(
+                options);
+        task.setGeneratedFileSupport(new GeneratedFilesSupport());
+        task.execute();
+
+        Set<File> expected = new HashSet<>(devServerFiles);
+        expected.add(manifest);
+        assertOnlyExpectedGeneratedFilesExists(expected.toArray(File[]::new));
     }
 
     private void assertOnlyExpectedGeneratedFilesExists(File... expectedFiles)

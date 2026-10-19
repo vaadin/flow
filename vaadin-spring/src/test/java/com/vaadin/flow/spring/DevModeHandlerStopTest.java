@@ -22,7 +22,6 @@ import java.io.Closeable;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -38,11 +37,15 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class DevModeHandlerStopTest {
 
     private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
             .withConfiguration(AutoConfigurations.of(Config.class,
-                    SpringBootAutoConfiguration.class));
+                    SpringBootAutoConfiguration.class,
+                    VaadinApplicationConfiguration.class));
 
     @Test
     void devModeStartupListener_contextDestroyAfterSpringContextClosed_shouldNotThrow() {
@@ -68,15 +71,15 @@ class DevModeHandlerStopTest {
             startupListenerAsContextListener.contextInitialized(
                     new ServletContextEvent(servletContext));
         });
-        Assertions.assertTrue(handlerManagerRef.get().initialized,
+        assertTrue(handlerManagerRef.get().initialized,
                 "Expecting DevModeHandlerManager initialization to be invoked, but it was not");
-        Assertions.assertFalse(handlerManagerRef.get().stopped,
+        assertFalse(handlerManagerRef.get().stopped,
                 "Expecting DevModeHandler not yet to be yet stopped, but it was");
 
         // Stop the DevModeHandler after Spring Context has been closed
         startupListenerAsContextListener
                 .contextDestroyed(new ServletContextEvent(contextRef.get()));
-        Assertions.assertTrue(handlerManagerRef.get().stopped,
+        assertTrue(handlerManagerRef.get().stopped,
                 "Expecting DevModeHandler to be stopped by DevModeHandlerManager, but it was not");
     }
 
@@ -94,7 +97,7 @@ class DevModeHandlerStopTest {
             }
         });
         devModeHandlerManager.stopDevModeHandler();
-        Assertions.assertTrue(watcherClosed.get());
+        assertTrue(watcherClosed.get());
     }
 
     private static class MockDevModeHandlerManager

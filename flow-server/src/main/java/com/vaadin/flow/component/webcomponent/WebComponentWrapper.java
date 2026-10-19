@@ -83,6 +83,7 @@ public class WebComponentWrapper extends Component {
      *            {@code rootElement}. These are copies of the original elements
      *            and the copies are created by
      *            {@link com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry}
+     * @since 2.2
      */
     protected WebComponentWrapper(Element rootElement,
             WebComponentBinding<?> binding, List<Element> bootstrapElements) {
@@ -100,6 +101,7 @@ public class WebComponentWrapper extends Component {
      *            property name to update
      * @param newValue
      *            the new value to set
+     * @since 25.0
      */
     @ClientCallable
     public void sync(String property, BaseJsonNode newValue) {
@@ -138,8 +140,9 @@ public class WebComponentWrapper extends Component {
             disconnect = System.currentTimeMillis();
             disconnectRegistration = uiOptional.get().getInternals()
                     .addHeartbeatListener(event -> {
-                        int disconnectTimeout = event.getSource().getSession()
-                                .getConfiguration().getWebComponentDisconnect();
+                        int disconnectTimeout = event.getSource()
+                                .getSessionOrThrow().getConfiguration()
+                                .getWebComponentDisconnect();
 
                         int timeout = 1000 * disconnectTimeout;
 

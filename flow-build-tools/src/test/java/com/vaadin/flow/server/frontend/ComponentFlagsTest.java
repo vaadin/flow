@@ -21,12 +21,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -43,8 +42,9 @@ import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
-@NotThreadSafe
+@Isolated
 class ComponentFlagsTest extends NodeUpdateTestUtil {
 
     @TempDir
@@ -67,7 +67,7 @@ class ComponentFlagsTest extends NodeUpdateTestUtil {
         propertiesDir = Files
                 .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
 
-        featureFlags = new FeatureFlags(Mockito.mock(Lookup.class));
+        featureFlags = new FeatureFlags(mock(Lookup.class));
         featureFlags.setPropertiesLocation(propertiesDir);
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);
@@ -81,7 +81,7 @@ class ComponentFlagsTest extends NodeUpdateTestUtil {
     protected FrontendDependenciesScanner getScanner(ClassFinder finder,
             FeatureFlags featureFlags) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true, featureFlags, true);
+                .createScanner(false, finder, true, featureFlags, true, false);
     }
 
     @Test
@@ -149,8 +149,9 @@ class ComponentFlagsTest extends NodeUpdateTestUtil {
 
         Options options = new MockOptions(classFinder, tmpRoot)
                 .withFrontendDirectory(frontendDirectory)
-                .withBuildDirectory(TARGET).withProductionMode(true);
-        return new TaskUpdateImports(getScanner(classFinder, featureFlags),
-                options);
+                .withBuildDirectory(TARGET).withProductionMode(true)
+                .withFrontendDependenciesScanner(
+                        getScanner(classFinder, featureFlags));
+        return new TaskUpdateImports(options);
     }
 }

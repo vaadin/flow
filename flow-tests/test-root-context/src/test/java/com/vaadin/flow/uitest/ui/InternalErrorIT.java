@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,6 +26,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static org.junit.Assert.assertFalse;
@@ -36,6 +38,9 @@ import static org.junit.Assert.assertTrue;
  * @author Vaadin Ltd
  * @since 1.0.
  */
+// The tests change the system messages provider of the shared VaadinService,
+// which the bootstrap page reads, so they must not run concurrently
+@NotThreadSafe
 public class InternalErrorIT extends ChromeBrowserTest {
 
     private static final String UPDATE = "update";
@@ -80,8 +85,10 @@ public class InternalErrorIT extends ChromeBrowserTest {
     public void enableSessionExpiredNotification_sessionExpired_notificationShown() {
         clickButton("enable-notification");
 
+        WebElement message = $(DivElement.class).id("message");
         // Refresh to take the new config into use
         getDriver().navigate().refresh();
+        waitUntil(ExpectedConditions.stalenessOf(message));
 
         clickButton(UPDATE);
         waitUntil(driver -> isMessageUpdated());
@@ -113,7 +120,7 @@ public class InternalErrorIT extends ChromeBrowserTest {
                         + "a server-side exception",
                 isInternalErrorNotificationPresent());
 
-        getErrorNotification().click();
+        clickErrorNotification();
         try {
             waitUntil(driver -> !isMessageUpdated());
         } catch (TimeoutException e) {
@@ -151,6 +158,33 @@ public class InternalErrorIT extends ChromeBrowserTest {
                 isInternalErrorNotificationPresent());
     }
 
+    @Test
+    public void popover_showNotification_notificationInteractable() {
+        clickButton(UPDATE);
+
+        clickButton("open-popover");
+        waitForElementPresent(By.id("cause-exception-popover"));
+        clickButton("cause-exception-popover");
+
+        Assert.assertTrue("The page should not be immediately refreshed after "
+                + "a server-side exception", isMessageUpdated());
+        Assert.assertTrue(
+                "'Internal error' notification should be present after "
+                        + "a server-side exception",
+                isInternalErrorNotificationPresent());
+
+        clickErrorNotification();
+        try {
+            waitUntil(driver -> !isMessageUpdated());
+        } catch (TimeoutException e) {
+            Assert.fail("After internal error, clicking the notification "
+                    + "should refresh the page, resetting the state of the UI.");
+        }
+        Assert.assertFalse(
+                "'Internal error' notification should be gone after refreshing",
+                isInternalErrorNotificationPresent());
+    }
+
     @After
     public void resetSystemMessages() {
         waitUntil(ExpectedConditions
@@ -174,7 +208,13 @@ public class InternalErrorIT extends ChromeBrowserTest {
         if (!isElementPresent(By.className("v-system-error"))) {
             return false;
         }
-        return getErrorNotification().getAttribute("innerHTML").contains(text);
+        WebElement notification = getErrorNotification();
+        notification = ExpectedConditions.elementToBeClickable(notification)
+                .apply(driver);
+        if (notification == null) {
+            return false;
+        }
+        return notification.getText().contains(text);
     }
 
     private WebElement getErrorNotification() {
@@ -184,4 +224,12 @@ public class InternalErrorIT extends ChromeBrowserTest {
     private void clickButton(String id) {
         findElement(By.id(id)).click();
     }
+
+    private void clickErrorNotification() {
+        // Do not use click() because it currently invokes JavaScript function
+        // instead of clicking on the element
+        new Actions(getDriver()).click(getErrorNotification()).build()
+                .perform();
+    }
+
 }

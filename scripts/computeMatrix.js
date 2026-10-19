@@ -8,13 +8,19 @@ const globalExclusions = [
   'flow-tests/test-multi-war/test-war1',
   'flow-tests/test-multi-war/test-war2',
   'flow-tests/test-webpush',
+  // Deploys to a real application server, so it needs one of the container
+  // profiles and has its own job in validation.yml
+  'flow-tests/vaadin-cdi-tests',
+  // Only in the reactor with -Dnative; runs in spring-native.yml
+  'flow-tests/vaadin-spring-tests/test-spring-native',
+  // Boots Quarkus applications instead of deploying to a servlet container,
+  // so it has its own job in validation.yml. Only the quarkus-tests profile
+  // lists it, but the module lists here are read regardless of profiles
+  'flow-tests/vaadin-quarkus-tests',
   'flow-tests/vaadin-spring-tests/test-plain-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-reload-time',
   'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/generator',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/library',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/theme',
-  'flow-tests/vaadin-spring-tests/test-spring-boot-multimodule-reload-time/ui'
+  'flow-tests/test-devloop/test-devloop-support'
 ];
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
@@ -26,13 +32,18 @@ const globalExclusions = [
 // Container 1:
 //  When running `flow-tests/test-mixed/pom-npm.xml` together with the following modules they fail
 //  - flow-tests/test-live-reload
-//  - flow-tests/test-dev-mode
 // Containers 2 & 3:
 //  Tests that need shared modules, check validation.yml to see how they are generated before running ITs
 // Containers 4, 5 & 6:
 //  Spring tests, they need also spring shared modules to be generated in validation.yml
+// Containers 7, 9, 10, 11 & 12:
+//  Dev loop fixtures, they need their devloop-shared modules to be installed in
+//  validation.yml. Each runs its ITs with javac and a Maven-compile subset,
+//  so at most two share a container.
 // Container 6:
-//  Live Reload Multimodule test needs being executed in the same container
+//  Live Reload Multimodule test needs being executed in the same container.
+//  Also holds a subset of the lighter spring-security tests offloaded from
+//  container 5, since 5 is dominated by `test-spring` (weight ~20).
 const moduleWeights = {
   'flow-client': { weight: 8 },
   'flow-server': { weight: 10 },
@@ -105,13 +116,17 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-websocket': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-themes-contextpath': { pos: 5, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-themes-urlmapping': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-themes-urlmapping': { pos: 6, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-methodsecurity': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 3 },
+  // Stays at pos:5: depends on test-spring-security-flow (built in the same
+  // reactor via the run-tests profile, but not installed to local .m2 because
+  // the workspace build step uses -DskipTests).
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-standalone-routepathaccesschecker': { pos: 5, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-routepathaccesschecker': { pos: 5, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-standalone-routepathaccesschecker': { pos: 6, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-routepathaccesschecker': { pos: 6, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-pwa': { pos: 6, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 6, weight: 2 },
   'flow-tests/test-live-reload-multimodule': {pos:6},
   'flow-tests/test-live-reload-multimodule/ui': {pos:6},
   'flow-tests/test-live-reload-multimodule/library': {pos:6},
@@ -124,6 +139,22 @@ const moduleWeights = {
   'flow-tests/test-commercial-banner/commercial-addon': { pos: 7},
   'flow-tests/test-commercial-banner/flow-application': { pos: 7},
   'flow-tests/test-commercial-banner/integration-test': { pos: 7},
+  'flow-tests/test-devloop/test-devloop-spring/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-spring/devloop-app': { pos: 7, weight: 10 },
+  'flow-tests/test-devloop/test-devloop-jetty/devloop-shared': { pos: 7 },
+  'flow-tests/test-devloop/test-devloop-jetty/devloop-app': { pos: 7, weight: 13 },
+  'flow-tests/test-devloop/test-devloop-cargo/devloop-shared': { pos: 11 },
+  'flow-tests/test-devloop/test-devloop-cargo/devloop-app': { pos: 11, weight: 15 },
+  'flow-tests/test-devloop/test-devloop-tomee/devloop-shared': { pos: 9 },
+  'flow-tests/test-devloop/test-devloop-tomee/devloop-app': { pos: 9, weight: 15 },
+  'flow-tests/test-devloop/test-devloop-liberty/devloop-shared': { pos: 9 },
+  'flow-tests/test-devloop/test-devloop-liberty/devloop-app': { pos: 9, weight: 15 },
+  'flow-tests/test-devloop/test-devloop-payara-micro/devloop-shared': { pos: 10 },
+  'flow-tests/test-devloop/test-devloop-payara-micro/devloop-app': { pos: 10, weight: 15 },
+  'flow-tests/test-devloop/test-devloop-payara/devloop-shared': { pos: 10 },
+  'flow-tests/test-devloop/test-devloop-payara/devloop-app': { pos: 10, weight: 17 },
+  'flow-tests/test-devloop/test-devloop-jbosseap/devloop-shared': { pos: 12 },
+  'flow-tests/test-devloop/test-devloop-jbosseap/devloop-app': { pos: 12, weight: 19 },
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
@@ -136,7 +167,7 @@ const moduleWeights = {
   'flow-tests/test-router-custom-context-encoded': { pos: 8 },
   'flow-tests/test-router-custom-context-encoded-prod': { pos: 8 },
   'flow-tests/test-frontend/vite-embedded': { weight: 5 },
-  'flow-tests/test-dev-mode': { weight: 5 },
+  'flow-tests/test-default': { weight: 5 },
   'flow-tests/test-custom-frontend-directory/test-themes-custom-frontend-directory': { weight: 5 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 5 },
   'flow-tests/test-ccdm': { weight: 4 },
@@ -172,7 +203,8 @@ const moduleWeights = {
 
 // Set split number for modules with several tests
 const moduleSplits = {
-  'flow-tests/test-root-context': 2
+  'flow-tests/test-root-context': 2,
+  'flow-plugins/flow-maven-plugin': 2
 }
 /****************** END CONFIG */
 
@@ -232,8 +264,15 @@ function getFiles(files, folder, pattern) {
  */
 function setVersion(newVersion) {
   const pomContent = fs.readFileSync('pom.xml').toString();
-  const current = RegExp(regexVersion.replace('VERSION', '\\d+\\.\\d+\\-SNAPSHOT')).exec(pomContent)[2];
-  if (current && current != newVersion) {
+  // Match any SNAPSHOT version, including extra qualifier segments such as
+  // `25.3.tsclient-SNAPSHOT`, not just the `\d+\.\d+-SNAPSHOT` shape.
+  const match = RegExp(regexVersion.replace('VERSION', '[\\w.\\-]+?-SNAPSHOT')).exec(pomContent);
+  const current = match && match[2];
+  if (!current) {
+    console.log('No SNAPSHOT version found in pom.xml, nothing to replace');
+    return;
+  }
+  if (current != newVersion) {
     const regexChangeVersion = RegExp(regexVersion.replace('VERSION', current), 'g');
     const files = getFiles([], '.', /.*\/pom.*\.xml$/);
     files.forEach(file => {
@@ -257,7 +296,10 @@ function getTestFiles(folder, pattern) {
  * remove excluded elements from array
  */
 function grep(array, exclude) {
-  return array.filter(item => !exclude.includes(item));
+  // Entries match a module or any module under it, so excluding a directory
+  // with sub-modules takes one line rather than one per sub-module.
+  return array.filter(item => !exclude.some(
+    excluded => item === excluded || item.startsWith(excluded + "/")));
 }
 
 function sumWeights(items, slowMap) {
@@ -419,6 +461,32 @@ function formatSecs(s) {
   const pad = (n, p) => ("" + n).padStart(p || 2, 0);
   const r = {h:~~(s / 3600),m:~~((s % 3600) / 60),s:~~s % 60, f:~~(s%1*10)};
   return `${pad(r.m)}':${pad(r.s)}"`;
+}
+
+/**
+ * The matrix of the quarkus-tests job in validation.yml. The suite is not a
+ * module of flow-tests (see flow-tests/pom.xml), so it is read from its own
+ * POM: every module of the suite that sets the validation.run property is a
+ * leg of the job, and the value says when it runs - `always` for every
+ * change, `when-changed` only when the Quarkus sources change. Modules
+ * without the property are fixtures the legs depend on.
+ */
+function getQuarkusTestsMatrix() {
+  const suite = 'flow-tests/vaadin-quarkus-tests';
+  const regexRun = /<validation\.run>\s*([\w-]+)\s*<\/validation\.run>/;
+  return getModules(suite).flatMap(path => {
+    const content = fs.readFileSync(path + '/pom.xml').toString()
+      .replace(regexComment, '');
+    const run = (regexRun.exec(content) || [])[1];
+    if (!run) {
+      return [];
+    }
+    if (run !== 'always' && run !== 'when-changed') {
+      throw new Error(`${path}/pom.xml: validation.run must be always or when-changed, not ${run}`);
+    }
+    const module = path.substring(suite.length + 1);
+    return [{ name: module, module, ungated: run === 'always' }];
+  });
 }
 
 /**
@@ -616,6 +684,8 @@ async function main() {
     printStrategy(object);
     const json = objectToString(object, keys);
     console.log(json);
+  } else if (action == 'quarkus-tests') {
+    console.log(objectToString(getQuarkusTestsMatrix()));
   } else if (action == 'clean-success') {
     const xmlSucceed = getFiles([], '.', /(surefire|failsafe)-reports\//)
       .filter(f => !fs.readFileSync(f).toString().match(/<stackTrace>/));
@@ -632,6 +702,7 @@ Actions
   set-version        replace versions in all pom files of the project
   unit-tests         outputs the JSON matrix for unit-tests
   it-tests           outputs the JSON matrix for it-tests
+  quarkus-tests      outputs the JSON matrix for the quarkus-tests job
   test-results       process test-results and outputs a matrix with weights
   clean-success      remove success xml test files to reduce uploaded artifact
 

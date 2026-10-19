@@ -4,39 +4,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-Vaadin Flow is the Java framework of Vaadin Platform for building modern web applications. This is a large, multi-module Maven project that combines server-side Java components with modern frontend tooling (Vite, TypeScript, React support).
+Vaadin Flow is the Java framework of Vaadin Platform for building modern web
+applications. This is a large, multi-module Maven project that combines
+server-side Java components with modern frontend tooling (Vite, TypeScript,
+React support).
 
-### Key Architecture Components
+### Technologies
 
-**Core Server Framework (`flow-server/`)**:
-- Component system with server-side state management (`StateNode`, `StateTree`)
-- DOM abstraction layer (`Element`, `Node`) that syncs with client-side
-- JavaScript execution bridge (`JacksonCodec`, `JsonCodec`) for seamless client-server communication
-- Routing system (`Router`, `RouteConfiguration`) with navigation lifecycle
-- Dependency injection and instantiation (`Instantiator`, `Lookup`)
-- Frontend asset management and bundling
+- Java 21+, Maven
+- Jakarta EE (not Java EE), Spring Boot 4 integration
+- Jackson for client-server JSON serialization
+- Vite for frontend builds, TypeScript for the client engine
+- JUnit and Mockito for unit tests, Vaadin TestBench for integration tests
 
-**Client-Server Communication**:
-- Uses Jackson for JSON serialization/deserialization between Java objects and JavaScript
-- `executeJs()` methods allow calling JavaScript from server with automatic parameter serialization
-- Return values from JavaScript can be automatically deserialized into Java beans
-- WebSocket-based push communication (`PushConnection`, `AtmospherePushConnection`)
+### Key Modules
 
-**Frontend Build System**:
-- Vite-based development mode with hot reload
-- Production bundling with webpack plugins
-- TypeScript support with generated type definitions
-- React and Lit template support
-- Theme system with CSS custom properties
-
-**Multi-Module Structure**:
-- `flow-server`: Core server-side framework
-- `flow-client`: Client-side TypeScript/JavaScript code
-- `flow-data`: Data binding and validation
-- `flow-router`: Navigation and routing
-- `flow-html-components`: Basic HTML component wrappers
-- `flow-tests/`: Extensive integration test suite
+- `flow-server`: core server-side framework (state tree, `Element`, routing, DI)
+- `flow-client`: client-side TypeScript/JavaScript engine
+- `flow-data`: data binding and validation
+- `flow-html-components`: basic HTML component wrappers
+- `flow-plugins`: Maven and Gradle build plugins
+- `flow-devloop-daemon`: daemon for the `vaadin-dev` dev loop
+- `flow-tests/`: integration test suite
 - `vaadin-spring`: Spring Framework integration
+- `vaadin-cdi`: CDI integration
+- `vaadin-quarkus`: Quarkus extension
+
+See `guidelines/repository.md` for the full module map and
+`guidelines/architecture.md` for how the pieces fit together.
+
+## Guidelines & Conventions
+
+Always read `CONVENTIONS.md` in full when **authoring** or **reviewing** code, and before **committing** or **opening a pull request** — it is the canonical list of checkable conventions.
+
+Design and implementation guidelines live in `guidelines/`. Read the chapters mapped in `guidelines/overview.md` selectively for the topics your work touches.
+
+The commit message format, the PR description format and the expectations for opening a pull request are in the `commit-and-pr` skill (`.claude/skills/commit-and-pr/SKILL.md`), linked from the Commit & PR Hygiene section of `CONVENTIONS.md`.
 
 ## Development Commands
 
@@ -52,10 +55,10 @@ mvn clean install -DskipTests
 # Note: To run tests, omit -DskipTests entirely (not -DskipTests=false)
 
 # Build specific module
-cd flow-server && mvn clean install
+mvn clean install -pl flow-server -am
 
 # Run tests for specific module
-cd flow-server && mvn test
+mvn test -pl flow-server
 
 # Run specific test class
 mvn test -Dtest=JacksonCodecTest
@@ -67,16 +70,16 @@ mvn test -Dtest=JacksonCodecTest#testComplexTypeSerialization
 mvn test -Dtest="*Codec*Test"
 
 # Run integration tests (automatically starts and stops server)
-cd flow-tests/test-root-context && mvn verify
+mvn verify -pl flow-tests/test-root-context
 
 # Run single integration test
-mvn verify -Dit.test=ExecJavaScriptIT
+mvn verify -pl flow-tests/test-root-context -Dit.test=ExecJavaScriptIT
 ```
 
 ### Code Quality
 
 ```bash
-# Format code
+# Format code, must be run before every commit
 mvn spotless:apply
 
 # Check code formatting
@@ -86,92 +89,10 @@ mvn spotless:check
 mvn checkstyle:check
 ```
 
-### Coding Conventions
-
-- Use triple quotes (`"""`) for multi-line string blocks in Java text blocks
-- **When tests fail, code doesn't compile, or similar issues occur: Always analyze why first, do not start rewriting code**
-- **When writing code, names and comments should describe how the code works and why, not what has changed from previous versions. Commit messages capture change information, not the code itself.**
-- **Always create proper tests for what should work first. If the tests expose problems in the implementation, fix the implementation after the tests have been created.**
-
 ### Frontend Development
 
 ```bash
-# Frontend assets are managed by Maven plugins
-# Vite dev mode is automatically started for development
-# Manual frontend build (rare, usually automatic):
+# Frontend assets are managed by Maven plugins, and Vite dev mode is started
+# automatically during development. Manual frontend build (rare):
 cd flow-client && npm install && npm run build
 ```
-
-## Working with Key Components
-
-### JavaScript Execution and JSON Codec
-
-The `JacksonCodec` and `JsonCodec` classes handle serialization between Java and JavaScript:
-
-- Parameters: Java objects → JSON → JavaScript variables (`$0`, `$1`, etc.)
-- Return values: JavaScript objects → JSON → Java beans
-- Special handling for `Element` instances (sent as DOM references)
-- Support for arbitrary objects via Jackson serialization
-
-### State Management
-
-Flow uses a tree-based state management system:
-- `StateNode`: Represents component state on server
-- `StateTree`: Manages entire application state tree
-- `NodeFeature`: Different aspects of node state (properties, children, etc.)
-- Changes are automatically synchronized to client
-
-### Component Development
-
-Components extend `Component` and use:
-- `Element`: Low-level DOM manipulation
-- Property synchronization via `@Synchronize`
-- Event handling with `@DomEvent`
-- Client-side callbacks with `@ClientCallable`
-
-### Testing
-
-**Unit Tests**: Located in `src/test/java/` in each module
-- Use JUnit 4/5
-- Mock heavy use of Mockito
-- Focus on individual class behavior
-
-**Integration Tests**: Located in `flow-tests/`
-- Use TestBench for browser automation
-- Test full client-server interaction
-- Require running application server
-- **When an IT fails: Use Playwright to debug the browser behavior and understand what's actually happening in the UI**
-
-### Common Patterns
-
-**Test Improvements**: When improving tests, focus on:
-- Verifying actual behavior rather than just "not null"
-- Testing JSON structure and content for serialization
-- Adding comprehensive edge case coverage
-
-**JavaScript Integration**: When working with `executeJs()`:
-- Remember Element parameters become DOM references or null
-- Return values can be deserialized to Java beans automatically
-- Use Jackson-compatible types for seamless serialization
-
-**Architecture Changes**: This is a complex, interconnected system:
-- Changes to core classes like `StateNode` or `Element` have wide impact
-- Frontend changes require corresponding server-side updates
-- Always run relevant test suites after modifications
-
-## Important Notes
-
-- Java 21+ required for development
-- Uses Jakarta EE (not Java EE)
-- Spring Boot 4 integration available
-- Hot reload available in development mode
-- Extensive CI/CD pipeline with multiple test configurations
-- When sending data to executeJS, always pass it as parameters and use $1,$2 etc and never concatenate strings
-- When creating a commit that will resolve an issue in the same repository, add "Fixes #issuenumber" to the commit message
-- When creating a PR, mark it as a draft on GitHub and remind the user about reviewing the code themselves and marking the PR ready
-- Don't add @since to javadocs
-- When adding unit tests, add only the essential ones and not more than that
-- Use test: instead of fix: when fixing only tests
-- Prefix custom DOM events with `vaadin-` (e.g. `vaadin-component-resize` instead of `component-resize`)
-- Always write even slightly complex JavaScript into a separate `.js` file rather than inlining it in Java strings. Use `@JsModule` on `UI.java` to load the file from `META-INF/frontend/`
-- Store global JavaScript state and functions on `window.Vaadin.Flow` (e.g. `window.Vaadin.Flow.componentSizeObserver`). Use annotations on the UI class for global scripts

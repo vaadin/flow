@@ -19,7 +19,11 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Objects;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.DisabledFeatureException;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnection;
@@ -68,6 +72,7 @@ public interface PushConfiguration extends Serializable {
      *
      * @param pushServletMapping
      *            The servlet mapping to use for push
+     * @since 23.3.5
      */
     void setPushServletMapping(String pushServletMapping);
 
@@ -79,6 +84,7 @@ public interface PushConfiguration extends Serializable {
      *
      * @return the servlet mapping to use for push requests, or null to use to
      *         default
+     * @since 23.3.5
      */
     String getPushServletMapping();
 
@@ -251,6 +257,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     @Override
     public void setTransport(Transport transport) {
+        checkTransportEnabled(transport);
         getPushConfigurationMap().setTransport(transport);
     }
 
@@ -261,7 +268,31 @@ class PushConfigurationImpl implements PushConfiguration {
 
     @Override
     public void setFallbackTransport(Transport fallbackTransport) {
+        checkTransportEnabled(fallbackTransport);
         getPushConfigurationMap().setFallbackTransport(fallbackTransport);
+    }
+
+    /**
+     * Checks that the given transport can be used, i.e. that the feature flag
+     * guarding an experimental transport is enabled. An experimental transport
+     * is also rejected when there is no service to read the feature flags from,
+     * for example for a UI that is not attached to a session.
+     *
+     * @param transport
+     *            the transport to check
+     */
+    private void checkTransportEnabled(Transport transport) {
+        if (transport != Transport.SERVER_SENT_EVENTS) {
+            return;
+        }
+        VaadinSession session = ui.getSession();
+        VaadinService service = session == null ? VaadinService.getCurrent()
+                : session.getService();
+        if (service == null || !FeatureFlags.get(service.getContext())
+                .isEnabled(CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT)) {
+            throw new DisabledFeatureException(
+                    CoreFeatureFlagProvider.SSE_PUSH_TRANSPORT);
+        }
     }
 
     @Override

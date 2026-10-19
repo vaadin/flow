@@ -17,17 +17,22 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.type.TypeReference;
 
+import com.vaadin.flow.signals.InvalidSignalValueTypeException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.impl.Transaction;
 import com.vaadin.flow.signals.impl.UsageTracker;
 import com.vaadin.flow.signals.impl.UsageTracker.Usage;
+import com.vaadin.flow.signals.operations.BulkInsertOperation;
 import com.vaadin.flow.signals.operations.InsertOperation;
 import com.vaadin.flow.signals.operations.SignalOperation;
 import com.vaadin.flow.signals.shared.SharedListSignal.ListPosition;
@@ -51,6 +56,18 @@ class SharedListSignalTest extends SignalTestBase {
         int size = signal.peek().size();
 
         assertEquals(0, size);
+    }
+
+    @Test
+    void constructor_typeReference_parameterizedElementTypeIsRetained() {
+        UUID id = UUID.randomUUID();
+        SharedListSignal<Set<UUID>> signal = new SharedListSignal<>(
+                new TypeReference<Set<UUID>>() {
+                });
+
+        signal.insertLast(Set.of(id));
+
+        assertEquals(Set.of(id), signal.peek().get(0).peek());
     }
 
     @Test
@@ -462,6 +479,96 @@ class SharedListSignalTest extends SignalTestBase {
         Stream<String> stream = Signal.untracked(() -> signal.getValues());
 
         assertThrows(IllegalStateException.class, () -> stream.toList());
+    }
+
+    @Test
+    void insertAllAt_valuesInsertedAtPosition() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> first = signal.insertLast("first").signal();
+        signal.insertLast("last");
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllAt(List.of("a", "b"), ListPosition.after(first));
+
+        assertSuccess(op);
+        assertEquals(2, op.signals().size());
+        assertChildren(signal, "first", "a", "b", "last");
+    }
+
+    @Test
+    void insertAllAt_emptyCollection_noChange() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllAt(List.of(), ListPosition.last());
+
+        assertSuccess(op);
+        assertTrue(op.signals().isEmpty());
+        assertChildren(signal, "existing");
+    }
+
+    @Test
+    void insertAllAt_invalidPosition_operationFails() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> child = signal.insertLast("child").signal();
+        signal.remove(child);
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllAt(List.of("a", "b"), ListPosition.after(child));
+
+        assertFailure(op);
+        assertChildren(signal);
+    }
+
+    @Test
+    void insertAllLast_multipleValues_valuesAppended() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllLast(List.of("a", "b", "c"));
+
+        assertEquals(3, op.signals().size());
+        assertChildren(signal, "existing", "a", "b", "c");
+    }
+
+    @Test
+    void insertAllFirst_multipleValues_valuesAtStart() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        signal.insertLast("existing");
+
+        BulkInsertOperation<SharedValueSignal<String>> op = signal
+                .insertAllFirst(List.of("a", "b", "c"));
+
+        assertEquals(3, op.signals().size());
+        assertChildren(signal, "a", "b", "c", "existing");
+    }
+
+    @Test
+    void insertLast_valueOfWrongType_throwsAndNothingInserted() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        SharedListSignal<Object> raw = ((SharedListSignal) signal);
+        Object wrongType = new Object();
+
+        assertThrows(InvalidSignalValueTypeException.class,
+                () -> raw.insertLast(wrongType));
+        assertChildren(signal);
+    }
+
+    @Test
+    void insertAllLast_oneValueOfWrongType_throwsAndNothingInserted() {
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        SharedListSignal<Object> raw = ((SharedListSignal) signal);
+        List<Object> values = List.of("a", new Object(), "c");
+
+        assertThrows(InvalidSignalValueTypeException.class,
+                () -> raw.insertAllLast(values));
+        // The bulk insert runs in a transaction, so not even the values
+        // preceding the rejected one are inserted
+        assertChildren(signal);
     }
 
     static void assertChildren(SharedListSignal<String> signal,

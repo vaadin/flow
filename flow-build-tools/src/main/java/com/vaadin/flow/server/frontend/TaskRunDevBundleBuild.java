@@ -44,6 +44,8 @@ import com.vaadin.flow.shared.util.SharedUtil;
  * Only used when running in dev mode without a dev server.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.0
  */
 public class TaskRunDevBundleBuild implements FallibleCommand {
 
@@ -134,17 +136,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             throws ExecutionFailedException {
         Logger logger = getLogger();
 
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                options.getNpmFolder().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
-        settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
-        settings.setNodeFolder(options.getNodeFolder());
-        settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setNodeVersion(options.getNodeVersion());
-        settings.setIgnoreVersionChecks(
-                options.isFrontendIgnoreVersionChecks());
-        FrontendTools frontendTools = new FrontendTools(settings);
+        FrontendTools frontendTools = FrontendTools.fromOptions(options);
 
         File buildExecutable;
         try {
@@ -208,11 +200,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             int errorCode = process.waitFor();
 
             if (errorCode != 0) {
-                logger.error("Command `{}` failed:\n{}", commandString,
-                        toolOutput);
-                throw new ExecutionFailedException(
+                ExecutionFailedException exception = new ExecutionFailedException(
                         SharedUtil.capitalize(toolName)
-                                + " build exited with a non zero status");
+                                + " build exited with a non zero status:\n"
+                                + toolOutput);
+                logger.error("Command `{}` failed", commandString, exception);
+                throw exception;
             } else {
                 logger.info("Development frontend bundle built");
             }
@@ -258,7 +251,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
         Optional<String> vaadinVersion = FrontendBuildUtils
-                .getVaadinVersion(options.getClassFinder());
+                .getVaadinVersion(options);
         if (vaadinVersion.isPresent()) {
             ObjectNode vaadinObject = JacksonUtils.createObjectNode();
             vaadinObject.put("version", vaadinVersion.get());

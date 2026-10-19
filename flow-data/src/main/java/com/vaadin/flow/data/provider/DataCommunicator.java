@@ -30,6 +30,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,6 +46,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -103,7 +105,10 @@ public class DataCommunicator<T> implements Serializable {
     private int assumedSize;
     private int lastSent = -1;
 
-    private boolean resendEntireRange = true;
+    // Reloads the viewport range from the data provider and resends it
+    private boolean reloadViewportRange = true;
+    // Resends the viewport range without reloading it from the data provider
+    private boolean resendViewportRange = false;
     private boolean assumeEmptyClient = true;
 
     private int nextUpdateId = 0;
@@ -147,6 +152,7 @@ public class DataCommunicator<T> implements Serializable {
      *            item type
      *
      * @see AbstractDataView#AbstractDataView(SerializableSupplier, Component)
+     * @since 5.0
      */
     public static final class EmptyDataProvider<T1>
             extends ListDataProvider<T1> {
@@ -165,6 +171,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param <F>
      *            filter's type
+     * @since 5.0
      */
     public static final class Filter<F> implements Serializable {
 
@@ -304,6 +311,7 @@ public class DataCommunicator<T> implements Serializable {
      *            if {@code fetchEnabled} is {@code true} then the data provider
      *            will be called to fetch the items and/or to get the items
      *            count until it's set to {@code false}
+     * @since 5.0
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
@@ -343,6 +351,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the viewport range
      * @param length
      *            the end of the viewport range
+     * @since 24.9
      */
     public void setViewportRange(int start, int length) {
         setRequestedRange(start, length);
@@ -359,6 +368,7 @@ public class DataCommunicator<T> implements Serializable {
      * @return the computed requested range
      * @deprecated since 24.9 and will be removed in Vaadin 26. Use
      *             {@link #computeViewportRange(int, int)} instead.
+     * @since 24.3.3
      */
     protected final Range computeRequestedRange(int start, int length) {
         final int maximumAllowedItems = getMaximumAllowedItems();
@@ -381,6 +391,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param length
      *            the end of the viewport range
      * @return the computed viewport range
+     * @since 24.9
      */
     protected final Range computeViewportRange(int start, int length) {
         return computeRequestedRange(start, length);
@@ -397,6 +408,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param executor
      *            The Executor used for async updates.
+     * @since 23.0
      */
     public void enablePushUpdates(Executor executor) {
         if (this.executor != null && future != null) {
@@ -414,7 +426,7 @@ public class DataCommunicator<T> implements Serializable {
     public void reset() {
         skipCountIncreaseUntilReset = false;
         sizeReset = true;
-        resendEntireRange = true;
+        reloadViewportRange = true;
         dataGenerator.destroyAllData();
         updatedData.clear();
         requestFlush();
@@ -427,32 +439,22 @@ public class DataCommunicator<T> implements Serializable {
      *            updated data object; not {@code null}
      */
     public void refresh(T data) {
-        refresh(data, data);
-    }
-
-    /**
-     * Informs the DataCommunicator that a data object has been updated,
-     * providing the old data object for identity remapping in the KeyMapper.
-     *
-     * @param data
-     *            the new data object; not {@code null}
-     * @param oldData
-     *            the old data object used to find the existing key mapping
-     */
-    protected void refresh(T data, T oldData) {
         Objects.requireNonNull(data,
                 "DataCommunicator can not refresh null object");
-        getKeyMapper().refresh(data, oldData);
+        getKeyMapper().refresh(data);
         dataGenerator.refreshData(data);
         updatedData.add(data);
         requestFlushUpdatedData();
     }
 
     /**
-     * Regenerates and resends data for all items in the current viewport.
+     * Regenerates and resends data for all items in the current viewport. The
+     * items themselves are not reloaded from the data provider.
+     *
+     * @since 25.0.1
      */
     protected void refreshViewport() {
-        resendEntireRange = true;
+        resendViewportRange = true;
         requestFlush();
     }
 
@@ -508,6 +510,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the filter type
      *
      * @return a consumer that accepts a new filter value to use
+     * @since 5.0
      */
     public <F> SerializableConsumer<Filter<F>> setDataProvider(
             DataProvider<T, F> dataProvider, F initialFilter,
@@ -581,10 +584,11 @@ public class DataCommunicator<T> implements Serializable {
      * fetched from the DataProvider if client data has not been sent.
      *
      * @return count of available items
+     * @since 4.0
      */
     public int getItemCount() {
         if (isDefinedSize()
-                && (resendEntireRange || assumeEmptyClient || sizeReset)) {
+                && (reloadViewportRange || assumeEmptyClient || sizeReset)) {
             // TODO it could be possible to cache the value returned here
             // and use it next time instead of making another query, unless
             // the conditions like filter (or another reset) have changed
@@ -603,6 +607,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param item
      *            the item to check, not {@code null}
      * @return {@code true} if item is active, {@code false} if not
+     * @since 4.0
      */
     public boolean isItemActive(T item) {
         return getKeyMapper().has(item);
@@ -621,6 +626,7 @@ public class DataCommunicator<T> implements Serializable {
      * @throws IndexOutOfBoundsException
      *             requested index is outside of the filtered and sorted data
      *             set
+     * @since 4.0
      */
     @SuppressWarnings("unchecked")
     public T getItem(int index) {
@@ -674,6 +680,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param limit
      *            fetched item count
      * @return {@link Query} for component state
+     * @since 4.0
      */
     public Query buildQuery(int offset, int limit) {
         return new Query(offset, limit, getBackEndSorting(),
@@ -686,6 +693,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param pageSize
      *            the page size to set
+     * @since 4.0
      */
     public void setPageSize(int pageSize) {
         if (pageSize < 1) {
@@ -699,6 +707,7 @@ public class DataCommunicator<T> implements Serializable {
      * Returns the page size set to fetch items.
      *
      * @return the page size
+     * @since 4.0
      */
     public int getPageSize() {
         return pageSize;
@@ -710,6 +719,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param countCallback
      *            the size callback to use
+     * @since 4.0
      */
     public void setCountCallback(
             CallbackDataProvider.CountCallback<T, ?> countCallback) {
@@ -740,6 +750,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param itemCountEstimate
      *            the item count estimate to be used
+     * @since 4.0
      */
     public void setItemCountEstimate(int itemCountEstimate) {
         if (itemCountEstimate < 1) {
@@ -760,6 +771,7 @@ public class DataCommunicator<T> implements Serializable {
      * Gets the item count estimate used.
      *
      * @return the item count estimate used
+     * @since 4.0
      */
     public int getItemCountEstimate() {
         if (itemCountEstimate < 1) {
@@ -777,6 +789,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param itemCountEstimateIncrease
      *            the item count estimate step to use
+     * @since 4.0
      */
     public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
         if (itemCountEstimateIncrease < 1) {
@@ -792,6 +805,7 @@ public class DataCommunicator<T> implements Serializable {
      * Gets the item count estimate increase used.
      *
      * @return the item count estimate increase
+     * @since 4.0
      */
     public int getItemCountEstimateIncrease() {
         if (itemCountEstimateIncrease == -1) {
@@ -815,6 +829,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param definedSize
      *            {@code true} for defined size, {@code false} for undefined
      *            size
+     * @since 4.0
      */
     public void setDefinedSize(boolean definedSize) {
         if (this.definedSize != definedSize) {
@@ -840,6 +855,7 @@ public class DataCommunicator<T> implements Serializable {
      * Returns whether defined or undefined size is used.
      *
      * @return {@code true} for defined size, {@code false} for undefined size
+     * @since 4.0
      */
     public boolean isDefinedSize() {
         return definedSize;
@@ -863,6 +879,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @param keyMapper
      *            the keyMapper
+     * @since 1.1
      */
     protected void setKeyMapper(DataKeyMapper<T> keyMapper) {
         this.keyMapper = keyMapper;
@@ -921,6 +938,7 @@ public class DataCommunicator<T> implements Serializable {
      *         queries
      *
      * @see #setPagingEnabled(boolean)
+     * @since 4.0
      */
     public boolean isPagingEnabled() {
         return pagingEnabled;
@@ -932,6 +950,7 @@ public class DataCommunicator<T> implements Serializable {
      * @param pagingEnabled
      *            {@code true} for paged queries, {@code false} for offset/limit
      *            queries
+     * @since 4.0
      */
     public void setPagingEnabled(boolean pagingEnabled) {
         this.pagingEnabled = pagingEnabled;
@@ -944,6 +963,7 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @return {@code true} if the calls to data provider are enabled,
      *         {@code false} otherwise
+     * @since 5.0
      */
     public boolean isFetchEnabled() {
         return fetchEnabled;
@@ -963,6 +983,7 @@ public class DataCommunicator<T> implements Serializable {
      *            if {@code true} then the calls to data provider are enabled,
      *            otherwise the data provider won't be called to fetch the
      *            items.
+     * @since 5.0
      */
     public void setFetchEnabled(boolean fetchEnabled) {
         this.fetchEnabled = fetchEnabled;
@@ -983,17 +1004,18 @@ public class DataCommunicator<T> implements Serializable {
     public int getDataProviderSize() {
         assert definedSize
                 : "This method should never be called when using undefined size";
-        if (countCallback != null) {
-            return countCallback.count(new Query(getFilter()));
-        } else {
-            return getDataProvider().size(new Query(getFilter()));
-        }
+        IntSupplier countItems = () -> countCallback != null
+                ? countCallback.count(new Query(getFilter()))
+                : getDataProvider().size(new Query(getFilter()));
+
+        return DataFetchObserver.count(getUI(), getComponent(),
+                getFilter() != null, countItems);
     }
 
     private void updateUndefinedSize() {
         assert !definedSize
                 : "This method should never be called when using defined size";
-        if (resendEntireRange || sizeReset) {
+        if (reloadViewportRange || sizeReset) {
             // things have reset
             assumedSize = getItemCountEstimate();
         }
@@ -1154,7 +1176,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     protected void handleDataRefreshEvent(DataRefreshEvent<T> event) {
-        refresh(event.getItem(), event.getOldItem());
+        refresh(event.getItem());
     }
 
     private void handleDetach() {
@@ -1238,7 +1260,7 @@ public class DataCommunicator<T> implements Serializable {
         // Phase 1: Find all items that the client should have
 
         // With defined size the backend is only queried when necessary
-        if (definedSize && (resendEntireRange || sizeReset)) {
+        if (definedSize && (reloadViewportRange || sizeReset)) {
             assumedSize = getDataProviderSize();
         } else if (!definedSize
                 && (!skipCountIncreaseUntilReset || sizeReset)) {
@@ -1248,7 +1270,7 @@ public class DataCommunicator<T> implements Serializable {
         effectiveRequested = viewportRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
-        resendEntireRange |= !(previousActive.intersects(effectiveRequested)
+        reloadViewportRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
         UI ui = getUI();
@@ -1334,7 +1356,8 @@ public class DataCommunicator<T> implements Serializable {
         boolean updated = collectChangesToSend(previousActive,
                 effectiveRequested, update);
 
-        resendEntireRange = false;
+        reloadViewportRange = false;
+        resendViewportRange = false;
         assumeEmptyClient = false;
         sizeReset = false;
 
@@ -1437,7 +1460,7 @@ public class DataCommunicator<T> implements Serializable {
     private boolean collectChangesToSend(final Range previousActive,
             final Range effectiveRequested, Update update) {
         boolean updated = false;
-        if (assumeEmptyClient || resendEntireRange) {
+        if (assumeEmptyClient || reloadViewportRange || resendViewportRange) {
             if (!assumeEmptyClient) {
                 /*
                  * TODO: Not necessary to clear something that would be set back
@@ -1492,7 +1515,7 @@ public class DataCommunicator<T> implements Serializable {
          * actually be useful can be optimized away once we have some actual
          * test coverage for the logic here.
          */
-        if (resendEntireRange) {
+        if (reloadViewportRange) {
             return activate(effectiveRequested);
         } else {
             List<String> newActiveKeyOrder = new ArrayList<>();
@@ -1550,20 +1573,30 @@ public class DataCommunicator<T> implements Serializable {
 
         // XXX Explicitly refresh anything that is updated
         List<String> activeKeys = new ArrayList<>(range.length());
-        try (Stream<T> stream = fetchFromProvider(range.getStart(),
-                range.length())) {
-            stream.forEach(bean -> {
-                boolean mapperHasKey = keyMapper.has(bean);
-                String key = keyMapper.key(bean);
-                if (mapperHasKey) {
-                    // Ensure latest instance from provider is used
-                    keyMapper.refresh(bean);
-                    passivatedByUpdate.values().stream()
-                            .forEach(set -> set.remove(key));
-                }
-                activeKeys.add(key);
-            });
-        }
+
+        // The stream is consumed inside the observed query, so the reported
+        // duration covers the backend round-trip even for a data provider
+        // returning a lazily evaluated stream.
+        IntSupplier fetchActiveKeys = () -> {
+            try (Stream<T> stream = fetchFromProvider(range.getStart(),
+                    range.length())) {
+                stream.forEach(bean -> {
+                    boolean mapperHasKey = keyMapper.has(bean);
+                    String key = keyMapper.key(bean);
+                    if (mapperHasKey) {
+                        // Ensure latest instance from provider is used
+                        keyMapper.refresh(bean);
+                        passivatedByUpdate.values().stream()
+                                .forEach(set -> set.remove(key));
+                    }
+                    activeKeys.add(key);
+                });
+            }
+            return activeKeys.size();
+        };
+
+        DataFetchObserver.fetch(getUI(), getComponent(), range,
+                getFilter() != null, fetchActiveKeys);
         boolean needsSizeRecheck = activeKeys.size() < range.length();
         return new Activation(activeKeys, needsSizeRecheck);
     }
@@ -1585,12 +1618,31 @@ public class DataCommunicator<T> implements Serializable {
                 MAXIMUM_ALLOWED_PAGES * pageSize);
     }
 
-    private UI getUI() {
+    /**
+     * Gets the UI this data communicator belongs to.
+     *
+     * @return the UI, or {@code null} if the component is not attached
+     * @since 25.3
+     */
+    protected UI getUI() {
         NodeOwner owner = stateNode.getOwner();
         if (owner instanceof StateTree) {
             return ((StateTree) owner).getUI();
         }
         return null;
+    }
+
+    /**
+     * Gets the component this data communicator loads data for, so that
+     * observers can attribute a query to it.
+     *
+     * @return the component, or {@code null} if none can be resolved, for
+     *         example when the communicator is driven by a bare element
+     * @since 25.3
+     */
+    protected Component getComponent() {
+        return ElementUtil.from(stateNode).flatMap(Element::getComponent)
+                .orElse(null);
     }
 
     private static class Activation implements Serializable {

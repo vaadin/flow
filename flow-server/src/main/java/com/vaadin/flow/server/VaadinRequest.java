@@ -79,6 +79,7 @@ public interface VaadinRequest {
      *
      * @return a long containing the length of the request body or -1L if the
      *         length is not known
+     * @since 6.0.5
      */
     default long getContentLengthLong() {
         return getContentLength();

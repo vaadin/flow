@@ -64,8 +64,6 @@ public class CssLoadingView extends Div {
         idToExpectedColor.put("stylesheetVsAddStylesheet", "purple");
         idToExpectedColor.put("addStylesheetVsCssImport", "yellow");
         idToExpectedColor.put("laterAddStylesheetVsCssImport", "darkgoldenrod");
-        idToExpectedColor.put("cssImportVsLumo", "orange");
-        idToExpectedColor.put("lumo", "hsl(214, 35%, 15%)");
     }
 
     public CssLoadingView() {
@@ -107,15 +105,15 @@ public class CssLoadingView extends Div {
         add(wrap("laterAddStylesheetVsCssImport",
                 laterAddStylesheetVsCssImport));
 
-        Span cssImportVsLumo = new Span(
-                "CSSImport vs Lumo, should be orange from cssimport");
-        cssImportVsLumo.addClassNames("compare", "bg-contrast-20");
-        add(wrap("cssImportVsLumo", cssImportVsLumo));
-
-        Span lumo = new Span("Lumo, should be quite black");
-        lumo.addClassNames("compare", "bg-contrast");
-        add(wrap("lumo", lumo));
-
+        // Regression target for https://github.com/vaadin/flow/issues/24164:
+        // .relurl-test-target's background-image is defined in
+        // webapp/relurl-test/views/messages.css using a relative
+        // url('../images/dot.svg'). The IT asserts that this url resolves
+        // to /relurl-test/images/dot.svg.
+        Div relurlTestTarget = new Div();
+        relurlTestTarget.setId("relurlTestTarget");
+        relurlTestTarget.addClassName("relurl-test-target");
+        add(relurlTestTarget);
     }
 
     private Component wrap(String id, Component component) {

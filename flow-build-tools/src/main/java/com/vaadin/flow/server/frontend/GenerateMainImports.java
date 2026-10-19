@@ -28,7 +28,6 @@ import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.frontend.scanner.CssData;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
  * Collect generated-flow-imports content for project to use to determine if
@@ -38,14 +37,15 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
  * a dev server.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 24.0
  */
 public class GenerateMainImports extends AbstractUpdateImports {
     private JsonNode statsJson;
     private Map<File, List<String>> output;
 
-    public GenerateMainImports(FrontendDependenciesScanner frontendDepScanner,
-            Options options, JsonNode statsJson) {
-        super(options, frontendDepScanner);
+    public GenerateMainImports(Options options, JsonNode statsJson) {
+        super(options);
         this.statsJson = statsJson;
     }
 

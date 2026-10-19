@@ -38,6 +38,8 @@ import com.vaadin.flow.i18n.I18NUtil;
  * Factory for {@link DefaultI18NProvider}. Factory creates I18N provider for
  * locales based on all .properties files in /vaadin-i18n folder in the
  * classpath including JAR contents.
+ * 
+ * @since 24.3
  */
 public class DefaultI18NProviderFactory implements Condition, Serializable {
 
@@ -45,6 +47,13 @@ public class DefaultI18NProviderFactory implements Condition, Serializable {
      * Default location pattern to be used with {@link ResourcePatternResolver}.
      */
     public static final String DEFAULT_LOCATION_PATTERN = "classpath*:/vaadin-i18n/*.properties";
+
+    /**
+     * Creates the factory. Spring instantiates it.
+     */
+    public DefaultI18NProviderFactory() {
+        // Default constructor
+    }
 
     /**
      * Creates new instance of {@link DefaultI18NProvider} with the given

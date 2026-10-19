@@ -19,11 +19,16 @@ import org.junit.After;
 import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
 
-import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
 import com.vaadin.flow.spring.test.AbstractSpringTest;
+import com.vaadin.testbench.HasElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 
 public abstract class AbstractIT extends AbstractSpringTest {
+
+    static final String LOGIN_USERNAME_ID = "vaadinLoginUsername";
+    static final String LOGIN_PASSWORD_ID = "vaadinLoginPassword";
+    static final String LOGIN_SUBMIT_ID = "login-submit";
+    static final String LOGIN_OVERLAY_ID = "login-overlay";
 
     private static final String ROOT_PAGE_HEADER_TEXT = "Welcome to the Java Bank of Vaadin";
     private static final String ANOTHER_PUBLIC_PAGE_HEADER_TEXT = "Another public view for testing";
@@ -91,19 +96,30 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     protected void login(String username, String password) {
         assertLoginViewShown();
-
-        LoginOverlayElement form = $(LoginOverlayElement.class).first();
-        form.getUsernameField().setValue(username);
-        form.getPasswordField().setValue(password);
-        form.submit();
+        submitLogin(this, username, password);
         waitUntilNot(
                 driver -> driver.getCurrentUrl().contains("my/login/page"));
-        waitUntilNot(driver -> $(LoginOverlayElement.class).exists());
+        waitUntilNot(driver -> loginOverlayPresent(this));
+    }
+
+    protected static boolean loginOverlayPresent(HasElementQuery context) {
+        return context.$("*").withAttribute("id", LOGIN_OVERLAY_ID).exists();
+    }
+
+    protected static void submitLogin(HasElementQuery context, String username,
+            String password) {
+        TestBenchElement usernameField = context.$("input")
+                .id(LOGIN_USERNAME_ID);
+        TestBenchElement passwordField = context.$("input")
+                .id(LOGIN_PASSWORD_ID);
+        usernameField.setProperty("value", username);
+        passwordField.setProperty("value", password);
+        context.$("button").id(LOGIN_SUBMIT_ID).click();
     }
 
     protected void assertLoginViewShown() {
         assertPathShown("my/login/page");
-        waitUntil(driver -> $(LoginOverlayElement.class).exists());
+        waitUntil(driver -> loginOverlayPresent(this));
     }
 
     protected void assertRootPageShown() {

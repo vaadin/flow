@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,8 @@ import tools.jackson.databind.JsonNode;
  * Utility methods to handle application theme CSS content.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.1
  */
 public class CssBundler {
 
@@ -59,8 +62,40 @@ public class CssBundler {
     private static final String MAYBE_LAYER_OR_MEDIA_QUERY = "(" + LAYER + "|"
             + MEDIA_QUERY + ")";
 
+    // One <ident> token of a dot separated CSS <layer-name>. Escapes in
+    // identifiers are not accepted, which also keeps the name safe to write
+    // into a rule.
+    private static final Pattern LAYER_NAME_PART = Pattern
+            .compile("-?[_a-zA-Z][_a-zA-Z0-9-]*+|--[_a-zA-Z0-9-]*+");
+
+    // Selects how url(...) references are rewritten when inlining @import
+    // statements. The right choice depends on how the bundled CSS is later
+    // delivered to the browser:
+    //
+    // THEMES — used for application themes; url() targets are rewritten to
+    // absolute "VAADIN/themes/<theme>/..." paths because themes are
+    // served from a known fixed location.
+    //
+    // STATIC_RESOURCES — used in dev mode for @StyleSheet files served from
+    // public roots (META-INF/resources, webapp, ...). The dev-tools
+    // live-reload client (vaadin-dev-tools.ts onUpdate) injects the
+    // bundled content into an inline <style> tag and removes the
+    // original <link>. An inline <style> has no URL of its own, so the
+    // browser resolves any relative url() against the *page URL*, which
+    // would point to the wrong folder. To stay correct we rewrite to
+    // absolute paths rooted at the servlet context (e.g.
+    // "/myapp/relurl-test/images/dot.svg").
+    //
+    // STATIC_RESOURCES_RELATIVE — used in prod by TaskProcessStylesheetCss.
+    // The bundled CSS is written back in-place under META-INF/resources
+    // and served via the original <link href>, so the browser still
+    // fetches it from the entry file's URL. Relative url() therefore
+    // resolves against the entry's folder and we just need to express
+    // each url() relative to that folder. We can't use STATIC_RESOURCES
+    // here because the deployment context path is not known at build
+    // time.
     private enum BundleFor {
-        THEMES, STATIC_RESOURCES
+        THEMES, STATIC_RESOURCES, STATIC_RESOURCES_RELATIVE
     }
 
     /**
@@ -168,6 +203,37 @@ public class CssBundler {
     }
 
     /**
+     * Inlines imports for CSS files located under public static resources (e.g.
+     * META-INF/resources) at build time, rewriting relative {@code url(...)}
+     * references so they are expressed relative to the entry CSS file's folder.
+     * <p>
+     * Unlike {@link #inlineImportsForPublicResources(File, File, String)}, this
+     * variant does not prepend a servlet context path. The resulting URLs are
+     * purely relative, which is required when the CSS is processed at build
+     * time and the deployment context path is not yet known.
+     *
+     * @param baseFolder
+     *            folder of the entry CSS file; inlined {@code url(...)}
+     *            references are rewritten to paths relative to this folder.
+     * @param cssFile
+     *            the CSS file to process.
+     * @param nodeModulesFolder
+     *            the node_modules folder for resolving npm package imports, or
+     *            {@code null} if node_modules resolution is not needed.
+     * @return the processed stylesheet content, with inlined imports and
+     *         rewritten URLs.
+     * @throws IOException
+     *             if filesystem resources cannot be read.
+     * @since 25.1.4
+     */
+    public static String inlineImportsForStaticResourcesRelative(
+            File baseFolder, File cssFile, File nodeModulesFolder)
+            throws IOException {
+        return inlineImports(baseFolder, cssFile, new HashSet<>(),
+                BundleFor.STATIC_RESOURCES_RELATIVE, null, nodeModulesFolder);
+    }
+
+    /**
      * Internal implementation that can optionally skip URL rewriting.
      *
      * @param baseFolder
@@ -247,6 +313,9 @@ public class CssBundler {
         } else if (bundleFor == BundleFor.STATIC_RESOURCES) {
             content = rewriteCssUrlsForStaticResources(baseFolder, cssFile,
                     contextPath, content);
+        } else if (bundleFor == BundleFor.STATIC_RESOURCES_RELATIVE) {
+            content = rewriteCssUrlsForStaticResourcesRelative(baseFolder,
+                    cssFile, content);
         }
         content = StringUtil.removeComments(content, true);
         List<String> unhandledImports = new ArrayList<>();
@@ -307,13 +376,41 @@ public class CssBundler {
 
     private static String rewriteCssUrlsForStaticResources(File baseFolder,
             File cssFile, String contextPath, String content) {
-        // Public resources: rebase URLs from the current cssFile to the
-        // entry stylesheet base folder
+        // Bundled CSS is delivered as inline <style> in dev mode, so url()s
+        // need to be absolute paths rooted at the servlet context.
+        return rewriteCssUrls(baseFolder, cssFile, content,
+                target -> rebaseToContextPath(baseFolder, contextPath, target));
+    }
+
+    private static String rewriteCssUrlsForStaticResourcesRelative(
+            File baseFolder, File cssFile, String content) {
+        // Bundled CSS is written back to disk and served from the entry
+        // file's URL in prod mode, so url()s can be expressed relative to
+        // that entry folder.
+        Path baseNormalized = baseFolder.toPath().normalize().toAbsolutePath();
+        return rewriteCssUrls(baseFolder, cssFile, content,
+                target -> baseNormalized.relativize(target).toString()
+                        .replace('\\', '/'));
+    }
+
+    /**
+     * Common url() rewriting pipeline used by both static-resource bundling
+     * strategies. Walks every {@code url(...)} in {@code content}, skips ones
+     * that should be left untouched (empty, absolute, protocol-prefixed,
+     * unresolvable, outside {@code baseFolder}, or pointing at a missing file),
+     * and lets the caller decide how to format the kept ones via
+     * {@code targetToUrl}.
+     */
+    private static String rewriteCssUrls(File baseFolder, File cssFile,
+            String content,
+            java.util.function.Function<Path, String> targetToUrl) {
+        Path baseNormalized = baseFolder.toPath().normalize().toAbsolutePath();
         Matcher urlMatcher = URL_PATTERN.matcher(content);
-        content = urlMatcher.replaceAll(result -> {
+        return urlMatcher.replaceAll(result -> {
             String url = getNonNullGroup(result, 2, 3, 4);
             if (url == null || url.trim().endsWith(".css")) {
-                // CSS imports handled separately below
+                // @import-style url()s are handled by import inlining, not
+                // here.
                 return Matcher.quoteReplacement(urlMatcher.group());
             }
             String sanitized = sanitizeUrl(url);
@@ -321,34 +418,34 @@ public class CssBundler {
                 return Matcher.quoteReplacement(urlMatcher.group());
             }
             String trimmed = sanitized.trim();
-            // Only handle relative URLs (no protocol, no leading slash, not
-            // data URIs)
-            // Treat only known protocols as absolute to avoid false
-            // positives like "my:file.css"
-            if (trimmed.startsWith("/")
+            // Only handle relative URLs: not empty, no leading slash, no
+            // known protocol prefix. Match only known protocols as absolute
+            // to avoid false positives like "my:file.css".
+            if (trimmed.isEmpty() || trimmed.startsWith("/")
                     || PROTOCOL_PATTER_FOR_URLS.matcher(trimmed).matches()) {
                 return Matcher.quoteReplacement(urlMatcher.group());
             }
             try {
                 Path target = cssFile.getParentFile().toPath().resolve(trimmed)
-                        .normalize();
-                // Only rewrite when we can safely confirm the target (in
-                // url()) file exists
-                if (Files.exists(target)) {
-                    // For inline <style> tags, make URLs absolute to the
-                    // application context
-                    String rebased = rebaseToContextPath(baseFolder,
-                            contextPath, target);
-                    return Matcher.quoteReplacement("url('" + rebased + "')");
+                        .normalize().toAbsolutePath();
+                if (!target.startsWith(baseNormalized)) {
+                    // Target is outside the entry's base folder (e.g. an
+                    // npm-package CSS referencing a sibling file). Don't
+                    // invent a path for it.
+                    return Matcher.quoteReplacement(urlMatcher.group());
                 }
+                if (!Files.exists(target)) {
+                    // Don't rewrite something we can't confirm.
+                    return Matcher.quoteReplacement(urlMatcher.group());
+                }
+                return Matcher.quoteReplacement(
+                        "url('" + targetToUrl.apply(target) + "')");
             } catch (Exception e) {
-                // On any resolution issue, keep the original
                 getLogger().debug("Unable to resolve url: {}",
                         urlMatcher.group());
             }
             return Matcher.quoteReplacement(urlMatcher.group());
         });
-        return content;
     }
 
     private static String rewriteCssUrlsForThemes(File baseFolder, File cssFile,
@@ -547,6 +644,102 @@ public class CssBundler {
         // Remove trailing semicolons before }
         css = css.replaceAll(";}", "}");
         return css.trim();
+    }
+
+    /**
+     * Returns whether the given value is a valid CSS cascade layer name: one or
+     * more CSS identifiers separated by dots, such as {@code theme} or
+     * {@code theme.base}.
+     *
+     * @param layer
+     *            the layer name to check, not {@code null}
+     * @return {@code true} if the value is a valid layer name
+     */
+    public static boolean isValidLayerName(String layer) {
+        return Stream.of(layer.split("\\.", -1))
+                .allMatch(part -> LAYER_NAME_PART.matcher(part).matches());
+    }
+
+    /**
+     * Checks that the given value is a valid CSS cascade layer name: one or
+     * more CSS identifiers separated by dots, such as {@code theme} or
+     * {@code theme.base}.
+     *
+     * @param layer
+     *            the layer name to check, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the value is not a valid layer name
+     */
+    public static void validateLayerName(String layer) {
+        if (!isValidLayerName(layer)) {
+            throw new IllegalArgumentException(
+                    createInvalidLayerNameMessage(layer));
+        }
+    }
+
+    /**
+     * Creates the message that explains why the given value is not a valid CSS
+     * cascade layer name.
+     *
+     * @param layer
+     *            the invalid layer name
+     * @return the error message
+     */
+    public static String createInvalidLayerNameMessage(String layer) {
+        return "'" + layer + "' is not a valid CSS cascade layer name. Use"
+                + " one or more identifiers separated by dots, e.g. 'theme'"
+                + " or 'theme.base'.";
+    }
+
+    /**
+     * Creates a CSS {@code @import} rule that loads the style sheet at the
+     * given URL into the given cascade layer.
+     * <p>
+     * A {@code <link rel="stylesheet">} cannot put a style sheet into a layer,
+     * so a layered style sheet is loaded through this rule in a {@code <style>}
+     * element instead.
+     *
+     * @param url
+     *            the URL of the style sheet, not {@code null}
+     * @param layer
+     *            a valid cascade layer name, see
+     *            {@link #validateLayerName(String)}
+     * @return the {@code @import} rule
+     */
+    public static String createLayerImport(String url, String layer) {
+        validateLayerName(layer);
+        String escapedUrl = url.replace("\\", "\\\\").replace("\"", "\\\"")
+                .replace("\n", "\\a ").replace("\r", "\\d ");
+        return "@import url(\"" + escapedUrl + "\") layer(" + layer + ");";
+    }
+
+    /**
+     * Wraps the given style sheet content into a {@code @layer} block so that
+     * it applies in the given cascade layer.
+     * <p>
+     * The content must not contain {@code @import} rules, as those are not
+     * allowed inside a block and a browser would silently drop them.
+     *
+     * @param css
+     *            the style sheet content, not {@code null}
+     * @param layer
+     *            a valid cascade layer name, see
+     *            {@link #validateLayerName(String)}
+     * @return the content wrapped into a {@code @layer} block
+     * @throws IllegalArgumentException
+     *             if the layer name is not valid or the content contains an
+     *             {@code @import} rule
+     */
+    public static String wrapInLayer(String css, String layer) {
+        validateLayerName(layer);
+        if (IMPORT_PATTERN.matcher(StringUtil.removeComments(css, true))
+                .find()) {
+            throw new IllegalArgumentException(
+                    "Style sheet content with @import rules cannot be wrapped"
+                            + " into layer '" + layer + "'. Load the style"
+                            + " sheet by URL instead of inlining it.");
+        }
+        return "@layer " + layer + " {\n" + css + "\n}";
     }
 
 }

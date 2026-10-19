@@ -18,8 +18,6 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 import java.util.Collection;
 
-import com.vaadin.flow.signals.BindingActiveException;
-
 /**
  * Interface that defines methods for fetching items lazily from a backend. The
  * API will return a {@link LazyDataView}.
@@ -30,6 +28,7 @@ import com.vaadin.flow.signals.BindingActiveException;
  *            filter type
  * @param <V>
  *            DataView type
+ * @since 4.0
  */
 public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
         extends Serializable {
@@ -54,11 +53,8 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
      *            on the offset, limit and an optional filter provided by the
      *            query object
      * @return LazyDataView instance for further configuration
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     default V setItems(CallbackDataProvider.FetchCallback<T, F> fetchCallback) {
-        DataViewUtils.checkNoActiveItemsBinding(this);
         setItems(DataProvider.fromFilteringCallbacks(fetchCallback, query -> {
             throw new IllegalStateException(
                     "Trying to use exact size with a lazy loading component"
@@ -101,12 +97,9 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
      *            function that return the number of items in the back end for a
      *            query
      * @return LazyDataView instance for further configuration
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     default V setItems(CallbackDataProvider.FetchCallback<T, F> fetchCallback,
             CallbackDataProvider.CountCallback<T, F> countCallback) {
-        DataViewUtils.checkNoActiveItemsBinding(this);
         setItems(DataProvider.fromFilteringCallbacks(fetchCallback,
                 countCallback));
         return getLazyDataView();
@@ -126,8 +119,6 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
      * @param dataProvider
      *            BackEndDataProvider instance
      * @return LazyDataView instance for further configuration
-     * @throws BindingActiveException
-     *             if there is an active signal binding for items
      */
     V setItems(BackEndDataProvider<T, F> dataProvider);
 

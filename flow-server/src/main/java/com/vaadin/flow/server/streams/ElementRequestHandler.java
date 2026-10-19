@@ -27,6 +27,8 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * Request handler callback for handing client-server or server-client data
  * transfer scoped to a specific (owner) element.
+ * 
+ * @since 24.8
  */
 @FunctionalInterface
 public interface ElementRequestHandler extends Serializable {
@@ -39,6 +41,18 @@ public interface ElementRequestHandler extends Serializable {
      * typical stream handling issues, e.g. exceptions yourself. However, you do
      * not need to close the stream yourself, Flow will handle that for you when
      * needed.
+     * <p>
+     * Note: the owner element's attached, visible, enabled and inert state is
+     * checked before this method is called, but not while it is running. A
+     * request that has already been passed to this method is therefore served
+     * to the end even if the owner element is detached, hidden or disabled in
+     * the meantime.
+     * <p>
+     * Note: the request is terminated if the session is invalidated while it is
+     * being served. The streams of the given request and response then refuse
+     * to transfer any more bytes and throw an {@link IOException} instead, so a
+     * handler that reads or writes through some other means should stop on its
+     * own account when the session is no longer valid.
      *
      * @param request
      *            VaadinRequest request to handle
@@ -70,6 +84,12 @@ public interface ElementRequestHandler extends Serializable {
     /**
      * Whether to invoke this request handler even if the owning element is
      * currently inert.
+     * <p>
+     * This is checked for every request when it is received, so the result can
+     * depend on the current state. For example, an upload component can allow
+     * the remaining files of an upload that started before a modal component
+     * made it inert, while still rejecting an upload that starts while it is
+     * inert.
      *
      * @return {@code true} to invoke for inert elements, {@code false}
      *         otherwise. Defaults to {@code false}.

@@ -39,6 +39,7 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
@@ -77,6 +78,8 @@ class HtmlComponentSmokeTest {
                         IFrame.SandboxType.ALLOW_MODALS });
         testValues.put(Component.class, new Paragraph("Component"));
         testValues.put(HasText.WhiteSpace.class, HasText.WhiteSpace.PRE_LINE);
+        testValues.put(TableHeaderCell.Scope.class, TableHeaderCell.Scope.COL);
+        testValues.put(Media.Preload.class, Media.Preload.METADATA);
     }
 
     private static final Map<Class<?>, Map<Class<?>, Object>> specialTestValues = new HashMap<>();
@@ -216,6 +219,29 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == HasAriaLabel.class
+                && method.getName().equals("setAriaLabelledBy")
+                && method.getParameterTypes()[0] == Component.class) {
+            return true;
+        }
+
+        // the headers attribute is a list rather than a scalar property, so
+        // none of its setters pairs with a same-type getter. TableCellTest
+        // drives every entry point through both kinds of cell.
+        if (method.getDeclaringClass() == TableCell.class
+                && (method.getName().equals("setHeaders")
+                        || method.getName().equals("setHeaderIds"))) {
+            return true;
+        }
+
+        // Table.setCaption/setHead/setFoot attach a child rather than write a
+        // property; TableTest covers them, and feeding a shared component
+        // instance through this walk would leave it parented
+        if (method.getDeclaringClass() == Table.class && Component.class
+                .isAssignableFrom(method.getParameterTypes()[0])) {
+            return true;
+        }
+
         // Anchor.setTarget(AnchorTargetValue) -
         // https://github.com/vaadin/flow/issues/8346
         if (method.getDeclaringClass() == Anchor.class
@@ -256,6 +282,11 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == IFrame.class
+                && method.getName().equals("setUnsafeSrc")) {
+            return true;
+        }
+
         if (method.getDeclaringClass() == HtmlObject.class
                 && method.getName().startsWith("setData")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
@@ -268,8 +299,25 @@ class HtmlComponentSmokeTest {
             return true;
         }
 
+        if (method.getDeclaringClass() == Anchor.class
+                && method.getName().equals("setUnsafeHref")) {
+            return true;
+        }
+
         if (method.getDeclaringClass() == Image.class
                 && method.getName().startsWith("setSrc")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Source.class
+                && method.getName().equals("setSrc")
+                && method.getParameterTypes()[0] == DownloadHandler.class) {
+            return true;
+        }
+
+        if (method.getDeclaringClass() == Video.class
+                && method.getName().equals("setPoster")
                 && method.getParameterTypes()[0] == DownloadHandler.class) {
             return true;
         }
@@ -408,7 +456,10 @@ class HtmlComponentSmokeTest {
     }
 
     private static boolean isHtmlComponentSubclass(Class<?> cls) {
-        return HtmlComponent.class.isAssignableFrom(cls);
+        // Abstract bases such as TableCell cannot be instantiated; they are
+        // covered through their concrete subclasses
+        return HtmlComponent.class.isAssignableFrom(cls)
+                && !Modifier.isAbstract(cls.getModifiers());
     }
 
     private static Class<? extends HtmlComponent> asHtmlComponentSubclass(

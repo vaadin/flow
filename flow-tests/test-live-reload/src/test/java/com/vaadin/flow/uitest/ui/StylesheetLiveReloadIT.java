@@ -50,15 +50,18 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
     private static final String VIEW_STYLES_DIV_BG_COLOR = "rgba(75, 0, 130, 1)";
     private static final String VIEW_IMPORTED_DIV_BG_COLOR = "rgba(205, 133, 63, 1)";
     private static final String VIEW_NESTED_IMPORTED_DIV_BG_COLOR = "rgba(255, 127, 80, 1)";
+    private static final String ADDON_STYLE_DIV_BG_COLOR = "rgba(0, 128, 128, 1)";
     private final Map<Path, byte[]> styleSheetRestore = new HashMap<>();
     private static final String DIV_BG_COLOR_BEFORE_DELETE = "rgba(0, 255, 0, 1)";
 
     private Path resourcesPath;
     private Path sourceResourcesPath;
+    private Path jarResourcesPath;
     private Path updatedImagePath;
 
     @Before
-    public void detectStylesheetsLocation() throws URISyntaxException {
+    public void detectStylesheetsLocation()
+            throws URISyntaxException, IOException {
         URL markerUrl = getClass().getResource("/META-INF/resources/.marker");
         Assert.assertNotNull("No marker file found", markerUrl);
         Assert.assertEquals(
@@ -84,13 +87,44 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
                 projectDir);
         sourceResourcesPath = projectDir
                 .resolve("src/main/resources/META-INF/resources");
+        jarResourcesPath = projectDir
+                .resolve("src/main/frontend/generated/jar-resources");
+
+        // Create addon CSS in the target directory so Jetty can serve it
+        // on initial page load at /context/frontend/addon.css.
+        // The jar-resources copy is created later during the reload trigger
+        // to avoid a Vite rebuild at startup.
+        String addonCss = ".addon-style { background-color: "
+                + ADDON_STYLE_DIV_BG_COLOR + "; }\n";
+
+        Path targetAddonDir = resourcesPath.resolve("frontend");
+        Files.createDirectories(targetAddonDir);
+        Path targetAddonCss = targetAddonDir.resolve("addon.css");
+        Files.write(targetAddonCss, addonCss.getBytes());
+        styleSheetRestore.put(targetAddonCss, null);
     }
 
     @After
     public void restoreStylesheets() throws IOException {
         for (Map.Entry<Path, byte[]> entry : styleSheetRestore.entrySet()) {
-            System.out.println("Restoring " + entry.getKey());
-            Files.write(entry.getKey(), entry.getValue());
+            Path path = entry.getKey();
+            if (entry.getValue() == null) {
+                // File was created by the test; delete it and clean up
+                // empty parent directories
+                System.out.println("Deleting " + path);
+                Files.deleteIfExists(path);
+                Path parent = path.getParent();
+                if (parent != null && Files.isDirectory(parent)) {
+                    try (var entries = Files.list(parent)) {
+                        if (entries.findFirst().isEmpty()) {
+                            Files.delete(parent);
+                        }
+                    }
+                }
+            } else {
+                System.out.println("Restoring " + path);
+                Files.write(path, entry.getValue());
+            }
         }
     }
 
@@ -119,6 +153,8 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
 
         assertImageIsReloaded("appshell-image", "css/images/gobo.png");
         assertImageIsReloaded("view-image", "css/images/viking.png");
+
+        assertJarResourceStyleSheetIsReloaded();
 
         assertStyleSheetIsRemoved();
     }
@@ -161,6 +197,38 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
                         "$1");
         waitUntilContentMatches(backgroundImage,
                 Files.readAllBytes(updatedImagePath));
+    }
+
+    private void assertJarResourceStyleSheetIsReloaded() throws IOException {
+        String backgroundColor = $("div").id("addon-style")
+                .getCssValue("backgroundColor");
+        Assert.assertEquals(ADDON_STYLE_DIV_BG_COLOR, backgroundColor);
+
+        // Update the target file so the servlet serves the new content
+        triggerReloadStyleSheet("addon-style");
+
+        // Create the jar-resources file with the updated CSS to trigger
+        // the file watcher. The file sits at jar-resources/addon.css
+        // (without frontend/ prefix, as TaskCopyFrontendFiles strips it)
+        String updatedCss = ".addon-style { background-color: "
+                + UPDATED_DIV_BG_COLOR + "; }\n";
+        Path jarAddonCss = jarResourcesPath.resolve("addon.css");
+        try (var writer = Files.newBufferedWriter(jarAddonCss,
+                StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+                StandardOpenOption.SYNC)) {
+            writer.write(updatedCss);
+            writer.flush();
+        }
+        styleSheetRestore.put(jarAddonCss, null);
+
+        Assert.assertEquals("Page should not be reloaded", getInitialAttachId(),
+                getAttachId());
+
+        waitUntil(d -> {
+            var newBgColor = $("div").id("addon-style")
+                    .getCssValue("backgroundColor");
+            return UPDATED_DIV_BG_COLOR.equals(newBgColor);
+        });
     }
 
     private void assertStyleSheetIsRemoved() throws IOException {
@@ -215,7 +283,10 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         Assert.assertTrue("Resource file not found: " + resourcePath,
                 Files.exists(resourcePath));
 
-        styleSheetRestore.put(resourcePath, Files.readAllBytes(resourcePath));
+        if (!styleSheetRestore.containsKey(resourcePath)) {
+            styleSheetRestore.put(resourcePath,
+                    Files.readAllBytes(resourcePath));
+        }
         updater.accept(resourcePath);
 
         final byte[] content = Files.readAllBytes(resourcePath);
@@ -228,8 +299,21 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         Path sourcePath = sourceResourcesPath
                 .resolve(resourceRelativePath.replace('/', File.separatorChar));
         if (Files.exists(sourcePath)) {
-            styleSheetRestore.put(sourcePath, Files.readAllBytes(sourcePath));
+            if (!styleSheetRestore.containsKey(sourcePath)) {
+                styleSheetRestore.put(sourcePath,
+                        Files.readAllBytes(sourcePath));
+            }
             updater.accept(sourcePath);
+        }
+
+        // Also check jar-resources path for addon stylesheets
+        Path jarPath = jarResourcesPath
+                .resolve(resourceRelativePath.replace('/', File.separatorChar));
+        if (Files.exists(jarPath)) {
+            if (!styleSheetRestore.containsKey(jarPath)) {
+                styleSheetRestore.put(jarPath, Files.readAllBytes(jarPath));
+            }
+            updater.accept(jarPath);
         }
     }
 

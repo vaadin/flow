@@ -19,6 +19,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Serializable;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
@@ -49,6 +50,8 @@ import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
@@ -438,12 +441,13 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     .getProjectFrontendDir(config);
 
             // Add document.css link to the document
+            StylesheetJs stylesheetJs = UI.getCurrentOrThrow().getPage()
+                    .executeJs(StylesheetJs.class);
             BootstrapHandler
                     .getStylesheetLinks(context, "document.css",
                             frontendDirectory)
-                    .forEach(link -> UI.getCurrentOrThrow().getPage().executeJs(
-                            BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
-                            modifyPath(serviceUrl, link)));
+                    .forEach(link -> stylesheetJs
+                            .addStylesheet(modifyPath(serviceUrl, link)));
         }
 
         WebComponentConfigurationRegistry
@@ -543,6 +547,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param path
      *            original resource path
      * @return new resource path, relative to basePath
+     * @since 2.1
      */
     protected String modifyPath(String basePath, String path) {
         int vaadinIndex = path.indexOf(Constants.VAADIN_MAPPING);
@@ -595,6 +600,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param response
      *            the response object
      * @return Service url for the given request.
+     * @since 2.2
      */
     protected String getServiceUrl(VaadinRequest request,
             VaadinResponse response) {
@@ -623,6 +629,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
      * @param response
      *            the response object
      * @return true if request has been handled, false otherwise
+     * @since 23.3.2
      */
     protected boolean handleWebComponentResyncRequest(BootstrapContext context,
             VaadinRequest request, VaadinResponse response) {
@@ -638,7 +645,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
                 context.getUI().getCsrfToken());
         json.put(ApplicationConstants.UIDL_PUSH_ID,
-                context.getUI().getSession().getPushId());
+                context.getUI().getSessionOrThrow().getPushId());
         String responseString = json.toString();
 
         try {
@@ -655,5 +662,27 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static Logger getLogger() {
         return LoggerFactory
                 .getLogger(WebComponentBootstrapHandler.class.getName());
+    }
+
+    /**
+     * How a stylesheet is added to the document of an embedding page, as a
+     * JavaScript definition for
+     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface StylesheetJs extends Serializable {
+
+        /**
+         * Adds a stylesheet link to the head of the document.
+         *
+         * @param href
+         *            the address of the stylesheet
+         */
+        @JsExpression(BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG)
+        void addStylesheet(String href);
     }
 }

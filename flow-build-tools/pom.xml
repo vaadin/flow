@@ -4,13 +4,14 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.2-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>flow-build-tools</artifactId>
   <packaging>jar</packaging>
   <name>Flow Frontend Build Tools</name>
   <description>A module to handle frontend build tools common to the plugins and dev server</description>
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!-- It appears that sonar does not like shade plugin -->
     <sonar.skip>true</sonar.skip>
   </properties>
@@ -45,6 +46,11 @@
       <groupId>jakarta.servlet</groupId>
       <artifactId>jakarta.servlet-api</artifactId>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>tools.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
     </dependency>
 
     <!-- Test dependencies -->
@@ -94,6 +100,7 @@
                   <include>commons-io:commons-io</include>
                   <include>commons-codec:commons-codec</include>
                   <include>org.apache.commons:commons-lang3</include>
+                  <include>org.ow2.asm</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -112,6 +119,10 @@
                 <relocation>
                   <pattern>org.apache.commons.lang3</pattern>
                   <shadedPattern>com.vaadin.frontendtools.internal.commons.lang3</shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.objectweb.asm</pattern>
+                  <shadedPattern>com.vaadin.frontendtools.internal.asm</shadedPattern>
                 </relocation>
               </relocations>
               <filters>

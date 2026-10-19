@@ -21,18 +21,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -50,11 +49,24 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 class NodeUpdaterTest {
 
@@ -75,14 +87,14 @@ class NodeUpdaterTest {
     void setUp() throws IOException {
         npmFolder = Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                 .toFile();
-        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+        FeatureFlags featureFlags = mock(FeatureFlags.class);
+        finder = spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
         options = new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
-                .withFeatureFlags(featureFlags);
+                .withFeatureFlags(featureFlags).withFrontendDependenciesScanner(
+                        mock(FrontendDependencies.class));
 
-        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        nodeUpdater = new NodeUpdater(options) {
 
             @Override
             public void execute() {
@@ -161,17 +173,22 @@ class NodeUpdaterTest {
         expectedDependencies.add("vite");
         expectedDependencies.add("@vitejs/plugin-react");
         expectedDependencies.add("rollup-plugin-brotli");
-        expectedDependencies.add("@rollup/plugin-replace");
-        expectedDependencies.add("@rollup/pluginutils");
         expectedDependencies.add("rollup-plugin-visualizer");
         expectedDependencies.add("vite-plugin-checker");
-        expectedDependencies.add("workbox-build");
+        // Note: workbox-build is now only included when PWA offline is enabled
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
-        expectedDependencies.add("@babel/preset-react");
+        expectedDependencies.add("@babel/core");
+        expectedDependencies.add("@babel/types");
+        expectedDependencies
+                .add("@babel/plugin-transform-react-jsx-development");
+        expectedDependencies.add("@rolldown/plugin-babel");
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        // the transform injects imports from the signals runtime into the
+        // application sources, so the runtime must be declared too
+        expectedDependencies.add("@preact/signals-react");
         expectedDependencies.add("magic-string");
         expectedDependencies.add("@types/node");
 
@@ -182,6 +199,9 @@ class NodeUpdaterTest {
 
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
+        // Native TypeScript for Flow's checker and classic TypeScript for
+        // tooling that needs the compiler API.
+        expectedDependencies.add("@typescript/native");
         expectedDependencies.add("typescript");
         return expectedDependencies;
     }
@@ -236,12 +256,12 @@ class NodeUpdaterTest {
                 JacksonUtils.createObjectNode());
         packageJson.set(NodeUpdater.DEV_DEPENDENCIES,
                 JacksonUtils.createObjectNode());
-        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES))
-                .put("typescript", "1.0.0");
+        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES)).put("vite",
+                "1.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         assertNotEquals("1.0.0", packageJson.get(NodeUpdater.DEV_DEPENDENCIES)
-                .get("typescript").stringValue());
+                .get("vite").stringValue());
     }
 
     @Test // #6907 test when user has set newer versions
@@ -330,6 +350,37 @@ class NodeUpdaterTest {
     }
 
     @Test
+    void managedNpmAlias_isUpdatedAndRetainsTarget() throws IOException {
+        ObjectNode json = nodeUpdater.getPackageJson();
+        String oldVersion = "npm:@typescript/typescript6@6.0.2";
+        String newVersion = "npm:@typescript/typescript6@6.0.3";
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", oldVersion);
+
+        assertEquals(1, nodeUpdater.addDependency(json,
+                NodeUpdater.DEV_DEPENDENCIES, "compiler", newVersion));
+        assertEquals(newVersion, json.get(NodeUpdater.DEV_DEPENDENCIES)
+                .get("compiler").asString());
+        assertEquals(0, nodeUpdater.addDependency(json,
+                NodeUpdater.DEV_DEPENDENCIES, "compiler", newVersion));
+    }
+
+    @Test
+    void managedNpmAlias_userChangesTarget_sameVersionIsPreserved()
+            throws IOException {
+        ObjectNode json = nodeUpdater.getPackageJson();
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", "npm:@typescript/typescript6@6.0.2");
+        ((ObjectNode) json.get(NodeUpdater.DEV_DEPENDENCIES)).put("compiler",
+                "npm:custom-compiler@6.0.2");
+
+        nodeUpdater.addDependency(json, NodeUpdater.DEV_DEPENDENCIES,
+                "compiler", "npm:@typescript/typescript6@6.0.3");
+        assertEquals("npm:custom-compiler@6.0.2", json
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("compiler").asString());
+    }
+
+    @Test
     void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName()
             throws IOException {
         File brokenPackageJsonFile = new File(temporaryFolder,
@@ -341,9 +392,9 @@ class NodeUpdaterTest {
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> NodeUpdater.getJsonFileContent(brokenPackageJsonFile));
 
-        MatcherAssert.assertThat(exception.getMessage(),
+        assertThat(exception.getMessage(),
                 StringContains.containsString("Cannot parse package file "));
-        MatcherAssert.assertThat(exception.getMessage(),
+        assertThat(exception.getMessage(),
                 StringContains.containsString("broken-package.json"));
     }
 
@@ -419,52 +470,60 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_vaadinCoreVersionIsNotPresent_outputIsEmptyJson()
+    void testGetPinnedNpmVersions_versionsFilesAreReadOnceForTheBuild()
             throws IOException {
-        Logger logger = Mockito.spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of());
+
+        assertSame(options.getPinnedNpmVersions(),
+                nodeUpdater.getPinnedNpmVersions(),
+                "The updater should take the versions the build has read");
+        verify(finder, times(1))
+                .getResources(Constants.PINNED_NPM_VERSIONS_FOLDER);
+    }
+
+    @Test
+    void testGetPinnedNpmDependencies_noVersionsFileIsPresent_outputIsEmptyJson()
+            throws IOException {
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(nodeUpdater.getClass()))
                     .thenReturn(logger);
 
-            Mockito.when(
-                    finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                    .thenReturn(null);
-            Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                    .thenReturn(null);
+            when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                    .thenReturn(List.of());
 
-            ObjectNode pinnedVersions = nodeUpdater
-                    .getPlatformPinnedDependencies();
+            ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
             assertEquals(0, JacksonUtils.getKeys(pinnedVersions).size());
 
-            Mockito.verify(logger, Mockito.times(1)).info(
-                    "Couldn't find {} file to pin dependency versions for core components."
+            verify(logger, times(1)).info(
+                    "Couldn't find any versions file in {} to pin npm dependency versions."
                             + " Transitive dependencies won't be pinned for npm/pnpm/bun.",
-                    Constants.VAADIN_CORE_VERSIONS_JSON);
+                    Constants.PINNED_NPM_VERSIONS_FOLDER);
         }
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_onlyVaadinCoreVersionIsPresent_outputContainsOnlyCoreVersions()
+    void testGetPinnedNpmDependencies_oneVersionsFileIsPresent_outputContainsItsVersions()
             throws IOException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+        File coreVersionsFile = File.createTempFile("core-components-versions",
                 ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        ObjectNode mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
-        assertTrue(mockedVaadinCoreJson.has("core"));
-        assertTrue(mockedVaadinCoreJson.get("core").has("button"));
-        assertFalse(mockedVaadinCoreJson.has("vaadin"));
+        ObjectNode mockedCoreJson = getMockCoreVersionsJson();
+        assertTrue(mockedCoreJson.has("core"));
+        assertTrue(mockedCoreJson.get("core").has("button"));
+        assertFalse(mockedCoreJson.has("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
+        FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List
+                        .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         assertTrue(pinnedVersions.has("@vaadin/button"));
         assertFalse(pinnedVersions.has("@vaadin/grid-pro"));
@@ -472,13 +531,13 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_reactNotAvailable_noReactComponents()
+    void testGetPinnedNpmDependencies_reactNotAvailable_noReactComponents()
             throws IOException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+        File coreVersionsFile = File.createTempFile("core-components-versions",
                 ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        ObjectNode mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+        ObjectNode mockedCoreJson = getMockCoreVersionsJson();
 
         ObjectNode reactComponents = JacksonUtils.createObjectNode();
         ObjectNode reactData = JacksonUtils.createObjectNode();
@@ -487,31 +546,30 @@ class NodeUpdaterTest {
 
         reactComponents.set("react-components", reactData);
 
-        mockedVaadinCoreJson.set("react", reactComponents);
+        mockedCoreJson.set("react", reactComponents);
 
-        assertTrue(mockedVaadinCoreJson.has("core"));
-        assertTrue(mockedVaadinCoreJson.get("core").has("button"));
-        assertFalse(mockedVaadinCoreJson.has("vaadin"));
+        assertTrue(mockedCoreJson.has("core"));
+        assertTrue(mockedCoreJson.get("core").has("button"));
+        assertFalse(mockedCoreJson.has("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
+        FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List
+                        .of(coreVersionsFile.getParentFile().toURI().toURL()));
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         assertTrue(pinnedVersions.has("@vaadin/button"));
         assertFalse(pinnedVersions.has("react-components"));
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_reactAvailable_containsReactComponents()
+    void testGetPinnedNpmDependencies_reactAvailable_containsReactComponents()
             throws IOException, ClassNotFoundException {
         generateTestDataForReactComponents();
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         assertTrue(pinnedVersions.has("@vaadin/button"));
         assertTrue(pinnedVersions.has("@vaadin/react-components"));
@@ -519,12 +577,12 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_reactAvailable_excludeWebComponents()
+    void testGetPinnedNpmDependencies_reactAvailable_excludeWebComponents()
             throws IOException, ClassNotFoundException {
         options.withNpmExcludeWebComponents(true);
         generateTestDataForReactComponents();
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         // @vaadin/button doesn't have 'mode' set, so it should be included
         assertTrue(pinnedVersions.has("@vaadin/button"));
@@ -533,13 +591,13 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_reactDisabled_excludeWebComponents()
+    void testGetPinnedNpmDependencies_reactDisabled_excludeWebComponents()
             throws IOException, ClassNotFoundException {
         options.withReact(false);
         options.withNpmExcludeWebComponents(true);
         generateTestDataForReactComponents();
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         // @vaadin/button doesn't have 'mode' set, so it should be included
         assertTrue(pinnedVersions.has("@vaadin/button"));
@@ -549,15 +607,15 @@ class NodeUpdaterTest {
 
     private void generateTestDataForReactComponents()
             throws IOException, ClassNotFoundException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+        File coreVersionsFile = File.createTempFile("core-components-versions",
                 ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
-                ".json",
+        File commercialVersionsFile = File.createTempFile(
+                "commercial-components-versions", ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        ObjectNode mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+        ObjectNode mockedCoreJson = getMockCoreVersionsJson();
 
         ObjectNode reactComponents = JacksonUtils.createObjectNode();
         ObjectNode reactData = JacksonUtils.createObjectNode();
@@ -567,13 +625,13 @@ class NodeUpdaterTest {
 
         reactComponents.set("react-components", reactData);
 
-        mockedVaadinCoreJson.set("react", reactComponents);
+        mockedCoreJson.set("react", reactComponents);
 
-        assertTrue(mockedVaadinCoreJson.has("core"));
-        assertTrue(mockedVaadinCoreJson.get("core").has("button"));
-        assertFalse(mockedVaadinCoreJson.has("vaadin"));
+        assertTrue(mockedCoreJson.has("core"));
+        assertTrue(mockedCoreJson.get("core").has("button"));
+        assertFalse(mockedCoreJson.has("vaadin"));
 
-        ObjectNode mockedVaadinJson = getMockVaadinVersionsJson();
+        ObjectNode mockedCommercialJson = getMockCommercialVersionsJson();
 
         reactComponents = JacksonUtils.createObjectNode();
         reactData = JacksonUtils.createObjectNode();
@@ -583,54 +641,56 @@ class NodeUpdaterTest {
 
         reactComponents.set("react-components-pro", reactData);
 
-        mockedVaadinJson.set("react", reactComponents);
+        mockedCommercialJson.set("react", reactComponents);
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
+        FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toString(),
+        FileUtils.write(commercialVersionsFile, mockedCommercialJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(
+                        coreVersionsFile.getParentFile().toURI().toURL(),
+                        commercialVersionsFile.getParentFile().toURI()
+                                .toURL()));
         Class clazz = FeatureFlags.class; // actual class doesn't matter
-        Mockito.doReturn(clazz).when(finder).loadClass(
+        doReturn(clazz).when(finder).loadClass(
                 "com.vaadin.flow.component.react.ReactAdapterComponent");
     }
 
     @Test
-    void testGetPlatformPinnedDependencies_VaadinAndVaadinCoreVersionsArePresent_outputContainsBothCoreAndCommercialVersions()
+    void testGetPinnedNpmDependencies_severalVersionsFilesArePresent_outputContainsTheVersionsOfEach()
             throws IOException {
-        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+        File coreVersionsFile = File.createTempFile("core-components-versions",
                 ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        JsonNode mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
-        assertTrue(mockedVaadinCoreJson.has("core"));
-        assertTrue(mockedVaadinCoreJson.get("core").has("button"));
-        assertFalse(mockedVaadinCoreJson.has("vaadin"));
+        JsonNode mockedCoreJson = getMockCoreVersionsJson();
+        assertTrue(mockedCoreJson.has("core"));
+        assertTrue(mockedCoreJson.get("core").has("button"));
+        assertFalse(mockedCoreJson.has("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toString(),
+        FileUtils.write(coreVersionsFile, mockedCoreJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(coreVersionsFile.toURI().toURL());
 
-        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
-                ".json",
+        File commercialVersionsFile = File.createTempFile(
+                "commercial-components-versions", ".json",
                 Files.createTempDirectory(temporaryFolder.toPath(), "tmp")
                         .toFile());
-        JsonNode mockedVaadinJson = getMockVaadinVersionsJson();
-        assertFalse(mockedVaadinJson.has("core"));
-        assertTrue(mockedVaadinJson.has("vaadin"));
-        assertTrue(mockedVaadinJson.get("vaadin").has("grid-pro"));
-        assertTrue(mockedVaadinJson.get("vaadin").has("vaadin-grid-pro"));
+        JsonNode mockedCommercialJson = getMockCommercialVersionsJson();
+        assertFalse(mockedCommercialJson.has("core"));
+        assertTrue(mockedCommercialJson.has("vaadin"));
+        assertTrue(mockedCommercialJson.get("vaadin").has("grid-pro"));
+        assertTrue(mockedCommercialJson.get("vaadin").has("vaadin-grid-pro"));
 
-        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toString(),
+        FileUtils.write(commercialVersionsFile, mockedCommercialJson.toString(),
                 StandardCharsets.UTF_8);
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(vaadinVersionsFile.toURI().toURL());
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(
+                        coreVersionsFile.getParentFile().toURI().toURL(),
+                        commercialVersionsFile.getParentFile().toURI()
+                                .toURL()));
 
-        ObjectNode pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+        ObjectNode pinnedVersions = nodeUpdater.getPinnedNpmDependencies();
 
         assertTrue(pinnedVersions.has("@vaadin/button"));
         assertTrue(pinnedVersions.has("@vaadin/grid-pro"));
@@ -640,17 +700,16 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        MockedStatic<FrontendUtils> mockFrontendUtils = Mockito
-                .mockStatic(FrontendUtils.class);
-        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = Mockito
-                .mockStatic(FrontendBuildUtils.class);
+        MockedStatic<FrontendUtils> mockFrontendUtils = mockStatic(
+                FrontendUtils.class);
+        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = mockStatic(
+                FrontendBuildUtils.class);
         try {
-            mockFrontendBuildUtils.when(() -> FrontendBuildUtils.isHillaUsed(
-                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+            mockFrontendBuildUtils.when(() -> FrontendBuildUtils
+                    .isHillaUsed(any(File.class), any(ClassFinder.class)))
                     .thenReturn(true);
-            mockFrontendUtils
-                    .when(() -> FrontendUtils
-                            .isReactRouterRequired(Mockito.any(File.class)))
+            mockFrontendUtils.when(
+                    () -> FrontendUtils.isReactRouterRequired(any(File.class)))
                     .thenReturn(true);
             options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
@@ -678,11 +737,10 @@ class NodeUpdaterTest {
     @Test
     void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendBuildUtils> mock = Mockito
-                .mockStatic(FrontendBuildUtils.class)) {
-            mock.when(() -> FrontendBuildUtils.isHillaUsed(
-                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
-                    .thenReturn(true);
+        try (MockedStatic<FrontendBuildUtils> mock = mockStatic(
+                FrontendBuildUtils.class)) {
+            mock.when(() -> FrontendBuildUtils.isHillaUsed(any(File.class),
+                    any(ClassFinder.class))).thenReturn(true);
             options.withReact(false);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
@@ -719,17 +777,15 @@ class NodeUpdaterTest {
     }
 
     @Test
-    void getDefaultDevDependencies_includesWorkbox_whenPwaEnabled() {
-        // Create a mock FrontendDependencies with PWA enabled
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
-        Mockito.when(pwaConfig.isEnabled()).thenReturn(true);
-        Mockito.when(frontendDependencies.getPwaConfiguration())
+    void getDefaultDevDependencies_includesWorkbox_whenPwaOfflineEnabled() {
+        // Create a mock PwaConfiguration with PWA offline enabled
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
 
-        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+        nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // NO-OP
@@ -739,23 +795,21 @@ class NodeUpdaterTest {
         Map<String, String> defaultDevDeps = nodeUpdater
                 .getDefaultDevDependencies();
         assertTrue(defaultDevDeps.containsKey("workbox-core"),
-                "workbox-core should be included when PWA is enabled");
+                "workbox-core should be included when PWA offline is enabled");
         assertTrue(defaultDevDeps.containsKey("workbox-precaching"),
-                "workbox-precaching should be included when PWA is enabled");
+                "workbox-precaching should be included when PWA offline is enabled");
     }
 
     @Test
-    void getDefaultDevDependencies_excludesWorkbox_whenPwaDisabled() {
-        // Create a mock FrontendDependencies with PWA disabled
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
-        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
-                .mock(com.vaadin.flow.server.PwaConfiguration.class);
-        Mockito.when(pwaConfig.isEnabled()).thenReturn(false);
-        Mockito.when(frontendDependencies.getPwaConfiguration())
+    void getDefaultDevDependencies_excludesWorkbox_whenPwaOfflineDisabled() {
+        // Create a mock PwaConfiguration with PWA offline disabled
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(pwaConfig);
 
-        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+        nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // NO-OP
@@ -765,20 +819,18 @@ class NodeUpdaterTest {
         Map<String, String> defaultDevDeps = nodeUpdater
                 .getDefaultDevDependencies();
         assertFalse(defaultDevDeps.containsKey("workbox-core"),
-                "workbox-core should not be included when PWA is disabled");
+                "workbox-core should not be included when PWA offline is disabled");
         assertFalse(defaultDevDeps.containsKey("workbox-precaching"),
-                "workbox-precaching should not be included when PWA is disabled");
+                "workbox-precaching should not be included when PWA offline is disabled");
     }
 
     @Test
     void getDefaultDevDependencies_excludesWorkbox_whenPwaNull() {
-        // Create a mock FrontendDependencies with no PWA configuration
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
-        Mockito.when(frontendDependencies.getPwaConfiguration())
+        // No PWA configuration
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
                 .thenReturn(null);
 
-        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+        nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
                 // NO-OP
@@ -791,6 +843,72 @@ class NodeUpdaterTest {
                 "workbox-core should not be included when PWA is null");
         assertFalse(defaultDevDeps.containsKey("workbox-precaching"),
                 "workbox-precaching should not be included when PWA is null");
+    }
+
+    @Test
+    void getDefaultOverrides_includesWorkboxOverrides_whenPwaOfflineEnabled() {
+        // Create a mock PwaConfiguration with PWA offline enabled
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        ObjectNode overrides = nodeUpdater.getDefaultOverrides();
+        assertTrue(overrides.has("workbox-build"),
+                "workbox-build override should be included when PWA offline is enabled");
+        // Verify nested structure
+        JsonNode workboxBuildOverride = overrides.get("workbox-build");
+        assertTrue(workboxBuildOverride.isObject(),
+                "workbox-build override should be an object");
+        assertTrue(workboxBuildOverride.has("glob"),
+                "workbox-build override should contain glob");
+    }
+
+    @Test
+    void getDefaultOverrides_returnsEmpty_whenPwaOfflineDisabled() {
+        // Create a mock PwaConfiguration with PWA offline enabled
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = mock(
+                com.vaadin.flow.server.PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        ObjectNode overrides = nodeUpdater.getDefaultOverrides();
+        assertTrue(overrides.isEmpty(),
+                "overrides should be empty when PWA offline is disabled");
+    }
+
+    @Test
+    void getDefaultOverrides_returnsEmpty_whenPwaNull() {
+        // No PWA configuration
+        when(options.getFrontendDependenciesScanner().getPwaConfiguration())
+                .thenReturn(null);
+
+        nodeUpdater = new NodeUpdater(options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        ObjectNode overrides = nodeUpdater.getDefaultOverrides();
+        assertTrue(overrides.isEmpty(),
+                "overrides should be empty when PWA is null");
     }
 
     @Test
@@ -815,9 +933,8 @@ class NodeUpdaterTest {
 
     @Test
     void readPackageJsonIfAvailable_nonExistingFile_noErrorLog() {
-        Logger log = Mockito.mock(Logger.class);
-        nodeUpdater = new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        Logger log = mock(Logger.class);
+        nodeUpdater = new NodeUpdater(options) {
 
             @Override
             public void execute() {
@@ -831,43 +948,41 @@ class NodeUpdaterTest {
         };
         nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
                 "dependencies");
-        Mockito.verifyNoInteractions(log);
+        verifyNoInteractions(log);
 
         nodeUpdater.readDependenciesIfAvailable("non-existing-folder",
                 "devDpendencies");
-        Mockito.verifyNoInteractions(log);
+        verifyNoInteractions(log);
     }
 
     @Test
     void getDefaultDependencies_hillaAvailableButNotUsed_addsGeneratorDependencies() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendBuildUtils> frontendBuildUtilsMock = Mockito
-                .mockStatic(FrontendBuildUtils.class);
-                MockedStatic<FrontendUtils> frontendUtilsMock = Mockito
-                        .mockStatic(FrontendUtils.class);
+        try (MockedStatic<FrontendBuildUtils> frontendBuildUtilsMock = mockStatic(
+                FrontendBuildUtils.class);
+                MockedStatic<FrontendUtils> frontendUtilsMock = mockStatic(
+                        FrontendUtils.class);
 
-                MockedStatic<EndpointRequestUtil> endpointUtilMock = Mockito
-                        .mockStatic(EndpointRequestUtil.class)) {
+                MockedStatic<EndpointRequestUtil> endpointUtilMock = mockStatic(
+                        EndpointRequestUtil.class)) {
 
             // Hilla is available in classpath but not used
-            frontendBuildUtilsMock.when(() -> FrontendBuildUtils.isHillaUsed(
-                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+            frontendBuildUtilsMock.when(() -> FrontendBuildUtils
+                    .isHillaUsed(any(File.class), any(ClassFinder.class)))
                     .thenReturn(false);
             endpointUtilMock.when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
-            frontendUtilsMock
-                    .when(() -> FrontendUtils
-                            .isReactRouterRequired(Mockito.any(File.class)))
+            frontendUtilsMock.when(
+                    () -> FrontendUtils.isReactRouterRequired(any(File.class)))
                     .thenReturn(true);
 
             // Create a spy to mock the readDependenciesIfAvailable method
-            NodeUpdater spyNodeUpdater = Mockito.spy(nodeUpdater);
+            NodeUpdater spyNodeUpdater = spy(nodeUpdater);
             Map<String, String> mockGeneratorDeps = Map
                     .of("@vaadin/hilla-generator-core", "2.0.0");
-            Mockito.doReturn(mockGeneratorDeps).when(spyNodeUpdater)
-                    .readDependenciesIfAvailable(Mockito.anyString(),
-                            Mockito.eq("dependencies"),
-                            Mockito.eq("@vaadin/hilla-generator-"));
+            doReturn(mockGeneratorDeps).when(spyNodeUpdater)
+                    .readDependenciesIfAvailable(anyString(),
+                            eq("dependencies"), eq("@vaadin/hilla-generator-"));
 
             // Test with React enabled
             options.withReact(true);
@@ -898,16 +1013,16 @@ class NodeUpdaterTest {
     private void fakePolymerTemplateInClasspath() {
         Class clazz = FeatureFlags.class; // actual class doesn't matter
         try {
-            Mockito.doReturn(clazz).when(finder).loadClass(
+            doReturn(clazz).when(finder).loadClass(
                     "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private ObjectNode getMockVaadinCoreVersionsJson() {
+    private ObjectNode getMockCoreVersionsJson() {
         // @formatter:off
-        return (ObjectNode) JacksonUtils.readTree(
+        return JacksonUtils.readTree(
                 """
                 {
                     "core": {
@@ -943,9 +1058,9 @@ class NodeUpdaterTest {
         // @formatter:on
     }
 
-    private ObjectNode getMockVaadinVersionsJson() {
+    private ObjectNode getMockCommercialVersionsJson() {
         // @formatter:off
-        return (ObjectNode) JacksonUtils.readTree(
+        return JacksonUtils.readTree(
                 """
                 {
                     "vaadin": {

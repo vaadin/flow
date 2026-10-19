@@ -26,16 +26,24 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
-import com.vaadin.flow.data.provider.DataCommunicatorTest;
+import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.intThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 abstract class AbstractHierarchicalDataCommunicatorTest {
     public static class Item {
@@ -82,13 +90,12 @@ abstract class AbstractHierarchicalDataCommunicatorTest {
     @Mock
     protected Update arrayUpdate;
 
-    protected DataCommunicatorTest.MockUI ui = new DataCommunicatorTest.MockUI();
+    protected MockUI ui = new MockUI();
 
     @BeforeEach
     void init() {
         MockitoAnnotations.openMocks(this);
-        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
-                .thenReturn(arrayUpdate);
+        when(arrayUpdater.startUpdate(anyInt())).thenReturn(arrayUpdate);
     }
 
     @AfterEach
@@ -133,18 +140,15 @@ abstract class AbstractHierarchicalDataCommunicatorTest {
         var end = start + length;
         var size = captureArrayUpdateSize();
 
-        Mockito.verify(arrayUpdate,
-                start > 0 ? Mockito.times(1) : Mockito.never()).clear(0, start);
-        Mockito.verify(arrayUpdate,
-                end < size ? Mockito.times(1) : Mockito.never())
-                .clear(end, size - end);
-        Mockito.verify(arrayUpdate, Mockito.atMost(length)).set(
-                Mockito.intThat(index -> start <= index && index < end),
-                Mockito.anyList());
+        verify(arrayUpdate, start > 0 ? times(1) : never()).clear(0, start);
+        verify(arrayUpdate, end < size ? times(1) : never()).clear(end,
+                size - end);
+        verify(arrayUpdate, atMost(length)).set(
+                intThat(index -> start <= index && index < end), anyList());
     }
 
     protected void assertArrayUpdateSize(int size) {
-        Mockito.verify(arrayUpdater).startUpdate(size);
+        verify(arrayUpdater).startUpdate(size);
     }
 
     @SuppressWarnings("unchecked")
@@ -153,8 +157,8 @@ abstract class AbstractHierarchicalDataCommunicatorTest {
                 .forClass(List.class);
         ArgumentCaptor<Integer> indexCaptor = ArgumentCaptor
                 .forClass(Integer.class);
-        Mockito.verify(arrayUpdate, Mockito.atLeast(0))
-                .set(indexCaptor.capture(), itemsCaptor.capture());
+        verify(arrayUpdate, atLeast(0)).set(indexCaptor.capture(),
+                itemsCaptor.capture());
 
         Map<Integer, JsonNode> result = new LinkedHashMap<>();
         for (int i = 0; i < indexCaptor.getAllValues().size(); i++) {
@@ -170,13 +174,13 @@ abstract class AbstractHierarchicalDataCommunicatorTest {
 
     protected int captureArrayUpdateId() {
         var argumentCaptor = ArgumentCaptor.forClass(Integer.class);
-        Mockito.verify(arrayUpdate).commit(argumentCaptor.capture());
+        verify(arrayUpdate).commit(argumentCaptor.capture());
         return argumentCaptor.getValue();
     }
 
     protected int captureArrayUpdateSize() {
         var argumentCaptor = ArgumentCaptor.forClass(Integer.class);
-        Mockito.verify(arrayUpdater).startUpdate(argumentCaptor.capture());
+        verify(arrayUpdater).startUpdate(argumentCaptor.capture());
         return argumentCaptor.getValue();
     }
 

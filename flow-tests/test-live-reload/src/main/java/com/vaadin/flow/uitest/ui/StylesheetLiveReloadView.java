@@ -23,6 +23,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Route(value = "com.vaadin.flow.uitest.ui.StylesheetLiveReloadView", layout = ViewTestLayout.class)
 @StyleSheet("context://css/view/view.css")
 @StyleSheet("context://css/view/for-deletion.css")
+@StyleSheet("context://frontend/addon.css")
 public class StylesheetLiveReloadView extends AbstractLiveReloadView {
 
     public StylesheetLiveReloadView() {
@@ -37,6 +38,7 @@ public class StylesheetLiveReloadView extends AbstractLiveReloadView {
                 "css/view/nested/nested-imported.css"));
         add(makeDiv("view-image", "css/images/viking.png"));
         add(makeDivForDelete());
+        add(makeDiv("addon-style", "frontend/addon.css"));
     }
 
     private Div makeDiv(String id, String resourceFilePath) {

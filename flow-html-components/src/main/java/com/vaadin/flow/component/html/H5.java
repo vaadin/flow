@@ -25,7 +25,13 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;h5&gt;</code> element.
+ * <p>
+ * A rank-5 heading. Keep heading ranks sequential rather than skipping levels
+ * for style.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/h5">MDN:
+ *      &lt;h5&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -66,6 +72,7 @@ public class H5 extends HtmlContainer implements ClickNotifier<H5> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public H5(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

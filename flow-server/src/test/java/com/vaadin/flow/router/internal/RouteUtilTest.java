@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -36,16 +36,26 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PageTitleContext;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteParent;
+import com.vaadin.flow.router.RouteParentContext;
+import com.vaadin.flow.router.RouteParentResolver;
 import com.vaadin.flow.router.RoutePrefix;
+import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -53,6 +63,7 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -60,6 +71,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Test that {@link RouteUtil} route resolving works as intended for both simple
@@ -367,7 +382,7 @@ class RouteUtilTest {
                 .getParentLayouts(new MockVaadinContext(),
                         BaseRouteWithParentPrefixAndRouteAlias.class, "parent");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
@@ -375,7 +390,7 @@ class RouteUtilTest {
         parentLayouts = RouteUtil.getParentLayouts(new MockVaadinContext(),
                 RootWithParents.class, "");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { MiddleParent.class, Parent.class }));
@@ -389,7 +404,7 @@ class RouteUtilTest {
 
         assertEquals(1, parentLayouts.size(), "Expected one parent layout");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { Parent.class }));
@@ -401,7 +416,7 @@ class RouteUtilTest {
                 .getParentLayouts(new MockVaadinContext(),
                         RouteAliasWithParentPrefix.class, "aliasparent/alias");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { RouteAliasPrefixParent.class }));
@@ -413,7 +428,7 @@ class RouteUtilTest {
                 .getParentLayouts(new MockVaadinContext(), AbsoluteRoute.class,
                         "single");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
@@ -421,7 +436,7 @@ class RouteUtilTest {
         parentLayouts = RouteUtil.getParentLayouts(new MockVaadinContext(),
                 AbsoluteCenterRoute.class, "absolute/child");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
                 parentLayouts,
                 IsIterableContainingInOrder.contains(new Class[] {
@@ -434,7 +449,7 @@ class RouteUtilTest {
                 .getParentLayouts(new MockVaadinContext(), AbsoluteRoute.class,
                         "alias");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
@@ -442,7 +457,7 @@ class RouteUtilTest {
         parentLayouts = RouteUtil.getParentLayouts(new MockVaadinContext(),
                 AbsoluteCenterRoute.class, "absolute/alias");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
                 parentLayouts,
                 IsIterableContainingInOrder.contains(new Class[] {
@@ -485,15 +500,14 @@ class RouteUtilTest {
                 .getParentLayouts(new MockVaadinContext(), MultiTarget.class,
                         "");
 
-        MatcherAssert.assertThat(
-                "Get parent layouts for route \"\" gave wrong result.",
+        assertThat("Get parent layouts for route \"\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { Parent.class }));
 
         parentLayouts = RouteUtil.getParentLayouts(new MockVaadinContext(),
                 MultiTarget.class, "alias");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Get parent layouts for routeAlias \"alias\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { MiddleParent.class, Parent.class }));
@@ -501,7 +515,7 @@ class RouteUtilTest {
         parentLayouts = RouteUtil.getParentLayouts(new MockVaadinContext(),
                 SubLayout.class, "parent/sub");
 
-        MatcherAssert.assertThat(
+        assertThat(
                 "Get parent layouts for route \"parent/sub\" with parent Route + ParentLayout gave wrong result.",
                 parentLayouts,
                 IsIterableContainingInOrder.contains(new Class[] {
@@ -1036,22 +1050,20 @@ class RouteUtilTest {
         clientRoutes.put("/hilla", new AvailableViewInfo("public", null, false,
                 "", false, false, null, null, null, false, null));
 
-        try (MockedStatic<MenuRegistry> registry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
-                MockedStatic<FrontendUtils> frontendUtils = Mockito.mockStatic(
+        try (MockedStatic<MenuRegistry> registry = mockStatic(
+                MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
+                MockedStatic<FrontendUtils> frontendUtils = mockStatic(
                         FrontendUtils.class, Mockito.CALLS_REAL_METHODS);) {
-            VaadinService service = Mockito.mock(VaadinService.class);
-            DeploymentConfiguration conf = Mockito
-                    .mock(DeploymentConfiguration.class);
-            Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
-            Mockito.when(conf.isProductionMode()).thenReturn(false);
-            Mockito.when(conf.getFrontendFolder())
-                    .thenReturn(Mockito.mock(File.class));
+            VaadinService service = mock(VaadinService.class);
+            DeploymentConfiguration conf = mock(DeploymentConfiguration.class);
+            when(service.getDeploymentConfiguration()).thenReturn(conf);
+            when(conf.isProductionMode()).thenReturn(false);
+            when(conf.getFrontendFolder()).thenReturn(mock(File.class));
 
             registry.when(
                     () -> MenuRegistry.collectClientMenuItems(false, conf))
                     .thenReturn(clientRoutes);
-            frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+            frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                     .thenReturn(true);
 
             RouteUtil.checkForClientRouteCollisions(service, "flow",
@@ -1072,22 +1084,20 @@ class RouteUtilTest {
         clientRoutes.put("/hilla", new AvailableViewInfo("public", null, false,
                 "", false, false, null, null, null, false, null));
 
-        try (MockedStatic<MenuRegistry> registry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
-                MockedStatic<FrontendUtils> frontendUtils = Mockito.mockStatic(
+        try (MockedStatic<MenuRegistry> registry = mockStatic(
+                MenuRegistry.class, Mockito.CALLS_REAL_METHODS);
+                MockedStatic<FrontendUtils> frontendUtils = mockStatic(
                         FrontendUtils.class, Mockito.CALLS_REAL_METHODS);) {
-            VaadinService service = Mockito.mock(VaadinService.class);
-            DeploymentConfiguration conf = Mockito
-                    .mock(DeploymentConfiguration.class);
-            Mockito.when(service.getDeploymentConfiguration()).thenReturn(conf);
-            Mockito.when(conf.isProductionMode()).thenReturn(false);
-            Mockito.when(conf.getFrontendFolder())
-                    .thenReturn(new File("/tmp/folder"));
+            VaadinService service = mock(VaadinService.class);
+            DeploymentConfiguration conf = mock(DeploymentConfiguration.class);
+            when(service.getDeploymentConfiguration()).thenReturn(conf);
+            when(conf.isProductionMode()).thenReturn(false);
+            when(conf.getFrontendFolder()).thenReturn(new File("/tmp/folder"));
 
             registry.when(
                     () -> MenuRegistry.collectClientMenuItems(false, conf))
                     .thenReturn(clientRoutes);
-            frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+            frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                     .thenReturn(true);
 
             InvalidRouteConfigurationException ex = assertThrows(
@@ -1125,6 +1135,337 @@ class RouteUtilTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    void routeHierarchy_resolvesParentsAndTitlesWithoutInstance() {
+        OrgView.instantiated = false;
+        ProjectView.instantiated = false;
+
+        VaadinService.setCurrent(new MockVaadinServletService());
+        try {
+            RouteParameters parameters = new RouteParameters(
+                    Map.of("orgId", "acme", "projectId", "42"));
+
+            List<RouteReference> hierarchy = RouteUtil.getRouteHierarchy(null,
+                    ProjectView.class, parameters);
+
+            // ordered from root to current target
+            assertEquals(List.of(OrgView.class, ProjectView.class), hierarchy
+                    .stream().map(RouteReference::navigationTarget).toList());
+
+            // the org parameter is carried over to the parent reference
+            assertEquals("acme", hierarchy.get(0).routeParameters().get("orgId")
+                    .orElseThrow());
+
+            // titles compose with PageTitleGenerator, also without an instance
+            List<String> titles = hierarchy.stream()
+                    .map(reference -> MenuRegistry.getTitle(
+                            reference.navigationTarget(),
+                            reference.routeParameters()))
+                    .toList();
+            assertEquals(List.of("Org acme", "Project 42"), titles);
+
+            assertFalse(OrgView.instantiated,
+                    "Hierarchy resolution must not instantiate the route");
+            assertFalse(ProjectView.instantiated,
+                    "Hierarchy resolution must not instantiate the route");
+        } finally {
+            VaadinService.setCurrent(null);
+        }
+    }
+
+    @Test
+    void getRouteParent_staticValue_carriesParameters() {
+        RouteParameters parameters = new RouteParameters("orgId", "acme");
+
+        RouteReference parent = RouteUtil
+                .getRouteParent(null, SettingsView.class, parameters)
+                .orElseThrow();
+
+        assertEquals(OrgView.class, parent.navigationTarget());
+        assertEquals("acme",
+                parent.routeParameters().get("orgId").orElseThrow());
+    }
+
+    @Test
+    void getRouteParent_noAnnotationNoRegistry_isEmpty() {
+        assertFalse(RouteUtil
+                .getRouteParent(null, OrgView.class, RouteParameters.empty())
+                .isPresent());
+    }
+
+    @Test
+    void getRouteParent_staticParentWithFewerParameters_narrowsParameters() {
+        withRegistry(registry -> {
+            RouteReference parent = RouteUtil
+                    .getRouteParent(registry, OrderDetailView.class,
+                            new RouteParameters("orderId", "1001"))
+                    .orElseThrow();
+
+            assertEquals(OrdersView.class, parent.navigationTarget());
+            // the parent route declares no parameters, so orderId is dropped
+            assertTrue(parent.routeParameters().getParameterNames().isEmpty());
+            // and a link to the parent can actually be built
+            assertEquals("uc2", RouteConfiguration.forRegistry(registry).getUrl(
+                    parent.navigationTarget(), parent.routeParameters()));
+        }, OrdersView.class, OrderDetailView.class);
+    }
+
+    @Test
+    void getRouteParent_noAnnotation_derivedFromRouteUrl() {
+        withRegistry(registry -> {
+            // orgs/:orgId/members has no @RouteParent, so the parent is the
+            // route serving the nearest ancestor path orgs/:orgId
+            RouteReference parent = RouteUtil.getRouteParent(registry,
+                    MembersView.class, new RouteParameters("orgId", "acme"))
+                    .orElseThrow();
+
+            assertEquals(OrgView.class, parent.navigationTarget());
+            assertEquals("acme",
+                    parent.routeParameters().get("orgId").orElseThrow());
+        }, OrgView.class, MembersView.class);
+    }
+
+    @Test
+    void getRouteHierarchy_classWithoutRoute_returnsSingletonOfItself() {
+        withRegistry(registry -> assertEquals(List.of(PlainView.class),
+                targets(RouteUtil.getRouteHierarchy(registry, PlainView.class,
+                        RouteParameters.empty()))));
+    }
+
+    @Test
+    void getRouteHierarchy_singleRouteNoParent_returnsSingletonChain() {
+        withRegistry(
+                registry -> assertEquals(List.of(AView.class),
+                        targets(RouteUtil.getRouteHierarchy(registry,
+                                AView.class, RouteParameters.empty()))),
+                AView.class);
+    }
+
+    @Test
+    void getRouteHierarchy_urlPrefixHappyPath_returnsTwoElementChain() {
+        withRegistry(
+                registry -> assertEquals(List.of(AView.class, AbView.class),
+                        targets(RouteUtil.getRouteHierarchy(registry,
+                                AbView.class, RouteParameters.empty()))),
+                AView.class, AbView.class);
+    }
+
+    @Test
+    void getRouteHierarchy_deepChain_walksMultipleSteps() {
+        withRegistry(
+                registry -> assertEquals(
+                        List.of(AView.class, AbView.class, AbcView.class),
+                        targets(RouteUtil.getRouteHierarchy(registry,
+                                AbcView.class, RouteParameters.empty()))),
+                AView.class, AbView.class, AbcView.class);
+    }
+
+    @Test
+    void getRouteHierarchy_missingIntermediate_terminatesAtLeaf() {
+        // only a/b/c is registered (no a/b, no a), so no ancestor is found
+        withRegistry(
+                registry -> assertEquals(List.of(AbcView.class),
+                        targets(RouteUtil.getRouteHierarchy(registry,
+                                AbcView.class, RouteParameters.empty()))),
+                AbcView.class);
+    }
+
+    @Test
+    void getRouteHierarchy_emptyTemplateRoot_isFoundAsParent() {
+        withRegistry(
+                registry -> assertEquals(
+                        List.of(HomeView.class, DocsView.class),
+                        targets(RouteUtil.getRouteHierarchy(registry,
+                                DocsView.class, RouteParameters.empty()))),
+                HomeView.class, DocsView.class);
+    }
+
+    @Test
+    void getRouteHierarchy_routeParent_takesPrecedenceOverUrlPrefix() {
+        // OrderDetailView is order-detail/:orderId; its URL parent would be
+        // order-detail, but @RouteParent(OrdersView) wins
+        withRegistry(
+                registry -> assertEquals(
+                        List.of(OrdersView.class, OrderDetailView.class),
+                        targets(RouteUtil.getRouteHierarchy(registry,
+                                OrderDetailView.class,
+                                new RouteParameters("orderId", "1001")))),
+                OrdersView.class, OrderDetailView.class);
+    }
+
+    @Test
+    void getRouteHierarchy_cycleViaRouteParent_truncatesWithoutDuplicates() {
+        withRegistry(registry -> {
+            List<Class<? extends Component>> chain = targets(
+                    RouteUtil.getRouteHierarchy(registry, CycleAView.class,
+                            RouteParameters.empty()));
+            assertTrue(chain.size() <= 2,
+                    "Cycle must be truncated, was " + chain.size());
+            assertTrue(chain.contains(CycleAView.class));
+            assertEquals(chain.size(), chain.stream().distinct().count(),
+                    "Chain must not contain duplicates");
+        }, CycleAView.class, CycleBView.class);
+    }
+
+    @Test
+    void getRouteParent_resolverReturningEmpty_marksRoot() {
+        // RootResolver returns empty -> RootResolvedView is its own root
+        assertFalse(RouteUtil.getRouteParent(null, RootResolvedView.class,
+                RouteParameters.empty()).isPresent());
+    }
+
+    @SafeVarargs
+    private static void withRegistry(Consumer<RouteRegistry> test,
+            Class<? extends Component>... routes) {
+        MockVaadinServletService service = new MockVaadinServletService();
+        VaadinService.setCurrent(service);
+        try {
+            ApplicationRouteRegistry registry = ApplicationRouteRegistry
+                    .getInstance(service.getContext());
+            RouteConfiguration configuration = RouteConfiguration
+                    .forRegistry(registry);
+            for (Class<? extends Component> route : routes) {
+                configuration.setAnnotatedRoute(route);
+            }
+            test.accept(registry);
+        } finally {
+            VaadinService.setCurrent(null);
+        }
+    }
+
+    private static List<Class<? extends Component>> targets(
+            List<RouteReference> hierarchy) {
+        return hierarchy.stream().map(RouteReference::navigationTarget)
+                .toList();
+    }
+
+    public static class OrgTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Org " + context.routeParameters().get("orgId").orElse("");
+        }
+    }
+
+    public static class ProjectTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Project "
+                    + context.routeParameters().get("projectId").orElse("");
+        }
+    }
+
+    public static class OrgParentResolver implements RouteParentResolver {
+        @Override
+        public Optional<RouteReference> resolveParent(
+                RouteParentContext context) {
+            RouteParameters parentParameters = new RouteParameters("orgId",
+                    context.routeParameters().get("orgId").orElseThrow());
+            return Optional
+                    .of(new RouteReference(OrgView.class, parentParameters));
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("orgs/:orgId")
+    @DynamicPageTitle(OrgTitleGenerator.class)
+    public static class OrgView extends Component {
+        static boolean instantiated = false;
+
+        public OrgView() {
+            instantiated = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("orgs/:orgId/projects/:projectId")
+    @DynamicPageTitle(ProjectTitleGenerator.class)
+    @RouteParent(resolver = OrgParentResolver.class)
+    public static class ProjectView extends Component {
+        static boolean instantiated = false;
+
+        public ProjectView() {
+            instantiated = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("orgs/:orgId/settings")
+    @PageTitle("Settings")
+    @RouteParent(OrgView.class)
+    public static class SettingsView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("orgs/:orgId/members")
+    public static class MembersView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("uc2")
+    public static class OrdersView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("order-detail/:orderId")
+    @RouteParent(OrdersView.class)
+    public static class OrderDetailView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    public static class PlainView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("a")
+    public static class AView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("a/b")
+    public static class AbView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("a/b/c")
+    public static class AbcView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("")
+    public static class HomeView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("docs")
+    public static class DocsView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("cycle-a")
+    @RouteParent(CycleBView.class)
+    public static class CycleAView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @Route("cycle-b")
+    @RouteParent(CycleAView.class)
+    public static class CycleBView extends Component {
+    }
+
+    public static class RootResolver implements RouteParentResolver {
+        @Override
+        public Optional<RouteReference> resolveParent(
+                RouteParentContext context) {
+            return Optional.empty();
+        }
+    }
+
+    @Tag(Tag.DIV)
+    @Route("root-resolved")
+    @RouteParent(resolver = RootResolver.class)
+    public static class RootResolvedView extends Component {
     }
 
     private static class MockRouteTarget extends RouteTarget {

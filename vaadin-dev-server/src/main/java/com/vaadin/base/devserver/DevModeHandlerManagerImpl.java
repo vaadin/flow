@@ -50,6 +50,7 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 8.0
  */
 public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
@@ -73,6 +74,14 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private String applicationUrl;
     private boolean fullyStarted = false;
+
+    /**
+     * Creates the manager. Flow instantiates it when building the
+     * {@code Lookup}.
+     */
+    public DevModeHandlerManagerImpl() {
+        // Default constructor
+    }
 
     @Override
     public Class<?>[] getHandlesTypes() {
@@ -173,14 +182,18 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         try {
             File projectFolder = config.getProjectFolder();
             File resourceFolder = config.getJavaResourceFolder();
-            List<String> locations = Stream.concat(Stream
+            File jarResourcesFolder = FrontendUtils
+                    .getJarResourcesFolder(config.getFrontendFolder());
+            List<String> locations = Stream.of(Stream
                     .of("META-INF/resources", "resources", "static", "public")
                     .map(location -> new File(resourceFolder, location)),
-                    Stream.of(new File(projectFolder, "src/main/webapp")))
+                    Stream.of(new File(projectFolder, "src/main/webapp"),
+                            jarResourcesFolder))
+                    .flatMap(s -> s)
                     .filter(root -> root.exists() && root.isDirectory())
                     .filter(File::exists)
-                    .map(staticResourceFolder -> FrontendUtils
-                            .getUnixPath(staticResourceFolder.toPath()))
+                    .map(staticResourceFolder -> FrontendUtils.getUnixPath(
+                            staticResourceFolder.toPath().normalize()))
                     .toList();
             registerWatcherShutdownCommand(
                     new PublicResourcesLiveUpdater(locations, context));

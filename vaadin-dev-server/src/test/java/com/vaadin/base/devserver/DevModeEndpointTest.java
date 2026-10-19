@@ -26,9 +26,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -48,8 +48,15 @@ import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class DevModeEndpointTest extends AbstractDevModeTest {
 
     Set<Class<?>> classes;
@@ -77,18 +84,17 @@ class DevModeEndpointTest extends AbstractDevModeTest {
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
-        ServletRegistration vaadinServletRegistration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration vaadinServletRegistration = mock(
+                ServletRegistration.class);
 
-        Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
+        doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
 
-        Mockito.when(vaadinServletRegistration.getClassName())
+        when(vaadinServletRegistration.getClassName())
                 .thenReturn(VaadinServletSubClass.class.getName());
 
         classes = new HashSet<>();
@@ -100,14 +106,13 @@ class DevModeEndpointTest extends AbstractDevModeTest {
         // DevModeInitializer picks
         // the correct registration which is a VaadinServlet
         // registration.
-        registry.put("extra1", Mockito.mock(ServletRegistration.class));
+        registry.put("extra1", mock(ServletRegistration.class));
         registry.put("foo", vaadinServletRegistration);
-        registry.put("extra2", Mockito.mock(ServletRegistration.class));
-        Mockito.when(servletContext.getServletRegistrations())
-                .thenReturn(registry);
-        Mockito.when(servletContext.getInitParameterNames())
+        registry.put("extra2", mock(ServletRegistration.class));
+        when(servletContext.getServletRegistrations()).thenReturn(registry);
+        when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(servletContext.getClassLoader())
+        when(servletContext.getClassLoader())
                 .thenReturn(this.getClass().getClassLoader());
 
         Files.createDirectories(new File(baseDir, "src/main/java").toPath());
@@ -122,16 +127,15 @@ class DevModeEndpointTest extends AbstractDevModeTest {
                 .toFile();
 
         assertFalse(generatedOpenApiJson.exists());
-        MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
-        MockedStatic<FrontendBuildUtils> frontendBuildUtils = Mockito
-                .mockStatic(FrontendBuildUtils.class,
-                        Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendBuildUtils> frontendBuildUtils = mockStatic(
+                FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS);
         try {
-            frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+            frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                     .thenReturn(true);
-            frontendBuildUtils.when(() -> FrontendBuildUtils
-                    .isHillaUsed(Mockito.any(), Mockito.any()))
+            frontendBuildUtils
+                    .when(() -> FrontendBuildUtils.isHillaUsed(any(), any()))
                     .thenReturn(true);
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
@@ -153,9 +157,8 @@ class DevModeEndpointTest extends AbstractDevModeTest {
         // in some tests
         File src = new File(
                 getClass().getClassLoader().getResource("java").getFile());
-        Mockito.when(appConfig.getStringProperty(
-                Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
-                Mockito.anyString())).thenReturn(src.getAbsolutePath());
+        when(appConfig.getStringProperty(eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
+                anyString())).thenReturn(src.getAbsolutePath());
 
         File ts1 = new File(baseDir,
                 FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR
@@ -166,16 +169,15 @@ class DevModeEndpointTest extends AbstractDevModeTest {
 
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
-        MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
-        MockedStatic<FrontendBuildUtils> frontendBuildUtils = Mockito
-                .mockStatic(FrontendBuildUtils.class,
-                        Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendBuildUtils> frontendBuildUtils = mockStatic(
+                FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS);
         try {
-            frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+            frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                     .thenReturn(true);
-            frontendBuildUtils.when(() -> FrontendBuildUtils
-                    .isHillaUsed(Mockito.any(), Mockito.any()))
+            frontendBuildUtils
+                    .when(() -> FrontendBuildUtils.isHillaUsed(any(), any()))
                     .thenReturn(true);
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();

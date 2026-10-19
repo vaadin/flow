@@ -15,11 +15,19 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -27,12 +35,13 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Utility class for compression and decompression of folders and files.
+ * Utility class for compression and decompression of folders, files and
+ * strings.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.3
+ * @since 25.0
  */
 public class CompressUtil {
 
@@ -143,17 +152,40 @@ public class CompressUtil {
 
     private static File newFile(File destinationDir, ZipEntry zipEntry)
             throws IOException {
-        File destFile = new File(destinationDir, zipEntry.getName());
+        // Canonicalize the destination directory once. Resolving each entry
+        // lexically against this base (instead of canonicalizing the
+        // not-yet-created target file) avoids inconsistent path forms, e.g. on
+        // Windows mapped network drives where getCanonicalPath() returns the
+        // UNC form for an existing directory but the drive-letter form for a
+        // non-existent child, which made a legitimate entry look "outside".
+        Path destDir = destinationDir.getCanonicalFile().toPath();
+        Path destFile = destDir.resolve(zipEntry.getName()).normalize();
 
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+        if (!destFile.startsWith(destDir)) {
             throw new IOException("Entry is outside of the target dir: "
                     + zipEntry.getName());
         }
 
-        return destFile;
+        return destFile.toFile();
+    }
+
+    /**
+     * Checks if the given zip file contains a file with the given name.
+     *
+     * @param zip
+     *            Target zip file
+     * @param filename
+     *            Target file name
+     * @return {@code true} if the file is found in the zip
+     * @throws IOException
+     *             if an I/O error occurs
+     * @since 25.3
+     */
+    public static boolean hasFileInZip(File zip, String filename)
+            throws IOException {
+        try (ZipFile zipFile = new ZipFile(zip)) {
+            return zipFile.getEntry(filename) != null;
+        }
     }
 
     /**
@@ -179,6 +211,52 @@ public class CompressUtil {
             }
         } catch (ZipException e) {
             throw new IOException(e);
+        }
+    }
+
+    /**
+     * Compresses a string with the deflate algorithm, favoring speed over size.
+     * Use {@link #inflateString(byte[])} to get the string back.
+     *
+     * @param text
+     *            the string to compress, not {@code null}
+     * @return the compressed UTF-8 bytes of the string
+     */
+    public static byte[] deflateString(String text) {
+        byte[] input = text.getBytes(StandardCharsets.UTF_8);
+        Deflater deflater = new Deflater(Deflater.BEST_SPEED, true);
+        // Deflater is AutoCloseable only from Java 25
+        try { // NOSONAR
+            deflater.setInput(input);
+            deflater.finish();
+            ByteArrayOutputStream output = new ByteArrayOutputStream(
+                    input.length / 4 + 16);
+            byte[] buffer = new byte[4096];
+            while (!deflater.finished()) {
+                output.write(buffer, 0, deflater.deflate(buffer));
+            }
+            return output.toByteArray();
+        } finally {
+            deflater.end();
+        }
+    }
+
+    /**
+     * Decompresses a string compressed with {@link #deflateString(String)}.
+     *
+     * @param data
+     *            the compressed bytes, not {@code null}
+     * @return the original string
+     */
+    public static String inflateString(byte[] data) {
+        Inflater inflater = new Inflater(true);
+        try (InputStream input = new InflaterInputStream(
+                new ByteArrayInputStream(data), inflater)) {
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } finally {
+            inflater.end();
         }
     }
 }

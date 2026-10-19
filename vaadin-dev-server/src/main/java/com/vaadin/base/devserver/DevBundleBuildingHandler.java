@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -41,11 +41,21 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * Most of the other methods should not be invoked, and they may throw an
  * exception if called.
+ * 
+ * @since 24.3
  */
 public final class DevBundleBuildingHandler implements DevModeHandler {
 
     private final transient CompletableFuture<Void> buildCompletedFuture;
+    /** The failure message of the bundle build, or {@code null}. */
+    private final AtomicReference<String> devServerFailure = new AtomicReference<>();
 
+    /**
+     * Creates a handler that makes requests wait for the given bundle build.
+     *
+     * @param buildCompletedFuture
+     *            completes when the bundle has been built
+     */
     public DevBundleBuildingHandler(
             CompletableFuture<Void> buildCompletedFuture) {
         this.buildCompletedFuture = buildCompletedFuture;
@@ -91,7 +101,7 @@ public final class DevBundleBuildingHandler implements DevModeHandler {
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
         return AbstractDevServerRunner.handleRequestInternal(session, request,
-                response, buildCompletedFuture, new AtomicBoolean());
+                response, buildCompletedFuture, devServerFailure);
     }
 
     /**

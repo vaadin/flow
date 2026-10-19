@@ -15,15 +15,20 @@
  */
 package com.vaadin.flow.server.scanner;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Repeatable;
 import java.lang.reflect.AnnotatedElement;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,7 +57,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  *
  * @since 2.0
  */
-public class ReflectionsClassFinder implements ClassFinder {
+public class ReflectionsClassFinder implements ClassFinder, AutoCloseable {
     /**
      * System property name to be used to disable default package filtering
      * during class scan. See {@link #applyScannerPackageFilters(ClassGraph)}
@@ -220,7 +225,43 @@ public class ReflectionsClassFinder implements ClassFinder {
 
     @Override
     public URL getResource(String name) {
-        return classLoader.getResource(name);
+        return disableJarCaching(classLoader.getResource(name));
+    }
+
+    @Override
+    public List<URL> getResources(String name) throws IOException {
+        return Collections.list(classLoader.getResources(name)).stream()
+                .map(ReflectionsClassFinder::disableJarCaching).toList();
+    }
+
+    /**
+     * Wraps a {@code jar:} URL with a handler that disables JVM-level JAR
+     * caching. Prevents {@code JarFileFactory} from caching stale
+     * {@code JarFile} instances across daemon builds (Gradle daemon, mvnd).
+     *
+     * @param url
+     *            the URL to wrap, may be {@code null}
+     * @return a wrapped URL with caching disabled for {@code jar:} protocol, or
+     *         the original URL for other protocols or {@code null} input
+     */
+    public static URL disableJarCaching(URL url) {
+        if (url == null || !"jar".equals(url.getProtocol())) {
+            return url;
+        }
+        try {
+            return new URL(null, url.toExternalForm(), new URLStreamHandler() {
+                @Override
+                protected URLConnection openConnection(URL u)
+                        throws IOException {
+                    URLConnection conn = new URL(u.toExternalForm())
+                            .openConnection();
+                    conn.setUseCaches(false);
+                    return conn;
+                }
+            });
+        } catch (MalformedURLException e) {
+            return url;
+        }
     }
 
     @Override
@@ -270,6 +311,14 @@ public class ReflectionsClassFinder implements ClassFinder {
     @Override
     public ClassLoader getClassLoader() {
         return classLoader;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (classLoader instanceof URLClassLoader) {
+            LOGGER.debug("Closing URLClassLoader to release file handles");
+            ((URLClassLoader) classLoader).close();
+        }
     }
 
     private <T> Set<Class<? extends T>> sortedByClassName(

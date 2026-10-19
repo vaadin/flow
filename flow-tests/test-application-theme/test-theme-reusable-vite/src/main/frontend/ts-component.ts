@@ -1,7 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { applyTheme } from './generated/theme';
-import lumo from '@vaadin/vaadin-lumo-styles/lumo.css?inline';
 
 @customElement('ts-component')
 export class TsComponent extends LitElement {
@@ -11,7 +10,9 @@ export class TsComponent extends LitElement {
   }
   static get styles() {
     return css`
-      ${lumo}.toString()
+      [theme='badge'] {
+        background-color: rgba(51, 139, 255, 0.13);
+      }
     `;
   }
   render() {

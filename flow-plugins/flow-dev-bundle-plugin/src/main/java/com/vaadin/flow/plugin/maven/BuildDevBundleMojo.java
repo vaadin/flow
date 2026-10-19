@@ -183,6 +183,15 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
 
+    /**
+     * Npm packages to exclude from running post install scripts.
+     * <p>
+     * Used to skip built-in entries (e.g. {@code esbuild}) when their
+     * postinstall step is known to fail or is not needed.
+     */
+    @Parameter(property = "npm.excludePostinstallPackages", defaultValue = "")
+    private List<String> excludePostinstallPackages;
+
     @Parameter(property = InitParameters.REACT_ENABLE, defaultValue = "true")
     private boolean reactEnable;
 
@@ -203,6 +212,30 @@ public class BuildDevBundleMojo extends AbstractMojo
     private boolean frontendIgnoreVersionChecks;
 
     /**
+     * Minimum age (in days) a frontend (npm) package version must have before
+     * npm, pnpm or bun is allowed to install it. Mitigates supply-chain attacks
+     * where a compromised version is briefly available on the registry. Set to
+     * {@code 0} to disable. Requires pnpm &ge; 10.16.0 or bun &ge; 1.3.0 when
+     * those tools are used.
+     * <p>
+     * When not set, the value configured for npm or pnpm itself ({@code .npmrc}
+     * or {@code pnpm-workspace.yaml}) is used, so that a manually run
+     * {@code npm install} behaves the same way. Only when there is no such
+     * value does the check default to {@code 1} day. The configuration of bun
+     * cannot be read, so the default always applies for it.
+     * <p>
+     * The packages Vaadin publishes itself ({@code @vaadin/*}) are exempt from
+     * the check, so that a project can be built right after a Vaadin release.
+     * Excluding them requires npm &ge; 11.17.0, which Node.js &ge; 26.4.0 ships
+     * with, or pnpm &ge; 10.17.0; bun cannot exclude packages on the command
+     * line, so with bun an installation may fail during the first day after a
+     * Vaadin release.
+     */
+    @Parameter(property = "vaadin."
+            + InitParameters.MINIMUM_FRONTEND_PACKAGE_AGE_DAYS)
+    private Integer minimumFrontendPackageAgeDays;
+
+    /**
      * The folder where the META-INF/resources files are copied. Used for
      * finding the StyleSheet referenced css files.
      */
@@ -213,6 +246,13 @@ public class BuildDevBundleMojo extends AbstractMojo
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
 
     private ClassFinder classFinder;
+
+    /**
+     * Creates the goal. Maven instantiates it and injects the parameters.
+     */
+    public BuildDevBundleMojo() {
+        // Default constructor
+    }
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -258,6 +298,14 @@ public class BuildDevBundleMojo extends AbstractMojo
                 "To diagnose the issue, please re-run Maven with the -X option to enable detailed debug logging and identify the root cause.");
     }
 
+    /**
+     * Runs the goal once the isolated class loader is in place.
+     * <p>
+     * Called reflectively from {@link #execute()}, so it has to stay public.
+     *
+     * @throws MojoFailureException
+     *             if the bundle cannot be built
+     */
     public void executeInternal() throws MojoFailureException {
         long start = System.nanoTime();
 
@@ -493,16 +541,34 @@ public class BuildDevBundleMojo extends AbstractMojo
 
     @Override
     public String buildFolder() {
-        if (projectBuildDir.startsWith(projectBasedir.toString())) {
-            return projectBaseDirectory().relativize(Paths.get(projectBuildDir))
-                    .toString();
+        Path buildDir = Paths.get(projectBuildDir);
+        // buildFolder() is consumed as a path relative to the project folder
+        // (new File(npmFolder, buildFolder)), so always return it relative to
+        // the project basedir. A build dir outside basedir then yields a "../"
+        // path. Returning the absolute path would instead append it to the
+        // project folder and point outside the build dir.
+        if (!buildDir.isAbsolute()) {
+            return projectBuildDir;
         }
-        return projectBuildDir;
+        // relativize() requires both paths to be absolute; basedir is always
+        // absolute in a real build, toAbsolutePath() only guards exotic setups.
+        try {
+            return projectBaseDirectory().toAbsolutePath().relativize(buildDir)
+                    .toString();
+        } catch (IllegalArgumentException e) {
+            // Different filesystem roots (e.g. on Windows): cannot relativize.
+            return projectBuildDir;
+        }
     }
 
     @Override
     public List<String> postinstallPackages() {
         return postinstallPackages;
+    }
+
+    @Override
+    public List<String> excludePostinstallPackages() {
+        return excludePostinstallPackages;
     }
 
     @Override
@@ -550,6 +616,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    @Override
+    public Integer minimumFrontendPackageAgeDays() {
+        return minimumFrontendPackageAgeDays;
     }
 
     @Override

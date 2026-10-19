@@ -33,6 +33,7 @@ import com.vaadin.flow.signals.Signal;
  *
  * @see Signal#effect(Component, ContextualEffectAction)
  * @see EffectContext
+ * @since 25.1
  */
 @FunctionalInterface
 public interface ContextualEffectAction extends Serializable {

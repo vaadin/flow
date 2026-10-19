@@ -29,9 +29,18 @@ import org.springframework.core.env.Environment;
  * @author Vaadin Ltd
  * @see <a href=
  *      "http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html">http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html</a>
+ * @since 10.0
  */
 @ConfigurationProperties(prefix = "vaadin")
 public class VaadinConfigurationProperties {
+
+    /**
+     * Creates the properties holder. Spring Boot instantiates it and binds the
+     * {@code vaadin.*} properties to it.
+     */
+    public VaadinConfigurationProperties() {
+        // Default constructor
+    }
 
     /**
      * Gets the url mapping using the given environment.
@@ -42,6 +51,7 @@ public class VaadinConfigurationProperties {
      * @param environment
      *            the application environment
      * @return the url mapping or null if none is defined
+     * @since 23.1
      */
     public static String getUrlMapping(Environment environment) {
         return Binder.get(environment)
@@ -58,6 +68,7 @@ public class VaadinConfigurationProperties {
      * @param environment
      *            the application environment
      * @return the excluded URLs or null if none is defined
+     * @since 23.3
      */
     public static List<String> getExcludedUrls(Environment environment) {
         return Binder.get(environment)
@@ -75,6 +86,7 @@ public class VaadinConfigurationProperties {
      * @param environment
      *            the application environment
      * @return the allowed packages or an empty list if none is defined
+     * @since 24.9.8
      */
     public static List<String> getAllowedPackages(Environment environment) {
         return Binder.get(environment)
@@ -145,6 +157,12 @@ public class VaadinConfigurationProperties {
     private int launchBrowserDelay = 30;
 
     /**
+     * Enables the client-side bootstrap page to include the initial JSON data
+     * fragment.
+     */
+    private boolean eagerServerLoad = false;
+
+    /**
      * URL patterns that should not be handled by the Vaadin servlet when mapped
      * to the context root.
      */
@@ -156,35 +174,61 @@ public class VaadinConfigurationProperties {
      */
     private boolean devmodeCaching = true;
 
+    /**
+     * Frontend related properties, bound from {@code vaadin.frontend.*}.
+     *
+     * @since 24.0.5
+     */
     public static class Frontend {
+
         /**
          * Whether a frontend development server (Vite) is used in development
          * mode or not.
          */
         private boolean hotdeploy = false;
 
-        /*
+        /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public Frontend() {
+            // Default constructor
+        }
+
+        /**
          * Checks if frontend hotdeploy is enabled.
          *
-         * @return true if hotdeploy is enabled
+         * @return {@code true} if hotdeploy is enabled
          */
         public boolean isHotdeploy() {
             return hotdeploy;
         }
 
-        /*
+        /**
          * Enables/disables frontend hotdeploy mode.
          *
-         * @param hotdeploy true to enable, false to disable
+         * @param hotdeploy
+         *            {@code true} to enable, {@code false} to disable
          */
         public void setHotdeploy(boolean hotdeploy) {
             this.hotdeploy = hotdeploy;
         }
     }
 
+    /**
+     * pnpm related properties, bound from {@code vaadin.pnpm.*}.
+     *
+     * @since 14.0
+     */
     public static class Pnpm {
 
         private boolean enable;
+
+        /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public Pnpm() {
+            // Default constructor
+        }
 
         /**
          * Returns if pnpm support is enabled.
@@ -209,9 +253,21 @@ public class VaadinConfigurationProperties {
 
     }
 
+    /**
+     * Bun related properties, bound from {@code vaadin.bun.*}.
+     *
+     * @since 24.4
+     */
     public static class Bun {
 
         private boolean enable;
+
+        /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public Bun() {
+            // Default constructor
+        }
 
         /**
          * Returns if bun support is enabled.
@@ -236,9 +292,21 @@ public class VaadinConfigurationProperties {
 
     }
 
+    /**
+     * React related properties, bound from {@code vaadin.react.*}.
+     *
+     * @since 24.4
+     */
     public static class React {
 
         private boolean enable = true;
+
+        /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public React() {
+            // Default constructor
+        }
 
         /**
          * Returns if react support is enabled.
@@ -263,7 +331,13 @@ public class VaadinConfigurationProperties {
 
     }
 
+    /**
+     * Development mode properties, bound from {@code vaadin.devmode.*}.
+     *
+     * @since 24.3
+     */
     public static class Devmode {
+
         /**
          * A comma separated list of IP addresses, potentially with wildcards,
          * which can connect to the dev tools. If not specified, only localhost
@@ -279,11 +353,17 @@ public class VaadinConfigurationProperties {
         private String remoteAddressHeader;
 
         /**
+         * Creates the properties holder. Spring Boot instantiates it.
+         */
+        public Devmode() {
+            // Default constructor
+        }
+
+        /**
          * Gets the hosts allowed to connect to the dev mode server.
          *
          * @return the hosts allowed to connect to the dev mode server
          */
-
         public String getHostsAllowed() {
             return hostsAllowed;
         }
@@ -305,6 +385,7 @@ public class VaadinConfigurationProperties {
          * @return the name of the custom HTTP header that contains the client
          *         IP address that is checked to allow access to the dev mode
          *         server.
+         * @since 24.4
          */
         public String getRemoteAddressHeader() {
             return remoteAddressHeader;
@@ -324,6 +405,7 @@ public class VaadinConfigurationProperties {
          *            the name of the custom HTTP header that contains the
          *            client IP address that is checked to allow access to the
          *            dev mode server.
+         * @since 24.4
          */
         public void setRemoteAddressHeader(String remoteAddressHeader) {
             this.remoteAddressHeader = remoteAddressHeader;
@@ -377,6 +459,7 @@ public class VaadinConfigurationProperties {
      * access to a public view will be denied instead of allowed.
      *
      * @return if servlet is loaded on startup
+     * @since 18.0
      */
     public boolean isLoadOnStartup() {
         return loadOnStartup;
@@ -393,6 +476,7 @@ public class VaadinConfigurationProperties {
      * @param loadOnStartup
      *            {@code true} to load the servlet on startup, {@code false}
      *            otherwise
+     * @since 18.0
      */
     public void setLoadOnStartup(boolean loadOnStartup) {
         this.loadOnStartup = loadOnStartup;
@@ -404,6 +488,7 @@ public class VaadinConfigurationProperties {
      *
      * @return if a browser should be launched on startup when in development
      *         mode
+     * @since 19.0
      */
     public boolean isLaunchBrowser() {
         return launchBrowser;
@@ -416,6 +501,7 @@ public class VaadinConfigurationProperties {
      * @param launchBrowser
      *            {@code true} to launch a browser on startup when in
      *            development mode, {@code false} otherwise
+     * @since 19.0
      */
     public void setLaunchBrowser(boolean launchBrowser) {
         this.launchBrowser = launchBrowser;
@@ -427,6 +513,7 @@ public class VaadinConfigurationProperties {
      *
      * @return if a browser should be launched on startup when in development
      *         mode
+     * @since 24.4
      */
     public int getLaunchBrowserDelay() {
         return launchBrowserDelay;
@@ -439,9 +526,35 @@ public class VaadinConfigurationProperties {
      * @param launchBrowser
      *            {@code true} to launch a browser on startup when in
      *            development mode, {@code false} otherwise
+     * @since 24.4
      */
     public void setLaunchBrowserDelay(int launchBrowser) {
         this.launchBrowserDelay = launchBrowser;
+    }
+
+    /**
+     * Returns whether the client-side bootstrap page should include the initial
+     * JSON data fragment.
+     *
+     * @return {@code true} if eager server load is enabled, {@code false}
+     *         otherwise
+     * @since 25.1.4
+     */
+    public boolean isEagerServerLoad() {
+        return eagerServerLoad;
+    }
+
+    /**
+     * Sets whether the client-side bootstrap page should include the initial
+     * JSON data fragment.
+     *
+     * @param eagerServerLoad
+     *            {@code true} to enable eager server load, {@code false}
+     *            otherwise
+     * @since 25.1.4
+     */
+    public void setEagerServerLoad(boolean eagerServerLoad) {
+        this.eagerServerLoad = eagerServerLoad;
     }
 
     /**
@@ -449,6 +562,7 @@ public class VaadinConfigurationProperties {
      * DevTools should be enabled.
      *
      * @return if class scan caching should be enabled
+     * @since 24.2
      */
     public boolean isDevmodeCaching() {
         return devmodeCaching;
@@ -461,6 +575,7 @@ public class VaadinConfigurationProperties {
      * @param devmodeCaching
      *            {@code true} to enable class scan caching when in development
      *            mode, {@code false} otherwise
+     * @since 24.2
      */
     public void setDevmodeCaching(boolean devmodeCaching) {
         this.devmodeCaching = devmodeCaching;
@@ -470,6 +585,7 @@ public class VaadinConfigurationProperties {
      * Get a list of packages that are blocked for class scanning.
      *
      * @return blocked packages
+     * @since 24.3.4
      */
     public List<String> getBlockedPackages() {
         return Collections.unmodifiableList(blockedPackages);
@@ -480,6 +596,7 @@ public class VaadinConfigurationProperties {
      *
      * @param blockedPackages
      *            list of packages to ignore
+     * @since 24.3.4
      */
     public void setBlockedPackages(List<String> blockedPackages) {
         this.blockedPackages = blockedPackages;
@@ -489,6 +606,7 @@ public class VaadinConfigurationProperties {
      * Get a list of packages that are allowed for class scanning.
      *
      * @return allowed packages
+     * @since 24.3.4
      */
     public List<String> getAllowedPackages() {
         return allowedPackages;
@@ -500,6 +618,7 @@ public class VaadinConfigurationProperties {
      *
      * @param allowedPackages
      *            list of packages to be scanned
+     * @since 24.3.4
      */
     public void setAllowedPackages(List<String> allowedPackages) {
         this.allowedPackages = allowedPackages;
@@ -510,6 +629,7 @@ public class VaadinConfigurationProperties {
      * when it is mapped to the context root.
      *
      * @return a list of url patterns to exclude
+     * @since 23.3
      */
     public List<String> getExcludeUrls() {
         return excludeUrls;
@@ -521,6 +641,7 @@ public class VaadinConfigurationProperties {
      *
      * @param excludeUrls
      *            a list of url patterns to exclude
+     * @since 23.3
      */
     public void setExcludeUrls(List<String> excludeUrls) {
         this.excludeUrls = excludeUrls;
@@ -530,6 +651,7 @@ public class VaadinConfigurationProperties {
      * Gets the devmode specific configuration.
      *
      * @return the devmode configuration
+     * @since 24.3
      */
     public Devmode getDevmode() {
         return devmode;
@@ -539,6 +661,7 @@ public class VaadinConfigurationProperties {
      * Gets the pnpm specific configuration.
      *
      * @return the pnpm configuration
+     * @since 24.0.5
      */
     public Pnpm getPnpm() {
         return pnpm;
@@ -548,6 +671,7 @@ public class VaadinConfigurationProperties {
      * Gets the bun specific configuration.
      *
      * @return the bun configuration
+     * @since 24.4
      */
     public Bun getBun() {
         return bun;
@@ -557,6 +681,7 @@ public class VaadinConfigurationProperties {
      * Gets the react specific configuration.
      *
      * @return the react configuration
+     * @since 24.4
      */
     public React getReact() {
         return react;
@@ -566,6 +691,7 @@ public class VaadinConfigurationProperties {
      * Gets the frontend specific configuration.
      *
      * @return the frontend configuration
+     * @since 24.0.5
      */
     public Frontend getFrontend() {
         return frontend;

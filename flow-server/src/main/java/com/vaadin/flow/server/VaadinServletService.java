@@ -19,15 +19,14 @@ import jakarta.servlet.GenericServlet;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,12 +168,49 @@ public class VaadinServletService extends VaadinService {
     protected boolean requestCanCreateSession(VaadinRequest request) {
         if (isOtherRequest(request)) {
             /*
-             * I.e URIs that are not RPC calls or static file requests.
+             * I.e URIs that are not RPC calls or static file requests. Web
+             * component scripts are served without a session, see
+             * handleSessionExpired.
              */
-            return true;
+            return getWebComponentScriptProvider(request).isEmpty();
         }
 
         return false;
+    }
+
+    @Override
+    protected void handleSessionExpired(VaadinRequest request,
+            VaadinResponse response) throws ServiceException {
+        // The web component provider serves its scripts before any other
+        // session expired handler gets the chance to answer them with
+        // something else than the script
+        Optional<WebComponentProvider> provider = getWebComponentScriptProvider(
+                request);
+        if (provider.isPresent()) {
+            try {
+                if (provider.get().handleSessionExpired(request, response)) {
+                    return;
+                }
+            } catch (IOException e) {
+                throw new ServiceException("Handling of session expired failed",
+                        e);
+            }
+        }
+        super.handleSessionExpired(request, response);
+    }
+
+    /**
+     * Gets the registered web component provider if the request is for a web
+     * component script that it serves.
+     */
+    private Optional<WebComponentProvider> getWebComponentScriptProvider(
+            VaadinRequest request) {
+        if (!WebComponentProvider.isWebComponentScriptRequest(request)) {
+            return Optional.empty();
+        }
+        return StreamSupport.stream(getRequestHandlers().spliterator(), false)
+                .filter(WebComponentProvider.class::isInstance)
+                .map(WebComponentProvider.class::cast).findFirst();
     }
 
     private boolean isOtherRequest(VaadinRequest request) {
@@ -280,6 +316,7 @@ public class VaadinServletService extends VaadinService {
      *            the path inside servlet context
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
+     * @since 3.0
      */
     public URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();
@@ -338,13 +375,15 @@ public class VaadinServletService extends VaadinService {
         URL url = servletContext.getResource(path);
         if (url != null && Optional.ofNullable(servletContext.getServerInfo())
                 .orElse("").contains("jetty/12.")) {
-            // Making sure that resource exists before returning it. Jetty
-            // 12 may return URL for non-existing resource.
-            try {
-                if (!Files.exists(Path.of(url.toURI()))) {
-                    url = null;
-                }
-            } catch (URISyntaxException e) {
+            // Jetty 12 may return URLs for non-existing resources. Probe the
+            // URL by opening a stream: this works uniformly for file: URLs
+            // and for jar:file:...!/entry URLs without requiring a NIO
+            // FileSystem to be mounted for the JAR (which Path.of(jarUri)
+            // would need, breaking on Jetty 12.1.9 where classpath JARs are
+            // no longer kept mounted in the JVM-wide cache).
+            try (InputStream probe = url.openStream()) {
+                // resource exists
+            } catch (IOException e) {
                 url = null;
             }
         }

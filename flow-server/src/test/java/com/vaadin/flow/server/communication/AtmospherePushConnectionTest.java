@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.atmosphere.cpr.AtmosphereResource;
@@ -35,17 +36,29 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
+import org.mockito.ArgumentCaptor;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.communication.AtmospherePushConnection.PushMessage;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Vaadin Ltd
@@ -75,20 +88,19 @@ class AtmospherePushConnectionTest {
         vaadinSession.lock();
         UI ui = new MockUI(vaadinSession);
         vaadinSession.unlock();
-        broadcaster = Mockito.mock(Broadcaster.class);
-        resource = Mockito.mock(AtmosphereResource.class);
-        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-        Mockito.doAnswer(i -> {
+        broadcaster = mock(Broadcaster.class);
+        resource = mock(AtmosphereResource.class);
+        when(resource.getBroadcaster()).thenReturn(broadcaster);
+        doAnswer(i -> {
             // Introduce a small delay to hold the lock during disconnect
             Thread.sleep(30);
             return null;
         }).when(resource).close();
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             // Introduce a small delay to hold the lock during message push
             Thread.sleep(30);
             return CompletableFuture.completedFuture(null);
-        }).when(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.any(AtmosphereResource.class));
+        }).when(broadcaster).broadcast(any(), any(AtmosphereResource.class));
 
         connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
@@ -97,8 +109,8 @@ class AtmospherePushConnectionTest {
     @Test
     void testSerialization() throws Exception {
 
-        UI ui = Mockito.mock(UI.class);
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        UI ui = mock(UI.class);
+        AtmosphereResource resource = mock(AtmosphereResource.class);
 
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
@@ -113,6 +125,175 @@ class AtmospherePushConnectionTest {
                 new ByteArrayInputStream(baos.toByteArray())).readObject();
 
         assertEquals(State.DISCONNECTED, connection.getState());
+    }
+
+    @Test
+    void resendLastResponse_sendsThePreviousResponseAgain() throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        String recorded = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        assertNotNull(recorded,
+                "The response to a client message should be recorded");
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster, times(2)).broadcast(captor.capture(), eq(resource));
+        assertEquals(recorded,
+                ((PushMessage) captor.getAllValues().get(1)).message,
+                "The client should get the previous response again, not a new one");
+    }
+
+    @Test
+    void resendLastResponse_noRecordedResponse_sendsARegularResponse()
+            throws Exception {
+        connection.getUI().getInternals().setLastRequestResponse(null);
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        verify(broadcaster).broadcast(any(), eq(resource));
+        String created = connection.getUI().getInternals()
+                .getLastRequestResponse();
+        assertNotNull(created,
+                "The response created instead answers the re-sent message, so it is recorded");
+        clearInvocations(broadcaster);
+
+        // If that response is lost too, the next resend sends it again rather
+        // than creating another one, which would be empty by then.
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(), eq(resource));
+        assertEquals(created, ((PushMessage) captor.getValue()).message,
+                "The response created for the re-sent message can itself be sent again");
+    }
+
+    @Test
+    void push_deferred_leavesNothingToSendAgain() throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        assertNotNull(
+                connection.getUI().getInternals().getLastRequestResponse());
+
+        // The next client message is processed, which forgets the answer to
+        // the previous one, and its own answer cannot be created because the
+        // connection is gone.
+        connection.getUI().getInternals().setLastProcessedClientToServerId(1,
+                new byte[0]);
+        connection.connectionLost();
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+
+        assertNull(connection.getUI().getInternals().getLastRequestResponse(),
+                "A deferred response must not leave an older answer to send again");
+    }
+
+    @Test
+    void resendLastResponse_notConnected_sendsNothingAndOwesNothing()
+            throws Exception {
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        connection.connectionLost();
+        clearInvocations(broadcaster);
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+        verifyNoInteractions(broadcaster);
+        assertEquals(State.DISCONNECTED, connection.getState(),
+                "A resend that cannot be sent should not look like a pending push");
+
+        // The client keeps re-sending until it is answered, so reconnecting
+        // sends nothing by itself; the next resend is what answers it.
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+        verifyNoInteractions(broadcaster);
+
+        vaadinSession.runWithLock(() -> {
+            connection.resendLastResponse();
+            return null;
+        });
+
+        ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+        verify(broadcaster).broadcast(captor.capture(), eq(resource));
+        assertEquals(connection.getUI().getInternals().getLastRequestResponse(),
+                ((PushMessage) captor.getValue()).message,
+                "The resend after reconnecting answers the client message");
+    }
+
+    @Test
+    void connect_deferredResponse_isSentOnReconnect() throws Exception {
+        connection.connectionLost();
+
+        vaadinSession.runWithLock(() -> {
+            connection.push(false);
+            return null;
+        });
+        verifyNoInteractions(broadcaster);
+        assertEquals(State.RESPONSE_PENDING, connection.getState());
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+
+        verify(broadcaster).broadcast(any(), eq(resource));
+    }
+
+    @Test
+    void connect_deferredAsynchronousPush_isSentOnReconnect() throws Exception {
+        connection.connectionLost();
+
+        vaadinSession.runWithLock(() -> {
+            connection.push(true);
+            return null;
+        });
+        verifyNoInteractions(broadcaster);
+        assertEquals(State.PUSH_PENDING, connection.getState());
+
+        vaadinSession.runWithLock(() -> {
+            connection.connect(resource);
+            return null;
+        });
+
+        verify(broadcaster).broadcast(any(), eq(resource));
+    }
+
+    @Test
+    void push_asynchronous_doesNotRecordAResponseToSendAgain()
+            throws Exception {
+        String recorded = "{\"marker\":1}";
+        connection.getUI().getInternals().setLastRequestResponse(recorded);
+
+        vaadinSession.runWithLock(() -> {
+            connection.push(true);
+            return null;
+        });
+
+        assertEquals(recorded,
+                connection.getUI().getInternals().getLastRequestResponse(),
+                "A server initiated push is not a response the client can ask for again");
     }
 
     @Test
@@ -138,7 +319,7 @@ class AtmospherePushConnectionTest {
         assertTrue(latch.await(2, TimeUnit.SECONDS),
                 "AtmospherePushConnection not disconnected");
         assertEquals(State.PUSH_PENDING, connection.getState());
-        Mockito.verifyNoInteractions(broadcaster);
+        verifyNoInteractions(broadcaster);
     }
 
     @Test
@@ -169,8 +350,7 @@ class AtmospherePushConnectionTest {
         });
 
         assertTrue(latch.await(3, TimeUnit.SECONDS), "Push not completed");
-        Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.eq(resource));
+        verify(broadcaster).broadcast(any(), eq(resource));
     }
 
     @Test
@@ -198,7 +378,7 @@ class AtmospherePushConnectionTest {
         // the HTTP session lock, that is however hold by the other thread that
         // is waiting for AtmosphereConnection lock to be released.
         ReentrantLock sessionLock = new ReentrantLock();
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             // simulate HTTP session lock attempt because of atmosphere resource
             // accesses session attributes
             // It does not wait indefinitely, but triggers an error if the lock
@@ -247,7 +427,7 @@ class AtmospherePushConnectionTest {
         assertTrue(latch.await(3, TimeUnit.SECONDS),
                 "Disconnect calls not completed, missing " + latch.getCount()
                         + " call");
-        Mockito.verify(resource, Mockito.times(1)).close();
+        verify(resource, times(1)).close();
     }
 
     @Test
@@ -257,7 +437,7 @@ class AtmospherePushConnectionTest {
         // but when a Vaadin session is unlocked as a consequence of HTTP
         // session invalidation
         ReentrantLock httpSessionLock = new ReentrantLock();
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             // simulate HTTP session lock attempt because of atmosphere resource
             // accesses session attributes
             // It does not wait indefinitely, but triggers an error if the lock
@@ -307,7 +487,134 @@ class AtmospherePushConnectionTest {
         assertTrue(latch.await(3, TimeUnit.SECONDS),
                 "Disconnect calls not completed, missing " + latch.getCount()
                         + " call");
-        Mockito.verify(resource, Mockito.times(1)).close();
+        verify(resource, times(1)).close();
+    }
+
+    @Test
+    void pushInterleavedWithDisconnect_preventDeadlocks() throws Exception {
+        // Same motivation as pushWhileDisconnect_preventDeadlocks, but
+        // exercises the race where push() has already read
+        // disconnecting=false BEFORE a concurrent disconnect() flips it
+        // to true. The AtomicBoolean guard does not protect against this
+        // interleaving: disconnect() enters synchronized(lock) and
+        // blocks in resource.close() waiting for the HTTP session lock
+        // held by the push thread, while the push thread then blocks
+        // trying to enter synchronized(lock) held by disconnect(),
+        // producing a deadlock.
+        ReentrantLock httpSessionLock = new ReentrantLock();
+        CountDownLatch disconnectReachedClose = new CountDownLatch(1);
+        doAnswer(i -> {
+            // Signal that disconnect() has entered synchronized(lock)
+            // and is about to contend for the HTTP session lock.
+            disconnectReachedClose.countDown();
+            // simulate HTTP session lock attempt because resource.close
+            // accesses session attributes; fail fast if it is still held
+            // by the push thread (indicates a deadlock).
+            if (httpSessionLock.tryLock(2, TimeUnit.SECONDS)) {
+                httpSessionLock.unlock();
+            } else {
+                throw new AssertionError(
+                        "Deadlock on AtmosphereResource.close");
+            }
+            return null;
+        }).when(resource).close();
+
+        CountDownLatch pushReachedBarrier = new CountDownLatch(1);
+        CountDownLatch disconnectProceed = new CountDownLatch(1);
+        AtomicBoolean paused = new AtomicBoolean(false);
+        ThreadLocal<Boolean> pushThreadMarker = ThreadLocal
+                .withInitial(() -> Boolean.FALSE);
+
+        // Pause push() between the disconnecting.get() read and the
+        // synchronized(lock) entry by overriding isConnected(), which is
+        // called in between. Only the push thread's first call pauses,
+        // so a post-fix re-check inside synchronized(lock) does not
+        // re-trigger the hook.
+        UI ui = spy(new UI());
+        when(ui.getSession()).thenReturn(vaadinSession);
+        AtmospherePushConnection testConnection = new AtmospherePushConnection(
+                ui) {
+            @Override
+            public boolean isConnected() {
+                boolean connected = super.isConnected();
+                if (connected && pushThreadMarker.get()
+                        && paused.compareAndSet(false, true)) {
+                    pushReachedBarrier.countDown();
+                    try {
+                        disconnectProceed.await(2, TimeUnit.SECONDS);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+                return connected;
+            }
+        };
+        testConnection.connect(resource);
+
+        // Dedicated executor to guarantee that push and disconnect can
+        // run concurrently, independent of the common pool parallelism.
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        try {
+            CompletableFuture<Throwable> pushFuture = CompletableFuture
+                    .supplyAsync(() -> {
+                        pushThreadMarker.set(Boolean.TRUE);
+                        httpSessionLock.lock();
+                        try {
+                            vaadinSession.runWithLock(() -> {
+                                testConnection.push();
+                                return null;
+                            });
+                            return (Throwable) null;
+                        } catch (Throwable t) {
+                            return t;
+                        } finally {
+                            httpSessionLock.unlock();
+                            pushThreadMarker.remove();
+                        }
+                    }, executor);
+
+            // Wait until push() has read disconnecting=false and is
+            // paused just before entering synchronized(lock).
+            assertTrue(pushReachedBarrier.await(2, TimeUnit.SECONDS),
+                    "Push thread did not reach the barrier");
+
+            // Start a concurrent disconnect(). It will CAS disconnecting
+            // from false to true, enter synchronized(lock), and then
+            // attempt resource.close(), which requires the HTTP session
+            // lock held by the push thread.
+            CompletableFuture<Throwable> disconnectFuture = CompletableFuture
+                    .supplyAsync(() -> {
+                        try {
+                            testConnection.disconnect();
+                            return (Throwable) null;
+                        } catch (Throwable t) {
+                            return t;
+                        }
+                    }, executor);
+
+            // Wait deterministically until disconnect() has reached
+            // resource.close() before releasing the push thread.
+            assertTrue(disconnectReachedClose.await(2, TimeUnit.SECONDS),
+                    "Disconnect did not reach resource.close()");
+
+            // Release the push thread so it proceeds toward
+            // synchronized(lock). Without the fix, it blocks here
+            // forever.
+            disconnectProceed.countDown();
+
+            Throwable pushError = pushFuture.get(5, TimeUnit.SECONDS);
+            Throwable disconnectError = disconnectFuture.get(5,
+                    TimeUnit.SECONDS);
+
+            if (disconnectError != null) {
+                fail("Disconnect failed (likely deadlock): " + disconnectError);
+            }
+            if (pushError != null) {
+                fail("Push failed: " + pushError);
+            }
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
 }

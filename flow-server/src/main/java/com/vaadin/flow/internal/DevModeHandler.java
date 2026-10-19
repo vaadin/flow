@@ -29,6 +29,8 @@ import com.vaadin.flow.server.RequestHandler;
  * development server and access to compilation output.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 8.0
  */
 public interface DevModeHandler extends RequestHandler {
 
@@ -76,6 +78,7 @@ public interface DevModeHandler extends RequestHandler {
      * Gets the project root folder.
      *
      * @return the project root folder
+     * @since 9.0
      */
     File getProjectRoot();
 
@@ -83,6 +86,7 @@ public interface DevModeHandler extends RequestHandler {
      * Get the listening port of the dev server.
      *
      * @return the listening port
+     * @since 23.1
      */
     int getPort();
 }

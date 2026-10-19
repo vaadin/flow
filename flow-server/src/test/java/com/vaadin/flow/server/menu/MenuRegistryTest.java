@@ -27,11 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -48,9 +48,15 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.Menu;
+import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PageTitleContext;
+import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockServletContext;
@@ -74,8 +80,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class MenuRegistryTest {
     @TempDir
     Path tmpDir;
@@ -102,23 +113,23 @@ class MenuRegistryTest {
 
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
-        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
-        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        when(vaadinService.getContext()).thenReturn(vaadinContext);
+        when(vaadinService.getRouter()).thenReturn(new Router(registry));
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
 
-        Mockito.when(vaadinService.getDeploymentConfiguration())
+        when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
 
-        Mockito.when(deploymentConfiguration.getFrontendFolder())
+        when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.toFile());
-        Mockito.when(deploymentConfiguration.getProjectFolder())
+        when(deploymentConfiguration.getProjectFolder())
                 .thenReturn(tmpDir.toFile());
-        Mockito.when(deploymentConfiguration.getBuildFolder())
-                .thenReturn("build");
+        when(deploymentConfiguration.getBuildFolder()).thenReturn("build");
 
-        frontendUtils = Mockito.mockStatic(FrontendUtils.class);
-        frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+        frontendUtils = mockStatic(FrontendUtils.class);
+        frontendUtils.when(() -> FrontendUtils.isHillaUsed(any()))
                 .thenReturn(true);
 
         VaadinService.setCurrent(vaadinService);
@@ -132,7 +143,7 @@ class MenuRegistryTest {
 
         VaadinSession.setCurrent(session);
 
-        Mockito.when(request.getService()).thenReturn(vaadinService);
+        when(request.getService()).thenReturn(vaadinService);
         CurrentInstance.set(VaadinRequest.class, request);
     }
 
@@ -141,6 +152,66 @@ class MenuRegistryTest {
         frontendUtils.close();
         closeable.close();
         CurrentInstance.clearAll();
+    }
+
+    @Test
+    void getTitle_staticPageTitle_returnsValue() {
+        assertEquals("Static Title",
+                MenuRegistry.getTitle(StaticTitleRoute.class));
+    }
+
+    @Test
+    void getTitle_noPageTitle_returnsSimpleName() {
+        assertEquals("MyRoute", MenuRegistry.getTitle(MyRoute.class));
+    }
+
+    @Test
+    void getTitle_generator_resolvedWithoutInstance() {
+        GeneratedTitleRoute.instantiated = false;
+
+        String title = MenuRegistry.getTitle(GeneratedTitleRoute.class,
+                new RouteParameters("productId", "7"));
+
+        assertEquals("Product 7", title);
+        assertFalse(GeneratedTitleRoute.instantiated,
+                "Generator-based title resolution must not instantiate the route");
+    }
+
+    @Test
+    void getTitle_generatorWithoutParameters_usesEmptyParameters() {
+        assertEquals("Product ",
+                MenuRegistry.getTitle(GeneratedTitleRoute.class));
+    }
+
+    @Test
+    void getTitle_generatorReceivesAnnotationValue() {
+        assertEquals("resolved:orders.title",
+                MenuRegistry.getTitle(KeyedTitleRoute.class));
+    }
+
+    @Test
+    void getTitle_defaultGenerator_usedWhenNoRouteGenerator() {
+        PageTitleGenerator defaultGenerator = context -> "default:"
+                + context.navigationTarget().getSimpleName() + ":"
+                + context.value();
+        when(vaadinService.getInstantiator())
+                .thenReturn(new DefaultInstantiator(vaadinService) {
+                    @Override
+                    public PageTitleGenerator getPageTitleGenerator() {
+                        return defaultGenerator;
+                    }
+                });
+
+        // no @PageTitle: the default generator replaces the simple-name
+        // fallback
+        assertEquals("default:MyRoute:", MenuRegistry.getTitle(MyRoute.class));
+        // static @PageTitle value is handed to the default generator
+        assertEquals("default:StaticTitleRoute:Static Title",
+                MenuRegistry.getTitle(StaticTitleRoute.class));
+        // a per-route generator still takes precedence
+        assertEquals("Product 7",
+                MenuRegistry.getTitle(GeneratedTitleRoute.class,
+                        new RouteParameters("productId", "7")));
     }
 
     @Test
@@ -225,8 +296,7 @@ class MenuRegistryTest {
     @Test
     void productionMode_getMenuItemsContainsExpectedClientPaths()
             throws IOException {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(true);
+        when(deploymentConfiguration.isProductionMode()).thenReturn(true);
         // Clear any production mode execution route contents
         MenuRegistry.clearFileRoutesCache();
 
@@ -235,11 +305,11 @@ class MenuRegistryTest {
                 FILE_ROUTES_JSON_PROD_PATH);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        ClassLoader mockClassLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
+        ClassLoader mockClassLoader = mock(ClassLoader.class);
+        when(mockClassLoader.getResource(FILE_ROUTES_JSON_PROD_PATH))
                 .thenReturn(clientFiles.toURI().toURL());
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class, Mockito.CALLS_REAL_METHODS)) {
             menuRegistry.when(() -> MenuRegistry.getClassLoader())
                     .thenReturn(mockClassLoader);
 
@@ -313,10 +383,8 @@ class MenuRegistryTest {
 
     @Test
     void testWithLoggedInUser_userHasRoles() throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(true);
+        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(request.isUserInRole(anyString())).thenReturn(true);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -342,10 +410,8 @@ class MenuRegistryTest {
 
     @Test
     void testWithLoggedInUser_noMatchingRoles() throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(false);
+        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(request.isUserInRole(anyString())).thenReturn(false);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -584,6 +650,45 @@ class MenuRegistryTest {
     @Route("home")
     @Menu(title = "Home")
     public static class MyRoute extends Component {
+    }
+
+    @Tag("div")
+    @Route("static")
+    @PageTitle("Static Title")
+    public static class StaticTitleRoute extends Component {
+    }
+
+    public static class ProductTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "Product "
+                    + context.routeParameters().get("productId").orElse("");
+        }
+    }
+
+    @Tag("div")
+    @Route("product/:productId")
+    @DynamicPageTitle(ProductTitleGenerator.class)
+    public static class GeneratedTitleRoute extends Component {
+        static boolean instantiated = false;
+
+        public GeneratedTitleRoute() {
+            instantiated = true;
+        }
+    }
+
+    public static class ValueEchoTitleGenerator implements PageTitleGenerator {
+        @Override
+        public String generatePageTitle(PageTitleContext context) {
+            return "resolved:" + context.value();
+        }
+    }
+
+    @Tag("div")
+    @Route("keyed")
+    @PageTitle("orders.title")
+    @DynamicPageTitle(ValueEchoTitleGenerator.class)
+    public static class KeyedTitleRoute extends Component {
     }
 
     @Tag("div")

@@ -30,11 +30,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
@@ -69,11 +70,14 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * This class is meant to be used during developing time.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 9.0
  */
 public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
+    /** Host the dev server is started on and proxied to. */
     public static final String DEV_SERVER_HOST = "http://127.0.0.1";
 
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
@@ -98,29 +102,56 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     private static final Pattern WEBPACK_ILLEGAL_CHAR_PATTERN = Pattern
             .compile("\"|%22");
 
+    // Hop-by-hop headers per RFC 9110 Section 7.6.1: these are
+    // per-connection headers that a proxy must not forward to the next hop.
+    // Stored in lowercase for case-insensitive matching.
+    private static final Set<String> HOP_BY_HOP_HEADERS = Set.of("connection",
+            "keep-alive", "proxy-authenticate", "proxy-authorization", "te",
+            "trailer", "transfer-encoding", "upgrade");
+
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
     private static final int DEFAULT_TIMEOUT = 120 * 1000;
 
+    /** The project folder the dev server process is started in. */
     private final File npmFolder;
+
+    /** The port the dev server listens on, 0 until it has been started. */
     private volatile int port;
+
+    /** The dev server process, or {@code null} when one was reused. */
     private final AtomicReference<Process> devServerProcess = new AtomicReference<>();
+
+    /** Whether an already running dev server may be reused. */
     private final boolean reuseDevServer;
+
+    /** File the port of a reusable dev server is recorded in. */
     private final File devServerPortFile;
 
-    private AtomicBoolean isDevServerFailedToStart = new AtomicBoolean();
+    /** The failure message of the last compilation, or {@code null}. */
+    private AtomicReference<String> devServerFailure = new AtomicReference<>();
 
+    /** Completes once the dev server is up, or completes exceptionally. */
     private final CompletableFuture<Void> devServerStartFuture;
 
+    /**
+     * Holds a socket open for as long as this JVM uses the dev server, so that
+     * the dev server can stop itself when the JVM goes away.
+     */
     private final AtomicReference<DevServerWatchDog> watchDog = new AtomicReference<>();
 
+    /** Whether this runner attached to a dev server it did not start. */
     private boolean usingAlreadyStartedProcess = false;
 
+    /** The configuration the runner was created with. */
     private ApplicationConfiguration applicationConfiguration;
 
+    /** Locates the Node.js and npm executables used to start the server. */
     private FrontendTools frontendTools;
 
+    /** The output of the last failed compilation, or {@code null}. */
     private String failedOutput = null;
 
+    /** Blocks a request until an ongoing recompilation has finished. */
     private transient Runnable waitForRestart;
 
     /**
@@ -158,6 +189,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     }
 
+    /**
+     * Gets the tools used to locate the Node.js executable that runs the dev
+     * server.
+     *
+     * @return the frontend tools of this runner
+     * @since 24.8
+     */
     protected FrontendTools getFrontendTools() {
         return frontendTools;
     }
@@ -217,8 +255,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             Process process = doStartDevServer();
             devServerProcess.set(process);
             if (!isRunning()) {
-                throw new IllegalStateException("Startup of " + getServerName()
-                        + " failed. Output was:\n" + getFailedOutput());
+                IllegalStateException exception = new IllegalStateException(
+                        "Startup of " + getServerName()
+                                + " failed. Output was:\n" + getFailedOutput());
+                getLogger().error("Dev server failed to start", exception);
+                throw exception;
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
@@ -299,6 +340,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * @param tools
      *            the frontend tools object
      * @return the list of commands to start the dev server
+     * @since 23.0
      */
     protected abstract List<String> getServerStartupCommand(
             FrontendTools tools);
@@ -310,6 +352,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *            frontend tools metadata
      * @param environment
      *            the environment variables to use
+     * @since 9.0.3
      */
     protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
@@ -351,6 +394,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @return the restarting pattern, or {@code null} if restart monitoring is
      *         not used
+     * @since 24.2
      */
     protected Pattern getServerRestartingPattern() {
         return null;
@@ -368,6 +412,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @return the restarted pattern, or {@code null} if restart monitoring is
      *         not used
+     * @since 24.2
      */
     protected Pattern getServerRestartedPattern() {
         return null;
@@ -385,7 +430,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
         List<String> command = getServerStartupCommand(frontendTools);
 
-        FrontendUtils.console(FrontendUtils.GREEN, START);
+        FrontendUtils.console(FrontendUtils.AnsiColor.GREEN, START);
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(FrontendUtils.commandToString(
                     getProjectRoot().getAbsolutePath(), command));
@@ -457,10 +502,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected void onDevServerCompilation(Result result) {
         if (result.isSuccess()) {
-            FrontendUtils.console(FrontendUtils.GREEN, SUCCEED_MSG);
+            FrontendUtils.console(FrontendUtils.AnsiColor.GREEN, SUCCEED_MSG);
             failedOutput = null;
         } else {
-            FrontendUtils.console(FrontendUtils.RED, FAILED_MSG);
+            FrontendUtils.console(FrontendUtils.AnsiColor.RED, FAILED_MSG);
             failedOutput = result.getOutput();
         }
     }
@@ -532,11 +577,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     private void removeRunningDevServerPort() {
-        try {
-            FileIOUtils.delete(devServerPortFile);
-        } catch (IOException e) {
-            // ignore
-        }
+        FileIOUtils.deleteQuietly(devServerPortFile);
     }
 
     @Override
@@ -648,22 +689,30 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
         return handleRequestInternal(session, request, response,
-                devServerStartFuture, isDevServerFailedToStart);
+                devServerStartFuture, devServerFailure);
     }
 
     static boolean handleRequestInternal(VaadinSession session,
             VaadinRequest request, VaadinResponse response,
             CompletableFuture<?> devServerStartFuture,
-            AtomicBoolean isDevServerFailedToStart) throws IOException {
-        if (devServerStartFuture.isDone()) {
-            // The server has started, check for any exceptions in the startup
-            // process
+            AtomicReference<String> devServerFailure) throws IOException {
+        if (devServerFailure.get() == null && devServerStartFuture.isDone()) {
             try {
                 devServerStartFuture.getNow(null);
             } catch (CompletionException exception) {
-                isDevServerFailedToStart.set(true);
-                throw getCause(exception);
+                RuntimeException cause = getCause(exception);
+                devServerFailure.set("The Vite dev server failed to start: "
+                        + cause.getMessage());
             }
+        }
+        String failureMessage = devServerFailure.get();
+        if (failureMessage != null) {
+            response.setContentType("text/html;charset=utf-8");
+            response.setHeader("Cache-Control", "no-cache");
+            response.getWriter().write("<pre>" + failureMessage + "</pre>");
+            return true;
+        }
+        if (devServerStartFuture.isDone()) {
             if (request.getHeader("X-DevModePoll") != null) {
                 // Avoid creating a UI that is thrown away for polling requests
                 response.setContentType("text/html;charset=utf-8");
@@ -721,7 +770,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Do not serve requests if dev server starting or failed to start.
-        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()
+        if (devServerFailure.get() != null || !devServerStartFuture.isDone()
                 || devServerStartFuture.isCompletedExceptionally()) {
             return false;
         }
@@ -755,15 +804,20 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         HttpURLConnection connection = prepareConnection(devServerRequestPath,
                 request.getMethod());
 
-        // Copies all the headers from the original request
+        // Copies request headers, skipping hop-by-hop headers
+        // (RFC 9110 Section 7.6.1) which are per-connection and must not
+        // be forwarded by a proxy
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String header = headerNames.nextElement();
-            connection.setRequestProperty(header,
-                    // Exclude keep-alive
-                    "Connect".equals(header) ? "close"
-                            : request.getHeader(header));
+            if (!HOP_BY_HOP_HEADERS
+                    .contains(header.toLowerCase(Locale.ENGLISH))) {
+                connection.setRequestProperty(header,
+                        request.getHeader(header));
+            }
         }
+        // Connection is not reused, signal to the dev server
+        connection.setRequestProperty("Connection", "close");
 
         // Send the request
         getLogger().debug("Requesting resource from {} {}", getServerName(),
@@ -780,13 +834,18 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         getLogger().debug("Served resource by {}: {} {}", getServerName(),
                 responseCode, devServerRequestPath);
 
-        // Copies response headers
+        // Copies response headers, skipping hop-by-hop headers
+        // (RFC 9110 Section 7.6.1) and Content-Length. Content-Length is
+        // dropped because HttpURLConnection may transparently decode the
+        // body (de-chunking, decompression), making the original value
+        // incorrect. The servlet container will determine the correct
+        // framing from the actual bytes written (RFC 9110 Section 8.6).
         connection.getHeaderFields().forEach((header, values) -> {
-            if (header != null) {
-                if ("Transfer-Encoding".equals(header)) {
-                    return;
-                }
-                response.addHeader(header, values.get(0));
+            if (header != null
+                    && !HOP_BY_HOP_HEADERS
+                            .contains(header.toLowerCase(Locale.ENGLISH))
+                    && !"Content-Length".equalsIgnoreCase(header)) {
+                response.setHeader(header, values.get(0));
             }
         });
 
@@ -799,15 +858,17 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             // Copies response payload
             writeStream(response.getOutputStream(),
                     connection.getInputStream());
+            // Close request to avoid issues in CI and Chrome
+            response.getOutputStream().close();
         } else if (responseCode < 400) {
             response.setStatus(responseCode);
+            response.getOutputStream().close();
         } else {
-            // Copies response code
+            // sendError() commits the response and may generate an error
+            // page; closing the output stream after that can throw in
+            // some servlet containers.
             response.sendError(responseCode);
         }
-
-        // Close request to avoid issues in CI and Chrome
-        response.getOutputStream().close();
 
         return true;
     }
@@ -822,6 +883,16 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
+    /**
+     * Copies the dev server response body to the response of the browser.
+     *
+     * @param outputStream
+     *            the stream to write to
+     * @param inputStream
+     *            the stream to read from
+     * @throws IOException
+     *             if reading or writing fails
+     */
     protected void writeStream(ServletOutputStream outputStream,
             InputStream inputStream) throws IOException {
         final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];

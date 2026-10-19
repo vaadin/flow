@@ -32,15 +32,17 @@ import com.vaadin.flow.function.ValueProvider;
 /**
  * Represents hierarchical data.
  * <p>
- * Typically used as a backing data source for {@link TreeDataProvider}.
+ * Typically used as a backing data source for {@link TreeDataProvider}. After
+ * making changes to the tree data, {@link TreeDataProvider#refreshAll()} should
+ * be called.
  *
  * @author Vaadin Ltd
- * @since 1.2
+ * @since 1.1
  *
  * @param <T>
  *            data type
  */
-public class TreeData<T> implements Serializable {
+public class TreeData<T> implements HierarchicalData<T> {
 
     private static class HierarchyWrapper<T> implements Serializable {
         private T parent;
@@ -86,6 +88,9 @@ public class TreeData<T> implements Serializable {
     /**
      * Adds the items as root items to this structure.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param items
      *            the items to add
      * @return this
@@ -104,6 +109,9 @@ public class TreeData<T> implements Serializable {
     /**
      * Adds the items of the given collection as root items to this structure.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param items
      *            the collection of items to add
      * @return this
@@ -121,6 +129,9 @@ public class TreeData<T> implements Serializable {
 
     /**
      * Adds the items of the given stream as root items to this structure.
+     *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @param items
      *            the stream of root items to add
@@ -141,6 +152,9 @@ public class TreeData<T> implements Serializable {
      * Adds a data item as a child of {@code parent}. Call with {@code null} as
      * parent to add a root level item. The given parent item must already exist
      * in this structure, and an item can only be added to this structure once.
+     *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @param parent
      *            the parent item for which the items are added as children
@@ -176,6 +190,9 @@ public class TreeData<T> implements Serializable {
      * must already exist in this structure, and an item can only be added to
      * this structure once.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param parent
      *            the parent item for which the items are added as children
      * @param items
@@ -202,6 +219,9 @@ public class TreeData<T> implements Serializable {
      * must already exist in this structure, and an item can only be added to
      * this structure once.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param parent
      *            the parent item for which the items are added as children
      * @param items
@@ -227,6 +247,9 @@ public class TreeData<T> implements Serializable {
      * item must already exist in this structure, and an item can only be added
      * to this structure once.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param parent
      *            the parent item for which the items are added as children
      * @param items
@@ -250,6 +273,9 @@ public class TreeData<T> implements Serializable {
      * Adds the given items as root items and uses the given value provider to
      * recursively populate children of the root items.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param rootItems
      *            the root items to add
      * @param childItemProvider
@@ -272,6 +298,9 @@ public class TreeData<T> implements Serializable {
      * Adds the given items as root items and uses the given value provider to
      * recursively populate children of the root items.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @param rootItems
      *            the root items to add
      * @param childItemProvider
@@ -290,6 +319,9 @@ public class TreeData<T> implements Serializable {
     /**
      * Remove a given item from this structure. Additionally, this will
      * recursively remove any descendants of the item.
+     *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
      *
      * @param item
      *            the item to remove, or null to clear all data
@@ -317,6 +349,9 @@ public class TreeData<T> implements Serializable {
      * Clear all items from this structure. Shorthand for calling
      * {@link #removeItem(Object)} with null.
      *
+     * After making changes to the tree data,
+     * {@link TreeDataProvider#refreshAll()} should be called.
+     *
      * @return this
      */
     public TreeData<T> clear() {
@@ -333,17 +368,7 @@ public class TreeData<T> implements Serializable {
         return getChildren(null);
     }
 
-    /**
-     * Get the immediate child items for the given item.
-     *
-     * @param item
-     *            the item for which to retrieve child items for, null to
-     *            retrieve all root items
-     * @return an unmodifiable list of child items for the given item
-     *
-     * @throws IllegalArgumentException
-     *             if the item does not exist in this structure
-     */
+    @Override
     public List<T> getChildren(T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
@@ -353,16 +378,7 @@ public class TreeData<T> implements Serializable {
                 .unmodifiableList(itemToWrapperMap.get(item).getChildren());
     }
 
-    /**
-     * Get the parent item for the given item.
-     *
-     * @param item
-     *            the item for which to retrieve the parent item for
-     * @return parent item for the given item or {@code null} if the item is a
-     *         root item.
-     * @throws IllegalArgumentException
-     *             if the item does not exist in this structure
-     */
+    @Override
     public T getParent(T item) {
         if (!contains(item)) {
             throw new IllegalArgumentException(
@@ -468,14 +484,7 @@ public class TreeData<T> implements Serializable {
         }
     }
 
-    /**
-     * Check whether the given item is in this hierarchy.
-     *
-     * @param item
-     *            the item to check
-     * @return {@code true} if the item is in this hierarchy, {@code false} if
-     *         not
-     */
+    @Override
     public boolean contains(T item) {
         return itemToWrapperMap.containsKey(item);
     }

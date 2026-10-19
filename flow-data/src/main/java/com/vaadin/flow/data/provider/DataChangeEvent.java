@@ -16,7 +16,6 @@
 package com.vaadin.flow.data.provider;
 
 import java.util.EventObject;
-import java.util.Objects;
 
 import com.vaadin.flow.server.Command;
 
@@ -45,7 +44,6 @@ public class DataChangeEvent<T> extends EventObject {
     public static class DataRefreshEvent<T> extends DataChangeEvent<T> {
 
         private final T item;
-        private final T oldItem;
         private boolean refreshChildren;
 
         /**
@@ -55,10 +53,11 @@ public class DataChangeEvent<T> extends EventObject {
          * @param source
          *            the data provider, not null
          * @param item
-         *            the updated item, not null
+         *            the updated item, or {@code null} for the virtual root of
+         *            a hierarchical data provider (parent of root-level items)
          */
         public DataRefreshEvent(DataProvider<T, ?> source, T item) {
-            this(source, item, null, false);
+            this(source, item, false);
         }
 
         /**
@@ -68,75 +67,29 @@ public class DataChangeEvent<T> extends EventObject {
          * @param source
          *            the data provider, not null
          * @param item
-         *            the updated item, not null
+         *            the updated item, or {@code null} for the virtual root of
+         *            a hierarchical data provider (parent of root-level items).
+         *            Non-hierarchical communicators reject {@code null}.
          * @param refreshChildren
          *            whether, in hierarchical providers, subelements should be
          *            refreshed as well
+         * @since 2.1
          */
         public DataRefreshEvent(DataProvider<T, ?> source, T item,
                 boolean refreshChildren) {
-            this(source, item, null, refreshChildren);
-        }
-
-        /**
-         * Creates a new data refresh event originating from the given data
-         * provider, carrying the previous item instance so that downstream
-         * consumers can remap their internal state.
-         *
-         * @param source
-         *            the data provider, not null
-         * @param item
-         *            the updated item, not null
-         * @param oldItem
-         *            the old item before the update, or null if the identity
-         *            has not changed
-         */
-        public DataRefreshEvent(DataProvider<T, ?> source, T item, T oldItem) {
-            this(source, item, oldItem, false);
-        }
-
-        /**
-         * Creates a new data refresh event originating from the given data
-         * provider, carrying the previous item instance so that downstream
-         * consumers can remap their internal state.
-         *
-         * @param source
-         *            the data provider, not null
-         * @param item
-         *            the updated item, not null
-         * @param oldItem
-         *            the old item before the update, or null if the identity
-         *            has not changed
-         * @param refreshChildren
-         *            whether, in hierarchical providers, subelements should be
-         *            refreshed as well
-         */
-        public DataRefreshEvent(DataProvider<T, ?> source, T item, T oldItem,
-                boolean refreshChildren) {
             super(source);
-            Objects.requireNonNull(item, "Refreshed item can't be null");
             this.item = item;
-            this.oldItem = oldItem;
             this.refreshChildren = refreshChildren;
         }
 
         /**
          * Gets the refreshed item.
          *
-         * @return the refreshed item
+         * @return the refreshed item, or {@code null} when the virtual root of
+         *         a hierarchical data provider is refreshed
          */
         public T getItem() {
             return item;
-        }
-
-        /**
-         * Gets the old item before the update. If no old item was provided,
-         * returns the current item as a safe default.
-         *
-         * @return the old item, or the current item if no old item was provided
-         */
-        public T getOldItem() {
-            return oldItem != null ? oldItem : item;
         }
 
         /**
@@ -145,6 +98,7 @@ public class DataChangeEvent<T> extends EventObject {
          *
          * @return whether, in hierarchical providers, subelements should be
          *         refreshed as well
+         * @since 2.1
          */
         public boolean isRefreshChildren() {
             return refreshChildren;
@@ -188,6 +142,7 @@ public class DataChangeEvent<T> extends EventObject {
      *
      * @throws IllegalStateException
      *             if the method is called outside of the event listener.
+     * @since 9.0
      */
     public void unregisterListener() throws IllegalStateException {
         if (unregisterListenerCommand == null) {

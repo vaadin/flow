@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -34,6 +35,7 @@ import com.vaadin.flow.server.VaadinService;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
+ * @since 25.1
  */
 public class ResourceContentHash {
 
@@ -73,6 +75,19 @@ public class ResourceContentHash {
                 url -> computeHash(service, url));
     }
 
+    /**
+     * Discards all cached hashes.
+     * <p>
+     * The cache is static and keyed by resource path only, so it outlives the
+     * service that filled it. Tests that assert on hashed URLs need to reset it
+     * to avoid observing a hash computed for the same path by another test.
+     * 
+     * @since 25.2.9
+     */
+    public static void clearCache() {
+        cache.clear();
+    }
+
     private static String computeHash(VaadinService service,
             String resourceUrl) {
         try (InputStream stream = openResource(service, resourceUrl)) {
@@ -98,13 +113,10 @@ public class ResourceContentHash {
     private static InputStream openResource(VaadinService service,
             String resourceUrl) {
         String resolved = service.resolveResource(resourceUrl);
-        URL url = service.getStaticResource(resolved);
-        // Bare paths (e.g. "styles.css") may not resolve in the servlet
-        // context which requires a leading '/'. Try with '/' prefix.
-        if (url == null && !resolved.startsWith("/")
-                && !resolved.contains("://")) {
-            url = service.getStaticResource("/" + resolved);
+        if (!resolved.startsWith("/") && !resolved.contains("://")) {
+            resolved = URI.create("/" + resolved).normalize().getPath();
         }
+        URL url = service.getStaticResource(resolved);
         if (url == null) {
             logger.debug(
                     "Could not find static resource for '{}' "

@@ -19,35 +19,36 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 @Tag("com.vaadin.flow.testcategory.SlowTests")
 class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
@@ -62,8 +63,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // create an empty package.json so as pnpm can be run without
         // error
-        FileUtils.write(new File(npmFolder, PACKAGE_JSON), "{}",
-                StandardCharsets.UTF_8);
+        Files.writeString(new File(npmFolder, PACKAGE_JSON).toPath(), "{}");
     }
 
     @Override
@@ -71,7 +71,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
             throws ExecutionFailedException, IOException {
         File nodeModules = options.getNodeModulesFolder();
-        FileUtils.forceMkdir(nodeModules);
+        Files.createDirectories(nodeModules.toPath());
 
         // create a fake file in the node modules dir to check that it's
         // removed
@@ -94,9 +94,8 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // create some package.json file so pnpm does some installation
         // into
         // node_modules folder
-        FileUtils.write(packageJson,
-                "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}",
-                StandardCharsets.UTF_8);
+        Files.writeString(packageJson.toPath(),
+                "{\"dependencies\": {" + "\"pnpm\": \"5.15.1\"}}");
 
         getNodeUpdater().modified = true;
         createTask().execute();
@@ -113,30 +112,30 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
+    void generateVersionsJson_userHasNoCustomVersions_pinnedVersionsAreMergedWithDevDeps()
             throws IOException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
         // Write package json file
-        FileUtils.write(packageJson, "{}", StandardCharsets.UTF_8);
+        Files.writeString(packageJson.toPath(), "{}");
 
-        File versions = File.createTempFile("tmp", null, temporaryFolder);
-        // Platform defines a pinned version
+        File versions = createVersionsFile();
+        // The versions file defines a pinned version
         // @formatter:off
-        FileUtils.write(versions, String.format(
+        Files.writeString(versions.toPath(), String.format(
                 "{"
                   + "\"vaadin-overlay\": {"
                     + "\"npmName\": \"@vaadin/vaadin-overlay\","
                     + "\"jsVersion\": \"%s\""
                   + "}"
-                + "}", PINNED_VERSION), StandardCharsets.UTF_8);
+                + "}", PINNED_VERSION));
         // @formatter:on
 
         JsonNode object = getGeneratedVersionsContent(versions, packageJson);
         assertTrue(object.has("@vaadin/vaadin-overlay"));
 
-        // Platform version takes precedence over dev deps
+        // The pinned version takes precedence over dev deps
         assertEquals(PINNED_VERSION,
                 object.get("@vaadin/vaadin-overlay").asString());
     }
@@ -153,7 +152,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String notificationVersion = "1.4.0";
         String uploadVersion = "4.2.0";
         // @formatter:off
-        FileUtils.write(packageJson, String.format(
+        Files.writeString(packageJson.toPath(), String.format(
                 "{"
                     + "\"vaadin\": {"
                       + "\"dependencies\": {"
@@ -172,18 +171,18 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "}",
                 loginVersion, "1.0.0", notificationVersion,
                 "4.0.0", loginVersion, menuVersion, notificationVersion,
-                uploadVersion), StandardCharsets.UTF_8);
+                uploadVersion));
         // @formatter:on
-        // Platform defines a pinned version
+        // The versions file defines a pinned version
 
         String versionsLoginVersion = "1.1.0-alpha1";
         String versionsMenuBarVersion = "1.1.0-alpha1";
         String versionsNotificationVersion = "1.5.0-alpha1";
         String versionsUploadVersion = "4.2.0-beta2";
 
-        File versions = File.createTempFile("tmp", null, temporaryFolder);
+        File versions = createVersionsFile();
         // @formatter:off
-        FileUtils.write(versions,String.format(
+        Files.writeString(versions.toPath(), String.format(
                 "{"
                     + "\"vaadin-login\": {"
                         + "\"npmName\": \"@vaadin/vaadin-login\","
@@ -203,7 +202,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                     + "}"
                 + "}",
                 versionsLoginVersion, versionsMenuBarVersion,
-                versionsNotificationVersion, versionsUploadVersion), StandardCharsets.UTF_8);
+                versionsNotificationVersion, versionsUploadVersion));
         // @formatter:on
 
         JsonNode generatedVersions = getGeneratedVersionsContent(versions,
@@ -211,10 +210,10 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         assertEquals(loginVersion,
                 generatedVersions.get("@vaadin/vaadin-login").asString(),
-                "Login version is the same for user and platform.");
+                "Login version is the same for the user and the versions file.");
         assertEquals(versionsNotificationVersion,
                 generatedVersions.get("@vaadin/vaadin-notification").asString(),
-                "Notification version should use platform");
+                "Notification version should use the pinned version");
     }
 
     @Test
@@ -225,9 +224,9 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         File npmRcFile = new File(npmFolder, ".npmrc");
         assertTrue(npmRcFile.exists());
-        String content = FileUtils.readFileToString(npmRcFile,
-                StandardCharsets.UTF_8);
+        String content = Files.readString(npmRcFile.toPath());
         assertTrue(content.contains("shamefully-hoist"));
+        assertTrue(content.contains("node-linker=hoisted"));
     }
 
     @Test
@@ -239,16 +238,14 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "shamefully-hoist=true\n"
                 + "symlink=true\n";
         // @formatter:on
-        FileUtils.writeStringToFile(oldNpmRcFile, originalContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(oldNpmRcFile.toPath(), originalContent);
 
         TaskRunNpmInstall task = createTask();
         task.execute();
 
         File newNpmRcFile = new File(npmFolder, ".npmrc");
         assertTrue(newNpmRcFile.exists());
-        String content = FileUtils.readFileToString(newNpmRcFile,
-                StandardCharsets.UTF_8);
+        String content = Files.readString(newNpmRcFile.toPath());
         assertTrue(content.contains("shamefully-hoist"));
         assertFalse(content.contains("symlink=true"));
     }
@@ -261,21 +258,19 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         String originalContent = "# A custom npmrc file for my project\n"
                 + "symlink=true\n";
         // @formatter:on
-        FileUtils.writeStringToFile(oldNpmRcFile, originalContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(oldNpmRcFile.toPath(), originalContent);
 
         TaskRunNpmInstall task = createTask();
         task.execute();
 
         File newNpmRcFile = new File(npmFolder, ".npmrc");
         assertTrue(newNpmRcFile.exists());
-        String content = FileUtils.readFileToString(newNpmRcFile,
-                StandardCharsets.UTF_8);
+        String content = Files.readString(newNpmRcFile.toPath());
         assertEquals(originalContent, content);
     }
 
     @Test
-    void runPnpmInstall_userVersionNewerThanPinned_installedOverlayVersionIsNotSpecifiedByPlatform()
+    void runPnpmInstall_userVersionNewerThanPinned_installedOverlayVersionIsNotThePinnedOne()
             throws IOException, ExecutionFailedException {
         File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
@@ -291,13 +286,12 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "}"
             + "}";
         // @formatter:on
-        FileUtils.write(packageJson, packageJsonContent,
-                StandardCharsets.UTF_8);
+        Files.writeString(packageJson.toPath(), packageJsonContent);
 
         final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
                 JacksonUtils.readTree(packageJsonContent),
                 NodeUpdater.DEPENDENCIES);
-        // Platform defines a pinned version
+        // The versions file defines a pinned version
         TaskRunNpmInstall task = createTask(versionsJsonFilter
                 .getFilteredVersions(
                         JacksonUtils.readTree("{ \"@vaadin/vaadin-overlay\":\""
@@ -310,8 +304,8 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "@vaadin/vaadin-overlay/package.json");
 
         // The resulting version should be the one specified by the user
-        JsonNode overlayPackage = JacksonUtils.readTree(FileUtils
-                .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
+        JsonNode overlayPackage = JacksonUtils
+                .readTree(Files.readString(overlayPackageJson.toPath()));
         assertEquals(customOverlayVersion,
                 overlayPackage.get("version").asString());
     }
@@ -354,6 +348,23 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 "Postinstall for 'foo' was not run");
     }
 
+    @Test
+    void runPnpmInstall_postInstall_excludedBuiltinPackageIsSkipped()
+            throws ExecutionFailedException, IOException {
+        setupPostinstallPackages();
+        options.withExcludePostinstallPackages(
+                List.of("@vaadin/vaadin-usage-statistics"));
+        TaskRunNpmInstall task = createTask();
+        task.execute();
+
+        assertFalse(
+                new File(
+                        new File(options.getNodeModulesFolder(),
+                                "@vaadin/vaadin-usage-statistics"),
+                        "postinstall-file.txt").exists(),
+                "Postinstall for '@vaadin/vaadin-usage-statistics' should have been skipped");
+    }
+
     // https://github.com/vaadin/flow/issues/17663
     @Test
     @Timeout(30)
@@ -365,12 +376,11 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         File fooPackageJson = new File(
                 new File(nodeModules.getParentFile(), "fake-foo"),
                 "package.json");
-        String fooPackageJsonContents = IOUtils.toString(
-                getClass().getResourceAsStream(
-                        "fake-package-with-postinstall-writing-to-console.json"),
-                StandardCharsets.UTF_8);
-        FileUtils.write(fooPackageJson, fooPackageJsonContents,
-                StandardCharsets.UTF_8);
+        String fooPackageJsonContents = new String(getClass()
+                .getResourceAsStream(
+                        "fake-package-with-postinstall-writing-to-console.json")
+                .readAllBytes(), StandardCharsets.UTF_8);
+        Files.writeString(fooPackageJson.toPath(), fooPackageJsonContents);
 
         TaskRunNpmInstall task = createTask(List.of("foo"));
         task.execute();
@@ -391,13 +401,13 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         getNodeUpdater().modified = false;
 
         task.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
 
         deleteDirectory(nodeModules);
 
         TaskRunNpmInstall ciTask = createCiTask();
         ciTask.execute();
-        Mockito.verify(logger).info(getRunningMsg());
+        verify(logger).info(getRunningMsg());
     }
 
     @Test
@@ -409,8 +419,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         task.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(
-                Mockito.eq("using '{}' for frontend package installation"),
+        verify(logger).info(eq("using '{}' for frontend package installation"),
                 captor.capture());
         assertTrue(captor.getValue().contains("--no-frozen-lockfile"),
                 "pnpm install in dev mode should use --no-frozen-lockfile");
@@ -425,14 +434,49 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         ciTask.execute();
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(
-                Mockito.eq("using '{}' for frontend package installation"),
+        verify(logger).info(eq("using '{}' for frontend package installation"),
                 captor.capture());
         String command = captor.getValue();
         assertTrue(command.contains("--frozen-lockfile"),
                 "pnpm install in CI build should use --frozen-lockfile");
         assertFalse(command.contains("--no-frozen-lockfile"),
                 "pnpm install in CI build should not use --no-frozen-lockfile");
+    }
+
+    @Test
+    void runPnpmInstall_excludesVaadinPackagesFromTheMinimumAge()
+            throws ExecutionFailedException, IOException {
+        TaskRunNpmInstall task = createTask();
+        getNodeUpdater().modified = true;
+
+        task.execute();
+
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(logger).info(eq("using '{}' for frontend package installation"),
+                captor.capture());
+        assertTrue(
+                captor.getValue().contains(
+                        "--config.minimum-release-age-exclude=@vaadin/*"),
+                "pnpm install should let the packages Vaadin publishes be "
+                        + "installed regardless of the minimum frontend "
+                        + "package age");
+    }
+
+    @Test
+    void runPnpmInstall_postinstallDoesNotVerifyTheDependencies()
+            throws ExecutionFailedException, IOException {
+        setupPostinstallPackages();
+        MockLogger mockLogger = new MockLogger();
+        logger = mockLogger;
+        TaskRunNpmInstall task = createTask();
+
+        task.execute();
+
+        assertTrue(
+                mockLogger.getLogs()
+                        .contains("--config.verify-deps-before-run=false"),
+                "the postinstall command should stop pnpm from running an "
+                        + "install of its own, was: " + mockLogger.getLogs());
     }
 
     @Override
@@ -474,15 +518,21 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return new TaskRunNpmInstall(updater, options);
     }
 
+    private File createVersionsFile() throws IOException {
+        File versionsFolder = Files
+                .createTempDirectory(temporaryFolder.toPath(), "versions")
+                .toFile();
+        return new File(versionsFolder, "versions.json");
+    }
+
     private JsonNode getGeneratedVersionsContent(File versions,
             File packageJsonFile) throws IOException {
         ClassFinder classFinder = getClassFinder();
-        Mockito.when(
-                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
-                .thenReturn(versions.toURI().toURL());
+        when(classFinder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+                .thenReturn(List.of(versions.getParentFile().toURI().toURL()));
 
-        ObjectNode packageJson = JacksonUtils.readTree(FileUtils
-                .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
+        ObjectNode packageJson = JacksonUtils
+                .readTree(Files.readString(packageJsonFile.toPath()));
         getNodeUpdater().generateVersionsJson(packageJson);
         return getNodeUpdater().versionsJson;
     }
@@ -502,8 +552,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     private NodeUpdater createNodeUpdater(String versionsContent) {
         options.withBuildDirectory(TARGET);
 
-        return new NodeUpdater(Mockito.mock(FrontendDependencies.class),
-                options) {
+        return new NodeUpdater(options) {
 
             @Override
             public void execute() {
@@ -515,7 +564,7 @@ class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             }
 
             @Override
-            ObjectNode getPlatformPinnedDependencies() {
+            ObjectNode getPinnedNpmDependencies() {
                 if (versionsContent != null) {
                     return JacksonUtils.readTree(versionsContent);
                 } else {

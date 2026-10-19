@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
-import { handleLicenseMessage, licenseCheckOk, licenseInit, Product } from './License';
+import { customElement, property, state } from 'lit/decorators.js';
+import { DownloadLicenseOptions, handleLicenseMessage, licenseCheckOk, licenseInit, Product } from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
@@ -62,18 +62,6 @@ export enum MessageType {
   ERROR = 'error'
 }
 
-interface Message {
-  id: number;
-  type: MessageType;
-  message: string;
-  details?: string;
-  link?: string;
-  persistentId?: string;
-  dontShowAgain: boolean;
-  dontShowAgainMessage?: string;
-  deleted: boolean;
-}
-
 type DevToolsConf = {
   enable: boolean;
   url: string;
@@ -105,10 +93,11 @@ export class VaadinDevTools extends LitElement {
     return [
       css`
         :host {
-          --dev-tools-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
-            'Helvetica Neue', sans-serif;
-          --dev-tools-font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-            monospace;
+          --dev-tools-font-family:
+            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue',
+            sans-serif;
+          --dev-tools-font-family-monospace:
+            SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
           --dev-tools-font-size: 0.8125rem;
           --dev-tools-font-size-small: 0.75rem;
@@ -615,18 +604,11 @@ export class VaadinDevTools extends LitElement {
   @property({ type: String, attribute: false })
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
-  @query('.window')
-  private root!: HTMLElement;
-
   @state()
   componentPickActive: boolean = false;
 
   private javaConnection?: LiveReloadConnection;
   private frontendConnection?: WebSocketConnection;
-
-  private nextMessageId: number = 1;
-
-  private transitionDuration: number = 0;
 
   elementTelemetry() {
     let data = {};
@@ -684,10 +666,17 @@ export class VaadinDevTools extends LitElement {
         if (!styleTag) {
           styleTag = document.createElement('style');
           styleTag.setAttribute('data-file-path', path);
+          const layer = this.removeOldLinks(pathWithNoProtocol);
+          if (layer) {
+            styleTag.setAttribute('data-layer', layer);
+          }
           document.head.appendChild(styleTag);
-          this.removeOldLinks(pathWithNoProtocol);
         }
-        styleTag.textContent = content;
+        // A stylesheet loaded into a cascade layer stays in it when its
+        // content is replaced. The pushed content has its imports inlined, so
+        // it can be wrapped into a layer block.
+        const layer = styleTag.getAttribute('data-layer');
+        styleTag.textContent = layer ? `@layer ${layer} {\n${content}\n}` : content;
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       } else if (content === '' || content === null) {
         // remove inlined stylesheets or initial links with the given path
@@ -701,7 +690,11 @@ export class VaadinDevTools extends LitElement {
       }
     };
 
-    const frontendConnection = new WebSocketConnection(this.getDedicatedWebSocketUrl());
+    const wsUrl = this.getDedicatedWebSocketUrl();
+    if (!wsUrl) {
+      return;
+    }
+    const frontendConnection = new WebSocketConnection(wsUrl);
     frontendConnection.onHandshake = () => {
       if (!VaadinDevTools.isActive) {
         frontendConnection.setActive(false);
@@ -739,15 +732,29 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  removeOldLinks(path: string) {
-    // removes initially added links that are outdated after hot-reload and replaced by inlined styles
-    const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
-    links.forEach((link) => {
-      let filePath = link.getAttribute('data-file-path') || link.getAttribute('href');
-      if (filePath && filePath.includes(path)) {
-        link.remove();
+  /**
+   * Removes initially added stylesheet elements that are outdated after
+   * hot-reload and replaced by inlined styles. Besides links, this covers the
+   * style elements that load a stylesheet into a cascade layer.
+   *
+   * @returns the cascade layer of a removed element, or null if none had one
+   */
+  removeOldLinks(path: string): string | null {
+    let layer: string | null = null;
+    const elements = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style[data-layer]'));
+    elements.forEach((element) => {
+      let filePath =
+        element.getAttribute('data-file-path') || element.getAttribute('href') || element.getAttribute('data-href');
+      if (filePath) {
+        // Strip query string and fragment for comparison
+        const cleanPath = filePath.split(/[?#]/)[0];
+        if (cleanPath === path || cleanPath.endsWith('/' + path)) {
+          layer = element.getAttribute('data-layer') ?? layer;
+          element.remove();
+        }
       }
     });
+    return layer;
   }
 
   tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {
@@ -812,14 +819,10 @@ export class VaadinDevTools extends LitElement {
     this.bodyShadowRoot = document.body.attachShadow({ mode: 'closed' });
     this.bodyShadowRoot.innerHTML = '<slot></slot>';
 
-    this.conf = (window.Vaadin as any).devToolsConf || this.conf;
+    this.conf = (window as any).Vaadin?.devToolsConf || this.conf;
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
-      const now = new Date();
-      const reloaded = `${`0${now.getHours()}`.slice(-2)}:${`0${now.getMinutes()}`.slice(
-        -2
-      )}:${`0${now.getSeconds()}`.slice(-2)}`;
       window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
@@ -831,16 +834,11 @@ export class VaadinDevTools extends LitElement {
 
     registerRefreshUIHandler();
 
-    this.transitionDuration = parseInt(
-      window.getComputedStyle(this).getPropertyValue('--dev-tools-transition-duration'),
-      10
-    );
-
     const windowAny = window as any;
     windowAny.Vaadin = windowAny.Vaadin || {};
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
 
-    const anyVaadin = window.Vaadin as any;
+    const anyVaadin = (window as any).Vaadin;
     if (anyVaadin.devToolsPlugins) {
       Array.from(anyVaadin.devToolsPlugins as DevToolsPlugin[]).forEach((plugin) => this.initPlugin(plugin));
       anyVaadin.devToolsPlugins = { push: (plugin: DevToolsPlugin) => this.initPlugin(plugin) };
@@ -880,9 +878,9 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  downloadLicense(productInfo: Product) {
+  downloadLicense(productInfo: Product, options?: DownloadLicenseOptions) {
     if (this.frontendConnection) {
-      this.frontendConnection.send('downloadLicense', productInfo);
+      this.frontendConnection.send('downloadLicense', { ...productInfo, ...options });
     } else {
       updateLicenseDownloadStatus('failed', this.bodyShadowRoot);
     }

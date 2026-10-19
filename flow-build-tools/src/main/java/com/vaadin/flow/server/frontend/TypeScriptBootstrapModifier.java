@@ -22,6 +22,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
  * Implemented by classes that want to modify the bootstrap typescript.
+ * 
+ * @since 24.3
  */
 public interface TypeScriptBootstrapModifier extends Serializable {
 
@@ -34,9 +36,28 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      *            options used by the build
      * @param frontendDependenciesScanner
      *            the frontend dependencies scanner
+     * @deprecated {@code frontendDependenciesScanner} can be obtained calling
+     *             {@link Options#getFrontendDependenciesScanner()}. Use
+     *             {@link #modify(List, Options)} instead
+     * @since 24.4
      */
+    @Deprecated(since = "25.2", forRemoval = true)
     default void modify(List<String> bootstrapTypeScript, Options options,
             FrontendDependenciesScanner frontendDependenciesScanner) {
+    }
+
+    /**
+     * Modifies the bootstrap typescript by mutating the parameter.
+     *
+     * @param bootstrapTypeScript
+     *            the input typescript split into lines
+     * @param options
+     *            options used by the build
+     * @since 25.1.6
+     */
+    default void modify(List<String> bootstrapTypeScript, Options options) {
+        modify(bootstrapTypeScript, options,
+                options.getFrontendDependenciesScanner());
     }
 
 }

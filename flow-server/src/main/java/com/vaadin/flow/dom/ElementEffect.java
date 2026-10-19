@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -61,11 +60,10 @@ public final class ElementEffect implements Serializable {
     private final ContextualEffectAction effectFunction;
     private final Element owner;
     private Effect effect = null;
-    private Registration attachRegistration;
-    private Registration detachRegistration;
+    private Registration attachedScope;
     /**
      * Error handler used by the active effect action. {@code null} means
-     * exceptions are re-thrown (probe / unattached mode).
+     * exceptions are not caught (probe / unattached mode).
      */
     private @Nullable SerializableBiConsumer<Exception, Element> errorHandler = null;
 
@@ -80,19 +78,7 @@ public final class ElementEffect implements Serializable {
         this.effectFunction = effectFunction;
         this.owner = owner;
 
-        if (owner.getNode().isAttached()) {
-            // Element is already attached: set up the error handler and
-            // UI-locked dispatcher before creating the Effect so that the
-            // initial (synchronous) run uses the proper error-routing and
-            // execution context.
-            enableEffect(owner);
-
-            detachRegistration = owner.addDetachListener(detach -> {
-                disableEffect();
-                detachRegistration.remove();
-                detachRegistration = null;
-            });
-        } else {
+        if (!owner.getNode().isAttached()) {
             // Element is not yet attached: run a probe immediately so that
             // structural errors (e.g. MissingSignalUsageException) are reported
             // at the call site rather than delayed until attach. The probe uses
@@ -103,24 +89,30 @@ public final class ElementEffect implements Serializable {
             effect.passivate();
         }
 
-        attachRegistration = owner.addAttachListener(attach -> {
-            enableEffect(attach.getSource());
-
-            detachRegistration = owner.addDetachListener(detach -> {
-                disableEffect();
-                detachRegistration.remove();
-                detachRegistration = null;
-            });
+        // Enables the effect on attach and passivates it on detach, also when
+        // the element is re-attached without an intervening detach event
+        // reaching its listeners.
+        attachedScope = owner.whenAttached(ui -> {
+            enableEffect(ui);
+            return this::disableEffect;
         });
     }
 
     /**
      * Executes the effect function, routing exceptions through the
-     * {@link #errorHandler} when attached (active mode) or re-throwing them
-     * when no error handler is set (probe/unattached mode). This is a named
-     * method rather than a lambda to ensure reliable serialization.
+     * {@link #errorHandler} when attached (active mode) or letting them
+     * propagate as-is when no error handler is set (probe/unattached mode).
+     * This is a named method rather than a lambda to ensure reliable
+     * serialization.
      */
     private void executeAction(EffectContext ctx) {
+        SerializableBiConsumer<Exception, Element> handler = errorHandler;
+        if (handler == null) {
+            // Probe run: nothing is caught so that the exception surfaces at
+            // the call site (e.g. inside bindText / Signal.effect).
+            effectFunction.execute(ctx);
+            return;
+        }
         try {
             effectFunction.execute(ctx);
         } catch (DeniedSignalUsageException e) {
@@ -128,15 +120,10 @@ public final class ElementEffect implements Serializable {
             // (e.g. inside bindChildren factory). Always propagate so
             // the caller gets an immediate exception.
             throw e;
-        } catch (RuntimeException e) {
-            SerializableBiConsumer<Exception, Element> handler = errorHandler;
-            if (handler != null) {
-                handler.accept(e, owner);
-            } else {
-                // Probe run: re-throw so the exception surfaces at the
-                // call site (e.g. inside bindText / Signal.effect).
-                throw e;
-            }
+        } catch (Exception e) {
+            // Exception rather than RuntimeException since the JVM allows
+            // throwing checked exceptions without declaring them
+            handler.accept(e, owner);
         }
     }
 
@@ -164,6 +151,7 @@ public final class ElementEffect implements Serializable {
      *            changed, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1
      */
     public static Registration effect(Element owner,
             EffectAction effectFunction) {
@@ -205,6 +193,7 @@ public final class ElementEffect implements Serializable {
      *            information about the trigger, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
+     * @since 25.1
      */
     public static Registration effect(Element owner,
             ContextualEffectAction effectFunction) {
@@ -250,35 +239,37 @@ public final class ElementEffect implements Serializable {
             Element owner, Signal<T> signal,
             SerializableBiConsumer<Element, T> setter) {
         SignalBinding<T> binding = new SignalBinding<>();
-        @SuppressWarnings("unchecked")
-        T[] previousValue = (T[]) new Object[] { signal.peek() };
-        new ElementEffect(owner, ctx -> {
-            T newValue = signal.get();
-            T oldValue = previousValue[0];
-            setter.accept(owner, newValue);
-            if (ctx.isInitialRun() || binding.hasCallbacks()) {
-                var bindingContext = new BindingContext<>(ctx.isInitialRun(),
-                        ctx.isBackgroundChange(), oldValue, newValue, owner);
-                binding.setInitialContext(bindingContext);
-                if (binding.hasCallbacks()) {
-                    binding.fireOnChange(bindingContext);
-                }
-            }
+        new ElementEffect(owner, new ContextualEffectAction() {
+            private T previousValue;
+            private boolean hasRun = false;
 
-            previousValue[0] = newValue;
+            @Override
+            public void execute(EffectContext ctx) {
+                T newValue = signal.get();
+                T oldValue = hasRun ? previousValue : newValue;
+                setter.accept(owner, newValue);
+                if (ctx.isInitialRun() || binding.hasCallbacks()) {
+                    var bindingContext = new BindingContext<>(
+                            ctx.isInitialRun(), ctx.isBackgroundChange(),
+                            oldValue, newValue, owner);
+                    binding.setInitialContext(bindingContext);
+                    if (binding.hasCallbacks()) {
+                        binding.fireOnChange(bindingContext);
+                    }
+                }
+
+                previousValue = newValue;
+                hasRun = true;
+            }
         });
         return binding;
     }
 
-    private void enableEffect(Element owner) {
-        Component parentComponent = ComponentUtil.findParentComponent(owner)
-                .get();
-        UI ui = parentComponent.getUI().get();
-
+    private void enableEffect(UI ui) {
         // Install the UI error handler so that exceptions during active
         // (post-attach) runs are routed to the session error handler instead
         // of being re-thrown.
-        errorHandler = (e, elem) -> ui.getSession().getErrorHandler()
+        errorHandler = (e, elem) -> ui.getSessionOrThrow().getErrorHandler()
                 .error(new ErrorEvent(e, elem.getNode()));
 
         SerializableExecutor uiDispatcher = command -> {
@@ -290,7 +281,16 @@ public final class ElementEffect implements Serializable {
                     try {
                         // Guard against detach while waiting for lock
                         if (effect != null) {
-                            ui.access(command::run);
+                            // In test environments, the effect dispatcher
+                            // may run tasks on the test thread where
+                            // UI.getCurrent() is already set. In that case
+                            // run directly instead of ui.access() which
+                            // would only enqueue without executing.
+                            if (UI.getCurrent() == ui) {
+                                command.run();
+                            } else {
+                                ui.access(command::run);
+                            }
                         }
                     } catch (UIDetachedException e) {
                         // Effect was concurrently disabled -> nothing do to
@@ -311,6 +311,7 @@ public final class ElementEffect implements Serializable {
             effect.setDispatcher(uiDispatcher);
             effect.activate();
         }
+        effect.setOwnerUI(ui);
     }
 
     private void disableEffect() {
@@ -320,17 +321,13 @@ public final class ElementEffect implements Serializable {
     }
 
     public void close() {
+        if (attachedScope != null) {
+            attachedScope.remove();
+            attachedScope = null;
+        }
         if (effect != null) {
             effect.dispose();
             effect = null;
-        }
-        if (attachRegistration != null) {
-            attachRegistration.remove();
-            attachRegistration = null;
-        }
-        if (detachRegistration != null) {
-            detachRegistration.remove();
-            detachRegistration = null;
         }
     }
 
@@ -374,6 +371,7 @@ public final class ElementEffect implements Serializable {
      * @throws IllegalStateException
      *             thrown if parent element has default-slot children, or if the
      *             child factory produces elements with a {@code slot} attribute
+     * @since 25.1
      */
     public static <T extends @Nullable Object, S extends Signal<T>> Registration bindChildren(
             Element parentElement, Signal<List<S>> list,
