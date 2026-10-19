@@ -323,7 +323,7 @@ class WebComponentBootstrapHandlerViteTest {
         assertTrue(handler.canHandleRequest(request));
     }
 
-    @Disabled
+    @Disabled("Export chunks are a webpack build output, not produced by the Vite build")
     @Test
     void writeBootstrapPage_withExportChunk()
             throws IOException, ServiceException {
@@ -357,7 +357,7 @@ class WebComponentBootstrapHandlerViteTest {
                 result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
-    @Disabled
+    @Disabled("Export chunks are a webpack build output, not produced by the Vite build")
     @Test
     void writeBootstrapPage_noExportChunk() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
