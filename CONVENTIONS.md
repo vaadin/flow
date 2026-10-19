@@ -275,6 +275,15 @@ exercises the same area and extend it. Put a new one in the module
 for the default configuration. Exercise both the happy path and the error
 branch.
 
+In an integration test, wait for the expected state with `waitUntil(...)` or
+`waitForElementPresent(...)` after an action that updates the page
+asynchronously — a server round trip, a React or Lit re-render, a `setTimeout`
+or `requestAnimationFrame` — instead of asserting right away, and never use a
+fixed `Thread.sleep` to wait for a state the test can poll for. When an
+assertion becomes a wait, catch `TimeoutException` and fail with the message
+and the expected and actual values. Call `checkLogsForErrors()` right after
+each step that could log a browser error, not only at the end of the test.
+
 Debug a failing integration test with Playwright before guessing. Look at what
 the browser is actually doing.
 
