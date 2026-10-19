@@ -45,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -274,6 +275,172 @@ class ComputedSignalTest extends SignalTestBase {
 
         signal.peek();
         assertEquals(1, count.intValue());
+    }
+
+    @Test
+    void cached_dependsOnCachedWithoutListeners_peekReturnsCurrentValue() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        Signal<Integer> inner = Signal.cached(source.map(value -> value * 10));
+        Signal<Integer> outer = Signal
+                .cached(Signal.computed(() -> inner.get() + 1));
+
+        assertEquals(11, outer.peek());
+
+        source.set(2);
+        assertEquals(21, outer.peek());
+    }
+
+    @Test
+    void cached_dependsOnCachedWithSharedSource_peekReturnsCurrentValue() {
+        SharedValueSignal<Integer> source = new SharedValueSignal<>(1);
+        Signal<Integer> inner = Signal.cached(source.map(value -> value * 10));
+        Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
+
+        assertEquals(11, outer.peek());
+
+        source.set(2);
+        assertEquals(21, outer.peek());
+    }
+
+    @Test
+    void cached_threeLevelChain_peekReturnsCurrentValue() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        Signal<Integer> first = Signal.cached(() -> source.get() * 10);
+        Signal<Integer> second = Signal.cached(() -> first.get() + 1);
+        Signal<Integer> third = Signal.cached(() -> second.get() * 2);
+
+        assertEquals(22, third.peek());
+
+        source.set(2);
+        assertEquals(42, third.peek());
+    }
+
+    @Test
+    void cached_dependsOnCachedNoOpChange_outerNotRunAgain() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        AtomicInteger innerCount = new AtomicInteger();
+        AtomicInteger outerCount = new AtomicInteger();
+
+        Signal<Integer> inner = Signal.cached(() -> {
+            innerCount.incrementAndGet();
+            return source.get() % 10;
+        });
+        Signal<Integer> outer = Signal.cached(() -> {
+            outerCount.incrementAndGet();
+            return inner.get() + 1;
+        });
+
+        assertEquals(2, outer.peek());
+        assertEquals(1, innerCount.intValue());
+        assertEquals(1, outerCount.intValue());
+
+        source.set(11);
+        assertEquals(2, outer.peek());
+        assertEquals(2, innerCount.intValue());
+        assertEquals(1, outerCount.intValue());
+    }
+
+    @Test
+    void cached_diamondGraph_eachComputationRunsOncePerChange() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        AtomicInteger count = new AtomicInteger();
+        int depth = 30;
+
+        Signal<Integer> level = Signal.cached(() -> {
+            count.incrementAndGet();
+            return source.get();
+        });
+        for (int i = 0; i < depth; i++) {
+            Signal<Integer> previous = level;
+            Signal<Integer> left = Signal.cached(() -> {
+                count.incrementAndGet();
+                return previous.get() + 1;
+            });
+            Signal<Integer> right = Signal.cached(() -> {
+                count.incrementAndGet();
+                return previous.get() + 2;
+            });
+            level = Signal.cached(() -> {
+                count.incrementAndGet();
+                return (left.get() + right.get()) % 1000;
+            });
+        }
+        Signal<Integer> top = level;
+
+        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
+            top.peek();
+            assertEquals(1 + 3 * depth, count.intValue());
+
+            // Nothing changed, nothing is computed again
+            top.peek();
+            assertEquals(1 + 3 * depth, count.intValue());
+
+            source.set(2);
+            top.peek();
+            assertEquals(2 * (1 + 3 * depth), count.intValue());
+        });
+    }
+
+    @Test
+    void cached_cachedDependencyNoLongerRead_notComputedAgain() {
+        ValueSignal<Boolean> flag = new ValueSignal<>(false);
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        AtomicInteger innerCount = new AtomicInteger();
+
+        Signal<Boolean> cachedFlag = Signal.cached(() -> flag.get());
+        Signal<Integer> inner = Signal.cached(() -> {
+            innerCount.incrementAndGet();
+            return source.get();
+        });
+        Signal<Integer> outer = Signal
+                .cached(() -> cachedFlag.get() ? 0 : inner.get());
+
+        assertEquals(1, outer.peek());
+        assertEquals(1, innerCount.intValue());
+
+        flag.set(true);
+        source.set(2);
+        assertEquals(0, outer.peek());
+        assertEquals(1, innerCount.intValue());
+    }
+
+    @Test
+    void cached_dependsOnCachedThatThrows_exceptionRethrownAndRecovered() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        Signal<Integer> inner = Signal.cached(() -> {
+            if (source.get() < 0) {
+                throw new ArithmeticException("negative");
+            }
+            return source.get();
+        });
+        Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
+
+        assertEquals(2, outer.peek());
+
+        source.set(-1);
+        assertThrows(ArithmeticException.class, outer::peek);
+
+        source.set(5);
+        assertEquals(6, outer.peek());
+    }
+
+    @Test
+    void cached_dependsOnCachedInAbortedTransaction_valueRestoredAfterRejection() {
+        SharedValueSignal<Integer> source = new SharedValueSignal<>(1);
+        Signal<Integer> inner = Signal.cached(source.map(value -> value * 10));
+        Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
+
+        assertEquals(11, outer.peek());
+
+        Transaction.runInTransaction(() -> {
+            source.set(2);
+
+            assertEquals(21, outer.get());
+
+            source.verifyValue(3);
+        });
+
+        assertEquals(11, outer.peek());
     }
 
     @Test
