@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -966,7 +967,8 @@ class FrontendUtilsTest {
             "1.x || 2.x", "*", "latest", "25.0.0-beta1",
             "npm:@typescript/typescript6@6.0.2", "file:../web-components",
             "link:../overlay", "workspace:*", "./target/flow-frontend",
-            "../overlay", "/opt/overlay" })
+            "../overlay", "/opt/overlay", "~/overlay", " ^1.2.3 " })
+    @NullSource
     void isExoticVersion_registryVersionOrLocalPath_notExotic(String version) {
         assertFalse(FrontendBuildUtils.isExoticVersion(version));
     }

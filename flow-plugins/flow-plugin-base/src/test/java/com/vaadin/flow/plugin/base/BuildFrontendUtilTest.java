@@ -269,6 +269,22 @@ class BuildFrontendUtilTest {
     }
 
     @Test
+    void propagateBuildInfo_npmAllowExoticVersions_writtenOnlyWhenEnabled()
+            throws Exception {
+        File tokenFile = prepareAndAssertTokenFile();
+        assertFalse(JacksonUtils.readTree(Files.readString(tokenFile.toPath()))
+                .has(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+
+        when(adapter.isNpmAllowExoticVersions()).thenReturn(true);
+        BuildFrontendUtil.propagateBuildInfo(adapter);
+
+        JsonNode buildInfo = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
+        assertTrue(buildInfo.get(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS)
+                .booleanValue());
+    }
+
+    @Test
     void prepareFrontend_shouldCleanUnusedGeneratedFiles() throws Exception {
         fillAdapter();
         File frontendGeneratedFolder = new File(

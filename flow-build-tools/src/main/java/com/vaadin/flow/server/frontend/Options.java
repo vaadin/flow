@@ -1163,7 +1163,8 @@ public class Options implements Serializable {
      * Sets whether npm packages may be declared with an exotic version, such as
      * a tarball URL or a git repository, rather than a registry version or a
      * local path. When not allowed, an {@code @NpmPackage} with an exotic
-     * version fails the build and a URL version in a versions file is ignored.
+     * version fails the build and an exotic version in a versions file is
+     * ignored.
      *
      * @param allow
      *            whether to allow exotic versions

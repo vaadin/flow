@@ -240,7 +240,8 @@ public class BuildDevBundleMojo extends AbstractMojo
      * neither a registry version nor a local path, such as a tarball URL or a
      * git repository.
      */
-    @Parameter(property = InitParameters.NPM_ALLOW_EXOTIC_VERSIONS, defaultValue = "false")
+    @Parameter(property = "vaadin."
+            + InitParameters.NPM_ALLOW_EXOTIC_VERSIONS, defaultValue = "false")
     private boolean npmAllowExoticVersions;
 
     /**
