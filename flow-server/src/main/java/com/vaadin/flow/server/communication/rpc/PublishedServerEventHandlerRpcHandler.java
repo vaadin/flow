@@ -155,7 +155,7 @@ public class PublishedServerEventHandlerRpcHandler
         } else {
             getLogger().error(String.format(
                     "Faulty method invocation. Neither class '%s' "
-                            + "nor its super classes declare event handler method '%s'",
+                            + "nor its super classes or interfaces declare event handler method '%s'",
                     instance.getClass().getName(), methodName));
             throw new IllegalStateException(
                     "Faulty method invocation. See server log for more details.");
@@ -166,6 +166,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> !clazz.isInterface() || method.isDefault())
                 .filter(method -> hasMethodAnnotation(method))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {

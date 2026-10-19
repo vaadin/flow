@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -48,15 +49,34 @@ class ClientCallableHandlersTest {
         }
     }
 
-    interface InterfaceWithClientCallable {
-        @ClientCallable
+    interface SuperInterfaceWithClientCallable {
+        @ClientCallable(DisabledUpdateMode.ALWAYS)
         default void publishedDefaultMethod() {
         }
+    }
+
+    interface InterfaceWithClientCallable
+            extends SuperInterfaceWithClientCallable {
+        @ClientCallable
+        default void overriddenDefaultMethod() {
+        }
+
+        @ClientCallable
+        void abstractMethod();
     }
 
     @Tag("div")
     static class NonTemplateComponentWithInterfaceEventHandler extends Component
             implements InterfaceWithClientCallable {
+
+        @Override
+        @ClientCallable(DisabledUpdateMode.ALWAYS)
+        public void overriddenDefaultMethod() {
+        }
+
+        @Override
+        public void abstractMethod() {
+        }
     }
 
     @Tag("div")
@@ -112,9 +132,20 @@ class ClientCallableHandlersTest {
         NonTemplateComponentWithInterfaceEventHandler component = new NonTemplateComponentWithInterfaceEventHandler();
         ui.add(component);
 
+        // Default methods are published also from superinterfaces, while
+        // abstract interface methods are not. The mode of the most specific
+        // declaration wins, ALWAYS is used since ONLY_WHEN_ENABLED is the
+        // default.
         ClientCallableHandlers feature = component.getElement().getNode()
                 .getFeature(ClientCallableHandlers.class);
-        assertListFeature(feature, "publishedDefaultMethod");
+        assertEquals(2, feature.size());
+        assertEquals(
+                Set.of("publishedDefaultMethod", "overriddenDefaultMethod"),
+                Set.of(feature.get(0), feature.get(1)));
+        assertEquals(DisabledUpdateMode.ALWAYS,
+                feature.getDisabledUpdateMode("publishedDefaultMethod"));
+        assertEquals(DisabledUpdateMode.ALWAYS,
+                feature.getDisabledUpdateMode("overriddenDefaultMethod"));
     }
 
     @Test

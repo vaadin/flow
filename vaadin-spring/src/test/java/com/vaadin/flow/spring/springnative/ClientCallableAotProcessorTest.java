@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
@@ -163,12 +162,14 @@ class ClientCallableAotProcessorTest {
     }
 
     @Test
-    @Disabled("@ClientCallable on interfaces are currently not supported")
     void processAheadOfTime_clientCallableOnInterface_typesDetected() {
         RuntimeHints hints = processAotForComponents(
                 InterfaceBasedComponent.class);
 
         assertThat(RuntimeHintsPredicates.reflection().onType(ComplexDto.class))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
+                InterfaceWithClientCallable.class, "processData"))
                 .accepts(hints);
     }
 
