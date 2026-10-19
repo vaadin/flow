@@ -18,7 +18,6 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -38,7 +37,7 @@ import com.vaadin.flow.server.VaadinSession;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class FaviconHandler implements RequestHandler, SessionExpiredHandler {
+public class FaviconHandler implements SessionExpiredHandler {
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
