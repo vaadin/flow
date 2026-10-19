@@ -65,6 +65,7 @@ import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -278,6 +279,34 @@ class VaadinServletServiceTest {
         verify(customHandler, never()).handleSessionExpired(any(), any());
         verify(response).sendError(eq(HttpStatusCode.NOT_FOUND.getCode()),
                 anyString());
+    }
+
+    @Test
+    void handleSessionExpired_notServedByProvider_reachesCustomHandlers()
+            throws Exception {
+        WebComponentConfigurationRegistry registry = mock(
+                WebComponentConfigurationRegistry.class);
+        when(registry.hasConfigurations()).thenReturn(true);
+        VaadinRequest request = createWebComponentRequest(registry);
+        VaadinResponse response = mock(VaadinResponse.class);
+        CatchAllSessionExpiredHandler customHandler = mock(
+                CatchAllSessionExpiredHandler.class);
+        when(customHandler.handleSessionExpired(request, response))
+                .thenReturn(true);
+        service.getRequestHandlers().add(0, customHandler);
+
+        when(request.getPathInfo())
+                .thenReturn("/web-component/web-component-bootstrap.js");
+        service.handleSessionExpired(request, response);
+        verify(customHandler).handleSessionExpired(request, response);
+
+        // Without a provider, nothing else serves the script
+        service.getRequestHandlers()
+                .removeIf(WebComponentProvider.class::isInstance);
+        when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.js");
+        service.handleSessionExpired(request, response);
+        verify(customHandler, times(2)).handleSessionExpired(request, response);
     }
 
     private interface CatchAllSessionExpiredHandler
