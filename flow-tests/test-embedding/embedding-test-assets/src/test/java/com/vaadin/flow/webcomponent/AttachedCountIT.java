@@ -28,7 +28,7 @@ public class AttachedCountIT extends ChromeBrowserTest implements HasById {
     }
 
     @Test
-    public void removedBeforeConnecting_doesNotAttachServerSideComponent() {
+    public void removedBeforeConnecting_connectsOnlyWhenAttachedAgain() {
         open();
         // Wait for the client to connect the element in the page. The page
         // also adds an element and removes it again before it connects.
@@ -39,6 +39,12 @@ public class AttachedCountIT extends ChromeBrowserTest implements HasById {
         Assert.assertEquals(
                 "Only the elements in the page should have a server-side component",
                 "2", getAttachedCount("added"));
+
+        $("button").id("reattach").click();
+        waitUntil(driver -> !getAttachedCount("removed").isEmpty());
+        Assert.assertEquals(
+                "The removed element should connect when attached again", "3",
+                getAttachedCount("removed"));
     }
 
     private String getAttachedCount(String id) {

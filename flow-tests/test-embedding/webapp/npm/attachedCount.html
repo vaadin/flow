@@ -23,21 +23,26 @@
 <body>
   <p>
     An exported web component that is removed before it connects must not
-    attach a server-side component.
+    attach a server-side component, but must connect when attached again.
   </p>
 
   <attached-count id="first"></attached-count>
   <script>
     customElements.whenDefined('attached-count').then(() => {
       const removed = document.createElement('attached-count');
+      removed.id = 'removed';
       document.body.append(removed);
       removed.remove();
+      window.removedElement = removed;
     });
   </script>
 
   <button id="add"
     onclick="const added = document.createElement('attached-count'); added.id = 'added'; document.body.append(added);">
     Add
+  </button>
+  <button id="reattach" onclick="document.body.append(window.removedElement);">
+    Re-attach removed
   </button>
 
 </body>
