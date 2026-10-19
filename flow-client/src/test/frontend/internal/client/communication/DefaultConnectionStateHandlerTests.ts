@@ -204,13 +204,15 @@ describe('DefaultConnectionStateHandler', () => {
     handler.xhrInvalidStatusCode(xhrError({ rpc: 1 }, 500));
     handler.pushNotConnected({ rpc: 1 });
     handler.pushReconnectPending({ isBidirectional: () => true } as never);
+    handler.pushInvalidContent({ isBidirectional: () => true } as never, 'not json');
 
     expect(registry.log.requests).to.deep.equal([
       { reason: 'network' },
       { reason: 'network' },
       { reason: 'http', status: 500 },
       { reason: 'network' },
-      { reason: 'network' }
+      { reason: 'network' },
+      { reason: 'invalid-response' }
     ]);
   });
 

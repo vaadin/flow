@@ -281,6 +281,25 @@ describe('MessageSender (class)', () => {
       expect(events).to.deep.equal(['0 sent 1', '0 end acknowledged']);
     });
 
+    it('ends a request sent over push once the server confirms it', () => {
+      const context = makeRegistry();
+      const push = {
+        isActive: () => true,
+        isBidirectional: () => true,
+        push: () => {},
+        disconnect: () => {},
+        getTransportType: () => 'websocket'
+      };
+      const sender = new MessageSender(context.registry, () => push);
+      sender.setPushEnabled(true);
+      const { requests, events } = recordRequests(context.clientEvents);
+      sender.send({ rpc: [] });
+
+      expect(sender.findRequest(1)).to.equal(requests[0]);
+      sender.setClientToServerMessageId(1, false);
+      expect(events).to.deep.equal(['0 sent 1', '0 end acknowledged']);
+    });
+
     it('ends the requests it drops as discarded, and reports nothing for them afterwards', () => {
       const context = makeRegistry();
       const sender = new MessageSender(context.registry);
