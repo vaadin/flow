@@ -44,6 +44,7 @@ import com.vaadin.flow.signals.shared.SharedValueSignal;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -286,6 +287,26 @@ class ComputedSignalTest extends SignalTestBase {
 
         source.set(2);
         assertEquals(21, outer.peek());
+    }
+
+    @Test
+    void cached_nestedCachedComputationThrows_exceptionRethrownFromOuter() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        IllegalStateException expected = new IllegalStateException();
+
+        Signal<Integer> inner = Signal.cached(() -> {
+            if (source.get() > 1) {
+                throw expected;
+            }
+            return source.get();
+        });
+        Signal<Integer> outer = Signal.cached(() -> inner.get() + 1);
+
+        assertEquals(2, outer.peek());
+
+        source.set(2);
+        assertSame(expected,
+                assertThrows(IllegalStateException.class, outer::peek));
     }
 
     @Test
