@@ -24,7 +24,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -38,6 +37,7 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateIndexTsTest {
     @TempDir
@@ -59,7 +59,7 @@ class TaskGenerateIndexTsTest {
         generatedImports = new File(generatedFolder,
                 "flow-generated-imports.js");
         generatedImports.createNewFile();
-        options = new Options(Mockito.mock(Lookup.class), temporaryFolder)
+        options = new Options(mock(Lookup.class), temporaryFolder)
                 .withFrontendDirectory(frontendFolder)
                 .withBuildDirectory(TARGET);
 

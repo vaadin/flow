@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableExecutor;
@@ -52,6 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 class EffectTest extends SignalTestBase {
 
@@ -841,7 +841,7 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_sameUICurrent_notBackgroundChange() {
-        UI ui = Mockito.mock(UI.class);
+        UI ui = mock(UI.class);
         UI.setCurrent(ui);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -865,7 +865,7 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_noUICurrent_isBackgroundChange() {
-        UI ui = Mockito.mock(UI.class);
+        UI ui = mock(UI.class);
         UI.setCurrent(ui);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
@@ -889,8 +889,8 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void ownerUI_differentUICurrent_isBackgroundChange() {
-        UI uiA = Mockito.mock(UI.class);
-        UI uiB = Mockito.mock(UI.class);
+        UI uiA = mock(UI.class);
+        UI uiB = mock(UI.class);
 
         ValueSignal<String> signal = new ValueSignal<>("initial");
         List<Boolean> backgroundChangesA = new ArrayList<>();
@@ -928,7 +928,7 @@ class EffectTest extends SignalTestBase {
 
     @Test
     void noOwnerUI_fallsBackToVaadinRequestCheck() {
-        VaadinRequest mockRequest = Mockito.mock(VaadinRequest.class);
+        VaadinRequest mockRequest = mock(VaadinRequest.class);
         CurrentInstance.set(VaadinRequest.class, mockRequest);
 
         ValueSignal<String> signal = new ValueSignal<>("hello");
