@@ -654,6 +654,7 @@ public class CssBundler {
      * @param layer
      *            the layer name to check, not {@code null}
      * @return {@code true} if the value is a valid layer name
+     * @since 25.4
      */
     public static boolean isValidLayerName(String layer) {
         return Stream.of(layer.split("\\.", -1))
@@ -669,6 +670,7 @@ public class CssBundler {
      *            the layer name to check, not {@code null}
      * @throws IllegalArgumentException
      *             if the value is not a valid layer name
+     * @since 25.4
      */
     public static void validateLayerName(String layer) {
         if (!isValidLayerName(layer)) {
@@ -684,6 +686,7 @@ public class CssBundler {
      * @param layer
      *            the invalid layer name
      * @return the error message
+     * @since 25.4
      */
     public static String createInvalidLayerNameMessage(String layer) {
         return "'" + layer + "' is not a valid CSS cascade layer name. Use"
@@ -705,6 +708,7 @@ public class CssBundler {
      *            a valid cascade layer name, see
      *            {@link #validateLayerName(String)}
      * @return the {@code @import} rule
+     * @since 25.4
      */
     public static String createLayerImport(String url, String layer) {
         validateLayerName(layer);
@@ -729,6 +733,7 @@ public class CssBundler {
      * @throws IllegalArgumentException
      *             if the layer name is not valid or the content contains an
      *             {@code @import} rule
+     * @since 25.4
      */
     public static String wrapInLayer(String css, String layer) {
         validateLayerName(layer);

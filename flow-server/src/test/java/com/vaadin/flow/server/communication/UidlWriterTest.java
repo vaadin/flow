@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -777,7 +776,7 @@ class UidlWriterTest {
         VaadinServletContext context = (VaadinServletContext) mocks.getService()
                 .getContext();
         Lookup lookup = context.getAttribute(Lookup.class);
-        Mockito.when(lookup.lookup(RoutePathProvider.class))
+        when(lookup.lookup(RoutePathProvider.class))
                 .thenReturn(new RoutePathProviderImpl());
 
         VaadinSession session = mocks.getSession();

@@ -86,7 +86,7 @@ public class FileDownloadHandler
                 downloadEvent.setFileName(resourceName);
             }
             downloadEvent
-                    .setContentType(getContentType(resourceName, response));
+                    .setContentType(resolveContentType(resourceName, response));
             transferContent(downloadEvent, inputStream, outputStream,
                     file.length(), SeekableContent.ofFile(file));
         } catch (RangeRequestException e) {
@@ -108,6 +108,8 @@ public class FileDownloadHandler
      * {@inheritDoc}
      * <p>
      * Range requests are always answered for a file.
+     * 
+     * @since 25.4
      */
     @Override
     public boolean isRangeRequestsEnabled() {

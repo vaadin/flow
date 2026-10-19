@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -58,6 +57,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class FrontendUtilsTest {
 
@@ -251,18 +255,16 @@ class FrontendUtilsTest {
 
     @Test
     void should_getUnixRelativePath_when_givenTwoPaths() {
-        Path sourcePath = Mockito.mock(Path.class);
-        Path relativePath = Mockito.mock(Path.class);
-        Mockito.when(sourcePath.relativize(Mockito.any()))
-                .thenReturn(relativePath);
-        Mockito.when(relativePath.toString())
-                .thenReturn("this\\is\\windows\\path");
+        Path sourcePath = mock(Path.class);
+        Path relativePath = mock(Path.class);
+        when(sourcePath.relativize(any())).thenReturn(relativePath);
+        when(relativePath.toString()).thenReturn("this\\is\\windows\\path");
 
         String relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
                 tmpDir.toPath());
         assertEquals("this/is/windows/path", relativeUnixPath,
                 "Should replace windows path separator with unix path separator");
-        Mockito.when(relativePath.toString()).thenReturn("this/is/unix/path");
+        when(relativePath.toString()).thenReturn("this/is/unix/path");
 
         relativeUnixPath = FrontendUtils.getUnixRelativePath(sourcePath,
                 tmpDir.toPath());
@@ -422,10 +424,10 @@ class FrontendUtilsTest {
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toString(), StandardCharsets.UTF_8);
 
-        Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
+        Logger logger = spy(LoggerFactory.getLogger(NodeUpdater.class));
         Options options = new MockOptions(npmFolder).withBuildDirectory(TARGET)
                 .withFrontendDependenciesScanner(
-                        Mockito.mock(FrontendDependencies.class));
+                        mock(FrontendDependencies.class));
         NodeUpdater nodeUpdater = new NodeUpdater(options) {
             @Override
             public void execute() {
@@ -686,8 +688,8 @@ class FrontendUtilsTest {
         File versionsFolder = new File(npmFolder, "versions");
         versionsFolder.mkdirs();
         File versionJsonFile = new File(versionsFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
@@ -723,8 +725,8 @@ class FrontendUtilsTest {
     void noVersionsJson_getVersionsDoesntThrow() throws IOException {
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of());
 
         Optional<String> vaadinVersion = FrontendBuildUtils
@@ -742,8 +744,8 @@ class FrontendUtilsTest {
         File versionsFolder = new File(npmFolder, "versions");
         versionsFolder.mkdirs();
         File versionJsonFile = new File(versionsFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
@@ -797,8 +799,8 @@ class FrontendUtilsTest {
         File versionsFolder = new File(npmFolder, "versions");
         versionsFolder.mkdirs();
         File versionJsonFile = new File(versionsFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
@@ -854,8 +856,8 @@ class FrontendUtilsTest {
         File versionsFolder = new File(npmFolder, "versions");
         versionsFolder.mkdirs();
         File versionJsonFile = new File(versionsFolder, "versions.json");
-        ClassFinder finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
+        ClassFinder finder = mock(ClassFinder.class);
+        when(finder.getResources(Constants.PINNED_NPM_VERSIONS_FOLDER))
                 .thenReturn(List.of(versionsFolder.toURI().toURL()));
 
         //@formatter:off
@@ -901,8 +903,8 @@ class FrontendUtilsTest {
 
     @Test
     void isTailwindCssEnabled_withOptions() throws IOException {
-        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        Mockito.doReturn(true).when(featureFlags)
+        FeatureFlags featureFlags = mock(FeatureFlags.class);
+        doReturn(true).when(featureFlags)
                 .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
         File npmFolder = Files.createTempDirectory(tmpDir.toPath(), "tmp")
                 .toFile();
