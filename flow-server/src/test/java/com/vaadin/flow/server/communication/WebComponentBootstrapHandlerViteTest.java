@@ -261,8 +261,7 @@ class WebComponentBootstrapHandlerViteTest {
     }
 
     @Test
-    void writeBootstrapPage_readyScriptInlined()
-            throws IOException, ServiceException {
+    void writeBootstrapPage_readyScriptInlined() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
             @Override
@@ -360,8 +359,7 @@ class WebComponentBootstrapHandlerViteTest {
 
     @Disabled
     @Test
-    void writeBootstrapPage_noExportChunk()
-            throws IOException, ServiceException {
+    void writeBootstrapPage_noExportChunk() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService() {
             @Override
