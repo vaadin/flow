@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -27,6 +28,7 @@ import com.vaadin.flow.component.trigger.ClientAction;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.ClientActions;
 import com.vaadin.flow.component.trigger.internal.ContextInput;
+import com.vaadin.flow.component.trigger.internal.PromiseAction.Error;
 import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -185,13 +187,50 @@ public final class Clipboard implements Serializable {
      * }</pre>
      *
      * The action still runs inside the browser's own event handler, so the user
-     * gesture is valid, exactly as with {@link #onClick(Component)}.
+     * gesture is valid, exactly as with {@link #onClick(Component)}. The
+     * outcome of the write is not reported back; use
+     * {@link #writeText(SerializableConsumer, SerializableConsumer)} to confirm
+     * the copy or report a failure.
      *
      * @return an unbound action, to be handed to whatever fires it
      */
     public static ClientAction writeText() {
         return ClientActions.of(new WriteToClipboardAction(
                 new ContextInput<>("args", "0"), null));
+    }
+
+    /**
+     * Like {@link #writeText()} but reports the outcome of each write back to
+     * the server, so the application can confirm the copy or explain why it
+     * failed:
+     *
+     * <pre>{@code
+     * LitRenderer.<Customer> of(
+     *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
+     *         .withProperty("email", Customer::email)
+     *         .withClientAction("copy", Clipboard.writeText(
+     *                 copied -> Notification.show("Copied " + copied),
+     *                 err -> Notification.show("Failed: " + err.message())));
+     * }</pre>
+     *
+     * The action is still bound once, however many elements call it, so the
+     * callbacks are shared too: {@code onCopied} receives the string that was
+     * copied, which is how the application tells the calls apart.
+     *
+     * @param onCopied
+     *            UI-thread callback receiving the copied string, not
+     *            {@code null}
+     * @param onError
+     *            UI-thread callback receiving the browser's error, for example
+     *            when the page is not a secure context or the write permission
+     *            is denied, not {@code null}
+     * @return an unbound action, to be handed to whatever fires it
+     */
+    public static ClientAction writeText(
+            SerializableConsumer<@Nullable String> onCopied,
+            SerializableConsumer<Error> onError) {
+        return ClientActions.of(new WriteToClipboardAction(
+                new ContextInput<>("args", "0"), null, onCopied, onError));
     }
 
     /**

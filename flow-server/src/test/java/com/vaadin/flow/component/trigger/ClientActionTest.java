@@ -18,13 +18,19 @@ package com.vaadin.flow.component.trigger;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.clipboard.Clipboard;
+import com.vaadin.flow.component.trigger.internal.PromiseAction;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
 
@@ -88,6 +94,47 @@ class ClientActionTest {
     }
 
     @Test
+    void writeWithCallbacks_reportsEachOutcomeBackToTheServer() {
+        UI ui = new MockUI();
+        Div container = new Div();
+        ui.add(container);
+        RecordingSink sink = new RecordingSink();
+        List<@Nullable String> copied = new ArrayList<>();
+        List<PromiseAction.Error> failed = new ArrayList<>();
+
+        Clipboard.writeText(copied::add, failed::add)
+                .bindTo(container.getElement(), sink);
+
+        // Still one binding: the outcome travels over one return channel on
+        // the renderer's element, shared by every element that calls copy.
+        assertEquals(1, sink.installed.size());
+        List<ReturnChannelRegistration> channels = sink.installed.get(0)
+                .getCaptures().stream()
+                .filter(ReturnChannelRegistration.class::isInstance)
+                .map(ReturnChannelRegistration.class::cast).toList();
+        assertEquals(1, channels.size());
+        ReturnChannelRegistration channel = channels.get(0);
+
+        ObjectNode ok = JacksonUtils.createObjectNode();
+        ok.put("ok", true);
+        ok.put("value", "ada@example.com");
+        channel.invoke(outcome(ok));
+
+        ObjectNode error = JacksonUtils.createObjectNode();
+        error.put("name", "NotAllowedError");
+        error.put("message", "Write permission denied.");
+        ObjectNode rejected = JacksonUtils.createObjectNode();
+        rejected.put("ok", false);
+        rejected.set("error", error);
+        channel.invoke(outcome(rejected));
+
+        assertEquals(List.of("ada@example.com"), copied);
+        assertEquals(1, failed.size());
+        assertEquals("NotAllowedError", failed.get(0).name());
+        assertEquals("Write permission denied.", failed.get(0).message());
+    }
+
+    @Test
     void unarmedCheckPasses_andRegistrationDetachesTheBinding() {
         UI ui = new MockUI();
         Div container = new Div();
@@ -115,5 +162,11 @@ class ClientActionTest {
 
         assertThrows(NullPointerException.class, () -> Clipboard.writeText()
                 .bindTo(container.getElement(), action -> null));
+    }
+
+    private static ArrayNode outcome(ObjectNode outcome) {
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(outcome);
+        return args;
     }
 }
