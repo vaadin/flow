@@ -185,11 +185,21 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      * converter returns null. Otherwise, it delegates to the wrapped
      * converter.</li>
      * </ul>
-     * This means that the wrapped converter never sees a null value, nor an
-     * empty field value such as an empty string from a text field. A null model
-     * value is converted to a null presentation value, so if the field does not
-     * accept null, configure a null representation for the binding with
-     * {@link BindingBuilder#withNullRepresentation(Object)}.
+     * When the converter is used directly on a field, as the first converter of
+     * a binding, the wrapped converter thus never sees a null value nor the
+     * field's empty value, such as an empty string from a text field. The
+     * field's empty value is always converted to null, even when it is a
+     * meaningful value such as {@code false} for a checkbox. The empty value
+     * check is only meaningful when this converter is attached directly to the
+     * field: further down a converter chain, the incoming value is still
+     * compared to the field's empty value. Without a field in the context, for
+     * example when the converter is used outside a binder, only null is
+     * converted to null.
+     * <p>
+     * A null model value is converted to a null presentation value. If the
+     * field does not accept null, configure a null representation for the
+     * binding with {@link BindingBuilder#withNullRepresentation(Object)} before
+     * adding this converter.
      * <p>
      * Example use:
      * 
@@ -207,7 +217,7 @@ public interface Converter<PRESENTATION, MODEL> extends Serializable {
      *            the model type
      * @param converter
      *            the converter to delegate to when the value being converted is
-     *            not null
+     *            neither null nor the field's empty value
      * @return a converter that handles both null presentation and null model
      *         values
      */

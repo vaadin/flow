@@ -82,6 +82,9 @@ class NullSafeConverterTest {
         binder.setBean(bean);
         assertEquals("hello", field.getValue());
 
+        field.setValue("world");
+        assertEquals(new ValueObject("world"), bean.getValue());
+
         field.setValue("");
         assertTrue(binder.isValid());
         assertNull(bean.getValue());
