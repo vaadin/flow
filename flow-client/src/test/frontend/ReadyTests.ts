@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
 import { ACTIVITY_CHANGED_EVENT } from '../../main/frontend/internal/client/ActivityNotifier';
 
 const $wnd = window as any;
@@ -19,8 +20,9 @@ describe('window.Vaadin.Flow.ready', () => {
 
   before(async () => {
     // Served by web-test-runner.config.mjs from flow-server, where the script
-    // is inlined into the bootstrap page.
-    readyScript = await (await fetch('/flow-server/ready.js')).text();
+    // is inlined into the bootstrap page. The server joins its lines without a
+    // separator when inlining it, so evaluate it in that form.
+    readyScript = (await (await fetch('/flow-server/ready.js')).text()).split(/\r?\n/).join('');
   });
 
   beforeEach(() => {
@@ -58,6 +60,27 @@ describe('window.Vaadin.Flow.ready', () => {
     await ready;
     // Well below the safety net interval, i.e. resolved by the event
     expect(performance.now() - start).to.be.below(100);
+  });
+
+  it('waits for the document to finish loading', async () => {
+    installReady({ clients: {} });
+    let readyState = 'loading';
+    const readyStateStub = sinon.stub(document, 'readyState').get(() => readyState);
+    try {
+      let resolved = false;
+      const ready = $wnd.Vaadin.Flow.ready({ timeout: 5000 }).then(() => {
+        resolved = true;
+      });
+
+      await new Promise((r) => setTimeout(r, 20));
+      expect(resolved).to.be.false;
+
+      readyState = 'complete';
+      document.dispatchEvent(new Event('readystatechange'));
+      await ready;
+    } finally {
+      readyStateStub.restore();
+    }
   });
 
   it('keeps waiting while the dev server is not loaded', async () => {

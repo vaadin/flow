@@ -1,3 +1,23 @@
+/**
+ * Waits until Vaadin is idle, for use by testing tools.
+ *
+ * Vaadin is idle when the document has finished loading, the dev server (if
+ * any) has loaded and no Flow client on the page reports that it is active,
+ * i.e. no server round trip or deferred client work is in progress. A page
+ * without Flow clients is idle as soon as it has loaded.
+ *
+ * The check is re-run whenever a client reports that its activity may have
+ * changed and when the document ready state changes, with a 500 ms interval
+ * as a fallback.
+ *
+ * The page shown while the dev server is starting sets window.Vaadin.Flow.ready
+ * to false instead, so callers should check that it is a function first.
+ *
+ * @param options optional; options.timeout is the maximum time to wait,
+ *     in milliseconds; defaults to 30000
+ * @returns a promise that resolves when Vaadin is idle, or rejects with an
+ *     Error if it is still busy when the timeout expires
+ */
 window.Vaadin.Flow.ready = function (options) {
   const timeout = options && options.timeout !== undefined ? options.timeout : 30000;
   const isIdle = () => {

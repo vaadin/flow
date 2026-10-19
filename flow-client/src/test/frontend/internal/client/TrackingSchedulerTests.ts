@@ -43,11 +43,15 @@ describe('TrackingScheduler', () => {
     const listener = () => queuedWhenNotified.push(scheduler.hasWorkQueued());
     window.addEventListener(ACTIVITY_CHANGED_EVENT, listener);
     try {
+      // The second command schedules a third one before the notification
+      // from an early decrement would be dispatched, so such a notification
+      // would see work still queued
       scheduler.scheduleDeferred(() => {});
-      scheduler.scheduleDeferred(() => {});
+      scheduler.scheduleDeferred(() => scheduler.scheduleDeferred(() => {}));
 
-      await settle();
-      await settle();
+      for (let i = 0; i < 5; i++) {
+        await settle();
+      }
       expect(queuedWhenNotified).to.deep.equal([false]);
     } finally {
       window.removeEventListener(ACTIVITY_CHANGED_EVENT, listener);

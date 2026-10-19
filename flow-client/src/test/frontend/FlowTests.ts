@@ -10,6 +10,7 @@ import '../../main/frontend/FlowClient';
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import { type MockXhrServer, newServer } from 'mock-xmlhttprequest';
 import sinon from 'sinon';
+import { ACTIVITY_CHANGED_EVENT } from '../../main/frontend/internal/client/ActivityNotifier';
 
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
@@ -289,6 +290,21 @@ describe('Flow', () => {
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
     sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingFinished);
+  });
+
+  it('loadingFinished notifies that the client activity may have changed', async () => {
+    const flow = new Flow();
+    flow.loadingStarted();
+    const activeWhenNotified: boolean[] = [];
+    const listener = () => activeWhenNotified.push($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    window.addEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    try {
+      flow.loadingFinished();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(activeWhenNotified).to.deep.equal([false]);
+    } finally {
+      window.removeEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    }
   });
 
   it('should remove context-path in request', () => {

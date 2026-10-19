@@ -128,7 +128,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     /**
      * Inlined into the bootstrap {@code <script>}. Must not contain {@code //}
      * comments — they would swallow the rest of the line if the inline script
-     * is collapsed to one line by HTML processing.
+     * is collapsed to one line by HTML processing. Must not contain {@code <}
+     * either, as the inline script must not contain it unescaped.
      */
     public static final String READY_JS = readResource("ready.js");
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
