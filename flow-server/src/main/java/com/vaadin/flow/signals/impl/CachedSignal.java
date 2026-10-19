@@ -50,7 +50,8 @@ import com.vaadin.flow.signals.shared.impl.SynchronousSignalTree;
  * this signal. An {@link Signal#unboundEffect(EffectAction) effect} or outer
  * cached signal that uses the value from a cached signal will not be
  * invalidated if the computation is run again but produces the same value as
- * before.
+ * before. Exceptions are compared by identity, so a new exception from the
+ * computation always invalidates them.
  *
  * @param <T>
  *            the value type
