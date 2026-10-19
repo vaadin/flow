@@ -23,8 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -37,10 +35,14 @@ import com.vaadin.flow.internal.MockLogger;
 
 import static com.vaadin.flow.server.frontend.TaskGenerateTsDefinitions.TS_DEFINITIONS;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 @Isolated
 class TaskGenerateTsDefinitionsTest {
@@ -53,7 +55,7 @@ class TaskGenerateTsDefinitionsTest {
     void setUp() throws IOException {
         outputFolder = Files
                 .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
-        Options options = new Options(Mockito.mock(Lookup.class), outputFolder);
+        Options options = new Options(mock(Lookup.class), outputFolder);
 
         taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(options);
         taskGenerateTsDefinitions.warningEmitted = false;
@@ -153,11 +155,10 @@ class TaskGenerateTsDefinitionsTest {
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         String updatedContent = Files.readString(typesTSfile);
-        MatcherAssert.assertThat("types.d.ts should have been updated",
-                updatedContent,
-                CoreMatchers.containsString(readExpectedContent(true)));
-        MatcherAssert.assertThat("types.d.ts should contain original content",
-                updatedContent, CoreMatchers.containsString(hillaTsDef));
+        assertThat("types.d.ts should have been updated", updatedContent,
+                containsString(readExpectedContent(true)));
+        assertThat("types.d.ts should contain original content", updatedContent,
+                containsString(hillaTsDef));
     }
 
     @Test
@@ -175,11 +176,10 @@ class TaskGenerateTsDefinitionsTest {
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         String updatedContent = Files.readString(typesTSfile);
-        MatcherAssert.assertThat("types.d.ts should have been updated",
-                updatedContent,
-                CoreMatchers.containsString(readExpectedContent(true)));
-        MatcherAssert.assertThat("types.d.ts should contain original content",
-                updatedContent, CoreMatchers.containsString(hillaTsDef));
+        assertThat("types.d.ts should have been updated", updatedContent,
+                containsString(readExpectedContent(true)));
+        assertThat("types.d.ts should contain original content", updatedContent,
+                containsString(hillaTsDef));
     }
 
     @Test
@@ -197,11 +197,10 @@ class TaskGenerateTsDefinitionsTest {
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         String updatedContent = Files.readString(typesTSfile);
-        MatcherAssert.assertThat("types.d.ts should have been updated",
-                updatedContent,
-                CoreMatchers.containsString(readExpectedContent(true)));
-        MatcherAssert.assertThat("types.d.ts should contain original content",
-                updatedContent, CoreMatchers.containsString(hillaTsDef));
+        assertThat("types.d.ts should have been updated", updatedContent,
+                containsString(readExpectedContent(true)));
+        assertThat("types.d.ts should contain original content", updatedContent,
+                containsString(hillaTsDef));
     }
 
     @Test
@@ -216,11 +215,11 @@ class TaskGenerateTsDefinitionsTest {
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         String updatedContent = Files.readString(typesTSfile);
-        MatcherAssert.assertThat("types.d.ts should have been updated",
-                stripEmptyLines(updatedContent), CoreMatchers.containsString(
-                        stripEmptyLines(readExpectedContent(true))));
-        MatcherAssert.assertThat("types.d.ts should contain original content",
-                updatedContent, CoreMatchers.containsString(hillaTsDef));
+        assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent),
+                containsString(stripEmptyLines(readExpectedContent(true))));
+        assertThat("types.d.ts should contain original content", updatedContent,
+                containsString(hillaTsDef));
     }
 
     @Test
@@ -238,11 +237,11 @@ class TaskGenerateTsDefinitionsTest {
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         String updatedContent = Files.readString(typesTSfile);
-        MatcherAssert.assertThat("types.d.ts should have been updated",
-                stripEmptyLines(updatedContent), CoreMatchers.containsString(
-                        stripEmptyLines(readExpectedContent(true))));
-        MatcherAssert.assertThat("types.d.ts should contain original content",
-                updatedContent, CoreMatchers.containsString(hillaTsDef));
+        assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent),
+                containsString(stripEmptyLines(readExpectedContent(true))));
+        assertThat("types.d.ts should contain original content", updatedContent,
+                containsString(hillaTsDef));
     }
 
     @Test
@@ -260,11 +259,11 @@ class TaskGenerateTsDefinitionsTest {
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         String updatedContent = Files.readString(typesTSfile);
-        MatcherAssert.assertThat("types.d.ts should have been updated",
-                stripEmptyLines(updatedContent), CoreMatchers.containsString(
-                        stripEmptyLines(readExpectedContent(true))));
-        MatcherAssert.assertThat("types.d.ts should contain original content",
-                updatedContent, CoreMatchers.containsString(hillaTsDef));
+        assertThat("types.d.ts should have been updated",
+                stripEmptyLines(updatedContent),
+                containsString(stripEmptyLines(readExpectedContent(true))));
+        assertThat("types.d.ts should contain original content", updatedContent,
+                containsString(hillaTsDef));
     }
 
     @Test
@@ -282,9 +281,9 @@ class TaskGenerateTsDefinitionsTest {
         Files.writeString(typesTSfile, originalContent);
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsDefinitions.execute();
@@ -294,9 +293,8 @@ class TaskGenerateTsDefinitionsTest {
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         String updatedContent = Files.readString(typesTSfile);
-        MatcherAssert.assertThat("types.d.ts should have been updated",
-                updatedContent,
-                CoreMatchers.containsString(readExpectedContent(true)));
+        assertThat("types.d.ts should have been updated", updatedContent,
+                containsString(readExpectedContent(true)));
         assertBackupFileCreated(originalContent);
     }
 
@@ -322,9 +320,9 @@ class TaskGenerateTsDefinitionsTest {
         Files.writeString(typesTSfile, originalContent);
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsDefinitions.execute();
@@ -335,9 +333,8 @@ class TaskGenerateTsDefinitionsTest {
         assertFalse(taskGenerateTsDefinitions.shouldGenerate(),
                 "Should not generate types.d.ts when already existing");
         String updatedContent = stripEmptyLines(Files.readString(typesTSfile));
-        MatcherAssert.assertThat("types.d.ts should have been updated",
-                updatedContent, CoreMatchers.containsString(
-                        stripEmptyLines(readExpectedContent(true))));
+        assertThat("types.d.ts should have been updated", updatedContent,
+                containsString(stripEmptyLines(readExpectedContent(true))));
         assertBackupFileCreated(originalContent);
     }
 
@@ -359,9 +356,9 @@ class TaskGenerateTsDefinitionsTest {
         Files.writeString(typesTSfile, originalContent);
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<AbstractTaskClientGenerator> client = Mockito
-                .mockStatic(AbstractTaskClientGenerator.class,
-                        Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<AbstractTaskClientGenerator> client = mockStatic(
+                AbstractTaskClientGenerator.class,
+                Mockito.CALLS_REAL_METHODS)) {
             client.when(() -> AbstractTaskClientGenerator.log())
                     .thenReturn(logger);
             taskGenerateTsDefinitions.execute();
@@ -498,8 +495,8 @@ class TaskGenerateTsDefinitionsTest {
         ExecutionFailedException exception = assertThrows(
                 ExecutionFailedException.class,
                 taskGenerateTsDefinitions::execute);
-        MatcherAssert.assertThat(exception.getMessage(), CoreMatchers
-                .containsString(TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
+        assertThat(exception.getMessage(),
+                containsString(TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
                         .substring(0,
                                 TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
                                         .indexOf("%s"))));
@@ -521,8 +518,8 @@ class TaskGenerateTsDefinitionsTest {
         ExecutionFailedException exception = assertThrows(
                 ExecutionFailedException.class,
                 taskGenerateTsDefinitions::execute);
-        MatcherAssert.assertThat(exception.getMessage(), CoreMatchers
-                .containsString(TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
+        assertThat(exception.getMessage(),
+                containsString(TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
                         .substring(0,
                                 TaskGenerateTsDefinitions.CHECK_CONTENT_MESSAGE
                                         .indexOf("%s"))));

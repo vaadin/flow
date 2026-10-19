@@ -134,6 +134,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            {@code true} if scanning for a production build, in which case
      *            routes marked with {@link Route#developmentOnly()} are not
      *            collected as entry points
+     * @since 25.3.4
      */
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,

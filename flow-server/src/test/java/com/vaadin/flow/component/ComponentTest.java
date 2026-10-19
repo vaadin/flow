@@ -35,7 +35,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ScrollOptions.Alignment;
 import com.vaadin.flow.component.ScrollOptions.Behavior;
@@ -77,6 +76,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ComponentTest {
 
@@ -342,7 +343,7 @@ public class ComponentTest {
     public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
-        Mockito.when(instantiator.getI18NProvider()).thenReturn(null);
+        when(instantiator.getI18NProvider()).thenReturn(null);
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         assertEquals(Locale.getDefault(), locale,
@@ -368,19 +369,18 @@ public class ComponentTest {
                 List.of(Locale.US, Locale.CANADA_FRENCH, Locale.FRANCE));
         providedLocales.remove(Locale.getDefault());
 
-        Mockito.when(instantiator.getI18NProvider())
-                .thenReturn(new I18NProvider() {
-                    @Override
-                    public List<Locale> getProvidedLocales() {
-                        return providedLocales;
-                    }
+        when(instantiator.getI18NProvider()).thenReturn(new I18NProvider() {
+            @Override
+            public List<Locale> getProvidedLocales() {
+                return providedLocales;
+            }
 
-                    @Override
-                    public String getTranslation(String key, Locale locale,
-                            Object... params) {
-                        return null;
-                    }
-                });
+            @Override
+            public String getTranslation(String key, Locale locale,
+                    Object... params) {
+                return null;
+            }
+        });
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         assertEquals(providedLocales.get(0), locale,
@@ -391,19 +391,18 @@ public class ComponentTest {
     public void getComponentLocale_noCurrentUI_returnsDefaultLocale_ifNoProvidedLocale() {
         UI.setCurrent(null);
         Instantiator instantiator = mocks.getService().getInstantiator();
-        Mockito.when(instantiator.getI18NProvider())
-                .thenReturn(new I18NProvider() {
-                    @Override
-                    public List<Locale> getProvidedLocales() {
-                        return List.of();
-                    }
+        when(instantiator.getI18NProvider()).thenReturn(new I18NProvider() {
+            @Override
+            public List<Locale> getProvidedLocales() {
+                return List.of();
+            }
 
-                    @Override
-                    public String getTranslation(String key, Locale locale,
-                            Object... params) {
-                        return null;
-                    }
-                });
+            @Override
+            public String getTranslation(String key, Locale locale,
+                    Object... params) {
+                return null;
+            }
+        });
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         assertEquals(Locale.getDefault(), locale,
@@ -1023,7 +1022,7 @@ public class ComponentTest {
         assertTrue(grandChild.isAttached());
 
         // Mock closing of UI after request handled
-        ui.getInternals().setSession(Mockito.mock(VaadinSession.class));
+        ui.getInternals().setSession(mock(VaadinSession.class));
         ui.close();
         ui.getInternals().setSession(null);
 

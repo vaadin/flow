@@ -131,6 +131,7 @@ public class Dependency implements Serializable {
      * @throws IllegalArgumentException
      *             if a layer is given for a dependency that is not a
      *             {@link Type#STYLESHEET}
+     * @since 25.4
      */
     public Dependency(Type type, String url, LoadMode loadMode, String id,
             String layer) {
@@ -216,6 +217,7 @@ public class Dependency implements Serializable {
      * For internal use only. May be renamed or removed in a future release.
      *
      * @return the layer name or null if the dependency does not use a layer
+     * @since 25.4
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getLayer() {

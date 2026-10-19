@@ -12,14 +12,11 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Tag;
@@ -32,9 +29,16 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class NpmTemplateParserTest {
 
@@ -48,36 +52,33 @@ class NpmTemplateParserTest {
     void init() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        when(configuration.getStringProperty(anyString(), anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(configuration.getBuildFolder()).thenReturn("target");
+        when(configuration.getBuildFolder()).thenReturn("target");
 
         Properties properties = new Properties();
-        Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+        when(configuration.getInitParameters()).thenReturn(properties);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getServiceInitListeners())
+        Instantiator instantiator = mock(Instantiator.class);
+        when(instantiator.getServiceInitListeners()).thenReturn(Stream.empty());
+        when(instantiator.getDependencyFilters(any()))
                 .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
-                .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any()))
+        when(instantiator.getIndexHtmlRequestListeners(any()))
                 .thenReturn(Stream.empty());
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
 
-        resourceProvider = Mockito.mock(ResourceProvider.class);
-        Mockito.when(service.getLookup().lookup(ResourceProvider.class))
+        resourceProvider = mock(ResourceProvider.class);
+        when(service.getLookup().lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
-        Mockito.when(
-                resourceProvider.getApplicationResource(Mockito.anyString()))
+        when(resourceProvider.getApplicationResource(anyString()))
                 .thenAnswer(invocation -> NpmTemplateParserTest.class
                         .getResource("/" + invocation.getArgument(0)));
     }
 
     @Test
     void should_FindCorrectDataInTemplate() {
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        when(configuration.isProductionMode()).thenReturn(true);
         TemplateParser instance = NpmTemplateParser.getInstance();
         TemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(Likeable.class, "likeable-element",
@@ -314,9 +315,8 @@ class NpmTemplateParserTest {
         // name", the second one doesn't contain this string.
         // The second module should be chosen since its name matches the tag
         // name
-        MatcherAssert.assertThat(templateContent.getTemplateElement().html(),
-                CoreMatchers.not(CoreMatchers.containsString(
-                        "Tag name doesn't match the JS module name")));
+        assertThat(templateContent.getTemplateElement().html(), not(
+                containsString("Tag name doesn't match the JS module name")));
     }
 
     @Tag("likeable-element")

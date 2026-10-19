@@ -109,6 +109,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler
      * @param request
      *            the request to check
      * @return {@code true} if the request is for a web component script
+     * @since 25.4
      */
     public static boolean isWebComponentScriptRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
@@ -135,6 +136,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler
      * @return {@code true} if the request was handled, {@code false} otherwise
      * @throws IOException
      *             if writing the response fails
+     * @since 25.4
      */
     protected boolean handleWebComponentRequest(VaadinRequest request,
             VaadinResponse response) throws IOException {

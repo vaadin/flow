@@ -47,6 +47,8 @@ import com.vaadin.flow.server.communication.JSR356WebsocketInitializer.FakeServl
  * connects.
  * <p>
  * This class is meant for internal use only.
+ * 
+ * @since 25.4
  */
 @Recorder
 public class AtmosphereRecorder {
