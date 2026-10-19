@@ -459,11 +459,12 @@ public class ElementListenersTest
     @Test
     void unencodableCaptureValue_throwsWhenAdded() {
         DomListenerRegistration registration = ns.add("foo", noOp);
+        SelfReference unencodable = new SelfReference();
 
-        assertThrows(RuntimeException.class, () -> registration
-                .addEventData("data", "$0", new SelfReference()));
         assertThrows(RuntimeException.class,
-                () -> registration.setFilter("$0", new SelfReference()));
+                () -> registration.addEventData("data", "$0", unencodable));
+        assertThrows(RuntimeException.class,
+                () -> registration.setFilter("$0", unencodable));
     }
 
     private static ArrayNode encodeSettings(ElementListenerMap listenerMap,
