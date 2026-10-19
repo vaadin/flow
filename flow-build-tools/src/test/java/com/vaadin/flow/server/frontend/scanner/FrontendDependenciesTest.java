@@ -70,12 +70,17 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class FrontendDependenciesTest {
+
+    private static final String RUNTIME_JS_MODULE_WARNING = "@JsModule values with a runtime URL";
 
     private ClassFinder classFinder = mock(ClassFinder.class);
 
@@ -177,10 +182,8 @@ class FrontendDependenciesTest {
                 Collections.singleton(RuntimeJavaScriptComponent.class));
 
         ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
-        Mockito.verify(logger)
-                .warn(ArgumentMatchers
-                        .contains("@JsModule values with a runtime URL"),
-                        usages.capture());
+        verify(logger).warn(contains(RUNTIME_JS_MODULE_WARNING),
+                usages.capture());
         String listed = (String) usages.getValue();
         String component = RuntimeJavaScriptComponent.class.getName();
         assertTrue(listed.contains("\n  - " + component
@@ -188,6 +191,15 @@ class FrontendDependenciesTest {
                 + component + ": \"context://runtime-module.js\"\n  - "
                 + component + ": \"/absolute-module.js\""), listed);
         assertFalse(listed.contains("bundled-module.js"), listed);
+    }
+
+    @Test
+    void onlyBundledJsModules_noRuntimeJsModuleWarning() {
+        Logger logger = scanWithSpyLogger(
+                Collections.singleton(RouteComponent.class));
+
+        verify(logger, never()).warn(contains(RUNTIME_JS_MODULE_WARNING),
+                ArgumentMatchers.<Object> any());
     }
 
     @Test

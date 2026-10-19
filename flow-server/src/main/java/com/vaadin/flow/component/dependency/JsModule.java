@@ -74,6 +74,14 @@ public @interface JsModule {
      * NOTE: In the case of using JsModule with LitTemplate, the value needs to
      * point to a real file as it will be copied to the templates folder under
      * target folder. An exported alias from the package will not work.
+     * <p>
+     * The value is meant to be resolved by the frontend bundler. Using a
+     * runtime URL (one starting with {@code context://}, {@code base://},
+     * {@code /}, {@code http://}, {@code https://} or {@code //}) is
+     * deprecated: such a value is not bundled but loaded at runtime as a
+     * {@code <script type="module">}, and a warning is logged during the build.
+     * Use {@link JavaScript @JavaScript} with {@link JavaScript.Type#MODULE}
+     * for runtime modules instead.
      *
      * @return a JavaScript module identifier
      */
