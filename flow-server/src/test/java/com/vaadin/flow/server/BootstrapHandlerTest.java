@@ -38,4 +38,18 @@ class BootstrapHandlerTest {
         assertFalse(unlayered.outerHtml().contains("layer("),
                 unlayered.outerHtml());
     }
+
+    @Test
+    void whenReadyJs_hasNoLineComments() {
+        // readResource joins lines without separators, so a // comment would
+        // comment out the rest of the inlined script
+        assertFalse(BootstrapHandler.WHEN_READY_JS.contains("//"),
+                BootstrapHandler.WHEN_READY_JS);
+    }
+
+    @Test
+    void bootstrapJs_hasWhenReadyPlaceholder() {
+        assertTrue(BootstrapHandler.readResource("BootstrapHandler.js")
+                .contains("{{WHEN_READY}}"));
+    }
 }

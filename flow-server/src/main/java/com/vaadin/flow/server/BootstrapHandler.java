@@ -125,6 +125,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static final String BOOTSTRAP_JS = readResource(
             "BootstrapHandler.js");
+    /**
+     * Script defining {@code window.Vaadin.Flow.ready()} and
+     * {@code window.Vaadin.Flow.whenReady(callback)}, to be inlined into a
+     * {@code <script>} after {@code window.Vaadin.Flow} has been defined.
+     */
     public static final String WHEN_READY_JS = readResource("whenReady.js");
     private static final String CSS_TYPE_ATTRIBUTE_VALUE = "text/css";
 
