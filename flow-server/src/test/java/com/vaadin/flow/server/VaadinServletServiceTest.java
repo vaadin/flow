@@ -334,9 +334,8 @@ class VaadinServletServiceTest {
         VaadinServletService servletService = mock(VaadinServletService.class);
         doCallRealMethod().when(servletService)
                 .getContextRootRelativePath(any());
-        String location = servletService.getContextRootRelativePath(
+        return servletService.getContextRootRelativePath(
                 servlet.createVaadinRequest(request));
-        return location;
     }
 
     private HttpServletRequest createNonIncludeRequest(String base,
