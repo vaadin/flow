@@ -31,8 +31,12 @@ test('branch under development compares against its latest beta or rc', () => {
 });
 
 test('branch with only alphas compares against the previous release', () => {
-  assert.strictEqual(selectReferenceVersion('25.5-SNAPSHOT', PUBLISHED.slice(0, 6)), '25.3.3');
+  assert.strictEqual(selectReferenceVersion('25.4-SNAPSHOT', PUBLISHED.slice(0, 6)), '25.3.3');
   assert.strictEqual(selectReferenceVersion('25.0-SNAPSHOT', PUBLISHED), '24.10.14');
+});
+
+test('a release is newer than its betas and rcs', () => {
+  assert.strictEqual(selectReferenceVersion('25.4-SNAPSHOT', ['25.4.0-beta1', '25.4.0', '25.4.0-rc1']), '25.4.0');
 });
 
 test('modules without a jar or with flow.apicmp.skip are not compared', () => {
@@ -79,9 +83,13 @@ const added = (name) => method(name, 'NEW', 'METHOD_ADDED_TO_PUBLIC_CLASS', true
 const removed = (name) => method(name, 'REMOVED', 'METHOD_REMOVED', false);
 
 test('removing a method added after the release is not a change', () => {
-  const base = collectChanges(report(added('unreleased')), LEVELS);
-  const head = collectChanges(report(), LEVELS);
+  const base = collectChanges(report(added('merged'), added('unreleased')), LEVELS);
+  const head = collectChanges(report(added('merged')), LEVELS);
   assert.deepStrictEqual([...findPullRequestChanges(base, head)], []);
+  assert.deepStrictEqual(
+    [...findPullRequestChanges(head, base).keys()],
+    ['com.example.Widget#unreleased(java.lang.String<T>): METHOD_ADDED_TO_PUBLIC_CLASS']
+  );
 });
 
 test('only the changes the pull request adds on top of the merge base count', () => {
@@ -106,4 +114,34 @@ test('changes have the level of their type, whatever their compatibility', () =>
     LEVELS
   );
   assert.deepStrictEqual([...changes.values()], ['0.0.1', '0.1.0', '0.1.0']);
+});
+
+test('a change without a compatibility change is a patch, and a new class is one change', () => {
+  const changes = collectChanges(
+    `<?xml version="1.0"?>
+<japicmp>
+  <classes>
+    <class changeStatus="NEW" fullyQualifiedName="com.example.Added">
+      <compatibilityChanges/>
+      <methods>${added('run')}</methods>
+    </class>
+    <class changeStatus="MODIFIED" fullyQualifiedName="com.example.Widget">
+      <compatibilityChanges/>
+      <fields>
+        <field changeStatus="NEW" name="count"><compatibilityChanges/></field>
+        <field changeStatus="MODIFIED" name="size"><compatibilityChanges/></field>
+      </fields>
+    </class>
+  </classes>
+</japicmp>`,
+    LEVELS
+  );
+  assert.deepStrictEqual(
+    [...changes],
+    [
+      ['com.example.Added: NEW', '0.0.1'],
+      ['com.example.Widget#count: NEW', '0.0.1'],
+      ['com.example.Widget#size: MODIFIED', '0.0.1']
+    ]
+  );
 });
