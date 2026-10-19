@@ -61,6 +61,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -446,7 +447,7 @@ class DataFetchEventsTest {
             TreeData<String> data) {
         CompositeDataGenerator<String> generator = new CompositeDataGenerator<>();
         ArrayUpdater updater = mock(ArrayUpdater.class);
-        when(updater.startUpdate(Mockito.anyInt()))
+        when(updater.startUpdate(anyInt()))
                 .thenReturn(new ArrayUpdater.Update() {
                     @Override
                     public void clear(int start, int length) {

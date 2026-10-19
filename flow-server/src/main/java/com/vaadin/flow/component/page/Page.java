@@ -230,6 +230,7 @@ public class Page implements Serializable {
      * @return a registration object that can be used to remove the style sheet
      * @throws IllegalArgumentException
      *             if {@code layer} is not a valid cascade layer name
+     * @since 25.4
      */
     public Registration addStyleSheet(String url, LoadMode loadMode,
             String layer) {

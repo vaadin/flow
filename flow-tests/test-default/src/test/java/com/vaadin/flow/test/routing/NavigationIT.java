@@ -26,6 +26,10 @@ import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @TestFor(NavigationView.class)
 public class NavigationIT extends AbstractDefaultIT {
     @BrowserTest
@@ -78,7 +82,7 @@ public class NavigationIT extends AbstractDefaultIT {
         getDriver().switchTo().window(secondWindow);
         waitUntil(driver -> $(SpanElement.class).exists()
                 && "RouterView".equals($(SpanElement.class).first().getText()));
-        Assertions.assertTrue(
+        assertTrue(
                 getDriver().getCurrentUrl()
                         .endsWith("com.vaadin.flow.RouterView"),
                 "Url of the new tab was : " + getDriver().getCurrentUrl());
@@ -95,7 +99,7 @@ public class NavigationIT extends AbstractDefaultIT {
         Assertions.assertEquals("RouterView",
                 $(SpanElement.class).first().getText());
         Assertions.assertEquals(1, getDriver().getWindowHandles().size());
-        Assertions.assertTrue(
+        assertTrue(
                 getDriver().getCurrentUrl()
                         .endsWith("com.vaadin.flow.RouterView"),
                 "Url should have updated to RouterView was : "
@@ -124,17 +128,16 @@ public class NavigationIT extends AbstractDefaultIT {
                 "Navigation should have postponed");
 
         Assertions.assertEquals(2, $(NativeButtonElement.class).all().size());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.STAY_ID).isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.CONTINUE_ID)
+                .isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
 
         Assertions.assertEquals(0, $(NativeButtonElement.class).all().size());
 
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith("PostponeView"),
+        assertTrue(getDriver().getCurrentUrl().endsWith("PostponeView"),
                 "Url should not have changed");
 
         $(AnchorElement.class).id(PostponeView.NAVIGATION_ID).click();
@@ -144,10 +147,10 @@ public class NavigationIT extends AbstractDefaultIT {
                 "Navigation should have fired and be postponed again");
 
         Assertions.assertEquals(2, $(NativeButtonElement.class).all().size());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.STAY_ID).isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.CONTINUE_ID)
+                .isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
 
@@ -155,8 +158,7 @@ public class NavigationIT extends AbstractDefaultIT {
                 $(SpanElement.class).first().getText(),
                 "Navigation should have continued to NavigationView");
 
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith("NavigationView"),
+        assertTrue(getDriver().getCurrentUrl().endsWith("NavigationView"),
                 "Url should have updated to NavigationView was : "
                         + getDriver().getCurrentUrl());
     }
@@ -181,17 +183,16 @@ public class NavigationIT extends AbstractDefaultIT {
                 "Navigation should have postponed");
 
         Assertions.assertEquals(2, $(NativeButtonElement.class).all().size());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.STAY_ID).isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.CONTINUE_ID)
+                .isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
 
         Assertions.assertEquals(0, $(NativeButtonElement.class).all().size());
 
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith("PostponeView"),
+        assertTrue(getDriver().getCurrentUrl().endsWith("PostponeView"),
                 "Url should not have changed");
 
         $(AnchorElement.class).id(PostponeView.NAVIGATION_ROUTER_LINK_ID)
@@ -202,10 +203,10 @@ public class NavigationIT extends AbstractDefaultIT {
                 "Navigation should have fired and be postponed again");
 
         Assertions.assertEquals(2, $(NativeButtonElement.class).all().size());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.STAY_ID).isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.CONTINUE_ID)
+                .isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
 
@@ -213,8 +214,7 @@ public class NavigationIT extends AbstractDefaultIT {
                 $(SpanElement.class).first().getText(),
                 "Navigation should have continued to NavigationView");
 
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith("NavigationView"),
+        assertTrue(getDriver().getCurrentUrl().endsWith("NavigationView"),
                 "Url should have updated to NavigationView was : "
                         + getDriver().getCurrentUrl());
     }
@@ -318,7 +318,7 @@ public class NavigationIT extends AbstractDefaultIT {
         Assertions.assertEquals("This is a simple view for a React route",
                 $(ParagraphElement.class).id("react").getText());
 
-        Assertions.assertFalse($(AnchorElement.class)
+        assertFalse($(AnchorElement.class)
                 .attribute("id", NavigationView.REACT_ANCHOR_ID).exists(),
                 "Flow navigation view contents should not exist");
     }
@@ -356,8 +356,7 @@ public class NavigationIT extends AbstractDefaultIT {
         Assertions.assertEquals("AnchorView",
                 $(SpanElement.class).first().getText(),
                 "Exception on router-link navigation with query parameters");
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith("?test=value"),
+        assertTrue(getDriver().getCurrentUrl().endsWith("?test=value"),
                 "Query was missing in url");
     }
 
@@ -372,8 +371,7 @@ public class NavigationIT extends AbstractDefaultIT {
         Assertions.assertEquals("AnchorView",
                 $(SpanElement.class).first().getText(),
                 "Exception on router-link navigation with query parameters");
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith("?test=anchor"),
+        assertTrue(getDriver().getCurrentUrl().endsWith("?test=anchor"),
                 "Query was missing in url");
     }
 
@@ -399,8 +397,7 @@ public class NavigationIT extends AbstractDefaultIT {
         waitUntil(driver -> $(SpanElement.class).id(NavigationView.QUERY_LOG_ID)
                 .getText().contains(","));
 
-        Assertions.assertNull(
-                executeScript("return window.queryLogAtSecondClick"),
+        assertNull(executeScript("return window.queryLogAtSecondClick"),
                 "Second navigation should start while the first one is in progress");
         Assertions.assertEquals("first,second",
                 $(SpanElement.class).id(NavigationView.QUERY_LOG_ID).getText());
@@ -412,7 +409,7 @@ public class NavigationIT extends AbstractDefaultIT {
         Object message = ((JavascriptExecutor) getDriver())
                 .executeScript("return window.testMessage;");
 
-        Assertions.assertTrue(message instanceof String);
+        assertTrue(message instanceof String);
         Assertions.assertEquals(log, message);
     }
 
@@ -472,17 +469,16 @@ public class NavigationIT extends AbstractDefaultIT {
                 "Navigation should have postponed");
         checkNavigatedEvent("navigated to /com.vaadin.flow.PostponeView");
 
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.STAY_ID).isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.CONTINUE_ID)
+                .isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.STAY_ID).click();
 
         Assertions.assertEquals(0, $(NativeButtonElement.class).all().size());
 
-        Assertions.assertTrue(
-                getDriver().getCurrentUrl().endsWith("PostponeView"),
+        assertTrue(getDriver().getCurrentUrl().endsWith("PostponeView"),
                 "Url should not have changed");
         checkNavigatedEvent("navigated to /com.vaadin.flow.PostponeView");
 
@@ -493,10 +489,10 @@ public class NavigationIT extends AbstractDefaultIT {
                 "Navigation should have fired and be postponed again");
         checkNavigatedEvent("navigated to /com.vaadin.flow.PostponeView");
 
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.CONTINUE_ID).isDisplayed());
-        Assertions.assertTrue($(NativeButtonElement.class)
-                .id(PostponeView.STAY_ID).isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.CONTINUE_ID)
+                .isDisplayed());
+        assertTrue($(NativeButtonElement.class).id(PostponeView.STAY_ID)
+                .isDisplayed());
 
         $(NativeButtonElement.class).id(PostponeView.CONTINUE_ID).click();
 

@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -40,6 +39,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 class HierarchicalDataCommunicatorBasicTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -85,25 +87,25 @@ class HierarchicalDataCommunicatorBasicTest
     @Test
     void flush_arrayUpdaterInitializedOnce() {
         fakeClientCommunication();
-        Mockito.verify(arrayUpdater).initialize();
+        verify(arrayUpdater).initialize();
 
-        Mockito.clearInvocations(arrayUpdater);
+        clearInvocations(arrayUpdater);
 
         fakeClientCommunication();
-        Mockito.verify(arrayUpdater, Mockito.never()).initialize();
+        verify(arrayUpdater, never()).initialize();
     }
 
     @Test
     void setViewportRange_flush_arrayUpdaterInitializedOnce() {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
-        Mockito.verify(arrayUpdater).initialize();
+        verify(arrayUpdater).initialize();
 
-        Mockito.clearInvocations(arrayUpdater);
+        clearInvocations(arrayUpdater);
 
         dataCommunicator.setViewportRange(50, 50);
         fakeClientCommunication();
-        Mockito.verify(arrayUpdater, Mockito.never()).initialize();
+        verify(arrayUpdater, never()).initialize();
     }
 
     @Test
@@ -275,7 +277,7 @@ class HierarchicalDataCommunicatorBasicTest
         assertArrayUpdateSize(2);
         assertArrayUpdateItems("name", "Item 1", "Item 1-1");
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setDataProvider(treeDataProvider,
                 (item) -> item.equals(new Item("Item 0")));
@@ -300,7 +302,7 @@ class HierarchicalDataCommunicatorBasicTest
         assertArrayUpdateSize(2);
         assertArrayUpdateItems("name", "Item 1", "Item 1-1");
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         filterCallback.accept(item -> item.equals(new Item("Item 0")));
         fakeClientCommunication();
@@ -324,7 +326,7 @@ class HierarchicalDataCommunicatorBasicTest
         assertArrayUpdateItems("name", "Item 2", "Item 1", "Item 1-1",
                 "Item 1-0", "Item 0");
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setInMemorySorting(null);
         fakeClientCommunication();
@@ -386,7 +388,7 @@ class HierarchicalDataCommunicatorBasicTest
         assertArrayUpdateItems("name", "Item 2", "Item 1", "Item 1-1",
                 "Item 1-0", "Item 0");
 
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.setBackEndSorting(Collections.emptyList());
         fakeClientCommunication();

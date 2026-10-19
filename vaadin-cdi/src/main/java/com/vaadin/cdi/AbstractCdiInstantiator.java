@@ -61,6 +61,7 @@ abstract public class AbstractCdiInstantiator implements Instantiator {
      * bean.
      *
      * @return the fallback instantiator
+     * @since 15.0
      */
     protected abstract DefaultInstantiator getDelegate();
 
