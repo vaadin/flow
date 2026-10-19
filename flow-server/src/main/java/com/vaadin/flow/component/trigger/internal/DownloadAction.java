@@ -160,14 +160,18 @@ public class DownloadAction extends Action {
     protected JsFunction toJs(Trigger trigger) {
         // Two body shapes — with or without a filename argument — keep the
         // emitted JS minimal. Both URL and filename are JsFunctions invoked
-        // with event so any handler-scoped inputs read live state.
+        // with event so any handler-scoped inputs read live state. The event
+        // itself is passed last so the client can click the anchor next to
+        // the trigger element, keeping a surrounding overlay open, while
+        // url-only overrides of the client helper keep working.
         if (filenameInput == null) {
-            return JsFunction.of("window.Vaadin.Flow.download.start($0(event))",
+            return JsFunction.of(
+                    "window.Vaadin.Flow.download.start($0(event), undefined, event)",
                     urlInput.toJs(trigger)).withArguments("event");
         }
-        return JsFunction
-                .of("window.Vaadin.Flow.download.start($0(event), $1(event))",
-                        urlInput.toJs(trigger), filenameInput.toJs(trigger))
+        return JsFunction.of(
+                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
+                urlInput.toJs(trigger), filenameInput.toJs(trigger))
                 .withArguments("event");
     }
 

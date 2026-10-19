@@ -19,7 +19,9 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -30,9 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
@@ -65,8 +65,15 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class WebComponentProviderTest {
@@ -94,40 +101,27 @@ class WebComponentProviderTest {
         MockitoAnnotations.initMocks(this);
         registry = setUpRegistry(); // same code as used for local variables in
                                     // some tests
-        Mockito.when(request.getService()).thenReturn(service);
-        Mockito.when(session.getService()).thenReturn(service);
-        Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(
-                context.getAttribute(WebComponentConfigurationRegistry.class))
+        when(request.getService()).thenReturn(service);
+        when(session.getService()).thenReturn(service);
+        when(service.getContext()).thenReturn(context);
+        when(context.getAttribute(WebComponentConfigurationRegistry.class))
                 .then(invocationOnMock -> registry);
-        Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), any()))
-                .then(invocationOnMock -> registry);
-        Mockito.doAnswer(
+        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
+                any())).then(invocationOnMock -> registry);
+        doAnswer(
                 invocationOnMock -> registry = (WebComponentConfigurationRegistry) invocationOnMock
                         .getArguments()[0])
                 .when(context)
                 .setAttribute(any(WebComponentConfigurationRegistry.class));
 
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-        Mockito.doAnswer(i -> i.getArgument(1, Supplier.class).get())
-                .when(context).getAttribute(
-                        ArgumentMatchers.argThat(aClass -> "FeatureFlagsWrapper"
-                                .equals(aClass.getSimpleName())),
-                        any());
+        final Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        doAnswer(i -> i.getArgument(1, Supplier.class).get()).when(context)
+                .getAttribute(argThat(aClass -> "FeatureFlagsWrapper"
+                        .equals(aClass.getSimpleName())), any());
         VaadinService.setCurrent(service);
-        Mockito.when(service.getInstantiator())
-                .thenReturn(new MockInstantiator());
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-
-        VaadinServletService service = Mockito.mock(VaadinServletService.class);
-        Mockito.doCallRealMethod().when(service)
-                .getContextRootRelativePath(Mockito.any());
-
-        Mockito.doCallRealMethod().when(service)
-                .getContextRootRelativePath(Mockito.any());
+        when(service.getInstantiator()).thenReturn(new MockInstantiator());
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
 
         provider = new WebComponentProvider();
     }
@@ -139,36 +133,35 @@ class WebComponentProviderTest {
 
     @Test
     void nonHandledPaths_handlerInformsNotHandled() throws IOException {
-        Mockito.when(request.getPathInfo()).thenReturn(null);
+        when(request.getPathInfo()).thenReturn(null);
         assertFalse(provider.canHandleRequest(request),
                 "Provider shouldn't handle null path");
 
-        Mockito.when(request.getPathInfo()).thenReturn("");
+        when(request.getPathInfo()).thenReturn("");
         assertFalse(provider.canHandleRequest(request),
                 "Provider shouldn't handle empty path");
 
-        Mockito.when(request.getPathInfo()).thenReturn("/home");
+        when(request.getPathInfo()).thenReturn("/home");
         assertFalse(provider.canHandleRequest(request),
                 "Provider shouldn't handle non web-component path");
     }
 
     @Test
     void faultyTag_handlerInformsNotHandled() throws IOException {
-        Mockito.when(request.getPathInfo())
+        when(request.getPathInfo())
                 .thenReturn("/web-component" + "/extensionless-component");
 
         assertFalse(
                 provider.synchronizedHandleRequest(session, request, response),
                 "Provider shouldn't handle path without extension");
 
-        Mockito.when(request.getPathInfo())
-                .thenReturn("/web-component/component.js");
+        when(request.getPathInfo()).thenReturn("/web-component/component.js");
 
         assertFalse(
                 provider.synchronizedHandleRequest(session, request, response),
                 "Provider shouldn't handle request for non-custom element name");
 
-        Mockito.when(request.getPathInfo())
+        when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
 
         assertFalse(
@@ -178,16 +171,16 @@ class WebComponentProviderTest {
 
     @Test
     void webComponentNotPresent_responseReturns404() throws IOException {
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        ServletContext servletContext = mock(ServletContext.class);
 
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
+        when(request.getServletContext()).thenReturn(servletContext);
 
-        Mockito.when(request.getPathInfo())
+        when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         assertTrue(
                 provider.synchronizedHandleRequest(session, request, response),
                 "Provider should handle web-component request");
-        Mockito.verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(),
+        verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(),
                 "No web component for my-component");
     }
 
@@ -195,15 +188,15 @@ class WebComponentProviderTest {
     void webComponentGenerator_responseGetsResult() throws IOException {
         registry = setupConfigurations(MyComponentExporter.class);
 
-        ByteArrayOutputStream out = Mockito.spy(new ByteArrayOutputStream());
+        ByteArrayOutputStream out = spy(new ByteArrayOutputStream());
 
-        DefaultDeploymentConfiguration configuration = Mockito
-                .mock(DefaultDeploymentConfiguration.class);
+        DefaultDeploymentConfiguration sessionConfiguration = mock(
+                DefaultDeploymentConfiguration.class);
 
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        when(response.getOutputStream()).thenReturn(out);
+        when(session.getConfiguration()).thenReturn(sessionConfiguration);
 
-        Mockito.when(request.getPathInfo())
+        when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         assertTrue(
                 provider.synchronizedHandleRequest(session, request, response),
@@ -216,10 +209,50 @@ class WebComponentProviderTest {
         assertTrue(generatedScript.contains("web-component-bootstrap.js"),
                 "Response should reference the web component bootstrap module");
 
-        Mockito.verify(response).getOutputStream();
-        Mockito.verify(out).write(Mockito.any(), Mockito.anyInt(),
-                Mockito.anyInt());
+        verify(response).getOutputStream();
+        verify(out).write(any(), anyInt(), anyInt());
 
+    }
+
+    @Test
+    void handleSessionExpired_webComponentScriptRequest_writesScriptWithoutSession()
+            throws IOException {
+        registry = setupConfigurations(MyComponentExporter.class);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        when(response.getOutputStream()).thenReturn(out);
+
+        when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.js");
+        assertTrue(provider.handleSessionExpired(request, response));
+        assertTrue(out.toString().contains("web-component-bootstrap.js"),
+                "Response should contain the web component script");
+
+        when(request.getPathInfo())
+                .thenReturn("/web-component/web-component-bootstrap.js");
+        assertFalse(provider.handleSessionExpired(request, response),
+                "Bootstrap request needs a session and should not be handled");
+    }
+
+    @Test
+    void handleWebComponentRequest_overridden_usedWithAndWithoutSession()
+            throws IOException {
+        registry = setupConfigurations(MyComponentExporter.class);
+        List<VaadinRequest> handled = new ArrayList<>();
+        WebComponentProvider customProvider = new WebComponentProvider() {
+            @Override
+            protected boolean handleWebComponentRequest(VaadinRequest req,
+                    VaadinResponse resp) {
+                handled.add(req);
+                return true;
+            }
+        };
+        when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.js");
+
+        assertTrue(customProvider.handleSessionExpired(request, response));
+        assertTrue(customProvider.synchronizedHandleRequest(session, request,
+                response));
+        assertEquals(List.of(request, request), handled);
     }
 
     @Test
@@ -233,27 +266,27 @@ class WebComponentProviderTest {
         ByteArrayOutputStream out1 = new ByteArrayOutputStream();
         ByteArrayOutputStream out2 = new ByteArrayOutputStream();
 
-        DefaultDeploymentConfiguration configuration = Mockito
-                .mock(DefaultDeploymentConfiguration.class);
+        DefaultDeploymentConfiguration sessionConfiguration = mock(
+                DefaultDeploymentConfiguration.class);
 
-        Mockito.when(response.getOutputStream()).thenReturn(out1);
-        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        when(response.getOutputStream()).thenReturn(out1);
+        when(session.getConfiguration()).thenReturn(sessionConfiguration);
 
-        Mockito.when(request.getPathInfo())
+        when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         assertTrue(
                 provider.synchronizedHandleRequest(session, request, response),
                 "Provider should handle first web-component request");
 
-        Mockito.when(response.getOutputStream()).thenReturn(out2);
+        when(response.getOutputStream()).thenReturn(out2);
 
-        Mockito.when(request.getPathInfo())
+        when(request.getPathInfo())
                 .thenReturn("/web-component/other-component.js");
         assertTrue(
                 provider.synchronizedHandleRequest(session, request, response),
                 "Provider should handle second web-component request");
 
-        Mockito.verify(response, times(2)).getOutputStream();
+        verify(response, times(2)).getOutputStream();
 
         byte[] first = out1.toByteArray();
         byte[] second = out2.toByteArray();
@@ -306,22 +339,22 @@ class WebComponentProviderTest {
     }
 
     private VaadinRequest mockRequest(boolean hasConfig) {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinService service = Mockito.mock(VaadinService.class);
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request.getService()).thenReturn(service);
-        Mockito.when(service.getContext()).thenReturn(context);
+        VaadinContext requestContext = mock(VaadinContext.class);
+        VaadinService requestService = mock(VaadinService.class);
+        VaadinRequest scriptRequest = mock(VaadinRequest.class);
+        when(scriptRequest.getService()).thenReturn(requestService);
+        when(requestService.getContext()).thenReturn(requestContext);
 
-        WebComponentConfigurationRegistry registry = Mockito
-                .mock(WebComponentConfigurationRegistry.class);
-        Mockito.when(context.getAttribute(
-                Mockito.eq(WebComponentConfigurationRegistry.class),
-                Mockito.any())).thenReturn(registry);
-        Mockito.when(registry.hasConfigurations()).thenReturn(hasConfig);
+        WebComponentConfigurationRegistry requestRegistry = mock(
+                WebComponentConfigurationRegistry.class);
+        when(requestContext.getAttribute(
+                eq(WebComponentConfigurationRegistry.class), any()))
+                .thenReturn(requestRegistry);
+        when(requestRegistry.hasConfigurations()).thenReturn(hasConfig);
 
-        Mockito.when(request.getPathInfo()).thenReturn("/web-component/a-b.js");
+        when(scriptRequest.getPathInfo()).thenReturn("/web-component/a-b.js");
 
-        return request;
+        return scriptRequest;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
