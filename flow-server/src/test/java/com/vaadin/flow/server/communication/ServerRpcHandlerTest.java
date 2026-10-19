@@ -452,8 +452,7 @@ class ServerRpcHandlerTest {
     void handleRpc_mapSyncListenerThrows_firesRpcInvocationFailed_withSyncedPropertyAsName()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        ErrorHandler errorHandler = mock(ErrorHandler.class);
-        when(session.getErrorHandler()).thenReturn(errorHandler);
+        when(session.getErrorHandler()).thenReturn(mock(ErrorHandler.class));
         List<String> sequence = new ArrayList<>();
         List<RpcInvocationFailedEvent> failed = new ArrayList<>();
         List<RpcInvocationEndedEvent> ended = new ArrayList<>();
