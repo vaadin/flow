@@ -64,6 +64,7 @@ public class VaadinSessionScopedContext extends AbstractContext {
      *
      * @param beanManager
      *            the bean manager
+     * @since 16.0.2
      */
     public void init(BeanManager beanManager) {
         contextManager = BeanProvider.getContextualReference(beanManager,

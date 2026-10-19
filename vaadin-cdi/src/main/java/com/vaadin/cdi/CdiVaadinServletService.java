@@ -198,6 +198,7 @@ public class CdiVaadinServletService extends VaadinServletService {
          *
          * @param beanManager
          *            the bean manager used for looking up CDI beans
+         * @since 15.0.1
          */
         public CdiVaadinServiceDelegate(BeanManager beanManager) {
             this.beanManager = beanManager;
@@ -214,6 +215,7 @@ public class CdiVaadinServletService extends VaadinServletService {
          * @throws ServiceException
          *             if multiple eligible {@link SystemMessagesProvider} beans
          *             are found
+         * @since 15.0.1
          */
         public void init(VaadinService vaadinService) throws ServiceException {
             lookup(SystemMessagesProvider.class)
