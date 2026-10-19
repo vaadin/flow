@@ -546,6 +546,27 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    void warnOnVersionRangeMismatch_devDependencyManagedByVaadin_noWarning()
+            throws IOException {
+        // A scanned dev package keeps its vaadin.devDependencies entry, so
+        // the value managed by Vaadin must be skipped there too.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+        ObjectNode devDependencies = JacksonUtils.createObjectNode();
+        devDependencies.put(VAADIN_DIALOG, "25.1.0");
+        packageJson.set(DEV_DEPENDENCIES, devDependencies);
+        ObjectNode vaadin = JacksonUtils.createObjectNode();
+        vaadin.set(DEV_DEPENDENCIES, devDependencies.deepCopy());
+        packageJson.set(VAADIN_DEP_KEY, vaadin);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
+
+        Mockito.verifyNoInteractions(logger);
+    }
+
+    @Test
     void warnOnVersionRangeMismatch_overrideFromDifferentMinor_noWarning()
             throws IOException {
         // The overrides are reconciled with the pinned versions by the
