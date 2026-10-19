@@ -103,7 +103,10 @@ class FullDependenciesScannerTest {
     @JavaScript("/absolute.js")
     @JavaScript("base://servlet-relative.js")
     @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
-    @JsModule("/abs-module.js")
+    @JsModule("./bundled-module.js")
+    @JsModule("https://cdn.example.com/external-module.js")
+    @JsModule("context://runtime-module.js")
+    @JsModule("/absolute-module.js")
     public static class RuntimeJavaScriptComponent extends Component {
 
     }
@@ -328,7 +331,7 @@ class FullDependenciesScannerTest {
     }
 
     @Test
-    void getModules_jsModuleWithRuntimePrefix_stillBundled()
+    void getModules_jsModuleWithRuntimeUrl_excludedFromBundleImports()
             throws ClassNotFoundException {
         Class fakeAnnotation = Object.class;
         when(finder.loadClass(JsModule.class.getName()))
@@ -340,9 +343,9 @@ class FullDependenciesScannerTest {
                 (type, annotation) -> findAnnotations(type, JsModule.class),
                 null, true);
 
-        // Runtime prefixes only change the meaning of @JavaScript values,
-        // @JsModule values are always bundled
-        DepsTests.assertImports(scanner.getModules(), "/abs-module.js");
+        // @JsModule values with a runtime URL are loaded at runtime, so they
+        // must not end up in the bundle imports
+        DepsTests.assertImports(scanner.getModules(), "./bundled-module.js");
     }
 
     @Test
