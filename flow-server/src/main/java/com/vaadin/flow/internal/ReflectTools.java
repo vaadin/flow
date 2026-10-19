@@ -493,6 +493,26 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Returns whether the given method is declared in a proper subtype of the
+     * type declaring the other method, i.e. whether its declaration is more
+     * specific.
+     *
+     * @param method
+     *            the method to check, not {@code null}
+     * @param other
+     *            the method to compare to, not {@code null}
+     * @return <code>true</code> if the declaring type of {@code method} is a
+     *         subtype of, but not the same as, the declaring type of
+     *         {@code other}, <code>false</code> otherwise
+     */
+    public static boolean isDeclaredInSubtype(Method method, Method other) {
+        Class<?> declaringClass = method.getDeclaringClass();
+        Class<?> otherDeclaringClass = other.getDeclaringClass();
+        return declaringClass != otherDeclaringClass
+                && otherDeclaringClass.isAssignableFrom(declaringClass);
+    }
+
+    /**
      * Parses the property name from the given getter or setter method.
      * <p>
      * If the given method does not have a valid setter or getter name, this

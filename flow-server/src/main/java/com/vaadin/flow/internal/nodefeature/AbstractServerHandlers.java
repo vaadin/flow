@@ -149,9 +149,12 @@ public abstract class AbstractServerHandlers<T>
                         classWithAnnotations.getName(), method.getName());
                 throw new IllegalStateException(msg);
             }
-            // Methods are collected starting from the most specific type, so
-            // e.g. the update mode of an override wins over the overridden one
-            map.putIfAbsent(method.getName(), method);
+            // The most specific declaration wins, so e.g. the update mode of
+            // an override wins over the overridden one
+            if (existing == null
+                    || ReflectTools.isDeclaredInSubtype(method, existing)) {
+                map.put(method.getName(), method);
+            }
         }
         Map<String, DisabledUpdateMode> handlers = new LinkedHashMap<>();
         map.values().forEach(method -> handlers.put(method.getName(),

@@ -28,6 +28,10 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
  * using the notation <code>this.$server.method()</code>. The method will return
  * a Promise which will be resolved with either the return value from the server
  * or a generic rejection if the server-side method throws an exception.
+ * <p>
+ * Annotated methods are also published from superclasses, and from default
+ * methods of implemented interfaces. An annotated abstract interface method is
+ * not published: annotate the method that implements it instead.
  *
  * @author Vaadin Ltd
  * @since 1.0

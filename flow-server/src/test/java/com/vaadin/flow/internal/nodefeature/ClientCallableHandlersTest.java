@@ -83,6 +83,20 @@ class ClientCallableHandlersTest {
         }
     }
 
+    interface SpecificInterfaceWithClientCallable
+            extends SuperInterfaceWithClientCallable {
+        @Override
+        @ClientCallable
+        default void publishedDefaultMethod() {
+        }
+    }
+
+    @Tag("div")
+    static class SubComponentWithInterfaceEventHandler
+            extends NonTemplateComponentWithInterfaceEventHandler
+            implements SpecificInterfaceWithClientCallable {
+    }
+
     @Tag("div")
     static class ComponentWithEventHandlerEnabledWhenDisabled
             extends Component {
@@ -150,6 +164,21 @@ class ClientCallableHandlersTest {
                 feature.getDisabledUpdateMode("publishedDefaultMethod"));
         assertEquals(DisabledUpdateMode.ALWAYS,
                 feature.getDisabledUpdateMode("overriddenDefaultMethod"));
+    }
+
+    @Test
+    void interfaceOverrideWinsOverInterfaceReachedThroughSuperclass() {
+        UI ui = new UI();
+        SubComponentWithInterfaceEventHandler component = new SubComponentWithInterfaceEventHandler();
+        ui.add(component);
+
+        // The superclass reaches the ALWAYS declaration first, but the more
+        // specific override in the class' own interface is the one Java
+        // dispatches to, so its default mode must win
+        ClientCallableHandlers feature = component.getElement().getNode()
+                .getFeature(ClientCallableHandlers.class);
+        assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                feature.getDisabledUpdateMode("publishedDefaultMethod"));
     }
 
     @Test

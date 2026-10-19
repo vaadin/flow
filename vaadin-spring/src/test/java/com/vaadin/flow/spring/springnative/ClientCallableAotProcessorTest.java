@@ -171,6 +171,10 @@ class ClientCallableAotProcessorTest {
         assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
                 InterfaceWithClientCallable.class, "processData"))
                 .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(AbstractMethodDto.class))
+                .as("Abstract interface methods are not published")
+                .rejects(hints);
     }
 
     @Test
@@ -478,10 +482,18 @@ class ClientCallableAotProcessorTest {
         default void processData(ComplexDto data) {
 
         }
+
+        @ClientCallable
+        void processAbstract(AbstractMethodDto data);
     }
 
     public static class InterfaceBasedComponent extends Component
             implements InterfaceWithClientCallable {
+
+        @Override
+        public void processAbstract(AbstractMethodDto data) {
+            // Not published, as only the interface method is annotated
+        }
     }
 
     // Non-Component class with ClientCallable (should be filtered out)
@@ -558,6 +570,9 @@ class ClientCallableAotProcessorTest {
     }
 
     public record RecordId(int id) {
+    }
+
+    public record AbstractMethodDto(String value) {
     }
 
     public record RecordDto(String value) {

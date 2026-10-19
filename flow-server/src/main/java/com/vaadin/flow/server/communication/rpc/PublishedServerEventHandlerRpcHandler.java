@@ -179,12 +179,16 @@ public class PublishedServerEventHandlerRpcHandler
         } else if (methods.size() == 1) {
             return Optional.of(methods.get(0));
         } else if (!Component.class.equals(clazz)) {
-            // Interfaces are searched too, for default methods
+            // Interfaces are searched too, for default methods. The most
+            // specific declaration wins, like when registering the handlers.
             return Stream
                     .concat(Stream.ofNullable(clazz.getSuperclass()),
                             Stream.of(clazz.getInterfaces()))
                     .map(type -> findMethod(instance, type, methodName))
-                    .flatMap(Optional::stream).findFirst();
+                    .flatMap(Optional::stream)
+                    .reduce((found, candidate) -> ReflectTools
+                            .isDeclaredInSubtype(candidate, found) ? candidate
+                                    : found);
         } else {
             return Optional.empty();
         }
