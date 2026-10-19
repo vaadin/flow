@@ -97,6 +97,12 @@ public class FrontendDependencyUrlResolverTest {
                 .isRuntimeDependencyUrl("//cdn/foo.js"));
         Assert.assertTrue(FrontendDependencyUrlResolver
                 .isRuntimeDependencyUrl("/assets/foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("HTTPS://cdn/foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("Context://foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("  /foo.js"));
     }
 
     @Test
