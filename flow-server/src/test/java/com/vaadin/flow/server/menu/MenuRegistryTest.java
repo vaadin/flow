@@ -46,11 +46,13 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.menu.MenuRegistry;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.DynamicPageTitle;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
@@ -62,6 +64,7 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouteParent;
 import com.vaadin.flow.router.RouteParentContext;
 import com.vaadin.flow.router.RouteParentResolver;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.Router;
@@ -535,6 +538,24 @@ class MenuRegistryTest {
         // URL-derived parents other than an index route still nest.
         assertEquals(List.of("/about/team"),
                 collectRoutes(tree.get(1).children()));
+    }
+
+    @Test
+    void collectMenuItemsTree_urlDerivedParent_conventionNamedIndexRouteIsNotAParent() {
+        // The mock context's provider ignores the naming convention
+        when(vaadinContext.getAttribute(Lookup.class)
+                .lookup(RoutePathProvider.class))
+                .thenReturn(new DefaultRoutePathProvider());
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(registry);
+        Arrays.asList(MainView.class, TreeShopCart.class)
+                .forEach(routeConfiguration::setAnnotatedRoute);
+
+        List<AvailableViewInfo> tree = MenuRegistry.collectMenuItemsTree();
+
+        // MainView gets the empty path by the naming convention, so it is
+        // the index route of the @RoutePrefix layout and Cart its sibling.
+        assertEquals(List.of("/shop", "/shop/cart"), collectRoutes(tree));
     }
 
     @Test
@@ -1044,6 +1065,25 @@ class MenuRegistryTest {
     @RouteParent(TreePrefixHome.class)
     @Menu(title = "Invoices")
     public static class TreePrefixInvoices extends Component {
+    }
+
+    @Tag("div")
+    @RoutePrefix("shop")
+    public static class TreeShopLayout extends Component
+            implements RouterLayout {
+    }
+
+    // Index route of a @RoutePrefix layout by the naming convention, at /shop.
+    @Tag("div")
+    @Route(layout = TreeShopLayout.class)
+    @Menu(title = "Shop", order = 1)
+    public static class MainView extends Component {
+    }
+
+    @Tag("div")
+    @Route(value = "cart", layout = TreeShopLayout.class)
+    @Menu(title = "Cart", order = 2)
+    public static class TreeShopCart extends Component {
     }
 
     // TreeHidden is not registered in the test using this view.

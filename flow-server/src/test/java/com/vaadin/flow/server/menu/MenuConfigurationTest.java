@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -69,6 +70,7 @@ import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
@@ -202,8 +204,29 @@ class MenuConfigurationTest {
         List<MenuEntry> menuEntries = MenuConfiguration.getMenuEntries();
         ;
         assertEquals(4, menuEntries.size());
+        assertTrue(
+                menuEntries.stream()
+                        .allMatch(entry -> entry.children().isEmpty()),
+                "Flat menu entries are expected to have no children");
         assertOrder(menuEntries,
                 new String[] { "/d", "/c", "/a", "/b", "/d/a", "/d/b" });
+    }
+
+    @Test
+    void menuEntry_children_neverNullAndUnmodifiable() {
+        assertTrue(new MenuEntry("/a", "A", null, null, null).children()
+                .isEmpty());
+        assertTrue(new MenuEntry("/a", "A", null, null, null, null).children()
+                .isEmpty());
+
+        List<MenuEntry> children = new ArrayList<>(
+                List.of(new MenuEntry("/a/b", "B", null, null, null)));
+        MenuEntry entry = new MenuEntry("/a", "A", null, null, null, children);
+        children.clear();
+        assertEquals(1, entry.children().size(),
+                "Changes to the given list should not affect the entry");
+        assertThrows(UnsupportedOperationException.class,
+                () -> entry.children().clear());
     }
 
     @Test
