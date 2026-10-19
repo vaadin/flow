@@ -27,12 +27,15 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.testutil.TestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests that the telemetry notice is logged on first initialization and
@@ -58,13 +61,11 @@ class DevModeUsageStatisticsLoggingTest {
         usageStatisticsFile = tempDir.resolve("usage-statistics.json").toFile();
         copyStatsTemplate(usageStatisticsFile);
 
-        storage = Mockito.spy(new StatisticsStorage());
-        Mockito.when(storage.getUsageStatisticsFile())
-                .thenReturn(usageStatisticsFile);
+        storage = spy(new StatisticsStorage());
+        when(storage.getUsageStatisticsFile()).thenReturn(usageStatisticsFile);
 
-        sender = Mockito.spy(new StatisticsSender(storage));
-        Mockito.doAnswer(inv -> null).when(sender)
-                .triggerSendIfNeeded(Mockito.any());
+        sender = spy(new StatisticsSender(storage));
+        doAnswer(inv -> null).when(sender).triggerSendIfNeeded(any());
 
         // Capture slf4j-simple output which goes to System.err by default
         originalErr = System.err;

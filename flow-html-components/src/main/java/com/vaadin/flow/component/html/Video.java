@@ -48,6 +48,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/video">MDN:
  *      &lt;video&gt;</a>
  * @see Audio
+ * @since 25.4
  */
 @NullMarked
 @Tag(Tag.VIDEO)

@@ -24,7 +24,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 
@@ -32,6 +31,7 @@ import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateIndexHtmlTest {
     @TempDir
@@ -46,7 +46,7 @@ class TaskGenerateIndexHtmlTest {
         frontendFolder = Files
                 .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
         generatedFolder = new File(frontendFolder, "generated");
-        Options options = new Options(Mockito.mock(Lookup.class), null)
+        Options options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(generatedFolder);
         taskGenerateIndexHtml = new TaskGenerateIndexHtml(options);
@@ -65,7 +65,7 @@ class TaskGenerateIndexHtmlTest {
     @Test
     void should_generateIntoFrontendRootGenerated_whenGeneratedFolderRelocated() {
         File relocated = new File(temporaryFolder, "elsewhere/generated");
-        Options options = new Options(Mockito.mock(Lookup.class), null)
+        Options options = new Options(mock(Lookup.class), null)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(relocated);
         TaskGenerateIndexHtml task = new TaskGenerateIndexHtml(options);

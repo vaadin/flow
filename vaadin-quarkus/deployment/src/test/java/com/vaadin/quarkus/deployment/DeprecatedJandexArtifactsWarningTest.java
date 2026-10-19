@@ -25,21 +25,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class DeprecatedJandexArtifactsWarningTest {
 
-    private final Logger logger = Mockito.mock(Logger.class);
+    private final Logger logger = mock(Logger.class);
     private MockedStatic<LoggerFactory> loggerFactory;
 
     @BeforeEach
     void mockLogger() {
-        loggerFactory = Mockito.mockStatic(LoggerFactory.class);
+        loggerFactory = mockStatic(LoggerFactory.class);
         loggerFactory.when(
                 () -> LoggerFactory.getLogger(VaadinQuarkusProcessor.class))
                 .thenReturn(logger);
@@ -56,7 +59,7 @@ class DeprecatedJandexArtifactsWarningTest {
                 Map.of("quarkus.index-dependency.lumo.artifact-id",
                         "vaadin-lumo-theme"));
 
-        Mockito.verifyNoInteractions(logger);
+        verifyNoInteractions(logger);
     }
 
     @Test
@@ -64,7 +67,7 @@ class DeprecatedJandexArtifactsWarningTest {
         VaadinQuarkusProcessor.warnAboutDeprecatedJandexArtifacts(
                 List.of(dependency("vaadin-core-jandex", false)), Map.of());
 
-        Mockito.verifyNoInteractions(logger);
+        verifyNoInteractions(logger);
     }
 
     @Test
@@ -127,7 +130,7 @@ class DeprecatedJandexArtifactsWarningTest {
         ArgumentCaptor<String> message = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<Object> references = ArgumentCaptor
                 .forClass(Object.class);
-        Mockito.verify(logger).warn(message.capture(), references.capture());
+        verify(logger).warn(message.capture(), references.capture());
         assertTrue(message.getValue().contains("You can safely remove {}."),
                 message.getValue());
         return (String) references.getValue();

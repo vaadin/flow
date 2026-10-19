@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -43,6 +42,7 @@ import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @Isolated
 class ComponentFlagsTest extends NodeUpdateTestUtil {
@@ -67,7 +67,7 @@ class ComponentFlagsTest extends NodeUpdateTestUtil {
         propertiesDir = Files
                 .createTempDirectory(temporaryFolder.toPath(), "tmp").toFile();
 
-        featureFlags = new FeatureFlags(Mockito.mock(Lookup.class));
+        featureFlags = new FeatureFlags(mock(Lookup.class));
         featureFlags.setPropertiesLocation(propertiesDir);
 
         frontendDirectory = new File(tmpRoot, DEFAULT_FRONTEND_DIR);

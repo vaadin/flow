@@ -165,6 +165,7 @@ public class OpenInNewTabAction extends Action {
      * @param handler
      *            produces the response when the URL is fetched, not
      *            {@code null}
+     * @since 25.4
      */
     public OpenInNewTabAction(DownloadHandler handler) {
         this(new DownloadHandlerInput(

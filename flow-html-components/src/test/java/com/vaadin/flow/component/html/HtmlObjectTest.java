@@ -20,7 +20,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -36,6 +35,9 @@ import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class HtmlObjectTest extends ComponentTest {
 
@@ -62,7 +64,7 @@ class HtmlObjectTest extends ComponentTest {
         UI.setCurrent(ui);
         HtmlObject object = new HtmlObject();
         StreamResource resource = new StreamResource("foo",
-                Mockito.mock(StreamResourceWriter.class));
+                mock(StreamResourceWriter.class));
         object.setData(resource);
 
         URI uri = StreamResourceRegistry.getURI(resource);
@@ -76,7 +78,7 @@ class HtmlObjectTest extends ComponentTest {
         UI ui = new UI();
         UI.setCurrent(ui);
         StreamResource resource = new StreamResource("foo",
-                Mockito.mock(StreamResourceWriter.class));
+                mock(StreamResourceWriter.class));
 
         HtmlObject object = new HtmlObject(resource);
 
@@ -115,11 +117,10 @@ class HtmlObjectTest extends ComponentTest {
 
     @Test
     void downloadHandler_isSetToInline() {
-        Element element = Mockito.mock(Element.class);
-        StateNode node = Mockito.mock(StateNode.class);
-        Mockito.when(element.getNode()).thenReturn(node);
-        Mockito.when(node.getFeatureIfInitialized(Mockito.any()))
-                .thenReturn(Optional.empty());
+        Element element = mock(Element.class);
+        StateNode node = mock(StateNode.class);
+        when(element.getNode()).thenReturn(node);
+        when(node.getFeatureIfInitialized(any())).thenReturn(Optional.empty());
 
         class TestHtmlObject extends HtmlObject {
             public TestHtmlObject(DownloadHandler downloadHandler) {

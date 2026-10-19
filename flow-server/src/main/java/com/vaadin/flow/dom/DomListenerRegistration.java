@@ -77,6 +77,7 @@ public interface DomListenerRegistration extends Registration {
      *            containing <code>null</code>
      * @return this registration, for chaining
      * @see #addEventData(String)
+     * @since 25.4
      */
     default DomListenerRegistration addEventData(List<String> eventData) {
         if (eventData == null) {
