@@ -17,10 +17,19 @@ package com.vaadin.quarkus.deployment;
 
 import jakarta.inject.Inject;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -28,6 +37,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import io.quarkus.bootstrap.classloading.QuarkusClassLoader;
+import io.quarkus.bootstrap.model.ApplicationModel;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
 import io.quarkus.deployment.annotations.ExecutionTime;
@@ -41,9 +51,15 @@ import io.quarkus.deployment.builditem.nativeimage.NativeImageResourcePatternsBu
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveClassBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.RuntimeInitializedPackageBuildItem;
+import io.quarkus.deployment.builditem.nativeimage.ServiceProviderBuildItem;
 import io.quarkus.deployment.pkg.NativeConfig;
+import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
+import io.quarkus.deployment.util.JandexUtil;
 import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
+import io.quarkus.maven.dependency.ResolvedDependency;
+import io.quarkus.paths.PathTree;
+import io.quarkus.undertow.deployment.ServletContextAttributeBuildItem;
 import io.quarkus.undertow.deployment.ServletDeploymentManagerBuildItem;
 import io.quarkus.vertx.http.deployment.DefaultRouteBuildItem;
 import org.atmosphere.cache.UUIDBroadcasterCache;
@@ -80,6 +96,8 @@ import org.jboss.jandex.IndexView;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 import org.objectweb.asm.Opcodes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -101,13 +119,15 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.auth.AccessDeniedErrorRouter;
+import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.signals.Id;
+import com.vaadin.quarkus.VaadinServletStartupRecorder;
 import com.vaadin.quarkus.deployment.nativebuild.AtmospherePatches;
-import com.vaadin.quarkus.graal.AtmosphereDeferredInitializerRecorder;
-import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
+import com.vaadin.quarkus.graal.AtmosphereRecorder;
+import com.vaadin.quarkus.graal.QuarkusJSR356AsyncSupport;
 
 /**
  * A processor that applies necessary steps to build a native image for a Vaadin
@@ -115,17 +135,37 @@ import com.vaadin.quarkus.graal.DelayedSchedulerExecutorsFactory;
  * <p>
  * <ul>
  * <li>Patches Atmosphere
- * <li>Defers Atmosphere initialization at RUNTIME_INIT
+ * <li>Registers the push WebSocket endpoints at STATIC_INIT
+ * <li>Initializes Atmosphere and the Vaadin servlets at RUNTIME_INIT
  * <li>Generates stub classes for DAU integration if license checker is not
  * present at runtime
  * <li>Registers classes for reflection
  * <li>Registers the JDK proxies of the JavaScript definitions
+ * <li>Registers the service providers Flow loads with {@link ServiceLoader}
  * </ul>
  */
 public class VaadinQuarkusNativeProcessor {
 
+    private static final Logger LOG = LoggerFactory
+            .getLogger(VaadinQuarkusNativeProcessor.class);
+
+    private static final String SERVICES_FOLDER = "META-INF/services";
+
     private static final DotName JS_DEFINITION = DotName
             .createSimple(JsDefinition.class);
+
+    // FlowShortcut.js and FlowWebPush.js are client-side helpers Flow reads
+    // from the classpath at runtime. The rest of META-INF/frontend is
+    // build-time input for Vite and is served from the production bundle, so
+    // it is deliberately left out.
+    // Visible for testing
+    static final List<String> NATIVE_RESOURCE_GLOBS = List.of(
+            "META-INF/VAADIN/**", "com/vaadin/**", "vaadin-i18n/**",
+            "META-INF/frontend/FlowShortcut.js",
+            "META-INF/frontend/FlowWebPush.js",
+            "org/atmosphere/util/version.properties",
+            "META-INF/maven/com.vaadin/vaadin-core/pom.properties",
+            "vaadin-featureflags.properties");
 
     @BuildStep(onlyIf = IsNativeBuild.class)
     void patchAtmosphere(CombinedIndexBuildItem index,
@@ -135,12 +175,112 @@ public class VaadinQuarkusNativeProcessor {
         patcher.apply(producer);
     }
 
+    /*
+     * Atmosphere starts thread pools when it is initialized, which the image
+     * build does not allow, so JSR356WebsocketInitializer must not initialize
+     * it while the servlet container is deployed at STATIC_INIT.
+     */
+    @BuildStep(onlyIf = IsNativeBuild.class)
+    ServletContextAttributeBuildItem skipAtmosphereInitializationOnDeploy() {
+        return new ServletContextAttributeBuildItem(
+                JSR356WebsocketInitializer.SKIP_INITIALIZATION_ATTRIBUTE,
+                Boolean.TRUE);
+    }
+
+    @BuildStep(onlyIf = IsNativeBuild.class)
+    @Record(ExecutionTime.STATIC_INIT)
+    void registerPushEndpoints(AtmosphereRecorder recorder,
+            ServletDeploymentManagerBuildItem deploymentManager,
+            List<VaadinServletBuildItem> vaadinServlets) {
+        recorder.registerPushEndpoints(deploymentManager.getDeploymentManager(),
+                vaadinServlets.stream()
+                        .map(VaadinServletBuildItem::getServletName).toList());
+    }
+
+    /*
+     * STATIC_INIT runs while the native image is built, so the Vaadin servlets
+     * are initialized here instead, to create their configuration from the
+     * runtime configuration. Atmosphere is initialized first, so that the
+     * servlets use the instances the push endpoints look up. Producing
+     * DefaultRouteBuildItem makes this run before the HTTP router serves
+     * requests.
+     */
     @BuildStep(onlyIf = IsNativeBuild.class)
     @Record(ExecutionTime.RUNTIME_INIT)
     @Produce(DefaultRouteBuildItem.class)
-    void deferAtmosphereInit(AtmosphereDeferredInitializerRecorder recorder,
-            ServletDeploymentManagerBuildItem deploymentManager) {
-        recorder.initAtmosphere(deploymentManager.getDeploymentManager());
+    void initAtmosphereAndVaadinServlets(AtmosphereRecorder atmosphereRecorder,
+            VaadinServletStartupRecorder servletRecorder,
+            ServletDeploymentManagerBuildItem deploymentManager,
+            List<VaadinServletBuildItem> vaadinServlets) {
+        List<String> servletNames = vaadinServlets.stream()
+                .sorted(Comparator
+                        .comparingInt(VaadinServletBuildItem::getLoadOnStartup))
+                .map(VaadinServletBuildItem::getServletName).toList();
+        atmosphereRecorder.initAtmosphere(
+                deploymentManager.getDeploymentManager(), servletNames);
+        servletRecorder.initServlets(deploymentManager.getDeploymentManager(),
+                servletNames);
+    }
+
+    /**
+     * Registers the providers of the service interfaces that Flow loads with
+     * {@link ServiceLoader} at runtime.
+     * <p>
+     * Quarkus builds native images without the GraalVM feature that registers
+     * every provider listed in {@code META-INF/services}, so a provider that is
+     * not registered here is not found in the native binary. The Vaadin
+     * servlets start when the binary starts, so the lookups cannot happen on
+     * the build JVM instead.
+     * <p>
+     * Every service interface in a {@code com.vaadin} package that has a
+     * provider anywhere on the runtime classpath is registered, so that a new
+     * Flow service interface, and a provider in an add-on or in the
+     * application, needs no change here. Service interfaces of other libraries
+     * are left to their own extensions.
+     */
+    @BuildStep(onlyIf = IsNativeBuild.class)
+    void registerServiceProviders(CurateOutcomeBuildItem curateOutcome,
+            BuildProducer<ServiceProviderBuildItem> serviceProviders) {
+        ApplicationModel model = curateOutcome.getApplicationModel();
+        findVaadinServiceInterfaces(Stream
+                .concat(Stream.of(model.getAppArtifact()),
+                        model.getRuntimeDependencies().stream())
+                .map(ResolvedDependency::getContentTree)).stream()
+                .map(ServiceProviderBuildItem::allProvidersFromClassPath)
+                .forEach(serviceProviders::produce);
+    }
+
+    /**
+     * Collects the service interfaces in a {@code com.vaadin} package that the
+     * given archives list providers for in {@code META-INF/services}.
+     * <p>
+     * Not private for testing purposes only.
+     *
+     * @param archives
+     *            the content of the archives on the classpath
+     * @return the names of the service interfaces, sorted
+     */
+    static Set<String> findVaadinServiceInterfaces(Stream<PathTree> archives) {
+        Set<String> serviceInterfaces = new TreeSet<>();
+        // apply() rather than walkIfContains(), which a dependency that is a
+        // single file, not a folder or an archive, does not support
+        archives.forEach(archive -> archive.apply(SERVICES_FOLDER, folder -> {
+            if (folder != null) {
+                try (Stream<Path> files = Files.list(folder.getPath())) {
+                    files.filter(Files::isRegularFile)
+                            .map(file -> file.getFileName().toString())
+                            .filter(name -> name.startsWith("com.vaadin."))
+                            .forEach(serviceInterfaces::add);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(
+                            "Unable to list the service files in "
+                                    + archive.getRoots(),
+                            e);
+                }
+            }
+            return null;
+        }));
+        return serviceInterfaces;
     }
 
     /*
@@ -305,19 +445,8 @@ public class VaadinQuarkusNativeProcessor {
 
         IndexView index = combinedIndex.getIndex();
 
-        // FlowShortcut.js and FlowWebPush.js are client-side helpers Flow reads
-        // from the classpath at runtime. The rest of META-INF/frontend is
-        // build-time input for Vite and is served from the production bundle,
-        // so it is deliberately left out.
         nativeImageResource.produce(NativeImageResourcePatternsBuildItem
-                .builder()
-                .includeGlobs("META-INF/VAADIN/**", "com/vaadin/**",
-                        "vaadin-i18n/**", "META-INF/frontend/FlowShortcut.js",
-                        "META-INF/frontend/FlowWebPush.js",
-                        "org/atmosphere/util/version.properties",
-                        "META-INF/maven/com.vaadin/vaadin-core/pom.properties",
-                        "vaadin-featureflags.properties")
-                .build());
+                .builder().includeGlobs(NATIVE_RESOURCE_GLOBS).build());
 
         runtimeInitializedPackage
                 .produce(new RuntimeInitializedPackageBuildItem(
@@ -352,13 +481,14 @@ public class VaadinQuarkusNativeProcessor {
                 index.getAllKnownSubclasses(AccessDeniedException.class));
         classes.addAll(index.getAllKnownSubclasses(NotFoundException.class));
         classes.addAll(index.getAllKnownSubclasses(Component.class));
-        classes.addAll(index.getAllKnownSubclasses(RouterLayout.class));
-        classes.addAll(index.getAllKnownSubclasses(HasErrorParameter.class));
+        classes.addAll(index.getAllKnownImplementations(RouterLayout.class));
+        classes.addAll(
+                index.getAllKnownImplementations(HasErrorParameter.class));
         classes.addAll(index.getAllKnownSubclasses(ComponentEvent.class));
-        classes.addAll(index.getAllKnownSubclasses(HasUrlParameter.class));
+        classes.addAll(index.getAllKnownImplementations(HasUrlParameter.class));
         classes.add(index.getClassByName(
                 "com.vaadin.flow.component.littemplate.LitTemplateParser$LitTemplateParserFactory"));
-        classes.addAll(index.getAllKnownSubclasses(
+        classes.addAll(index.getAllKnownImplementations(
                 "com.vaadin.flow.data.converter.Converter"));
 
         reflectiveClass
@@ -370,6 +500,13 @@ public class VaadinQuarkusNativeProcessor {
                                                 .toString())
                                         .toArray(String[]::new))
                                 .constructors().methods().fields().build());
+
+        Set<String> errorParameterTypes = detectErrorParameterTypes(index);
+        if (!errorParameterTypes.isEmpty()) {
+            reflectiveClass.produce(ReflectiveClassBuildItem
+                    .builder(errorParameterTypes.toArray(String[]::new))
+                    .constructors().methods().fields().build());
+        }
 
         Set<ClassInfo> classesWithHierarchy = new HashSet<>();
         classesWithHierarchy.addAll(getJsonClasses(index));
@@ -439,6 +576,51 @@ public class VaadinQuarkusNativeProcessor {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Collects the exception types that error views handle, which is the type
+     * argument of {@link HasErrorParameter}. Flow creates an instance of such
+     * an exception by reflection when a view reroutes to an error by exception
+     * type.
+     * <p>
+     * The types are returned by name, so that exception types that are not in
+     * the index, such as JDK exceptions, are registered too.
+     */
+    private static Set<String> detectErrorParameterTypes(IndexView index) {
+        DotName hasErrorParameter = DotName
+                .createSimple(HasErrorParameter.class);
+        Set<String> exceptionTypes = new HashSet<>();
+        for (ClassInfo errorView : index
+                .getAllKnownImplementations(hasErrorParameter)) {
+            List<Type> typeArguments;
+            try {
+                typeArguments = JandexUtil.resolveTypeParameters(
+                        errorView.name(), hasErrorParameter, index);
+            } catch (IllegalArgumentException e) {
+                LOG.warn(
+                        "Cannot find the exception type of error view {}, because a class in its hierarchy is not in the Jandex index. "
+                                + "Rerouting to this error by exception type may fail in a native image.",
+                        errorView.name());
+                continue;
+            }
+            Type exceptionType = typeArguments.isEmpty() ? null
+                    : typeArguments.get(0);
+            if (exceptionType != null
+                    && exceptionType.kind() == Type.Kind.CLASS) {
+                exceptionTypes.add(exceptionType.name().toString());
+            } else if (!errorView.isInterface()
+                    && !Modifier.isAbstract(errorView.flags())) {
+                // A generic abstract error view leaves a type variable. Its
+                // subclasses give the concrete type, so only a class that can
+                // be used as an error view is reported.
+                LOG.warn(
+                        "Cannot find the exception type of error view {}: the type argument of HasErrorParameter is {}. "
+                                + "Rerouting to this error by exception type may fail in a native image.",
+                        errorView.name(), exceptionType);
+            }
+        }
+        return exceptionTypes;
+    }
+
     private Set<ClassInfo> getJsonClasses(IndexView index) {
         Set<ClassInfo> classes = new HashSet<>();
         Set<ClassInfo> jsonTypes = getAnnotatedClasses(index,
@@ -465,13 +647,13 @@ public class VaadinQuarkusNativeProcessor {
 
     private Stream<ClassInfo> collectClassesInPackage(IndexView index,
             String basePackage, boolean recursive) {
-        Predicate<ClassInfo> predicate = recursive
-                ? classInfo -> classInfo.name().packagePrefix() != null
-                        && classInfo.name().packagePrefix()
-                                .startsWith(basePackage)
-                : classInfo -> classInfo.name().packagePrefix() != null
-                        && classInfo.name().packagePrefix().equals(basePackage);
-        return index.getKnownClasses().stream().filter(predicate);
+        Predicate<String> inPackage = recursive
+                ? packageName -> packageName.startsWith(basePackage)
+                : basePackage::equals;
+        return index.getKnownClasses().stream().filter(classInfo -> {
+            String packageName = classInfo.name().packagePrefix();
+            return packageName != null && inPackage.test(packageName);
+        });
     }
 
     /**
@@ -488,10 +670,9 @@ public class VaadinQuarkusNativeProcessor {
      *         inner classes
      */
     static boolean isI18nClassName(String className) {
-        // matches() anchors the whole name, so what used to be an alternation
-        // of anchors inside the group is simply an optional group: the name
-        // either ends at I18n/I18N or continues into an inner class.
-        return className.matches(".*I18[nN](\\$.*)?");
+        // The name either ends at I18n/I18N or continues into an inner class
+        return className.endsWith("I18n") || className.endsWith("I18N")
+                || className.contains("I18n$") || className.contains("I18N$");
     }
 
     // These should really go into the separate components but are here for now
@@ -552,10 +733,14 @@ public class VaadinQuarkusNativeProcessor {
                 .constructors().methods().build());
 
         reflectiveClass.produce(ReflectiveClassBuildItem
-                .builder(DelayedSchedulerExecutorsFactory.class).constructors()
+                .builder(QuarkusJSR356AsyncSupport.class).constructors()
                 .build());
     }
 
+    /**
+     * Build step condition that is true when the application is built as a
+     * native image.
+     */
     public static class IsNativeBuild implements BooleanSupplier {
         @Inject
         NativeConfig nativeConfig;

@@ -27,7 +27,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 /**
  * Owns the app process. The daemon launches the app JVM directly rather than
@@ -49,9 +51,6 @@ final class AppProcess {
         STOPPED, STARTING, RUNNING, CRASHED
     }
 
-    /** How long an app may take to register before a start gives up on it. */
-    private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(5);
-
     /**
      * How long a registered app has to report a listening web server before the
      * start settles for "registered and still alive". A start returns the
@@ -63,7 +62,26 @@ final class AppProcess {
     private static final Duration SETTLE = Duration
             .ofMillis(Long.getLong("vaadin.dev.startSettleMillis", 15_000L));
 
+    /**
+     * How long a start holds on once the launch's own deployment is in place,
+     * under a runtime that replaces the one it booted. The replaced deployment
+     * closes its registration before the server logs the replacement, but the
+     * daemon learns of that close on the connection's own thread and reads the
+     * line off the log on this one; this is the window in which a registration
+     * that is already gone can still read as current. See {@link StartWait}.
+     */
+    private static final Duration DEPLOY_SETTLE = Duration
+            .ofMillis(Long.getLong("vaadin.dev.deploySettleMillis", 1_000L));
+
     private static final long POLL_MILLIS = 100L;
+
+    /**
+     * The token setting as it travels, up to the whitespace that ends it. The
+     * value itself is matched rather than named, so a change to how the token
+     * is built cannot leave part of it behind; see {@link #redact}.
+     */
+    private static final Pattern TOKEN_SETTING = Pattern
+            .compile("-Dvaadin\\.devloop\\.token=\\S*");
 
     /**
      * A start's verdict. Callers need the answer itself, not a message to match
@@ -106,12 +124,102 @@ final class AppProcess {
     static final class Run {
         final Process process;
         final Path logFile;
+        /** The files the launch reads, as stamped when it was spawned. */
+        final Compile.Snapshot snapshot;
         final CountDownLatch registrationLatch = new CountDownLatch(1);
         final AtomicBoolean stopExpected = new AtomicBoolean();
+        /**
+         * Connections open for this launch. More than one at a time is how an
+         * application server redeploys: the deployment it booted from its
+         * persisted configuration registers, and the one the build plugin
+         * deploys over it registers too, before or after the first has closed.
+         */
+        final AtomicInteger openRegistrations = new AtomicInteger();
 
-        Run(Process process, Path logFile) {
+        Run(Process process, Path logFile, Compile.Snapshot snapshot) {
             this.process = process;
             this.logFile = logFile;
+            this.snapshot = snapshot;
+        }
+    }
+
+    /**
+     * What a start has seen of the app so far, and whether that is enough to
+     * call it running. Apart from the loop that feeds it, because the order the
+     * signals arrive in is the whole difficulty and is not something a test can
+     * make a real server repeat.
+     * <p>
+     * Under a runtime that {@link AppRuntime#redeploysAfterBoot redeploys after
+     * boot}, neither the serving line nor the settle window ends a start: the
+     * deployment the server booted registers and serves as convincingly as the
+     * one that stays, and replacing it can outlast the window. Only the
+     * launch's own deployment does, and only once {@link #DEPLOY_SETTLE} has
+     * given the replaced one's close time to arrive.
+     */
+    static final class StartWait {
+        private final boolean redeploys;
+        private final long settle;
+        private final long deploySettle;
+        private boolean up;
+        private boolean serving;
+        private boolean deployed;
+        private long settleBy;
+        private long deploySettleBy;
+
+        StartWait(boolean redeploys) {
+            this(redeploys, SETTLE, DEPLOY_SETTLE);
+        }
+
+        StartWait(boolean redeploys, Duration settle, Duration deploySettle) {
+            this.redeploys = redeploys;
+            this.settle = settle.toNanos();
+            this.deploySettle = deploySettle.toNanos();
+        }
+
+        void markRegistered(long now) {
+            up = true;
+            settleBy = now + settle;
+        }
+
+        void markUnregistered() {
+            up = false;
+        }
+
+        void markServing() {
+            serving = true;
+        }
+
+        void markDeployed(long now) {
+            if (!deployed) {
+                deployed = true;
+                deploySettleBy = now + deploySettle;
+            }
+        }
+
+        boolean isUp() {
+            return up;
+        }
+
+        boolean isServing() {
+            return serving;
+        }
+
+        /**
+         * Whether the app is registered but still waiting for the launch's own
+         * deployment, which nothing but the startup timeout bounds.
+         */
+        boolean awaitsDeployment() {
+            return redeploys && up && !deployed;
+        }
+
+        boolean isOver(long now) {
+            if (!up) {
+                return false;
+            }
+            if (redeploys && (!deployed || now < deploySettleBy)) {
+                return false;
+            }
+            return serving || now >= settleBy;
         }
     }
 
@@ -156,23 +264,15 @@ final class AppProcess {
     }
 
     /**
-     * When the running JVM started, in epoch milliseconds.
-     * <p>
-     * This is the frontend leg's substitute for a build artifact. A Java source
-     * is stale when it is newer than its {@code .class} and a resource when it
-     * is newer than its classpath copy, but a frontend file has neither - what
-     * read it was the application, at startup. So a frontend file newer than
-     * this has not been folded into anything yet, whatever the daemon's own
-     * fingerprints say.
+     * The files the running application was launched with, as stamped the
+     * moment its process was spawned; see {@link Compile.Snapshot}.
      *
-     * @return the start time, or empty when there is no process or the platform
-     *         does not report one
+     * @return the snapshot, or empty when there is no process
      */
-    Optional<Long> startedAtMillis() {
+    Optional<Compile.Snapshot> launchSnapshot() {
         Run current = run;
         return current == null || !current.process.isAlive() ? Optional.empty()
-                : current.process.info().startInstant()
-                        .map(java.time.Instant::toEpochMilli);
+                : Optional.of(current.snapshot);
     }
 
     String mode() {
@@ -227,15 +327,37 @@ final class AppProcess {
      */
     private List<String> viaArgFile(List<String> command) throws IOException {
         Path file = Launch.workDir(root).resolve("jvm-args.txt");
+        writeArgFile(file, command.subList(1, command.size()));
+        return List.of(command.get(0), "@" + file);
+    }
+
+    /**
+     * Writes a JVM argument file, one quoted argument per line.
+     * <p>
+     * Shared with {@code MavenGoalRuntime}, which reaches for an argument file
+     * for a different reason: not length, but a channel that would otherwise
+     * mangle the value - Maven splits a {@code List<String>} user property on
+     * commas, and an argument file is the way to hand the JVM a value with a
+     * comma in it regardless. The quoting rules are the JVM's own either way,
+     * so there is one implementation of them.
+     *
+     * @param file
+     *            the file to write, whose directory is created if it is missing
+     * @param arguments
+     *            the arguments to write, each becoming one line
+     * @throws IOException
+     *             if the file cannot be written
+     */
+    static void writeArgFile(Path file, List<String> arguments)
+            throws IOException {
         Files.createDirectories(file.getParent());
         StringBuilder sb = new StringBuilder();
-        for (String argument : command.subList(1, command.size())) {
+        for (String argument : arguments) {
             sb.append('"').append(
                     argument.replace("\\", "\\\\").replace("\"", "\\\""))
                     .append('"').append('\n');
         }
         Files.writeString(file, sb.toString());
-        return List.of(command.get(0), "@" + file);
     }
 
     /**
@@ -253,11 +375,45 @@ final class AppProcess {
      *             if the command line cannot be built or the process started
      */
     Startup start(Launch.Log log, String launchKind) throws IOException {
+        return start(log, launchKind, null);
+    }
+
+    /**
+     * Launches the application with the JVM flags a {@code start} or
+     * {@code restart} asked for; see {@link Launch#requestJvmFlags}.
+     * <p>
+     * Set here, under the lifecycle lock, rather than by the caller: an app
+     * that is already up keeps the flags it was launched with, so the flags
+     * that the next escalated apply relaunches with stay the ones the running
+     * app has.
+     *
+     * @param log
+     *            where provisioning progress goes
+     * @param launchKind
+     *            see {@link #start(Launch.Log, String)}
+     * @param jvmFlags
+     *            the flags from {@code --jvm-args}, or {@code null} to keep the
+     *            ones the last launch had
+     * @return the outcome of the launch
+     * @throws IOException
+     *             if the command line cannot be built or the process started
+     */
+    Startup start(Launch.Log log, String launchKind, List<String> jvmFlags)
+            throws IOException {
         lifecycle.lock();
         try {
             if (alreadyLaunching()) {
-                return Startup.ok(state == State.STARTING ? "already starting"
-                        : "already running");
+                String message = state == State.STARTING ? "already starting"
+                        : "already running";
+                if (jvmFlags != null
+                        && !jvmFlags.equals(launch.requestedJvmFlags())) {
+                    message += "; the JVM flags given apply only to a new "
+                            + "launch: restart --jvm-args to change them";
+                }
+                return Startup.ok(message);
+            }
+            if (jvmFlags != null) {
+                launch.requestJvmFlags(jvmFlags);
             }
             // Composing resolves, and the order matters: how a WAR starts is
             // read out of the model Maven writes as it resolves, so asking
@@ -265,13 +421,20 @@ final class AppProcess {
             // built - a fresh clone, or anything after a mvn clean - and fail
             // with "cannot tell how to start this application". Asked after,
             // the answer is the one composing already settled on.
-            AppRuntime.Invocation invocation = launch.invocation(
-                    Daemon.currentPort(), Daemon.currentToken(), launchKind,
-                    log);
+            Launch.Composed composed = launch.invocation(Daemon.currentPort(),
+                    Daemon.currentToken(), launchKind, log);
+            AppRuntime.Invocation invocation = composed.invocation();
             AppRuntime runtime = launch.runtime();
             List<String> command = invocation.command();
             Path appLog = Launch.workDir(root).resolve("app.log");
             Files.createDirectories(appLog.getParent());
+            // As close to the spawn as it can be while still ahead of
+            // markStarting, so that a walk which fails leaves no launch open
+            // behind it. An edit made after this is one the launch may or may
+            // not read, and reporting it as a change is the safe way round:
+            // the worst it costs is one apply more than was needed - and for
+            // a bundled frontend file, whose change escalates, one restart.
+            Compile.Snapshot snapshot = Compile.Snapshot.of(composed.project());
 
             markStarting();
 
@@ -290,7 +453,7 @@ final class AppProcess {
                             ProcessBuilder.Redirect.to(appLog.toFile()));
             builder.environment().putAll(invocation.environment());
             Process started = builder.start();
-            Run current = beginRun(started, appLog);
+            Run current = beginRun(started, appLog, snapshot);
             log.line("app pid " + started.pid() + ", log " + appLog);
 
             started.onExit().thenAccept(exited -> handleExit(current));
@@ -304,34 +467,55 @@ final class AppProcess {
             AppLog.Watch watching = new AppLog.Watch(appLog);
             this.watch = watching;
             CountDownLatch latch = current.registrationLatch;
-            long registerBy = System.nanoTime() + STARTUP_TIMEOUT.toNanos();
-            long settleBy = 0;
-            boolean up = false;
-            boolean serving = false;
+            // The runtime's own, because a container that provisions a
+            // server before starting one needs a window an ordinary boot does
+            // not; see AppRuntime#startupTimeout.
+            Duration startupTimeout = runtime.startupTimeout();
+            long registerBy = System.nanoTime() + startupTimeout.toNanos();
+            StartWait wait = new StartWait(runtime.redeploysAfterBoot());
 
             while (true) {
-                serving = serving
-                        || watching.drain().stream().anyMatch(runtime::serving);
-                if (up && (serving || System.nanoTime() >= settleBy)) {
+                List<String> lines = watching.drain();
+                if (lines.stream().anyMatch(runtime::serving)) {
+                    wait.markServing();
+                }
+                if (lines.stream().anyMatch(runtime::deployed)) {
+                    wait.markDeployed(System.nanoTime());
+                }
+                if (wait.isUp() && !registered) {
+                    // The deployment that registered was undeployed before
+                    // the start was over: an application server replacing the
+                    // deployment its configuration persisted with the one the
+                    // build plugin deploys. Returning now would hand every
+                    // apply to a copy that is gone, so the start waits for
+                    // the replacement to register.
+                    wait.markUnregistered();
+                    log.line("the app's registration closed before the start "
+                            + "was over; waiting for it to register again");
+                }
+                if (wait.isOver(System.nanoTime())) {
                     state = State.RUNNING;
-                    return Startup.ok(serving ? "running"
+                    return Startup.ok(wait.isServing() ? "running"
                             : "running (registered; the app logged no server port)");
                 }
                 if (!started.isAlive()) {
                     // The authoritative signal, and the only one carrying a
                     // code.
                     return failed("app exited with code " + started.exitValue()
-                            + (up ? " right after registering, before it was serving"
+                            + (wait.isUp()
+                                    ? " right after registering, before it was serving"
                                     : " before registering"),
                             appLog);
                 }
-                if (!up && System.nanoTime() >= registerBy) {
+                if (System.nanoTime() >= registerBy
+                        && (!wait.isUp() || wait.awaitsDeployment())) {
                     // Still alive, so this launch has to be ended rather than
                     // merely reported: see abandon.
-                    return abandon(current,
-                            "app did not register within "
-                                    + STARTUP_TIMEOUT.toMinutes() + " minutes",
-                            appLog);
+                    return abandon(current, (wait.isUp()
+                            ? "the app registered, but its deployment was not "
+                                    + "in place within "
+                            : "app did not register within ")
+                            + startupTimeout.toMinutes() + " minutes", appLog);
                 }
                 try {
                     // The latch also fires when the process exits, so
@@ -339,12 +523,13 @@ final class AppProcess {
                     // is
                     // decided by the flag the connector sets, not by the
                     // wake-up.
-                    if (up) {
+                    if (wait.isUp() || (latch.getCount() == 0 && !registered)) {
                         Thread.sleep(POLL_MILLIS);
-                    } else if (latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
+                    }
+                    if (!wait.isUp()
+                            && latch.await(POLL_MILLIS, TimeUnit.MILLISECONDS)
                             && registered) {
-                        up = true;
-                        settleBy = System.nanoTime() + SETTLE.toNanos();
+                        wait.markRegistered(System.nanoTime());
                         log.line(
                                 "registered; waiting for the web server to bind");
                     }
@@ -378,11 +563,19 @@ final class AppProcess {
                 .collect(java.util.stream.Collectors.joining(" "));
     }
 
-    /** The auth token must never reach stdout or a log file. */
-    private static String redact(String value) {
-        return value.startsWith("-Dvaadin.devloop.token=")
-                ? "-Dvaadin.devloop.token=<redacted>"
-                : value;
+    /**
+     * The auth token must never reach stdout or a log file.
+     * <p>
+     * Matched wherever it sits in the value rather than only at its start. A
+     * forked container takes every flag of the loop's in one argument of its
+     * own - {@code -Dwildfly.javaOpts=...} and its equivalents, see
+     * {@code MavenGoalRuntime.forkedJvmFlags} - so the token is in the middle
+     * of that argument, and the same holds for the {@code MAVEN_OPTS} value
+     * logged beside the command.
+     */
+    static String redact(String value) {
+        return TOKEN_SETTING.matcher(value)
+                .replaceAll("-Dvaadin.devloop.token=<redacted>");
     }
 
     String stop() {
@@ -560,8 +753,8 @@ final class AppProcess {
      * Publishes a launch as the current run, which is what makes its exit
      * callback authoritative and every earlier one obsolete.
      */
-    Run beginRun(Process started, Path appLog) {
-        Run current = new Run(started, appLog);
+    Run beginRun(Process started, Path appLog, Compile.Snapshot snapshot) {
+        Run current = new Run(started, appLog, snapshot);
         this.run = current;
         return current;
     }
@@ -615,6 +808,7 @@ final class AppProcess {
             return Optional.empty();
         }
         this.mode = reportedMode;
+        current.openRegistrations.incrementAndGet();
         this.registered = true;
         this.state = State.RUNNING;
         current.registrationLatch.countDown();
@@ -660,13 +854,16 @@ final class AppProcess {
      * <p>
      * The socket of a superseded app closes on its own schedule, which can be
      * after a restart is already registered, so only the run still current may
-     * clear the flag.
+     * clear the flag - and only once no connection of that run is left open,
+     * since a deployment the server replaced can close after its replacement
+     * has registered.
      *
      * @param registration
      *            the run the closing connection registered for
      */
     void onUnregistered(Run registration) {
-        if (run == registration) {
+        if (registration.openRegistrations.decrementAndGet() <= 0
+                && run == registration) {
             registered = false;
         }
     }

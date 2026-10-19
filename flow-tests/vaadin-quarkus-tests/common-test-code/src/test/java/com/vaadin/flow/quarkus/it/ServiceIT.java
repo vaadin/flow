@@ -32,6 +32,8 @@ import com.vaadin.flow.server.SessionDestroyEvent;
 import com.vaadin.flow.server.SessionInitEvent;
 import com.vaadin.flow.server.UIInitEvent;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @QuarkusIntegrationTest
 public class ServiceIT extends AbstractCdiIT {
 
@@ -63,18 +65,21 @@ public class ServiceIT extends AbstractCdiIT {
         // open another UI
         open();
 
-        Assertions.assertTrue(id.endsWith("-1"),
+        assertTrue(id.endsWith("-1"),
                 "The number of created beans must be 1 but it's "
                         + id.substring(id.indexOf("-") + 1));
         Assertions.assertEquals(id, getText("service-id"));
     }
 
     @Test
-    public void sessionExpiredMessageCustomized() {
+    public void sessionExpiredMessageCustomized() throws IOException {
         open();
         click(ServiceView.EXPIRE);
         click(ServiceView.ACTION);
         assertSystemMessageEquals(TestSystemMessagesProvider.EXPIRED_BY_TEST);
+        // Wait for the session destroy, otherwise it may happen after the
+        // next test has reset the counters
+        waitForCount(1, SessionDestroyEvent.class.getSimpleName());
     }
 
     @Test
@@ -102,7 +107,7 @@ public class ServiceIT extends AbstractCdiIT {
         open();
         assertCountEquals(0, destroyCounter);
         click(ServiceView.EXPIRE);
-        assertCountEquals(1, destroyCounter);
+        waitForCount(1, destroyCounter);
     }
 
     @Test

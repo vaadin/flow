@@ -24,8 +24,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -60,6 +58,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ServerRpcHandlerTest {
 
@@ -85,34 +88,33 @@ class ServerRpcHandlerTest {
 
     @BeforeEach
     void setup() {
-        request = Mockito.mock(VaadinRequest.class);
-        service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getEventBus())
+        request = mock(VaadinRequest.class);
+        service = mock(VaadinService.class);
+        when(service.getEventBus())
                 .thenReturn(new VaadinServiceEventBus(service));
-        session = Mockito.mock(VaadinSession.class);
-        wrappedSession = Mockito.mock(WrappedSession.class);
-        ui = Mockito.mock(UI.class);
-        uiInternals = Mockito.mock(UIInternals.class);
-        dependencyList = Mockito.mock(DependencyList.class);
+        session = mock(VaadinSession.class);
+        wrappedSession = mock(WrappedSession.class);
+        ui = mock(UI.class);
+        uiInternals = mock(UIInternals.class);
+        dependencyList = mock(DependencyList.class);
 
-        Mockito.when(request.getService()).thenReturn(service);
-        Mockito.when(request.getWrappedSession()).thenReturn(wrappedSession);
-        Mockito.when(session.getService()).thenReturn(service);
+        when(request.getService()).thenReturn(service);
+        when(request.getWrappedSession()).thenReturn(wrappedSession);
+        when(session.getService()).thenReturn(service);
 
-        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
-        Mockito.when(ui.getSession()).thenReturn(session);
-        Mockito.when(ui.getCsrfToken()).thenReturn(csrfToken);
+        when(ui.getInternals()).thenReturn(uiInternals);
+        when(ui.getSession()).thenReturn(session);
+        when(ui.getSessionOrThrow()).thenCallRealMethod();
+        when(ui.getCsrfToken()).thenReturn(csrfToken);
 
-        deploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration())
+        deploymentConfiguration = mock(DeploymentConfiguration.class);
+        when(service.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
-        Mockito.when(deploymentConfiguration.getMaxRequestBodySize())
-                .thenReturn(-1L);
+        when(deploymentConfiguration.getMaxRequestBodySize()).thenReturn(-1L);
 
         uiTree = new StateTree(uiInternals);
-        Mockito.when(uiInternals.getStateTree()).thenReturn(uiTree);
-        Mockito.when(uiInternals.getDependencyList())
-                .thenReturn(dependencyList);
+        when(uiInternals.getStateTree()).thenReturn(uiTree);
+        when(uiInternals.getDependencyList()).thenReturn(dependencyList);
 
         serverRpcHandler = new ServerRpcHandler();
     }
@@ -138,7 +140,7 @@ class ServerRpcHandlerTest {
         assertTrue(uiTree.hasDirtyNodes());
 
         // the dependencies-sent cache was cleared
-        Mockito.verify(dependencyList).clearPendingSendToClient();
+        verify(dependencyList).clearPendingSendToClient();
 
         assertEquals(1, events.size());
         assertSame(ui, events.get(0).getUI());
@@ -216,7 +218,7 @@ class ServerRpcHandlerTest {
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
         ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+        when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
                 .thenReturn(new EnforcementException("Block"));
 
         ui = new UI();
@@ -234,7 +236,7 @@ class ServerRpcHandlerTest {
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"ui-poll\" }], \"syncId\": 0, \"clientId\":0}");
         ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+        when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
                 .thenReturn(new EnforcementException("Block"));
 
         ui = new UI();
@@ -255,7 +257,7 @@ class ServerRpcHandlerTest {
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"ui-poll\" },{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
         ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+        when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
                 .thenReturn(new EnforcementException("Block"));
 
         ui = new UI();
@@ -273,7 +275,7 @@ class ServerRpcHandlerTest {
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"resynchronize\": true, \"clientId\":0}");
         ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+        when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
                 .thenReturn(new EnforcementException("Block"));
 
         ui = new UI();
@@ -291,7 +293,7 @@ class ServerRpcHandlerTest {
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"UNLOAD\": true, \"clientId\":0}");
         ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+        when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
                 .thenReturn(new EnforcementException("Block"));
 
         ui = new UI();
@@ -312,7 +314,7 @@ class ServerRpcHandlerTest {
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"channel\", \"node\" : 1, \"channel\": 0 }], \"syncId\": 0, \"clientId\":0}");
         ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+        when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
                 .thenReturn(new EnforcementException("Block"));
 
         ui = new UI();
@@ -333,7 +335,7 @@ class ServerRpcHandlerTest {
         StringReader reader = new StringReader("{\"csrfToken\": \"" + csrfToken
                 + "\", \"rpc\":[{\"type\": \"channel\", \"node\" : 1, \"channel\": 0 },{\"type\": \"event\", \"node\" : 1, \"event\": \"click\" }], \"syncId\": 0, \"clientId\":0}");
         ServerRpcHandler handler = new ServerRpcHandler();
-        Mockito.when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
+        when(request.getAttribute(DAUUtils.ENFORCEMENT_EXCEPTION_KEY))
                 .thenReturn(new EnforcementException("Block"));
 
         ui = new UI();
@@ -421,8 +423,7 @@ class ServerRpcHandlerTest {
     void handleRpc_mapSyncListenerThrows_firesRpcInvocationFailed_withSyncedPropertyAsName()
             throws InvalidUIDLSecurityKeyException, IOException,
             ServerRpcHandler.MessageIdSyncException {
-        Mockito.when(session.getErrorHandler())
-                .thenReturn(Mockito.mock(ErrorHandler.class));
+        when(session.getErrorHandler()).thenReturn(mock(ErrorHandler.class));
         List<String> sequence = new ArrayList<>();
         List<RpcInvocationFailedEvent> failed = new ArrayList<>();
         List<RpcInvocationEndedEvent> ended = new ArrayList<>();
@@ -517,8 +518,8 @@ class ServerRpcHandlerTest {
             ServerRpcHandler.MessageIdSyncException {
         // Nothing observes the invocation, which is the default: wrapping the
         // handling in the phase events must not change where a failure goes.
-        ErrorHandler errorHandler = Mockito.mock(ErrorHandler.class);
-        Mockito.when(session.getErrorHandler()).thenReturn(errorHandler);
+        ErrorHandler errorHandler = mock(ErrorHandler.class);
+        when(session.getErrorHandler()).thenReturn(errorHandler);
 
         ui = new UI();
         ui.getInternals().setSession(session);
@@ -538,7 +539,7 @@ class ServerRpcHandlerTest {
 
         ArgumentCaptor<ErrorEvent> captor = ArgumentCaptor
                 .forClass(ErrorEvent.class);
-        Mockito.verify(errorHandler).error(captor.capture());
+        verify(errorHandler).error(captor.capture());
         assertSame(failure, captor.getValue().getThrowable());
     }
 
@@ -677,10 +678,8 @@ class ServerRpcHandlerTest {
     }
 
     private void enableDau() {
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(true);
-        Mockito.when(deploymentConfiguration.getBooleanProperty(
-                ArgumentMatchers.eq(Constants.DAU_TOKEN),
-                ArgumentMatchers.anyBoolean())).thenReturn(true);
+        when(deploymentConfiguration.isProductionMode()).thenReturn(true);
+        when(deploymentConfiguration.getBooleanProperty(eq(Constants.DAU_TOKEN),
+                anyBoolean())).thenReturn(true);
     }
 }

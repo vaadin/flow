@@ -70,16 +70,19 @@ public class FrontendTools {
     /**
      * This is the version that is installed if there is no node installed or
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}.
+     * <p>
+     * The downloaded archive is verified against checksums shipped with Flow,
+     * so run {@code scripts/updateNodeChecksums.sh} after changing this.
      * 
      * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v26.10.0";
+    public static final String DEFAULT_NODE_VERSION = "v26.12.0";
     /**
      * This is the version shipped with the default Node version.
      * 
      * @since 9.0
      */
-    public static final String DEFAULT_NPM_VERSION = "11.19.1";
+    public static final String DEFAULT_NPM_VERSION = "11.20.0";
 
     public static final String DEFAULT_PNPM_VERSION = "11.26.0";
 

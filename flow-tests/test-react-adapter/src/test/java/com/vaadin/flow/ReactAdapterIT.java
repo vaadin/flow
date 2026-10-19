@@ -17,6 +17,7 @@ package com.vaadin.flow;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
@@ -115,6 +116,57 @@ public class ReactAdapterIT extends ChromeBrowserTest {
                 "The rendered component must be bound to the server-side state",
                 ReactAdapterView.TELEPORTED_VALUE,
                 container.$("input").all().get(0).getPropertyString("value"));
+    }
+
+    @Test
+    public void ownRootReconnectedQuickly_rendersComponentOnceAndStaysBound() {
+        open();
+
+        waitForDevServer();
+
+        // Moved into document.body and reconnected before the root exists
+        $(NativeButtonElement.class).id("moveOwnRootInputToBodyButton").click();
+        TestBenchElement adapter = $(TestBenchElement.class).id("ownRootInput");
+        waitUntil(driver -> !adapter.$("input").all().isEmpty());
+        Assert.assertEquals(ReactAdapterView.OWN_ROOT_VALUE,
+                adapter.$("input").first().getPropertyString("value"));
+        assertOwnRootInputRenderedOnceAndBound(adapter, "typed after move");
+
+        // Reconnected after the root has rendered
+        $(NativeButtonElement.class).id("reconnectOwnRootInputButton").click();
+        assertOwnRootInputRenderedOnceAndBound(adapter,
+                "typed after reconnect");
+
+        checkLogsForErrors();
+    }
+
+    private void assertOwnRootInputRenderedOnceAndBound(
+            TestBenchElement adapter, String typedValue) {
+        waitUntil(driver -> !adapter.$("input").all().isEmpty());
+        // Reports React's duplicate-root error, if any, for this reconnect
+        checkLogsForErrors();
+        Assert.assertEquals(
+                "Reconnected adapter element must render exactly one "
+                        + "React component",
+                1, adapter.$("input").all().size());
+
+        TestBenchElement input = adapter.$("input").first();
+        input.clear();
+        input.focus();
+        input.sendKeys(typedValue);
+        Assert.assertEquals("Typed value must reach the server", typedValue,
+                $(SpanElement.class).id("ownRootListenerOutput").getText());
+        Assert.assertEquals(typedValue, input.getPropertyString("value"));
+
+        $(NativeButtonElement.class).id("setOwnRootValueButton").click();
+        try {
+            waitUntil(driver -> ReactAdapterView.OWN_ROOT_SERVER_VALUE
+                    .equals(input.getPropertyString("value")));
+        } catch (TimeoutException e) {
+            Assert.fail("Value set on the server must be rendered, expected '"
+                    + ReactAdapterView.OWN_ROOT_SERVER_VALUE + "' but was '"
+                    + input.getPropertyString("value") + "'");
+        }
     }
 
     private TestBenchElement getAdapterElement() {

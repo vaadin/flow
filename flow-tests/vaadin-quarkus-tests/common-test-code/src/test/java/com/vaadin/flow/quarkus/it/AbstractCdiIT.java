@@ -24,10 +24,13 @@ import java.net.URL;
 
 import org.junit.Assert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.test.AbstractChromeIT;
 
 abstract public class AbstractCdiIT extends AbstractChromeIT {
+
+    private static final int COUNT_TIMEOUT_SECONDS = 10;
 
     protected void click(String elementId) {
         findElement(By.id(elementId)).click();
@@ -42,15 +45,27 @@ abstract public class AbstractCdiIT extends AbstractChromeIT {
         return findElement(By.id(id)).getText();
     }
 
-    protected void waitForCount(int expectedCount, String counter) {
-        waitUntil(driver -> {
-            try {
-                assertCountEquals(expectedCount, counter);
-                return true;
-            } catch (Exception ex) {
-                return false;
-            }
-        }, 1);
+    /**
+     * Waits for a counter to reach the expected value.
+     * <p>
+     * Use it for counters updated when a session is destroyed: Flow destroys
+     * the session at the end of the request, after the response has been sent,
+     * so the client can be idle before the counter is updated.
+     */
+    protected void waitForCount(int expectedCount, String counter)
+            throws IOException {
+        getCommandExecutor().waitForVaadin();
+        try {
+            waitUntil(driver -> {
+                try {
+                    return expectedCount == readCount(counter);
+                } catch (IOException ex) {
+                    return false;
+                }
+            }, COUNT_TIMEOUT_SECONDS);
+        } catch (TimeoutException ex) {
+            Assert.assertEquals(expectedCount, readCount(counter));
+        }
     }
 
     protected void assertCountEquals(int expectedCount, String counter)
@@ -68,8 +83,11 @@ abstract public class AbstractCdiIT extends AbstractChromeIT {
 
     protected int getCount(String id) throws IOException {
         getCommandExecutor().waitForVaadin();
-        String line = slurp("?getCount=" + id);
-        return Integer.parseInt(line);
+        return readCount(id);
+    }
+
+    private int readCount(String id) throws IOException {
+        return Integer.parseInt(slurp("?getCount=" + id));
     }
 
     private String slurp(String uri) throws IOException {

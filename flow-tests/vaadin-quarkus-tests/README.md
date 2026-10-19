@@ -11,7 +11,9 @@ mvn verify -f flow-tests/vaadin-quarkus-tests/pom.xml -pl production
 The modules are:
 
 - `common-test-code` — the views and the IT classes that `production` and
-  `development` both run; on its own it only checks that they compile
+  `development` both run; on its own it only checks that they compile. Its
+  test-jar holds the TestBench base classes in `com.vaadin.flow.test`, which
+  the modules with an application of their own depend on
 - `production` / `development` — the same application in production and in
   development mode
 - `embedded-plugin` — the same application built by the Vaadin plugin the
@@ -19,6 +21,8 @@ The modules are:
   the native image build uses
 - `push-dispatch-it` — a deadlock regression test for the Push dispatch
   default the extension sets
+- `custom-servlet-it` — an application whose only Vaadin servlet is a
+  user-defined one mapped to `/app/*`, checked in a browser under that prefix
 - `codestarts` — generates a project from the extension's codestart and
   compares it against the snapshots in `src/test/resources/__snapshots__`;
   drives no browser

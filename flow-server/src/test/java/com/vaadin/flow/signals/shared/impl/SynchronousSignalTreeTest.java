@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.StringNode;
@@ -47,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 class SynchronousSignalTreeTest {
 
@@ -323,7 +323,7 @@ class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
         Registration canceler = tree.observeNextChange(Id.ZERO,
-                immediate -> Assertions.fail());
+                immediate -> fail());
         canceler.remove();
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
@@ -338,7 +338,7 @@ class SynchronousSignalTreeTest {
         tree.commitSingleCommand(new SignalCommand.InsertCommand(child, Id.ZERO,
                 null, null, ListPosition.first()));
 
-        tree.observeNextChange(Id.ZERO, immediate -> Assertions.fail());
+        tree.observeNextChange(Id.ZERO, immediate -> fail());
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
                 child, new StringNode("value")));

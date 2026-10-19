@@ -53,15 +53,11 @@ final class Launch {
 
     /**
      * HotswapAgent plugins the loop will not have running; see
-     * {@link #jvmFlags} for what each of them would do.
-     * <p>
-     * Named here because the value has to reach HotswapAgent two different
-     * ways: as a system property, which is what works when the application owns
-     * the JVM, and as a {@code hotswap-agent.properties} on the application's
-     * own classpath, which is what works when it does not. See
-     * {@code MavenGoalRuntime#writeHotswapAgentProperties}.
+     * {@link #jvmFlags} for what each of them would do. Each entry is the
+     * {@code name} of the plugin's {@code @Plugin} annotation, which is not
+     * always the short one: Jackson's is {@code JacksonPlugin}.
      */
-    static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty";
+    static final String DISABLED_HOTSWAP_PLUGINS = "Vaadin,Spring,SpringBoot,Jetty,JacksonPlugin";
 
     /** Maven's epilogue, which says nothing about why a build failed. */
     static final Pattern BOILERPLATE = Pattern
@@ -78,6 +74,16 @@ final class Launch {
      */
     static final Pattern HELP_TAIL = Pattern
             .compile("\\s*+->\\s*+\\[Help \\d++\\]$");
+
+    /**
+     * The daemon property carrying the developer's own flags for the app JVM;
+     * see {@link #readConfiguredJvmFlags()}.
+     */
+    static final String JVM_ARGS_PROPERTY = "vaadin.dev.jvmArgs";
+
+    /** What separates the flags in {@value #JVM_ARGS_PROPERTY}. */
+    private static final Pattern JVM_ARGS_SEPARATOR = Pattern
+            .compile("[\\s|]+");
 
     private static final List<String> ADD_OPENS = List.of("java.base/java.lang",
             "java.base/java.lang.reflect", "java.base/java.io",
@@ -108,6 +114,10 @@ final class Launch {
      * breaking.
      */
     private volatile Project project;
+
+    /** See {@link #requestJvmFlags}. */
+    private final AtomicReference<List<String>> requestedJvmFlags = new AtomicReference<>(
+            List.of());
 
     /**
      * Why the last resolution failed, when it failed and there was no earlier
@@ -798,7 +808,7 @@ final class Launch {
      *
      * @return the argument, or nothing when there is no jar
      */
-    private List<String> buildExtension() {
+    List<String> buildExtension() {
         return agentJar().filter(Files::isRegularFile)
                 .map(jar -> List.of("-Dmaven.ext.class.path=" + jar))
                 .orElseGet(List::of);
@@ -812,7 +822,8 @@ final class Launch {
         return List.of(configured.trim().split("\\s+"));
     }
 
-    private record Attempt(boolean ok, String output) {
+    /** How one Maven run ended, and everything it printed. */
+    record Attempt(boolean ok, String output) {
     }
 
     private Attempt attempt(List<String> base, boolean offline)
@@ -821,7 +832,26 @@ final class Launch {
         // After the wrapper, before the goals: Maven accepts options anywhere,
         // and inserting here keeps the goals last where a reader expects them.
         command.addAll(1, offline ? List.of("-o") : List.of("-nsu"));
-        Path directory = reactor.root();
+        return runMavenCommand(command, reactor.root());
+    }
+
+    /**
+     * Runs one Maven command from the reactor root and waits for it.
+     * <p>
+     * Shared by the resolve and by the compile leg's Maven backend (see
+     * {@link MavenCompile}), which need the same process set-up for the same
+     * reasons.
+     *
+     * @param command
+     *            the command line, Maven itself first
+     * @param directory
+     *            the reactor root
+     * @return how the run ended, with its merged output
+     * @throws IOException
+     *             if Maven could not be started, or the wait was interrupted
+     */
+    static Attempt runMavenCommand(List<String> command, Path directory)
+            throws IOException {
         ProcessBuilder builder = new ProcessBuilder(command)
                 .directory(directory.toFile()).redirectErrorStream(true);
         // The distribution's launcher derives maven.multiModuleProjectDirectory
@@ -839,7 +869,7 @@ final class Launch {
             return new Attempt(process.waitFor() == 0, output);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("classpath resolution interrupted", e);
+            throw new IOException("Maven run interrupted", e);
         }
     }
 
@@ -1043,7 +1073,7 @@ final class Launch {
      * the line after it is the one that names the artifact it could not
      * resolve.
      */
-    private static String failureReason(String output) {
+    static String failureReason(String output) {
         List<String> errors = output.lines().map(String::strip)
                 .filter(line -> line.startsWith("[ERROR]"))
                 .map(line -> line.substring("[ERROR]".length()).strip())
@@ -1123,7 +1153,7 @@ final class Launch {
      * off on the Maven command line, where each one is its own argument and so
      * a value containing a space survives.
      * <p>
-     * {@code disabledPlugins} is the exception that proves the rule:
+     * {@code hotswapagent.disablePlugin} is the exception that proves the rule:
      * HotswapAgent reads it in {@code premain}, before Maven has set a single
      * command-line property, so it has to be a real JVM flag wherever it runs.
      *
@@ -1136,12 +1166,13 @@ final class Launch {
      *            or {@code apply}. The three produce a process that is
      *            otherwise identical, so the app can only tell them apart if
      *            the daemon says which it is.
-     * @return the invocation, ready for a {@link ProcessBuilder}
+     * @return the invocation, ready for a {@link ProcessBuilder}, and the
+     *         resolved build it runs
      * @throws IOException
      *             if the launch cannot be composed
      */
-    AppRuntime.Invocation invocation(int daemonPort, String token,
-            String launchKind, Log progress) throws IOException {
+    Composed invocation(int daemonPort, String token, String launchKind,
+            Log progress) throws IOException {
         // Teed, for the same reason project(Log) is: every warning below is
         // one only the developer can act on - a pom setting the daemon cannot
         // override, a path it cannot unbreak, a missing agent jar - and a
@@ -1163,14 +1194,12 @@ final class Launch {
                             + resolutionError);
         }
         AppRuntime appRuntime = runtime();
-        List<String> jvmFlags = new ArrayList<>(jvmFlags(tee));
-        jvmFlags.addAll(appRuntime.extraJvmFlags());
-        if (!(appRuntime instanceof MainClassRuntime)) {
-            // Only a runtime that hands these to a shell can be defeated by a
-            // space in one of them; see MavenGoalRuntime.unsplittable.
-            MavenGoalRuntime.unsplittable(jvmFlags).forEach(tee::line);
-        }
-        appRuntime.warnings().forEach(tee::line);
+        List<String> jvmFlags = composeJvmFlags(tee,
+                appRuntime.extraJvmFlags());
+        // Only a runtime that hands these to a string something else splits
+        // can be defeated by a space in one of them, and only it knows which
+        // string that is; see MavenGoalRuntime.unsplittable.
+        appRuntime.warnings(jvmFlags).forEach(tee::line);
         AppRuntime.Invocation invocation = appRuntime.invocation(resolved,
                 jvmFlags,
                 systemProperties(daemonPort, token, launchKind, resolved));
@@ -1180,13 +1209,49 @@ final class Launch {
         // because the question it answers - is the running app still the app
         // the poms describe? - is the same either way.
         launchedClasspath = resolved.appClasspath();
-        return invocation;
+        return new Composed(invocation, resolved);
+    }
+
+    /**
+     * A composed launch: what to spawn, and the resolved build it runs - the
+     * module set whose files {@link Compile.Snapshot} stamps as it is spawned.
+     *
+     * @param invocation
+     *            the invocation, ready for a {@link ProcessBuilder}
+     * @param project
+     *            the resolved build the invocation runs
+     */
+    record Composed(AppRuntime.Invocation invocation, Project project) {
+    }
+
+    /**
+     * Every flag the app JVM starts with, in the order it gets them: the loop's
+     * own, then the runtime's, then the developer's from
+     * {@link #readConfiguredJvmFlags()} and from {@code --jvm-args}. The
+     * developer's are last so that where the JVM takes the last value of a
+     * repeated flag theirs wins - and of theirs, the command line's.
+     *
+     * @param tee
+     *            where a warning about the loop's own flags goes
+     * @param runtimeFlags
+     *            what the runtime adds, see {@link AppRuntime#extraJvmFlags()}
+     * @return the flags
+     * @throws IOException
+     *             if the loop's own flags cannot be composed
+     */
+    List<String> composeJvmFlags(Log tee, List<String> runtimeFlags)
+            throws IOException {
+        List<String> flags = new ArrayList<>(jvmFlags(tee));
+        flags.addAll(runtimeFlags);
+        flags.addAll(readConfiguredJvmFlags());
+        flags.addAll(requestedJvmFlags.get());
+        return flags;
     }
 
     /**
      * The flags that only a starting JVM can be given.
      */
-    private List<String> jvmFlags(Log tee) throws IOException {
+    List<String> jvmFlags(Log tee) throws IOException {
         Jvm.Jdk java = appJvm();
         Path haJar = ensureHotswapAgent();
         Optional<Path> connectorAgent = agentJar();
@@ -1232,17 +1297,97 @@ final class Launch {
         // of its own, which is a second driver of what the transaction model
         // owns - so if HotswapAgent ever grows ee10 hooks, the loop should not
         // acquire a competitor by surprise.
-        // The key is "disabledPlugins", plural and unprefixed: HotswapAgent
-        // loads hotswap-agent.properties and then merges System.getProperties()
-        // over it with the same key names. A wrong name is accepted silently
-        // and disables nothing, which is how the Vaadin plugin kept firing its
-        // own full page reload on top of Flow's soft refresh.
-        flags.add("-DdisabledPlugins=" + DISABLED_HOTSWAP_PLUGINS);
+        // JacksonPlugin: deadlocks a container's boot. It patches Jackson's
+        // caches as they are defined - including the container's own copy of
+        // Jackson, in the container's own loader - and compiles the patch while
+        // the JVM holds that loader's lock, resolving types through the thread
+        // context class loader first: HotswapAgent's PluginClassFileTransformer
+        // builds the pool with ClassPool.appendSystemPath(), which on Java 9+
+        // is the context loader. Measured on Payara Micro: Jackson defined in
+        // its boot loader while the patch waited on the API class loader - the
+        // context loader during boot - and Hazelcast's bootstrap holding the
+        // API loader while it waited on the boot loader. The odd start never
+        // got past "Registered ...HazelcastBackingStoreFactoryProxy", with no
+        // error and no exit, until the start timeout. A stopgap: the cause is
+        // HotswapAgent's, not the plugin's, and once a HotswapAgent release
+        // no longer resolves through the context loader - the fix is
+        // https://github.com/HotswapProjects/HotswapAgent/pull/681 -
+        // HotswapAgentJar should move to it and this entry should go. Until
+        // then, what the
+        // plugin buys - clearing Jackson's caches after a redefine - is not
+        // worth a start that may never end.
+        // The key is "hotswapagent.disablePlugin", read in premain into a set
+        // every class loader's configuration consults. "disabledPlugins", the
+        // key hotswap-agent.properties uses, reaches the system class loader
+        // only: every other loader re-reads the properties file bundled in
+        // HotswapAgent's own jar, whose empty "disabledPlugins=" shadows the
+        // system property, so a container's own loaders kept every plugin.
+        // A wrong name is accepted silently and disables nothing, which is how
+        // the Vaadin plugin kept firing its own full page reload on top of
+        // Flow's soft refresh.
+        flags.add("-Dhotswapagent.disablePlugin=" + DISABLED_HOTSWAP_PLUGINS);
         ADD_OPENS.forEach(target -> {
             flags.add("--add-opens");
             flags.add(target + "=ALL-UNNAMED");
         });
         return flags;
+    }
+
+    /**
+     * The developer's own flags for the app JVM, from
+     * {@value #JVM_ARGS_PROPERTY}: {@code --add-exports}, {@code -Xmx},
+     * {@code -XX:...} and the like, which the {@code -D} forwarding of
+     * {@link #forwardedToApp} cannot carry. They reach the app JVM alone,
+     * unlike {@code JDK_JAVA_OPTIONS}, which also reaches the daemon and every
+     * Maven run.
+     * <p>
+     * Split on whitespace and on {@code |}. Whitespace matches
+     * {@code vaadin.dev.mavenArgs}; the {@code |} is there because the CLI
+     * splits {@code VAADIN_DEV_DAEMON_OPTS} on whitespace itself, without
+     * honouring quotes, so a value that comes that way can hold several flags
+     * only as {@code -Xmx2g|--add-exports=java.base/x=ALL-UNNAMED}. A comma
+     * would not do, being part of {@code --add-exports} targets. Either way an
+     * argument cannot contain a space, and no flag this is for does. A flag
+     * that needs a literal {@code |} has to come through {@code --jvm-args},
+     * which carries each flag as given.
+     * <p>
+     * Nothing stops these from overriding a flag the loop needs; they are
+     * applied as given.
+     *
+     * @return the flags, empty when the property is not set
+     */
+    static List<String> readConfiguredJvmFlags() {
+        String configured = System.getProperty(JVM_ARGS_PROPERTY);
+        if (configured == null || configured.isBlank()) {
+            return List.of();
+        }
+        return JVM_ARGS_SEPARATOR.splitAsStream(configured)
+                .filter(flag -> !flag.isEmpty()).toList();
+    }
+
+    /**
+     * Sets the flags a {@code start} or {@code restart} asked for with
+     * {@code --jvm-args}. They are added after
+     * {@link #readConfiguredJvmFlags()} and kept for every later launch - a
+     * plain {@code restart}, and an apply that escalates to one - until another
+     * {@code --jvm-args} replaces them or the daemon shuts down. An app that
+     * lost its {@code --add-exports} on the first escalated apply would fail in
+     * a way that has nothing to do with the change being applied.
+     *
+     * @param flags
+     *            the flags, empty to clear them
+     */
+    void requestJvmFlags(List<String> flags) {
+        requestedJvmFlags.set(List.copyOf(flags));
+    }
+
+    /**
+     * The flags last set by {@link #requestJvmFlags}.
+     *
+     * @return the flags, empty when none were asked for
+     */
+    List<String> requestedJvmFlags() {
+        return requestedJvmFlags.get();
     }
 
     /**
@@ -1303,13 +1448,18 @@ final class Launch {
      * devtools restart is the one that matters: two things restarting the
      * application on their own schedules is what the transaction model exists
      * to prevent.
+     * <p>
+     * {@value #JVM_ARGS_PROPERTY} is held back as well: the app gets those
+     * flags themselves, and a copy of the raw value would only carry its
+     * {@code |} separators into {@code MAVEN_OPTS}, where {@code mvn.cmd} reads
+     * them as pipes.
      *
      * @param name
      *            a system property name
      * @return {@code true} if the app JVM is given it too
      */
     static boolean forwardedToApp(String name) {
-        if (LOOP_OWNED.contains(name)) {
+        if (LOOP_OWNED.contains(name) || JVM_ARGS_PROPERTY.equals(name)) {
             return false;
         }
         return name.startsWith("vaadin.") || name.startsWith("spring.");

@@ -17,6 +17,7 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -25,10 +26,12 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ClientCallableHandlersTest {
 
@@ -54,6 +57,17 @@ class ClientCallableHandlersTest {
     @Tag("div")
     static class NonTemplateComponentWithInterfaceEventHandler extends Component
             implements InterfaceWithClientCallable {
+    }
+
+    @Tag("div")
+    static class ComponentWithEventHandlerEnabledWhenDisabled
+            extends Component {
+
+        @ClientCallable(DisabledUpdateMode.ALWAYS)
+        public void publishedMethod2() {
+            // Only the handler registration is tested, the method is never
+            // invoked
+        }
     }
 
     @Test
@@ -104,14 +118,34 @@ class ClientCallableHandlersTest {
     }
 
     @Test
+    void secondComponentOfSameClass_getsCachedHandlerWithUpdateMode() {
+        // The handlers are cached per component class: the first component
+        // fills the cache and the second one is served from it. Both must get
+        // the handler and its update mode. ALWAYS is used since the default
+        // ONLY_WHEN_ENABLED would pass even if the mode was not cached.
+        UI ui = new UI();
+        ComponentWithEventHandlerEnabledWhenDisabled first = new ComponentWithEventHandlerEnabledWhenDisabled();
+        ComponentWithEventHandlerEnabledWhenDisabled second = new ComponentWithEventHandlerEnabledWhenDisabled();
+        ui.add(first, second);
+
+        for (Component component : List.of(first, second)) {
+            ClientCallableHandlers feature = component.getElement().getNode()
+                    .getFeature(ClientCallableHandlers.class);
+            assertListFeature(feature, "publishedMethod2");
+            assertEquals(DisabledUpdateMode.ALWAYS,
+                    feature.getDisabledUpdateMode("publishedMethod2"));
+        }
+    }
+
+    @Test
     void nonTemplateComponentWithoutEventHandler() {
         UI ui = new UI();
         NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
         ui.add(component);
 
-        ClientCallableHandlers feature = component.getElement().getNode()
-                .getFeature(ClientCallableHandlers.class);
-        assertListFeature(feature);
+        assertFalse(component.getElement().getNode()
+                .getFeatureIfInitialized(ClientCallableHandlers.class)
+                .isPresent());
     }
 
     private void assertListFeature(SerializableNodeList<String> feature,
