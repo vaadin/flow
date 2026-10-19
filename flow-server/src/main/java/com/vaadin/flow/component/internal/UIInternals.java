@@ -2165,6 +2165,7 @@ public class UIInternals implements Serializable {
      * without making the UI inert.
      *
      * @return {@code true} if a component with modality is defined
+     * @since 25.4
      */
     public boolean hasModalityComponent() {
         return modalityStack != null && !modalityStack.isEmpty();
@@ -2176,6 +2177,7 @@ public class UIInternals implements Serializable {
      * set first.
      *
      * @return the components with modality, never {@code null}
+     * @since 25.4
      */
     public List<Component> getModalityComponents() {
         if (!hasModalityComponent()) {
@@ -2198,6 +2200,7 @@ public class UIInternals implements Serializable {
      *
      * @return the most recently set component with modality, or {@code null} if
      *         there is none
+     * @since 25.4
      */
     public Component getActiveModalityComponent() {
         if (!hasModalityComponent()) {
@@ -2258,6 +2261,7 @@ public class UIInternals implements Serializable {
      *            the child component to change modality for
      * @param mode
      *            the modality mode, not {@code null}
+     * @since 25.4
      */
     public void setChildModal(Component child, ModalityMode mode) {
         setModality(child, Objects.requireNonNull(mode));

@@ -26,13 +26,14 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskProcessStylesheetCssTest {
 
@@ -52,13 +53,13 @@ class TaskProcessStylesheetCssTest {
         metaInfResources = new File(metaInf, "resources");
         metaInfResources.mkdirs();
 
-        classFinder = Mockito.mock(ClassFinder.class);
+        classFinder = mock(ClassFinder.class);
 
-        options = Mockito.mock(Options.class);
-        Mockito.when(options.isProductionMode()).thenReturn(true);
-        Mockito.when(options.getMetaInfResourcesDirectory())
+        options = mock(Options.class);
+        when(options.isProductionMode()).thenReturn(true);
+        when(options.getMetaInfResourcesDirectory())
                 .thenReturn(metaInfResources);
-        Mockito.when(options.getClassFinder()).thenReturn(classFinder);
+        when(options.getClassFinder()).thenReturn(classFinder);
     }
 
     // Test class with @StyleSheet annotation for testing
@@ -83,7 +84,7 @@ class TaskProcessStylesheetCssTest {
     void execute_processesAndMinifiesCssFiles()
             throws ExecutionFailedException, IOException {
         // Setup mock to return our test class
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class));
 
         String originalCss = """
@@ -105,7 +106,7 @@ class TaskProcessStylesheetCssTest {
 
     @Test
     void execute_inlinesImports() throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class));
 
         String mainCss = "@import 'other.css';\n.main { color: red; }";
@@ -129,7 +130,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_processesNestedDirectories()
             throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithNestedStyleSheet.class));
 
         File subDir = new File(metaInfResources, "sub");
@@ -149,7 +150,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_skipsNonProductionMode()
             throws ExecutionFailedException, IOException {
-        Mockito.when(options.isProductionMode()).thenReturn(false);
+        when(options.isProductionMode()).thenReturn(false);
 
         String originalCss = "/* comment */ .class { color: red; }";
         File cssFile = new File(metaInfResources, "styles.css");
@@ -167,7 +168,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_skipsExternalStylesheets()
             throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithExternalStyleSheet.class));
 
         // Create a local CSS file that should NOT be processed
@@ -188,7 +189,7 @@ class TaskProcessStylesheetCssTest {
     void execute_skipsUnreferencedCssFiles()
             throws ExecutionFailedException, IOException {
         // Only styles.css is referenced
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class));
 
         // Create referenced CSS file
@@ -218,7 +219,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_handlesNoAnnotations()
             throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Collections.emptySet());
 
         String originalCss = "/* comment */ .class { color: red; }";
@@ -237,7 +238,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_handlesNullClassFinder()
             throws ExecutionFailedException, IOException {
-        Mockito.when(options.getClassFinder()).thenReturn(null);
+        when(options.getClassFinder()).thenReturn(null);
 
         String originalCss = "/* comment */ .class { color: red; }";
         File cssFile = new File(metaInfResources, "styles.css");
@@ -264,7 +265,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_handlesNullResourceOutputDirectory()
             throws ExecutionFailedException {
-        Mockito.when(options.getResourceOutputDirectory()).thenReturn(null);
+        when(options.getResourceOutputDirectory()).thenReturn(null);
 
         TaskProcessStylesheetCss task = new TaskProcessStylesheetCss(options);
         task.execute(); // Should not throw
@@ -273,7 +274,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_inlinesNodeModulesImports()
             throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class));
 
         // Create node_modules structure
@@ -286,7 +287,7 @@ class TaskProcessStylesheetCssTest {
         FileUtils.writeStringToFile(nodeModulesCss,
                 ".from-node-modules { color: blue; }", StandardCharsets.UTF_8);
 
-        Mockito.when(options.getNodeModulesFolder()).thenReturn(nodeModules);
+        when(options.getNodeModulesFolder()).thenReturn(nodeModules);
 
         // Create main CSS that imports from node_modules
         String mainCss = "@import 'some-package/styles.css';\n.main { color: red; }";
@@ -307,7 +308,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_rewritesRelativeUrlsInInlinedImports()
             throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class));
 
         // Entry file at META-INF/resources/styles.css imports
@@ -343,7 +344,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_leavesAbsoluteAndExternalUrlsAlone()
             throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class));
 
         String mainCss = """
@@ -367,7 +368,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_processesMultipleAnnotatedClasses()
             throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithStyleSheet.class,
                         TestClassWithNestedStyleSheet.class));
 
@@ -393,7 +394,7 @@ class TaskProcessStylesheetCssTest {
     @Test
     void execute_handlesRepeatedAnnotations()
             throws ExecutionFailedException, IOException {
-        Mockito.when(classFinder.getAnnotatedClasses(StyleSheet.class))
+        when(classFinder.getAnnotatedClasses(StyleSheet.class))
                 .thenReturn(Set.of(TestClassWithMultipleStyleSheets.class));
 
         // Create both CSS files

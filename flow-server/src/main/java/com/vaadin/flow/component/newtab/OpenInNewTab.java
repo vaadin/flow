@@ -51,6 +51,8 @@ import com.vaadin.flow.shared.Registration;
  * <p>
  * To save content as a file instead of showing it, use
  * {@link com.vaadin.flow.component.download.Download Download}.
+ * 
+ * @since 25.4
  */
 public final class OpenInNewTab implements Serializable {
 

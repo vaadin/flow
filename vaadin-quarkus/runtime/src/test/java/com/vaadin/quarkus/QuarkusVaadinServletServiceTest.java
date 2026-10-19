@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.InstantiatorFactory;
@@ -38,6 +37,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * The service resolves the pieces Vaadin needs from the CDI container, and a
@@ -53,10 +56,10 @@ class QuarkusVaadinServletServiceTest {
 
     @BeforeEach
     void setUp() {
-        beanManager = Mockito.mock(BeanManager.class);
-        servlet = Mockito.mock(QuarkusVaadinServlet.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
+        beanManager = mock(BeanManager.class);
+        servlet = mock(QuarkusVaadinServlet.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
         service = new QuarkusVaadinServletService(servlet, configuration,
                 beanManager);
     }
@@ -68,8 +71,8 @@ class QuarkusVaadinServletServiceTest {
 
     @Test
     void loadInstantiators_noFactoryBean_reportsAServiceException() {
-        Mockito.when(beanManager.getBeans(Mockito.eq(InstantiatorFactory.class),
-                Mockito.any())).thenReturn(Set.of());
+        when(beanManager.getBeans(eq(InstantiatorFactory.class), any()))
+                .thenReturn(Set.of());
 
         ServiceException exception = assertThrows(ServiceException.class,
                 () -> service.loadInstantiators());
@@ -81,12 +84,12 @@ class QuarkusVaadinServletServiceTest {
 
     @Test
     void loadInstantiators_severalFactoryBeans_reportsAServiceException() {
-        Bean<?> bean = Mockito.mock(Bean.class);
-        Mockito.when(beanManager.getBeans(Mockito.eq(InstantiatorFactory.class),
-                Mockito.any())).thenReturn(Set.of(bean));
+        Bean<?> bean = mock(Bean.class);
+        when(beanManager.getBeans(eq(InstantiatorFactory.class), any()))
+                .thenReturn(Set.of(bean));
         AmbiguousResolutionException cause = new AmbiguousResolutionException(
                 "two of them");
-        Mockito.when(beanManager.resolve(Mockito.any())).thenThrow(cause);
+        when(beanManager.resolve(any())).thenThrow(cause);
 
         ServiceException exception = assertThrows(ServiceException.class,
                 () -> service.loadInstantiators());
@@ -96,8 +99,8 @@ class QuarkusVaadinServletServiceTest {
 
     @Test
     void loadInstantiators_factoryProducesNothing_reportsAServiceException() {
-        InstantiatorFactory factory = Mockito.mock(InstantiatorFactory.class);
-        Mockito.when(factory.createInstantitor(service)).thenReturn(null);
+        InstantiatorFactory factory = mock(InstantiatorFactory.class);
+        when(factory.createInstantitor(service)).thenReturn(null);
         mockFactoryBean(factory);
 
         ServiceException exception = assertThrows(ServiceException.class,
@@ -110,10 +113,9 @@ class QuarkusVaadinServletServiceTest {
     @Test
     void loadInstantiators_factoryPresent_returnsWhatItProduced()
             throws ServiceException {
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        InstantiatorFactory factory = Mockito.mock(InstantiatorFactory.class);
-        Mockito.when(factory.createInstantitor(service))
-                .thenReturn(instantiator);
+        Instantiator instantiator = mock(Instantiator.class);
+        InstantiatorFactory factory = mock(InstantiatorFactory.class);
+        when(factory.createInstantitor(service)).thenReturn(instantiator);
         mockFactoryBean(factory);
 
         assertEquals(Optional.of(instantiator), service.loadInstantiators());
@@ -121,8 +123,7 @@ class QuarkusVaadinServletServiceTest {
 
     @Test
     void lookup_severalBeans_reportsAServiceException() {
-        Mockito.when(
-                beanManager.getBeans(Mockito.eq(String.class), Mockito.any()))
+        when(beanManager.getBeans(eq(String.class), any()))
                 .thenThrow(new AmbiguousResolutionException("two of them"));
 
         ServiceException exception = assertThrows(ServiceException.class,
@@ -134,17 +135,16 @@ class QuarkusVaadinServletServiceTest {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void mockFactoryBean(InstantiatorFactory factory) {
-        Bean bean = Mockito.mock(Bean.class);
-        Mockito.when(beanManager.getBeans(Mockito.eq(InstantiatorFactory.class),
-                Mockito.any())).thenReturn(Set.of(bean));
-        Mockito.when(beanManager.resolve(Mockito.any())).thenReturn(bean);
-        CreationalContext creationalContext = Mockito
-                .mock(CreationalContext.class);
-        Mockito.when(beanManager.createCreationalContext(bean))
+        Bean bean = mock(Bean.class);
+        when(beanManager.getBeans(eq(InstantiatorFactory.class), any()))
+                .thenReturn(Set.of(bean));
+        when(beanManager.resolve(any())).thenReturn(bean);
+        CreationalContext creationalContext = mock(CreationalContext.class);
+        when(beanManager.createCreationalContext(bean))
                 .thenReturn(creationalContext);
-        Context context = Mockito.mock(Context.class);
-        Mockito.when(beanManager.getContext(ApplicationScoped.class))
+        Context context = mock(Context.class);
+        when(beanManager.getContext(ApplicationScoped.class))
                 .thenReturn(context);
-        Mockito.when(context.get(bean, creationalContext)).thenReturn(factory);
+        when(context.get(bean, creationalContext)).thenReturn(factory);
     }
 }
