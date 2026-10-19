@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarEntry;
@@ -44,6 +45,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 
@@ -61,7 +63,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -220,16 +224,10 @@ class VaadinServletServiceTest {
 
     @Test
     void requestCanCreateSession_webComponentScript_doesNotCreateSession() {
-        VaadinContext context = mock(VaadinContext.class);
         WebComponentConfigurationRegistry registry = mock(
                 WebComponentConfigurationRegistry.class);
         when(registry.hasConfigurations()).thenReturn(true);
-        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
-                any())).thenReturn(registry);
-        VaadinService requestService = mock(VaadinService.class);
-        when(requestService.getContext()).thenReturn(context);
-        VaadinRequest request = mock(VaadinRequest.class);
-        when(request.getService()).thenReturn(requestService);
+        VaadinRequest request = createWebComponentRequest(registry);
 
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
@@ -250,6 +248,52 @@ class VaadinServletServiceTest {
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
         assertTrue(service.requestCanCreateSession(request));
+
+        // Without a provider, nothing serves the script without a session
+        when(registry.hasConfigurations()).thenReturn(true);
+        service.getRequestHandlers()
+                .removeIf(WebComponentProvider.class::isInstance);
+        assertTrue(service.requestCanCreateSession(request));
+    }
+
+    @Test
+    void handleSessionExpired_webComponentScript_servedBeforeCustomHandlers()
+            throws Exception {
+        WebComponentConfigurationRegistry registry = mock(
+                WebComponentConfigurationRegistry.class);
+        when(registry.hasConfigurations()).thenReturn(true);
+        when(registry.getConfiguration("my-component"))
+                .thenReturn(Optional.empty());
+        VaadinRequest request = createWebComponentRequest(registry);
+        when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.js");
+        VaadinResponse response = mock(VaadinResponse.class);
+        // Handlers added through ServiceInitEvent come first
+        CatchAllSessionExpiredHandler customHandler = mock(
+                CatchAllSessionExpiredHandler.class);
+        service.getRequestHandlers().add(0, customHandler);
+
+        service.handleSessionExpired(request, response);
+
+        verify(customHandler, never()).handleSessionExpired(any(), any());
+        verify(response).sendError(eq(HttpStatusCode.NOT_FOUND.getCode()),
+                anyString());
+    }
+
+    private interface CatchAllSessionExpiredHandler
+            extends RequestHandler, SessionExpiredHandler {
+    }
+
+    private static VaadinRequest createWebComponentRequest(
+            WebComponentConfigurationRegistry registry) {
+        VaadinContext context = mock(VaadinContext.class);
+        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
+                any())).thenReturn(registry);
+        VaadinService requestService = mock(VaadinService.class);
+        when(requestService.getContext()).thenReturn(context);
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getService()).thenReturn(requestService);
+        return request;
     }
 
     private String testLocation(String base, String contextPath,

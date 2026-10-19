@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -168,12 +169,48 @@ public class VaadinServletService extends VaadinService {
         if (isOtherRequest(request)) {
             /*
              * I.e URIs that are not RPC calls or static file requests. Web
-             * component scripts are served without a session.
+             * component scripts are served without a session, see
+             * handleSessionExpired.
              */
-            return !WebComponentProvider.isWebComponentScriptRequest(request);
+            return getWebComponentScriptProvider(request).isEmpty();
         }
 
         return false;
+    }
+
+    @Override
+    protected void handleSessionExpired(VaadinRequest request,
+            VaadinResponse response) throws ServiceException {
+        // The web component provider serves its scripts before any other
+        // session expired handler gets the chance to answer them with
+        // something else than the script
+        Optional<WebComponentProvider> provider = getWebComponentScriptProvider(
+                request);
+        if (provider.isPresent()) {
+            try {
+                if (provider.get().handleSessionExpired(request, response)) {
+                    return;
+                }
+            } catch (IOException e) {
+                throw new ServiceException("Handling of session expired failed",
+                        e);
+            }
+        }
+        super.handleSessionExpired(request, response);
+    }
+
+    /**
+     * Gets the registered web component provider if the request is for a web
+     * component script that it serves.
+     */
+    private Optional<WebComponentProvider> getWebComponentScriptProvider(
+            VaadinRequest request) {
+        if (!WebComponentProvider.isWebComponentScriptRequest(request)) {
+            return Optional.empty();
+        }
+        return StreamSupport.stream(getRequestHandlers().spliterator(), false)
+                .filter(WebComponentProvider.class::isInstance)
+                .map(WebComponentProvider.class::cast).findFirst();
     }
 
     private boolean isOtherRequest(VaadinRequest request) {
