@@ -39,7 +39,8 @@ export interface ApplicationConfiguration {
  * What {@link publishClient} needs from the running engine to build
  * `window.Vaadin.Flow.clients[appId]`. The published keys are the ones the JSNI
  * blocks in ApplicationConnection.java define, so two of them (`getByNodeId`,
- * `addDomBindingListener`) differ from the engine method they call.
+ * `addDomBindingListener`) differ from the engine method they call. The one
+ * key beyond them is `events`, which the GWT engine does not publish.
  */
 export interface ApplicationConnection {
   isActive(): boolean;

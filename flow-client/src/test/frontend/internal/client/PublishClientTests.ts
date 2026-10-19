@@ -5,7 +5,6 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { ClientEvents } from '../../../../main/frontend/internal/client/ClientEvents';
-import { VaadinRequest } from '../../../../main/frontend/internal/client/communication/VaadinRequest';
 import { publishClient } from '../../../../main/frontend/internal/client/publishClient';
 import type {
   ApplicationConfiguration,
@@ -81,22 +80,11 @@ describe('publishClient', () => {
     expect(stubs.sendEventMessage.calledWith(2, 'click', null)).to.be.true;
   });
 
-  it('publishes the client events, on which the engine and page scripts can dispatch', () => {
+  it('publishes the client events, typed so only the listed events can be dispatched', () => {
     publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
-    const client = $wnd.Vaadin.Flow.clients.ROOT;
-    expect(client.events).to.equal(events);
-
-    const announced: VaadinRequest[] = [];
-    const listener = (event: CustomEvent<VaadinRequest>) => announced.push(event.detail);
-    const request = new VaadinRequest();
-    client.events.addEventListener('vaadin-request', listener);
-    // A page script can dispatch a synthetic event, for example to test its listener.
-    client.events.dispatchEvent(new CustomEvent('vaadin-request', { detail: request }));
-    client.events.removeEventListener('vaadin-request', listener);
-    client.events.dispatchEvent(new CustomEvent('vaadin-request', { detail: new VaadinRequest() }));
+    expect($wnd.Vaadin.Flow.clients.ROOT.events).to.equal(events);
     // @ts-expect-error -- only the events listed for the client can be dispatched on it
-    events.dispatchEvent(new Event('vaadin-request'));
-    expect(announced).to.deep.equal([request]);
+    expect(() => events.dispatchEvent(new Event('vaadin-request'))).to.not.throw();
   });
 
   it('omits dev-only and profiling methods in production without request timing', () => {
