@@ -535,6 +535,28 @@ public class ElementListenersTest
     }
 
     @Test
+    void serializable_withCaptures() {
+        DomListenerRegistration registration = ns.add("click", noOp)
+                .setFilter("event.key === $0", "Enter")
+                .addEventData("label", "element.getAttribute($0)", "data-a");
+        String filterKey = ElementListenerMap.getFilterKey(registration);
+        String labelKey = ElementListenerMap.getEventDataKey(registration,
+                "label");
+
+        ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
+
+        assertEquals(ns.getExpressions("click"),
+                roundtrip.getExpressions("click"));
+
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(filterKey, true);
+        fromClient.put(labelKey, "a");
+        JsonNode translated = roundtrip.translateEventData("click", fromClient);
+        assertTrue(translated.get(filterKey).booleanValue());
+        assertEquals("a", translated.get("label").stringValue());
+    }
+
+    @Test
     void synchronizeProperty_hasSynchronizedProperty() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
