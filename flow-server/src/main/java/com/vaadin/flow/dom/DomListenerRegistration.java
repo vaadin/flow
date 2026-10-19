@@ -127,10 +127,15 @@ public interface DomListenerRegistration extends Registration {
      *            parameter to {@link Element#executeJs(String, Object...)}
      * @return this registration, for chaining
      * @see #addEventData(String)
-     * @since 25.3
      */
-    DomListenerRegistration addEventData(String name, String expression,
-            Object... captures);
+    default DomListenerRegistration addEventData(String name, String expression,
+            Object... captures) {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Sets a JavaScript expression that is used for filtering events to this
@@ -184,9 +189,15 @@ public interface DomListenerRegistration extends Registration {
      *            parameter to {@link Element#executeJs(String, Object...)}
      * @return this registration, for chaining
      * @see #setFilter(String)
-     * @since 25.3
      */
-    DomListenerRegistration setFilter(String filter, Object... captures);
+    default DomListenerRegistration setFilter(String filter,
+            Object... captures) {
+        /*
+         * Dummy backwards compatibility implementation to keep old custom code
+         * compiling.
+         */
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Gets the currently set filter expression.

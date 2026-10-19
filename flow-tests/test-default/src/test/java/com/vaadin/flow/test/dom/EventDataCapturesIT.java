@@ -13,17 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.dom;
 
-import org.junit.Assert;
-import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.test.AbstractDefaultIT;
+import com.vaadin.flow.test.TestFor;
+import com.vaadin.testbench.BrowserTest;
 
-public class EventDataCapturesIT extends ChromeBrowserTest {
+@TestFor(EventDataCapturesView.class)
+public class EventDataCapturesIT extends AbstractDefaultIT {
 
-    @Test
+    @BrowserTest
     public void capturedEventDataIsReportedUnderItsName() {
         open();
 
@@ -33,7 +34,7 @@ public class EventDataCapturesIT extends ChromeBrowserTest {
                 .equals(findElement(By.id("dataResult")).getText()));
     }
 
-    @Test
+    @BrowserTest
     public void capturedFilterOnlyMatchesItsOwnListener() {
         open();
 
@@ -42,7 +43,5 @@ public class EventDataCapturesIT extends ChromeBrowserTest {
         // Only the listener whose capture matches the primary button fires
         waitUntil(driver -> "primary"
                 .equals(findElement(By.id("filterResult")).getText()));
-        Assert.assertEquals("primary",
-                findElement(By.id("filterResult")).getText());
     }
 }

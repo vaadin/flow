@@ -28,6 +28,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -59,6 +62,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -441,6 +447,25 @@ public class ElementListenersTest
                 () -> registration.addEventData("data", null));
     }
 
+    /**
+     * A bean that cannot be encoded since it refers to itself.
+     */
+    public static class SelfReference {
+        public SelfReference getSelf() {
+            return this;
+        }
+    }
+
+    @Test
+    void unencodableCaptureValue_throwsWhenAdded() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+
+        assertThrows(RuntimeException.class, () -> registration
+                .addEventData("data", "$0", new SelfReference()));
+        assertThrows(RuntimeException.class,
+                () -> registration.setFilter("$0", new SelfReference()));
+    }
+
     private static ArrayNode encodeSettings(ElementListenerMap listenerMap,
             String eventType, ConstantPool constantPool) {
         List<NodeChange> changes = new java.util.ArrayList<>();
@@ -808,6 +833,48 @@ public class ElementListenersTest
 
         ns.fireEvent(new DomEvent(new Element("element"), "foo", translated));
         assertEquals(firstData.get(), secondData.get());
+
+        assertTrue(isConflictingNameWarningLogged());
+    }
+
+    @Test
+    void preventDefaultWithDifferentFilters_noConflictingNameWarning() {
+        ns.add("foo", noOp).setFilter("event.key === 'a'").preventDefault();
+        ns.add("foo", noOp).setFilter("event.key === 'b'").preventDefault();
+
+        assertFalse(isConflictingNameWarningLogged());
+    }
+
+    private boolean isConflictingNameWarningLogged() {
+        Logger logger = mock(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactory.when(
+                    () -> LoggerFactory.getLogger(ElementListenerMap.class))
+                    .thenReturn(logger);
+            collectChanges(ns);
+        }
+        return !mockingDetails(logger).getInvocations().isEmpty();
+    }
+
+    @Test
+    void translateEventData_listenerChangedAfterEvent_newNameUsed() {
+        DomListenerRegistration registration = ns.add("foo", noOp);
+        registration.addEventData("first", "element.getAttribute($0)", "a");
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        fromClient.put(
+                ElementListenerMap.getEventDataKey(registration, "first"),
+                "value");
+        assertTrue(ns.translateEventData("foo", fromClient).has("first"));
+
+        registration.addEventData("second", "element.getAttribute($0)", "b");
+        fromClient.put(
+                ElementListenerMap.getEventDataKey(registration, "second"),
+                "value");
+
+        JsonNode translated = ns.translateEventData("foo", fromClient);
+        assertTrue(translated.has("first"));
+        assertTrue(translated.has("second"));
     }
 
     @Test

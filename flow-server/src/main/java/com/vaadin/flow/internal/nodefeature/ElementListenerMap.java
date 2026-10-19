@@ -84,6 +84,15 @@ public class ElementListenerMap extends NodeMap {
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
+    /*
+     * Server-side only mapping from the keys that the client reports event data
+     * under to the names used on the server, per event type. Derived lazily
+     * when the first event of a type arrives, so that the keys are hashed once
+     * rather than for every event, and cleared when the listeners of that type
+     * change.
+     */
+    private Map<String, Map<String, String>> eventDataNames;
+
     /**
      * Placeholder stored in the map instead of the actual event settings. The
      * settings JSON is derived on demand from the registered listeners when
@@ -321,7 +330,10 @@ public class ElementListenerMap extends NodeMap {
             }
             if (!entry.isFilter()) {
                 String previousKey = keysByName.putIfAbsent(entry.name, key);
-                if (previousKey != null && !previousKey.equals(key)) {
+                // Side effects made conditional on different filters share
+                // their generated name, but nobody reads their values
+                if (previousKey != null && !previousKey.equals(key)
+                        && !isSideEffect(entry.name)) {
                     conflictingNames.add(entry.name);
                 }
                 if (!key.equals(entry.name)) {
@@ -745,9 +757,7 @@ public class ElementListenerMap extends NodeMap {
     private static ExpressionEntry makeConditional(ExpressionEntry entry,
             ExpressionEntry filter) {
         if (filter == null || filter.expression.isEmpty()
-                || !("event.preventDefault()".equals(entry.expression)
-                        || "event.stopPropagation()"
-                                .equals(entry.expression))) {
+                || !isSideEffect(entry.expression)) {
             return entry;
         }
 
@@ -756,7 +766,13 @@ public class ElementListenerMap extends NodeMap {
                 filter.captures);
     }
 
+    private static boolean isSideEffect(String expression) {
+        return "event.preventDefault()".equals(expression)
+                || "event.stopPropagation()".equals(expression);
+    }
+
     private void updateEventSettings(String eventType) {
+        clearEventDataNames(eventType);
         put(eventType, EventSettingsMarker.INSTANCE);
     }
 
@@ -840,9 +856,11 @@ public class ElementListenerMap extends NodeMap {
             return eventData;
         }
 
-        // Derived from the current listeners rather than kept in memory, like
-        // the settings sent to the client
-        Map<String, String> names = collectEventSettings(eventType).names;
+        if (eventDataNames == null) {
+            eventDataNames = new HashMap<>();
+        }
+        Map<String, String> names = eventDataNames.computeIfAbsent(eventType,
+                type -> collectEventSettings(type).names);
         if (names.isEmpty() || !eventData.isObject()) {
             return eventData;
         }
@@ -875,6 +893,17 @@ public class ElementListenerMap extends NodeMap {
 
                 // Remove from the set that is synchronized with the client
                 remove(eventType);
+
+                clearEventDataNames(eventType);
+            }
+        }
+    }
+
+    private void clearEventDataNames(String eventType) {
+        if (eventDataNames != null) {
+            eventDataNames.remove(eventType);
+            if (eventDataNames.isEmpty()) {
+                eventDataNames = null;
             }
         }
     }
@@ -954,7 +983,6 @@ public class ElementListenerMap extends NodeMap {
      *            <code>null</code>
      * @return the filter key, or <code>null</code> if the registration has no
      *         filter
-     * @since 25.3
      */
     public static String getFilterKey(DomListenerRegistration registration) {
         assert registration != null;
@@ -974,7 +1002,6 @@ public class ElementListenerMap extends NodeMap {
      *            the name of the event data, not <code>null</code>
      * @return the event data key, or <code>null</code> if the registration has
      *         no event data with the given name
-     * @since 25.3
      */
     public static String getEventDataKey(DomListenerRegistration registration,
             String name) {

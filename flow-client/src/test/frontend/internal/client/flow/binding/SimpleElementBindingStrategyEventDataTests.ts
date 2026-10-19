@@ -185,18 +185,20 @@ describe('SimpleElementBindingStrategy event data (beyond the Java suite)', () =
 
   it('debounces a parameterized filter per set of captures', () => {
     bindWithClickCaptures(
-      { shared: { c: 1, d: [[0]], e: 'element.hasAttribute($0)' } },
+      { shared: { c: 1, d: [[200, 'leading']], e: 'element.hasAttribute($0)' } },
       { shared$first: ['shared', 'id'], shared$second: ['shared', 'title'] }
     );
 
-    // Neither filter matches, so nothing is sent.
-    element.click();
-    expect(harness.collectedNodes).to.have.length(0);
-
-    // One of the two filters matching is enough.
+    // Only the first filter matches, which starts its debounce period.
     element.setAttribute('id', 'set');
     element.click();
     expect(harness.collectedNodes).to.have.length(1);
+
+    // The second filter has a debouncer of its own, so its first match is
+    // eager even though the first filter is still within its period.
+    element.setAttribute('title', 'set');
+    element.click();
+    expect(harness.collectedNodes).to.have.length(2);
   });
 
   it('decodes an element capture into a DOM node', () => {

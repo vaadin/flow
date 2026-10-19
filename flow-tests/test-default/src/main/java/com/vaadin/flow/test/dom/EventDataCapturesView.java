@@ -13,18 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.test.dom;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.EventDataCapturesView", layout = ViewTestLayout.class)
-public class EventDataCapturesView extends AbstractDivView {
+@Route("event-data-captures")
+public class EventDataCapturesView extends Div {
 
-    @Override
-    protected void onShow() {
+    public EventDataCapturesView() {
         Div dataResult = new Div();
         dataResult.setId("dataResult");
         Div filterResult = new Div();

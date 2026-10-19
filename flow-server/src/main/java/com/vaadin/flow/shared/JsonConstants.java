@@ -360,16 +360,12 @@ public class JsonConstants implements Serializable {
     /**
      * Key of the JavaScript expression in the settings that are sent to the
      * client for one entry that is evaluated when an event occurs.
-     *
-     * @since 25.3
      */
     public static final String EVENT_SETTINGS_EXPRESSION = "e";
 
     /**
      * Key of the debounce settings in the settings that are sent to the client
      * for one entry that is evaluated when an event occurs.
-     *
-     * @since 25.3
      */
     public static final String EVENT_SETTINGS_DEBOUNCE = "d";
 
@@ -378,8 +374,6 @@ public class JsonConstants implements Serializable {
      * for one entry that is evaluated when an event occurs. Entries with
      * captures are only evaluated for the capture values that are sent
      * separately for each element.
-     *
-     * @since 25.3
      */
     public static final String EVENT_SETTINGS_CAPTURE_COUNT = "c";
 
