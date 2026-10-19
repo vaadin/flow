@@ -36,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
  *
  * @param value
  *            the id value as a 64-bit integer
+ * @since 25.1
  */
 public record Id(long value) implements Comparable<Id>, Serializable {
     /**

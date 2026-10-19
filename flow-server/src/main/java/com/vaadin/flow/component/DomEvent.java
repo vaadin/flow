@@ -100,6 +100,7 @@ public @interface DomEvent {
      * Controls if the event is let to propagate to parent elements.
      *
      * @return true if the event is not let to propagate to parent elements
+     * @since 24.2
      */
     public boolean stopPropagation() default false;
 
@@ -107,6 +108,7 @@ public @interface DomEvent {
      * Controls if the browser is asked to prevent the default browser behavior.
      *
      * @return true if default behavior is should be prevented
+     * @since 24.2
      */
     public boolean preventDefault() default false;
 
@@ -124,6 +126,7 @@ public @interface DomEvent {
      *
      * @return {@code true} if the listener should receive events even when the
      *         component is inert, {@code false} otherwise (default)
+     * @since 25.1
      */
     public boolean allowInert() default false;
 

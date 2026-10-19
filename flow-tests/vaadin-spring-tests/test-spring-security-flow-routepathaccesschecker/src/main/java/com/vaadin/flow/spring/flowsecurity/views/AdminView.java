@@ -17,7 +17,6 @@ package com.vaadin.flow.spring.flowsecurity.views;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -28,9 +27,10 @@ import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 @RouteAlias(value = "alias-for-admin", layout = MainView.class)
 @PageTitle("Admin View")
 @Menu(order = 1.10001)
-public class AdminView extends VerticalLayout {
+public class AdminView extends Div {
 
     public AdminView(SecurityUtils securityUtils) {
+        getStyle().set("display", "flex").set("flex-direction", "column");
         H1 welcome = new H1("Welcome to the admin page, "
                 + securityUtils.getAuthenticatedUserInfo().getFullName());
         welcome.setId("welcome");

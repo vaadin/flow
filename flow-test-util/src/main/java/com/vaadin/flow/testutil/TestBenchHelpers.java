@@ -375,6 +375,17 @@ public class TestBenchHelpers extends ParallelTest {
             result = getCommandExecutor().executeScript(
                     "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
         } while (Boolean.TRUE.equals(result));
+
+        // Fast-fail when AbstractDevServerRunner detected a Vite startup
+        // failure and served `<pre>The Vite dev server failed to start:
+        // ...</pre>`. Otherwise every subsequent waitUntil(...) burns its
+        // full timeout against the error page, blowing the runner timeout
+        // for the whole shard. Surface the embedded cause verbatim.
+        String pageSource = getDriver().getPageSource();
+        if (pageSource != null
+                && pageSource.contains("The Vite dev server failed to start")) {
+            throw new AssertionError(pageSource);
+        }
     }
 
     /**

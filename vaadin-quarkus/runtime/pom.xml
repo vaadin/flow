@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>vaadin-quarkus-parent</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>vaadin-quarkus</artifactId>
+  <name>Vaadin Quarkus - Runtime</name>
+  <description>Provides Quarkus integration for Vaadin applications.</description>
+
+  <properties>
+    <!--
+      Two kinds of code here never run under surefire, so measuring them says
+      nothing about how well they are tested:
+
+      com.vaadin.quarkus.graal is loaded only inside a GraalVM native image,
+      which is built and exercised by the nightly quarkus-native workflow.
+
+      A Quarkus @Recorder is not called by the code that appears to call it:
+      the deployment module records its invocations at augmentation time and
+      Quarkus replays them during static init of the application, so the
+      bodies run in a built application and never in a test JVM.
+
+      BeanProvider and ContextUtils are CDI plumbing derived from Apache
+      DeltaSpike and carried along unchanged, the same as
+      com.vaadin.cdi.util - see the note in vaadin-cdi/pom.xml. What exercises
+      them is the Arquillian-style suite in flow-tests/vaadin-quarkus-tests,
+      which deploys real Quarkus applications, and Sonar is fed unit-test
+      coverage only (see the sonar-analysis job).
+
+      Everything else in this module, which is Vaadin's own code, stays
+      measured.
+    -->
+    <sonar.coverage.exclusions>src/main/java/com/vaadin/quarkus/graal/**,src/main/java/com/vaadin/quarkus/**/*Recorder.java,src/main/java/com/vaadin/quarkus/context/BeanProvider.java,src/main/java/com/vaadin/quarkus/context/ContextUtils.java</sonar.coverage.exclusions>
+    <!--
+      The DeltaSpike-derived layer is duplicated against the copy vaadin-cdi
+      carries in com.vaadin.cdi.util: both integrations need the same CDI
+      plumbing and each vendored it. Reporting it as duplication is correct but
+      not actionable per module - removing it means extracting a module both
+      integrations depend on, which moves published API in vaadin-cdi and is
+      not part of importing this extension. Vaadin's own classes, which have
+      their own per-integration duplication against vaadin-cdi, stay measured.
+    -->
+    <sonar.cpd.exclusions>src/main/java/com/vaadin/quarkus/context/AbstractContext.java,src/main/java/com/vaadin/quarkus/context/AbstractContextualStorageManager.java,src/main/java/com/vaadin/quarkus/context/BeanProvider.java,src/main/java/com/vaadin/quarkus/context/ContextUtils.java,src/main/java/com/vaadin/quarkus/context/ContextualInstanceInfo.java,src/main/java/com/vaadin/quarkus/context/ContextualStorage.java</sonar.cpd.exclusions>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-arc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-undertow</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-websockets</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-extension-maven-plugin</artifactId>
+        <version>${quarkus.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>extension-descriptor</goal>
+            </goals>
+            <phase>compile</phase>
+            <configuration>
+              <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}</deployment>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-codestart-jar</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+            <phase>generate-resources</phase>
+            <configuration>
+              <classesDirectory>${project.basedir}/src/main</classesDirectory>
+              <includes>
+                <include>codestarts/**</include>
+              </includes>
+              <classifier>codestarts</classifier>
+              <skipIfEmpty>true</skipIfEmpty>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

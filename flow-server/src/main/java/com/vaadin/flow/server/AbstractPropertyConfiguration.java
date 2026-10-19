@@ -27,6 +27,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0
  */
 public abstract class AbstractPropertyConfiguration
         implements AbstractConfiguration {

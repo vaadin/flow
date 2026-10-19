@@ -24,8 +24,8 @@ import com.vaadin.testbench.TestBenchElement;
 /**
  * Test CSS loading order from different sources.
  *
- * The expected priority is: Lumo styles < @CssImport < page.addStylesheet
- * < @Stylehseet < parent theme < current theme (app theme)
+ * The expected priority is: @CssImport < page.addStylesheet < @Stylehseet <
+ * parent theme < current theme (app theme)
  */
 public class CssLoadingIT extends ChromeBrowserTest {
 

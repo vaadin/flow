@@ -25,7 +25,12 @@ import com.vaadin.flow.signals.Signal;
 
 /**
  * Component representing a <code>&lt;li&gt;</code> element.
+ * <p>
+ * One item in an ordered or unordered list.
  *
+ * @see <a href=
+ *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/li">MDN:
+ *      &lt;li&gt;</a>
  * @author Vaadin Ltd
  * @since 1.0
  */
@@ -66,6 +71,7 @@ public class ListItem extends HtmlContainer implements ClickNotifier<ListItem> {
      * @param textSignal
      *            the signal to bind, not {@code null}
      * @see #bindText(Signal)
+     * @since 25.1
      */
     public ListItem(Signal<String> textSignal) {
         Objects.requireNonNull(textSignal, "textSignal must not be null");

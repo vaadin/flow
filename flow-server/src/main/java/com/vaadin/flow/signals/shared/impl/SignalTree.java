@@ -35,6 +35,7 @@ import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.function.ValueSupplier;
+import com.vaadin.flow.signals.impl.LeafLock;
 import com.vaadin.flow.signals.impl.TransientListener;
 import com.vaadin.flow.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
 
@@ -44,6 +45,8 @@ import com.vaadin.flow.signals.shared.impl.CommandsAndHandlers.CommandResultHand
  * synchronous trees have their changes applied immediately whereas asynchronous
  * trees make a differences between submitted changes and changes that have been
  * asynchronously confirmed.
+ * 
+ * @since 25.1
  */
 public abstract class SignalTree implements Serializable {
     /**
@@ -181,6 +184,26 @@ public abstract class SignalTree implements Serializable {
     }
 
     /**
+     * Asserts that the current thread is not holding any component
+     * {@link LeafLock} while it is about to acquire this tree lock. Acquiring a
+     * tree lock while holding a leaf lock is the ordering that causes ABBA
+     * deadlocks (see #25166); the reverse (tree lock held while a listener
+     * takes a leaf lock) is the reference direction and stays allowed.
+     * Reentrant re-locks of this same tree are permitted.
+     * <p>
+     * Only active under {@code -ea}. This is the enforcement side of the
+     * {@link LeafLock} invariant.
+     */
+    private void assertNoLeafLockHeld() {
+        assert lock.isHeldByCurrentThread()
+                || !LeafLock.isAnyHeldByCurrentThread()
+                : "Acquiring a SignalTree lock while holding a component leaf lock ("
+                        + LeafLock.describeHeld()
+                        + "). This leaf-lock -> tree-lock ordering causes ABBA "
+                        + "deadlocks; do the tree call outside the leaf lock. See #25166.";
+    }
+
+    /**
      * Runs a supplier while holding the lock and returns the provided value.
      *
      * @param <T>
@@ -190,6 +213,7 @@ public abstract class SignalTree implements Serializable {
      * @return the value returned by the supplier
      */
     protected <T> @Nullable T getWithLock(ValueSupplier<T> action) {
+        assertNoLeafLockHeld();
         lock.lock();
         try {
             return action.supply();
@@ -205,6 +229,7 @@ public abstract class SignalTree implements Serializable {
      *            the action to run, not <code>null</code>
      */
     protected void runWithLock(SerializableRunnable action) {
+        assertNoLeafLockHeld();
         lock.lock();
         try {
             action.run();

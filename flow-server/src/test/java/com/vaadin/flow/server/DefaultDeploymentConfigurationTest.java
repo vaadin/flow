@@ -26,7 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
@@ -40,6 +39,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link DefaultDeploymentConfiguration}
@@ -66,7 +68,7 @@ class DefaultDeploymentConfigurationTest {
         System.setProperty(prop, value);
         Properties initParameters = new Properties();
         ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 appConfig, clazz, initParameters);
@@ -83,7 +85,7 @@ class DefaultDeploymentConfigurationTest {
                 value);
         Properties initParameters = new Properties();
         ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 appConfig, DefaultDeploymentConfigurationTest.class,
@@ -185,9 +187,40 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
+    void maxRequestBodySize_defaultValue() {
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                new Properties());
+        assertEquals(
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                config.getMaxRequestBodySize());
+    }
+
+    @Test
+    void maxRequestBodySize_validValue_accepted() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE, "2048");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertEquals(2048, config.getMaxRequestBodySize());
+    }
+
+    @Test
+    void maxRequestBodySize_invalidValue_defaultValue() {
+        Properties initParameters = new Properties();
+        initParameters.setProperty(
+                InitParameters.SERVLET_PARAMETER_MAX_REQUEST_BODY_SIZE, "kk");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                initParameters);
+        assertEquals(
+                DefaultDeploymentConfiguration.DEFAULT_MAX_REQUEST_BODY_SIZE,
+                config.getMaxRequestBodySize());
+    }
+
+    @Test
     void isProductionMode_productionModeIsSetViaParentOnly_productionModeIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.isProductionMode()).thenReturn(true);
+        when(appConfig.isProductionMode()).thenReturn(true);
 
         // Note: application configuration doesn't contain production mode
         // parameter !
@@ -203,7 +236,7 @@ class DefaultDeploymentConfigurationTest {
     @Test
     void isProductionMode_productionModeIsSetViaPropertiesAndViaParent_productionModeIsTakenFromProperties() {
         ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        when(appConfig.isProductionMode()).thenReturn(false);
 
         Properties initParameters = new Properties();
         initParameters.setProperty(
@@ -219,7 +252,7 @@ class DefaultDeploymentConfigurationTest {
     @Test
     void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
+        when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
 
         // Note: application configuration doesn't contain production mode
         // parameter !
@@ -236,7 +269,7 @@ class DefaultDeploymentConfigurationTest {
     @Test
     void isXsrfProtectionEnabled_valueIsSetViaParentOnlyAndViaParent_valueIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
+        when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
 
         Properties initParameters = new Properties();
         initParameters.setProperty(
@@ -267,7 +300,7 @@ class DefaultDeploymentConfigurationTest {
     @Test
     void frontendHotdeploy_defaultsToParentConfiguration() {
         ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.getMode())
+        when(appConfig.getMode())
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 appConfig, new Properties());
@@ -327,8 +360,8 @@ class DefaultDeploymentConfigurationTest {
         org.apache.commons.io.FileUtils.writeStringToFile(viewFile,
                 "export default function MyView(){}", "UTF-8");
 
-        try (MockedStatic<EndpointRequestUtil> util = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> util = mockStatic(
+                EndpointRequestUtil.class)) {
             util.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
             Properties init = new Properties();
             init.put(FrontendUtils.PROJECT_BASEDIR,
@@ -348,25 +381,23 @@ class DefaultDeploymentConfigurationTest {
 
     private DefaultDeploymentConfiguration createDeploymentConfig(
             ApplicationConfiguration appConfig, Properties initParameters) {
-        Mockito.when(appConfig.getPropertyNames())
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(appConfig.getBuildFolder()).thenReturn(".");
-        Mockito.when(appConfig.getContext()).thenReturn(context);
+        when(appConfig.getBuildFolder()).thenReturn(".");
+        when(appConfig.getContext()).thenReturn(context);
         return new DefaultDeploymentConfiguration(appConfig,
                 DefaultDeploymentConfigurationTest.class, initParameters);
     }
 
     private ApplicationConfiguration setupAppConfig() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getFrontendFolder()).thenCallRealMethod();
-        Mockito.when(
-                appConfig.getStringProperty(FrontendUtils.PARAM_FRONTEND_DIR,
-                        FrontendUtils.DEFAULT_FRONTEND_DIR))
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getFrontendFolder()).thenCallRealMethod();
+        when(appConfig.getStringProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                FrontendUtils.DEFAULT_FRONTEND_DIR))
                 .thenReturn(FrontendUtils.DEFAULT_FRONTEND_DIR);
-        Mockito.when(appConfig.getProjectFolder())
-                .thenReturn(tempFolder.toFile());
-        Mockito.when(appConfig.getContext()).thenReturn(context);
+        when(appConfig.getProjectFolder()).thenReturn(tempFolder.toFile());
+        when(appConfig.getContext()).thenReturn(context);
         return appConfig;
     }
 }

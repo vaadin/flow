@@ -32,11 +32,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -53,15 +53,21 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class TranslationFileRequestHandlerTest {
 
-    private final VaadinService service = Mockito.mock(VaadinService.class);
+    private final VaadinService service = mock(VaadinService.class);
 
-    private final VaadinSession session = Mockito.mock(VaadinSession.class);
+    private final VaadinSession session = mock(VaadinSession.class);
 
-    private final VaadinRequest request = Mockito.mock(VaadinRequest.class);
+    private final VaadinRequest request = mock(VaadinRequest.class);
 
     private VaadinResponse response;
     @TempDir
@@ -104,7 +110,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(true);
         testResponseContent(null, "{\"title\":\"Root bundle lang\"}", "und");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -112,7 +118,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(false);
         testResponseContent(null, "", null);
-        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
@@ -120,7 +126,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(true);
         testResponseContent("", "{\"title\":\"Root bundle lang\"}", "und");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -128,7 +134,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(false);
         testResponseContent("", "", null);
-        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
@@ -136,7 +142,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(true);
         testResponseContent("fi", "{\"title\":\"Suomi\"}", "fi");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -144,7 +150,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(false);
         testResponseContent("es", "", null);
-        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
@@ -153,7 +159,7 @@ class TranslationFileRequestHandlerTest {
         configure(false);
         testResponseContent("es-ES", "{\"title\":\"Espanol (Spain)\"}",
                 "es-ES");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -162,7 +168,7 @@ class TranslationFileRequestHandlerTest {
         configure(true);
         testResponseContent("en-US", "{\"title\":\"Root bundle lang\"}",
                 "en-US");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -170,7 +176,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(false);
         testResponseContent("en-US", "", null);
-        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
@@ -179,7 +185,7 @@ class TranslationFileRequestHandlerTest {
         configure(false);
         testResponseContent("es_ES", "{\"title\":\"Espanol (Spain)\"}",
                 "es-ES");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -188,7 +194,7 @@ class TranslationFileRequestHandlerTest {
         configure(true);
         testResponseContent("it_IT", "{\"title\":\"Root bundle lang\"}",
                 "it-IT");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -196,7 +202,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(false);
         testResponseContent("it_IT", "", null);
-        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     @Test
@@ -204,7 +210,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(true, CustomI18NProvider.class, false);
         testResponseContent("fi", "{\"title\":\"title-fi\"}", "fi");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -212,7 +218,7 @@ class TranslationFileRequestHandlerTest {
             throws IOException {
         configure(true, CustomI18NProvider.class, true);
         testResponseContent("fi", "{\"title\":\"title-fi\"}", "fi");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     private void setUpChunkedTest() throws IOException {
@@ -307,11 +313,10 @@ class TranslationFileRequestHandlerTest {
 
     private void setRequestParams(String langtag, String requestTypeId,
             String[] chunks, String[] keys) {
-        Mockito.when(request.getParameter(
+        when(request.getParameter(
                 TranslationFileRequestHandler.LANGUAGE_TAG_PARAMETER_NAME))
                 .thenReturn(langtag);
-        Mockito.when(request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+        when(request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
                 .thenReturn(requestTypeId);
         // The parameter map is incomplete, but it is enough for the tests
         var paramMap = new HashMap<String, String[]>();
@@ -323,7 +328,7 @@ class TranslationFileRequestHandlerTest {
             paramMap.put(TranslationFileRequestHandler.KEYS_PARAMETER_NAME,
                     keys);
         }
-        Mockito.when(request.getParameterMap()).thenReturn(paramMap);
+        when(request.getParameterMap()).thenReturn(paramMap);
     }
 
     private void createTranslationFiles(boolean withRootBundleFile)
@@ -374,40 +379,36 @@ class TranslationFileRequestHandlerTest {
     private void mockI18nProvider(
             Class<? extends I18NProvider> i18NProviderClass) {
         if (i18NProviderClass.equals(DefaultI18NProvider.class)) {
-            i18NProvider = Mockito.spy(
+            i18NProvider = spy(
                     new DefaultI18NProvider(providedLocales, urlClassLoader));
         } else {
-            i18NProvider = Mockito.mock(i18NProviderClass,
-                    Mockito.CALLS_REAL_METHODS);
-            Mockito.when(i18NProvider.getProvidedLocales())
-                    .thenReturn(providedLocales);
+            i18NProvider = mock(i18NProviderClass, Mockito.CALLS_REAL_METHODS);
+            when(i18NProvider.getProvidedLocales()).thenReturn(providedLocales);
         }
     }
 
     private void mockResponse() throws IOException {
-        response = Mockito.mock(VaadinResponse.class);
+        response = mock(VaadinResponse.class);
         out = new StringWriter();
         writer = new PrintWriter(out);
-        Mockito.when(response.getWriter()).thenReturn(writer);
+        when(response.getWriter()).thenReturn(writer);
         retrievedLocaleCapture = ArgumentCaptor.forClass(String.class);
-        Mockito.doNothing().when(response).setHeader(Mockito
-                .eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
+        doNothing().when(response).setHeader(
+                eq(TranslationFileRequestHandler.RETRIEVED_LOCALE_HEADER_NAME),
                 retrievedLocaleCapture.capture());
     }
 
     private void mockService(boolean isProductionMode) {
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(isProductionMode);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(request.getService()).thenReturn(service);
+        Instantiator instantiator = mock(Instantiator.class);
+        when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
+        when(service.getInstantiator()).thenReturn(instantiator);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(isProductionMode);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        when(request.getService()).thenReturn(service);
         // Just a guard to ensure the handler never uses VaadinSession
-        Mockito.when(session.getService()).thenThrow(new IllegalStateException(
+        when(session.getService()).thenThrow(new IllegalStateException(
                 "TranslationFileRequestHandler should not use Vaadin session."));
     }
 
@@ -424,7 +425,7 @@ class TranslationFileRequestHandlerTest {
 
         assertEquals("{\"title\":\"Suomi\"}", getResponseContent(),
                 "The expected response content does not match.");
-        Mockito.verify(response).setStatus(HttpStatusCode.OK.getCode());
+        verify(response).setStatus(HttpStatusCode.OK.getCode());
     }
 
     @Test
@@ -453,8 +454,7 @@ class TranslationFileRequestHandlerTest {
                 "handleSessionExpired should return true");
 
         // In dev mode, should return 501 Not Implemented error
-        Mockito.verify(response).sendError(
-                HttpStatusCode.NOT_IMPLEMENTED.getCode(),
+        verify(response).sendError(HttpStatusCode.NOT_IMPLEMENTED.getCode(),
                 "Missing I18nProvider implementation, loading translations is not supported.");
     }
 
@@ -475,7 +475,7 @@ class TranslationFileRequestHandlerTest {
                 "handleSessionExpired should return true");
 
         // In production mode, should return 404 Not Found
-        Mockito.verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
     private static class CustomI18NProvider implements I18NProvider {

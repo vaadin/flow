@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Registers DevLoopBuildExtension with Maven when this jar is put on
+  maven.ext.class.path, which is how the dev loop reconfigures the server plugin
+  for its own run without editing the project's pom.
+
+  Hand-written rather than generated: it is three lines, and generating it would
+  mean an annotation processor on a module whose whole point is to have no build
+  machinery. Inert everywhere else - nothing reads it when this jar is run as the
+  daemon or loaded as the javaagent.
+-->
+<component-set>
+  <components>
+    <component>
+      <role>org.apache.maven.AbstractMavenLifecycleParticipant</role>
+      <role-hint>vaadin-devloop</role-hint>
+      <implementation>com.vaadin.flow.devloop.mavenext.DevLoopBuildExtension</implementation>
+    </component>
+  </components>
+</component-set>

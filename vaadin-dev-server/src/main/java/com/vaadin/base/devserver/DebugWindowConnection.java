@@ -57,20 +57,29 @@ import com.vaadin.pro.licensechecker.Product;
  *
  * @author Vaadin Ltd
  *
+ * @since 9.0
  */
 public class DebugWindowConnection implements BrowserLiveReload {
 
+    /** The class loader used to detect the live reload backend in use. */
     private final ClassLoader classLoader;
+
+    /** The context this connection belongs to. */
     private VaadinContext context;
 
+    /** The connected browsers, with the message being assembled for each. */
     private final ConcurrentHashMap<WeakReference<AtmosphereResource>, FragmentedMessage> resources = new ConcurrentHashMap<>();
+
+    /** The detected live reload backend, or {@code null} if none. */
     private Backend backend = null;
 
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
             Backend.class);
 
+    /** Serializes the messages sent to the debug window. */
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /** The dev tools plugins that get a chance to handle a message. */
     private List<DevToolsMessageHandler> plugins;
 
     static {
@@ -181,6 +190,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
     }
 
+    /**
+     * Creates the interface a plugin uses to talk back to one browser.
+     *
+     * @param resource
+     *            the connection of the browser to talk to
+     * @return the interface for that browser
+     * @since 24.2.1
+     */
     protected DevToolsInterface getDevToolsInterface(
             AtmosphereResource resource) {
         return new DevToolsInterfaceImpl(this, resource);
@@ -263,6 +280,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
      *
      * @param msg
      *            the message to broadcast
+     * @since 24.8
      */
     public void broadcast(ObjectNode msg) {
         resources.keySet().forEach(resourceRef -> {
@@ -374,10 +392,20 @@ public class DebugWindowConnection implements BrowserLiveReload {
         String name = data.get("name").asString();
         String version = data.get("version").asString();
         Product product = new Product(name, version);
+        LicenseDownloadCallback callback = new LicenseDownloadCallback(resource,
+                product);
 
+        // The browser is opened so the user can sign in and download the
+        // license; the timeout (in seconds) sets how long the checker waits for
+        // that to complete. The dev tools client may supply a custom timeout
+        // for flows where the user needs more time; otherwise the license
+        // checker's own default applies.
+        JsonNode timeoutNode = data.get("timeout");
+        int timeout = timeoutNode != null && timeoutNode.isIntegralNumber()
+                ? timeoutNode.intValue()
+                : LicenseChecker.DEFAULT_KEY_URL_HANDLER_TIMEOUT_SECONDS;
         LicenseChecker.checkLicenseAsync(product.getName(),
-                product.getVersion(), BuildType.DEVELOPMENT,
-                new LicenseDownloadCallback(resource, product));
+                product.getVersion(), BuildType.DEVELOPMENT, callback, timeout);
         send(resource, "license-download-started", product);
     }
 

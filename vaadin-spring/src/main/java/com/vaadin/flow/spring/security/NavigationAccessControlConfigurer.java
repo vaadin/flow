@@ -73,6 +73,7 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * navigation access checkers are provided.
  *
  * @see NavigationAccessControl
+ * @since 24.3
  */
 public final class NavigationAccessControlConfigurer {
 
@@ -84,6 +85,14 @@ public final class NavigationAccessControlConfigurer {
     private String loginViewPath;
     private AccessCheckDecisionResolver decisionResolver = new DefaultAccessCheckDecisionResolver();
     private Predicate<NavigationAccessChecker> accessCheckersFilter;
+
+    /**
+     * Creates a configurer with no checkers enabled. Use the {@code withXyz}
+     * methods to select the checkers to apply.
+     */
+    public NavigationAccessControlConfigurer() {
+        // Default constructor
+    }
 
     /**
      * Enables the

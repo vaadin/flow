@@ -23,8 +23,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.vaadin.flow.component.button.testbench.ButtonElement;
-import com.vaadin.flow.component.notification.testbench.NotificationElement;
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 
 /**
  * Test that application is deployed and can be opened in the browser. Works
@@ -48,13 +48,12 @@ public class SmokeTestIT extends AbstractSpringTest {
     public void componentsAreFoundAndLoaded() throws Exception {
         open();
 
-        $(ButtonElement.class).waitForFirst();
+        $(NativeButtonElement.class).waitForFirst();
 
-        $(ButtonElement.class).first().click();
+        $(NativeButtonElement.class).first().click();
 
-        Assert.assertTrue(
-                "Clicking button should have opened a notification successfully.",
-                $(NotificationElement.class).exists());
+        Assert.assertTrue("Clicking button should have shown the notification.",
+                $(DivElement.class).id("notification").isDisplayed());
     }
 
     @Override

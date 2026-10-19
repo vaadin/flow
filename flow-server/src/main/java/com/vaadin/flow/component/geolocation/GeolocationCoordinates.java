@@ -53,6 +53,7 @@ import org.jspecify.annotations.Nullable;
  * @param speed
  *            ground speed in metres per second, or {@code null} when the device
  *            cannot measure it
+ * @since 25.2
  */
 public record GeolocationCoordinates(double latitude, double longitude,
         double accuracy, @Nullable Double altitude,

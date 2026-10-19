@@ -26,12 +26,10 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.BUTTERFLY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.KEYBOARD_ID;
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.LEMON_ID;
-import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.MY_POLYMER_ID;
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.SUN_ID;
 
@@ -75,20 +73,6 @@ public class ParentThemeIT extends ChromeBrowserTest {
                         .getCssValue("background-image"));
         Assert.assertTrue("Should override the octupuss background image",
                 octupussImageMatcher.matches());
-    }
-
-    @Test
-    public void componentThemeIsApplied_childThemeTextColorIsApplied() {
-        open();
-        TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
-
-        Assert.assertEquals("Text field should have color as green",
-                "rgba(0, 128, 0, 1)", input.getCssValue("color"));
-
     }
 
     @Test

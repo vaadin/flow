@@ -35,7 +35,7 @@ public class ViewTitleIT extends ChromeBrowserTest {
     @Test
     public void testNoViewTitle() {
         open();
-        openView("BasicElementView");
+        openView("BaseHrefView");
 
         verifyTitle("");
     }
@@ -62,6 +62,14 @@ public class ViewTitleIT extends ChromeBrowserTest {
         openView("DynamicTitleView");
 
         verifyTitle("dynamic title view");
+    }
+
+    @Test
+    public void testViewDynamicPageTitleAnnotation() {
+        open();
+        openView("DynamicPageTitleView");
+
+        verifyTitle("generated dynamic title");
     }
 
     private void openView(String viewName) {

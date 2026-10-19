@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
  * {@literal manifest.webmanifest}. Same applies for service worker and
  * generated icons.
  *
- * @since 1.2
+ * @since 1.1
  *
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/Apps/Progressive">https://developer.mozilla.org/en-US/Apps/Progressive</a>
@@ -181,6 +181,7 @@ public @interface PWA {
      * unregistered on the user's next visit.
      *
      * @return whether offline is enabled.
+     * @since 23.1
      */
     boolean offline() default true;
 }

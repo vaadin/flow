@@ -29,8 +29,16 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
  *             which is now no-op. The default strategy implementation is
  *             {@link VaadinAwareSecurityContextHolderStrategy} and can be
  *             overridden by providing a custom bean.
+ * @since 23.3.4
  */
 @Deprecated(since = "25.0", forRemoval = true)
 @Configuration
 public class VaadinAwareSecurityContextHolderStrategyConfiguration {
+
+    /**
+     * Creates the configuration, which does nothing.
+     */
+    public VaadinAwareSecurityContextHolderStrategyConfiguration() {
+        // Default constructor
+    }
 }

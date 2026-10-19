@@ -20,6 +20,8 @@ import com.vaadin.flow.internal.Pair;
 /**
  * Route parameter containing the name and the value used mainly when
  * constructing a {@link RouteParameters} instance.
+ * 
+ * @since 4.0
  */
 public class RouteParam extends Pair<String, String> {
 
@@ -42,6 +44,7 @@ public class RouteParam extends Pair<String, String> {
      *            the name of the parameter.
      * @param value
      *            the value of the parameter.
+     * @since 24.2
      */
     public RouteParam(String name, int value) {
         super(name, Integer.toString(value));
@@ -54,6 +57,7 @@ public class RouteParam extends Pair<String, String> {
      *            the name of the parameter.
      * @param value
      *            the value of the parameter.
+     * @since 24.2
      */
     public RouteParam(String name, long value) {
         super(name, Long.toString(value));

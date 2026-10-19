@@ -23,7 +23,6 @@ import com.vaadin.flow.router.Route;
 @Route("com.vaadin.flow.uitest.ui.theme.ThemeView")
 public class ThemeView extends Div {
 
-    public static final String MY_COMPONENT_ID = "field";
     public static final String TEST_TEXT_ID = "test-text";
     public static final String SNOWFLAKE_ID = "fortawesome";
     public static final String BUTTERFLY_ID = "butterfly";
@@ -68,6 +67,5 @@ public class ThemeView extends Div {
                 faText, diceImageSpan);
 
         add(new Div());
-        add(new MyComponent().withId(MY_COMPONENT_ID));
     }
 }

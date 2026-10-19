@@ -39,6 +39,7 @@ import com.vaadin.flow.server.VaadinResponse;
  *            list of file names that were accepted
  * @param rejectedFiles
  *            list of rejected files with their rejection reasons
+ * @since 25.0
  */
 public record UploadResult(boolean success, VaadinResponse response,
         Exception exception, List<String> acceptedFiles,
@@ -51,6 +52,7 @@ public record UploadResult(boolean success, VaadinResponse response,
      *            the name of the rejected file
      * @param reason
      *            the reason for rejection
+     * @since 25.1
      */
     public record RejectedFile(String fileName,
             String reason) implements Serializable {
@@ -80,6 +82,7 @@ public record UploadResult(boolean success, VaadinResponse response,
      *            the response object for the upload request
      * @param exception
      *            the exception that caused the failure
+     * @since 25.1
      */
     public UploadResult(boolean success, VaadinResponse response,
             Exception exception) {
@@ -91,6 +94,7 @@ public record UploadResult(boolean success, VaadinResponse response,
      * Checks if all files were accepted.
      *
      * @return {@code true} if there are accepted files and no rejected files
+     * @since 25.1
      */
     public boolean allAccepted() {
         return !acceptedFiles.isEmpty() && rejectedFiles.isEmpty();
@@ -100,6 +104,7 @@ public record UploadResult(boolean success, VaadinResponse response,
      * Checks if all files were rejected.
      *
      * @return {@code true} if there are rejected files and no accepted files
+     * @since 25.1
      */
     public boolean allRejected() {
         return !rejectedFiles.isEmpty() && acceptedFiles.isEmpty();
@@ -109,6 +114,7 @@ public record UploadResult(boolean success, VaadinResponse response,
      * Checks if there is a mix of accepted and rejected files.
      *
      * @return {@code true} if there are both accepted and rejected files
+     * @since 25.1
      */
     public boolean hasMixed() {
         return !acceptedFiles.isEmpty() && !rejectedFiles.isEmpty();
@@ -118,6 +124,7 @@ public record UploadResult(boolean success, VaadinResponse response,
      * Checks if any files were processed.
      *
      * @return {@code true} if there are any accepted or rejected files
+     * @since 25.1
      */
     public boolean hasFiles() {
         return !acceptedFiles.isEmpty() || !rejectedFiles.isEmpty();

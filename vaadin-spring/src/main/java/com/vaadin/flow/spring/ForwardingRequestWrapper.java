@@ -31,11 +31,19 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @author Vaadin Ltd
  *
+ * @since 10.0.6
  */
 public class ForwardingRequestWrapper extends HttpServletRequestWrapper {
 
     private UrlPathHelper urlPathHelper = new UrlPathHelper();
 
+    /**
+     * Wraps the given request so that the servlet path and path info are
+     * reported the way the Vaadin servlet expects them after a forward.
+     *
+     * @param request
+     *            the forwarded request to wrap
+     */
     public ForwardingRequestWrapper(HttpServletRequest request) {
         super(request);
     }

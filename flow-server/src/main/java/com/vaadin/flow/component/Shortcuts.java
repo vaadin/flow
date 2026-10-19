@@ -83,7 +83,7 @@ public final class Shortcuts {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
         return new ShortcutRegistration(lifecycleOwner,
-                () -> new Component[] { lifecycleOwner.getUI().get() },
+                () -> new Component[] { lifecycleOwner.getUIOrThrow() },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -128,7 +128,7 @@ public final class Shortcuts {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
         return new ShortcutRegistration(lifecycleOwner,
-                () -> new Component[] { lifecycleOwner.getUI().get() },
+                () -> new Component[] { lifecycleOwner.getUIOrThrow() },
                 listener, key).withModifiers(keyModifiers);
     }
 
@@ -157,6 +157,7 @@ public final class Shortcuts {
      * @return a registration for removing the locator, does not affect active
      *         shortcuts or if the locator has changed from what was set for
      *         this registration
+     * @since 6.0.2
      */
     public static Registration setShortcutListenOnElement(
             String elementLocatorJs, Component listenOnComponent) {

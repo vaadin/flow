@@ -52,6 +52,21 @@ import com.vaadin.flow.server.VaadinServlet;
  */
 public class JSR356WebsocketInitializer implements ServletContextListener {
 
+    /**
+     * The name of the servlet context attribute which, when set to
+     * {@link Boolean#TRUE}, makes this listener leave Atmosphere uninitialized
+     * when the servlet context is initialized.
+     * <p>
+     * An integration sets it when it registers the push WebSocket endpoints
+     * itself and initializes Atmosphere later, with
+     * {@link #initAtmosphereForVaadinServlet(ServletRegistration, ServletContext)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    public static final String SKIP_INITIALIZATION_ATTRIBUTE = "com.vaadin.flow.server.communication.skipAtmosphereInitialization";
+
     private static boolean atmosphereAvailable = false;
 
     static {
@@ -125,13 +140,16 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      * context.
      * <p>
      * For JSR 356 websockets to work properly, the initialization must be done
-     * in the servlet context initialization phase.
+     * in the servlet context initialization phase, unless the
+     * {@link #SKIP_INITIALIZATION_ATTRIBUTE} attribute of the context says that
+     * an integration takes care of the push WebSocket endpoints.
      *
      * @param servletContext
      *            The servlet context
      */
     public void init(ServletContext servletContext) {
-        if (!atmosphereAvailable) {
+        if (!atmosphereAvailable || Boolean.TRUE.equals(
+                servletContext.getAttribute(SKIP_INITIALIZATION_ATTRIBUTE))) {
             return;
         }
         getLogger().debug("Atmosphere available, initializing");
@@ -162,7 +180,11 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      * Initializes Atmosphere for use with the given Vaadin servlet
      * <p>
      * For JSR 356 websockets to work properly, the initialization must be done
-     * in the servlet context initialization phase.
+     * in the servlet context initialization phase, unless an integration that
+     * set the {@link #SKIP_INITIALIZATION_ATTRIBUTE} attribute registers the
+     * push WebSocket endpoints itself. Such an integration calls this method
+     * later, before the Vaadin servlet is initialized, so that the servlet uses
+     * the Atmosphere instance created here.
      *
      * @param servletRegistration
      *            The servlet registration info for the servlet
@@ -226,34 +248,30 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      *            The servlet registration info for the servlet
      * @param servletContext
      *            the context of the servlet
-     * @return false if the servlet is definitely not a Vaadin servlet, true
-     *         otherwise
+     * @return true if the servlet class is a Vaadin servlet, false otherwise
+     *         (including when the servlet class cannot be loaded)
      */
     protected boolean isVaadinServlet(ServletRegistration servletRegistration,
             ServletContext servletContext) {
         try {
             String servletClassName = servletRegistration.getClassName();
-            if (servletClassName.equals("com.ibm.ws.wsoc.WsocServlet")) {
-                // Websphere servlet which implements websocket endpoints,
-                // dynamically added
-                return false;
-            }
-            if (servletClassName
-                    .equals("com.ibm.websphere.jaxrs.server.IBMRestServlet")) {
-                // Websphere servlet which implements websocket endpoints,
-                // dynamically added
-                return false;
-            }
-
             // Must use servletContext class loader to load servlet class to
-            // work correctly in an OSGi environment (#20024)
+            // work correctly in an OSGi environment (#1311)
             Class<?> servletClass = servletContext.getClassLoader()
                     .loadClass(servletClassName);
             return VaadinServlet.class.isAssignableFrom(servletClass);
         } catch (Exception e) {
-            // This will fail in OSGi environments, assume everything is a
-            // VaadinServlet
-            return true;
+            // If the servlet class cannot be loaded or checked, it is not a
+            // Vaadin servlet we should initialize Atmosphere for. The OSGi
+            // class loading issue that previously required assuming everything
+            // is a VaadinServlet was fixed by using the servlet context class
+            // loader above (#1311). Assuming true here caused Atmosphere to be
+            // initialized for non-Vaadin servlets, e.g. on Liberty (#14889).
+            getLogger().debug(
+                    "Could not determine whether {} is a Vaadin servlet, "
+                            + "assuming it is not",
+                    servletRegistration.getName(), e);
+            return false;
         }
     }
 

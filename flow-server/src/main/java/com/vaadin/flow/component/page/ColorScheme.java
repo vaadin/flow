@@ -43,6 +43,7 @@ import java.lang.annotation.Target;
  *
  * @see Page#setColorScheme(ColorScheme.Value)
  * @see Page#getColorScheme()
+ * @since 25.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

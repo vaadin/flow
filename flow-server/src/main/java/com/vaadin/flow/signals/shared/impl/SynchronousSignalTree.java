@@ -26,6 +26,8 @@ import com.vaadin.flow.signals.SignalCommand;
  * external system to determine command ordering. This means that
  * {@link #confirmed()} and {@link #submitted()} return the same value. This
  * type of tree is intended for signals that are used only within a single JVM.
+ * 
+ * @since 25.1
  */
 public class SynchronousSignalTree extends SignalTree {
 

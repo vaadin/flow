@@ -54,6 +54,7 @@ import com.vaadin.flow.server.VaadinService;
  * @see Id
  *
  * @author Vaadin Ltd
+ * @since 4.0
  */
 public abstract class LitTemplate extends Component
         implements HasStyle, Template {
@@ -77,7 +78,8 @@ public abstract class LitTemplate extends Component
      * @see Instantiator#getOrCreate(Class)
      */
     protected LitTemplate() {
-        this(getParser(VaadinService.getCurrent()), VaadinService.getCurrent());
+        this(getParser(VaadinService.getCurrentOrThrow()),
+                VaadinService.getCurrentOrThrow());
     }
 
     /**
@@ -88,6 +90,7 @@ public abstract class LitTemplate extends Component
      *            a template parser
      * @param service
      *            the related service instance
+     * @since 5.0
      */
     protected LitTemplate(LitTemplateParser parser, VaadinService service) {
         LitTemplateInitializer templateInitializer = new LitTemplateInitializer(

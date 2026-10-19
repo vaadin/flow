@@ -33,7 +33,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * A link that handles navigation internally using {@link Router} instead of
- * loading a new page in the browser.
+ * loading a new page in the browser. {@link #setOpenInNewBrowserTab(boolean)}
+ * opens the route in a new browser tab instead.
  * <p>
  * The <code>href</code> attribute of {@link #getElement()} will only be
  * up-to-date when the component is attached to a UI.
@@ -47,6 +48,10 @@ public class RouterLink extends Component implements HasText, HasComponents,
 
     private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors
             .attributeWithDefault("href", "", false);
+
+    private static final String TARGET = "target";
+
+    private static final String BLANK = "_blank";
 
     private HighlightCondition<RouterLink> highlightCondition = HighlightConditions
             .locationPrefix();
@@ -69,6 +74,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *
      * @param navigationTarget
      *            navigation target
+     * @since 23.2
      */
     public RouterLink(Class<? extends Component> navigationTarget) {
         this(navigationTarget, RouteParameters.empty());
@@ -100,6 +106,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @since 23.2
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
             Class<? extends C> navigationTarget, T parameter) {
@@ -135,6 +142,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 23.2
      */
     public RouterLink(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -152,6 +160,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 4.0
      */
     public RouterLink(String text, Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -169,6 +178,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @throws IllegalArgumentException
      *             if navigation target requires parameters
+     * @since 23.2
      */
     public RouterLink(Router router,
             Class<? extends Component> navigationTarget)
@@ -209,6 +219,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @since 23.2
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
             Router router, Class<? extends C> navigationTarget, T parameter) {
@@ -250,6 +261,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 23.2
      */
     public RouterLink(Router router,
             Class<? extends Component> navigationTarget,
@@ -270,6 +282,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 4.0
      */
     public RouterLink(Router router, String text,
             Class<? extends Component> navigationTarget,
@@ -323,6 +336,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 4.0
      */
     public void setRoute(Router router,
             Class<? extends Component> navigationTarget,
@@ -346,6 +360,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @throws IllegalArgumentException
      *             if navigation target requires parameters
+     * @since 2.1
      */
     public void setRoute(Class<? extends Component> navigationTarget) {
         setRoute(getRouter(), navigationTarget);
@@ -362,6 +377,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @since 2.1
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Class<? extends C> navigationTarget, T parameter) {
@@ -375,6 +391,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target
      * @param parameters
      *            route parameters for navigation target
+     * @since 4.0
      */
     public void setRoute(Class<? extends Component> navigationTarget,
             RouteParameters parameters) {
@@ -438,6 +455,71 @@ public class RouterLink extends Component implements HasText, HasComponents,
 
     private Router getRouter() {
         return ComponentUtil.getRouter(this);
+    }
+
+    /**
+     * Sets the browsing context the link opens in, as the {@code target}
+     * attribute of the {@code <a>} element. Any target other than {@code _self}
+     * leaves the click to the browser: the route opens in that context through
+     * a regular page load, with a UI of its own, and the current UI does not
+     * navigate.
+     *
+     * <pre>{@code
+     * RouterLink link = new RouterLink("Report", ReportView.class);
+     * link.setTarget("_blank"); // same as setOpenInNewBrowserTab(true)
+     * }</pre>
+     *
+     * @param target
+     *            a {@code window.name} or one of {@code _self}, {@code _blank},
+     *            {@code _parent}, {@code _top}; {@code null} or {@code ""}
+     *            removes the attribute, which opens the link in the current
+     *            context
+     * @see #setOpenInNewBrowserTab(boolean)
+     * @since 25.4
+     */
+    public void setTarget(String target) {
+        if (target == null || target.isEmpty()) {
+            getElement().removeAttribute(TARGET);
+        } else {
+            getElement().setAttribute(TARGET, target);
+        }
+    }
+
+    /**
+     * Gets the browsing context the link opens in.
+     *
+     * @return the {@code target} attribute, or {@code null} if none is set
+     * @see #setTarget(String)
+     * @since 25.4
+     */
+    public String getTarget() {
+        return getElement().getAttribute(TARGET);
+    }
+
+    /**
+     * Sets whether the link opens its route in a new browser tab, through the
+     * {@code _blank} target. Turning it off removes the target, whatever it
+     * was.
+     *
+     * @param openInNewBrowserTab
+     *            {@code true} to open the route in a new tab, {@code false} to
+     *            navigate in the current one
+     * @see #setTarget(String)
+     * @since 25.4
+     */
+    public void setOpenInNewBrowserTab(boolean openInNewBrowserTab) {
+        setTarget(openInNewBrowserTab ? BLANK : null);
+    }
+
+    /**
+     * Gets whether the link opens its route in a new browser tab.
+     *
+     * @return {@code true} if the target is {@code _blank}
+     * @see #setOpenInNewBrowserTab(boolean)
+     * @since 25.4
+     */
+    public boolean isOpenInNewBrowserTab() {
+        return BLANK.equals(getTarget());
     }
 
     /**

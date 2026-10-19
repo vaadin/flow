@@ -50,6 +50,8 @@ import com.vaadin.flow.router.Router;
  * navigation checker to take a decision; for example, a configuration where the
  * path {@literal /my/view} is public, but {@literal /my/*} is protected.</li>
  * </ul>
+ * 
+ * @since 24.3
  */
 public final class NavigationContext {
     private final Router router;
@@ -84,6 +86,7 @@ public final class NavigationContext {
      * @param navigating
      *            {@literal true} if the navigation is ongoing, {@literal false}
      *            if not (e.g. during access checks outside of navigation)
+     * @since 25.0
      */
     public NavigationContext(Router router, Class<?> navigationTarget,
             Location location, RouteParameters parameters, Principal principal,
@@ -222,6 +225,7 @@ public final class NavigationContext {
      * 
      * @return {@literal true} if the navigation is ongoing, {@literal false} if
      *         not
+     * @since 25.0
      */
     public boolean isNavigating() {
         return navigating;

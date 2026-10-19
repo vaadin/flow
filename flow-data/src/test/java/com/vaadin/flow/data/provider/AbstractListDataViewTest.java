@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -54,6 +53,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class AbstractListDataViewTest {
 
@@ -324,13 +328,12 @@ class AbstractListDataViewTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     void setIdentifierProvider_firesIdentifierProviderChangeEvent() {
-        ComponentEventListener mockEventListener = Mockito
-                .mock(ComponentEventListener.class);
+        ComponentEventListener mockEventListener = mock(
+                ComponentEventListener.class);
         beanDataView.addIdentifierProviderChangeListener(mockEventListener);
         beanDataView.setIdentifierProvider(Item::getId);
 
-        Mockito.verify(mockEventListener, Mockito.times(1))
-                .onComponentEvent(Mockito.any());
+        verify(mockEventListener, times(1)).onComponentEvent(any());
     }
 
     @Test
@@ -342,15 +345,14 @@ class AbstractListDataViewTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test()
     void addIdentifierProviderChangeListener_removeListener_listenerIsNotNotified() {
-        ComponentEventListener mockEventListener = Mockito
-                .mock(ComponentEventListener.class);
+        ComponentEventListener mockEventListener = mock(
+                ComponentEventListener.class);
         Registration registration = beanDataView
                 .addIdentifierProviderChangeListener(mockEventListener);
         registration.remove();
         beanDataView.setIdentifierProvider(Item::getId);
 
-        Mockito.verify(mockEventListener, Mockito.times(0))
-                .onComponentEvent(Mockito.any());
+        verify(mockEventListener, times(0)).onComponentEvent(any());
     }
 
     @Test
@@ -876,8 +878,8 @@ class AbstractListDataViewTest {
     void refreshItem_itemPresentInDataSet_refreshesItem() {
         Collection<Item> items = getTestItems();
 
-        ListDataProvider<Item> dataProvider = Mockito
-                .spy(DataProvider.ofCollection(items));
+        ListDataProvider<Item> dataProvider = spy(
+                DataProvider.ofCollection(items));
 
         ItemListDataView dataView = new ItemListDataView(() -> dataProvider,
                 component);
@@ -887,7 +889,7 @@ class AbstractListDataViewTest {
         firstItem.setValue("updatedValue");
 
         dataView.refreshItem(firstItem);
-        Mockito.verify(dataProvider).refreshItem(firstItem);
+        verify(dataProvider).refreshItem(firstItem);
 
         dataView.setIdentifierProvider(Item::getId);
         Item secondItem = iterator.next();
@@ -897,8 +899,8 @@ class AbstractListDataViewTest {
         dataView.refreshItem(secondItemDuplicate);
         // Verify that the refresh is made on a new object, no on an old
         // object.
-        Mockito.verify(dataProvider).refreshItem(secondItemDuplicate);
-        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(secondItem);
+        verify(dataProvider).refreshItem(secondItemDuplicate);
+        verify(dataProvider, times(0)).refreshItem(secondItem);
     }
 
     @Test
@@ -1008,6 +1010,29 @@ class AbstractListDataViewTest {
         // Check that the verification is still passed during data view API
         // usage, because the default data provider is an in-memory one
         dataView.addItem("foo");
+    }
+
+    @Test
+    void addFilter_beforeSettingDataProvider_callbackNotInvoked() {
+        DataCommunicator<String> dataCommunicator = new DataCommunicator<>(
+                (item, jsonObject) -> {
+                }, null, null, component.getElement().getNode());
+
+        AtomicInteger callbackInvocations = new AtomicInteger();
+
+        AbstractListDataView<String> dataView = new AbstractListDataView<String>(
+                dataCommunicator::getDataProvider, component,
+                (filter, sorting) -> callbackInvocations.incrementAndGet()) {
+        };
+
+        dataView.addFilter(item -> item.contains("test"));
+
+        assertEquals(0, callbackInvocations.get());
+
+        dataCommunicator.setDataProvider(DataProvider.ofItems("test"), null);
+        dataView.addFilter(item -> item.startsWith("t"));
+
+        assertEquals(1, callbackInvocations.get());
     }
 
     @Test

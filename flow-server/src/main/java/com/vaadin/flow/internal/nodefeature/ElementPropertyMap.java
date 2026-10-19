@@ -148,6 +148,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            the property name
      * @param value
      *            the new value to set
+     * @since 25.1
      */
     public void setPropertyWithWriteCallback(String name, Serializable value) {
         assert hasSignal(name)

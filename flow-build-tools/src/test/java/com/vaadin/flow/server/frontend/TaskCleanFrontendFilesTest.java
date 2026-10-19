@@ -27,13 +27,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class TaskCleanFrontendFilesTest {
     @TempDir
@@ -48,7 +50,7 @@ class TaskCleanFrontendFilesTest {
     void init() {
         projectRoot = rootFolder;
         frontendDirectory = new File(projectRoot, "target/frontend");
-        classFinder = Mockito.mock(ClassFinder.class);
+        classFinder = mock(ClassFinder.class);
         options = new Options(null, classFinder, projectRoot)
                 .withFrontendDirectory(frontendDirectory)
                 .withFrontendGeneratedFolder(
@@ -136,10 +138,10 @@ class TaskCleanFrontendFilesTest {
     void hillaIsUsed_nodeModulesFolderIsKept()
             throws IOException, ExecutionFailedException {
         TaskCleanFrontendFiles clean;
-        try (MockedStatic<FrontendBuildUtils> util = Mockito
-                .mockStatic(FrontendBuildUtils.class)) {
-            util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
+        try (MockedStatic<FrontendBuildUtils> util = mockStatic(
+                FrontendBuildUtils.class)) {
+            util.when(() -> FrontendBuildUtils.isHillaUsed(any(),
+                    any(ClassFinder.class))).thenReturn(true);
             clean = new TaskCleanFrontendFiles(options);
         }
 
@@ -165,15 +167,44 @@ class TaskCleanFrontendFilesTest {
         new File(nodeModules, "file-routes.ts").createNewFile();
         new File(nodeModules, "file-routes.json").createNewFile();
 
-        try (MockedStatic<FrontendBuildUtils> util = Mockito
-                .mockStatic(FrontendBuildUtils.class)) {
-            util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any(ClassFinder.class))).thenReturn(false);
+        try (MockedStatic<FrontendBuildUtils> util = mockStatic(
+                FrontendBuildUtils.class)) {
+            util.when(() -> FrontendBuildUtils.isHillaUsed(any(),
+                    any(ClassFinder.class))).thenReturn(false);
             new TaskCleanFrontendFiles(options);
         }
 
         assertFilesNotExist(Set.of("target/frontend/generated/file-routes.ts",
                 "target/frontend/generated/file-routes.json"));
+    }
+
+    @Test
+    void pnpmWorkspaceYaml_whenGeneratedDuringBuild_isRemoved()
+            throws IOException, ExecutionFailedException {
+        // Not present when the task snapshots existing files...
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+
+        // ...then generated during the build.
+        createFiles(Collections.singleton(PnpmWorkspaceFile.WORKSPACE_FILE));
+
+        clean.execute();
+
+        assertFilesNotExist(
+                Collections.singleton(PnpmWorkspaceFile.WORKSPACE_FILE));
+    }
+
+    @Test
+    void existingPnpmWorkspaceYaml_isKept()
+            throws IOException, ExecutionFailedException {
+        // Present before the build -> user-owned -> must survive cleanup.
+        createFiles(Collections.singleton(PnpmWorkspaceFile.WORKSPACE_FILE));
+
+        TaskCleanFrontendFiles clean = new TaskCleanFrontendFiles(options);
+
+        clean.execute();
+
+        assertFilesExist(
+                Collections.singleton(PnpmWorkspaceFile.WORKSPACE_FILE));
     }
 
     private void createFiles(Set<String> filesToCreate) throws IOException {
