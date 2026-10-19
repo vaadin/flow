@@ -50,7 +50,8 @@ class DownloadActionTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("window.Vaadin.Flow.download.start($0(event))",
+        assertEquals(
+                "window.Vaadin.Flow.download.start($0(event), undefined, event)",
                 action.getBody());
         assertLiteralInputValue(action, 0, "/api/report.pdf");
     }
@@ -70,7 +71,8 @@ class DownloadActionTest {
         // verbatim into the input function's capture — Jackson handles the
         // escaping on the wire, no hand-quoting in the JS.
         JsFunction action = actionOf(singleInstallFn(ui));
-        assertEquals("window.Vaadin.Flow.download.start($0(event), $1(event))",
+        assertEquals(
+                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
                 action.getBody());
         assertLiteralInputValue(action, 0, "/api/report.pdf");
         assertLiteralInputValue(action, 1, "Q1 \"report\".pdf");

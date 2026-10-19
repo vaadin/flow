@@ -33,7 +33,6 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -51,6 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class WebComponentConfigurationRegistryTest {
@@ -72,14 +72,12 @@ class WebComponentConfigurationRegistryTest {
         VaadinService service = mock(VaadinService.class);
         context = mock(VaadinContext.class);
         VaadinService.setCurrent(service);
-        Mockito.when(service.getContext()).thenReturn(context);
+        when(service.getContext()).thenReturn(context);
         WebComponentConfigurationRegistry instance = createRegistry();
-        Mockito.when(
-                context.getAttribute(WebComponentConfigurationRegistry.class))
+        when(context.getAttribute(WebComponentConfigurationRegistry.class))
                 .thenReturn(instance);
-        Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), any()))
-                .thenReturn(instance);
+        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
+                any())).thenReturn(instance);
         registry = WebComponentConfigurationRegistry.getInstance(context);
     }
 

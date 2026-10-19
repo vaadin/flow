@@ -66,7 +66,8 @@ class DownloadTest {
                 "Expected install captures to include the event name: "
                         + installFn.getCaptures());
         JsFunction action = actionOf(installFn);
-        assertEquals("window.Vaadin.Flow.download.start($0(event))",
+        assertEquals(
+                "window.Vaadin.Flow.download.start($0(event), undefined, event)",
                 action.getBody());
         resourceUri(action);
     }
@@ -76,7 +77,8 @@ class DownloadTest {
         Download.onClick(button, "/files/a.bin", "b.bin");
 
         JsFunction action = actionOf(singleInstallFn());
-        assertEquals("window.Vaadin.Flow.download.start($0(event), $1(event))",
+        assertEquals(
+                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
                 action.getBody());
         assertEquals("return $0",
                 ((JsFunction) action.getCaptures().get(1)).getBody());

@@ -1614,6 +1614,13 @@ public class UI extends Component
      * {@link #navigate(Class) navigating} to the location that is already shown
      * does nothing.
      * <p>
+     * Components with modality, such as open dialogs in either
+     * {@link ModalityMode#STRICT strict} or {@link ModalityMode#VISUAL visual}
+     * mode, are removed from the UI as part of the refresh, since they would
+     * otherwise keep showing outdated contents. If such components are present,
+     * the whole route chain is refreshed regardless of
+     * {@code refreshRouteChain}.
+     * <p>
      * In development mode, local signal field values are automatically
      * transferred from the old component instance to the new one, preserving UI
      * state across refreshes.
@@ -1958,6 +1965,10 @@ public class UI extends Component
      * curtain or change the visible state of the components in the UI - that
      * should be handled by the component separately. Thus, this is purely a
      * server side feature.
+     * <p>
+     * Passing {@code false} also removes {@link ModalityMode#VISUAL} from a
+     * component. Components that use visual modality should use
+     * {@link #setChildComponentModal(Component, ModalityMode)} instead.
      *
      * @param childComponent
      *            the child component to change state for
@@ -2002,11 +2013,7 @@ public class UI extends Component
                             + "Add it first as a child of the UI so it is "
                             + "attached or just use addModal(component) when using ModalityMode.STRICT.");
         }
-        if (mode == ModalityMode.STRICT) {
-            getInternals().setChildModal(childComponent);
-        } else {
-            getInternals().setChildModeless(childComponent);
-        }
+        getInternals().setChildModal(childComponent, mode);
     }
 
     /**
@@ -2020,29 +2027,28 @@ public class UI extends Component
     }
 
     /**
-     * Add component as child to modal component if one is active. Else it will
-     * be added to the UI normally.
+     * Add component as child to the most recently set component with modality,
+     * either {@link ModalityMode#STRICT} or {@link ModalityMode#VISUAL}, if
+     * there is one. Else it will be added to the UI normally.
      * <p>
      * This is meant to be used with components that are not added as part of a
-     * layout, like dialog, so that they are interactive when a modal component
-     * opens up an overlay component.
+     * layout, like dialog, so that they are interactive when a component with
+     * modality opens up an overlay component.
      *
      * @param component
      *            component to add to modal component
      * @since 23.0
      */
     public void addToModalComponent(Component component) {
-        if (hasModalComponent()) {
-            final Component activeModalComponent = getInternals()
-                    .getActiveModalComponent();
-            if (activeModalComponent instanceof HasComponents) {
-                ((HasComponents) activeModalComponent).add(component);
-            } else {
-                activeModalComponent.getElement()
-                        .appendChild(component.getElement());
-            }
-        } else {
+        final Component activeModalComponent = getInternals()
+                .getActiveModalityComponent();
+        if (activeModalComponent == null) {
             add(component);
+        } else if (activeModalComponent instanceof HasComponents hasComponents) {
+            hasComponents.add(component);
+        } else {
+            activeModalComponent.getElement()
+                    .appendChild(component.getElement());
         }
     }
 

@@ -20,8 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -33,6 +31,8 @@ import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -304,10 +304,8 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         List<NodeChange> changes = collectChanges(nodeList);
 
         assertEquals(2, changes.size());
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(ListClearChange.class));
-        MatcherAssert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(ListAddChange.class));
+        assertThat(changes.get(0), instanceOf(ListClearChange.class));
+        assertThat(changes.get(1), instanceOf(ListAddChange.class));
 
         assertEquals(1, nodeList.size());
         assertEquals("baz", nodeList.get(0));
@@ -335,12 +333,9 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         nodeList.getNode().collectChanges(changes::add);
 
         assertEquals(3, changes.size());
-        MatcherAssert.assertThat(changes.get(0),
-                CoreMatchers.instanceOf(NodeAttachChange.class));
-        MatcherAssert.assertThat(changes.get(1),
-                CoreMatchers.instanceOf(ListClearChange.class));
-        MatcherAssert.assertThat(changes.get(2),
-                CoreMatchers.instanceOf(ListAddChange.class));
+        assertThat(changes.get(0), instanceOf(NodeAttachChange.class));
+        assertThat(changes.get(1), instanceOf(ListClearChange.class));
+        assertThat(changes.get(2), instanceOf(ListAddChange.class));
 
         nodeList.add("baz");
 
@@ -533,8 +528,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
     private void verifyCleared(List<NodeChange> changes) {
         assertEquals(1, changes.size());
         NodeChange nodeChange = changes.get(0);
-        MatcherAssert.assertThat(nodeChange,
-                CoreMatchers.instanceOf(ListClearChange.class));
+        assertThat(nodeChange, instanceOf(ListClearChange.class));
     }
 
     private void verifyRemoved(List<NodeChange> changes, List<String> items,
@@ -542,8 +536,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
         assertTrue(changes.size() > 0);
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            MatcherAssert.assertThat(nodeChange,
-                    CoreMatchers.instanceOf(ListRemoveChange.class));
+            assertThat(nodeChange, instanceOf(ListRemoveChange.class));
             ListRemoveChange<?> change = (ListRemoveChange<?>) nodeChange;
             assertEquals(indexes[i].intValue(), change.getIndex());
             assertEquals(items.get(i), change.getRemovedItem());
@@ -554,8 +547,7 @@ class NodeListAddRemoveTest extends AbstractNodeFeatureTest<ElementClassList> {
             Integer... indexes) {
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            MatcherAssert.assertThat(nodeChange,
-                    CoreMatchers.instanceOf(ListAddChange.class));
+            assertThat(nodeChange, instanceOf(ListAddChange.class));
             ListAddChange<?> change = (ListAddChange<?>) nodeChange;
             assertEquals(indexes[i].intValue(), change.getIndex());
             assertEquals(1, change.getNewItems().size());

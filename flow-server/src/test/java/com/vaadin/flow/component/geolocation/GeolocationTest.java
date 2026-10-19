@@ -23,7 +23,6 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
@@ -46,6 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 class GeolocationTest {
 
@@ -182,7 +182,7 @@ class GeolocationTest {
     void getPosition_callbackException_routesToErrorHandler() {
         List<Throwable> caught = new ArrayList<>();
         ErrorHandler handler = event -> caught.add(event.getThrowable());
-        Mockito.when(requireNonNull(ui.getSession()).getErrorHandler())
+        when(requireNonNull(ui.getSession()).getErrorHandler())
                 .thenReturn(handler);
 
         Geolocation.getPosition(pos -> {
@@ -431,7 +431,7 @@ class GeolocationTest {
         ui.add(component);
         List<Throwable> caught = new ArrayList<>();
         ErrorHandler handler = event -> caught.add(event.getThrowable());
-        Mockito.when(requireNonNull(ui.getSession()).getErrorHandler())
+        when(requireNonNull(ui.getSession()).getErrorHandler())
                 .thenReturn(handler);
 
         GeolocationWatcher watcher = Geolocation.watchPosition(component);
