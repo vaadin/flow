@@ -14,6 +14,7 @@
   <description>Provides CDI integration for Vaadin applications.</description>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!--
       com.vaadin.cdi.util is CDI plumbing derived from Apache DeltaSpike and
       carried along unchanged. What exercises it is the Arquillian suite in
@@ -96,5 +97,25 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-generic</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <java.util.logging.config.file>${project.basedir}/src/test/resources/logging.properties</java.util.logging.config.file>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

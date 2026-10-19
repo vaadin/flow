@@ -30,8 +30,8 @@ another application with `--app`, the version that counts is that application's.
 
 0. `.vaadin/vaadin-dev status` first — it costs milliseconds (no JVM per command) and
    everything after depends on the answer.
-1. If it says `stopped`, `.vaadin/vaadin-dev start` (~30 s cold; it blocks until the app
-   serves or fails).
+1. If it says `stopped`, `.vaadin/vaadin-dev start` — it blocks for ~30 s on a cold start, so
+   run it in the background and read the code while it boots.
 2. **Open the app in the browser now, before the first `apply`**, and keep that page open,
    unless the change ahead has no visual surface at all — step 5 defines which those are. A
    CSS or theme push has somewhere to land only if a page is already connected: with none,
@@ -48,6 +48,21 @@ another application with `--app`, the version that counts is that application's.
    service, a repository, a formatter, a config value — is answered in full by `apply`'s
    verdict and the project's own tests, so opening a browser to look at nothing buys no
    evidence and costs the run a browser launch.
+
+   Use whatever browser automation you already have — a Playwright or browser MCP server, a
+   built-in browser tool, or the browser tests the project itself runs; one is preferred over
+   another only by convenience, and none of them is required. Snapshot or evaluate the open
+   page for the assertion, and read the browser console after each change (a `/favicon.ico`
+   404 is normal noise). The first snapshot after navigating is usually empty — Vaadin renders
+   client-side, so wait for a known element or re-snapshot before asserting. With no browser
+   automation at all, extend a `*BrowserTest` or `*IT` class the project already has, using the
+   element API it already depends on, and say that is where you verified.
+
+   **Never build a browser harness for one change** — it costs more than the change, and a loop
+   over ten viewport widths is one. Where the project ships a checker of its own, it is the
+   grader: run it and read its report instead of re-measuring by hand. *Verifying in the
+   browser* in [reference.md](reference.md) says what a run with no browser at all can and
+   cannot claim.
 
 **Verification ends the cycle.** A change `apply` reports live and step 5 has verified is
 finished; where the project has tests or checks that cover it, their passing *is* that
@@ -74,6 +89,13 @@ use.
 configuration): the daemon owns the app, and a second process fights it for the HTTP port. The
 daemon auto-spawns on first use and survives between commands, so every command — from any
 shell, agent or IDE — answers for the same running app.
+
+That holds for a **WAR project** too, and there the daemon runs the project's own `jetty:run`
+for you — a WAR has no main class, and its servlet container is a build plugin rather than a
+dependency, so the build is the only thing that knows how to start it. Once started, `status`
+names the runtime it chose (`runtime=jetty-ee10`). Nothing in the pom needs changing: the
+daemon turns the plugin's own rescanner off for its run, because two things redeploying the app
+on separate schedules is what the loop exists to prevent, and it says so in the app log.
 
 **And do not reach for Maven to check an edit.** `mvn compile` and `mvn test` boot a fresh JVM
 and a fresh Spring context to answer what `apply` answers against the app already running, and

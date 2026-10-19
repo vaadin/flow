@@ -20,7 +20,6 @@ import java.util.Optional;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -34,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class ElementUtilTest {
 
@@ -70,7 +70,7 @@ class ElementUtilTest {
     @Test
     void attachToComponent() {
         Element e = ElementFactory.createDiv();
-        Component c = Mockito.mock(Component.class);
+        Component c = mock(Component.class);
         ElementUtil.setComponent(e, c);
         assertEquals(c, e.getComponent().get());
     }
@@ -78,7 +78,7 @@ class ElementUtilTest {
     @Test
     void attachComponentToTextElement() {
         Element e = Element.createText("Text text");
-        Component c = Mockito.mock(Component.class);
+        Component c = mock(Component.class);
         ElementUtil.setComponent(e, c);
         assertEquals(c, e.getComponent().get());
     }
@@ -86,7 +86,7 @@ class ElementUtilTest {
     @Test
     void attachTwiceToComponent() {
         Element e = ElementFactory.createDiv();
-        Component c = Mockito.mock(Component.class);
+        Component c = mock(Component.class);
         ElementUtil.setComponent(e, c);
         assertThrows(IllegalStateException.class,
                 () -> ElementUtil.setComponent(e, c));
@@ -102,8 +102,8 @@ class ElementUtilTest {
     @Test
     void attachTwoComponents() {
         Element e = ElementFactory.createDiv();
-        Component c = Mockito.mock(Component.class);
-        Component c2 = Mockito.mock(Component.class);
+        Component c = mock(Component.class);
+        Component c2 = mock(Component.class);
         ElementUtil.setComponent(e, c);
         assertThrows(IllegalStateException.class,
                 () -> ElementUtil.setComponent(e, c2));

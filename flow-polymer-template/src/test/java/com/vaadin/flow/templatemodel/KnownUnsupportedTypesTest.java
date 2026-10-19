@@ -10,7 +10,6 @@ package com.vaadin.flow.templatemodel;
 
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.HasCurrentService;
@@ -21,6 +20,8 @@ import com.vaadin.flow.server.VaadinService;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class KnownUnsupportedTypesTest extends HasCurrentService {
 
@@ -91,12 +92,11 @@ class KnownUnsupportedTypesTest extends HasCurrentService {
 
     @Override
     protected VaadinService createService() {
-        VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        VaadinService service = mock(VaadinService.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
         return service;
     }
 

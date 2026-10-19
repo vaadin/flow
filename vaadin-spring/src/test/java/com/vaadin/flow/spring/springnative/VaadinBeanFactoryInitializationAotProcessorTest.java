@@ -15,19 +15,27 @@
  */
 package com.vaadin.flow.spring.springnative;
 
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
+import org.springframework.asm.ClassWriter;
+import org.springframework.asm.MethodVisitor;
+import org.springframework.asm.Opcodes;
+import org.springframework.asm.Type;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationCode;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -35,15 +43,22 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.mock.env.MockEnvironment;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -60,6 +75,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -169,8 +185,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -216,8 +231,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -249,8 +263,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -368,6 +381,58 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
+    void processAheadOfTime_componentEventWithBeanEventData_beanTypesRegistered() {
+        RuntimeHints hints = processAotForHintsWithSubtypes(
+                TestBeanDataEvent.class, ComponentEvent.class);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestEventDataBean.class))
+                .as("@EventData bean type should be registered for reflection")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestNestedEventDataBean.class))
+                .as("Type of an @EventData bean property should be registered for reflection")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestEventDataArrayItem.class))
+                .as("Component type of an @EventData array should be registered for reflection")
+                .accepts(hints);
+    }
+
+    @Test
+    void processAheadOfTime_classInAllowedPackage_reflectionHintRegistered() {
+        String allowedPackage = "org.example.addon";
+        VaadinBeanFactoryInitializationAotProcessor processor = new StubProcessor() {
+            @Override
+            Collection<Class<?>> getSubtypesOf(String basePackage,
+                    Class<?> parentType) {
+                if (basePackage.equals(allowedPackage)
+                        && parentType == ComponentEvent.class) {
+                    return List.of(TestComponentEvent.class);
+                }
+                return List.of();
+            }
+        };
+        MockEnvironment environment = new MockEnvironment()
+                .withProperty("vaadin.allowed-packages", allowedPackage);
+
+        RuntimeHints hints = processAotForHints(processor, environment);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestComponentEvent.class))
+                .as("ComponentEvent subtype in an allowed package should be registered for reflection")
+                .accepts(hints);
+    }
+
+    @Test
+    void getEventDataTypes_skipsTypesNotDecodedThroughReflection() {
+        assertThat(VaadinBeanFactoryInitializationAotProcessor
+                .getEventDataTypes(TestBeanDataEvent.class))
+                .containsExactlyInAnyOrder(TestEventDataBean.class,
+                        TestEventDataArrayItem.class);
+    }
+
+    @Test
     void processAheadOfTime_hasUrlParameterSubtype_reflectionHintRegistered() {
         RuntimeHints hints = processAotForHintsWithSubtypes(
                 TestUrlParameterView.class, HasUrlParameter.class);
@@ -419,8 +484,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 ConfigurableListableBeanFactory.class);
         // Note: NOT adding BeanDefinitionRegistry interface
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -681,6 +745,33 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
+    void processAheadOfTime_jsDefinition_jdkProxyAndReflectionHintsRegistered() {
+        RuntimeHints hints = processAotForHints(
+                createProcessorWithJsDefinitions(TestJsDefinition.class));
+
+        assertThat(RuntimeHintsPredicates.proxies()
+                .forInterfaces(TestJsDefinition.class))
+                .as("JavaScript definition should be registered as a JDK proxy")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestJsDefinition.class, "addClass"))
+                .as("JavaScript definition methods should be invokable through reflection")
+                .accepts(hints);
+    }
+
+    @Test
+    void getJsDefinitionTypes_findsAnnotatedInterfaces() {
+        VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
+
+        Collection<Class<?>> definitions = processor
+                .getJsDefinitionTypes(getClass().getPackageName());
+
+        assertThat(definitions)
+                .as("Should find @JsDefinition annotated interfaces")
+                .containsExactly(TestJsDefinition.class);
+    }
+
+    @Test
     void getAnnotatedClasses_findsClassesWithSpecificAnnotation() {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
@@ -705,11 +796,95 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                         RouteWithLayout.class, RouteAliasWithLayout.class);
     }
 
+    @Test
+    void getAnnotatedClasses_classesThatFailToLoadOrInitialize_skippedOrNotInitialized(
+            @TempDir Path classesDir) throws IOException {
+        Path packageDir = Files
+                .createDirectories(classesDir.resolve("org/example/addon"));
+        Files.write(packageDir.resolve("MissingParentView.class"),
+                createRouteClass("org/example/addon/MissingParentView",
+                        "org/example/missing/Parent", false));
+        Files.write(packageDir.resolve("FailingInitializerView.class"),
+                createRouteClass("org/example/addon/FailingInitializerView",
+                        "java/lang/Object", true));
+
+        Thread thread = Thread.currentThread();
+        ClassLoader originalClassLoader = thread.getContextClassLoader();
+        try (URLClassLoader classLoader = new URLClassLoader(
+                new URL[] { classesDir.toUri().toURL() },
+                originalClassLoader)) {
+            thread.setContextClassLoader(classLoader);
+
+            Collection<Class<?>> routes = new VaadinBeanFactoryInitializationAotProcessor()
+                    .getAnnotatedClasses("org.example.addon", Route.class);
+
+            assertThat(routes).extracting(Class::getName).as(
+                    "A class with a missing superclass should be skipped, and a class with a failing static initializer loaded without running it")
+                    .containsExactly(
+                            "org.example.addon.FailingInitializerView");
+        } finally {
+            thread.setContextClassLoader(originalClassLoader);
+        }
+    }
+
     // ================== Helper Methods ==================
+
+    private static byte[] createRouteClass(String internalName,
+            String superName, boolean failingStaticInitializer) {
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC, internalName, null,
+                superName, null);
+        writer.visitAnnotation(Type.getDescriptor(Route.class), true)
+                .visitEnd();
+        if (failingStaticInitializer) {
+            MethodVisitor clinit = writer.visitMethod(Opcodes.ACC_STATIC,
+                    "<clinit>", "()V", null, null);
+            clinit.visitCode();
+            clinit.visitTypeInsn(Opcodes.NEW,
+                    "java/lang/IllegalStateException");
+            clinit.visitInsn(Opcodes.DUP);
+            clinit.visitMethodInsn(Opcodes.INVOKESPECIAL,
+                    "java/lang/IllegalStateException", "<init>", "()V", false);
+            clinit.visitInsn(Opcodes.ATHROW);
+            clinit.visitMaxs(0, 0);
+            clinit.visitEnd();
+        }
+        writer.visitEnd();
+        return writer.toByteArray();
+    }
+
+    /**
+     * Processor that finds nothing, so that a case decides what a scan answers
+     * by overriding the one method it is about.
+     */
+    private static class StubProcessor
+            extends VaadinBeanFactoryInitializationAotProcessor {
+        @Override
+        Collection<Class<?>> getRouteTypesFor(String packageName) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getSubtypesOf(String basePackage,
+                Class<?> parentType) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getAnnotatedClasses(String basePackage,
+                Class<?>... annotations) {
+            return List.of();
+        }
+
+        @Override
+        Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+            return List.of();
+        }
+    }
 
     private VaadinBeanFactoryInitializationAotProcessor createProcessor(
             Class<?>... routeClasses) {
-        return new VaadinBeanFactoryInitializationAotProcessor() {
+        return new StubProcessor() {
             @Override
             Collection<Class<?>> getRouteTypesFor(String packageName) {
                 return Arrays.asList(routeClasses);
@@ -722,23 +897,12 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                         .filter(parentType::isAssignableFrom)
                         .collect(Collectors.toList());
             }
-
-            @Override
-            Collection<Class<?>> getAnnotatedClasses(String basePackage,
-                    Class<?>... annotations) {
-                return Collections.emptyList();
-            }
         };
     }
 
     private VaadinBeanFactoryInitializationAotProcessor createProcessorWithSubtypes(
             Class<?> subtypeClass, Class<?> parentType) {
-        return new VaadinBeanFactoryInitializationAotProcessor() {
-            @Override
-            Collection<Class<?>> getRouteTypesFor(String packageName) {
-                return Collections.emptyList();
-            }
-
+        return new StubProcessor() {
             @Override
             Collection<Class<?>> getSubtypesOf(String basePackage,
                     Class<?> parentTypeParam) {
@@ -746,13 +910,17 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                         || parentTypeParam.isAssignableFrom(subtypeClass)) {
                     return List.of(subtypeClass);
                 }
-                return Collections.emptyList();
+                return List.of();
             }
+        };
+    }
 
+    private VaadinBeanFactoryInitializationAotProcessor createProcessorWithJsDefinitions(
+            Class<?>... definitionTypes) {
+        return new StubProcessor() {
             @Override
-            Collection<Class<?>> getAnnotatedClasses(String basePackage,
-                    Class<?>... annotations) {
-                return Collections.emptyList();
+            Collection<Class<?>> getJsDefinitionTypes(String basePackage) {
+                return Arrays.asList(definitionTypes);
             }
         };
     }
@@ -764,8 +932,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -783,49 +950,29 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     private RuntimeHints processAotForHints(Class<?>... routeClasses) {
-        ConfigurableListableBeanFactory beanFactory = mock(
-                ConfigurableListableBeanFactory.class,
-                withSettings().extraInterfaces(BeanDefinitionRegistry.class));
-        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
-
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
-            mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
-                    .thenReturn(List.of(getClass().getPackageName()));
-
-            when(beanFactory.getBeanClassLoader())
-                    .thenReturn(getClass().getClassLoader());
-            when(beanFactory.getBeanDefinitionNames())
-                    .thenReturn(new String[0]);
-            when(registry.containsBeanDefinition(any())).thenReturn(false);
-
-            VaadinBeanFactoryInitializationAotProcessor processor = createProcessor(
-                    routeClasses);
-            BeanFactoryInitializationAotContribution contribution = processor
-                    .processAheadOfTime(beanFactory);
-
-            RuntimeHints hints = new RuntimeHints();
-            if (contribution != null) {
-                GenerationContext generationContext = mock(
-                        GenerationContext.class);
-                when(generationContext.getRuntimeHints()).thenReturn(hints);
-                BeanFactoryInitializationCode code = mock(
-                        BeanFactoryInitializationCode.class);
-                contribution.applyTo(generationContext, code);
-            }
-            return hints;
-        }
+        return processAotForHints(createProcessor(routeClasses));
     }
 
     private RuntimeHints processAotForHintsWithSubtypes(Class<?> subtypeClass,
             Class<?> parentType) {
+        return processAotForHints(
+                createProcessorWithSubtypes(subtypeClass, parentType));
+    }
+
+    private RuntimeHints processAotForHints(
+            VaadinBeanFactoryInitializationAotProcessor processor) {
+        return processAotForHints(processor, new MockEnvironment());
+    }
+
+    private RuntimeHints processAotForHints(
+            VaadinBeanFactoryInitializationAotProcessor processor,
+            ConfigurableEnvironment environment) {
         ConfigurableListableBeanFactory beanFactory = mock(
                 ConfigurableListableBeanFactory.class,
                 withSettings().extraInterfaces(BeanDefinitionRegistry.class));
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 
-        try (var mockedStatic = Mockito
-                .mockStatic(AutoConfigurationPackages.class)) {
+        try (var mockedStatic = mockStatic(AutoConfigurationPackages.class)) {
             mockedStatic.when(() -> AutoConfigurationPackages.get(beanFactory))
                     .thenReturn(List.of(getClass().getPackageName()));
 
@@ -834,9 +981,9 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
             when(beanFactory.getBeanDefinitionNames())
                     .thenReturn(new String[0]);
             when(registry.containsBeanDefinition(any())).thenReturn(false);
+            when(beanFactory.getBean(ConfigurableEnvironment.class))
+                    .thenReturn(environment);
 
-            VaadinBeanFactoryInitializationAotProcessor processor = createProcessorWithSubtypes(
-                    subtypeClass, parentType);
             BeanFactoryInitializationAotContribution contribution = processor
                     .processAheadOfTime(beanFactory);
 
@@ -935,6 +1082,46 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         }
     }
 
+    public static class TestBeanDataEvent extends ComponentEvent<Component> {
+        public TestBeanDataEvent(Component source, boolean fromClient,
+                @EventData("event.detail") TestEventDataBean detail,
+                @EventData("event.items") TestEventDataArrayItem[] items,
+                @EventData("event.name") String name,
+                @EventData("event.count") int count,
+                @EventData("event.json") ObjectNode json,
+                @EventData("element") Element element,
+                @EventData("element.parent") TestComponentSubtype parent) {
+            super(source, fromClient);
+        }
+    }
+
+    public static class TestEventDataBean {
+        private TestNestedEventDataBean nested;
+
+        public TestNestedEventDataBean getNested() {
+            return nested;
+        }
+
+        public void setNested(TestNestedEventDataBean nested) {
+            this.nested = nested;
+        }
+    }
+
+    public static class TestNestedEventDataBean {
+        private String value;
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+    }
+
+    public record TestEventDataArrayItem(String value) {
+    }
+
     public static class TestAppShell implements AppShellConfigurator {
     }
 
@@ -982,6 +1169,12 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 Object... params) {
             return key;
         }
+    }
+
+    @JsDefinition
+    public interface TestJsDefinition {
+        @JsExpression("this.classList.add($0)")
+        void addClass(String className);
     }
 
     public static class TestMenuAccessControl implements MenuAccessControl {

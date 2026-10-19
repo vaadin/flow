@@ -12,159 +12,22 @@
   <description>${project.name}</description>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <skipTsTests>${skipTests}</skipTsTests>
-    <org.eclipse.equinox.common.version>3.19.100</org.eclipse.equinox.common.version>
-    <org.eclipse.core.runtime.version>3.31.100</org.eclipse.core.runtime.version>
-    <maven.compiler.release>8</maven.compiler.release>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <!-- The module has no Java sources, so there is no API to compare. -->
     <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.eclipse.platform</groupId>
-        <artifactId>org.eclipse.equinox.common</artifactId>
-        <version>${org.eclipse.equinox.common.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.platform</groupId>
-        <artifactId>org.eclipse.core.runtime</artifactId>
-        <version>${org.eclipse.core.runtime.version}</version>
-        <scope>test</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  <dependencies>
-
-    <!-- Project dependencies -->
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-server</artifactId>
-      <version>${project.version}</version>
-      <classifier>sources</classifier>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.vaadin.servletdetector</groupId>
-          <artifactId>throw-if-servlet3</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-server</artifactId>
-      <version>${project.version}</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>com.vaadin.servletdetector</groupId>
-          <artifactId>throw-if-servlet3</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.5.14</version>
-      <scope>provided</scope>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <!-- Overrides the dependency version of httpclient -->
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.22.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.service.prefs</artifactId>
-      <version>1.1.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.platform</groupId>
-      <artifactId>org.eclipse.equinox.preferences</artifactId>
-      <version>3.12.100</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.platform</groupId>
-      <artifactId>org.eclipse.core.resources</artifactId>
-      <version>3.21.0</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Force Java8 compatible package -->
-    <dependency>
-      <groupId>org.eclipse.platform</groupId>
-      <artifactId>org.eclipse.core.jobs</artifactId>
-      <version>3.15.400</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.platform</groupId>
-      <artifactId>org.eclipse.core.contenttype</artifactId>
-      <version>3.9.900</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>osgi.core</artifactId>
-      <version>${osgi.core.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>osgi.cmpn</artifactId>
-      <version>${osgi.compendium.version}</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>${slf4j.version}</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <scope>test</scope>
-    </dependency>
-
-  </dependencies>
-
   <build>
     <resources>
+      <!-- The hand written client sources next to the TypeScript ones. tsc
+           only emits what it compiles, so these are copied as they are. -->
       <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <filtering>true</filtering>
-        <directory>src/main/resources</directory>
+        <targetPath>META-INF/frontend</targetPath>
+        <directory>src/main/frontend</directory>
         <includes>
-          <include>version.txt</include>
+          <include>*.js</include>
+          <include>*.d.ts</include>
         </includes>
       </resource>
     </resources>
@@ -174,12 +37,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
-          <!-- Exclude all source files and classes so only the
-                        compile result ends up in the JAR -->
+          <!-- The module builds no classes: the JAR only ships the compiled
+               TypeScript under META-INF/frontend plus the OSGi manifest -->
           <includes>
-            <include>com/vaadin/flow/client/osgi/*</include>
             <include>META-INF/**</include>
-            <include>OSGI-INF/**</include>
           </includes>
           <archive>
             <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -188,37 +49,6 @@
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
           </archive>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven.surefire.plugin.version}</version>
-        <configuration>
-          <enableAssertions>true</enableAssertions>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>integration-test</goal>
-              <goal>verify</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>com.diffplug.spotless</groupId>
-        <artifactId>spotless-maven-plugin</artifactId>
-        <configuration>
-          <typescript>
-            <excludes>
-              <exclude>src/main/frontend/FlowClient.js</exclude>
-            </excludes>
-          </typescript>
         </configuration>
       </plugin>
       <plugin>
@@ -287,8 +117,7 @@
     <profile>
       <id>slow-tests</id>
       <properties>
-        <!-- There are no slowTests in this module, we disable surefire and Ts -->
-        <groups>none</groups>
+        <!-- There are no slow tests in this module, so skip the TypeScript ones -->
         <skipTsTests>true</skipTsTests>
       </properties>
     </profile>

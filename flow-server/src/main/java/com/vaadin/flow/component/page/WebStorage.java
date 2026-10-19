@@ -21,6 +21,8 @@ import java.util.concurrent.CompletableFuture;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 
 /**
  * Wrapper for similarly named Browser API. WebStorage may be handy to save some
@@ -109,7 +111,7 @@ public interface WebStorage extends Serializable {
      */
     public static void setItem(UI ui, Storage storage, String key,
             String value) {
-        ui.getPage().executeJs("window[$0].setItem($1,$2)", storage.toString(),
+        ui.getPage().executeJs(WebStorageJs.class).setItem(storage.toString(),
                 key, value);
     }
 
@@ -149,8 +151,8 @@ public interface WebStorage extends Serializable {
      *            the key to be deleted
      */
     public static void removeItem(UI ui, Storage storage, String key) {
-        ui.getPage().executeJs("window[$0].removeItem($1)", storage.toString(),
-                key);
+        ui.getPage().executeJs(WebStorageJs.class)
+                .removeItem(storage.toString(), key);
     }
 
     /**
@@ -179,7 +181,7 @@ public interface WebStorage extends Serializable {
      *            the storage
      */
     public static void clear(UI ui, Storage storage) {
-        ui.getPage().executeJs("window[$0].clear()", storage.toString());
+        ui.getPage().executeJs(WebStorageJs.class).clear(storage.toString());
     }
 
     /**
@@ -308,8 +310,67 @@ public interface WebStorage extends Serializable {
 
     private static PendingJavaScriptResult requestItem(UI ui, Storage storage,
             String key) {
-        return ui.getPage().executeJs("return window[$0].getItem($1);",
-                storage.toString(), key);
+        return ui.getPage().executeJs(WebStorageJs.class)
+                .getItem(storage.toString(), key);
+    }
+
+    /**
+     * What web storage asks of the browser, as a JavaScript definition for
+     * {@link Page#executeJs(Class)}.
+     * <p>
+     * Which storage is worked on is a parameter rather than a declaration of
+     * its own, so the bundle carries one function per operation.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface WebStorageJs extends Serializable {
+
+        /**
+         * Writes a value.
+         *
+         * @param storage
+         *            the name of the storage on the window
+         * @param key
+         *            the key to write under
+         * @param value
+         *            the value to write
+         */
+        @JsExpression("window[$0].setItem($1,$2)")
+        void setItem(String storage, String key, String value);
+
+        /**
+         * Removes the value of a key.
+         *
+         * @param storage
+         *            the name of the storage on the window
+         * @param key
+         *            the key to remove
+         */
+        @JsExpression("window[$0].removeItem($1)")
+        void removeItem(String storage, String key);
+
+        /**
+         * Removes every value of a storage.
+         *
+         * @param storage
+         *            the name of the storage on the window
+         */
+        @JsExpression("window[$0].clear()")
+        void clear(String storage);
+
+        /**
+         * Reads the value of a key.
+         *
+         * @param storage
+         *            the name of the storage on the window
+         * @param key
+         *            the key to read
+         * @return the pending result, which answers with the value or with
+         *         <code>null</code> when the key has none
+         */
+        @JsExpression("return window[$0].getItem($1);")
+        PendingJavaScriptResult getItem(String storage, String key);
     }
 
 }

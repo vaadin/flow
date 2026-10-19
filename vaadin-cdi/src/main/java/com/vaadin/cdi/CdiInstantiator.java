@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,10 +32,25 @@ import com.vaadin.flow.server.VaadinService;
  */
 public class CdiInstantiator extends AbstractCdiInstantiator {
 
+    /**
+     * The bean manager used for looking up CDI beans.
+     */
     private final BeanManager beanManager;
 
+    /**
+     * The instantiator used when no CDI bean is available.
+     */
     private final DefaultInstantiator delegate;
 
+    /**
+     * Creates a new CDI instantiator for the given service.
+     *
+     * @param beanManager
+     *            the bean manager used for looking up CDI beans
+     * @param service
+     *            the Vaadin service the instantiator is created for
+     * @since 15.0
+     */
     public CdiInstantiator(BeanManager beanManager, VaadinService service) {
         this.beanManager = beanManager;
         this.delegate = new DefaultInstantiator(service);

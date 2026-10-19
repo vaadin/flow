@@ -78,9 +78,10 @@ copying the test. Never add the same test in two places.
 Some tests need irreducible special infrastructure and keep their own modules:
 `servlet-containers` (non-Jetty containers), `test-multi-war`,
 `test-commercial-banner`, the proxy-based fault-tolerance tests,
-`test-npm-performance-regression`, and `test-devloop` (its own two-module Maven
-reactor, and the dev-loop daemon owns the application process instead of a Maven
-plugin — see [test-devloop/README.md](test-devloop/README.md)).
+`test-npm-performance-regression`, and `test-devloop` (one multi-module Maven
+reactor per shape of application, and the dev-loop daemon owns the application
+process instead of a Maven plugin — see
+[test-devloop/README.md](test-devloop/README.md)).
 
 ---
 
@@ -119,7 +120,7 @@ Active when `-DskipTests` is **not** set (the default).
 
 | Module | Description |
 |--------|-------------|
-| **test-default** | Home for ITs that need only the default configuration (Spring Boot, React, dev hotdeploy, root context, npm), on JUnit 6. Holds the routing suite and the dev-mode ITs (dependency loading order, Vite communication, browser logging, dev-mode URL validation, exported JS functions, stream resources, Vite websocket logout handling) — see [test-default/README.md](test-default/README.md). |
+| **test-default** | Home for ITs that need only the default configuration (Spring Boot, React, dev hotdeploy, root context, npm), on JUnit 6. Holds the routing suite, the DOM suite (Element API, DOM events and filters, shadow root, visibility, `Page`), the components suite (HTML components, composites, drag and drop, dialogs and shortcuts, popovers, inert and enabled state, loading indicator, upload, download handlers and media) and the dev-mode ITs (dependency loading order, Vite communication, browser logging, dev-mode URL validation, exported JS functions, stream resources, Vite websocket logout handling) — see [test-default/README.md](test-default/README.md). |
 | **test-push-startup** | Tests that a push connection arriving while the Vaadin service is still initializing is held and then served, instead of being dropped. Uses a deliberately slow service init listener, so it needs its own module. |
 | **test-devloop** | End-to-end tests for the `vaadin-dev` CLI and the dev-loop daemon: apply/restart/deletion, frontend and CSS changes, POM edits, multi-module projects and daemon survival. |
 | **test-servlet** | Tests that the Flow servlet registers and deploys correctly, verifying a basic navigation target is accessible and renders content via the standard servlet mechanism. |

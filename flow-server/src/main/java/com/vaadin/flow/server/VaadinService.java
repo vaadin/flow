@@ -27,6 +27,7 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -145,6 +146,12 @@ public abstract class VaadinService implements Serializable {
             .getName() + ".reinitializing";
 
     private static final String REQUEST_START_TIME_ATTRIBUTE = "requestStartTime";
+
+    private static final String REQUEST_HANDLER_ATTRIBUTE = VaadinService.class
+            .getName() + ".requestHandler";
+
+    private static final String REQUEST_FAILURE_ATTRIBUTE = VaadinService.class
+            .getName() + ".requestFailure";
 
     /**
      * Should never be used directly, always use
@@ -1551,6 +1558,30 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Gets the currently used Vaadin service, throwing an exception if none is
+     * available. Use this method when the code must run within an active
+     * service context.
+     * <p>
+     * If the code can work without a service, use {@link #getCurrent()} instead
+     * and check for null.
+     *
+     * @return the current Vaadin service instance, never <code>null</code>
+     * @throws IllegalStateException
+     *             if no service is bound to the current thread
+     * @see #getCurrent()
+     * @since 25.4
+     */
+    public static VaadinService getCurrentOrThrow() {
+        VaadinService service = getCurrent();
+        if (service == null) {
+            throw new IllegalStateException(
+                    "No currently active VaadinService found. This code must be run while a request is handled "
+                            + "or within UI.access() or VaadinSession.access().");
+        }
+        return service;
+    }
+
+    /**
      * Sets the this Vaadin service as the current service and also sets the
      * current Vaadin request and Vaadin response. This method is used by the
      * framework to set the current instances when a request related to the
@@ -1666,7 +1697,12 @@ public abstract class VaadinService implements Serializable {
      * @param request
      *            The Vaadin request for which the session should be
      *            reinitialized
+     * @deprecated use
+     *             {@link jakarta.servlet.http.HttpServletRequest#changeSessionId()}
+     *             instead, which changes the session id in place without
+     *             copying the session attributes
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public static void reinitializeSession(VaadinRequest request) {
         WrappedSession oldSession = request.getWrappedSession();
 
@@ -1899,7 +1935,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         // Check for long running tasks
-        Lock lockInstance = ui.getSession().getLockInstance();
+        Lock lockInstance = ui.getSessionOrThrow().getLockInstance();
         if (lockInstance instanceof ReentrantLock
                 && ((ReentrantLock) lockInstance).hasQueuedThreads()) {
             /*
@@ -1963,6 +1999,35 @@ public abstract class VaadinService implements Serializable {
         vaadinRequestInterceptors
                 .forEach(requestInterceptor -> requestInterceptor
                         .requestStart(request, response));
+        if (eventBus.hasListener(RequestStartedEvent.class)) {
+            eventBus.fireEvent(
+                    new RequestStartedEvent(this, request, response));
+        }
+    }
+
+    /**
+     * Records the exception that made handling a request fail, so that the
+     * {@link RequestEndedEvent} of the request reports it.
+     * <p>
+     * Failures in {@link #handleRequest(VaadinRequest, VaadinResponse)} are
+     * recorded automatically. Code that handles a request between its own calls
+     * to {@link #requestStart(VaadinRequest, VaadinResponse)} and
+     * {@link #requestEnd(VaadinRequest, VaadinResponse, VaadinSession)}, such
+     * as the handling of push messages, calls this method when it catches an
+     * exception, typically next to passing it to the session
+     * {@link ErrorHandler}.
+     *
+     * @param request
+     *            the request that failed, not {@code null}
+     * @param failure
+     *            the exception that made handling the request fail, not
+     *            {@code null}
+     * @since 25.4
+     */
+    public void recordRequestFailure(VaadinRequest request, Exception failure) {
+        if (eventBus.hasListener(RequestEndedEvent.class)) {
+            request.setAttribute(REQUEST_FAILURE_ATTRIBUTE, failure);
+        }
     }
 
     /**
@@ -1979,6 +2044,17 @@ public abstract class VaadinService implements Serializable {
      */
     public void requestEnd(VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
+        if (eventBus.hasListener(RequestEndedEvent.class)) {
+            Duration duration = Duration
+                    .ofNanos(System.nanoTime() - (Long) request
+                            .getAttribute(REQUEST_START_TIME_ATTRIBUTE));
+            eventBus.fireEventInReverseOrder(new RequestEndedEvent(this,
+                    request, response, session,
+                    (RequestHandler) request
+                            .getAttribute(REQUEST_HANDLER_ATTRIBUTE),
+                    (Exception) request.getAttribute(REQUEST_FAILURE_ATTRIBUTE),
+                    duration));
+        }
         vaadinRequestInterceptors.forEach(requestInterceptor -> {
             try {
                 requestInterceptor.requestEnd(request, response, session);
@@ -2074,10 +2150,19 @@ public abstract class VaadinService implements Serializable {
                 return;
             }
 
+            // The handler is recorded before it runs, so that a request
+            // ended event names the handler that threw if handling fails
+            boolean observed = eventBus.hasListener(RequestEndedEvent.class);
             for (RequestHandler handler : getRequestHandlers()) {
+                if (observed) {
+                    request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, handler);
+                }
                 if (handler.handleRequest(vaadinSession, request, response)) {
                     return;
                 }
+            }
+            if (observed) {
+                request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, null);
             }
 
             // Request not handled by any RequestHandler
@@ -2087,6 +2172,7 @@ public abstract class VaadinService implements Serializable {
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
         } catch (final Exception e) {
+            recordRequestFailure(request, e);
             handleExceptionDuringRequest(request, response, vaadinSession, e);
         } finally {
             requestEnd(request, response, vaadinSession);
@@ -2485,7 +2571,7 @@ public abstract class VaadinService implements Serializable {
      */
     public static boolean isCsrfTokenValid(UI ui, String requestToken) {
 
-        if (ui.getSession().getService().getDeploymentConfiguration()
+        if (ui.getSessionOrThrow().getService().getDeploymentConfiguration()
                 .isXsrfProtectionEnabled()) {
             String uiToken = ui.getCsrfToken();
 

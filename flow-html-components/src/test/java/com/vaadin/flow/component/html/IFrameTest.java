@@ -20,7 +20,6 @@ import java.lang.reflect.Field;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -43,6 +42,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class IFrameTest extends ComponentTest {
 
@@ -67,16 +70,21 @@ class IFrameTest extends ComponentTest {
 
     @Test
     void reload() throws Exception {
-        Element element = Mockito.mock(Element.class);
+        Element element = mock(Element.class);
         IFrame iframe = new IFrame();
         Field f = Component.class.getDeclaredField("element");
 
         f.setAccessible(true);
         f.set(iframe, element);
 
+        IFrame.ReloadJs reloadJs = mock(IFrame.ReloadJs.class);
+        when(element.executeJs(IFrame.ReloadJs.class)).thenReturn(reloadJs);
+
         iframe.reload();
 
-        Mockito.verify(element).executeJs("this.src = this.src");
+        // Reached through the declared JavaScript rather than through an
+        // expression, so that it runs from the bundle
+        verify(reloadJs).reload();
     }
 
     @Test
@@ -87,7 +95,7 @@ class IFrameTest extends ComponentTest {
 
     @Test
     void setSrc_downloadHandler_disabledUpdateModeIsAlways() {
-        Element element = Mockito.mock(Element.class);
+        Element element = mock(Element.class);
         class TestIFrame extends IFrame {
             @Override
             public Element getElement() {
@@ -102,15 +110,14 @@ class IFrameTest extends ComponentTest {
 
         ArgumentCaptor<DownloadHandler> captor = ArgumentCaptor
                 .forClass(DownloadHandler.class);
-        Mockito.verify(element).setAttribute(Mockito.eq("src"),
-                captor.capture());
+        verify(element).setAttribute(eq("src"), captor.capture());
         assertEquals(DisabledUpdateMode.ALWAYS,
                 captor.getValue().getDisabledUpdateMode());
     }
 
     @Test
     void downloadHandler_isSetToInline() {
-        Element element = Mockito.mock(Element.class);
+        Element element = mock(Element.class);
         class TestIFrame extends IFrame {
             public TestIFrame(DownloadHandler downloadHandler) {
                 super(downloadHandler);

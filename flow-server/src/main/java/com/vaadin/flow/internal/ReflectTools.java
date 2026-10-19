@@ -167,6 +167,33 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Locates the public methods of the given type that have the given name and
+     * take the given number of parameters, which is the lookup available to a
+     * caller that has the arguments of a call rather than the parameter types
+     * of the method - values, whose classes are not the declarations.
+     * <p>
+     * More than one is returned when the type overloads the name with the same
+     * number of parameters, which such a caller cannot tell apart.
+     *
+     * @param cls
+     *            the type to look the methods up in
+     * @param methodName
+     *            the name of the methods
+     * @param parameterCount
+     *            the number of parameters the methods take
+     * @return the methods with that name and that number of parameters, empty
+     *         if the type has none
+     * @since 25.4
+     */
+    public static List<Method> getMethodsWithParameterCount(Class<?> cls,
+            String methodName, int parameterCount) {
+        return Stream.of(cls.getMethods())
+                .filter(method -> method.getName().equals(methodName)
+                        && method.getParameterCount() == parameterCount)
+                .toList();
+    }
+
+    /**
      * Returns the value of the java field.
      * <p>
      * Uses getter if present, otherwise tries to access even private fields

@@ -93,10 +93,11 @@ export class VaadinDevTools extends LitElement {
     return [
       css`
         :host {
-          --dev-tools-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
-            'Helvetica Neue', sans-serif;
-          --dev-tools-font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-            monospace;
+          --dev-tools-font-family:
+            -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue',
+            sans-serif;
+          --dev-tools-font-family-monospace:
+            SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
           --dev-tools-font-size: 0.8125rem;
           --dev-tools-font-size-small: 0.75rem;
@@ -665,10 +666,17 @@ export class VaadinDevTools extends LitElement {
         if (!styleTag) {
           styleTag = document.createElement('style');
           styleTag.setAttribute('data-file-path', path);
+          const layer = this.removeOldLinks(pathWithNoProtocol);
+          if (layer) {
+            styleTag.setAttribute('data-layer', layer);
+          }
           document.head.appendChild(styleTag);
-          this.removeOldLinks(pathWithNoProtocol);
         }
-        styleTag.textContent = content;
+        // A stylesheet loaded into a cascade layer stays in it when its
+        // content is replaced. The pushed content has its imports inlined, so
+        // it can be wrapped into a layer block.
+        const layer = styleTag.getAttribute('data-layer');
+        styleTag.textContent = layer ? `@layer ${layer} {\n${content}\n}` : content;
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       } else if (content === '' || content === null) {
         // remove inlined stylesheets or initial links with the given path
@@ -724,19 +732,29 @@ export class VaadinDevTools extends LitElement {
     }
   }
 
-  removeOldLinks(path: string) {
-    // removes initially added links that are outdated after hot-reload and replaced by inlined styles
-    const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
-    links.forEach((link) => {
-      let filePath = link.getAttribute('data-file-path') || link.getAttribute('href');
+  /**
+   * Removes initially added stylesheet elements that are outdated after
+   * hot-reload and replaced by inlined styles. Besides links, this covers the
+   * style elements that load a stylesheet into a cascade layer.
+   *
+   * @returns the cascade layer of a removed element, or null if none had one
+   */
+  removeOldLinks(path: string): string | null {
+    let layer: string | null = null;
+    const elements = Array.from(document.head.querySelectorAll('link[rel="stylesheet"], style[data-layer]'));
+    elements.forEach((element) => {
+      let filePath =
+        element.getAttribute('data-file-path') || element.getAttribute('href') || element.getAttribute('data-href');
       if (filePath) {
         // Strip query string and fragment for comparison
         const cleanPath = filePath.split(/[?#]/)[0];
         if (cleanPath === path || cleanPath.endsWith('/' + path)) {
-          link.remove();
+          layer = element.getAttribute('data-layer') ?? layer;
+          element.remove();
         }
       }
     });
+    return layer;
   }
 
   tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {

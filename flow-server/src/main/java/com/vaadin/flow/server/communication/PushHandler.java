@@ -334,6 +334,10 @@ public class PushHandler {
                 session = service.findVaadinSession(vaadinRequest);
                 assert VaadinSession.getCurrent() == session;
             } catch (SessionExpiredException e) {
+                // Handled below in the same way as a missing session
+                getLogger().debug("Session expired for push request", e);
+            }
+            if (session == null) {
                 if (!isResourceDisconnected(resource)) {
                     sendNotificationAndDisconnect(resource,
                             VaadinService.createSessionExpiredJSON(true));
@@ -370,6 +374,7 @@ public class PushHandler {
                     callback.run(resource, ui);
                 }
             } catch (final IOException e) {
+                service.recordRequestFailure(vaadinRequest, e);
                 callErrorHandler(session, e);
             } catch (final Exception e) {
                 SystemMessages msg = service.getSystemMessages(
@@ -392,6 +397,7 @@ public class PushHandler {
                                 msg.getInternalErrorCaption(),
                                 msg.getInternalErrorMessage(), null,
                                 msg.getInternalErrorURL()));
+                service.recordRequestFailure(vaadinRequest, e);
                 callErrorHandler(session, e);
             } finally {
                 try {
@@ -516,6 +522,10 @@ public class PushHandler {
                     "Session expired before push disconnect event was received",
                     e);
             return session;
+        }
+        if (session == null) {
+            getLogger().debug("No session found for the push disconnect event");
+            return null;
         }
 
         UI ui;
