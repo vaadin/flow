@@ -45,15 +45,38 @@ jobs:
       # Excluded are modules whose sources are not public API (client-side
       # code, test helpers, tooling) and the ones reconciled against their
       # own index below.
+      # Pooling is only correct for modules on flow-server's release timeline
+      # (see vaadin-spring below), so a module with any release flow-server
+      # does not have fails the run: it needs an isolated step and an exclude
+      # entry instead. An unpublished module has no history and is skipped.
       - id: modules
         name: List modules to reconcile
         run: |
           exclude=" flow-client flow-test-util flow-test-generic flow-devloop-daemon flow-polymer2lit vaadin-spring vaadin-cdi vaadin-quarkus "
           shared=""
+          versions() {
+            curl -sS --fail --max-time 60 --retry 4 --retry-all-errors \
+              "https://repo1.maven.org/maven2/com/vaadin/$1/maven-metadata.xml" \
+              | sed -n 's:.*<version>\(.*\)</version>.*:\1:p' | sort -u
+          }
+          versions flow-server > "$RUNNER_TEMP/flow-server-versions"
           while read -r m; do
-            if [ -d "$m/src/main/java" ] && [[ "$exclude" != *" $m "* ]]; then
-              shared="$shared$m"$'\n'
+            if [ ! -d "$m/src/main/java" ] || [[ "$exclude" == *" $m "* ]]; then
+              continue
             fi
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 60 \
+              "https://repo1.maven.org/maven2/com/vaadin/$m/maven-metadata.xml")
+            if [ "$code" = 404 ]; then
+              echo "Skipping $m: not published yet"
+              continue
+            fi
+            foreign=$(versions "$m" | comm -23 - "$RUNNER_TEMP/flow-server-versions")
+            if [ -n "$foreign" ]; then
+              echo "::error::$m has releases flow-server does not ($(echo "$foreign" | head -3 | xargs)...)." \
+                "Pooling it would rewrite @since across the framework; give it an isolated index step."
+              exit 1
+            fi
+            shared="$shared$m"$'\n'
           done < <(sed -n 's:.*<module>\(.*\)</module>.*:\1:p' pom.xml)
           [ -n "$shared" ] || { echo "No modules to reconcile found in pom.xml"; exit 1; }
           printf 'Shared index modules:\n%s' "$shared"
