@@ -27,7 +27,6 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.flow.di.Lookup;
@@ -44,6 +43,8 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class JsDefinitionHotswapperTest {
 
@@ -92,13 +93,11 @@ class JsDefinitionHotswapperTest {
         frontendFolder = FrontendUtils
                 .getProjectFrontendDir(deploymentConfiguration);
 
-        configuration = Mockito.mock(ApplicationConfiguration.class);
+        configuration = mock(ApplicationConfiguration.class);
         // What a browser runs without the frontend dev server is a bundle,
         // which a case has to opt out of to get the file written again.
-        Mockito.when(configuration.getMode())
-                .thenReturn(Mode.DEVELOPMENT_BUNDLE);
-        Mockito.when(service.getLookup()
-                .lookup(ApplicationConfigurationFactory.class))
+        when(configuration.getMode()).thenReturn(Mode.DEVELOPMENT_BUNDLE);
+        when(service.getLookup().lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(context -> configuration);
     }
 
@@ -107,7 +106,7 @@ class JsDefinitionHotswapperTest {
      * generated file in a running browser.
      */
     private void withFrontendDevServer() {
-        Mockito.when(configuration.getMode())
+        when(configuration.getMode())
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
     }
 
@@ -127,7 +126,7 @@ class JsDefinitionHotswapperTest {
      * hotswapper looks for it, which is what a browser would be running.
      */
     private void writeGeneratedDefinitionsFor(Class<?> definition) {
-        Options options = new Options(Mockito.mock(Lookup.class), null, null)
+        Options options = new Options(mock(Lookup.class), null, null)
                 .withFrontendDirectory(frontendFolder);
         TaskGenerateJsDefinitions.updateJsDefinitions(options,
                 List.of(definition));

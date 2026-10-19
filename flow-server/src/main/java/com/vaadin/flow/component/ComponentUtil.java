@@ -106,6 +106,7 @@ public class ComponentUtil {
      * @deprecated the mapping was added for internal use by development tools,
      *             which no longer need it, and it is never filled in Spring
      *             Boot applications. It will be removed without a replacement.
+     * @since 25.4
      */
     @Deprecated(since = "25.4", forRemoval = true)
     public static void unregisterAllComponentClasses() {

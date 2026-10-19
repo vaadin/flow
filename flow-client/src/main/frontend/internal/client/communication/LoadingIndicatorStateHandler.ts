@@ -21,7 +21,7 @@
 
 import type { Registry } from '../Registry';
 import { getScheduler } from '../TrackingScheduler';
-import { loadingFinished, loadingStarted } from '../ConnectionIndicator';
+import { CONNECTED, LOADING, getState, loadingFinished, loadingStarted, setState } from '../ConnectionIndicator';
 import { JsonConstants } from '../../flow/shared/JsonConstants';
 
 // High-frequency events whose RPC requests should not trigger loading
@@ -88,6 +88,24 @@ export class LoadingIndicatorStateHandler {
     // the pending update keeps the application active for TestBench's
     // waitForVaadin, as ServerRpcQueue's deferred flush does.
     getScheduler().scheduleDeferred(() => this.#update());
+  }
+
+  /**
+   * Restores the loading indication after a reconnect, which replaced it with
+   * the reconnecting state. Re-announces an ongoing loading indication, moving
+   * the state from reconnecting to loading in one transition, or adding to the
+   * loading started by another party (Flow router, Hilla requests) during the
+   * reconnect. Otherwise shows connected, also leaving a connection lost set
+   * by another party, unless another party is loading. Then stops the loading
+   * indication if no request remains active.
+   */
+  restoreLoading(): void {
+    if (this.#loading) {
+      loadingStarted();
+    } else if (getState() !== LOADING) {
+      setState(CONNECTED);
+    }
+    this.stopLoading();
   }
 
   /**

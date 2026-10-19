@@ -28,9 +28,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,10 +45,12 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.HeartbeatEvent;
 import com.vaadin.flow.component.HeartbeatListener;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
 import com.vaadin.flow.component.geolocation.GeolocationClient;
 import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
@@ -65,7 +67,9 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.CompressUtil;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -305,7 +309,11 @@ public class UIInternals implements Serializable {
 
     private byte[] lastProcessedMessageHash = null;
 
-    private String lastRequestResponse;
+    /*
+     * Kept compressed: it is held for every UI until the next client message,
+     * but only read when the client sends a message again.
+     */
+    private byte[] lastRequestResponse;
 
     private String contextRootRelativePath;
 
@@ -354,7 +362,11 @@ public class UIInternals implements Serializable {
 
     private boolean screenOrientationListenerInstalled;
 
-    private ArrayDeque<Component> modalComponentStack;
+    /*
+     * Components with modality, most recently set first. Strict modal
+     * components are the entries with ModalityMode.STRICT.
+     */
+    private ArrayDeque<ModalityEntry> modalityStack;
 
     private Element wrapperElement;
 
@@ -464,7 +476,8 @@ public class UIInternals implements Serializable {
      * @since 24.7
      */
     public void setLastRequestResponse(String lastRequestResponse) {
-        this.lastRequestResponse = lastRequestResponse;
+        this.lastRequestResponse = lastRequestResponse == null ? null
+                : CompressUtil.deflateString(lastRequestResponse);
     }
 
     /**
@@ -474,7 +487,8 @@ public class UIInternals implements Serializable {
      * @since 24.7
      */
     public String getLastRequestResponse() {
-        return lastRequestResponse;
+        return lastRequestResponse == null ? null
+                : CompressUtil.inflateString(lastRequestResponse);
     }
 
     /**
@@ -1436,25 +1450,41 @@ public class UIInternals implements Serializable {
             Class<? extends Component> componentClass) {
         boolean isProductionMode = ui.getSession() != null
                 && ui.getSession().getConfiguration().isProductionMode();
-        List<String> chunkIds = new ArrayList<>();
-        chunkIds.add(BundleUtils.getChunkId(componentClass));
+        Set<String> chunkIds = new LinkedHashSet<>();
         if (isProductionMode) {
-            // When using the default production bundle, the chunk for a
-            // specific
-            // Flow component subclass may not be present (e.g. MyChart < Chart)
-            // However, the required imports are in the bundle, associated with
-            // the chunk id of the parent class.
-            // Force loading of potential chunks for all parent classes in the
-            // component hierarchy. DependencyList takes care to prevent loading
-            // the same chunk multiple times.
-            Class<?> clazz = componentClass.getSuperclass();
-            while (clazz != Component.class) {
-                chunkIds.add(BundleUtils.getChunkId(clazz.getName()));
-                clazz = clazz.getSuperclass();
-            }
+            collectProductionChunkIds(componentClass, chunkIds,
+                    new HashSet<>());
+        } else {
+            chunkIds.add(BundleUtils.getChunkId(componentClass));
         }
         chunkIds.forEach(chunkId -> ui.getPage().addDynamicImport(
                 "return window.Vaadin.Flow.loadOnDemand('" + chunkId + "');"));
+    }
+
+    private static void collectProductionChunkIds(
+            Class<? extends Component> componentClass, Set<String> chunkIds,
+            Set<Class<?>> visited) {
+        if (!visited.add(componentClass)) {
+            return;
+        }
+        // When using the default production bundle, the chunk for a specific
+        // Flow component subclass may not be present (e.g. MyChart < Chart)
+        // However, the required imports are in the bundle, associated with
+        // the chunk id of the parent class.
+        // Force loading of potential chunks for all parent classes in the
+        // component hierarchy. DependencyList takes care to prevent loading
+        // the same chunk multiple times.
+        Class<?> clazz = componentClass;
+        while (clazz != Component.class) {
+            chunkIds.add(BundleUtils.getChunkId(clazz.getName()));
+            clazz = clazz.getSuperclass();
+        }
+        // The default production bundle has a chunk per component class, so
+        // the imports of a @Uses target are only loaded through its own chunk
+        for (Uses uses : AnnotationReader.getAnnotationsFor(componentClass,
+                Uses.class)) {
+            collectProductionChunkIds(uses.value(), chunkIds, visited);
+        }
     }
 
     private void warnForUnavailableBundledDependencies(
@@ -1601,8 +1631,8 @@ public class UIInternals implements Serializable {
      * component, and optionally all layouts in the route chain.
      * <p>
      *
-     * If modal components are currently defined for the UI, the whole route
-     * chain will be refreshed regardless the {@code refreshRouteChain}
+     * If components with modality are currently defined for the UI, the whole
+     * route chain will be refreshed regardless the {@code refreshRouteChain}
      * parameter, because otherwise it would not be possible to preserve the
      * correct modality cardinality and order.
      *
@@ -1618,7 +1648,7 @@ public class UIInternals implements Serializable {
         } else {
             getRouter().navigate(ui, locationForRefresh,
                     NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, true,
-                    refreshRouteChain || hasModalComponent());
+                    refreshRouteChain || hasModalityComponent());
         }
     }
 
@@ -1686,13 +1716,7 @@ public class UIInternals implements Serializable {
      * @since 25.4
      */
     public boolean enterNavigation() {
-        boolean outermost = navigationDepth++ == 0;
-        if (outermost) {
-            // A failure recorded outside a tracked navigation, such as when a
-            // postponed navigation proceeds, must not leak into this one
-            navigationFailure = null;
-        }
-        return outermost;
+        return navigationDepth++ == 0;
     }
 
     /**
@@ -2128,7 +2152,61 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public boolean hasModalComponent() {
-        return modalComponentStack != null && !modalComponentStack.isEmpty();
+        return getActiveModalComponent() != null;
+    }
+
+    /**
+     * Check if we have a component with modality defined for the UI, that is a
+     * child component set either {@link ModalityMode#STRICT} or
+     * {@link ModalityMode#VISUAL}.
+     * <p>
+     * Differently from {@link #hasModalComponent()}, this also takes into
+     * account components that show a modality curtain on the client side
+     * without making the UI inert.
+     *
+     * @return {@code true} if a component with modality is defined
+     * @since 25.4
+     */
+    public boolean hasModalityComponent() {
+        return modalityStack != null && !modalityStack.isEmpty();
+    }
+
+    /**
+     * Gets all child components with modality, that is components set either
+     * {@link ModalityMode#STRICT} or {@link ModalityMode#VISUAL}, most recently
+     * set first.
+     *
+     * @return the components with modality, never {@code null}
+     * @since 25.4
+     */
+    public List<Component> getModalityComponents() {
+        if (!hasModalityComponent()) {
+            return Collections.emptyList();
+        }
+        return modalityStack.stream().map(ModalityEntry::component).toList();
+    }
+
+    /**
+     * Gets the most recently set child component with modality, that is a
+     * component set either {@link ModalityMode#STRICT} or
+     * {@link ModalityMode#VISUAL}.
+     * <p>
+     * Differently from {@link #getActiveModalComponent()}, which only returns
+     * the component that escapes the inert state of the UI, this also returns
+     * components that show a modality curtain on the client side without making
+     * the UI inert. Overlays opened while such a component is showing have to
+     * be added inside it, since the curtain blocks pointer events and traps
+     * focus outside of it.
+     *
+     * @return the most recently set component with modality, or {@code null} if
+     *         there is none
+     * @since 25.4
+     */
+    public Component getActiveModalityComponent() {
+        if (!hasModalityComponent()) {
+            return null;
+        }
+        return modalityStack.peek().component();
     }
 
     /**
@@ -2138,10 +2216,12 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public Component getActiveModalComponent() {
-        if (hasModalComponent()) {
-            return modalComponentStack.peek();
+        if (modalityStack == null) {
+            return null;
         }
-        return null;
+        return modalityStack.stream()
+                .filter(entry -> entry.mode() == ModalityMode.STRICT)
+                .map(ModalityEntry::component).findFirst().orElse(null);
     }
 
     /**
@@ -2157,40 +2237,34 @@ public class UIInternals implements Serializable {
      *
      * @param child
      *            the child component to toggle modal
+     * @see #setChildModal(Component, ModalityMode)
      * @since 23.0
      */
     public void setChildModal(Component child) {
-        if (modalComponentStack == null) {
-            modalComponentStack = new ArrayDeque<>();
-        } else if (isTopMostModal(child)) {
-            return;
-        }
-        ElementUtil.setIgnoreParentInert(child.getElement(), true);
+        setModality(child, ModalityMode.STRICT);
+    }
 
-        if (modalComponentStack.isEmpty()) {
-            ElementUtil.setInert(ui.getElement(), true);
-        } else {
-            // disable previous top most modal component
-            ElementUtil.setIgnoreParentInert(
-                    modalComponentStack.peek().getElement(), false);
-        }
-
-        final boolean needsListener = !modalComponentStack.remove(child);
-        modalComponentStack.push(child);
-
-        if (needsListener) {
-            /*
-             * Handle removal automatically on element level always due to
-             * possible component.getElement().removeFromParent() usage.
-             */
-            AtomicReference<Registration> registrationCombination = new AtomicReference<>();
-            final Registration componentRemoval = () -> setChildModeless(child);
-            final Registration listenerRegistration = child.getElement()
-                    .addDetachListener(
-                            event -> registrationCombination.get().remove());
-            registrationCombination.set(Registration.combine(componentRemoval,
-                    listenerRegistration));
-        }
+    /**
+     * Changes the modality of an existing child component by modality mode.
+     * Differently from {@link #setChildModal(Component)}, which always makes
+     * the component strictly modal, this also supports
+     * {@link ModalityMode#VISUAL}: the UI and the other components inside it
+     * are not made inert, so they still react to client side requests, but the
+     * component is tracked as a component with modality, since it covers the UI
+     * with a modality curtain on the client side. {@link ModalityMode#MODELESS}
+     * is the same as {@link #setChildModeless(Component)}.
+     * <p>
+     * Tracking is removed automatically when the component is removed from the
+     * UI, no need to call anything.
+     *
+     * @param child
+     *            the child component to change modality for
+     * @param mode
+     *            the modality mode, not {@code null}
+     * @since 25.4
+     */
+    public void setChildModal(Component child, ModalityMode mode) {
+        setModality(child, Objects.requireNonNull(mode));
     }
 
     /**
@@ -2203,28 +2277,61 @@ public class UIInternals implements Serializable {
      * @since 23.0
      */
     public void setChildModeless(Component child) {
-        if (modalComponentStack == null) {
+        setModality(child, ModalityMode.MODELESS);
+    }
+
+    private void setModality(Component child, ModalityMode mode) {
+        Component previousActiveModal = getActiveModalComponent();
+
+        ModalityEntry previousEntry = null;
+        if (modalityStack != null) {
+            previousEntry = modalityStack.stream()
+                    .filter(entry -> entry.component() == child).findFirst()
+                    .orElse(null);
+            modalityStack.remove(previousEntry);
+        }
+        if (mode != ModalityMode.MODELESS) {
+            if (modalityStack == null) {
+                modalityStack = new ArrayDeque<>();
+            }
+            /*
+             * Handle removal automatically on element level always due to
+             * possible component.getElement().removeFromParent() usage. The
+             * listener is registered only once, so that repeatedly changing the
+             * modality of a component does not pile up detach listeners.
+             */
+            Registration detachRegistration = previousEntry != null
+                    ? previousEntry.detachRegistration()
+                    : child.getElement().addDetachListener(
+                            event -> setChildModeless(child));
+            modalityStack
+                    .push(new ModalityEntry(child, mode, detachRegistration));
+        } else if (previousEntry != null) {
+            previousEntry.detachRegistration().remove();
+        }
+
+        updateInert(previousActiveModal, getActiveModalComponent());
+    }
+
+    private void updateInert(Component previousActiveModal,
+            Component activeModal) {
+        if (previousActiveModal == activeModal) {
             return;
         }
-        boolean isTopmostModal = isTopMostModal(child);
-        if (modalComponentStack.remove(child)) {
-            if (isTopmostModal) {
-                // reset ignoring inert
-                ElementUtil.setIgnoreParentInert(child.getElement(), false);
-                if (modalComponentStack.isEmpty()) { // make UI active
-                    ElementUtil.setInert(ui.getElement(), false);
-                } else { // make top most modal component ignore inert
-                    ElementUtil.setIgnoreParentInert(
-                            modalComponentStack.peek().getElement(), true);
-                }
-            }
+        if (previousActiveModal != null) {
+            ElementUtil.setIgnoreParentInert(previousActiveModal.getElement(),
+                    false);
+        }
+        if (activeModal != null) {
+            ElementUtil.setIgnoreParentInert(activeModal.getElement(), true);
+        }
+        if ((previousActiveModal == null) != (activeModal == null)) {
+            ElementUtil.setInert(ui.getElement(), activeModal != null);
         }
     }
 
-    private boolean isTopMostModal(Component child) {
-        // null has been checked in calling code before this
-        return !modalComponentStack.isEmpty()
-                && modalComponentStack.peek() == child;
+    private record ModalityEntry(Component component, ModalityMode mode,
+            Registration detachRegistration) implements Serializable {
     }
 
     private void removeChildrenContentFromRouterLayout(

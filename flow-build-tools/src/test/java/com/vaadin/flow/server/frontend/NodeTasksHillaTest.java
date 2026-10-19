@@ -37,9 +37,12 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import static com.vaadin.flow.internal.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class NodeTasksHillaTest {
 
@@ -95,9 +98,8 @@ class NodeTasksHillaTest {
     }
 
     private Options createOptions() {
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
+        Lookup lookup = mock(Lookup.class);
+        doReturn(new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(lookup).lookup(ClassFinder.class);
         File npmFolder = new File(userDir);
         return new Options(lookup, npmFolder).withBuildDirectory(TARGET)
@@ -115,18 +117,17 @@ class NodeTasksHillaTest {
     void should_useHillaEngine_whenEnabled()
             throws ExecutionFailedException, IOException {
         Options options = createOptions();
-        Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
+        doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any());
-        Mockito.doReturn(taskGenerateEndpoint)
-                .when(endpointGeneratorTaskFactory)
+        doReturn(taskGenerateEndpoint).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateEndpoint(any());
-        Mockito.doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
+        doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+        try (MockedStatic<FrontendBuildUtils> util = mockStatic(
                 FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+            util.when(() -> FrontendBuildUtils.isHillaUsed(any(), any()))
+                    .thenReturn(true);
 
             new NodeTasks(options).execute();
         }
@@ -150,14 +151,11 @@ class NodeTasksHillaTest {
 
     private void verifyHillaEngine(boolean expected)
             throws ExecutionFailedException {
-        Mockito.verify(endpointGeneratorTaskFactory,
-                expected ? times(1) : never())
+        verify(endpointGeneratorTaskFactory, expected ? times(1) : never())
                 .createTaskGenerateEndpoint(any());
-        Mockito.verify(endpointGeneratorTaskFactory,
-                expected ? times(1) : never()).createTaskGenerateOpenAPI(any());
-        Mockito.verify(taskGenerateOpenAPI, expected ? times(1) : never())
-                .execute();
-        Mockito.verify(taskGenerateEndpoint, expected ? times(1) : never())
-                .execute();
+        verify(endpointGeneratorTaskFactory, expected ? times(1) : never())
+                .createTaskGenerateOpenAPI(any());
+        verify(taskGenerateOpenAPI, expected ? times(1) : never()).execute();
+        verify(taskGenerateEndpoint, expected ? times(1) : never()).execute();
     }
 }
