@@ -57,6 +57,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
     private final File jarResourcesFolder;
+    private ObjectNode allPinnedNpmDependencies;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -519,7 +520,13 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @see PinnedNpmVersions
      */
     private ObjectNode getAllPinnedNpmDependencies() throws IOException {
-        return getPinnedNpmVersions().getAllDependencies();
+        // Read once per run, as merging the versions files warns about the
+        // packages they disagree on
+        if (allPinnedNpmDependencies == null) {
+            allPinnedNpmDependencies = getPinnedNpmVersions()
+                    .getAllDependencies();
+        }
+        return allPinnedNpmDependencies;
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
@@ -854,10 +861,9 @@ public class TaskUpdatePackages extends NodeUpdater {
             if (entry.getValue().equals(vaadinSection.get(pkg))) {
                 continue;
             }
-            final FrontendVersion pinned = parseVersion(entry.getValue());
-            if (pinned != null && isDifferentRange(expected, pinned)) {
+            if (resolvesOutsideRange(entry.getValue(), expected)) {
                 mismatches.add(String.format("  - %s: %s (in %s), expected %s",
-                        pkg, pinned.getFullVersion(), location,
+                        pkg, entry.getValue(), location,
                         expected.getFullVersion()));
             }
         }
@@ -874,10 +880,31 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    private boolean isDifferentRange(FrontendVersion expected,
-            FrontendVersion actual) {
-        return expected.getMajorVersion() != actual.getMajorVersion()
-                || expected.getMinorVersion() != actual.getMinorVersion();
+    /**
+     * Tells whether a version declared in package.json resolves to a different
+     * minor or major version than the expected one. An exact version and a
+     * tilde range stay within their minor, while a caret range accepts any
+     * later minor of its major (from 1.0.0 on), so for it only the major is
+     * compared. Other ranges, tags, URLs and file links are not reported, as
+     * what they resolve to is not known here.
+     */
+    private boolean resolvesOutsideRange(String declared,
+            FrontendVersion expected) {
+        final boolean caret = declared.startsWith("^");
+        if (!caret && !declared.startsWith("~") && (declared.isEmpty()
+                || !Character.isDigit(declared.charAt(0)))) {
+            return false;
+        }
+        final FrontendVersion actual = parseVersion(declared);
+        if (actual == null) {
+            return false;
+        }
+        if (expected.getMajorVersion() != actual.getMajorVersion()) {
+            return true;
+        }
+        final boolean anyMinor = caret && actual.getMajorVersion() > 0;
+        return !anyMinor
+                && expected.getMinorVersion() != actual.getMinorVersion();
     }
 
     private Map<String, String> sectionToMap(JsonNode section) {

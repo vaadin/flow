@@ -35,6 +35,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -421,22 +423,63 @@ class TaskUpdatePackagesNpmTest {
         createTaskWithLogger(logger, Collections.emptyMap()).execute();
 
         Mockito.verify(logger, Mockito.atLeastOnce()).warn(Mockito.anyString(),
-                Mockito.contains(VAADIN_DIALOG));
+                Mockito.contains(VAADIN_DIALOG + ": 25.1.0 (in dependencies)"));
     }
 
-    @Test
-    void warnOnVersionRangeMismatch_dependencyPinnedToMaintenanceRelease_noWarning()
-            throws IOException {
-        // The pin differs from the expected version only in the maintenance
-        // (patch) part, which is supported and should not warn.
-        createVaadinVersionsJson("25.1.4", PINNED_ELEMENT_MIXIN_VERSION,
+    @ParameterizedTest
+    @ValueSource(strings = { "25.1.0", "24.3.0", "~25.1.0", "^24.3.0" })
+    void warnOnVersionRangeMismatch_dependencyOutsideExpectedMinor_warningLogged(
+            String declaredVersion) throws IOException {
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
                 PINNED_OVERLAY_VERSION);
 
         Logger logger = Mockito.mock(Logger.class);
         createTaskWithLogger(logger).warnOnVersionRangeMismatch(
-                dependencyPackageJson("25.1.0", "25.1.4"));
+                dependencyPackageJson(declaredVersion, "25.1.4"));
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_DIALOG + ": " + declaredVersion
+                        + " (in dependencies), expected 25.3.0"));
+    }
+
+    @ParameterizedTest
+    // Another maintenance release of the same minor is supported, a caret
+    // range resolves to the expected minor, and what the other values
+    // resolve to is not known
+    @ValueSource(strings = { "25.3.9", "^25.1.0", ">=24.0.0", "latest",
+            "file:../dialog", "$" + VAADIN_DIALOG })
+    void warnOnVersionRangeMismatch_dependencyNotKnownOutsideExpectedMinor_noWarning(
+            String declaredVersion) throws IOException {
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(
+                dependencyPackageJson(declaredVersion, "25.1.4"));
 
         Mockito.verifyNoInteractions(logger);
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_severalMismatches_singleWarningInPackageJsonOrder()
+            throws IOException {
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        ObjectNode packageJson = dependencyPackageJson("25.1.0", "25.1.4");
+        ObjectNode dependencies = JacksonUtils.createObjectNode();
+        dependencies.put(VAADIN_OVERLAY, "3.1.0");
+        dependencies.setAll((ObjectNode) packageJson.get(DEPENDENCIES));
+        packageJson.set(DEPENDENCIES, dependencies);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_OVERLAY
+                        + ": 3.1.0 (in dependencies), expected "
+                        + PINNED_OVERLAY_VERSION + "\n  - " + VAADIN_DIALOG
+                        + ": 25.1.0 (in dependencies), expected 25.3.0"));
+        Mockito.verifyNoMoreInteractions(logger);
     }
 
     @Test
