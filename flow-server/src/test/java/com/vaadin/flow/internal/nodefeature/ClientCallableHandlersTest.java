@@ -72,10 +72,14 @@ class ClientCallableHandlersTest {
         @Override
         @ClientCallable(DisabledUpdateMode.ALWAYS)
         public void overriddenDefaultMethod() {
+            // Only the handler registration is tested, the method is never
+            // invoked
         }
 
         @Override
         public void abstractMethod() {
+            // Only the handler registration is tested, the method is never
+            // invoked
         }
     }
 
