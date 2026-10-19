@@ -228,9 +228,10 @@ public abstract class Trigger implements Serializable {
      * passed.
      *
      * @param action
-     *            the rendered action {@link JsFunction}; takes one runtime
-     *            argument named {@code event} (the trigger's event payload),
-     *            not {@code null}
+     *            the rendered action {@link JsFunction}; takes the runtime
+     *            arguments {@code event} (the trigger's event payload) and
+     *            {@code context} (what the trigger fired for, or
+     *            {@code undefined} for triggers without one), not {@code null}
      * @return the registration whose {@link Registration#remove()} detaches the
      *         listener, not {@code null}
      */

@@ -47,7 +47,9 @@ import com.vaadin.flow.shared.Registration;
  * }</pre>
  *
  * The Clipboard API requires a fresh user gesture for each write, so actions
- * only run during the DOM event that fires the underlying trigger.
+ * only run during the DOM event that fires the underlying trigger. For copy
+ * affordances rendered on the client, where there is no component to bind to,
+ * {@link #writeText()} creates an unbound action instead.
  * <p>
  * Read-side support is exposed through
  * {@link #onPaste(Component, SerializableConsumer) onPaste}, which forwards the
@@ -179,7 +181,7 @@ public final class Clipboard implements Serializable {
      * LitRenderer.<Customer> of(
      *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
      *         .withProperty("email", Customer::email)
-     *         .withClientAction("copy", Clipboard.write());
+     *         .withClientAction("copy", Clipboard.writeText());
      * }</pre>
      *
      * The action still runs inside the browser's own event handler, so the user
@@ -187,7 +189,7 @@ public final class Clipboard implements Serializable {
      *
      * @return an unbound action, to be handed to whatever fires it
      */
-    public static ClientAction write() {
+    public static ClientAction writeText() {
         return ClientActions.of(new WriteToClipboardAction(
                 new ContextInput<>("args", "0"), null));
     }

@@ -35,7 +35,7 @@ import com.vaadin.flow.shared.Registration;
  * grid.addColumn(LitRenderer.<Customer> of(
  *         "<span>${item.email}</span><button @click=${() => copy(item.email)}>Copy</button>")
  *         .withProperty("email", Customer::email)
- *         .withClientAction("copy", Clipboard.write()));
+ *         .withClientAction("copy", Clipboard.writeText()));
  * }</pre>
  *
  * The action runs inside the browser's own event handler, so the user gesture
@@ -43,7 +43,7 @@ import com.vaadin.flow.shared.Registration;
  * cannot be made from a server-side listener.
  * <p>
  * Instances are created by the feature facades, such as
- * {@code Clipboard.write()}, not by application code.
+ * {@code Clipboard.writeText()}, not by application code.
  */
 public interface ClientAction extends Serializable {
 

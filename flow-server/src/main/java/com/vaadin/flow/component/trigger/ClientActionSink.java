@@ -28,7 +28,7 @@ import com.vaadin.flow.shared.Registration;
  * passes the function into its own client-side template so a {@code @click}
  * binding can call it. The function takes {@code (event, context)}: the client
  * event that fired it, if any, and {@code {args}}, the arguments the template
- * called the action with. {@code Clipboard.write()}, for example, copies
+ * called the action with. {@code Clipboard.writeText()}, for example, copies
  * {@code args[0]}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.

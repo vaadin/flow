@@ -58,9 +58,10 @@ public class ContextInput<T> extends Action.Input<T> {
     @Override
     public JsFunction toJs(Trigger trigger) {
         // Both names are captures, so nothing is concatenated into the body.
-        // Optional chaining yields undefined rather than throwing when the
-        // trigger supplies no context.
-        return JsFunction.of("return context?.[$0]?.[$1]", contextProperty,
-                valueProperty).withArguments("event", "context");
+        // Optional chaining avoids throwing when the trigger supplies no
+        // context; a missing value becomes null, which actions treat as absent.
+        return JsFunction.of("return context?.[$0]?.[$1] ?? null",
+                contextProperty, valueProperty)
+                .withArguments("event", "context");
     }
 }

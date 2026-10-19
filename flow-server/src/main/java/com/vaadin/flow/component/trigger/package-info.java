@@ -24,4 +24,7 @@
  * server-side component of its own — a {@code LitRenderer} row template, for
  * example. See {@link com.vaadin.flow.component.trigger.ClientAction}.
  */
+@NullMarked
 package com.vaadin.flow.component.trigger;
+
+import org.jspecify.annotations.NullMarked;

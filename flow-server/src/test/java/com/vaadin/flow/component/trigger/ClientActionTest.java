@@ -68,7 +68,7 @@ class ClientActionTest {
         RecordingSink sink = new RecordingSink();
 
         // Template: <button @click=${() => copy(item.email)}>Copy</button>
-        Clipboard.write().bindTo(container.getElement(), sink);
+        Clipboard.writeText().bindTo(container.getElement(), sink);
 
         // One binding for the whole renderer, whatever the row count.
         assertEquals(1, sink.installed.size());
@@ -83,7 +83,7 @@ class ClientActionTest {
 
         JsFunction text = (JsFunction) action.getCaptures().get(0);
         assertEquals(List.of("event", "context"), text.getArgumentNames());
-        assertEquals("return context?.[$0]?.[$1]", text.getBody());
+        assertEquals("return context?.[$0]?.[$1] ?? null", text.getBody());
         assertEquals(List.of("args", "0"), text.getCaptures());
     }
 
@@ -94,7 +94,7 @@ class ClientActionTest {
         ui.add(container);
         RecordingSink sink = new RecordingSink();
 
-        Registration registration = Clipboard.write()
+        Registration registration = Clipboard.writeText()
                 .bindTo(container.getElement(), sink);
 
         // The action is committed as part of binding, so the trigger is armed
@@ -107,12 +107,13 @@ class ClientActionTest {
     }
 
     @Test
+    @SuppressWarnings("NullAway") // deliberately violates the sink contract
     void sinkReturningNullRegistration_isRejected() {
         UI ui = new MockUI();
         Div container = new Div();
         ui.add(container);
 
-        assertThrows(NullPointerException.class, () -> Clipboard.write()
+        assertThrows(NullPointerException.class, () -> Clipboard.writeText()
                 .bindTo(container.getElement(), action -> null));
     }
 }
