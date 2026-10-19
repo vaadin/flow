@@ -18,10 +18,13 @@ package com.vaadin.flow.server.frontend.installer;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -31,17 +34,22 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
 
 import static com.vaadin.flow.internal.Platform.ALPINE_RELEASE_FILE_PATH;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class NodeInstallerTest {
 
@@ -161,6 +169,72 @@ class NodeInstallerTest {
                 "The downloaded archive should have been removed after it was unpacked");
     }
 
+    @Test
+    void defaultNodeChecksums_coverDefaultVersionOnSupportedPlatforms() {
+        String version = FrontendTools.DEFAULT_NODE_VERSION;
+        // Keep in sync with the archives scripts/updateNodeChecksums.sh checks
+        Map<String, Map<String, String>> archives = Map.of(
+                "darwin-arm64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "darwin-x64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-arm64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-x64.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS, "win-arm64.zip",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS, "win-x64.zip",
+                NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
+                "linux-arm64-musl.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.UNOFFICIAL_CHECKSUMS,
+                "linux-x64-musl.tar.gz",
+                NodeInstaller.DefaultNodeChecksums.UNOFFICIAL_CHECKSUMS);
+        archives.forEach((archive, checksums) -> {
+            String name = "node-" + version + "-" + archive;
+            assertTrue(checksums.containsKey(name), "No checksum for " + name
+                    + ". Run scripts/updateNodeChecksums.sh after changing DEFAULT_NODE_VERSION");
+        });
+    }
+
+    @ParameterizedTest(name = "musl: {0}")
+    @ValueSource(booleans = { false, true })
+    void installDefaultVersionFromMirror_archiveNotMatchingShippedChecksum_installFails(
+            boolean musl) throws IOException {
+        Platform platform = musl ? guessMuslPlatform() : Platform.guess();
+        File archive = createDownloadableNodeArchive(platform,
+                nodeArchivePrefix(platform));
+        URI mirror = URI.create("https://mirror.example/dist/");
+        FileDownloader downloader = (uri, destination, userName, password,
+                progressListener) -> {
+            try {
+                Files.copy(archive.toPath(), destination.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new DownloadException("Could not download " + uri, e);
+            }
+        };
+        NodeInstaller nodeInstaller = new NodeInstaller(
+                new File(baseDir, "installation"), platform,
+                new DefaultArchiveExtractor(), downloader)
+                .setNodeDownloadRoot(mirror)
+                .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION);
+
+        InstallationException exception = assertThrows(
+                InstallationException.class, nodeInstaller::install);
+        assertTrue(exception.getMessage().contains("vaadin.node.folder"),
+                exception.getMessage());
+    }
+
+    private static Platform guessMuslPlatform() {
+        Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
+        try (MockedStatic<Platform.OS> os = mockStatic(Platform.OS.class);
+                MockedStatic<Files> files = mockStatic(Files.class)) {
+            os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
+            files.when(() -> Files.exists(alpineReleaseFilePath))
+                    .thenReturn(true);
+            return Platform.guess();
+        }
+    }
+
     private static String nodeArchivePrefix(Platform platform) {
         return String.format("node-%s-%s", FrontendTools.DEFAULT_NODE_VERSION,
                 platform.getNodeClassifier(new FrontendVersion(
@@ -260,10 +334,9 @@ class NodeInstallerTest {
 
     @Test
     void testGuess_whenOsIsLinuxAndAlpineReleaseFileExists_unofficialNodeDownloadPathReturned() {
-        try (MockedStatic<Platform.OS> os = Mockito
-                .mockStatic(Platform.OS.class);
-                MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class);
-                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+        try (MockedStatic<Platform.OS> os = mockStatic(Platform.OS.class);
+                MockedStatic<Paths> paths = mockStatic(Paths.class);
+                MockedStatic<Files> files = mockStatic(Files.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
             Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
@@ -276,8 +349,7 @@ class NodeInstallerTest {
             assertEquals(NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
 
-            FrontendVersion frontendVersion = Mockito
-                    .mock(FrontendVersion.class);
+            FrontendVersion frontendVersion = mock(FrontendVersion.class);
             assertTrue(platform.getNodeClassifier(frontendVersion)
                     .contains("-musl"));
         }
@@ -285,8 +357,7 @@ class NodeInstallerTest {
 
     @Test
     void testGuess_whenOsIsLinuxAndAlpineReleaseFileDoesNotExist_officialNodeDownloadPathReturned() {
-        try (MockedStatic<Platform.OS> os = Mockito
-                .mockStatic(Platform.OS.class)) {
+        try (MockedStatic<Platform.OS> os = mockStatic(Platform.OS.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
 
@@ -294,8 +365,7 @@ class NodeInstallerTest {
             assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
 
-            FrontendVersion frontendVersion = Mockito
-                    .mock(FrontendVersion.class);
+            FrontendVersion frontendVersion = mock(FrontendVersion.class);
             assertFalse(platform.getNodeClassifier(frontendVersion)
                     .contains("-musl"));
         }
@@ -303,8 +373,7 @@ class NodeInstallerTest {
 
     @Test
     void testGuess_whenOsIsAnythingOtherThanLinuxAlpineRelease_officialNodeDownloadPathReturned() {
-        try (MockedStatic<Platform.OS> os = Mockito
-                .mockStatic(Platform.OS.class)) {
+        try (MockedStatic<Platform.OS> os = mockStatic(Platform.OS.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.WINDOWS);
 

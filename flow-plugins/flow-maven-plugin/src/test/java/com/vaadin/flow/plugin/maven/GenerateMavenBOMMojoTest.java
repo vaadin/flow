@@ -25,11 +25,12 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class GenerateMavenBOMMojoTest {
 
@@ -46,9 +47,9 @@ class GenerateMavenBOMMojoTest {
     void setUp() throws Exception {
         this.mojo = new GenerateMavenBOMMojo();
 
-        MavenProject project = Mockito.mock(MavenProject.class);
+        MavenProject project = mock(MavenProject.class);
         File projectBase = tempDir.toFile();
-        Mockito.when(project.getBasedir()).thenReturn(projectBase);
+        when(project.getBasedir()).thenReturn(projectBase);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
         bomFilename = new File(resourceOutputDirectory, "bom.json")

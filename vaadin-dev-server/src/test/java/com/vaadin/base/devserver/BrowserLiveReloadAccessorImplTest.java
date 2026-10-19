@@ -16,7 +16,6 @@
 package com.vaadin.base.devserver;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -27,6 +26,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class BrowserLiveReloadAccessorImplTest {
 
@@ -43,9 +46,8 @@ class BrowserLiveReloadAccessorImplTest {
     void getLiveReload_liveReloadDisabled_instanceIsCreated() {
         VaadinService service = mockConfiguration(false, false);
         VaadinContext context = service.getContext();
-        Mockito.when(context.getAttribute(Mockito.eq(BrowserLiveReload.class),
-                Mockito.any()))
-                .thenReturn(Mockito.mock(BrowserLiveReload.class));
+        when(context.getAttribute(eq(BrowserLiveReload.class), any()))
+                .thenReturn(mock(BrowserLiveReload.class));
 
         assertNotNull(access.getLiveReload(service));
     }
@@ -54,9 +56,8 @@ class BrowserLiveReloadAccessorImplTest {
     void getLiveReload_devMode_contextHasNoReloadInstance_instanceIsCreated() {
         VaadinService service = mockConfiguration(false, true);
         VaadinContext context = service.getContext();
-        Mockito.when(context.getAttribute(Mockito.eq(BrowserLiveReload.class),
-                Mockito.any()))
-                .thenReturn(Mockito.mock(BrowserLiveReload.class));
+        when(context.getAttribute(eq(BrowserLiveReload.class), any()))
+                .thenReturn(mock(BrowserLiveReload.class));
 
         assertNotNull(access.getLiveReload(service));
     }
@@ -64,31 +65,27 @@ class BrowserLiveReloadAccessorImplTest {
     @Test
     void getLiveReload_devMode_contextHasReloadInstance_instanceIsReturned() {
         VaadinService service = mockConfiguration(false, true);
-        BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
-        Mockito.when(service.getContext().getAttribute(
-                Mockito.eq(BrowserLiveReload.class), Mockito.any()))
-                .thenReturn(reload);
+        BrowserLiveReload reload = mock(BrowserLiveReload.class);
+        when(service.getContext().getAttribute(eq(BrowserLiveReload.class),
+                any())).thenReturn(reload);
 
         assertSame(reload, access.getLiveReload(service));
     }
 
     private VaadinService mockConfiguration(boolean productionMode,
             boolean liveReloadEnabled) {
-        VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
-        Mockito.when(config.isProductionMode()).thenReturn(productionMode);
-        Mockito.when(config.isDevModeLiveReloadEnabled())
-                .thenReturn(liveReloadEnabled);
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(applicationConfiguration.isProductionMode())
+        VaadinService service = mock(VaadinService.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
+        when(service.getDeploymentConfiguration()).thenReturn(config);
+        when(config.isProductionMode()).thenReturn(productionMode);
+        when(config.isDevModeLiveReloadEnabled()).thenReturn(liveReloadEnabled);
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
+        when(applicationConfiguration.isProductionMode())
                 .thenReturn(productionMode);
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Mockito.when(service.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+        VaadinContext context = mock(VaadinContext.class);
+        when(service.getContext()).thenReturn(context);
+        when(context.getAttribute(eq(ApplicationConfiguration.class), any()))
                 .thenReturn(applicationConfiguration);
         return service;
     }

@@ -42,11 +42,12 @@ import com.vaadin.flow.server.VaadinService;
  * navigation that caused them and fire no events of their own. Their effect is
  * in the {@link #getOutcome() outcome}.
  * <p>
- * Two cases fire no events at all, since they continue a navigation that has
- * already been reported: resuming a {@link Postponed postponed} navigation with
- * {@link BeforeLeaveEvent.ContinueNavigationAction#proceed()}, and showing a
- * {@link PreserveOnRefresh} view once the browser has sent its window name, in
- * the request after the one reported as {@link NotShown}.
+ * Resuming a {@link Postponed postponed} navigation with
+ * {@link BeforeLeaveEvent.ContinueNavigationAction#proceed()} is reported as a
+ * navigation of its own. Showing a {@link PreserveOnRefresh} view once the
+ * browser has sent its window name, in the request after the one reported as
+ * {@link NotShown}, fires no events, since it continues a navigation that has
+ * already been reported.
  * <p>
  * Use a {@code switch} over the outcome to tell the cases apart:
  *
@@ -112,8 +113,8 @@ public class NavigationEndedEvent extends EventObject {
      * navigation, so the current view is still shown.
      * <p>
      * If the navigation is resumed later with
-     * {@link BeforeLeaveEvent.ContinueNavigationAction#proceed()}, that is not
-     * reported as a new navigation.
+     * {@link BeforeLeaveEvent.ContinueNavigationAction#proceed()}, that is
+     * reported as a new navigation with an outcome of its own.
      */
     public record Postponed() implements Outcome {
     }
