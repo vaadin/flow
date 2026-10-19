@@ -66,6 +66,10 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
+        // Validate before any other work: the frontend build also validates
+        // the license, but it is skipped when an existing bundle is used
+        BuildFrontendUtil.validateProductionLicense()
+
         val options = Options(null, adapter.classFinder, config.npmFolder.get())
             .withFrontendDirectory(config.frontendDirectory.get())
             .withFrontendGeneratedFolder(config.generatedTsFolder.get())

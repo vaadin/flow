@@ -533,7 +533,7 @@ public class BuildFrontendUtil {
             Map<String, String> environment, String... params)
             throws TimeoutException {
 
-        validateLicense();
+        validateProductionLicense();
 
         File buildExecutable = new File(adapter.npmFolder(),
                 NODE_MODULES + executable);
@@ -582,9 +582,28 @@ public class BuildFrontendUtil {
         }
     }
 
-    private static void validateLicense() {
+    /**
+     * Validates the Flow license for a production build.
+     * <p>
+     * The check runs in strict offline mode, so it fails if the license server
+     * cannot be reached and no valid offline or server license key is
+     * available. If no license key is found, it fails immediately instead of
+     * opening a browser to download a key, because production builds usually
+     * run on CI servers.
+     * <p>
+     * Build tools must call this for every production build, also when the
+     * frontend bundle is not built because the default bundle or an existing
+     * bundle is used.
+     *
+     * @throws com.vaadin.pro.licensechecker.MissingLicenseKeyException
+     *             if no license key is found
+     * @throws com.vaadin.pro.licensechecker.LicenseException
+     *             if no valid license is available
+     */
+    public static void validateProductionLicense() {
+        LicenseChecker.setStrictOffline(true);
         LicenseChecker.checkLicense("flow", Version.getFullVersion(),
-                BuildType.PRODUCTION);
+                BuildType.PRODUCTION, null);
     }
 
     /**
@@ -634,7 +653,7 @@ public class BuildFrontendUtil {
         for (Product component : commercialComponents) {
             try {
                 LicenseChecker.checkLicense(component.getName(),
-                        component.getVersion(), BuildType.PRODUCTION);
+                        component.getVersion(), BuildType.PRODUCTION, null);
             } catch (Exception e) {
                 try {
                     getLogger().debug(
