@@ -455,11 +455,11 @@ class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void cached_dependsOnCachedWithoutSignalUsage_exceptionHandledInComputation() {
+    void cached_dependsOnCachedWithoutSignalUsage_throwsUntilRecovered() {
         ValueSignal<Integer> source = new ValueSignal<>(1);
-        ValueSignal<Integer> fallback = new ValueSignal<>(-1);
         Signal<Integer> inner = Signal
                 .cached(() -> source.peek() > 0 ? source.get() : 0);
+        ValueSignal<Integer> fallback = new ValueSignal<>(-1);
         Signal<Integer> outer = Signal.cached(() -> {
             try {
                 return inner.get();
@@ -470,8 +470,12 @@ class ComputedSignalTest extends SignalTestBase {
 
         assertEquals(1, outer.peek());
 
+        // Thrown while revalidating the dependency, before the computation
         source.set(-1);
-        assertEquals(-1, outer.peek());
+        assertThrows(MissingSignalUsageException.class, outer::peek);
+
+        source.set(2);
+        assertEquals(2, outer.peek());
     }
 
     @Test

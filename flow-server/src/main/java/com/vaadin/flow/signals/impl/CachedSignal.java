@@ -340,24 +340,17 @@ public class CachedSignal<T extends @Nullable Object>
      * dependencies.hasChanges() misses a change that comes through it.
      * Revalidate cached dependencies in the order they were read, each at most
      * once per read, and stop at the first change so that dependencies that the
-     * computation will no longer read are not revalidated.
+     * computation will no longer read are not revalidated. If revalidating a
+     * dependency throws, e.g. because its computation reads no signal, then
+     * this read throws as well. Nothing is stored in that case, so the
+     * dependency is kept and revalidated again on the next read.
      */
     private static boolean refreshCachedDependencies(CacheState state,
             Set<CachedSignal<?>> refreshed) {
         for (CachedSignal<?> dependency : state.cachedDependencies) {
             if (refreshed.add(dependency)) {
-                try {
-                    dependency.getValidState(
-                            dependency.data(Transaction.getCurrent()),
-                            refreshed);
-                } catch (MissingSignalUsageException e) {
-                    /*
-                     * Recompute so that reading the dependency throws the same
-                     * exception inside the computation, where it can be handled
-                     * like other exceptions from the dependency.
-                     */
-                    return true;
-                }
+                dependency.getValidState(
+                        dependency.data(Transaction.getCurrent()), refreshed);
                 if (state.dependencies.hasChanges()) {
                     return true;
                 }
