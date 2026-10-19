@@ -37,7 +37,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Platform;
@@ -49,6 +48,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class NodeInstallerTest {
 
@@ -171,6 +172,7 @@ class NodeInstallerTest {
     @Test
     void defaultNodeChecksums_coverDefaultVersionOnSupportedPlatforms() {
         String version = FrontendTools.DEFAULT_NODE_VERSION;
+        // Keep in sync with the archives scripts/updateNodeChecksums.sh checks
         Map<String, Map<String, String>> archives = Map.of(
                 "darwin-arm64.tar.gz",
                 NodeInstaller.DefaultNodeChecksums.CHECKSUMS,
@@ -224,9 +226,8 @@ class NodeInstallerTest {
 
     private static Platform guessMuslPlatform() {
         Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
-        try (MockedStatic<Platform.OS> os = Mockito
-                .mockStatic(Platform.OS.class);
-                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+        try (MockedStatic<Platform.OS> os = mockStatic(Platform.OS.class);
+                MockedStatic<Files> files = mockStatic(Files.class)) {
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
             files.when(() -> Files.exists(alpineReleaseFilePath))
                     .thenReturn(true);
@@ -333,10 +334,9 @@ class NodeInstallerTest {
 
     @Test
     void testGuess_whenOsIsLinuxAndAlpineReleaseFileExists_unofficialNodeDownloadPathReturned() {
-        try (MockedStatic<Platform.OS> os = Mockito
-                .mockStatic(Platform.OS.class);
-                MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class);
-                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+        try (MockedStatic<Platform.OS> os = mockStatic(Platform.OS.class);
+                MockedStatic<Paths> paths = mockStatic(Paths.class);
+                MockedStatic<Files> files = mockStatic(Files.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
             Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
@@ -349,8 +349,7 @@ class NodeInstallerTest {
             assertEquals(NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
 
-            FrontendVersion frontendVersion = Mockito
-                    .mock(FrontendVersion.class);
+            FrontendVersion frontendVersion = mock(FrontendVersion.class);
             assertTrue(platform.getNodeClassifier(frontendVersion)
                     .contains("-musl"));
         }
@@ -358,8 +357,7 @@ class NodeInstallerTest {
 
     @Test
     void testGuess_whenOsIsLinuxAndAlpineReleaseFileDoesNotExist_officialNodeDownloadPathReturned() {
-        try (MockedStatic<Platform.OS> os = Mockito
-                .mockStatic(Platform.OS.class)) {
+        try (MockedStatic<Platform.OS> os = mockStatic(Platform.OS.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
 
@@ -367,8 +365,7 @@ class NodeInstallerTest {
             assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     NodeInstaller.getDownloadRoot(platform));
 
-            FrontendVersion frontendVersion = Mockito
-                    .mock(FrontendVersion.class);
+            FrontendVersion frontendVersion = mock(FrontendVersion.class);
             assertFalse(platform.getNodeClassifier(frontendVersion)
                     .contains("-musl"));
         }
@@ -376,8 +373,7 @@ class NodeInstallerTest {
 
     @Test
     void testGuess_whenOsIsAnythingOtherThanLinuxAlpineRelease_officialNodeDownloadPathReturned() {
-        try (MockedStatic<Platform.OS> os = Mockito
-                .mockStatic(Platform.OS.class)) {
+        try (MockedStatic<Platform.OS> os = mockStatic(Platform.OS.class)) {
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.WINDOWS);
 

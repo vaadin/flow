@@ -25,8 +25,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -42,6 +40,10 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -148,17 +150,16 @@ class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
-        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+        assertThat(content, containsString(
                 "import 'Frontend/theme/myTheme/main-template.js';"));
-        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+        assertThat(content, containsString(
                 "import 'Frontend/theme/myTheme/client-side-template.js';"));
-        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+        assertThat(content, containsString(
                 "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"));
-        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+        assertThat(content, containsString(
                 "import '@vaadin/vaadin-button/src/vaadin-button.js';"));
-        MatcherAssert.assertThat(content,
-                CoreMatchers.not(CoreMatchers.containsString(
-                        "import 'theme/myTheme/wrong-themed-template.js';")));
+        assertThat(content, not(containsString(
+                "import 'theme/myTheme/wrong-themed-template.js';")));
     }
 
     @Test
@@ -191,12 +192,11 @@ class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
-        MatcherAssert.assertThat(content, CoreMatchers.allOf(
-                CoreMatchers.containsString(
+        assertThat(content, allOf(
+                containsString(
                         "import 'Frontend/theme/myTheme/main-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/directory';"),
-                CoreMatchers.containsString(
+                containsString("import 'Frontend/theme/myTheme/directory';"),
+                containsString(
                         "import 'Frontend/theme/myTheme/directory/sub1.js';")));
     }
 
@@ -220,15 +220,12 @@ class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
-        MatcherAssert.assertThat(content, CoreMatchers.allOf(
-                CoreMatchers.containsString(
+        assertThat(content, allOf(
+                containsString(
                         "import 'Frontend/theme/myTheme/main-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/directory';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/import1.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/import2.js';")));
+                containsString("import 'Frontend/theme/myTheme/directory';"),
+                containsString("import 'Frontend/theme/myTheme/import1.js';"),
+                containsString("import 'Frontend/theme/myTheme/import2.js';")));
     }
 
     private void createImport(String path, String content) throws IOException {

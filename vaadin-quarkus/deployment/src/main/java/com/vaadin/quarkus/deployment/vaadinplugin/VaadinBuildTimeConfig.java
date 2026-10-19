@@ -30,6 +30,10 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 
+/**
+ * Build time configuration of the Vaadin Quarkus extension, read from the
+ * {@code vaadin.build} properties.
+ */
 @ConfigMapping(prefix = "vaadin.build")
 @ConfigRoot(phase = ConfigPhase.BUILD_TIME)
 public interface VaadinBuildTimeConfig {

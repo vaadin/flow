@@ -2,9 +2,10 @@ name: Memory Footprint
 
 # Measures the memory a UI uses, with UIMemoryFootprintTest, on the head of a
 # pull request and on the commit it branches from, and reports the difference
-# in a pull request comment. The measurements are exact, so a comment is only
-# posted once a change affects them. After that the comment is updated on every
-# push, also when the difference goes away again.
+# in a pull request comment. A comment is only posted once a change affects
+# them by at least MIN_CHANGE bytes, see scripts/memoryFootprint.js.
+# After that the comment is updated on every push, also when the difference
+# goes away again.
 #
 # Every push to main is measured too, and the measurements of each base commit
 # are cached under a key made of the commit and the JDK. A pull request can

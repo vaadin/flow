@@ -16,14 +16,15 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | Target | ITs |
 |---|---|
-| test-default | 351 |
-| test-embedding | 24 |
+| test-default | 372 |
+| ?UNMAPPED? | 32 |
+| test-embedding | 26 |
 | test-production | 23 |
 | test-vaadin-router | 22 |
+| test-devloop(keep) | 21 |
 | test-spring-security | 21 |
 | test-themes | 14 |
 | test-contextpath | 13 |
-| test-devloop(keep) | 12 |
 | test-dev-bundle | 9 |
 | test-livereload | 9 |
 | test-plain-servlet | 9 |
@@ -42,7 +43,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | test-plain-spring | 1 |
 | test-push-startup(keep) | 1 |
 | test-tailwind | 1 |
-| **TOTAL** | **543** |
+| **TOTAL** | **607** |
 
 ## Mapping (grouped by target module, then feature)
 
@@ -55,6 +56,46 @@ procedure in [README.md](README.md) and the permutation policy in
 |---|---|---|
 | SpringDevToolsReloadViewIT | vaadin-spring-tests/test-plain-spring-boot-reload-time | keep |
 | SpringDevToolsReloadViewIT | vaadin-spring-tests/test-spring-boot-reload-time | keep |
+
+### → ?UNMAPPED?
+
+
+**`?`**
+
+| IT | from | type |
+|---|---|---|
+| AbstractCdiIT | vaadin-quarkus-tests/common-test-code | ? |
+| AbstractChromeIT | vaadin-quarkus-tests/common-test-code | ? |
+| AddonsIT | vaadin-quarkus-tests/common-test-code | ? |
+| AutoLayoutIT | vaadin-quarkus-tests/common-test-code | ? |
+| BinderIT | vaadin-quarkus-tests/common-test-code | ? |
+| ClientCallableIT | vaadin-quarkus-tests/common-test-code | ? |
+| CustomWebsocketsIT | vaadin-quarkus-tests/common-test-code | ? |
+| FeatureFlagIT | vaadin-quarkus-tests/common-test-code | ? |
+| FocusIT | vaadin-quarkus-tests/common-test-code | ? |
+| InstantiatorTestIT | vaadin-quarkus-tests/common-test-code | ? |
+| JsDefinitionIT | vaadin-quarkus-tests/common-test-code | ? |
+| JsModuleIT | vaadin-quarkus-tests/common-test-code | ? |
+| LayoutWithInjectionIT | vaadin-quarkus-tests/common-test-code | ? |
+| LitIT | vaadin-quarkus-tests/common-test-code | ? |
+| MenuIT | vaadin-quarkus-tests/common-test-code | ? |
+| PushSmokeIT | vaadin-quarkus-tests/common-test-code | ? |
+| RemoveOldContentIT | vaadin-quarkus-tests/common-test-code | ? |
+| RerouteToErrorIT | vaadin-quarkus-tests/common-test-code | ? |
+| RouteContextIT | vaadin-quarkus-tests/common-test-code | ? |
+| RuntimeConfigurationIT | vaadin-quarkus-tests/common-test-code | ? |
+| ServiceIT | vaadin-quarkus-tests/common-test-code | ? |
+| ServiceLoaderIT | vaadin-quarkus-tests/common-test-code | ? |
+| SessionContextCloseIT | vaadin-quarkus-tests/common-test-code | ? |
+| SessionContextIT | vaadin-quarkus-tests/common-test-code | ? |
+| ShortcutIT | vaadin-quarkus-tests/common-test-code | ? |
+| SmokeTestIT | vaadin-quarkus-tests/common-test-code | ? |
+| TranslationIT | vaadin-quarkus-tests/common-test-code | ? |
+| UIContextIT | vaadin-quarkus-tests/common-test-code | ? |
+| UIEventsIT | vaadin-quarkus-tests/common-test-code | ? |
+| WebComponentIT | vaadin-quarkus-tests/common-test-code | ? |
+| CustomServletIT | vaadin-quarkus-tests/custom-servlet-it | ? |
+| PushBlockingAfterNavIT | vaadin-quarkus-tests/push-dispatch-it | ? |
 
 ### → test-bun
 
@@ -116,23 +157,69 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | IT | from | type |
 |---|---|---|
+| AbstractBasicElementComponentIT | test-default | done |
 | AbstractDefaultIT | test-default | done |
+| AbstractEventDataIT | test-default | done |
+| AbstractStreamResourceIT | test-default | done |
 | AddQueryParamIT | test-default | done |
+| AllowInertDomEventIT | test-default | done |
 | BackNavIT | test-default | done |
 | BasePathIT | test-default | done |
+| BasicComponentIT | test-default | done |
+| BasicElementIT | test-default | done |
 | BrowserLoggingIT | test-default | done |
+| ClassListBindIT | test-default | done |
+| ComplexDialogShortcutIT | test-default | done |
+| ComponentEventDataIT | test-default | done |
+| CompositeIT | test-default | done |
+| CompositeNestedIT | test-default | done |
+| CustomCustomElementIT | test-default | done |
 | DependencyFilterIT | test-default | done |
 | DependencyIT | test-default | done |
+| DialogShortcutIT | test-default | done |
+| DisabledImageDownloadHandlerIT | test-default | done |
+| DnDAbsolutePositioningIT | test-default | done |
+| DnDIT | test-default | done |
+| DomEventFilterIT | test-default | done |
+| DomEventStopPropagationAndPreventDefaultIT | test-default | done |
+| DownloadHandlerIT | test-default | done |
+| ElementInnerHtmlIT | test-default | done |
+| ElementRemoveItselfIT | test-default | done |
+| EnabledIT | test-default | done |
+| EventListenersIT | test-default | done |
+| EventTargetIT | test-default | done |
 | ExceptionStacktraceIT | test-default | done |
 | ExportedJSFunctionIT | test-default | done |
+| FindComponentIT | test-default | done |
+| FocusBlurIT | test-default | done |
 | ForwardTargetIT | test-default | done |
+| IFrameIT | test-default | done |
+| ImageClickIT | test-default | done |
+| InMemoryChildrenIT | test-default | done |
+| InertComponentIT | test-default | done |
 | InfoIT | test-default | done |
+| InvisibleSlotAttributeIT | test-default | done |
+| KeyboardEventIT | test-default | done |
+| LoadingIndicatorIT | test-default | done |
+| MediaComponentsIT | test-default | done |
+| ModalDialogIT | test-default | done |
+| NamespacedElementsIT | test-default | done |
 | NavigationIT | test-default | done |
+| NestedPopoverShortcutIT | test-default | done |
 | OrderedDependencyIT | test-default | done |
+| PageIT | test-default | done |
+| PageVisibilityIT | test-default | done |
+| PopoverOwnerShortcutIT | test-default | done |
 | RemoveAddVisibilityIT | test-default | done |
+| ShadowRootIT | test-default | done |
+| ShortcutsIT | test-default | done |
 | StateIT | test-default | done |
 | StreamResourceIT | test-default | done |
+| TransferProgressListenerIT | test-default | done |
+| UIElementIT | test-default | done |
+| UploadIT | test-default | done |
 | UrlValidationIT | test-default | done |
+| VisibilityIT | test-default | done |
 | ViteCommunicationIT | test-default | done |
 | ViteLogoutRedirectIT | test-default | done |
 
@@ -145,6 +232,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | ClearAndReplaceChildrenIT | test-root-context | move |
 | ClientResourceIT | test-root-context | move |
 | CountUIsIT | test-root-context | move |
+| CustomBrowserTooOldPageIT | test-root-context | move |
 | DelegateLeakIT | test-root-context | move |
 | DevModeConfigIT | test-root-context | move |
 | ExtendedClientDetailsIT | test-root-context | move |
@@ -158,6 +246,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | RefreshCloseConnectionIT | test-root-context | move |
 | ReturnChannelIT | test-root-context | move |
 | ScreenOrientationIT | test-root-context | move |
+| ServiceInitListenersIT | test-root-context | move |
 | SessionCloseLogoutIT | test-root-context | move |
 | StaticHtmlIT | test-root-context | move |
 | TableSpanGridIT | test-root-context | move |
@@ -168,29 +257,7 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | IT | from | type |
 |---|---|---|
-| AbstractBasicElementComponentIT | test-root-context | move |
-| BasicComponentIT | test-root-context | move |
-| ComplexDialogShortcutIT | test-root-context | move |
-| ComponentEventDataIT | test-root-context | move |
-| CompositeIT | test-root-context | move |
-| CompositeNestedIT | test-root-context | move |
-| DialogShortcutIT | test-root-context | move |
-| DisabledImageDownloadHandlerIT | test-root-context | move |
-| DnDAbsolutePositioningIT | test-root-context | move |
-| DnDIT | test-root-context | move |
-| DownloadHandlerIT | test-root-context | move |
-| EnabledIT | test-root-context | move |
-| FindComponentIT | test-root-context | move |
-| IFrameIT | test-root-context | move |
-| ImageClickIT | test-root-context | move |
-| InMemoryChildrenIT | test-root-context | move |
-| InertComponentIT | test-root-context | move |
-| LoadingIndicatorIT | test-root-context | move |
-| ModalDialogIT | test-root-context | move |
-| NestedPopoverShortcutIT | test-root-context | move |
-| PopoverOwnerShortcutIT | test-root-context | move |
-| ShortcutsIT | test-root-context | move |
-| UploadIT | test-root-context | move |
+| DownloadQuoteFileNameIT | test-root-context | move |
 
 **`dependencies`**
 
@@ -213,6 +280,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | JsFunctionIT | test-root-context | move |
 | JsInitializerIT | test-root-context | move |
 | PlainScriptViaJavaScriptIT | test-root-context | move |
+| RuntimeJavaScriptModuleIT | test-root-context | move |
 | ScriptInjectIT | test-root-context | move |
 | StreamResourceIT | test-root-context | move |
 | WebStorageIT | test-root-context | move |
@@ -250,35 +318,22 @@ procedure in [README.md](README.md) and the permutation policy in
 | VaadinAutowiredDependenciesIT | vaadin-spring-tests/test-spring-common | move |
 | ClassScannerIT | vaadin-spring-tests/test-spring-filter-packages | move |
 | ClassScannerIT | vaadin-spring-tests/test-spring-filter-packages | move |
+| AutoLayoutIT | vaadin-spring-tests/test-spring-native | move |
+| BinderIT | vaadin-spring-tests/test-spring-native | move |
+| ClientCallableIT | vaadin-spring-tests/test-spring-native | move |
+| DomEventIT | vaadin-spring-tests/test-spring-native | move |
+| FocusIT | vaadin-spring-tests/test-spring-native | move |
+| LitIT | vaadin-spring-tests/test-spring-native | move |
+| MainViewIT | vaadin-spring-tests/test-spring-native | move |
+| PushIT | vaadin-spring-tests/test-spring-native | move |
+| PwaIT | vaadin-spring-tests/test-spring-native | move |
+| RerouteIT | vaadin-spring-tests/test-spring-native | move |
+| ResourcesIT | vaadin-spring-tests/test-spring-native | move |
+| ServiceLoaderIT | vaadin-spring-tests/test-spring-native | move |
+| ShortcutIT | vaadin-spring-tests/test-spring-native | move |
+| TranslationIT | vaadin-spring-tests/test-spring-native | move |
+| WebComponentIT | vaadin-spring-tests/test-spring-native | move |
 | SimpleIT | vaadin-spring-tests/test-spring-white-list | move |
-
-**`dom`**
-
-| IT | from | type |
-|---|---|---|
-| AbstractEventDataIT | test-root-context | move |
-| AllowInertDomEventIT | test-root-context | move |
-| BasicElementIT | test-root-context | move |
-| ClassListBindIT | test-root-context | move |
-| CustomBrowserTooOldPageIT | test-root-context | move |
-| CustomCustomElementIT | test-root-context | move |
-| DomEventFilterIT | test-root-context | move |
-| ElementInitOrderIT | test-root-context | move |
-| ElementInnerHtmlIT | test-root-context | move |
-| ElementRemoveItselfIT | test-root-context | move |
-| EventListenersIT | test-root-context | move |
-| EventTargetIT | test-root-context | move |
-| FocusBlurIT | test-root-context | move |
-| InvisibleSlotAttributeIT | test-root-context | move |
-| KeyboardEventIT | test-root-context | move |
-| NamespacedElementsIT | test-root-context | move |
-| PageIT | test-root-context | move |
-| PageVisibilityIT | test-root-context | move |
-| ServiceInitListenersIT | test-root-context | move |
-| ShadowRootIT | test-root-context | move |
-| TransferProgressListenerIT | test-root-context | move |
-| UIElementIT | test-root-context | move |
-| VisibilityIT | test-root-context | move |
 
 **`embedding`**
 
@@ -293,7 +348,6 @@ procedure in [README.md](README.md) and the permutation policy in
 |---|---|---|
 | AbstractErrorIT | test-root-context | move |
 | ComponentErrorIT | test-root-context | move |
-| DomEventStopPropagationAndPreventDefaultIT | test-root-context | move |
 | ErrorHandlingIT | test-root-context | move |
 | ErrorPageIT | test-root-context | move |
 | ExceptionDuringMapSyncIT | test-root-context | move |
@@ -396,6 +450,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | PushLongPollingWithPreserveOnRefreshIT | test-root-context | move |
 | PushSettingsIT | test-root-context | move |
 | PushToggleComponentVisibilityIT | test-root-context | move |
+| PushUnloadPolicyIT | test-root-context | move |
 | PushWSUpdateDivIT | test-root-context | move |
 | PushWithPreserveOnRefreshIT | test-root-context | move |
 | PushWithRequireJSIT | test-root-context | move |
@@ -509,6 +564,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | ClearNodeChildrenIT | test-root-context | move |
 | ConvertToBeanIT | test-root-context | move |
 | DomRepeatIT | test-root-context | move |
+| ElementInitOrderIT | test-root-context | move |
 | EmptyListsIT | test-root-context | move |
 | EventHandlerIT | test-root-context | move |
 | ExceptionsDuringPropertyUpdatesIT | test-root-context | move |
@@ -557,6 +613,7 @@ procedure in [README.md](README.md) and the permutation policy in
 | StyleBindIT | test-root-context | move |
 | StylePriorityIT | test-root-context | move |
 | StyleRemovalIT | test-root-context | move |
+| StyleSheetLayerIT | test-root-context | move |
 
 ### → test-dev-bundle
 
@@ -582,18 +639,27 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | IT | from | type |
 |---|---|---|
-| AbstractDevLoopIT | test-devloop/devloop-app | keep |
-| DevLoopApplyIT | test-devloop/devloop-app | keep |
-| DevLoopBrowserIT | test-devloop/devloop-app | keep |
-| DevLoopCliContractIT | test-devloop/devloop-app | keep |
-| DevLoopCssIT | test-devloop/devloop-app | keep |
-| DevLoopDaemonSurvivalIT | test-devloop/devloop-app | keep |
-| DevLoopDeletionIT | test-devloop/devloop-app | keep |
-| DevLoopFrontendIT | test-devloop/devloop-app | keep |
-| DevLoopMultiModuleIT | test-devloop/devloop-app | keep |
-| DevLoopPomEditIT | test-devloop/devloop-app | keep |
-| DevLoopRestartIT | test-devloop/devloop-app | keep |
-| DevLoopStatisticsIT | test-devloop/devloop-app | keep |
+| DevLoopCargoResourceIT | test-devloop/test-devloop-cargo | keep |
+| DevLoopCargoRestartIT | test-devloop/test-devloop-cargo | keep |
+| DevLoopCargoStartIT | test-devloop/test-devloop-cargo | keep |
+| DevLoopJettyApplyIT | test-devloop/test-devloop-jetty | keep |
+| DevLoopJettyCssIT | test-devloop/test-devloop-jetty | keep |
+| DevLoopJettyRestartIT | test-devloop/test-devloop-jetty | keep |
+| DevLoopJettyStartIT | test-devloop/test-devloop-jetty | keep |
+| DevLoopSpringApplyIT | test-devloop/test-devloop-spring | keep |
+| DevLoopSpringRestartIT | test-devloop/test-devloop-spring | keep |
+| DevLoopSpringStatisticsIT | test-devloop/test-devloop-spring | keep |
+| AbstractDevLoopIT | test-devloop/test-devloop-support | keep |
+| DevLoopApplyIT | test-devloop/test-devloop-support | keep |
+| DevLoopBrowserIT | test-devloop/test-devloop-support | keep |
+| DevLoopCliContractIT | test-devloop/test-devloop-support | keep |
+| DevLoopCssIT | test-devloop/test-devloop-support | keep |
+| DevLoopDaemonSurvivalIT | test-devloop/test-devloop-support | keep |
+| DevLoopDeletionIT | test-devloop/test-devloop-support | keep |
+| DevLoopFrontendIT | test-devloop/test-devloop-support | keep |
+| DevLoopLifecycleIT | test-devloop/test-devloop-support | keep |
+| DevLoopMultiModuleIT | test-devloop/test-devloop-support | keep |
+| DevLoopPomEditIT | test-devloop/test-devloop-support | keep |
 
 ### → test-eager-bootstrap
 
@@ -613,7 +679,9 @@ procedure in [README.md](README.md) and the permutation policy in
 
 | IT | from | type |
 |---|---|---|
+| BrowserDetailsIT | test-embedding/embedding-test-assets | move |
 | DefaultValueInitializationIT | test-embedding/embedding-test-assets | move |
+| ElementSizeIT | test-embedding/embedding-test-assets | move |
 | EmbeddedWebComponentIT | test-embedding/embedding-test-assets | move |
 | FactoryExporterIT | test-embedding/embedding-test-assets | move |
 | FireEventIT | test-embedding/embedding-test-assets | move |

@@ -172,7 +172,7 @@
       <plugin>
         <groupId>io.openliberty.tools</groupId>
         <artifactId>liberty-maven-plugin</artifactId>
-        <version>3.12.3</version>
+        <version>3.12.4</version>
         <configuration>
           <runtimeArtifact>
             <groupId>io.openliberty</groupId>

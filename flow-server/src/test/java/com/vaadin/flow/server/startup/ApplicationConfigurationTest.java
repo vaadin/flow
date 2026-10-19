@@ -18,23 +18,25 @@ package com.vaadin.flow.server.startup;
 import java.util.function.Supplier;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class ApplicationConfigurationTest {
 
     @Test
     void get_contextHasNoLookup_iseIsThrown() {
         assertThrows(IllegalStateException.class, () -> {
-            VaadinContext context = Mockito.spy(VaadinContext.class);
-            Mockito.when(context.getAttribute(Lookup.class)).thenReturn(null);
-            Mockito.doAnswer(invocation -> invocation
-                    .getArgument(1, Supplier.class).get()).when(context)
-                    .getAttribute(Mockito.any(), Mockito.any());
+            VaadinContext context = spy(VaadinContext.class);
+            when(context.getAttribute(Lookup.class)).thenReturn(null);
+            doAnswer(invocation -> invocation.getArgument(1, Supplier.class)
+                    .get()).when(context).getAttribute(any(), any());
             ApplicationConfiguration.get(context);
         });
     }

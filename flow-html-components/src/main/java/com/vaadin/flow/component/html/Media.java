@@ -53,6 +53,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * @see <a href=
  *      "https://developer.mozilla.org/en-US/docs/Web/HTML/Guides/Audio_and_video_delivery">MDN:
  *      Audio and video delivery</a>
+ * @since 25.4
  */
 @NullMarked
 public abstract class Media extends HtmlComponent

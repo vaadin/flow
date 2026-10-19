@@ -18,11 +18,13 @@ package com.vaadin.flow.component.html;
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.InputMode;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class InputTest extends ComponentTest {
 
@@ -42,7 +44,7 @@ class InputTest extends ComponentTest {
     @Test
     void inputMode_defaultsToNull() {
         Input input = new Input();
-        Assertions.assertNull(input.getInputMode());
+        assertNull(input.getInputMode());
     }
 
     @Test
@@ -50,13 +52,12 @@ class InputTest extends ComponentTest {
         Input input = new Input();
 
         input.setInputMode(InputMode.NUMERIC);
-        Assertions.assertEquals(InputMode.NUMERIC, input.getInputMode());
-        Assertions.assertEquals("numeric",
-                input.getElement().getAttribute("inputmode"));
+        assertEquals(InputMode.NUMERIC, input.getInputMode());
+        assertEquals("numeric", input.getElement().getAttribute("inputmode"));
 
         input.setInputMode(null);
-        Assertions.assertNull(input.getInputMode());
-        Assertions.assertNull(input.getElement().getAttribute("inputmode"));
+        assertNull(input.getInputMode());
+        assertNull(input.getElement().getAttribute("inputmode"));
     }
 
     @Override
