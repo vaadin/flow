@@ -428,7 +428,14 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         otherMap.put("baz", "g");
         otherMap.remove("qux");
 
+        // Grows from two keys onto the key set registered in another order
+        ElementStylePropertyMap growingMap = createFeature();
+        growingMap.put("bar", "h");
+        growingMap.put("baz", "i");
+        growingMap.put("foo", "j");
+
         assertSame(nodeMap.keySet(), otherMap.keySet());
+        assertSame(nodeMap.keySet(), growingMap.keySet());
         assertEquals(Set.of("foo", "bar", "baz"), otherMap.keySet());
         assertEquals("a", nodeMap.get("foo"));
         assertEquals("b", nodeMap.get("bar"));
@@ -437,6 +444,9 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         assertEquals("f", otherMap.get("bar"));
         assertEquals("g", otherMap.get("baz"));
         assertNull(otherMap.get("qux"));
+        assertEquals("j", growingMap.get("foo"));
+        assertEquals("h", growingMap.get("bar"));
+        assertEquals("i", growingMap.get("baz"));
     }
 
     @Test

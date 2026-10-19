@@ -2541,9 +2541,21 @@ class ElementTest extends AbstractNodeTest {
         div.getClassList().add("cls");
         div.setAttribute("pin", "");
 
+        // Attribute order is not defined
+        String html = div.getOuterHTML();
+        assertTrue(html.startsWith("<div ") && html.endsWith("></div>"), html);
+        List<String> attributes = List.of("foo=\"bar\"", "pin",
+                "style=\"width:20px\"", "class=\"cls\"");
+        attributes
+                .forEach(
+                        attribute -> assertTrue(
+                                html.contains(" " + attribute + " ")
+                                        || html.contains(" " + attribute + ">"),
+                                html));
         assertEquals(
-                "<div foo=\"bar\" pin style=\"width:20px\" class=\"cls\"></div>",
-                div.getOuterHTML());
+                "<div></div>".length() + attributes.stream()
+                        .mapToInt(a -> a.length() + 1).sum(),
+                html.length(), html);
     }
 
     @Test
