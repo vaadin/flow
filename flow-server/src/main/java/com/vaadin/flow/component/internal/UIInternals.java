@@ -1536,7 +1536,10 @@ public class UIInternals implements Serializable {
             Class<? extends Component> componentClass,
             DependencyInfo dependency) {
         Page page = ui.getPage();
+        boolean productionMode = ui.getSession() != null
+                && ui.getSession().getConfiguration().isProductionMode();
         dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+                .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> {
                     // Checked before resolving the value so that an
                     // unsupported combination is reported even when the value
