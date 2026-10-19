@@ -19,7 +19,9 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -229,6 +231,28 @@ class WebComponentProviderTest {
                 .thenReturn("/web-component/web-component-bootstrap.js");
         assertFalse(provider.handleSessionExpired(request, response),
                 "Bootstrap request needs a session and should not be handled");
+    }
+
+    @Test
+    void handleWebComponentRequest_overridden_usedWithAndWithoutSession()
+            throws IOException {
+        registry = setupConfigurations(MyComponentExporter.class);
+        List<VaadinRequest> handled = new ArrayList<>();
+        WebComponentProvider customProvider = new WebComponentProvider() {
+            @Override
+            protected boolean handleWebComponentRequest(VaadinRequest req,
+                    VaadinResponse resp) {
+                handled.add(req);
+                return true;
+            }
+        };
+        when(request.getPathInfo())
+                .thenReturn("/web-component/my-component.js");
+
+        assertTrue(customProvider.handleSessionExpired(request, response));
+        assertTrue(customProvider.synchronizedHandleRequest(session, request,
+                response));
+        assertEquals(List.of(request, request), handled);
     }
 
     @Test

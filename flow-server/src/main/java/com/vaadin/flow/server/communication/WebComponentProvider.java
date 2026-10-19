@@ -73,10 +73,20 @@ public class WebComponentProvider extends SynchronizedRequestHandler
                 && hasWebComponentConfigurations(request);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This is only called when the request has a session. A web component
+     * script request without a session is served through
+     * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)} instead.
+     * Override
+     * {@link #handleWebComponentRequest(VaadinRequest, VaadinResponse)} to
+     * customize how the script is served in both cases.
+     */
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        return writeWebComponentScript(request, response);
+        return handleWebComponentRequest(request, response);
     }
 
     @Override
@@ -88,7 +98,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler
         // browser with a cookie for a session other than the one its embedded
         // UI was created in.
         return isWebComponentScriptRequest(request)
-                && writeWebComponentScript(request, response);
+                && handleWebComponentRequest(request, response);
     }
 
     /**
@@ -113,7 +123,21 @@ public class WebComponentProvider extends SynchronizedRequestHandler
                         .find();
     }
 
-    private boolean writeWebComponentScript(VaadinRequest request,
+    /**
+     * Handles a request for a web component script. This is called both for
+     * requests that have a session and for requests that do not, so it must not
+     * depend on {@link VaadinSession#getCurrent()} or on the session lock.
+     *
+     * @param request
+     *            the request to handle
+     * @param response
+     *            the response to write the script to
+     * @return {@code true} if the request was handled, {@code false} otherwise
+     * @throws IOException
+     *             if writing the response fails
+     * @since 25.4
+     */
+    protected boolean handleWebComponentRequest(VaadinRequest request,
             VaadinResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
 
@@ -204,6 +228,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler
 
     /**
      * Generate the npm response for the web component.
+     * <p>
+     * The script is served without a session when the request has none, so this
+     * may run with no {@link VaadinSession} available. The result is cached per
+     * tag unless caching is disabled with {@link #setCacheEnabled(boolean)}.
      *
      * @param tagName
      *            tag name of component
