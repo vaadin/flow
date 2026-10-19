@@ -79,18 +79,6 @@ public class CachedSignal<T extends @Nullable Object>
      */
     private static final ThreadLocal<@Nullable Map<CachedSignal<?>, Transaction>> validatedInCurrentRead = new ThreadLocal<>();
 
-    /*
-     * Thrown when the inner signal cannot be computed again. A separate type
-     * lets hasChanges() handle only this failure and not, e.g., exceptions
-     * thrown while storing a recomputed value.
-     */
-    private static class RevalidationFailedException
-            extends MissingSignalUsageException {
-        RevalidationFailedException() {
-            super("A computing inner signal must read at least one other signal value.");
-        }
-    }
-
     private final Signal<T> inner;
 
     private int dependentCount = 0;
@@ -172,7 +160,7 @@ public class CachedSignal<T extends @Nullable Object>
         // Read inner value to get new dependencies. Reading dependencies (and
         // possibly submitting the refreshed cache value) acquires tree locks,
         // so this must likewise run without the monitor held.
-        CacheState state = getValidState(data(Transaction.getCurrent()));
+        CacheState state = requireValidState(data(Transaction.getCurrent()));
 
         // avoid lambda to allow proper deserialization
         TransientListener usageListener = new TransientListener() {
@@ -270,14 +258,12 @@ public class CachedSignal<T extends @Nullable Object>
                  * though a dependency has changed. Revalidate before comparing
                  * so that an outer cached signal sees transitive changes.
                  */
-                try {
-                    getValidState(data(Transaction.getCurrent()));
-                } catch (RevalidationFailedException e) {
+                if (getValidState(data(Transaction.getCurrent())) == null) {
                     /*
-                     * Report a change so that the caller reads the value again,
-                     * which throws the same exception in a context where the
-                     * caller can handle it, e.g. inside the computation of an
-                     * outer cached signal.
+                     * The computation read no signal value. Report a change so
+                     * that the caller reads the value again, which throws in a
+                     * context where the caller can handle it, e.g. inside the
+                     * computation of an outer cached signal.
                      */
                     return true;
                 }
@@ -311,7 +297,20 @@ public class CachedSignal<T extends @Nullable Object>
         };
     }
 
-    private CacheState getValidState(@Nullable Data data) {
+    private CacheState requireValidState(@Nullable Data data) {
+        CacheState state = getValidState(data);
+        if (state == null) {
+            throw new MissingSignalUsageException(
+                    "A computing inner signal must read at least one other signal value.");
+        }
+        return state;
+    }
+
+    /*
+     * Returns null if the inner signal had to be computed again but did not
+     * read any signal value.
+     */
+    private @Nullable CacheState getValidState(@Nullable Data data) {
         Map<CachedSignal<?>, Transaction> validated = validatedInCurrentRead
                 .get();
         if (validated == null) {
@@ -326,7 +325,7 @@ public class CachedSignal<T extends @Nullable Object>
         return getValidState(data, validated);
     }
 
-    private CacheState getValidState(@Nullable Data data,
+    private @Nullable CacheState getValidState(@Nullable Data data,
             Map<CachedSignal<?>, Transaction> validated) {
         Transaction transaction = Transaction.getCurrent();
         if (validated.get(this) == transaction) {
@@ -337,11 +336,13 @@ public class CachedSignal<T extends @Nullable Object>
         }
 
         CacheState state = revalidate(data);
-        validated.put(this, transaction);
+        if (state != null) {
+            validated.put(this, transaction);
+        }
         return state;
     }
 
-    private CacheState revalidate(@Nullable Data data) {
+    private @Nullable CacheState revalidate(@Nullable Data data) {
         CacheState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
@@ -355,7 +356,7 @@ public class CachedSignal<T extends @Nullable Object>
                 }
             });
             if (dependencies == UsageTracker.NO_USAGE) {
-                throw new RevalidationFailedException();
+                return null;
             }
             @Nullable
             Object value = holder[0];
@@ -401,7 +402,7 @@ public class CachedSignal<T extends @Nullable Object>
 
     @Override
     protected @Nullable T extractValue(@Nullable Data data) {
-        CacheState state = getValidState(data);
+        CacheState state = requireValidState(data);
 
         if (state.exception != null) {
             throw state.exception;

@@ -408,7 +408,7 @@ class ComputedSignalTest extends SignalTestBase {
 
         source.set(2);
         assertSame(expected,
-                assertThrows(IllegalStateException.class, () -> outer.peek()));
+                assertThrows(IllegalStateException.class, outer::peek));
     }
 
     @Test
