@@ -260,11 +260,12 @@ Static-import the test helpers and call them unqualified —
 `assertEquals(…)`, not `Assertions.assertEquals(…)`, and `mock(…)`, not
 `Mockito.mock(…)`. This covers the JUnit assertions, Hamcrest `assertThat`
 and its matchers, and the Mockito core methods (`mock`, `when`, `verify`,
-`spy`, `doReturn`, …) that Sonar flags with `java:S8924`. It applies to new
-tests and to the calls you are already changing: do not mass-convert an
-unrelated file, and leave the remaining JUnit 4 tests until they are migrated.
-Within a file you are changing, convert the rest of its calls too rather than
-leaving two styles behind.
+`spy`, `doReturn`, …) that Sonar flags with `java:S8924`. All JUnit 5 tests
+already follow this; leave the remaining JUnit 4 tests until they are migrated.
+Keep a call qualified only when the test class declares or inherits a method
+with the same name, which hides the static import — TestBench browser tests
+inherit `assertEquals(WebElement, WebElement)`, so they keep
+`Assertions.assertEquals(…)`.
 
 Add an integration test only when the behavior needs a browser and a server
 round trip; client-only logic belongs in the client-side tests in

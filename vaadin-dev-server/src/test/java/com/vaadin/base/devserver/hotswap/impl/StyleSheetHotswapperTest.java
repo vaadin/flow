@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
@@ -61,9 +60,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class StyleSheetHotswapperTest {
 
@@ -97,11 +98,10 @@ class StyleSheetHotswapperTest {
 
         appShellRegistry = AppShellRegistry.getInstance(service.getContext());
 
-        appConfig = Mockito.mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenAnswer(
+        appConfig = mock(ApplicationConfiguration.class);
+        when(appConfig.isProductionMode()).thenAnswer(
                 i -> service.getDeploymentConfiguration().isProductionMode());
-        Mockito.when(service.getLookup()
-                .lookup(ApplicationConfigurationFactory.class))
+        when(service.getLookup().lookup(ApplicationConfigurationFactory.class))
                 .thenReturn(context -> appConfig);
     }
 
@@ -202,7 +202,7 @@ class StyleSheetHotswapperTest {
         File css = new File(tempProjectDir, "src/main/webapp/styles/app.css");
         css.getParentFile().mkdirs();
         Files.writeString(css.toPath(), ".app { color: red; }\n");
-        Mockito.when(appConfig.getProjectFolder()).thenReturn(tempProjectDir);
+        when(appConfig.getProjectFolder()).thenReturn(tempProjectDir);
         appShellRegistry.setShell(TestAppShellNoAnnotation.class);
         hotswapper.onInit(service);
 
@@ -603,10 +603,10 @@ class StyleSheetHotswapperTest {
     @Test
     void onClassesChange_exceptionDuringProcessing_doesNotCrash() {
         // Setup: create a scenario that might cause issues
-        VaadinSession faultySession = Mockito.mock(VaadinSession.class);
-        Mockito.when(faultySession.getUIs())
+        VaadinSession faultySession = mock(VaadinSession.class);
+        when(faultySession.getUIs())
                 .thenThrow(new RuntimeException("Test exception"));
-        Mockito.when(faultySession.getService()).thenReturn(service);
+        when(faultySession.getService()).thenReturn(service);
 
         // Simulate: class change that would access UIs
         var event = new HotswapClassSessionEvent(service, faultySession,
