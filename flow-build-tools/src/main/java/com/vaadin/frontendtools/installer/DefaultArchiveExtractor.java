@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -40,6 +41,7 @@ import org.apache.commons.io.IOUtils;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 25.0
  */
 public final class DefaultArchiveExtractor implements ArchiveExtractor {
 
@@ -143,16 +145,20 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
                 // Create a file for this tarEntry
                 final File destPath = new File(destinationDirectory
                         + File.separator + tarEntry.getName());
-                prepDestination(destPath, tarEntry.isDirectory());
-
                 if (!startsWithPath(destPath.getCanonicalPath(),
                         canonicalDestinationDirectory)) {
                     throw new IOException("Expanding " + tarEntry.getName()
                             + " would create file outside of "
                             + canonicalDestinationDirectory);
                 }
+                prepDestination(destPath, tarEntry.isDirectory());
 
-                copyTarFileContents(tarIn, tarEntry, destPath);
+                if (tarEntry.isSymbolicLink()) {
+                    createSymbolicLink(tarEntry, destPath,
+                            canonicalDestinationDirectory);
+                } else {
+                    copyTarFileContents(tarIn, tarEntry, destPath);
+                }
                 tarEntry = tarIn.getNextTarEntry();
             }
         }
@@ -185,6 +191,37 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
         }
     }
 
+    /**
+     * Create a symbolic link for a TarArchiveEntry. Only links that resolve to
+     * a location inside the destination directory are allowed.
+     *
+     * @param tarEntry
+     *            symbolic link tar archive entry
+     * @param destinationFile
+     *            location of the link
+     * @param canonicalDestinationDirectory
+     *            canonical path of the extraction directory
+     * @throws IOException
+     *             thrown if the link points outside of the destination
+     *             directory or creating the link fails
+     */
+    private void createSymbolicLink(TarArchiveEntry tarEntry,
+            File destinationFile, String canonicalDestinationDirectory)
+            throws IOException {
+        Path linkPath = destinationFile.toPath();
+        Path linkTarget = Paths.get(tarEntry.getLinkName());
+        File resolvedTarget = linkPath.getParent().resolve(linkTarget).toFile();
+        if (linkTarget.isAbsolute()
+                || !startsWithPath(resolvedTarget.getCanonicalPath(),
+                        canonicalDestinationDirectory)) {
+            throw new IOException("Symbolic link " + tarEntry.getName() + " -> "
+                    + tarEntry.getLinkName() + " would point outside of "
+                    + canonicalDestinationDirectory);
+        }
+        Files.deleteIfExists(linkPath);
+        Files.createSymbolicLink(linkPath, linkTarget);
+    }
+
     private void prepDestination(File path, boolean directory)
             throws IOException {
         if (directory) {
@@ -209,9 +246,16 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
      *            destination path
      * @param destDir
      *            destination directory
-     * @return true is destination path starts with destination directory
+     * @return true if destination path is the destination directory or a path
+     *         inside it
      */
     private boolean startsWithPath(String destPath, String destDir) {
+        if (destPath.equals(destDir)) {
+            return true;
+        }
+        if (!destDir.endsWith(File.separator)) {
+            destDir += File.separator;
+        }
         if (destPath.startsWith(destDir)) {
             return true;
         } else if (destDir.length() > destPath.length()) {

@@ -19,8 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
@@ -43,6 +46,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class SharedNodeSignalTest extends SignalTestBase {
+    private static final TypeReference<Set<UUID>> ID_SET = new TypeReference<>() {
+    };
 
     @Test
     void constructor_initialValue_isEmpty() {
@@ -126,6 +131,17 @@ class SharedNodeSignalTest extends SignalTestBase {
     }
 
     @Test
+    void asValue_typeReference_parameterizedTypeIsRetained() {
+        UUID id = UUID.randomUUID();
+        SharedNodeSignal signal = new SharedNodeSignal();
+
+        signal.asValue(ID_SET).set(Set.of(id));
+
+        assertEquals(Set.of(id), signal.asValue(ID_SET).peek());
+        assertEquals(Set.of(id), signal.peek().value(ID_SET));
+    }
+
+    @Test
     void asList_insertThroughNode_wrapperUpdated() {
         SharedNodeSignal signal = new SharedNodeSignal();
         SharedListSignal<String> asList = signal.asList(String.class);
@@ -136,6 +152,16 @@ class SharedNodeSignalTest extends SignalTestBase {
         assertEquals(1, value.size());
 
         assertEquals("last", value.get(0).peek());
+    }
+
+    @Test
+    void asList_typeReference_parameterizedElementTypeIsRetained() {
+        UUID id = UUID.randomUUID();
+        SharedNodeSignal signal = new SharedNodeSignal();
+
+        signal.asList(ID_SET).insertLast(Set.of(id));
+
+        assertEquals(Set.of(id), signal.asList(ID_SET).peek().get(0).peek());
     }
 
     @Test
@@ -166,6 +192,44 @@ class SharedNodeSignalTest extends SignalTestBase {
         SharedValueSignal<String> keySignal = value.get("key");
         assertNotNull(keySignal);
         assertEquals("value", keySignal.peek());
+    }
+
+    @Test
+    void asMap_putValueOfWrongTypeThroughNode_valueStoredUnchecked() {
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedMapSignal<String> asMap = signal.asMap(String.class);
+
+        // A node signal declares no value type, so there is nothing to check
+        // the value against. Unlike the typed signals it stores whatever it is
+        // given, and the type is only applied when the value is read back.
+        signal.putChildWithValue("key", List.of("not a string"));
+
+        assertEquals(Set.of("key"), asMap.peek().keySet());
+        SharedNodeSignal child = signal.peek().mapChildren().get("key");
+        assertNotNull(child);
+        assertEquals(List.of("not a string"),
+                child.peek().value(new TypeReference<List<String>>() {
+                }));
+
+        // Only the reads that ask for a type the value doesn't match fail
+        SharedValueSignal<String> asString = asMap.peek().get("key");
+        assertNotNull(asString);
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                asString::peek);
+        assertInstanceOf(JacksonException.class, exception.getCause());
+    }
+
+    @Test
+    void asMap_typeReference_parameterizedElementTypeIsRetained() {
+        UUID id = UUID.randomUUID();
+        SharedNodeSignal signal = new SharedNodeSignal();
+
+        signal.asMap(ID_SET).put("key", Set.of(id));
+
+        SharedValueSignal<Set<UUID>> child = signal.asMap(ID_SET).peek()
+                .get("key");
+        assertNotNull(child);
+        assertEquals(Set.of(id), child.peek());
     }
 
     /*

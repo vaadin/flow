@@ -32,6 +32,7 @@ import java.io.Serializable;
  * @param debugInfo
  *            a free-form description of the failure as reported by the browser,
  *            suitable for logging; never {@code null} but possibly empty
+ * @since 25.2
  */
 public record ScreenOrientationLockError(
         ScreenOrientationLockErrorCode errorCode,

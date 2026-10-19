@@ -38,6 +38,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * @param <T>
  *            the runtime type of the value produced
+ * @since 25.2
  */
 public class PropertyInput<T> extends Action.Input<T> {
 
@@ -63,7 +64,7 @@ public class PropertyInput<T> extends Action.Input<T> {
     }
 
     @Override
-    protected JsFunction toJs(Trigger trigger) {
+    public JsFunction toJs(Trigger trigger) {
         // Both target (Element) and propertyName (String) are JsFunction
         // captures — JsFunction's wire encoding handles Element-to-DOM-ref
         // mapping and JSON-quotes the property name.

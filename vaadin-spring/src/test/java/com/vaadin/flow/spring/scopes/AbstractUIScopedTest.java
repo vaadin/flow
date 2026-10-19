@@ -24,7 +24,6 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
@@ -35,6 +34,9 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -63,30 +65,29 @@ abstract class AbstractUIScopedTest extends AbstractScopeTest {
         when(service.getRouter()).thenReturn(router);
 
         Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        when(service.getMainDivId(Mockito.any(), Mockito.any()))
-                .thenReturn("abc");
+        when(service.getMainDivId(any(), any())).thenReturn("abc");
 
         final Map<String, Object> attributeMap = new HashMap<>();
 
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+        ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getAttribute(anyString()))
                 .then(invocationOnMock -> attributeMap
                         .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
+        doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
-                .setAttribute(Mockito.anyString(), Mockito.any());
+                .setAttribute(anyString(), any());
 
         VaadinServletContext context = new VaadinServletContext(servletContext);
-        Mockito.when(service.getContext()).thenReturn(context);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(service.getContext()).thenReturn(context);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
-        Mockito.when(appConfig.getContext()).thenReturn(context);
+        when(appConfig.getContext()).thenReturn(context);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 appConfig, getClass(), initParameters);
         when(service.getDeploymentConfiguration()).thenReturn(config);

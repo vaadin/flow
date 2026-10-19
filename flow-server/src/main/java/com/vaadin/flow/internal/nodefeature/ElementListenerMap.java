@@ -21,11 +21,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -43,6 +43,8 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -66,6 +68,15 @@ public class ElementListenerMap extends NodeMap {
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
+
+    /**
+     * Placeholder stored in the map instead of the actual event settings. The
+     * settings JSON is derived on demand from the registered listeners when
+     * changes are collected, to avoid keeping it in memory.
+     */
+    private enum EventSettingsMarker {
+        INSTANCE
+    }
 
     private static class ExpressionSettings implements Serializable {
         private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
@@ -109,7 +120,13 @@ public class ElementListenerMap extends NodeMap {
         private final ElementListenerMap listenerMap;
 
         private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
-        private Set<String> eventDataExpressions;
+        /*
+         * Exactly sized unmodifiable list rather than a set: listeners hold a
+         * handful of expressions, so a hash set would cost several times more
+         * memory for each one. The list may be shared with other listeners, see
+         * addEventData(List), and is replaced with a copy when adding.
+         */
+        private List<String> eventDataExpressions;
         private String filter;
 
         private int debounceTimeout = 0;
@@ -154,22 +171,43 @@ public class ElementListenerMap extends NodeMap {
                         "The event data expression must not be null");
             }
 
-            if (eventDataExpressions == null) {
-                eventDataExpressions = Collections.singleton(eventData);
-            } else {
-                if (eventDataExpressions.size() == 1) {
-                    Set<String> oldExpressions = eventDataExpressions;
-                    // Don't use no-args or Collection constructors that
-                    // allocate for 16 entries
-                    eventDataExpressions = new HashSet<>(4);
-                    eventDataExpressions.addAll(oldExpressions);
-                }
-                eventDataExpressions.add(eventData);
-            }
+            appendEventData(List.of(eventData));
 
             listenerMap.updateEventSettings(type);
 
             return this;
+        }
+
+        @Override
+        public DomListenerRegistration addEventData(List<String> eventData) {
+            if (eventData == null) {
+                throw new IllegalArgumentException(
+                        "The event data expressions must not be null");
+            }
+            for (String expression : eventData) {
+                if (expression == null) {
+                    throw new IllegalArgumentException(
+                            "The event data expression must not be null");
+                }
+            }
+
+            appendEventData(eventData);
+
+            listenerMap.updateEventSettings(type);
+
+            return this;
+        }
+
+        private void appendEventData(List<String> eventData) {
+            if (eventDataExpressions == null) {
+                // Keeps the given list if it is already unmodifiable
+                eventDataExpressions = List.copyOf(eventData);
+            } else if (!eventDataExpressions.containsAll(eventData)) {
+                eventDataExpressions = Stream
+                        .concat(eventDataExpressions.stream(),
+                                eventData.stream())
+                        .distinct().toList();
+            }
         }
 
         @Override
@@ -263,9 +301,13 @@ public class ElementListenerMap extends NodeMap {
         }
 
         private boolean isPropertySynchronized(String propertyName) {
-            return eventDataExpressions != null && eventDataExpressions
-                    .contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                            + propertyName);
+            return hasEventData(
+                    JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + propertyName);
+        }
+
+        private boolean hasEventData(String expression) {
+            return eventDataExpressions != null
+                    && eventDataExpressions.contains(expression);
         }
 
         @Override
@@ -417,15 +459,38 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
+        put(eventType, EventSettingsMarker.INSTANCE);
+    }
+
+    @Override
+    protected boolean producePutChange(String key, boolean hadValueEarlier,
+            Serializable newValue) {
+        // The stored marker never changes even though the settings derived
+        // from it do, so every update needs to be sent
+        return true;
+    }
+
+    private ConstantPoolKey createEventSettingsKey(String eventType) {
         Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
                 eventType);
         ObjectNode eventSettingsJson = JacksonUtils.createObject(eventSettings,
                 ExpressionSettings::toJson);
 
-        ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                eventSettingsJson);
+        return new ConstantPoolKey(eventSettingsJson);
+    }
 
-        put(eventType, constantPoolKey);
+    @Override
+    public void collectChanges(Consumer<NodeChange> collector) {
+        super.collectChanges(change -> {
+            if (change instanceof MapPutChange putChange
+                    && putChange.getValue() instanceof EventSettingsMarker) {
+                String eventType = putChange.getKey();
+                collector.accept(new MapPutChange(this, eventType,
+                        createEventSettingsKey(eventType)));
+            } else {
+                collector.accept(change);
+            }
+        });
     }
 
     private void removeListener(String eventType,
@@ -509,6 +574,7 @@ public class ElementListenerMap extends NodeMap {
      *            the name of the event, not <code>null</code>
      * @return an unmodifiable set of event data expressions, not
      *         <code>null</code>
+     * @since 3.0
      */
     public Set<String> getExpressions(String eventName) {
         assert eventName != null;
@@ -523,6 +589,7 @@ public class ElementListenerMap extends NodeMap {
      *            the property name to check, not <code>null</code>
      * @return the most permissive update mode, or <code>null</code> if
      *         synchronization is not configured for the given property
+     * @since 1.3
      */
     public DisabledUpdateMode getPropertySynchronizationMode(
             String propertyName) {
@@ -548,6 +615,7 @@ public class ElementListenerMap extends NodeMap {
      *            the property name to check, not <code>null</code>
      * @return {@code true} if allowInert is enabled for any listener for the
      *         given property, {@code false otherwise}
+     * @since 24.6.8
      */
     public boolean hasAllowInertForProperty(String propertyName) {
         assert propertyName != null;

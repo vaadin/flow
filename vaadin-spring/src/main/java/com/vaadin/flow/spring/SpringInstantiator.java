@@ -43,10 +43,14 @@ import com.vaadin.flow.server.auth.MenuAccessControl;
  * registered. This implementation uses Spring beans.
  *
  * @author Vaadin Ltd
+ * @since 10.0
  */
 public class SpringInstantiator extends DefaultInstantiator {
 
+    /** The application context the beans are looked up from. */
     private ApplicationContext context;
+
+    /** Guards the one-time log message about the instantiator in use. */
     private AtomicBoolean loggingEnabled = new AtomicBoolean(true);
 
     /**

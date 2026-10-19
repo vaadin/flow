@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.component.trigger.internal;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.signals.Signal;
 
 /**
@@ -56,6 +59,7 @@ import com.vaadin.flow.signals.Signal;
  *
  * @param <T>
  *            the runtime type of the value produced
+ * @since 25.2
  */
 public class SignalInput<T> extends Action.Input<T> {
 
@@ -93,7 +97,7 @@ public class SignalInput<T> extends Action.Input<T> {
     }
 
     @Override
-    protected JsFunction toJs(Trigger trigger) {
+    public JsFunction toJs(Trigger trigger) {
         installEffectIfNeeded();
         // $0 = the owner element (resolved to a DOM ref on the wire); $1 =
         // the mirrored property name. Matches PropertyInput's shape — both
@@ -107,7 +111,30 @@ public class SignalInput<T> extends Action.Input<T> {
         }
         installed = true;
         Element target = owner.getElement();
-        Signal.effect(owner, () -> target.executeJs("this[$0]=$1", propertyName,
-                signal.get()));
+        Signal.effect(owner, () -> target.executeJs(MirrorJs.class)
+                .setProperty(propertyName, signal.get()));
+    }
+
+    /**
+     * How the mirrored value reaches the element, as a JavaScript definition
+     * for {@link Element#executeJs(Class)}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
+     */
+    @JsDefinition
+    public interface MirrorJs extends Serializable {
+
+        /**
+         * Writes the value of the signal to the property the trigger reads.
+         *
+         * @param propertyName
+         *            the name of the property to write
+         * @param value
+         *            the value the signal holds
+         */
+        @JsExpression("this[$0]=$1")
+        void setProperty(String propertyName, Object value);
     }
 }

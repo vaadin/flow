@@ -29,13 +29,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
@@ -56,6 +55,7 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.MockServletContext;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -70,8 +70,11 @@ import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class MenuConfigurationTest {
     @TempDir
     Path tmpDir;
@@ -96,20 +99,20 @@ class MenuConfigurationTest {
 
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
-        Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
-        Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getRouteRegistry()).thenReturn(registry);
+        when(vaadinService.getContext()).thenReturn(vaadinContext);
+        when(vaadinService.getRouter()).thenReturn(new Router(registry));
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
 
-        Mockito.when(vaadinService.getDeploymentConfiguration())
+        when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
 
-        Mockito.when(deploymentConfiguration.getFrontendFolder())
+        when(deploymentConfiguration.getFrontendFolder())
                 .thenReturn(tmpDir.toFile());
-        Mockito.when(deploymentConfiguration.getProjectFolder())
+        when(deploymentConfiguration.getProjectFolder())
                 .thenReturn(tmpDir.toFile());
-        Mockito.when(deploymentConfiguration.getBuildFolder())
-                .thenReturn("build");
+        when(deploymentConfiguration.getBuildFolder()).thenReturn("build");
 
         VaadinService.setCurrent(vaadinService);
 
@@ -122,7 +125,7 @@ class MenuConfigurationTest {
 
         VaadinSession.setCurrent(session);
 
-        Mockito.when(request.getService()).thenReturn(vaadinService);
+        when(request.getService()).thenReturn(vaadinService);
         CurrentInstance.set(VaadinRequest.class, request);
     }
 
@@ -134,10 +137,8 @@ class MenuConfigurationTest {
 
     @Test
     void testWithLoggedInUser_userHasRoles() throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(true);
+        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(request.isUserInRole(anyString())).thenReturn(true);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -213,12 +214,12 @@ class MenuConfigurationTest {
                 MandatoryParameterRouteWithPageTitle.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        UI mockUi = Mockito.mock(UI.class);
-        UIInternals uiInternals = Mockito.mock(UIInternals.class);
-        Location location = Mockito.mock(Location.class);
-        Mockito.when(mockUi.getInternals()).thenReturn(uiInternals);
-        Mockito.when(uiInternals.getActiveViewLocation()).thenReturn(location);
-        Mockito.when(uiInternals.getActiveRouterTargetsChain())
+        UI mockUi = mock(UI.class);
+        UIInternals uiInternals = mock(UIInternals.class);
+        Location location = mock(Location.class);
+        when(mockUi.getInternals()).thenReturn(uiInternals);
+        when(uiInternals.getActiveViewLocation()).thenReturn(location);
+        when(uiInternals.getActiveRouterTargetsChain())
                 .thenReturn(Collections.emptyList());
 
         final UI currentUi = UI.getCurrent();
@@ -226,32 +227,30 @@ class MenuConfigurationTest {
         try {
             UI.setCurrent(mockUi);
 
-            Mockito.when(location.getPath()).thenReturn("/normal-route");
+            when(location.getPath()).thenReturn("/normal-route");
             Optional<String> header = MenuConfiguration
                     .getPageHeader(new NormalRoute());
             assertTrue(header.isPresent());
             // directly from class name
             assertEquals("NormalRoute", header.get());
 
-            Mockito.when(location.getPath())
-                    .thenReturn("normal-route-with-page-title");
+            when(location.getPath()).thenReturn("normal-route-with-page-title");
             header = MenuConfiguration
                     .getPageHeader(new NormalRouteWithPageTitle());
             assertTrue(header.isPresent());
             // directly from @PageTitle
             assertEquals("My Normal Route", header.get());
 
-            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+            when(uiInternals.getActiveRouterTargetsChain())
                     .thenReturn(List.of(new RouteOrLayoutWithDynamicTitle()));
             header = MenuConfiguration.getPageHeader(new NormalRoute());
             assertTrue(header.isPresent());
             // from HasDynamicTitle
             assertEquals("My Route with dynamic title", header.get());
-            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+            when(uiInternals.getActiveRouterTargetsChain())
                     .thenReturn(Collections.emptyList());
 
-            Mockito.when(location.getPath())
-                    .thenReturn("mandatory-parameter-route");
+            when(location.getPath()).thenReturn("mandatory-parameter-route");
             header = MenuConfiguration
                     .getPageHeader(new MandatoryParameterRouteWithPageTitle());
             assertTrue(header.isPresent());
@@ -272,38 +271,35 @@ class MenuConfigurationTest {
                 MandatoryParameterRouteWithPageTitle.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        UI mockUi = Mockito.mock(UI.class);
-        UIInternals uiInternals = Mockito.mock(UIInternals.class);
-        Location location = Mockito.mock(Location.class);
-        Mockito.when(mockUi.getInternals()).thenReturn(uiInternals);
-        Mockito.when(uiInternals.getActiveViewLocation()).thenReturn(location);
+        UI mockUi = mock(UI.class);
+        UIInternals uiInternals = mock(UIInternals.class);
+        Location location = mock(Location.class);
+        when(mockUi.getInternals()).thenReturn(uiInternals);
+        when(uiInternals.getActiveViewLocation()).thenReturn(location);
 
         final UI currentUi = UI.getCurrent();
 
         try {
             UI.setCurrent(mockUi);
 
-            Mockito.when(location.getPath()).thenReturn("/normal-route");
+            when(location.getPath()).thenReturn("/normal-route");
             Optional<String> header = MenuConfiguration.getPageHeader();
             assertTrue(header.isPresent());
             // from class name, from menu config
             assertEquals("NormalRoute", header.get());
 
-            Mockito.when(location.getPath())
-                    .thenReturn("normal-route-with-page-title");
+            when(location.getPath()).thenReturn("normal-route-with-page-title");
             header = MenuConfiguration.getPageHeader();
             // no @Menu annotation -> no available view info
             assertFalse(header.isPresent());
 
-            Mockito.when(location.getPath())
-                    .thenReturn("mandatory-parameter-route");
+            when(location.getPath()).thenReturn("mandatory-parameter-route");
             header = MenuConfiguration.getPageHeader();
             // mandatory route parameter -> no menu entry -> no available view
             // info
             assertFalse(header.isPresent());
 
-            Mockito.when(location.getPath())
-                    .thenReturn("optional-parameter-route");
+            when(location.getPath()).thenReturn("optional-parameter-route");
             header = MenuConfiguration.getPageHeader();
             // optional route parameter -> menu is eligible
             assertTrue(header.isPresent());
@@ -317,10 +313,8 @@ class MenuConfigurationTest {
     @Test
     void testGetPageHeader_clientViews_pageHeaderFromTitle()
             throws IOException {
-        Mockito.when(request.getUserPrincipal())
-                .thenReturn(Mockito.mock(Principal.class));
-        Mockito.when(request.isUserInRole(Mockito.anyString()))
-                .thenReturn(true);
+        when(request.getUserPrincipal()).thenReturn(mock(Principal.class));
+        when(request.isUserInRole(anyString())).thenReturn(true);
 
         File generated = Files.createDirectories(tmpDir.resolve(GENERATED))
                 .toFile();
@@ -328,54 +322,54 @@ class MenuConfigurationTest {
         Files.writeString(clientFiles.toPath(),
                 MenuConfigurationTest.testPageHeaderClientRouteFile);
 
-        UI mockUi = Mockito.mock(UI.class);
-        UIInternals uiInternals = Mockito.mock(UIInternals.class);
-        Location location = Mockito.mock(Location.class);
-        Mockito.when(mockUi.getInternals()).thenReturn(uiInternals);
-        Mockito.when(uiInternals.getActiveViewLocation()).thenReturn(location);
+        UI mockUi = mock(UI.class);
+        UIInternals uiInternals = mock(UIInternals.class);
+        Location location = mock(Location.class);
+        when(mockUi.getInternals()).thenReturn(uiInternals);
+        when(uiInternals.getActiveViewLocation()).thenReturn(location);
 
         final UI currentUi = UI.getCurrent();
 
         try {
             UI.setCurrent(mockUi);
 
-            Mockito.when(location.getPath()).thenReturn("/");
+            when(location.getPath()).thenReturn("/");
             Optional<String> header = MenuConfiguration.getPageHeader();
             assertTrue(header.isPresent());
             // from ViewConfig.title
             assertEquals("Public", header.get());
 
-            Mockito.when(location.getPath()).thenReturn("/about");
+            when(location.getPath()).thenReturn("/about");
             header = MenuConfiguration.getPageHeader();
             assertTrue(header.isPresent());
             // from ViewConfig.title, with exclude=true
             assertEquals("About", header.get());
 
-            Mockito.when(location.getPath()).thenReturn("/other");
+            when(location.getPath()).thenReturn("/other");
             header = MenuConfiguration.getPageHeader();
             assertTrue(header.isPresent());
             // from ViewConfig.title, with menu config
             assertEquals("Other", header.get());
 
-            Mockito.when(location.getPath()).thenReturn("/hilla");
+            when(location.getPath()).thenReturn("/hilla");
             header = MenuConfiguration.getPageHeader();
             assertTrue(header.isPresent());
             // from ViewConfig.title, when flow layout is false
             assertEquals("Hilla", header.get());
 
-            Mockito.when(location.getPath()).thenReturn("/flow/hello");
+            when(location.getPath()).thenReturn("/flow/hello");
             header = MenuConfiguration.getPageHeader();
             assertTrue(header.isPresent());
             // from ViewConfig.title, when flow layout is false
             assertEquals("Hello", header.get());
 
-            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+            when(uiInternals.getActiveRouterTargetsChain())
                     .thenReturn(List.of(new RouteOrLayoutWithDynamicTitle()));
             header = MenuConfiguration.getPageHeader();
             assertTrue(header.isPresent());
             // from HasDynamicTitle
             assertEquals("My Route with dynamic title", header.get());
-            Mockito.when(uiInternals.getActiveRouterTargetsChain())
+            when(uiInternals.getActiveRouterTargetsChain())
                     .thenReturn(Collections.emptyList());
 
         } finally {

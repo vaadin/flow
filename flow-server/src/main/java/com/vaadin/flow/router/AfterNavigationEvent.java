@@ -50,12 +50,14 @@ public class AfterNavigationEvent extends EventObject {
      *            NavigationEvent that is on going
      * @param routeParameters
      *            route parameters, not <code>null</code>
+     * @since 24.3
      */
     public AfterNavigationEvent(LocationChangeEvent event,
             RouteParameters routeParameters) {
         super(event.getSource());
         this.event = event;
         this.routeParameters = routeParameters;
+        event.markNavigationCommitted();
     }
 
     /**
@@ -69,8 +71,15 @@ public class AfterNavigationEvent extends EventObject {
 
     /**
      * Get the {@link LocationChangeEvent}.
+     * <p>
+     * The navigation is already committed when this event fires, so the
+     * mutators of the returned event have no effect:
+     * {@link LocationChangeEvent#setStatusCode(int)} is read before this event
+     * and {@link LocationChangeEvent#rerouteTo(NavigationHandler)} is never
+     * read at all. Both log a warning when called from here.
      *
      * @return the {@link LocationChangeEvent}, not {@code null}
+     * @since 4.0
      */
     public LocationChangeEvent getLocationChangeEvent() {
         return event;
@@ -94,6 +103,7 @@ public class AfterNavigationEvent extends EventObject {
      * Check if event is for a refresh of a preserveOnRefresh view.
      *
      * @return true if refresh of a preserve on refresh view
+     * @since 23.2.8
      */
     public boolean isRefreshEvent() {
         return event.getTrigger().equals(NavigationTrigger.REFRESH);
@@ -103,6 +113,7 @@ public class AfterNavigationEvent extends EventObject {
      * Gets the route parameters associated with this event.
      *
      * @return route parameters retrieved from the navigation url.
+     * @since 24.3
      */
     public RouteParameters getRouteParameters() {
         return routeParameters;

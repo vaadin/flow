@@ -23,6 +23,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -43,22 +44,29 @@ internal class BuildFrontendInputProperties(
     @Input
     fun getProductionMode(): Provider<Boolean> = config.productionMode
 
-    @Input
-    @Optional
+    // The following directory locations are deliberately not task inputs.
+    // Hashing their absolute paths into the cache key would make the key
+    // path-dependent and break build-cache relocation: a shared cache would
+    // miss whenever the project is checked out at a different absolute path.
+    // Their relevant content is tracked by relocatable inputs instead
+    // (frontendSourceFiles, the package.json/lock files, the @Classpath
+    // project classes, and the feature-flags/application.properties files),
+    // and vaadinBuildFrontend strips these paths from the production token it
+    // caches, so the location never reaches a retained output.
+    @Internal
     fun getFrontendOutputDirectory(): Provider<String> =
         config.frontendOutputDirectory
             .absolutePath
 
-    @Input
-    @Optional
+    @Internal
     fun getResourcesOutputDirectory(): Provider<String> =
         config.resourcesOutputDirectory
             .absolutePath
 
-    @Input
+    @Internal
     fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
 
-    @Input
+    @Internal
     fun getFrontendDirectory(): Provider<String> =
         config.frontendDirectory.absolutePath
 
@@ -74,7 +82,7 @@ internal class BuildFrontendInputProperties(
 
     @InputDirectory
     @Optional
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     fun getFrontendResourcesDirectory(): Provider<File> =
         config.frontendResourcesDirectory.filterExists()
 
@@ -92,22 +100,22 @@ internal class BuildFrontendInputProperties(
 
     @InputFile
     @Optional
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.NONE)
     fun getOpenApiJsonFile(): Provider<File> =
         config.openApiJsonFile.filterExists()
 
     @InputFile
     @Optional
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.NONE)
     fun getFeatureFlagsFile(): Provider<File> = config.javaResourceFolder
         .map { it.resolve(FeatureFlags.PROPERTIES_FILENAME) }
         .filterExists()
 
-    @Input
+    @Internal
     fun getJavaSourceFolder(): Provider<String> =
         config.javaSourceFolder.absolutePath
 
-    @Input
+    @Internal
     fun getJavaResourceFolder(): Provider<String> =
         config.javaResourceFolder.absolutePath
 

@@ -56,6 +56,7 @@ import com.vaadin.flow.internal.FileIOUtils;
  * "vaadin.blocked-packages".
  *
  * @see org.springframework.core.io.support.PathMatchingResourcePatternResolver
+ * @since 24.5
  */
 public class FilterableResourceResolver
         extends PathMatchingResourcePatternResolver implements Serializable {
@@ -113,8 +114,10 @@ public class FilterableResourceResolver
             "hilla-engine-core-", "hilla-engine-runtime-", "hilla-parser-jvm-",
             "hilla-runtime-plugin-").toList();
 
+    /** Caches the package information read from each resolved jar. */
     private final Map<String, PackageInfo> propertiesCache = new HashMap<>();
 
+    /** The jar name prefixes and patterns that are skipped when scanning. */
     private List<String> blockedJarsList;
 
     private record PackageInfo(Set<String> allowedPackages,

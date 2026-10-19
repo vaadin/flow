@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.Command;
@@ -37,6 +36,8 @@ import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PasteFileHandlerTest {
 
@@ -162,17 +163,17 @@ class PasteFileHandlerTest {
 
         void fire(UploadHandler handler, long pasteId, int totalFiles,
                 String body) throws IOException {
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.getHeader(Clipboard.PASTE_ID_HEADER))
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.getHeader(Clipboard.PASTE_ID_HEADER))
                     .thenReturn(Long.toString(pasteId));
-            Mockito.when(request.getHeader(Clipboard.PASTE_FILE_COUNT_HEADER))
+            when(request.getHeader(Clipboard.PASTE_FILE_COUNT_HEADER))
                     .thenReturn(Integer.toString(totalFiles));
             byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
-            Mockito.when(request.getInputStream())
+            when(request.getInputStream())
                     .thenReturn(new ByteArrayInputStream(bytes));
 
             UploadEvent event = new UploadEvent(request,
-                    Mockito.mock(VaadinResponse.class),
+                    mock(VaadinResponse.class),
                     ui.getSession() != null ? ui.getSession()
                             : VaadinSession.getCurrent(),
                     "file.txt", bytes.length, "text/plain", ui.getElement(),

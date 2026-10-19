@@ -166,6 +166,26 @@ public class JsonConstants implements Serializable {
     public static final String UIDL_KEY_EXECUTE = "execute";
 
     /**
+     * Key of the function to run in the constant that an invocation of declared
+     * JavaScript names, in place of the expression that an invocation of an
+     * expression names. The value identifies the JavaScript that the bundle
+     * holds, and says nothing about the Java that declared it.
+     * 
+     * @since 25.4
+     */
+    public static final String UIDL_KEY_JS_FUNCTION = "f";
+
+    /**
+     * Key of the number of arguments an invocation of declared JavaScript
+     * carries, present only when the function collects them into a rest
+     * parameter and the client therefore cannot read their number off the
+     * function it looks up.
+     * 
+     * @since 25.4
+     */
+    public static final String UIDL_KEY_JS_ARGUMENT_COUNT = "n";
+
+    /**
      * Key used to hold the feature id when synchronizing node values.
      */
     public static final String RPC_FEATURE = "feature";
@@ -217,12 +237,16 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used to hold the promise id for a server side method call.
+     * 
+     * @since 2.2
      */
     public static final String RPC_TEMPLATE_EVENT_PROMISE = "promise";
 
     /**
      * Name of the $server property that is used to track pending promises. The
      * name is chosen to avoid conflicts with genuine $server method names.
+     * 
+     * @since 2.2
      */
     public static final String RPC_PROMISE_CALLBACK_NAME = "}p";
 
@@ -281,6 +305,8 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used when the message is sent asynchronously via push channel.
+     * 
+     * @since 2.1.1
      */
     public static final String META_ASYNC = "async";
 
@@ -312,6 +338,8 @@ public class JsonConstants implements Serializable {
      * should be synchronized. The token is chosen to avoid collisions with
      * regular event data expressions by using a character that cannot be the
      * start of a valid JS expression.
+     * 
+     * @since 1.3
      */
     public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
 
@@ -331,16 +359,22 @@ public class JsonConstants implements Serializable {
 
     /**
      * RPC type value used for return channel messages.
+     * 
+     * @since 2.0
      */
     public static final String RPC_TYPE_CHANNEL = "channel";
 
     /**
      * Key for the channel id in return channel messages.
+     * 
+     * @since 2.0
      */
     public static final String RPC_CHANNEL = "channel";
 
     /**
      * Key for the arguments array in return channel messages.
+     * 
+     * @since 2.0
      */
     public static final String RPC_CHANNEL_ARGUMENTS = "args";
 

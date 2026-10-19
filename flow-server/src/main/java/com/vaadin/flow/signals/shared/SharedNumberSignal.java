@@ -17,6 +17,8 @@ package com.vaadin.flow.signals.shared;
 
 import java.util.Objects;
 
+import tools.jackson.databind.JavaType;
+
 import com.vaadin.flow.function.SerializableIntFunction;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.Signal;
@@ -29,8 +31,11 @@ import com.vaadin.flow.signals.shared.impl.SignalTree;
  * A signal containing a numeric value. The value is updated as a single atomic
  * change. In addition to the regular {@link SharedValueSignal} operation, this
  * class also supports atomically incrementing the value.
+ * 
+ * @since 25.1
  */
 public class SharedNumberSignal extends SharedValueSignal<Double> {
+    private static final JavaType DOUBLE_TYPE = constructType(Double.class);
 
     /**
      * Creates a new number signal with a zero value. The signal does not
@@ -67,7 +72,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
      */
     protected SharedNumberSignal(SignalTree tree, Id id,
             CommandValidator validator) {
-        super(tree, id, validator, Double.class);
+        super(tree, id, validator, DOUBLE_TYPE);
     }
 
     /**
@@ -86,7 +91,7 @@ public class SharedNumberSignal extends SharedValueSignal<Double> {
                 new SignalCommand.IncrementCommand(Id.random(), id(), delta),
                 success -> nodeValue(
                         Objects.requireNonNull(success.onlyUpdate().newNode()),
-                        Double.class));
+                        DOUBLE_TYPE));
     }
 
     @Override

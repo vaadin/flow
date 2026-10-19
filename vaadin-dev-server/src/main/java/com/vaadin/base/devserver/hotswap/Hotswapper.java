@@ -26,8 +26,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -45,6 +47,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -93,7 +96,7 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @author Vaadin Ltd
  * @see VaadinHotswapper
- * @since 24.5
+ * @since 25.1
  */
 public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         SessionDestroyListener, UIInitListener {
@@ -107,10 +110,19 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(Hotswapper.class);
+    /** The sessions that have at least one UI, so that they can be updated. */
     private final Set<VaadinSession> sessions = ConcurrentHashMap.newKeySet();
+
+    /** The service this hotswapper is registered on. */
     private final VaadinService vaadinService;
+
+    /** Used to tell the browser to refresh or reload, may be {@code null}. */
     private final BrowserLiveReload liveReload;
+
+    /** The hotswappers the events are delegated to, in priority order. */
     private final Collection<VaadinHotswapper> hotSwappers;
+
+    /** Set when the service is destroyed, so that late events are ignored. */
     private volatile boolean serviceDestroyed = false;
 
     Hotswapper(VaadinService vaadinService) {
@@ -152,7 +164,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     /**
      * Called by hotswap tools when one or more application classes have been
      * updated.
-     * <p>
      * <p>
      * This method delegates update operations to registered
      * {@link VaadinHotswapper} implementors. invoking first
@@ -273,6 +284,11 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     "Hotswap event ignored because Hotswapper has been called without changes to apply.");
             return;
         }
+
+        // Caches needed up to date by hotswappers must be cleared before they
+        // run; all other reflection caches are cleared by
+        // ReflectionCacheHotswapper after them
+        classes.forEach(ReflectionCache::clearBeforeHotswap);
 
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 redefined);
@@ -455,9 +471,12 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 .distinct().toList();
 
         if (redefined) {
-            // A full chain refresh should be triggered if there are modal
-            // components, since they could be attached to UI or parent layouts
-            if (ui.hasModalComponent()) {
+            // A full chain refresh should be triggered if there are components
+            // with modality, since they could be attached to UI or parent
+            // layouts. Both strictly and visually modal components are taken
+            // into account, as for example dialogs are visually modal by
+            // default.
+            if (ui.getInternals().hasModalityComponent()) {
                 refreshStrategy = UIRefreshStrategy.PUSH_REFRESH_CHAIN;
             } else if (!targetChainChangedItems.isEmpty()) {
                 refreshStrategy = targetChainChangedItems.stream()
@@ -610,19 +629,27 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     public void serviceDestroy(ServiceDestroyEvent event) {
         serviceDestroyed = true;
         sessions.clear();
+        // The registration is held in the context, which outlives the service,
+        // so nothing else would ever drop it.
+        getRegistrationHolder(vaadinService).remove(vaadinService);
     }
 
     @Override
     public void uiInit(UIInitEvent event) {
         UI ui = event.getUI();
-        sessions.add(ui.getSession());
+        sessions.add(ui.getSessionOrThrow());
     }
 
     /**
      * Register the hotwsapper entry point for the given {@link VaadinService}.
      * <p>
-     * <p>
      * The hotswapper is registered only in development mode.
+     * <p>
+     * Calling this more than once for the same service returns the hotswapper
+     * created by the first call rather than a second one. Two instances would
+     * double every refresh, and there are two callers: the dev-loop connector
+     * (see {@code com.vaadin.base.devserver.devloop.DevLoopRegistration}), and
+     * any hotswap tool that injects a call of its own.
      *
      * @param vaadinService
      *            the {@link VaadinService} instance for hotswapper
@@ -631,15 +658,101 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      *         empty Optional if Vaadin is running in production mode.
      */
     public static Optional<Hotswapper> register(VaadinService vaadinService) {
-        if (!vaadinService.getDeploymentConfiguration().isProductionMode()) {
+        if (vaadinService.getDeploymentConfiguration().isProductionMode()) {
+            return Optional.empty();
+        }
+        RegistrationHolder holder = getRegistrationHolder(vaadinService);
+        synchronized (holder) {
+            Optional<Hotswapper> existing = holder.get(vaadinService);
+            if (existing.isPresent()) {
+                LOGGER.debug(
+                        "Hotswapper is already registered for this service; reusing it");
+                return existing;
+            }
             Hotswapper hotswapper = new Hotswapper(vaadinService);
             vaadinService.addUIInitListener(hotswapper);
             vaadinService.addSessionInitListener(hotswapper);
             vaadinService.addSessionDestroyListener(hotswapper);
             vaadinService.addServiceDestroyListener(hotswapper);
+            holder.set(vaadinService, hotswapper);
             return Optional.of(hotswapper);
         }
-        return Optional.empty();
+    }
+
+    /**
+     * Gets the hotswapper registered for the given service, if any.
+     * <p>
+     * Lets a component that needs the hotswapper - the dev loop's in-app
+     * connector, for one - find it without depending on having been the code
+     * that registered it, and therefore without depending on the order service
+     * init listeners happen to run in.
+     *
+     * @param vaadinService
+     *            the {@link VaadinService} instance, not {@literal null}.
+     * @return the registered hotswapper, or an empty Optional if none is
+     *         registered for this service.
+     * @since 25.3
+     */
+    public static Optional<Hotswapper> getRegistered(
+            VaadinService vaadinService) {
+        Objects.requireNonNull(vaadinService, "VaadinService cannot be null");
+        return getRegistrationHolder(vaadinService).get(vaadinService);
+    }
+
+    private static RegistrationHolder getRegistrationHolder(
+            VaadinService vaadinService) {
+        return vaadinService.getContext().getAttribute(RegistrationHolder.class,
+                RegistrationHolder::new);
+    }
+
+    /**
+     * Where the registered hotswappers are kept, so a second registration
+     * attempt can find the first.
+     * <p>
+     * One entry per {@link VaadinService} rather than one entry in total. The
+     * holder lives in the {@link com.vaadin.flow.server.VaadinContext}, which a
+     * web app with two {@code VaadinServlet}s shares between two services - so
+     * a single slot means the second registration evicts the first, and the
+     * first service then has no findable hotswapper while
+     * {@link #register(VaadinService)} would build it a second one and add
+     * every listener again.
+     * <p>
+     * Keyed by identity, because that is what "this service" means here;
+     * {@link VaadinService} does not override {@code equals}, but an identity
+     * map says so rather than relying on it.
+     */
+    private static class RegistrationHolder implements Serializable {
+
+        /**
+         * Not final, and read through {@link #map()}: a transient field comes
+         * back null from deserialization, and answering "nothing is registered"
+         * there is what the two transient fields this replaced did.
+         */
+        private transient Map<VaadinService, Hotswapper> hotswappers;
+
+        private Map<VaadinService, Hotswapper> map() {
+            if (hotswappers == null) {
+                hotswappers = new IdentityHashMap<>();
+            }
+            return hotswappers;
+        }
+
+        synchronized Optional<Hotswapper> get(VaadinService forService) {
+            return Optional.ofNullable(map().get(forService));
+        }
+
+        synchronized void set(VaadinService forService, Hotswapper instance) {
+            map().put(forService, instance);
+        }
+
+        /**
+         * Drops a destroyed service's entry. Without it the map holds the
+         * service and its hotswapper for as long as the context lives, which is
+         * longer than any service in it.
+         */
+        synchronized void remove(VaadinService forService) {
+            map().remove(forService);
+        }
     }
 
     /**

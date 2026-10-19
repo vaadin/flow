@@ -37,7 +37,7 @@ import com.vaadin.flow.internal.JacksonUtils;
  * {@code [[item.value]]} in the template.
  *
  * @author Vaadin Ltd.
- * @since 1.2
+ * @since 1.1
  *
  * @param <T>
  *            the type of the bean to be serialized to the client

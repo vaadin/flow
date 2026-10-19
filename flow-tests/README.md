@@ -2,6 +2,92 @@
 
 Integration and end-to-end test modules for the Vaadin Flow framework.
 
+> **Restructuring in progress.** These modules are being consolidated into a
+> smaller set organized by *setting* (which module) and *feature* (which
+> package). See [MIGRATION.md](MIGRATION.md) for the full plan. Use the **target
+> structure** below when adding new tests; the detailed list of the current
+> modules follows further down.
+
+## Where to add a new test
+
+Most tests need only the **default configuration** (React, dev hotdeploy, root
+context, default Lumo theme, npm, Spring Boot). Add those to **`test-default`**:
+
+1. Add a `@Route` view under `com.vaadin.flow.test.<feature>` in `src/main`
+   (e.g. `…test.routing`, `…test.dom`, `…test.components`, `…test.templates.lit`).
+2. Add an IT in the same package in `src/test`, extending `AbstractDefaultIT`,
+   annotated `@TestFor(TheView.class)`, with `@BrowserTest` methods (JUnit 6).
+
+Pick a specialized module **only** if your test needs a specific *setting*. Each
+specialized module pins one setting and holds only the tests that exercise it; its
+package carries the setting as a prefix
+(`com.vaadin.flow.test.<setting>.<feature>`), so e.g. `…test.routing` (default)
+and `…test.vaadinrouter.routing` (legacy router) stay distinct.
+
+A test has **exactly one home** — the first rule it matches below. If the same
+behavior should *also* be checked under another setting (e.g. in production or
+under the legacy router), that is a *permutation*: it is added by the specialized
+module reusing `test-default`'s tests (`test-jar` / `pom-*.xml`), **not** by
+copying the test. Never add the same test in two places.
+
+### Which module? (first match wins)
+
+1. Needs a non-Spring-Boot container? → plain `VaadinServlet` / custom servlet
+   service: **test-plain-servlet**; Spring MVC without Boot: **test-plain-spring**;
+   CDI: **vaadin-cdi-tests**.
+2. Needs Spring Security? → **test-spring-security** (its url-mapping /
+   context-path / method-security / route-path variants live here as profiles).
+3. Needs a specific theme setting? → custom application theme: **test-themes**;
+   `@NoTheme`: **test-no-theme**; Tailwind: **test-tailwind**.
+4. Needs a non-root / encoded context path (and not security)? → **test-contextpath**.
+5. Needs the legacy client router? → **test-vaadin-router**.
+6. Needs a custom/legacy frontend directory or a non-npm package manager? →
+   **test-custom-frontend-directory** / **test-pnpm** / **test-bun**.
+7. Is it about a setting-feature? → PWA: **test-pwa**; embedding: **test-embedding**;
+   live reload: **test-livereload**; redeployment: **test-redeployment**; eager
+   bootstrap: **test-eager-bootstrap**.
+8. Does it assert behavior that exists **only** in production / only with the dev
+   bundle? → **test-production** / **test-dev-bundle**. (Otherwise these are *not*
+   homes — a normal feature tested in prod is a permutation, see above.)
+9. Otherwise → **test-default**, in the package for the feature.
+
+### Target modules (pick by the setting your test needs)
+
+| Module | Use when the test needs… |
+|---|---|
+| **test-default** | nothing special — the default configuration (most tests) |
+| **test-plain-servlet** | a plain `VaadinServlet` / custom servlet service (no Spring Boot) |
+| **test-production** | production mode (`productionMode=true`) |
+| **test-dev-bundle** | the dev bundle instead of hotdeploy (`vaadin.frontend.hotdeploy=false`) |
+| **test-vaadin-router** | the legacy client router (`reactEnable=false`) |
+| **test-contextpath** | a non-root / encoded servlet context path |
+| **test-eager-bootstrap** | eager server load (`eagerServerLoad=true`) |
+| **test-custom-frontend-directory** | a custom / legacy `frontendDirectory` |
+| **test-pnpm** / **test-bun** | the pnpm / bun package manager |
+| **test-themes** | a custom application theme (reusable/parent themes, Aura, no-Polymer) |
+| **test-no-theme** | theming suppressed (`@NoTheme`) |
+| **test-tailwind** | the Tailwind CSS feature flag |
+| **test-pwa** | a PWA (`@PWA`, offline, web push) |
+| **test-embedding** | Flow embedded as a web component |
+| **test-plain-spring** | Spring without Boot (Spring MVC) |
+| **test-spring-security** | Spring Security (auth, url-mapping, method / route-path checks) |
+| **test-livereload** | live reload |
+| **test-redeployment** | Spring DevTools restart |
+| **vaadin-cdi-tests** | the CDI container (deploys to a real application server, so it runs only under a container profile) |
+
+Some tests need irreducible special infrastructure and keep their own modules:
+`servlet-containers` (non-Jetty containers), `test-multi-war`,
+`test-commercial-banner`, the proxy-based fault-tolerance tests,
+`test-npm-performance-regression`, and `test-devloop` (one multi-module Maven
+reactor per shape of application, and the dev-loop daemon owns the application
+process instead of a Maven plugin — see
+[test-devloop/README.md](test-devloop/README.md)).
+
+---
+
+The sections below describe the **current** modules (being consolidated into the
+target structure above).
+
 ## Always-Built Modules
 
 These modules are built regardless of `-DskipTests`.
@@ -34,9 +120,11 @@ Active when `-DskipTests` is **not** set (the default).
 
 | Module | Description |
 |--------|-------------|
-| **test-dev-mode** | Tests for development-mode-specific behavior: dependency loading order, debug window/error overlay, dev tools plugins, Vite communication channel, stream resources, exported JS functions, and Vite websocket logout handling. |
+| **test-default** | Home for ITs that need only the default configuration (Spring Boot, React, dev hotdeploy, root context, npm), on JUnit 6. Holds the routing suite, the DOM suite (Element API, DOM events and filters, shadow root, visibility, `Page`), the components suite (HTML components, composites, drag and drop, dialogs and shortcuts, popovers, inert and enabled state, loading indicator, upload, download handlers and media) and the dev-mode ITs (dependency loading order, Vite communication, browser logging, dev-mode URL validation, exported JS functions, stream resources, Vite websocket logout handling) — see [test-default/README.md](test-default/README.md). |
+| **test-push-startup** | Tests that a push connection arriving while the Vaadin service is still initializing is held and then served, instead of being dropped. Uses a deliberately slow service init listener, so it needs its own module. |
+| **test-devloop** | End-to-end tests for the `vaadin-dev` CLI and the dev-loop daemon: apply/restart/deletion, frontend and CSS changes, POM edits, multi-module projects and daemon survival. |
 | **test-servlet** | Tests that the Flow servlet registers and deploys correctly, verifying a basic navigation target is accessible and renders content via the standard servlet mechanism. |
-| **test-misc** | Catch-all module for miscellaneous integration tests: compressed resource serving, exception logging, i18n/translation, `@PreserveOnRefresh`, production-mode config, partial route matching, and themed component rendering. |
+| **test-misc** | Catch-all module for miscellaneous integration tests in **production mode** (it runs `build-frontend`, which sets `productionMode=true`): compressed resource serving, exception logging, i18n/translation, `@PreserveOnRefresh`, production-mode config, partial route matching, and themed component rendering. |
 | **test-eager-bootstrap** | Tests the "eager bootstrap" (eager server load) feature where the initial UIDL is embedded in the first HTTP response, verifying the page includes the UIDL payload and basic view rendering works. |
 | **test-custom-route-registry** | Tests using a custom `RouteRegistry` implementation in place of the default `ApplicationRouteRegistry`, verifying custom routes, error handling, and not-found views resolve through the user-provided registry. |
 | **test-client-queue** | Tests the client-side message queue under adverse server conditions: slow responses, missing responses, and re-sync loops. Verifies the client queues requests correctly and avoids duplicate processing. |
@@ -47,7 +135,6 @@ Active when `-DskipTests` is **not** set (the default).
 | Module | Description |
 |--------|-------------|
 | **test-vaadin-router** | Integration tests for client-side routing using `vaadin-router`: navigation lifecycle events, forwarding/redirecting, history manipulation, query parameters, back-navigation, and postponed navigation. Also has a production-mode build variant. |
-| **test-react-router** | Same routing test suite as `test-vaadin-router` but executed against a React Router-based setup, ensuring parity between the two routing strategies. Also has a production-mode build variant. |
 | **test-react-adapter** | Tests the `flow-react` adapter bridging server-side Flow components with client-side React components: bidirectional state synchronization and embedding Flow server views inside React component trees. Also has a production-mode build variant. |
 | **test-router-custom-context** | Tests that the Flow Router and dependency injection work correctly when deployed under a non-root servlet context path (`/custom-context-router`). Also tests encoded URL parameters and offline behavior. |
 | **test-router-custom-context-encoded** | Same tests as `test-router-custom-context` but deployed under a context path with URL-encodable and regex-special characters (spaces, `$`, `{`, `}`), verifying correct location computation in dev mode. |
@@ -93,6 +180,7 @@ Active when `-DskipTests` is **not** set (the default).
 | Module | Description |
 |--------|-------------|
 | **servlet-containers** | Aggregator that runs integration tests on servlet containers other than the default Jetty. Contains a `tomcat10` submodule deploying the root-context WAR onto Apache Tomcat 10 via the Cargo plugin. |
+| **vaadin-cdi-tests** | Arquillian suite for the `vaadin-cdi` integration, deploying to TomEE, WildFly, Payara, Open Liberty and Tomcat+Weld: CDI scopes and contexts, the instantiator, push, i18n, templates and deployment validation. Every test needs an application server, so its tests are skipped unless one of the container profiles is active — see [vaadin-cdi-tests/README.md](vaadin-cdi-tests/README.md). |
 
 ## Nightly Profile
 

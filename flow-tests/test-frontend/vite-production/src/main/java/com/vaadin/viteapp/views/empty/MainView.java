@@ -17,6 +17,7 @@ package com.vaadin.viteapp.views.empty;
 
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
@@ -28,13 +29,18 @@ import com.vaadin.flow.router.Route;
 @JsModule("@vaadin/test-package-outside-npm/index.js")
 @JsModule("@vaadin/test-package2-outside-npm/index.js")
 @JsModule("./toplevelawait-main.js")
+@JsModule("./i18n-chunk.js")
+@JsModule("./i18n-chunk-extra.js")
 @CssImport("./image.css")
+@StyleSheet("styles/static-stylesheet.css")
 public class MainView extends Div {
 
     public static final String PLANT = "plant";
     public static final String HIDEPLANT = "hideplant";
     public static final String OUTSIDE = "outsideButton";
     public static final String OUTSIDE_RESULT = "outsideResult";
+    public static final String FORCED_LIGHT = "forcedLight";
+    public static final String FORCED_DARK = "forcedDark";
 
     public MainView() {
         Image img = new Image("themes/vite-production/images/plant.png",
@@ -64,6 +70,22 @@ public class MainView extends Div {
         Paragraph outsideStatus = new Paragraph();
         outsideStatus.setId(OUTSIDE_RESULT);
         add(outsideStatus);
+
+        add(createForcedColorScheme("lightScheme", FORCED_LIGHT));
+        add(createForcedColorScheme("darkScheme", FORCED_DARK));
+    }
+
+    /**
+     * Creates a subtree with a color scheme of its own, containing a paragraph
+     * that takes its color from a light-dark() value on the document.
+     */
+    private static Div createForcedColorScheme(String schemeId,
+            String paragraphId) {
+        Paragraph paragraph = new Paragraph("Forced color scheme");
+        paragraph.setId(paragraphId);
+        Div scheme = new Div(paragraph);
+        scheme.setId(schemeId);
+        return scheme;
     }
 
 }

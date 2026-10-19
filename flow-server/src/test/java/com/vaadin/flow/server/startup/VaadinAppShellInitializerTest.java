@@ -29,14 +29,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,8 +76,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 public class VaadinAppShellInitializerTest {
 
     public interface InterfaceAppShellWithoutAnnotations
@@ -269,7 +278,7 @@ public class VaadinAppShellInitializerTest {
         Lookup lookup = (Lookup) servletContext
                 .getAttribute(Lookup.class.getName());
 
-        Mockito.when(lookup.lookup(AppShellPredicate.class))
+        when(lookup.lookup(AppShellPredicate.class))
                 .thenReturn(AppShellConfigurator.class::isAssignableFrom);
 
         attributeMap.put(Lookup.class.getName(),
@@ -277,31 +286,30 @@ public class VaadinAppShellInitializerTest {
         attributeMap.put(ApplicationConfiguration.class.getName(), appConfig);
 
         service = mocks.getService();
-        Mockito.when(servletContext.getAttribute(Mockito.anyString()))
+        when(servletContext.getAttribute(anyString()))
                 .then(invocationOnMock -> attributeMap
                         .get(invocationOnMock.getArguments()[0].toString()));
-        Mockito.doAnswer(invocationOnMock -> attributeMap.put(
+        doAnswer(invocationOnMock -> attributeMap.put(
                 invocationOnMock.getArguments()[0].toString(),
                 invocationOnMock.getArguments()[1])).when(servletContext)
-                .setAttribute(Mockito.anyString(), Mockito.any());
+                .setAttribute(anyString(), any());
 
-        ServletRegistration registration = Mockito
-                .mock(ServletRegistration.class);
+        ServletRegistration registration = mock(ServletRegistration.class);
         context = new VaadinServletContext(servletContext);
 
         classes = new HashSet<>();
 
         Map<String, ServletRegistration> registry = new HashMap<>();
         registry.put("foo", registration);
-        Mockito.when(servletContext.getServletRegistrations())
+        when(servletContext.getServletRegistrations())
                 .thenReturn((Map) registry);
-        Mockito.when(servletContext.getInitParameterNames())
+        when(servletContext.getInitParameterNames())
                 .thenReturn(Collections.emptyEnumeration());
 
         initializer = new VaadinAppShellInitializer();
         document = Document.createShell("");
 
-        pushConfiguration = Mockito.mock(PushConfiguration.class);
+        pushConfiguration = mock(PushConfiguration.class);
     }
 
     @AfterEach
@@ -404,8 +412,8 @@ public class VaadinAppShellInitializerTest {
         AppShellRegistry.getInstance(context)
                 .modifyPushConfiguration(pushConfiguration);
 
-        Mockito.verify(pushConfiguration).setPushMode(PushMode.MANUAL);
-        Mockito.verify(pushConfiguration).setTransport(Transport.WEBSOCKET);
+        verify(pushConfiguration).setPushMode(PushMode.MANUAL);
+        verify(pushConfiguration).setTransport(Transport.WEBSOCKET);
     }
 
     @Test
@@ -423,8 +431,7 @@ public class VaadinAppShellInitializerTest {
         AppShellRegistry.getInstance(context)
                 .modifyPushConfiguration(pushConfiguration);
 
-        Mockito.verify(pushConfiguration, Mockito.never())
-                .setPushMode(Mockito.any(PushMode.class));
+        verify(pushConfiguration, never()).setPushMode(any(PushMode.class));
     }
 
     @Test
@@ -446,8 +453,30 @@ public class VaadinAppShellInitializerTest {
         assertTrue(thrown.getMessage()
                 .contains("Found app shell configuration annotations in non"));
         assertTrue(thrown.getMessage().contains(
-                "- @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
-                        + " from"));
+                "Annotation @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
+                        + " which was encountered on class"));
+        assertTrue(thrown.getMessage()
+                .contains("Please move the annotations to the class "
+                        + MyAppShellWithoutAnnotations.class.getName()
+                        + " which already implements `AppShellConfigurator`"));
+    }
+
+    @Test
+    public void should_throw_when_offendingClass_and_noAppShell()
+            throws Exception {
+        InvalidApplicationConfigurationException thrown = assertThrows(
+                InvalidApplicationConfigurationException.class, () -> {
+                    classes.add(OffendingClass.class);
+                    initializer.process(classes, servletContext);
+                });
+        assertTrue(thrown.getMessage()
+                .contains("Found app shell configuration annotations in non"));
+        assertTrue(thrown.getMessage().contains(
+                "Annotation @Meta, @Inline, @Viewport, @BodySize, @Push, @Theme"
+                        + " which was encountered on class"));
+        assertTrue(thrown.getMessage()
+                .contains("Please make " + OffendingClass.class.getName()
+                        + " implement `AppShellConfigurator`"));
     }
 
     @Test
@@ -480,8 +509,8 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_not_throw_when_appShellAnnotationsAreAllowed_and_offendingClass()
             throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+        when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                false)).thenReturn(true);
         classes.add(OffendingClass.class);
         initializer.process(classes, servletContext);
 
@@ -522,24 +551,24 @@ public class VaadinAppShellInitializerTest {
 
     @Test
     public void should_link_to_PWA_article() throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+        when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingPwaClass.class);
         initializer.process(classes, servletContext);
-        Mockito.verify(logger, Mockito.times(1)).error(arg.capture());
+        verify(logger, times(1)).error(arg.capture());
         assertTrue(arg.getValue()
                 .contains("We changed the way you configure PWAs"));
     }
 
     @Test
     public void should_not_link_to_PWA_article() throws Exception {
-        Mockito.when(appConfig.getBooleanProperty(
-                Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
+        when(appConfig.getBooleanProperty(Constants.ALLOW_APPSHELL_ANNOTATIONS,
+                false)).thenReturn(true);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
         classes.add(OffendingNonPwaClass.class);
         initializer.process(classes, servletContext);
-        Mockito.verify(logger, Mockito.times(1)).error(arg.capture());
+        verify(logger, times(1)).error(arg.capture());
         assertFalse(arg.getValue()
                 .contains("We changed the way you configure PWAs"));
         assertTrue(arg.getValue().contains("@Viewport"));
@@ -616,7 +645,7 @@ public class VaadinAppShellInitializerTest {
 
     private Logger mockLog(Class clz) throws Exception {
         // wrap logger for clz in an spy
-        Logger spy = Mockito.spy(LoggerFactory.getLogger(clz.getName()));
+        Logger spy = spy(LoggerFactory.getLogger(clz.getName()));
         ConcurrentMap<String, Logger> ilogger = clearIlogger();
         // replace original logger with the spy
         ilogger.put(clz.getName(), spy);
@@ -634,15 +663,12 @@ public class VaadinAppShellInitializerTest {
     }
 
     private ApplicationConfiguration mockApplicationConfiguration() {
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.isProductionMode()).thenReturn(false);
+        ApplicationConfiguration config = mock(ApplicationConfiguration.class);
+        when(config.isProductionMode()).thenReturn(false);
 
-        Mockito.when(config.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
+        when(config.getStringProperty(anyString(), anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(config.getBooleanProperty(Mockito.anyString(),
-                Mockito.anyBoolean()))
+        when(config.getBooleanProperty(anyString(), anyBoolean()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         return config;
     }
@@ -659,12 +685,11 @@ public class VaadinAppShellInitializerTest {
 
     private HttpServletRequest createRequest(String pathInfo,
             String contextPath) {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getServletPath()).thenReturn("");
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(request.getRequestURL())
-                .thenReturn(new StringBuffer(pathInfo));
-        Mockito.when(request.getContextPath()).thenReturn(contextPath);
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getServletPath()).thenReturn("");
+        when(request.getPathInfo()).thenReturn(pathInfo);
+        when(request.getRequestURL()).thenReturn(new StringBuffer(pathInfo));
+        when(request.getContextPath()).thenReturn(contextPath);
         return request;
     }
 }

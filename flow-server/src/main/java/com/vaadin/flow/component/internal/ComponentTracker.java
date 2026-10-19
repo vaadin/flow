@@ -42,6 +42,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 /**
  * Tracks the location in source code where components were instantiated.
  *
+ * @since 24.0
  **/
 public class ComponentTracker {
 
@@ -145,6 +146,7 @@ public class ComponentTracker {
          * @param configuration
          *            the application configuration
          * @return the source file the location refers to, or {@code null}
+         * @since 24.4.9
          */
         public File findSourceFile(AbstractConfiguration configuration) {
             String cls = className();
@@ -206,6 +208,7 @@ public class ComponentTracker {
      * @param component
      *            the component to find
      * @return the locations involved in creating the component
+     * @since 24.5.5
      */
     public static Location[] findCreateLocations(Component component) {
         return computeAllLocations(component, createLocations, createThrowable,
@@ -251,6 +254,7 @@ public class ComponentTracker {
      * @param component
      *            the component to find
      * @return the locations involved in creating the component
+     * @since 24.5.5
      */
     public static Location[] findAttachLocations(Component component) {
         return computeAllLocations(component, attachLocations, attachThrowable,
@@ -288,6 +292,7 @@ public class ComponentTracker {
      *            reference component location
      * @param offset
      *            difference in lines to be applied
+     * @since 24.1
      */
     public static void refreshLocation(Location location, int offset) {
         // Force lazy evaluation for all components before refreshing

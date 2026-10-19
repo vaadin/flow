@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-project</artifactId>
+    <version>25.4-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>vaadin-quarkus-parent</artifactId>
+  <packaging>pom</packaging>
+  <name>Vaadin Quarkus extension</name>
+  <description>Parent for the Quarkus extension that adds Vaadin support to Quarkus applications.</description>
+
+  <modules>
+    <module>runtime</module>
+    <module>deployment</module>
+  </modules>
+
+  <properties>
+    <!-- Arc looks constructor and observer parameter names up by reflection,
+         and the Quarkus extension processor records config property names the
+         same way. -->
+    <maven.compiler.parameters>true</maven.compiler.parameters>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!--
+        Declared before the Quarkus BOM on purpose. The BOM is imported into
+        this POM rather than inherited from the Flow parent, which makes it
+        outrank everything the parent manages for these two modules - Jackson
+        among it. Flow pins Jackson deliberately (25.0 raised the minimum
+        Quarkus version to 3.32 precisely so the two agree), so it is pinned
+        again here, ahead of the import, rather than left to whichever version
+        the Quarkus release happens to carry. The first declaration wins, so
+        these entries survive the import below.
+      -->
+      <dependency>
+        <groupId>tools.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.quarkus</groupId>
+        <artifactId>quarkus-bom</artifactId>
+        <version>${quarkus.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <systemPropertyVariables>
+              <!-- Quarkus installs its own LogManager and fails the boot of a
+                   test application if JUL has already been initialized. -->
+              <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+              <maven.repo>${settings.localRepository}</maven.repo>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <!-- Appended rather than replacing: the Flow parent puts ErrorProne
+               and NullAway on this path and keeps -Xplugin:ErrorProne in the
+               compiler arguments, so overwriting the list fails the build with
+               "plug-in not found: ErrorProne". -->
+          <annotationProcessorPaths combine.children="append">
+            <path>
+              <groupId>io.quarkus</groupId>
+              <artifactId>quarkus-extension-processor</artifactId>
+              <version>${quarkus.version}</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

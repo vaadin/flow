@@ -18,6 +18,31 @@ package com.vaadin.flow.component;
 /**
  * Base class for a {@link Component} that represents a single built-in HTML
  * element that can contain child components or text.
+ * <p>
+ * This base class is meant for elements whose HTML content model accepts any
+ * kind of content, such as <code>&lt;div&gt;</code>, <code>&lt;span&gt;</code>
+ * or <code>&lt;section&gt;</code>. It implements {@link HasComponents}, so any
+ * {@link Component} can be added as a child and the API cannot prevent a child
+ * that the element isn't allowed to contain.
+ * <p>
+ * Elements with a restricted content model are a poor fit. Such a component
+ * should instead extend {@link HtmlComponent} and expose only an API that
+ * matches what the element actually accepts. The shape of that API depends on
+ * the element:
+ * <ul>
+ * <li>When each part of the content is different, a dedicated API for each part
+ * is the clearest option. A <code>&lt;table&gt;</code>, for example, accepts an
+ * optional <code>&lt;caption&gt;</code>, then <code>&lt;colgroup&gt;</code>,
+ * <code>&lt;thead&gt;</code>, <code>&lt;tbody&gt;</code> and
+ * <code>&lt;tfoot&gt;</code> elements in a specific order, so a table component
+ * is better served by separate methods for the caption, the header, the bodies
+ * and the footer than by a generic add-a-child method.</li>
+ * <li>When all children are of the same type, such as the
+ * <code>&lt;li&gt;</code> children of a <code>&lt;ul&gt;</code>,
+ * {@link HasComponentsOfType} gives the same add and remove methods as
+ * {@link HasComponents} while rejecting unrelated components already at compile
+ * time.</li>
+ * </ul>
  *
  * @author Vaadin Ltd
  * @since 1.0

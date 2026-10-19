@@ -26,7 +26,6 @@ import java.util.Objects;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -38,6 +37,13 @@ import com.vaadin.flow.internal.JacksonUtils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class VersionsJsonFilterTest {
 
@@ -57,26 +63,26 @@ class VersionsJsonFilterTest {
     }
 
     @Test
-    void filterPlatformVersions_dependencies() throws IOException {
-        assertFilterPlatformVersions(NodeUpdater.DEPENDENCIES);
+    void filterPinnedNpmVersions_dependencies() throws IOException {
+        assertFilterPinnedNpmVersions(NodeUpdater.DEPENDENCIES);
     }
 
     @Test
-    void filterPlatformVersions_devDependencies() throws IOException {
-        assertFilterPlatformVersions(NodeUpdater.DEV_DEPENDENCIES);
+    void filterPinnedNpmVersions_devDependencies() throws IOException {
+        assertFilterPinnedNpmVersions(NodeUpdater.DEV_DEPENDENCIES);
     }
 
     @Test
-    void filterPlatformDependenciesVersions_multipleUserChanged_correctlyIgnored()
+    void filterPinnedNpmDependenciesVersions_multipleUserChanged_correctlyIgnored()
             throws IOException {
-        assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+        assertFilterPinnedNpmVersions_multipleUserChanged_correctlyIgnored(
                 NodeUpdater.DEPENDENCIES);
     }
 
     @Test
-    void filterPlatformDevDependenciesVersions_multipleUserChanged_correctlyIgnored()
+    void filterPinnedNpmDevDependenciesVersions_multipleUserChanged_correctlyIgnored()
             throws IOException {
-        assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+        assertFilterPinnedNpmVersions_multipleUserChanged_correctlyIgnored(
                 NodeUpdater.DEV_DEPENDENCIES);
     }
 
@@ -107,39 +113,42 @@ class VersionsJsonFilterTest {
                 NodeUpdater.DEPENDENCIES);
         String versionOrigin = "dummy-origin.json";
 
-        Logger logger = Mockito.spy(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
             loggerFactoryMocked
                     .when(() -> LoggerFactory.getLogger(FrontendVersion.class))
                     .thenReturn(logger);
 
             ObjectNode sourceJsonMocked = getMockedJsonNode();
 
-            Mockito.when(sourceJsonMocked.get(Mockito.anyString()))
-                    .thenThrow(new ClassCastException());
+            JsonNode versionMocked = mock(JsonNode.class);
+            when(versionMocked.asString()).thenThrow(new ClassCastException());
+            when(sourceJsonMocked.get(anyString())).thenReturn(versionMocked);
             filter.getFilteredVersions(sourceJsonMocked, versionOrigin);
-            Mockito.verify(logger, Mockito.times(1)).warn(
+            verify(logger, times(1)).warn(
                     "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
                     "test", versionOrigin);
 
             sourceJsonMocked = getMockedJsonNode();
 
             String nfeMessage = "NFE MSG";
-            Mockito.when(sourceJsonMocked.get(Mockito.anyString()))
+            versionMocked = mock(JsonNode.class);
+            when(versionMocked.asString())
                     .thenThrow(new NumberFormatException(nfeMessage));
+            when(sourceJsonMocked.get(anyString())).thenReturn(versionMocked);
             filter.getFilteredVersions(sourceJsonMocked, versionOrigin);
-            Mockito.verify(logger, Mockito.times(1)).warn(
+            verify(logger, times(1)).warn(
                     "Ignoring error while parsing frontend dependency version in {}: {}",
                     versionOrigin, nfeMessage);
         }
     }
 
     private ObjectNode getMockedJsonNode() {
-        ObjectNode jsonObject = Mockito.mock(ObjectNode.class);
-        Mockito.when(jsonObject.propertyNames())
+        ObjectNode jsonObject = mock(ObjectNode.class);
+        when(jsonObject.propertyNames())
                 .thenReturn(Arrays.stream(new String[] { "test" }).toList());
-        Mockito.when(jsonObject.has("test")).thenReturn(true);
+        when(jsonObject.has("test")).thenReturn(true);
         return jsonObject;
     }
 
@@ -163,7 +172,7 @@ class VersionsJsonFilterTest {
                 filteredJson.get("@vaadin/vaadin-progress-bar").asString());
     }
 
-    private void assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
+    private void assertFilterPinnedNpmVersions_multipleUserChanged_correctlyIgnored(
             String depKey) throws IOException {
         String versions = IOUtils.toString(
                 Objects.requireNonNull(getClass().getClassLoader()
@@ -207,7 +216,7 @@ class VersionsJsonFilterTest {
         }
     }
 
-    private void assertFilterPlatformVersions(String depKey)
+    private void assertFilterPinnedNpmVersions(String depKey)
             throws IOException {
         String pkgJson = IOUtils.toString(
                 Objects.requireNonNull(getClass().getClassLoader()

@@ -19,11 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TracksAttachDetach;
@@ -36,8 +35,10 @@ import com.vaadin.tests.util.TestUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class CompositeTest {
 
     // layoutWithSingleComponentComposite (TestLayout)
@@ -115,12 +116,11 @@ class CompositeTest {
         layoutWithSingleComponentComposite.track();
 
         VaadinService.setCurrent(null);
-        VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
+        VaadinService service = mock(VaadinService.class);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(true);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
         VaadinService.setCurrent(service);
     }
 
