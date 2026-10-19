@@ -38,7 +38,6 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
-import nonapi.io.github.classgraph.utils.VersionFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,22 +139,20 @@ public class ReflectionsClassFinder implements ClassFinder, AutoCloseable {
 
         // Configure ClassGraph scanner with provided URLs
         ClassGraph classGraph = new ClassGraph()
-                .overrideClasspath((Object[]) urls).addClassLoader(classLoader)
-                .enableClassInfo().enableAnnotationInfo()
-                .ignoreClassVisibility() // Scan non-public classes
-                .filterClasspathElements(
+                .enableClasspathEntries((Object[]) urls).enableClassInfo()
+                .enableAnnotationInfo()
+                // Scan non-public classes
+                .ignoreClassVisibility()
+                // Report supertypes outside the scanned URLs, e.g. Component
+                .enableExternalClasses().filterClasspathElements(
                         path -> !path.endsWith("module-info.class"));
         applyScannerPackageFilters(classGraph);
-        if (VersionFinder.JAVA_MAJOR_VERSION < 24) {
-            // Not available on Java 24+ currently, because of the deprecation
-            // of the Unsafe API
-            classGraph.enableMemoryMapping();
-        }
 
         // Scan and extract all data, then close immediately
         int classCount;
         try (ScanResult scanResult = classGraph.scan()) {
-            ClassInfoList allClasses = scanResult.getAllClasses();
+            ClassInfoList allClasses = scanResult.getAllClasses()
+                    .filter(classInfo -> !classInfo.isExternalClass());
             classCount = allClasses.size();
 
             // Extract scanned packages
@@ -338,7 +335,7 @@ public class ReflectionsClassFinder implements ClassFinder, AutoCloseable {
         // Get all classes with any annotation
         for (ClassInfo classInfo : allClasses) {
             for (AnnotationInfo annotationInfo : classInfo
-                    .getAnnotationInfo()) {
+                    .getAllAnnotationInfo()) {
                 String annotationName = annotationInfo.getName();
                 cache.computeIfAbsent(annotationName,
                         k -> new LinkedHashSet<>()).add(classInfo.getName());
@@ -361,14 +358,14 @@ public class ReflectionsClassFinder implements ClassFinder, AutoCloseable {
             String className = classInfo.getName();
 
             // Register under all superclasses
-            ClassInfoList superclasses = classInfo.getSuperclasses();
+            ClassInfoList superclasses = classInfo.getAllSuperclasses();
             for (ClassInfo superclass : superclasses) {
                 cache.computeIfAbsent(superclass.getName(),
                         k -> new LinkedHashSet<>()).add(className);
             }
 
             // Register under all implemented interfaces
-            ClassInfoList interfaces = classInfo.getInterfaces();
+            ClassInfoList interfaces = classInfo.getAllSuperinterfaces();
             for (ClassInfo iface : interfaces) {
                 cache.computeIfAbsent(iface.getName(),
                         k -> new LinkedHashSet<>()).add(className);
