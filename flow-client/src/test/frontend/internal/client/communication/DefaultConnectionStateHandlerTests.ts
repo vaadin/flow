@@ -243,21 +243,26 @@ describe('DefaultConnectionStateHandler', () => {
     // Beyond the Java suite: a request sent while the network is gone may wait
     // for a response forever, and no other message is sent before it ends.
     // Ending it re-sends the pending messages.
-    const registry = makeRegistry(3);
+    const registry = makeRegistry(10);
     new DefaultConnectionStateHandler(registry.registry);
+
+    // Returns how many times going online ended a request.
+    const goOnline = (active: boolean, abortable: boolean): number => {
+      dispatch('offline');
+      registry.request.active = active;
+      registry.request.abortable = abortable;
+      const endRequests = registry.log.endRequests;
+      dispatch('online');
+      return registry.log.endRequests - endRequests;
+    };
 
     // A request that is not a hanging XHR, e.g. one sent over push, is left
     // alone.
-    dispatch('offline');
-    registry.request.active = true;
-    dispatch('online');
-    expect(registry.log.endRequests).to.equal(0);
-
-    dispatch('offline');
-    registry.request.abortable = true;
-    dispatch('online');
-
-    expect(registry.log.endRequests).to.equal(1);
+    expect(goOnline(true, false)).to.equal(0);
+    // An aborted XHR whose request has already ended is not ended again.
+    expect(goOnline(false, true)).to.equal(0);
+    expect(goOnline(true, true)).to.equal(1);
+    expect(registry.request.active).to.be.false;
     // The heartbeat still verifies the connection.
     expect(registry.log.heartbeatSends).to.equal(1);
     expect(getState()).to.equal(RECONNECTING);

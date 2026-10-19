@@ -195,7 +195,7 @@ describe('XhrConnection', () => {
       expect(registry.calls).to.deep.equal([]);
     });
 
-    it('does not abort a request that already got its response', () => {
+    it('does not abort a request that already completed', () => {
       const registry = makeRegistry();
       const connection = new XhrConnection(registry);
       withFakeXhr(fakeXhr({ status: 0 }), () => connection.send({ rpc: [] }));
