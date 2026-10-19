@@ -169,10 +169,11 @@ public class VaadinServletService extends VaadinService {
         if (isOtherRequest(request)) {
             /*
              * I.e URIs that are not RPC calls or static file requests. Web
-             * component scripts are served without a session, see
-             * handleSessionExpired.
+             * component scripts and the favicon are served without a session,
+             * see handleSessionExpired.
              */
-            return getWebComponentScriptProvider(request).isEmpty();
+            return getWebComponentScriptProvider(request).isEmpty()
+                    && getFaviconHandler(request).isEmpty();
         }
 
         return false;
@@ -181,14 +182,17 @@ public class VaadinServletService extends VaadinService {
     @Override
     protected void handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws ServiceException {
-        // The web component provider serves its scripts before any other
-        // session expired handler gets the chance to answer them with
-        // something else than the script
-        Optional<WebComponentProvider> provider = getWebComponentScriptProvider(
+        // The web component provider serves its scripts, and the favicon
+        // handler the favicon, before any other session expired handler gets
+        // the chance to answer them with something else
+        Optional<? extends SessionExpiredHandler> handler = getWebComponentScriptProvider(
                 request);
-        if (provider.isPresent()) {
+        if (handler.isEmpty()) {
+            handler = getFaviconHandler(request);
+        }
+        if (handler.isPresent()) {
             try {
-                if (provider.get().handleSessionExpired(request, response)) {
+                if (handler.get().handleSessionExpired(request, response)) {
                     return;
                 }
             } catch (IOException e) {
@@ -208,9 +212,23 @@ public class VaadinServletService extends VaadinService {
         if (!WebComponentProvider.isWebComponentScriptRequest(request)) {
             return Optional.empty();
         }
+        return findRequestHandler(WebComponentProvider.class);
+    }
+
+    /**
+     * Gets the registered favicon handler if the request is for the favicon.
+     */
+    private Optional<FaviconHandler> getFaviconHandler(VaadinRequest request) {
+        if (!FaviconHandler.isFaviconRequest(request)) {
+            return Optional.empty();
+        }
+        return findRequestHandler(FaviconHandler.class);
+    }
+
+    private <T extends RequestHandler> Optional<T> findRequestHandler(
+            Class<T> type) {
         return StreamSupport.stream(getRequestHandlers().spliterator(), false)
-                .filter(WebComponentProvider.class::isInstance)
-                .map(WebComponentProvider.class::cast).findFirst();
+                .filter(type::isInstance).map(type::cast).findFirst();
     }
 
     private boolean isOtherRequest(VaadinRequest request) {

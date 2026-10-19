@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -28,22 +29,49 @@ import com.vaadin.flow.server.VaadinSession;
  * Handles the favicon request explicitly and return 404 for it.
  * <p>
  * It allows to not produce the same content for the favicon as for any other
- * resource if servlet mapping is "/*".
+ * resource if servlet mapping is "/*". The favicon request does not need a
+ * session, so it is answered the same way when there is none, see
+ * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class FaviconHandler implements RequestHandler {
+public class FaviconHandler implements RequestHandler, SessionExpiredHandler {
 
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        VaadinServletRequest httpRequest = (VaadinServletRequest) request;
-        boolean isFavicon = httpRequest.getContextPath().isEmpty()
-                && httpRequest.getServletPath().isEmpty()
-                && "/favicon.ico".equals(httpRequest.getPathInfo());
+        return handleFavicon(request, response);
+    }
+
+    @Override
+    public boolean handleSessionExpired(VaadinRequest request,
+            VaadinResponse response) throws IOException {
+        return handleFavicon(request, response);
+    }
+
+    /**
+     * Checks whether the request asks for the favicon at the root of a servlet
+     * mapped to "/*". Such a request does not need a session, see
+     * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)}.
+     *
+     * @param request
+     *            the request to check
+     * @return {@code true} if the request is for the favicon
+     * @since 25.4
+     */
+    public static boolean isFaviconRequest(VaadinRequest request) {
+        return request instanceof VaadinServletRequest httpRequest
+                && "/favicon.ico".equals(httpRequest.getPathInfo())
+                && "".equals(httpRequest.getContextPath())
+                && "".equals(httpRequest.getServletPath());
+    }
+
+    private static boolean handleFavicon(VaadinRequest request,
+            VaadinResponse response) {
+        boolean isFavicon = isFaviconRequest(request);
         if (isFavicon) {
             response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
         }

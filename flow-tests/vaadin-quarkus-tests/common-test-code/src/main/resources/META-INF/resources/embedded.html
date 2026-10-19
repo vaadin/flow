@@ -3,12 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <title>Embedded web component</title>
-    <!-- Without an icon the browser requests /favicon.ico in parallel with
-         the first web component request. Both carry no cookie yet, and the
-         Vaadin servlet, mapped to /*, opens a new session for each. When the
-         favicon response lands last, its cookie replaces the session the UI
-         was created in, and the component shows "Session Expired". -->
-    <link rel="icon" href="data:," />
     <script type="text/javascript" src="/web-component/quarkus-greeting.js"></script>
   </head>
   <body>

@@ -45,6 +45,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -307,6 +308,45 @@ class VaadinServletServiceTest {
                 .thenReturn("/web-component/my-component.js");
         service.handleSessionExpired(request, response);
         verify(customHandler, times(2)).handleSessionExpired(request, response);
+    }
+
+    @Test
+    void requestCanCreateSession_favicon_doesNotCreateSession() {
+        VaadinServletRequest request = createFaviconRequest();
+        assertFalse(service.requestCanCreateSession(request));
+
+        // Below a servlet path, the favicon is a request like any other
+        when(request.getServletPath()).thenReturn("/vaadin");
+        assertTrue(service.requestCanCreateSession(request));
+
+        // Without the handler, nothing answers the favicon without a session
+        when(request.getServletPath()).thenReturn("");
+        service.getRequestHandlers().removeIf(FaviconHandler.class::isInstance);
+        assertTrue(service.requestCanCreateSession(request));
+    }
+
+    @Test
+    void handleSessionExpired_favicon_notFoundBeforeCustomHandlers()
+            throws Exception {
+        VaadinServletRequest request = createFaviconRequest();
+        VaadinResponse response = mock(VaadinResponse.class);
+        // Handlers added through ServiceInitEvent come first
+        CatchAllSessionExpiredHandler customHandler = mock(
+                CatchAllSessionExpiredHandler.class);
+        service.getRequestHandlers().add(0, customHandler);
+
+        service.handleSessionExpired(request, response);
+
+        verify(customHandler, never()).handleSessionExpired(any(), any());
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+    }
+
+    private static VaadinServletRequest createFaviconRequest() {
+        VaadinServletRequest request = mock(VaadinServletRequest.class);
+        when(request.getContextPath()).thenReturn("");
+        when(request.getServletPath()).thenReturn("");
+        when(request.getPathInfo()).thenReturn("/favicon.ico");
+        return request;
     }
 
     private interface CatchAllSessionExpiredHandler
