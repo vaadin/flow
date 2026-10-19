@@ -72,9 +72,24 @@ public class CachedSignal<T extends @Nullable Object>
      * which in turn revalidates any cached signals among them. Without this
      * memo, a cached signal reachable through several paths in the dependency
      * graph would be checked once per path, making the cost of a single read
-     * grow exponentially with the depth of the graph.
+     * grow exponentially with the depth of the graph. Storing a recomputed
+     * value during a read does not notify any listeners that could change
+     * already validated signals: a cached signal with active listeners is
+     * revalidated as soon as a dependency changes rather than when read.
      */
     private static final ThreadLocal<@Nullable Map<CachedSignal<?>, Transaction>> validatedInCurrentRead = new ThreadLocal<>();
+
+    /*
+     * Thrown when the inner signal cannot be computed again. A separate type
+     * lets hasChanges() handle only this failure and not, e.g., exceptions
+     * thrown while storing a recomputed value.
+     */
+    private static class RevalidationFailedException
+            extends MissingSignalUsageException {
+        RevalidationFailedException() {
+            super("A computing inner signal must read at least one other signal value.");
+        }
+    }
 
     private final Signal<T> inner;
 
@@ -257,7 +272,7 @@ public class CachedSignal<T extends @Nullable Object>
                  */
                 try {
                     getValidState(data(Transaction.getCurrent()));
-                } catch (RuntimeException e) {
+                } catch (RevalidationFailedException e) {
                     /*
                      * Report a change so that the caller reads the value again,
                      * which throws the same exception in a context where the
@@ -321,13 +336,12 @@ public class CachedSignal<T extends @Nullable Object>
             }
         }
 
-        CacheState state = revalidate(data, validated);
+        CacheState state = revalidate(data);
         validated.put(this, transaction);
         return state;
     }
 
-    private CacheState revalidate(@Nullable Data data,
-            Map<CachedSignal<?>, Transaction> validated) {
+    private CacheState revalidate(@Nullable Data data) {
         CacheState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
@@ -341,8 +355,7 @@ public class CachedSignal<T extends @Nullable Object>
                 }
             });
             if (dependencies == UsageTracker.NO_USAGE) {
-                throw new MissingSignalUsageException(
-                        "A computing inner signal must read at least one other signal value.");
+                throw new RevalidationFailedException();
             }
             @Nullable
             Object value = holder[0];
@@ -352,20 +365,9 @@ public class CachedSignal<T extends @Nullable Object>
             state = new CacheState(value, exception, dependencies);
 
             CacheState finalState = state;
-            /*
-             * Submitting the new value notifies listeners, which may run
-             * effects that change other signals. Those run as separate reads
-             * and anything validated so far may no longer be valid afterwards.
-             */
-            validatedInCurrentRead.remove();
-            try {
-                Effect.runInReadTriggeredUpdateContext(
-                        () -> submit(new SignalCommand.SetCommand(Id.random(),
-                                id(), new CachedPOJONode(finalState))));
-            } finally {
-                validated.clear();
-                validatedInCurrentRead.set(validated);
-            }
+            Effect.runInReadTriggeredUpdateContext(
+                    () -> submit(new SignalCommand.SetCommand(Id.random(), id(),
+                            new CachedPOJONode(finalState))));
         }
 
         return state;

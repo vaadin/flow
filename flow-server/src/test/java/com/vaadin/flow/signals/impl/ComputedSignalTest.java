@@ -347,6 +347,25 @@ class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void cached_readAgainInTransactionDuringRead_transactionValueSeen() {
+        SharedValueSignal<Integer> source = new SharedValueSignal<>(1);
+        Signal<Integer> inner = Signal.cached(source.map(value -> value));
+        AtomicInteger valueInTransaction = new AtomicInteger();
+
+        Signal<Integer> outer = Signal.cached(() -> {
+            int value = inner.get();
+            Transaction.runInTransaction(() -> {
+                source.set(5);
+                valueInTransaction.set(inner.get());
+            });
+            return value;
+        });
+
+        outer.peek();
+        assertEquals(5, valueInTransaction.get());
+    }
+
+    @Test
     void cached_nestedCachedFailsOnRevalidation_outerComputationHandlesError() {
         ValueSignal<Integer> source = new ValueSignal<>(1);
         ValueSignal<Integer> other = new ValueSignal<>(100);
