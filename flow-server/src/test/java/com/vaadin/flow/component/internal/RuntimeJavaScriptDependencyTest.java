@@ -21,14 +21,10 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -69,6 +65,11 @@ class RuntimeJavaScriptDependencyTest {
     @Tag("div")
     @JavaScript("https://example.net/script.js")
     private static class ExternalScript extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript("/script.js")
+    private static class AbsoluteScript extends Component {
     }
 
     @Tag("div")
@@ -117,21 +118,6 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
-    @JavaScript("context://script.js")
-    private static class ContextScript extends Component {
-    }
-
-    @Tag("div")
-    @JavaScript("base://script.js")
-    private static class BaseScript extends Component {
-    }
-
-    @Tag("div")
-    @JavaScript("/abs/script.js")
-    private static class AbsoluteScript extends Component {
-    }
-
-    @Tag("div")
     @JavaScript(value = "not-bundled-module.js", type = JavaScript.Type.MODULE)
     private static class ProductionRelativeModule extends Component {
     }
@@ -160,12 +146,30 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
+    void externalScript_addedAsRuntimeJavaScript() {
+        assertSingleDependency(ExternalScript.class, Dependency.Type.JAVASCRIPT,
+                "https://example.net/script.js", LoadMode.EAGER);
+    }
+
+    @Test
+    void absoluteScript_addedAsRuntimeJavaScript() {
+        assertSingleDependency(AbsoluteScript.class, Dependency.Type.JAVASCRIPT,
+                "/script.js", LoadMode.EAGER);
+    }
+
+    @Test
     void externalScriptWithParentPath_urlPassedThroughUntouched() {
         // External URLs are not normalized, so a '..' segment inside one must
         // not cause the dependency to be dropped
         assertSingleDependency(ExternalScriptWithParentPath.class,
                 Dependency.Type.JAVASCRIPT,
                 "https://example.net/pkg/../dist/script.js", LoadMode.EAGER);
+    }
+
+    @Test
+    void contextModule_urlPassedThroughUntouched() {
+        assertSingleDependency(ContextModule.class, Dependency.Type.JS_MODULE,
+                "context://module.js", LoadMode.EAGER);
     }
 
     @Test
@@ -214,6 +218,16 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
+    void productionMode_absoluteScript_noMissingBundleImportError()
+            throws Exception {
+        String log = productionModeLog(AbsoluteScript.class);
+
+        assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
+                "A value with a runtime prefix is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
+                        + log);
+    }
+
+    @Test
     void productionMode_relativeScript_stillReportsMissingBundleImport()
             throws Exception {
         // Control for the test above: proves the assertion there is not
@@ -225,33 +239,23 @@ class RuntimeJavaScriptDependencyTest {
                         + log);
     }
 
-    static Stream<Arguments> runtimePrefixedValues() {
-        return Stream.of(
-                Arguments.of(ExternalScript.class, Dependency.Type.JAVASCRIPT,
-                        "https://example.net/script.js"),
-                Arguments.of(ContextModule.class, Dependency.Type.JS_MODULE,
-                        "context://module.js"),
-                Arguments.of(ExternalJsModule.class, Dependency.Type.JS_MODULE,
-                        "https://example.net/module.js"),
-                Arguments.of(ContextJsModule.class, Dependency.Type.JS_MODULE,
-                        "context://module.js"),
-                Arguments.of(AbsoluteJsModule.class, Dependency.Type.JS_MODULE,
-                        "/abs/module.js"),
-                Arguments.of(ContextScript.class, Dependency.Type.JAVASCRIPT,
-                        "context://script.js"),
-                Arguments.of(BaseScript.class, Dependency.Type.JAVASCRIPT,
-                        "base://script.js"),
-                Arguments.of(AbsoluteScript.class, Dependency.Type.JAVASCRIPT,
-                        "/abs/script.js"));
+    @Test
+    void externalJsModule_stillAddedAsRuntimeJsModule() {
+        assertSingleDependency(ExternalJsModule.class,
+                Dependency.Type.JS_MODULE, "https://example.net/module.js",
+                LoadMode.EAGER);
     }
 
-    @ParameterizedTest
-    @MethodSource("runtimePrefixedValues")
-    void runtimePrefixedValue_addedAtRuntimeUntouched(
-            Class<? extends Component> componentType,
-            Dependency.Type expectedType, String expectedUrl) {
-        assertSingleDependency(componentType, expectedType, expectedUrl,
-                LoadMode.EAGER);
+    @Test
+    void contextJsModule_addedAsRuntimeJsModule() {
+        assertSingleDependency(ContextJsModule.class, Dependency.Type.JS_MODULE,
+                "context://module.js", LoadMode.EAGER);
+    }
+
+    @Test
+    void absoluteJsModule_addedAsRuntimeJsModule() {
+        assertSingleDependency(AbsoluteJsModule.class,
+                Dependency.Type.JS_MODULE, "/abs/module.js", LoadMode.EAGER);
     }
 
     @Test

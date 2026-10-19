@@ -85,13 +85,7 @@ public final class FrontendDependencyUrlResolver implements Serializable {
                     value);
             return null;
         }
-        String lower = value.toLowerCase();
-        if (lower.startsWith("http://") || lower.startsWith("https://")
-                || lower.startsWith("//")
-                || lower.startsWith(
-                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || lower.startsWith(
-                        ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
+        if (isRuntimeDependencyUrl(value)) {
             return value;
         }
         if (value.startsWith("./")) {

@@ -1497,8 +1497,9 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
-        // type=MODULE values are deliberately kept out of the bundle and are
-        // loaded at runtime instead, so their absence is not a problem
+        // type=MODULE values and values with a runtime prefix are deliberately
+        // kept out of the bundle and are loaded at runtime instead, so their
+        // absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream()
                 .filter(js -> !isRuntimeJavaScript(js)).map(JavaScript::value)
                 .collect(Collectors.toList()));
@@ -1578,9 +1579,9 @@ public class UIInternals implements Serializable {
      * <p>
      * Values with a protocol (external URLs but also {@code context://} and
      * {@code base://}) are passed through untouched, the same way they were
-     * before {@link JavaScript.Type#MODULE} existed. Only bare relative values,
-     * which are new with {@code Type.MODULE}, need normalizing to the context
-     * root.
+     * before {@link JavaScript.Type#MODULE} existed. All other values, such as
+     * absolute paths or bare relative {@code Type.MODULE} values, go through
+     * {@link FrontendDependencyUrlResolver#resolveToContextRoot(String)}.
      *
      * @return the normalized value, or {@code null} if the value was rejected
      */

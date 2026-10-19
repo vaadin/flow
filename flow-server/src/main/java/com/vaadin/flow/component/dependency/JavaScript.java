@@ -50,14 +50,19 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * runtime, such as a {@code @JavaScript} with {@link #type()} set to
  * {@link Type#MODULE}, which are loaded per page and never bundled.
  * <p>
- * External JavaScript dependencies (e.g. "http://example.com/some.js") are
- * added in the same way as {@link Page#addJavaScript(String)} and the result is
- * just adding a classic {@code script} element to the page. Other paths used in
- * the {@link JavaScript#value()} method are considered as relative to
- * {@code frontend} directory and they are bundled and added to the page as a
- * JavaScript module (a {@code script} element with {@code type="module"}). In
- * this case a {@link JavaScript} annotation behaves exactly as a
- * {@link JsModule} annotation.
+ * Values with a runtime prefix ({@code http://}, {@code https://}, {@code //},
+ * {@code context://}, {@code base://} or a leading {@code /}) are added in the
+ * same way as {@link Page#addJavaScript(String)} and the result is just adding
+ * a classic {@code script} element to the page. They are never bundled.
+ * <p>
+ * Other paths used in the {@link JavaScript#value()} method are considered as
+ * relative to {@code frontend} directory and they are bundled and added to the
+ * page as a JavaScript module (a {@code script} element with
+ * {@code type="module"}). In this case a {@link JavaScript} annotation behaves
+ * exactly as a {@link JsModule} annotation. This bundled interpretation is
+ * deprecated: use {@link JsModule} with the same value to keep bundling the
+ * file, or serve the file as a static resource and reference it with a runtime
+ * prefix (or {@link Type#MODULE}) to load it at runtime.
  * <p>
  * Setting {@link #type()} to {@link Type#MODULE} opts out of that bundling: the
  * file is then always loaded at runtime as a {@code script} element with
@@ -124,17 +129,18 @@ public @interface JavaScript {
      * JavaScript file URL to load before using the annotated {@link Component}
      * in the browser.
      * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location.
-     * <p>
-     * This URL identifies a file which will be bundled, so the file should be
-     * available to be able to bundle it.
-     * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
-     * context path or use an absolute URL to refer to files outside the
-     * frontend directory. Such URLs are not bundled but included into the page
-     * as standalone scripts in the same way as it's done by
+     * context path, with {@code base://} to make it relative to the page base
+     * URI, start it with {@code /} or use an absolute URL to refer to files
+     * outside the frontend directory. Such URLs are not bundled but included
+     * into the page as standalone scripts in the same way as it's done by
      * {@link Page#addJavaScript(String)}.
+     * <p>
+     * Other relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location and identify a file which will be
+     * bundled, so the file should be available to be able to bundle it. This
+     * bundled interpretation is deprecated; use {@link JsModule} for files that
+     * should be bundled.
      * <p>
      * When {@link #type()} is {@link Type#MODULE}, the value is loaded at
      * runtime regardless of whether it has a URL prefix; bare relative paths
