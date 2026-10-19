@@ -16,6 +16,8 @@
 package com.vaadin.flow.signals.impl;
 
 import java.io.Serializable;
+import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,6 +64,17 @@ public class CachedSignal<T extends @Nullable Object>
             @Nullable RuntimeException exception,
             Usage dependencies) implements Serializable {
     }
+
+    /*
+     * Cached signals that have already been revalidated during the ongoing
+     * top-level read on this thread, mapped to the transaction they were
+     * revalidated in. Revalidating a cached signal checks its dependencies,
+     * which in turn revalidates any cached signals among them. Without this
+     * memo, a cached signal reachable through several paths in the dependency
+     * graph would be checked once per path, making the cost of a single read
+     * grow exponentially with the depth of the graph.
+     */
+    private static final ThreadLocal<@Nullable Map<CachedSignal<?>, Transaction>> validatedInCurrentRead = new ThreadLocal<>();
 
     private final Signal<T> inner;
 
@@ -242,7 +255,17 @@ public class CachedSignal<T extends @Nullable Object>
                  * though a dependency has changed. Revalidate before comparing
                  * so that an outer cached signal sees transitive changes.
                  */
-                getValidState(data(Transaction.getCurrent()));
+                try {
+                    getValidState(data(Transaction.getCurrent()));
+                } catch (RuntimeException e) {
+                    /*
+                     * Report a change so that the caller reads the value again,
+                     * which throws the same exception in a context where the
+                     * caller can handle it, e.g. inside the computation of an
+                     * outer cached signal.
+                     */
+                    return true;
+                }
                 return superUsage.hasChanges();
             }
 
@@ -274,6 +297,37 @@ public class CachedSignal<T extends @Nullable Object>
     }
 
     private CacheState getValidState(@Nullable Data data) {
+        Map<CachedSignal<?>, Transaction> validated = validatedInCurrentRead
+                .get();
+        if (validated == null) {
+            validated = new IdentityHashMap<>();
+            validatedInCurrentRead.set(validated);
+            try {
+                return getValidState(data, validated);
+            } finally {
+                validatedInCurrentRead.remove();
+            }
+        }
+        return getValidState(data, validated);
+    }
+
+    private CacheState getValidState(@Nullable Data data,
+            Map<CachedSignal<?>, Transaction> validated) {
+        Transaction transaction = Transaction.getCurrent();
+        if (validated.get(this) == transaction) {
+            CacheState state = readState(data);
+            if (state != null) {
+                return state;
+            }
+        }
+
+        CacheState state = revalidate(data, validated);
+        validated.put(this, transaction);
+        return state;
+    }
+
+    private CacheState revalidate(@Nullable Data data,
+            Map<CachedSignal<?>, Transaction> validated) {
         CacheState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
@@ -298,9 +352,20 @@ public class CachedSignal<T extends @Nullable Object>
             state = new CacheState(value, exception, dependencies);
 
             CacheState finalState = state;
-            Effect.runInReadTriggeredUpdateContext(
-                    () -> submit(new SignalCommand.SetCommand(Id.random(), id(),
-                            new CachedPOJONode(finalState))));
+            /*
+             * Submitting the new value notifies listeners, which may run
+             * effects that change other signals. Those run as separate reads
+             * and anything validated so far may no longer be valid afterwards.
+             */
+            validatedInCurrentRead.remove();
+            try {
+                Effect.runInReadTriggeredUpdateContext(
+                        () -> submit(new SignalCommand.SetCommand(Id.random(),
+                                id(), new CachedPOJONode(finalState))));
+            } finally {
+                validated.clear();
+                validatedInCurrentRead.set(validated);
+            }
         }
 
         return state;

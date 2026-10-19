@@ -31,10 +31,12 @@ import java.util.concurrent.locks.LockSupport;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.SignalTestBase;
 import com.vaadin.flow.signals.function.EffectAction;
+import com.vaadin.flow.signals.impl.UsageTracker.Usage;
 import com.vaadin.flow.signals.local.ListSignal;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.flow.signals.shared.AbstractSharedSignal;
@@ -298,6 +300,75 @@ class ComputedSignalTest extends SignalTestBase {
         source.set(12);
         assertEquals(3, outer.peek());
         assertEquals(2, outerCount.intValue());
+    }
+
+    @Test
+    void cached_diamondOfNestedCached_eachDependencyCheckedOncePerRead() {
+        AtomicInteger sourceChecks = new AtomicInteger();
+        SharedValueSignal<Integer> source = new SharedValueSignal<>(1) {
+            @Override
+            protected Usage createUsage(Transaction transaction) {
+                Usage usage = super.createUsage(transaction);
+                return new Usage() {
+                    @Override
+                    public boolean hasChanges() {
+                        sourceChecks.incrementAndGet();
+                        return usage.hasChanges();
+                    }
+
+                    @Override
+                    public Registration onNextChange(
+                            TransientListener listener) {
+                        return usage.onNextChange(listener);
+                    }
+                };
+            }
+        };
+
+        // Each level reads the level below twice, so there are 2^20 paths
+        // from the top level to the source
+        Signal<Integer> level = Signal.cached(source.map(value -> value));
+        for (int i = 0; i < 20; i++) {
+            Signal<Integer> below = level;
+            level = Signal.cached(() -> below.get() + below.get());
+        }
+        Signal<Integer> top = level;
+
+        top.peek();
+        sourceChecks.set(0);
+        top.peek();
+        assertEquals(1, sourceChecks.get());
+
+        source.set(2);
+        sourceChecks.set(0);
+        assertEquals(2 << 20, top.peek());
+        assertTrue(sourceChecks.get() <= 21 * 2,
+                "Source checked " + sourceChecks.get() + " times");
+    }
+
+    @Test
+    void cached_nestedCachedFailsOnRevalidation_outerComputationHandlesError() {
+        ValueSignal<Integer> source = new ValueSignal<>(1);
+        ValueSignal<Integer> other = new ValueSignal<>(100);
+        AtomicInteger innerCount = new AtomicInteger();
+
+        // Reads no signal when run again, which fails revalidation
+        Signal<Integer> inner = Signal.cached(
+                () -> innerCount.getAndIncrement() == 0 ? source.get() : 0);
+        Signal<Integer> outer = Signal.cached(() -> {
+            int value;
+            try {
+                value = inner.get();
+            } catch (MissingSignalUsageException e) {
+                value = -1;
+            }
+            return value + other.get();
+        });
+
+        assertEquals(101, outer.peek());
+
+        source.set(2);
+        assertEquals(99, outer.peek());
     }
 
     @Test
