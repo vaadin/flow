@@ -135,7 +135,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler
      * @return {@code true} if the request was handled, {@code false} otherwise
      * @throws IOException
      *             if writing the response fails
-     * @since 25.4
      */
     protected boolean handleWebComponentRequest(VaadinRequest request,
             VaadinResponse response) throws IOException {
