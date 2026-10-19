@@ -48,17 +48,28 @@ public final class ClientActions implements Serializable {
      */
     public static ClientAction of(Action action) {
         Objects.requireNonNull(action, "action must not be null");
-        // Do not convert to lambda: the handle is held by a renderer and its
-        // action's callbacks typically reach back to it through the owning
-        // view, and lambda deserialization cannot resolve that cycle
-        // (ClassCastException on the captured value).
-        return new ClientAction() {
-            @Override
-            public Registration bindTo(Element host, ClientActionSink sink) {
-                SinkTrigger trigger = new SinkTrigger(host, sink);
-                trigger.triggers(action);
-                return trigger::remove;
-            }
-        };
+        return new ActionHandle(action);
+    }
+
+    /*
+     * Do not convert to lambda: the handle is held by a renderer and its
+     * action's callbacks typically reach back to it through the owning view,
+     * and lambda deserialization cannot resolve that cycle (ClassCastException
+     * on the captured value).
+     */
+    private static final class ActionHandle implements ClientAction {
+
+        private final Action action;
+
+        private ActionHandle(Action action) {
+            this.action = action;
+        }
+
+        @Override
+        public Registration bindTo(Element host, ClientActionSink sink) {
+            SinkTrigger trigger = new SinkTrigger(host, sink);
+            trigger.triggers(action);
+            return trigger::remove;
+        }
     }
 }
