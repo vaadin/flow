@@ -56,6 +56,7 @@ import com.vaadin.flow.internal.StringUtil;
  * @param arguments
  *            the arguments of the call, in declaration order, any of which may
  *            be <code>null</code>
+ * @since 25.4
  */
 public record JsCall(Class<?> definitionType, String methodName,
         List<Object> arguments) implements Serializable {

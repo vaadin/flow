@@ -35,7 +35,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -70,7 +69,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @Isolated
@@ -88,8 +92,8 @@ class StreamRequestHandlerTest {
     void setUp() throws ServletException, ServiceException {
         service = new MockVaadinServletService();
 
-        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
-        Mockito.when(wrappedSession.getId()).thenReturn("session-id");
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        when(wrappedSession.getId()).thenReturn("session-id");
 
         session = new AlwaysLockedVaadinSession(service) {
             @Override
@@ -103,12 +107,11 @@ class StreamRequestHandlerTest {
             }
         };
         streamResourceRegistry = new StreamResourceRegistry(session);
-        request = Mockito.mock(VaadinServletRequest.class);
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
-        Mockito.when(servletContext.getMimeType(Mockito.anyString()))
-                .thenReturn(null);
-        Mockito.when(request.getServletContext()).thenReturn(servletContext);
-        response = Mockito.mock(VaadinResponse.class);
+        request = mock(VaadinServletRequest.class);
+        ServletContext servletContext = mock(ServletContext.class);
+        when(servletContext.getMimeType(anyString())).thenReturn(null);
+        when(request.getServletContext()).thenReturn(servletContext);
+        response = mock(VaadinResponse.class);
         ui = new MockUI(session);
         UI.setCurrent(ui);
     }
@@ -202,7 +205,7 @@ class StreamRequestHandlerTest {
     void stateNodeStates_handlerMustNotReplyWhenNodeDisabled()
             throws IOException {
         stateNodeStatesTestInternal(false, true);
-        Mockito.verify(response).sendError(403, "Resource not available");
+        verify(response).sendError(403, "Resource not available");
     }
 
     @Test
@@ -211,8 +214,7 @@ class StreamRequestHandlerTest {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withDisabledUpdateMode(DisabledUpdateMode.ALWAYS);
         stateNodeStatesTestInternal(builder);
-        Mockito.verify(response, Mockito.never()).sendError(Mockito.anyInt(),
-                Mockito.anyString());
+        verify(response, never()).sendError(anyInt(), anyString());
     }
 
     @Test
@@ -220,7 +222,7 @@ class StreamRequestHandlerTest {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withInert(true);
         stateNodeStatesTestInternal(builder);
-        Mockito.verify(response).sendError(403, "Resource not available");
+        verify(response).sendError(403, "Resource not available");
     }
 
     @Test
@@ -228,8 +230,7 @@ class StreamRequestHandlerTest {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withInert(true).withAllowInert(true);
         stateNodeStatesTestInternal(builder);
-        Mockito.verify(response, Mockito.never()).sendError(Mockito.anyInt(),
-                Mockito.anyString());
+        verify(response, never()).sendError(anyInt(), anyString());
     }
 
     @Test
@@ -237,22 +238,21 @@ class StreamRequestHandlerTest {
         TestElementHandlerBuilder builder = new TestElementHandlerBuilder()
                 .withVisible(false);
         stateNodeStatesTestInternal(builder);
-        Mockito.verify(response).sendError(403, "Resource not available");
+        verify(response).sendError(403, "Resource not available");
     }
 
     @Test
     void stateNodeStates_handlerMustNotReplyWhenNodeDetached()
             throws IOException {
         stateNodeStatesTestInternal(true, false);
-        Mockito.verify(response).sendError(403, "Resource not available");
+        verify(response).sendError(403, "Resource not available");
     }
 
     @Test
     void stateNodeStates_handlerMustReplyWhenNodeAttachedAndEnabled()
             throws IOException {
         stateNodeStatesTestInternal(true, true);
-        Mockito.verify(response, Mockito.never()).sendError(Mockito.anyInt(),
-                Mockito.anyString());
+        verify(response, never()).sendError(anyInt(), anyString());
     }
 
     private VaadinResponse stateNodeStatesTestInternal(boolean enabled,
@@ -269,30 +269,25 @@ class StreamRequestHandlerTest {
         TestStateNodeProperties testStateNodeProperties = builder
                 .buildStateNodeProperties();
 
-        Element owner = Mockito.mock(Element.class);
-        StateNode stateNode = Mockito.mock(StateNode.class);
-        Mockito.when(owner.getNode()).thenReturn(stateNode);
+        Element owner = mock(Element.class);
+        StateNode stateNode = mock(StateNode.class);
+        when(owner.getNode()).thenReturn(stateNode);
 
-        Mockito.when(stateNode.isEnabled())
-                .thenReturn(testStateNodeProperties.enabled);
-        Mockito.when(stateNode.isAttached())
+        when(stateNode.isEnabled()).thenReturn(testStateNodeProperties.enabled);
+        when(stateNode.isAttached())
                 .thenReturn(testStateNodeProperties.attached);
-        Mockito.when(stateNode.isVisible())
-                .thenReturn(testStateNodeProperties.visible);
-        Mockito.when(stateNode.isInert())
-                .thenReturn(testStateNodeProperties.inert);
+        when(stateNode.isVisible()).thenReturn(testStateNodeProperties.visible);
+        when(stateNode.isInert()).thenReturn(testStateNodeProperties.inert);
 
         StreamResourceRegistry.ElementStreamResource res = new StreamResourceRegistry.ElementStreamResource(
                 stateHandler, owner);
 
         streamResourceRegistry.registerResource(res);
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo()).thenReturn(String.format(
-                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
-                res.getId(),
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(request.getPathInfo()).thenReturn(String.format("/%s%s/%s/%s",
+                DYN_RES_PREFIX, ui.getId().orElse("-1"), res.getId(),
                 StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
@@ -309,21 +304,18 @@ class StreamRequestHandlerTest {
 
         streamResourceRegistry.registerResource(res);
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo()).thenReturn(String.format(
-                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
-                res.getId(),
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(request.getPathInfo()).thenReturn(String.format("/%s%s/%s/%s",
+                DYN_RES_PREFIX, ui.getId().orElse("-1"), res.getId(),
                 StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
-        Mockito.verify(response).getOutputStream();
+        verify(response).getOutputStream();
 
         ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
-        Mockito.verify(outputStream).write(argument.capture(), Mockito.anyInt(),
-                Mockito.anyInt());
+        verify(outputStream).write(argument.capture(), anyInt(), anyInt());
 
         byte[] buf = new byte[1024];
         for (int i = 0; i < testBytes.length; i++) {
@@ -331,8 +323,8 @@ class StreamRequestHandlerTest {
         }
         assertArrayEquals(buf, argument.getValue(),
                 "Output differed from expected");
-        Mockito.verify(response).setCacheTime(Mockito.anyLong());
-        Mockito.verify(response).setContentType("application/octet-stream");
+        verify(response).setCacheTime(anyLong());
+        verify(response).setContentType("application/octet-stream");
     }
 
     private void testStreamResourceStreamResourceWriter(String testString,
@@ -344,25 +336,23 @@ class StreamRequestHandlerTest {
 
         streamResourceRegistry.registerResource(res);
 
-        ServletOutputStream outputStream = Mockito
-                .mock(ServletOutputStream.class);
-        Mockito.when(response.getOutputStream()).thenReturn(outputStream);
-        Mockito.when(request.getPathInfo()).thenReturn(String.format(
-                "/%s%s/%s/%s", DYN_RES_PREFIX, ui.getId().orElse("-1"),
-                res.getId(),
+        ServletOutputStream outputStream = mock(ServletOutputStream.class);
+        when(response.getOutputStream()).thenReturn(outputStream);
+        when(request.getPathInfo()).thenReturn(String.format("/%s%s/%s/%s",
+                DYN_RES_PREFIX, ui.getId().orElse("-1"), res.getId(),
                 StreamRequestHandler.sanitizeNameForUrl(res.getName())));
 
         handler.handleRequest(session, request, response);
 
-        Mockito.verify(response).getOutputStream();
+        verify(response).getOutputStream();
 
         ArgumentCaptor<byte[]> argument = ArgumentCaptor.forClass(byte[].class);
-        Mockito.verify(outputStream).write(argument.capture());
+        verify(outputStream).write(argument.capture());
 
         assertArrayEquals(testBytes, argument.getValue(),
                 "Output differed from expected");
-        Mockito.verify(response).setCacheTime(Mockito.anyLong());
-        Mockito.verify(response).setContentType("application/octet-stream");
+        verify(response).setCacheTime(anyLong());
+        verify(response).setContentType("application/octet-stream");
     }
 
     @Test

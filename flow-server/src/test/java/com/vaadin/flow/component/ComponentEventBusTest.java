@@ -17,12 +17,12 @@ package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -34,7 +34,6 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.JsonConstants;
@@ -47,6 +46,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mockStatic;
 
 class ComponentEventBusTest {
 
@@ -782,37 +783,46 @@ class ComponentEventBusTest {
 
     @Test // #7826
     void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
-        // Count the expressions without mocking, since the mocked digest
-        // makes all the derived keys collapse into one
-        final TestButton reference = new TestButton();
-        reference.addClickListener(event -> {
-        });
-        int expressionCount = ElementListenersTest
-                .getExpressions(reference.getElement().getNode()
-                        .getFeature(ElementListenerMap.class), "click")
-                .size();
-
         final TestButton button = new TestButton();
-        try (MockedStatic<MessageDigestUtil> util = Mockito
-                .mockStatic(MessageDigestUtil.class)) {
-            util.when(() -> MessageDigestUtil.sha256(Mockito.anyString()))
-                    .thenReturn(
-                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
+        try (MockedStatic<MessageDigestUtil> util = mockStatic(
+                MessageDigestUtil.class)) {
+            util.when(() -> MessageDigestUtil.sha256(anyString())).thenReturn(
+                    new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
             button.addClickListener(event -> {
             });
-
-            /*
-             * Each expression is hashed once for deriving the key that the
-             * client uses when reporting its value, and the key is then cached
-             * for the lifetime of the registration. The constant pool key for
-             * the settings of all expressions is still only hashed when the
-             * settings are actually sent to the client, i.e. the work stays
-             * linear in the number of expressions instead of being redone for
-             * all of them every time one is added.
-             */
-            util.verify(() -> MessageDigestUtil.sha256(Mockito.anyString()),
-                    Mockito.times(expressionCount));
+            util.verifyNoInteractions();
         }
+    }
+
+    @DomEvent("element-data-event")
+    public static class ElementDataEvent extends ComponentEvent<Component> {
+        // Only the event data annotations of the parameters are used
+        public ElementDataEvent(Component source, boolean fromClient,
+                @EventData("event.target") Element target, // NOSONAR
+                @EventData("element.parentNode") Component parent,
+                @EventData("event.detail") int detail) {
+            super(source, fromClient);
+        }
+    }
+
+    @Test
+    void addListener_elementAndComponentEventData_sameExpressionsAsAddEventDataElement() {
+        TestComponent component = new TestComponent();
+        Element element = new Element("div");
+
+        component.addListener(ElementDataEvent.class, event -> {
+        });
+        element.addEventListener("element-data-event", event -> {
+        }).addEventDataElement("event.target")
+                .addEventDataElement("element.parentNode")
+                .addEventData("event.detail");
+
+        Set<String> expressions = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event");
+        assertEquals(3, expressions.size());
+        assertEquals(element.getNode().getFeature(ElementListenerMap.class)
+                .getExpressions("element-data-event"), expressions);
     }
 
     @Test

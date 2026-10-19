@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -51,6 +52,8 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -81,9 +84,14 @@ public class ElementListenerMap extends NodeMap {
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
-    // Server-side only cache of the settings sent to the client, used for
-    // interpreting the values that the client sends back
-    private Map<String, EventSettings> settingsCache;
+    /**
+     * Placeholder stored in the map instead of the actual event settings. The
+     * settings JSON is derived on demand from the registered listeners when
+     * changes are collected, to avoid keeping it in memory.
+     */
+    private enum EventSettingsMarker {
+        INSTANCE
+    }
 
     /**
      * One JavaScript snippet that the client evaluates when the event occurs,
@@ -118,6 +126,15 @@ public class ElementListenerMap extends NodeMap {
                 String expression, List<JsonNode> captures) {
             return new ExpressionEntry(Objects.requireNonNull(name), expression,
                     captures);
+        }
+
+        /**
+         * Creates an entry for an expression that is added without a name or
+         * captures, which means that the expression is also used as the name.
+         */
+        private static ExpressionEntry forEventData(String expression) {
+            return forEventData(expression, expression,
+                    Collections.emptyList());
         }
 
         /**
@@ -324,11 +341,6 @@ public class ElementListenerMap extends NodeMap {
             .forFilter(ALWAYS_TRUE_FILTER, Collections.emptyList());
 
     /**
-     * Settings used for event types that have no listeners.
-     */
-    private static final EventSettings EMPTY_SETTINGS = new EventSettings();
-
-    /**
      * Creates a short key for the given content, using the same approach as
      * {@link ConstantPoolKey}.
      */
@@ -349,6 +361,17 @@ public class ElementListenerMap extends NodeMap {
         private final ElementListenerMap listenerMap;
 
         private DisabledUpdateMode mode = DisabledUpdateMode.ONLY_WHEN_ENABLED;
+        /*
+         * Exactly sized unmodifiable list rather than a set: listeners hold a
+         * handful of expressions, so a hash set would cost several times more
+         * memory for each one. The list may be shared with other listeners, see
+         * addEventData(List), and is replaced with a copy when adding.
+         */
+        private List<String> eventDataExpressions;
+        /*
+         * Event data that is added with a name or captures, kept apart from the
+         * plain expressions so that those can still be shared.
+         */
         private List<ExpressionEntry> eventDataEntries;
         private ExpressionEntry filter;
 
@@ -394,7 +417,43 @@ public class ElementListenerMap extends NodeMap {
                         "The event data expression must not be null");
             }
 
-            return addEventData(eventData, eventData);
+            appendEventData(List.of(eventData));
+
+            listenerMap.updateEventSettings(type);
+
+            return this;
+        }
+
+        @Override
+        public DomListenerRegistration addEventData(List<String> eventData) {
+            if (eventData == null) {
+                throw new IllegalArgumentException(
+                        "The event data expressions must not be null");
+            }
+            for (String expression : eventData) {
+                if (expression == null) {
+                    throw new IllegalArgumentException(
+                            "The event data expression must not be null");
+                }
+            }
+
+            appendEventData(eventData);
+
+            listenerMap.updateEventSettings(type);
+
+            return this;
+        }
+
+        private void appendEventData(List<String> eventData) {
+            if (eventDataExpressions == null) {
+                // Keeps the given list if it is already unmodifiable
+                eventDataExpressions = List.copyOf(eventData);
+            } else if (!eventDataExpressions.containsAll(eventData)) {
+                eventDataExpressions = Stream
+                        .concat(eventDataExpressions.stream(),
+                                eventData.stream())
+                        .distinct().toList();
+            }
         }
 
         @Override
@@ -409,8 +468,13 @@ public class ElementListenerMap extends NodeMap {
                         "The event data expression must not be null");
             }
 
+            List<JsonNode> encodedCaptures = encodeCaptures(captures);
+            if (encodedCaptures.isEmpty() && name.equals(expression)) {
+                return addEventData(expression);
+            }
+
             ExpressionEntry entry = ExpressionEntry.forEventData(name,
-                    expression, encodeCaptures(captures));
+                    expression, encodedCaptures);
 
             if (eventDataEntries == null) {
                 // Don't use the no-args constructor that allocates for 10
@@ -526,13 +590,21 @@ public class ElementListenerMap extends NodeMap {
         }
 
         private boolean isPropertySynchronized(String propertyName) {
-            if (eventDataEntries == null) {
-                return false;
-            }
             String token = JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
                     + propertyName;
-            return eventDataEntries.stream()
-                    .anyMatch(entry -> token.equals(entry.expression));
+            return eventDataExpressions != null
+                    && eventDataExpressions.contains(token)
+                    || eventDataEntries != null && eventDataEntries.stream()
+                            .anyMatch(entry -> token.equals(entry.expression));
+        }
+
+        private Stream<ExpressionEntry> streamEventData() {
+            Stream<ExpressionEntry> plain = eventDataExpressions == null
+                    ? Stream.empty()
+                    : eventDataExpressions.stream()
+                            .map(ExpressionEntry::forEventData);
+            return eventDataEntries == null ? plain
+                    : Stream.concat(plain, eventDataEntries.stream());
         }
 
         @Override
@@ -619,11 +691,9 @@ public class ElementListenerMap extends NodeMap {
 
             // Process event data expressions, handling preventDefault and
             // stopPropagation specially
-            if (wrapper.eventDataEntries != null) {
-                for (ExpressionEntry entry : wrapper.eventDataEntries) {
-                    settings.add(makeConditional(entry, filter));
-                }
-            }
+            ExpressionEntry listenerFilter = filter;
+            wrapper.streamEventData().forEach(entry -> settings
+                    .add(makeConditional(entry, listenerFilter)));
 
             int timeout = wrapper.debounceTimeout;
             if (timeout > 0 && filter == null) {
@@ -650,17 +720,6 @@ public class ElementListenerMap extends NodeMap {
              */
             settings.add(ALWAYS_TRUE_ENTRY).addDebouncePhases(0,
                     NO_TIMEOUT_PHASES);
-        }
-
-        if (!settings.conflictingNames.isEmpty()) {
-            LoggerFactory.getLogger(ElementListenerMap.class).warn(
-                    "The event data name(s) {} are used by multiple listeners "
-                            + "for the {} event on the same element, but with "
-                            + "different expressions or captures. Only one of "
-                            + "the values will be available to the listeners. "
-                            + "Use a unique name for each event data "
-                            + "expression.",
-                    settings.conflictingNames, eventType);
         }
 
         return settings;
@@ -698,59 +757,58 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
+        put(eventType, EventSettingsMarker.INSTANCE);
+    }
+
+    @Override
+    protected boolean producePutChange(String key, boolean hadValueEarlier,
+            Serializable newValue) {
+        // The stored marker never changes even though the settings derived
+        // from it do, so every update needs to be sent
+        return true;
+    }
+
+    private Serializable createEventSettingsKey(String eventType) {
         EventSettings settings = collectEventSettings(eventType);
 
-        cacheSettings(eventType, settings);
+        if (!settings.conflictingNames.isEmpty()) {
+            LoggerFactory.getLogger(ElementListenerMap.class).warn(
+                    "The event data name(s) {} are used by multiple listeners "
+                            + "for the {} event on the same element, but with "
+                            + "different expressions or captures. Only one of "
+                            + "the values will be available to the listeners. "
+                            + "Use a unique name for each event data "
+                            + "expression.",
+                    settings.conflictingNames, eventType);
+        }
 
         ObjectNode sharedJson = JacksonUtils.createObject(settings.shared,
                 ExpressionSettings::toJson);
         ConstantPoolKey constantPoolKey = new ConstantPoolKey(sharedJson);
 
         if (settings.captured.isEmpty()) {
-            put(eventType, constantPoolKey);
-        } else {
-            ObjectNode captures = JacksonUtils.createObjectNode();
-            settings.captured.forEach(
-                    (key, entry) -> captures.set(key, entry.toCaptureJson()));
-
-            put(eventType, new ParameterizedConstantPoolKey(constantPoolKey,
-                    captures));
-        }
-    }
-
-    /**
-     * Gets the number of event types that settings are cached for. Package
-     * private to facilitate unit testing.
-     *
-     * @return the number of cached event types
-     */
-    int getCachedSettingsCount() {
-        return settingsCache == null ? 0 : settingsCache.size();
-    }
-
-    private void cacheSettings(String eventType, EventSettings settings) {
-        if (settingsCache == null) {
-            settingsCache = new HashMap<>();
-        }
-        settingsCache.put(eventType, settings);
-    }
-
-    private EventSettings getEventSettings(String eventType) {
-        EventSettings cached = settingsCache == null ? null
-                : settingsCache.get(eventType);
-        if (cached != null) {
-            return cached;
+            return constantPoolKey;
         }
 
-        /*
-         * Settings are cached whenever they are updated, so a miss means that
-         * there are no listeners for the event type that the client sent.
-         * Nothing is cached here since the event type comes from the client,
-         * which would otherwise be able to grow this map without limit.
-         */
-        assert getWrappers(eventType).isEmpty();
+        ObjectNode captures = JacksonUtils.createObjectNode();
+        settings.captured.forEach(
+                (key, entry) -> captures.set(key, entry.toCaptureJson()));
 
-        return EMPTY_SETTINGS;
+        return new ParameterizedConstantPoolKey(constantPoolKey, captures);
+    }
+
+    @Override
+    public void collectChanges(Consumer<NodeChange> collector) {
+        super.collectChanges(change -> {
+            if (change instanceof MapPutChange putChange
+                    && putChange.getValue() instanceof EventSettingsMarker) {
+                String eventType = putChange.getKey();
+                collector.accept(new MapPutChange(this, eventType,
+                        createEventSettingsKey(eventType)));
+            } else {
+                collector.accept(change);
+            }
+        });
     }
 
     private static List<JsonNode> encodeCaptures(Object... captures) {
@@ -778,7 +836,13 @@ public class ElementListenerMap extends NodeMap {
         assert eventType != null;
         assert eventData != null;
 
-        Map<String, String> names = getEventSettings(eventType).names;
+        if (getWrappers(eventType).isEmpty()) {
+            return eventData;
+        }
+
+        // Derived from the current listeners rather than kept in memory, like
+        // the settings sent to the client
+        Map<String, String> names = collectEventSettings(eventType).names;
         if (names.isEmpty() || !eventData.isObject()) {
             return eventData;
         }
@@ -811,10 +875,6 @@ public class ElementListenerMap extends NodeMap {
 
                 // Remove from the set that is synchronized with the client
                 remove(eventType);
-
-                if (settingsCache != null) {
-                    settingsCache.remove(eventType);
-                }
             }
         }
     }
@@ -921,11 +981,8 @@ public class ElementListenerMap extends NodeMap {
         assert registration != null;
         assert name != null;
 
-        List<ExpressionEntry> entries = ((DomEventListenerWrapper) registration).eventDataEntries;
-        if (entries == null) {
-            return null;
-        }
-        return entries.stream().filter(entry -> name.equals(entry.name))
+        return ((DomEventListenerWrapper) registration).streamEventData()
+                .filter(entry -> name.equals(entry.name))
                 .map(ExpressionEntry::getKey).findFirst().orElse(null);
     }
 

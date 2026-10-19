@@ -18,11 +18,9 @@ package com.vaadin.flow.spring.security;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 
@@ -36,6 +34,11 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 class WebIconsRequestMatcherTest {
 
     AppShellRegistry shellRegistry;
@@ -45,10 +48,10 @@ class WebIconsRequestMatcherTest {
     @BeforeEach
     void setup() {
         ServletContext servletContext = new MockServletContext();
-        vaadinService = Mockito.mock(VaadinService.class);
-        Mockito.when(vaadinService.getContext())
+        vaadinService = mock(VaadinService.class);
+        when(vaadinService.getContext())
                 .thenReturn(new VaadinServletContext(servletContext));
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
         shellRegistry = AppShellRegistry
                 .getInstance(vaadinService.getContext());
@@ -135,7 +138,7 @@ class WebIconsRequestMatcherTest {
             String urlMapping) {
         WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(
                 vaadinService, urlMapping);
-        Assertions.assertTrue(
+        assertTrue(
                 matcher.matches(createRequest(requestPath, urlMapping, true)),
                 "Expecting '" + requestPath + "' to be matched, but was not");
     }
@@ -143,7 +146,7 @@ class WebIconsRequestMatcherTest {
     private void assertRequestMatching(String requestPath, String urlMapping) {
         WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(
                 vaadinService, urlMapping);
-        Assertions.assertTrue(
+        assertTrue(
                 matcher.matches(createRequest(requestPath, urlMapping, false)),
                 "Expecting '" + requestPath + "' to be matched, but was not");
     }
@@ -152,7 +155,7 @@ class WebIconsRequestMatcherTest {
             String urlMapping) {
         WebIconsRequestMatcher matcher = new WebIconsRequestMatcher(
                 vaadinService, urlMapping);
-        Assertions.assertFalse(
+        assertFalse(
                 matcher.matches(createRequest(requestPath, urlMapping, false)),
                 "Expecting '" + requestPath + "' not to be matched, but was");
     }

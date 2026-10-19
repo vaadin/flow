@@ -17,7 +17,9 @@ package com.vaadin.flow.component.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,7 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -38,12 +40,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UI.BrowserLeaveNavigationEvent;
 import com.vaadin.flow.component.UI.BrowserNavigateEvent;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -52,23 +56,37 @@ import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
 import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.NavigationEndedEvent;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
+import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class JavaScriptBootstrapUITest {
 
@@ -101,9 +119,12 @@ class JavaScriptBootstrapUITest {
     @Tag(Tag.H1)
     public static class DirtyChild extends Component
             implements BeforeLeaveObserver {
+        // What the postponed leave hands out, for a case that decides it
+        static ContinueNavigationAction action;
+
         @Override
         public void beforeLeave(BeforeLeaveEvent event) {
-            event.postpone();
+            action = event.postpone();
         }
     }
 
@@ -113,6 +134,18 @@ class JavaScriptBootstrapUITest {
         public Dirty() {
             add(new DirtyChild());
         }
+    }
+
+    @Route("preserved")
+    @Tag(Tag.SPAN)
+    @PreserveOnRefresh
+    public static class PreservedView extends Component {
+    }
+
+    @Route("partially-preserved")
+    @Tag(Tag.SPAN)
+    @PreserveOnRefresh(partialMatch = true)
+    public static class PartiallyPreservedView extends Component {
     }
 
     @Route("product")
@@ -197,6 +230,14 @@ class JavaScriptBootstrapUITest {
                 Dirty.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("product",
                 ProductView.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute("preserved",
+                PreservedView.class, Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "partially-preserved", PartiallyPreservedView.class,
+                Collections.emptyList());
+        mocks.getService().getRouter().getRegistry().setRoute(
+                "partially-preserved/1", PartiallyPreservedView.class,
+                Collections.emptyList());
 
         Class<? extends ProductView> routeProxyClass = new ByteBuddy()
                 .subclass(ProductView.class)
@@ -362,6 +403,44 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
+    void leaveNavigation_toClientView_firesNotShownOutcome() {
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
+        List<NavigationEndedEvent> ended = recordNavigationEndedEvents();
+
+        ui.leaveNavigation(
+                new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
+
+        assertEquals(1, ended.size());
+        assertEquals(new NavigationEndedEvent.NotShown(),
+                ended.get(0).getOutcome());
+    }
+
+    @Test
+    void browserNavigate_unknownRoute_firesOneFailedNavigation() {
+        ui.browserNavigate(
+                new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
+        List<NavigationEndedEvent> ended = recordNavigationEndedEvents();
+
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/unknown", "",
+                "", null, "link"));
+
+        assertEquals(1, ended.size());
+        NavigationEndedEvent event = ended.get(0);
+        assertEquals("unknown", event.getLocation().getPath());
+        assertInstanceOf(NotFoundException.class,
+                ((NavigationEndedEvent.Failed) event.getOutcome()).error());
+        assertEquals(404, event.getStatusCode());
+    }
+
+    private List<NavigationEndedEvent> recordNavigationEndedEvents() {
+        List<NavigationEndedEvent> ended = new ArrayList<>();
+        mocks.getService().getEventBus().addListener(NavigationEndedEvent.class,
+                ended::add);
+        return ended;
+    }
+
+    @Test
     void should_keep_content_on_leaveNavigation_postpone() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
@@ -376,6 +455,45 @@ class JavaScriptBootstrapUITest {
                 ui.getInternals().getWrapperElement().getChild(0).getTag());
         assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
                 .getChild(0).getTag());
+    }
+
+    @Test
+    void postponedLeave_proceedLetsTheClientGoAndCancelTurnsItBack() {
+        // The client waits to hear what became of the navigation it handed
+        // over, so each way out of a postponed one has to answer - and answer
+        // the right way round
+        for (boolean proceed : new boolean[] { true, false }) {
+            ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/dirty", "",
+                    "", null, ""));
+            ui.leaveNavigation(new BrowserLeaveNavigationEvent(ui, true,
+                    "/client-view", ""));
+            dumpServerConnectedCalls();
+
+            if (proceed) {
+                DirtyChild.action.proceed();
+            } else {
+                DirtyChild.action.cancel();
+            }
+
+            assertEquals(List.of(!proceed), dumpServerConnectedCalls(),
+                    proceed ? "proceeding should not cancel the navigation"
+                            : "cancelling should turn the navigation back");
+        }
+    }
+
+    /**
+     * What the wrapper element has been told since last asked, as the cancel
+     * flag of each call.
+     */
+    private List<Object> dumpServerConnectedCalls() {
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        return ui.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .map(pending -> pending.getInvocation().getJsCall())
+                .filter(call -> call != null
+                        && call.definitionType() == Element.CallFunctionJs.class
+                        && "serverConnected"
+                                .equals(call.flattenArguments().get(0)))
+                .map(call -> call.flattenArguments().get(1)).toList();
     }
 
     @Test
@@ -436,7 +554,7 @@ class JavaScriptBootstrapUITest {
 
     @Test
     void should_invoke_clientRoute_when_navigationHasNotBeenStarted() {
-        ui = Mockito.spy(ui);
+        ui = spy(ui);
         Page page = mockPage();
 
         ui.navigate("whatever");
@@ -447,33 +565,32 @@ class JavaScriptBootstrapUITest {
 
     @Test
     void should_update_pushState_when_navigationHasBeenAlreadyStarted() {
-        ui = Mockito.spy(ui);
+        ui = spy(ui);
         Page page = mockPage();
 
         UIInternals internals = mockUIInternals();
 
         VaadinSession session = mocks.getSession();
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(internals.getSession()).thenReturn(session);
-        Mockito.when(session.getConfiguration()).thenReturn(configuration);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(internals.getSession()).thenReturn(session);
+        when(session.getConfiguration()).thenReturn(configuration);
         ((MockDeploymentConfiguration) session.getService()
                 .getDeploymentConfiguration()).setReactEnabled(false);
 
-        Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
+        when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");
-        Mockito.when(internals.getLastHandledLocation())
-                .thenReturn(lastLocation);
-        StateTree stateTree = Mockito.mock(StateTree.class);
-        Mockito.when(internals.getStateTree()).thenReturn(stateTree);
-        Mockito.when(internals.getTitle()).thenReturn("");
+        when(internals.getLastHandledLocation()).thenReturn(lastLocation);
+        StateTree stateTree = mock(StateTree.class);
+        when(internals.getStateTree()).thenReturn(stateTree);
+        when(internals.getTitle()).thenReturn("");
 
         StateNode stateNode = BasicElementStateProvider
                 .createStateNode("foo-element");
-        Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
+        when(stateTree.getRootNode()).thenReturn(stateNode);
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
 
             menuRegistry
                     .when(() -> MenuRegistry.hasClientRoute("clean/1", true))
@@ -500,15 +617,14 @@ class JavaScriptBootstrapUITest {
 
     @Test
     void should_not_notify_clientRoute_when_navigatingToTheSame() {
-        ui = Mockito.spy(ui);
+        ui = spy(ui);
         Page page = mockPage();
 
         UIInternals internals = mockUIInternals();
 
-        Mockito.when(internals.hasLastHandledLocation()).thenReturn(true);
+        when(internals.hasLastHandledLocation()).thenReturn(true);
         Location lastLocation = new Location("clean");
-        Mockito.when(internals.getLastHandledLocation())
-                .thenReturn(lastLocation);
+        when(internals.getLastHandledLocation()).thenReturn(lastLocation);
 
         ui.navigate("clean/");
         assertEquals(List.of(), pageCalls);
@@ -523,7 +639,7 @@ class JavaScriptBootstrapUITest {
         assertEquals(Tag.H2, ui.getInternals().getWrapperElement().getChild(0)
                 .getChild(0).getTag());
 
-        ui = Mockito.spy(ui);
+        ui = spy(ui);
         Page page = mockPage();
 
         // Dirty view is allowed after clean view
@@ -582,6 +698,56 @@ class JavaScriptBootstrapUITest {
     }
 
     @Test
+    void should_restoreIndexHtmlTitle_when_preserveOnRefreshViewReloadedBeforeWindowNameKnown() {
+        assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown("preserved",
+                "preserved");
+    }
+
+    @Test
+    void should_restoreIndexHtmlTitle_when_partialMatchPreserveOnRefreshViewReloadedBeforeWindowNameKnown() {
+        assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown(
+                "partially-preserved", "partially-preserved/1");
+    }
+
+    private void assertAppShellTitleRestoredOnReloadBeforeWindowNameKnown(
+            String location, String reloadLocation) {
+        // The preserved chain is cached in a session attribute
+        VaadinSession session = mocks.getSession();
+        Map<Class<?>, Object> attributes = new HashMap<>();
+        attributes.put(SessionRouteRegistry.class,
+                session.getAttribute(SessionRouteRegistry.class));
+        doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+                invocation.getArgument(1))).when(session)
+                .setAttribute(any(Class.class), any());
+        doAnswer(invocation -> attributes.get(invocation.getArgument(0)))
+                .when(session).getAttribute(any(Class.class));
+
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("window");
+        ui.getInternals().setExtendedClientDetails(details);
+        ui.browserNavigate(new BrowserNavigateEvent(ui, true, location, "",
+                "app-shell-title", null, ""));
+        assertEquals("app-shell-title", ui.getInternals().getTitle());
+
+        // Reload: the new UI does not know the window name yet, so the
+        // preserved chain is only reused once the client has responded
+        UI reloadedUI = new UI();
+        reloadedUI.getInternals().setSession(mocks.getSession());
+        reloadedUI.doInit(null, 0, "reloadedUiId");
+        reloadedUI.browserNavigate(new BrowserNavigateEvent(reloadedUI, true,
+                reloadLocation, "", "app-shell-title", null, ""));
+
+        ObjectNode browserDetails = JacksonUtils.createObjectNode();
+        browserDetails.put("v-wn", "window");
+        reloadedUI.getInternals().dumpPendingJavaScriptInvocations().stream()
+                .filter(invocation -> invocation.getInvocation().getExpression()
+                        .contains("getBrowserDetailsParameters"))
+                .findFirst().orElseThrow().complete(browserDetails);
+
+        assertEquals("app-shell-title", reloadedUI.getInternals().getTitle());
+    }
+
+    @Test
     void should_not_share_dynamic_app_title_for_different_UIs() {
         String dynamicTitle = UUID.randomUUID().toString();
         ui.browserNavigate(new BrowserNavigateEvent(ui, true, "clean", "",
@@ -602,15 +768,15 @@ class JavaScriptBootstrapUITest {
 
     @Test
     void navigate_firsClientSideRoutingThrows_navigationInProgressIsReset_secondClientSideRoutingWorks() {
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(session.getService()).thenReturn(service);
-        Router router = Mockito.mock(Router.class);
-        Mockito.when(service.getRouter()).thenReturn(router);
+        VaadinService service = mock(VaadinService.class);
+        when(session.getService()).thenReturn(service);
+        Router router = mock(Router.class);
+        when(service.getRouter()).thenReturn(router);
 
-        Mockito.doThrow(RuntimeException.class).when(router)
-                .resolveNavigationTarget(Mockito.any());
+        doThrow(RuntimeException.class).when(router)
+                .resolveNavigationTarget(any());
 
         UI ui = new UI();
 
@@ -619,14 +785,14 @@ class JavaScriptBootstrapUITest {
         try {
             ui.navigate("foo", QueryParameters.empty());
         } catch (RuntimeException expected) {
-            router = Mockito.mock(Router.class);
-            Mockito.when(service.getRouter()).thenReturn(router);
+            router = mock(Router.class);
+            when(service.getRouter()).thenReturn(router);
 
-            Mockito.when(router.resolveNavigationTarget(Mockito.any()))
+            when(router.resolveNavigationTarget(any()))
                     .thenReturn(Optional.empty());
             ui.navigate("foo", QueryParameters.empty());
 
-            Mockito.verify(router).resolveNavigationTarget(Mockito.any());
+            verify(router).resolveNavigationTarget(any());
             return;
         }
         // self control: code inside catch should be invoked
@@ -652,11 +818,11 @@ class JavaScriptBootstrapUITest {
     }
 
     private Page mockPage() {
-        Page page = Mockito.mock(Page.class);
-        Mockito.when(ui.getPage()).thenReturn(page);
+        Page page = mock(Page.class);
+        when(ui.getPage()).thenReturn(page);
         // The page runs declared JavaScript rather than an expression, so the
         // mock hands out an implementation that records the call
-        Mockito.when(page.executeJs(Mockito.any(Class.class)))
+        when(page.executeJs(any(Class.class)))
                 .thenAnswer(invocation -> JsDefinitionProxy.create(
                         invocation.getArgument(0, Class.class), call -> {
                             pageCalls.add(call);
@@ -664,7 +830,7 @@ class JavaScriptBootstrapUITest {
                         }));
 
         History history = new History(ui);
-        Mockito.when(page.getHistory()).thenReturn(history);
+        when(page.getHistory()).thenReturn(history);
 
         return page;
     }
@@ -679,11 +845,10 @@ class JavaScriptBootstrapUITest {
     }
 
     private UIInternals mockUIInternals() {
-        UIInternals internals = Mockito.mock(UIInternals.class);
-        Mockito.when(ui.getInternals()).thenReturn(internals);
+        UIInternals internals = mock(UIInternals.class);
+        when(ui.getInternals()).thenReturn(internals);
 
-        Mockito.when(internals.getRouter())
-                .thenReturn(mocks.getService().getRouter());
+        when(internals.getRouter()).thenReturn(mocks.getService().getRouter());
 
         return internals;
     }

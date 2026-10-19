@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,6 +53,13 @@ import com.vaadin.flow.server.startup.ServletDeployer;
  */
 @HandlesTypes(Route.class)
 public class CdiServletDeployer implements ServletContainerInitializer {
+
+    /**
+     * Creates a new CDI servlet deployer.
+     */
+    public CdiServletDeployer() {
+        // Nothing to initialize
+    }
 
     @Override
     public void onStartup(Set<Class<?>> classSet, ServletContext ctx) {

@@ -149,7 +149,8 @@ const hasJsDefinitions = existsSync(jsDefinitionsFile);
 // version. Vite uses this as the cssTarget as well, and an ES year would map to
 // browsers that are much older than these, which makes Lightning CSS rewrite
 // light-dark() into custom properties that only follow the operating system
-// preference.
+// preference. Keep the old browser check in IndexHtmlRequestHandler in line
+// with this list.
 const target = ['chrome152', 'edge152', 'firefox140', 'safari17.6', 'ios17.6'];
 
 // Block debug and trace logs.
@@ -778,11 +779,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // Vite is always spawned with the project root as its working
           // directory, which is this directory, so "." resolves to the same
           // tsconfig. The dev server instead locates the tsc binary with
-          // Node's require relative to this root, which only accepts an
-          // absolute path and otherwise silently falls back to running a bare
-          // "tsc" through a shell, which logs "tsc: command not found" and
-          // leaves the dev server without type checking.
-          root: env.command === 'build' ? '.' : dirname
+          // Node's require relative to this root. We point it at the alias
+          // Flow ships TypeScript under (@typescript/native) so the checker
+          // spawns the native compiler through its bin/tsc entry point.
+          // The separate typescript alias provides the classic TS6 compiler
+          // API for tools such as eslint.
+          root: env.command === 'build' ? '.' : dirname,
+          typescriptPath: '@typescript/native',
         }
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })

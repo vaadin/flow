@@ -108,9 +108,18 @@ difference between the overloads in the Javadoc of both. See
 Apply `@NullMarked` (JSpecify) at the package level and annotate only what
 genuinely may be null with `@Nullable`.
 
-Prefer a sentinel value over a nullable return in the public API. Jackson wire
-records are the legitimate exception, because the wire format permits
-omissions — keep the wire record private and translate to a non-null public
+Return an empty collection, array, map or stream — never `null` — when there
+are no values.
+
+Return `@Nullable T`, not `Optional<T>`, from a getter whose value may be
+unset, such as `getLabel()` or `getPlaceholder()`. Do not use a stand-in value
+such as `""` or `-1` to mean "not set". See `guidelines/design.md`.
+
+Model a "no data yet" state of a signal or a sealed result type as a named
+value (`UNKNOWN`, `Pending`), not as `null`.
+
+Jackson wire records may have `@Nullable` fields, because the wire format
+permits omissions. Keep the wire record private and translate it to the public
 shape at the boundary.
 
 Put `@Nullable` on the declared type (`ValueSignal<@Nullable X>`). NullAway
@@ -161,7 +170,8 @@ debug output.
 Send a payload that repeats through the constant pool the client already
 caches, and keep the message shape the same for a new path and the existing one
 instead of adding a second cache beside it. Put arriving constants in the pool
-before anything resolves a reference to them.
+before anything resolves a reference to them. See
+`guidelines/wire-protocol.md` for what the pool holds today and what it costs.
 
 Keep a wire object down to what the receiver cannot derive: no key it ignores,
 no value it can read off the payload it already has.
@@ -200,6 +210,13 @@ Derive the version of a provisioned tool from the project's own dependency tree
 instead of pinning it in the plugin, otherwise the pre-provisioned artifact
 does not match what the running process expects and the network is hit anyway.
 
+Derive the set of modules a script or CI workflow iterates over from the poms
+that declare them, never from a list written into the script — a hard-coded
+list drifts the moment someone adds a module and forgets it. Read the
+`<module>` entries of `flow-tests/pom.xml`, or a per-module marker such as the
+`validation.run` property, so a new module is picked up without being listed
+anywhere else. See `scripts/computeMatrix.js` and `scripts/previewModule.js`.
+
 Extract a shared utility instead of copying a class or method between modules.
 When two modules need the same logic, move it to the module they both depend
 on.
@@ -232,18 +249,41 @@ Assert concrete outputs, not just "not null". Verify JSON structure and content
 for serialization, and cover the edge cases that the change actually
 introduces.
 
+Assert the observable outcome — DOM state, response, emitted event, public API
+result — not how it is produced. A test must fail when the behavior breaks and
+keep passing through a refactor that preserves it.
+
+Test the logic of the code under change, not framework behavior that is already
+covered elsewhere.
+
 Static-import the test helpers and call them unqualified —
 `assertEquals(…)`, not `Assertions.assertEquals(…)`, and `mock(…)`, not
 `Mockito.mock(…)`. This covers the JUnit assertions, Hamcrest `assertThat`
 and its matchers, and the Mockito core methods (`mock`, `when`, `verify`,
-`spy`, `doReturn`, …) that Sonar flags with `java:S8924`. It applies to new
-tests and to the calls you are already changing: do not mass-convert an
-unrelated file, and leave the remaining JUnit 4 tests until they are migrated.
-Within a file you are changing, convert the rest of its calls too rather than
-leaving two styles behind.
+`spy`, `doReturn`, …) that Sonar flags with `java:S8924`. All JUnit 5 tests
+already follow this; leave the remaining JUnit 4 tests until they are migrated.
+Keep a call qualified only when the test class declares or inherits a method
+with the same name, which hides the static import — TestBench browser tests
+inherit `assertEquals(WebElement, WebElement)`, so they keep
+`Assertions.assertEquals(…)`.
 
-Add an integration test view under `flow-tests/test-root-context/` for
-browser-facing features, and exercise both the happy path and the error branch.
+Add an integration test only when the behavior needs a browser and a server
+round trip; client-only logic belongs in the client-side tests in
+`flow-client/src/test/frontend/` (run with `npm test` in `flow-client`). Before
+adding an integration test view or class, look for an existing one that
+exercises the same area and extend it. Put a new one in the module
+[flow-tests/README.md](flow-tests/README.md) selects — `flow-tests/test-default/`
+for the default configuration. Exercise both the happy path and the error
+branch.
+
+In an integration test, wait for the expected state with `waitUntil(...)` or
+`waitForElementPresent(...)` after an action that updates the page
+asynchronously — a server round trip, a React or Lit re-render, a `setTimeout`
+or `requestAnimationFrame` — instead of asserting right away, and never use a
+fixed `Thread.sleep` to wait for a state the test can poll for. When an
+assertion becomes a wait, catch `TimeoutException` and fail with the message
+and the expected and actual values. Call `checkLogsForErrors()` right after
+each step that could log a browser error, not only at the end of the test.
 
 Debug a failing integration test with Playwright before guessing. Look at what
 the browser is actually doing.
@@ -262,6 +302,14 @@ what a collaborator does, the case belongs in that collaborator's test class.
 
 Make a value that only has to differ look arbitrary. A byte-exact copy of real
 data reads as a contract that the code does not have.
+
+When changing the setup of an existing test, keep every case it already
+covered. Replacing a mock or a fixture must not drop assertions that still
+apply.
+
+Do not depend on JVM defaults such as locale, time zone or charset. Set them
+explicitly, or pick a value that differs from the default, so the case cannot
+pass without exercising the code.
 
 Build the state a case needs directly. Setup that writes a file, deletes it and
 writes it again through another path hides what the case is about.

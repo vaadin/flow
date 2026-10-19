@@ -242,7 +242,7 @@ public class WebComponentUI extends UI {
         getElement().getStateProvider().appendVirtualChild(
                 getElement().getNode(), child, NodeProperties.INJECT_BY_ID,
                 elementId);
-        child.executeJs("$0.serverConnected()");
+        child.callJsFunction("serverConnected");
     }
 
     private boolean isConfigurationAnnotated(
@@ -269,7 +269,7 @@ public class WebComponentUI extends UI {
 
     private SessionEmbeddedComponentRegistry getRegistry() {
         return SessionEmbeddedComponentRegistry
-                .getSessionRegistry(VaadinSession.getCurrent());
+                .getSessionRegistry(VaadinSession.getCurrentOrThrow());
     }
 
     @Override
@@ -327,7 +327,7 @@ public class WebComponentUI extends UI {
 
     private WebComponentConfigurationRegistry getConfigurationRegistry() {
         return WebComponentConfigurationRegistry
-                .getInstance(getSession().getService().getContext());
+                .getInstance(getSessionOrThrow().getService().getContext());
     }
 
     private static class SessionEmbeddedComponentRegistry
@@ -399,6 +399,8 @@ public class WebComponentUI extends UI {
      * How the attributes a theme asks for reach every exported web component on
      * an embedding page, as a JavaScript definition for
      * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface ThemeAttributesJs extends Serializable {

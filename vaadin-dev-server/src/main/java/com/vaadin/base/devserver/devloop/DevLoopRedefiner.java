@@ -93,10 +93,26 @@ final class DevLoopRedefiner {
             .getLogger(DevLoopRedefiner.class);
 
     /**
-     * Where the agent publishes the JVM's instrumentation handle. The system
-     * properties table is a {@code Hashtable<Object, Object>} and can therefore
-     * carry an arbitrary object, which is what makes this work regardless of
-     * which class loader owns the application classes.
+     * The agent class that holds the JVM's instrumentation handle.
+     * <p>
+     * Named as a string and loaded through the system class loader rather than
+     * imported: the agent jar is on the system class path, because that is
+     * where {@code -javaagent} puts it, but it is not necessarily on the class
+     * path of whatever loader owns the application - a servlet container's
+     * webapp loader usually cannot see it at all. Going through
+     * {@link ClassLoader#getSystemClassLoader()} reaches the one copy from
+     * anywhere.
+     */
+    private static final String AGENT_CLASS = "com.vaadin.flow.devloop.agent.DevLoopAgent";
+
+    /**
+     * Where an older agent published the handle.
+     * <p>
+     * Read as a fallback so that a dev server newer than the agent jar beside
+     * it still works. Nothing writes it any more: an {@link Instrumentation} in
+     * the system properties table is a non-string value in a table the rest of
+     * the JVM reads as strings, and WildFly's transactions subsystem died on
+     * exactly that.
      */
     private static final String INSTRUMENTATION_PROPERTY = "devloop.instrumentation";
 
@@ -1351,8 +1367,20 @@ final class DevLoopRedefiner {
     }
 
     private static Instrumentation instrumentation() {
-        Object value = System.getProperties().get(INSTRUMENTATION_PROPERTY);
-        return value instanceof Instrumentation inst ? inst : null;
+        try {
+            Object value = ClassLoader.getSystemClassLoader()
+                    .loadClass(AGENT_CLASS).getMethod("get").invoke(null);
+            if (value instanceof Instrumentation inst) {
+                return inst;
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // No agent on this JVM, or one too old to answer. Either way the
+            // fallback below is the remaining chance, and a missing handle is
+            // reported by the caller as "no instrumentation" rather than here.
+            LOGGER.debug("no instrumentation handle from {}", AGENT_CLASS, e);
+        }
+        Object legacy = System.getProperties().get(INSTRUMENTATION_PROPERTY);
+        return legacy instanceof Instrumentation inst ? inst : null;
     }
 
     /**

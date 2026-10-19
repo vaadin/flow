@@ -23,7 +23,6 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.testutil.TestUtils;
@@ -31,6 +30,7 @@ import com.vaadin.flow.testutil.net.PortProber;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 class StatisticsSenderTest extends AbstractStatisticsTest {
 
@@ -52,7 +52,7 @@ class StatisticsSenderTest extends AbstractStatisticsTest {
 
     private void createServer(int statusCode, String message) throws Exception {
         this.server = new TestHttpServer(statusCode, message);
-        Mockito.when(sender.getReportingUrl())
+        when(sender.getReportingUrl())
                 .thenReturn("http://localhost:" + server.getPort() + "/");
     }
 

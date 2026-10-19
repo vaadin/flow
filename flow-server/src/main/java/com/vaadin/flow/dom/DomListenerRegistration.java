@@ -68,6 +68,27 @@ public interface DomListenerRegistration extends Registration {
     DomListenerRegistration addEventData(String eventData);
 
     /**
+     * Adds JavaScript expressions for extracting event data, like calling
+     * {@link #addEventData(String)} for each of them.
+     *
+     * @param eventData
+     *            definitions for data that should be passed back to the server
+     *            together with the event, not <code>null</code> and not
+     *            containing <code>null</code>
+     * @return this registration, for chaining
+     * @see #addEventData(String)
+     * @since 25.4
+     */
+    default DomListenerRegistration addEventData(List<String> eventData) {
+        if (eventData == null) {
+            throw new IllegalArgumentException(
+                    "The event data expressions must not be null");
+        }
+        eventData.forEach(this::addEventData);
+        return this;
+    }
+
+    /**
      * Adds a JavaScript expression for extracting event data, using the given
      * name for the result and the given values as captures.
      * <p>
@@ -439,6 +460,8 @@ public interface DomListenerRegistration extends Registration {
      */
     default DomListenerRegistration addEventDataElement(String eventData) {
         Objects.requireNonNull(eventData);
+        // ComponentEventBusUtil has a copy of this mapping for component event
+        // data, update it as well when changing the mapping here
         // optimizing this case as it is quite trivial
         if (Objects.equals(eventData, "event.target")) {
             return mapEventTargetElement();

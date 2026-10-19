@@ -24,6 +24,7 @@
   </modules>
 
   <properties>
+    <jandex.skip>true</jandex.skip>
     <!-- Don't care about coding style or licenses for tests -->
     <sonar.skip>true</sonar.skip>
     <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
@@ -305,6 +306,17 @@
 
   <profiles>
     <profile>
+      <!--
+        Adds the Quarkus suite to the reactor, so that -am can build the Flow
+        modules it depends on. Opt-in only, for the reason given where the
+        it-test-modules profile leaves the suite out.
+      -->
+      <id>quarkus-tests</id>
+      <modules>
+        <module>vaadin-quarkus-tests</module>
+      </modules>
+    </profile>
+    <profile>
       <!-- Modules that have shared stuff used in other modules -->
       <id>it-shared-modules</id>
       <activation>
@@ -385,6 +397,21 @@
 
         <module>vaadin-spring-tests</module>
         <module>vaadin-cdi-tests</module>
+        <!--
+          vaadin-quarkus-tests is deliberately not a module of this reactor.
+          Four of its modules use the `quarkus` packaging, which the Quarkus
+          Maven plugin provides as a build extension, and Maven loads an
+          extension for the whole session as soon as the project declaring it
+          is in the reactor. Listing the suite here therefore puts the Quarkus
+          bootstrap in front of every build of this repository, the ones the
+          dev loop runs included.
+
+          Nothing needs it listed: the quarkus-tests job in validation.yml
+          builds the suite from its own root with -f, computeMatrix.js
+          set-version rewrites POMs off the filesystem rather than off the
+          reactor, and the modules still inherit from this POM as their
+          parent. The quarkus-tests profile adds it to the reactor on request.
+        -->
         <module>test-vaadin-router</module>
         <module>test-react-adapter</module>
         <module>test-react-adapter/pom-production.xml</module>

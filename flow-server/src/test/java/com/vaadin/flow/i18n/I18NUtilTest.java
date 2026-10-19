@@ -40,13 +40,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class I18NUtilTest {
     @TempDir
@@ -64,7 +65,7 @@ class I18NUtilTest {
 
     @Test
     void foundResourceFolder_returnsExpectedLocales() throws IOException {
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
         File file = new File(resources,
@@ -107,7 +108,7 @@ class I18NUtilTest {
         File spacedResources = Files
                 .createDirectory(temporaryFolder.resolve("folder with space"))
                 .toFile();
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(spacedResources.toURI().toURL());
 
         Files.writeString(
@@ -143,7 +144,7 @@ class I18NUtilTest {
 
     @Test
     void noTranslationFiles_returnsEmptyList() throws IOException {
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
         List<Locale> defaultTranslationLocales = I18NUtil
@@ -154,7 +155,7 @@ class I18NUtilTest {
 
     @Test
     void onlyDefaultTranslationFile_returnsEmptyList() throws IOException {
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resources.toURI().toURL());
 
         File file = new File(resources,
@@ -325,7 +326,7 @@ class I18NUtilTest {
                 "jar:" + path.toUri().toURL() + "!/"
                         + DefaultI18NProvider.BUNDLE_FOLDER + "/",
                 cachingJarHandler);
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resource);
 
         assertEquals(2,
@@ -359,7 +360,7 @@ class I18NUtilTest {
                 "jar:" + path.toUri().toURL() + "!/"
                         + DefaultI18NProvider.BUNDLE_FOLDER + "/",
                 plainConnectionHandler);
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resource);
 
         List<Locale> defaultTranslationLocales = I18NUtil
@@ -393,7 +394,7 @@ class I18NUtilTest {
                 "jar:" + path.toUri().toURL() + "!/"
                         + DefaultI18NProvider.BUNDLE_FOLDER + "/",
                 noJarHandler);
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resource);
 
         List<Locale> defaultTranslationLocales = I18NUtil
@@ -435,7 +436,7 @@ class I18NUtilTest {
                 "jar:file:/app.jar!/BOOT-INF/lib/fake.jar!/"
                         + DefaultI18NProvider.BUNDLE_FOLDER + "/",
                 nestedJarHandler);
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resource);
 
         List<Locale> defaultTranslationLocales = I18NUtil
@@ -459,7 +460,7 @@ class I18NUtilTest {
             throws IOException {
         URL resource = new URL("jar:jrt:/java.base!/"
                 + DefaultI18NProvider.BUNDLE_FOLDER + "/");
-        Mockito.when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
+        when(mockLoader.getResource(DefaultI18NProvider.BUNDLE_FOLDER))
                 .thenReturn(resource);
 
         List<Locale> defaultTranslationLocales = assertDoesNotThrow(
@@ -510,9 +511,9 @@ class I18NUtilTest {
             throws IOException {
         Path path = generateZipArchive(temporaryFolder);
         JarFile jarFile = new JarFile(path.toFile());
-        URLConnection urlConnection = Mockito.mock(URLConnection.class);
-        Mockito.when(urlConnection.getContent()).thenReturn(new MockVirtualFile(
-                jarFile, jarFile.getJarEntry("vaadin-i18n/")));
+        URLConnection urlConnection = mock(URLConnection.class);
+        when(urlConnection.getContent()).thenReturn(new MockVirtualFile(jarFile,
+                jarFile.getJarEntry("vaadin-i18n/")));
 
         URLStreamHandler vfsMockHandler = new URLStreamHandler() {
             @Override

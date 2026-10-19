@@ -235,7 +235,7 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        if (ui.getSession().getService().getDeploymentConfiguration()
+        if (ui.getSessionOrThrow().getService().getDeploymentConfiguration()
                 .isReactEnabled()) {
             ui.getPage().executeJs(HistoryJs.class).navigatePushing(state,
                     pathWithQueryParameters, callback);
@@ -325,7 +325,7 @@ public class History implements Serializable {
                 location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
-        if (ui.getSession().getService().getDeploymentConfiguration()
+        if (ui.getSessionOrThrow().getService().getDeploymentConfiguration()
                 .isReactEnabled()) {
             ui.getPage().executeJs(HistoryJs.class).navigateReplacing(state,
                     pathWithQueryParameters, callback);
@@ -415,6 +415,8 @@ public class History implements Serializable {
     /**
      * What this history asks of the browser, as a JavaScript definition for
      * {@link Page#executeJs(Class)}.
+     * 
+     * @since 25.4
      */
     @JsDefinition
     public interface HistoryJs extends Serializable {
