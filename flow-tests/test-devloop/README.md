@@ -62,6 +62,13 @@ the nearest `.mvn/` above them - Flow's own - as the root, loads all of Flow
 into the session, and has `-pl … -am` build Flow's modules too: on every compile
 and restart the daemon runs, and in CI's shared-module build.
 
+The catch is formatting: `${maven.multiModuleProjectDirectory}` now resolves to
+the directory holding the nearest `.mvn/`, so `mvn spotless:apply` started from
+inside this aggregator or a fixture (or with `-f` pointing at one) looks for
+`eclipse/VaadinJavaConventions.xml` and the license header there and fails on
+the missing file. Run spotless from the repository root instead, e.g.
+`mvn spotless:apply -pl flow-tests/test-devloop/test-devloop-spring/devloop-app`.
+
 ## Running
 
 From the repository root, after one `mvn install -DskipTests`:
