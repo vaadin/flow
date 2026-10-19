@@ -103,12 +103,15 @@ class PublishedServerEventHandlerRpcHandlerTest {
 
     }
 
-    public interface InterfaceWithClientCallable {
+    public interface SuperInterfaceWithClientCallable {
         @ClientCallable
         default void defaultMethod() {
             ((ComponentWithDefaultClientCallable) this).isInvoked = true;
         }
+    }
 
+    public interface InterfaceWithClientCallable
+            extends SuperInterfaceWithClientCallable {
         @ClientCallable
         default void inertMethod() {
             ((ComponentWithDefaultClientCallable) this).isInvoked = true;
@@ -279,6 +282,7 @@ class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     void interfaceDefaultMethodIsInvoked() {
+        // Declared on a superinterface of the implemented interface
         ComponentWithDefaultClientCallable component = new ComponentWithDefaultClientCallable();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "defaultMethod",

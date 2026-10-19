@@ -173,6 +173,8 @@ class VaadinQuarkusNativeProcessorTest {
         Indexer indexer = new Indexer();
         indexer.indexClass(TestComponent.class);
         indexer.indexClass(NonComponentClass.class);
+        indexer.indexClass(NonComponentInterface.class);
+        indexer.indexClass(NonComponentInterfaceDto.class);
         indexer.indexClass(SimpleDto.class);
         indexer.indexClass(OtherDto.class);
         indexer.indexClass(com.vaadin.flow.component.Component.class);
@@ -187,6 +189,46 @@ class VaadinQuarkusNativeProcessorTest {
                 "Should detect SimpleDto from Component subclass");
         assertFalse(result.stream().anyMatch(containsClass(OtherDto.class)),
                 "Should NOT detect OtherDto from non-Component class");
+        assertFalse(
+                result.stream().anyMatch(
+                        containsClass(NonComponentInterfaceDto.class)),
+                "Should NOT detect NonComponentInterfaceDto from an interface implemented only by a non-Component class");
+    }
+
+    @Test
+    void testDetectClientCallablesTypes_interfaceDefaultMethods()
+            throws IOException {
+        Indexer indexer = new Indexer();
+        indexer.indexClass(InterfaceBasedComponent.class);
+        indexer.indexClass(InterfaceWithClientCallable.class);
+        indexer.indexClass(ParentInterfaceWithClientCallable.class);
+        indexer.indexClass(InterfaceDto.class);
+        indexer.indexClass(AbstractMethodDto.class);
+        Index testIndex = indexer.complete();
+
+        Set<ClassInfo> result = processor.detectClientCallablesTypes(testIndex);
+
+        assertTrue(result.stream().anyMatch(containsClass(InterfaceDto.class)),
+                "Should detect InterfaceDto from a default method of a parent interface");
+        assertFalse(
+                result.stream()
+                        .anyMatch(containsClass(AbstractMethodDto.class)),
+                "Should NOT detect AbstractMethodDto from an abstract interface method");
+
+        List<ReflectiveClassBuildItem> reflective = new ArrayList<>();
+        processor.vaadinNativeSupport(
+                new CombinedIndexBuildItem(testIndex, testIndex), item -> {
+                }, item -> {
+                }, reflective::add, item -> {
+                });
+
+        // Flow reads the default methods off the interface declaring them
+        assertTrue(
+                reflective.stream().filter(ReflectiveClassBuildItem::isMethods)
+                        .flatMap(item -> item.getClassNames().stream())
+                        .anyMatch(ParentInterfaceWithClientCallable.class
+                                .getName()::equals),
+                "Should register the methods of the interface declaring the default method");
     }
 
     @Test
@@ -614,8 +656,45 @@ class VaadinQuarkusNativeProcessorTest {
     public record RecordDto(String value) {
     }
 
+    public interface ParentInterfaceWithClientCallable {
+        @ClientCallable
+        default InterfaceDto getInterfaceData() {
+            return null;
+        }
+    }
+
+    public interface InterfaceWithClientCallable
+            extends ParentInterfaceWithClientCallable {
+        @ClientCallable
+        void processAbstract(AbstractMethodDto data);
+    }
+
+    public static class InterfaceBasedComponent extends Component
+            implements InterfaceWithClientCallable {
+        @Override
+        public void processAbstract(AbstractMethodDto data) {
+            // Not published, as only the interface method is annotated
+        }
+    }
+
+    public record InterfaceDto(String value) {
+    }
+
+    public record AbstractMethodDto(String value) {
+    }
+
+    public interface NonComponentInterface {
+        @ClientCallable
+        default NonComponentInterfaceDto getNonComponentInterfaceData() {
+            return null;
+        }
+    }
+
+    public record NonComponentInterfaceDto(String value) {
+    }
+
     // Non-Component class with ClientCallable (should be filtered out)
-    public static class NonComponentClass {
+    public static class NonComponentClass implements NonComponentInterface {
         @ClientCallable
         public OtherDto getNonComponentData() {
             return null;

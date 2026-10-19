@@ -172,6 +172,10 @@ class ClientCallableAotProcessorTest {
                 InterfaceWithClientCallable.class, "processData"))
                 .accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
+                .onType(ParentInterfaceDto.class))
+                .as("Default methods of parent interfaces are published")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
                 .onType(AbstractMethodDto.class))
                 .as("Abstract interface methods are not published")
                 .rejects(hints);
@@ -476,7 +480,16 @@ class ClientCallableAotProcessorTest {
         }
     }
 
-    public interface InterfaceWithClientCallable {
+    public interface ParentInterfaceWithClientCallable {
+
+        @ClientCallable
+        default void processParentData(ParentInterfaceDto data) {
+
+        }
+    }
+
+    public interface InterfaceWithClientCallable
+            extends ParentInterfaceWithClientCallable {
 
         @ClientCallable
         default void processData(ComplexDto data) {
@@ -570,6 +583,9 @@ class ClientCallableAotProcessorTest {
     }
 
     public record RecordId(int id) {
+    }
+
+    public record ParentInterfaceDto(String value) {
     }
 
     public record AbstractMethodDto(String value) {

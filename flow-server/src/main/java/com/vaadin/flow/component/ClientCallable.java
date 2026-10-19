@@ -45,6 +45,9 @@ public @interface ClientCallable {
     /**
      * Controls RPC for the method from the client side to the server side when
      * the element is disabled.
+     * <p>
+     * If the method overrides another annotated method, the value of the most
+     * specific declaration is used.
      *
      * @return the property update mode for disabled element
      */
