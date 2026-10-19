@@ -19,12 +19,18 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DownloadEventTest {
     private VaadinRequest request;
@@ -33,9 +39,9 @@ class DownloadEventTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        request = Mockito.mock(VaadinRequest.class);
-        response = Mockito.mock(VaadinResponse.class);
-        session = Mockito.mock(VaadinSession.class);
+        request = mock(VaadinRequest.class);
+        response = mock(VaadinResponse.class);
+        session = mock(VaadinSession.class);
     }
 
     @Test
@@ -44,7 +50,7 @@ class DownloadEventTest {
                 session, null);
         String fileName = "test.txt";
         downloadEvent.setFileName(fileName);
-        Mockito.verify(response).setHeader("Content-Disposition",
+        verify(response).setHeader("Content-Disposition",
                 "attachment;" + " filename=\"" + fileName + "\"");
     }
 
@@ -54,7 +60,7 @@ class DownloadEventTest {
                 session, null);
         String fileName = "test üñîçødë.txt";
         downloadEvent.setFileName(fileName);
-        Mockito.verify(response).setHeader("Content-Disposition", "attachment;"
+        verify(response).setHeader("Content-Disposition", "attachment;"
                 + " filename=\"" + EncodeUtil.rfc2047Encode(fileName) + "\";"
                 + " filename*=UTF-8''" + EncodeUtil.rfc5987Encode(fileName));
     }
@@ -65,7 +71,7 @@ class DownloadEventTest {
                 session, null);
         String fileName = "";
         downloadEvent.setFileName(fileName);
-        Mockito.verify(response).setHeader("Content-Disposition", "attachment");
+        verify(response).setHeader("Content-Disposition", "attachment");
     }
 
     @Test
@@ -74,7 +80,7 @@ class DownloadEventTest {
                 session, null);
         String fileName = "   ";
         downloadEvent.setFileName(fileName);
-        Mockito.verify(response).setHeader("Content-Disposition", "attachment");
+        verify(response).setHeader("Content-Disposition", "attachment");
     }
 
     @Test
@@ -82,19 +88,17 @@ class DownloadEventTest {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.setFileName(null);
-        Mockito.verify(response, Mockito.times(0))
-                .setHeader(Mockito.anyString(), Mockito.anyString());
+        verify(response, times(0)).setHeader(anyString(), anyString());
     }
 
     @Test
     void setFileName_headerAlreadySet_doesNotOverrideHeader() {
-        Mockito.when(response.containsHeader("Content-Disposition"))
-                .thenReturn(true);
+        when(response.containsHeader("Content-Disposition")).thenReturn(true);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.setFileName("test.txt");
-        Mockito.verify(response, Mockito.times(0)).setHeader(
-                Mockito.eq("Content-Disposition"), Mockito.anyString());
+        verify(response, times(0)).setHeader(eq("Content-Disposition"),
+                anyString());
     }
 
     @Test
@@ -102,7 +106,7 @@ class DownloadEventTest {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline();
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        verify(response).setHeader("Content-Disposition", "inline");
     }
 
     @Test
@@ -111,7 +115,7 @@ class DownloadEventTest {
                 session, null);
         String fileName = "document.pdf";
         downloadEvent.inline(fileName);
-        Mockito.verify(response).setHeader("Content-Disposition",
+        verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"" + fileName + "\"");
     }
 
@@ -121,7 +125,7 @@ class DownloadEventTest {
                 session, null);
         String fileName = "dökümänt üñîçødë.pdf";
         downloadEvent.inline(fileName);
-        Mockito.verify(response).setHeader("Content-Disposition",
+        verify(response).setHeader("Content-Disposition",
                 "inline;" + " filename=\"" + EncodeUtil.rfc2047Encode(fileName)
                         + "\";" + " filename*=UTF-8''"
                         + EncodeUtil.rfc5987Encode(fileName));
@@ -132,7 +136,7 @@ class DownloadEventTest {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline(null);
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        verify(response).setHeader("Content-Disposition", "inline");
     }
 
     @Test
@@ -140,7 +144,7 @@ class DownloadEventTest {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline("");
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        verify(response).setHeader("Content-Disposition", "inline");
     }
 
     @Test
@@ -148,29 +152,27 @@ class DownloadEventTest {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline("   ");
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        verify(response).setHeader("Content-Disposition", "inline");
     }
 
     @Test
     void inline_headerAlreadySet_doesNotOverrideHeader() {
-        Mockito.when(response.containsHeader("Content-Disposition"))
-                .thenReturn(true);
+        when(response.containsHeader("Content-Disposition")).thenReturn(true);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline();
-        Mockito.verify(response, Mockito.times(0)).setHeader(
-                Mockito.eq("Content-Disposition"), Mockito.anyString());
+        verify(response, times(0)).setHeader(eq("Content-Disposition"),
+                anyString());
     }
 
     @Test
     void inline_withFileNameHeaderAlreadySet_doesNotOverrideHeader() {
-        Mockito.when(response.containsHeader("Content-Disposition"))
-                .thenReturn(true);
+        when(response.containsHeader("Content-Disposition")).thenReturn(true);
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline("test.pdf");
-        Mockito.verify(response, Mockito.times(0)).setHeader(
-                Mockito.eq("Content-Disposition"), Mockito.anyString());
+        verify(response, times(0)).setHeader(eq("Content-Disposition"),
+                anyString());
     }
 
     @Test
@@ -179,7 +181,7 @@ class DownloadEventTest {
                 session, null);
         String contentType = "application/pdf";
         downloadEvent.setContentType(contentType);
-        Mockito.verify(response).setContentType(contentType);
+        verify(response).setContentType(contentType);
     }
 
     @Test
@@ -188,7 +190,7 @@ class DownloadEventTest {
                 session, null);
         int contentLength = 1024;
         downloadEvent.setContentLength(contentLength);
-        Mockito.verify(response).setContentLengthLong(contentLength);
+        verify(response).setContentLengthLong(contentLength);
     }
 
     @Test
@@ -197,7 +199,6 @@ class DownloadEventTest {
                 session, null);
         int contentLength = -1;
         downloadEvent.setContentLength(contentLength);
-        Mockito.verify(response, Mockito.times(0))
-                .setContentLengthLong(contentLength);
+        verify(response, times(0)).setContentLengthLong(contentLength);
     }
 }

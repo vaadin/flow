@@ -46,6 +46,7 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 class RouteRegistryMenuAccessTest {
@@ -109,7 +110,7 @@ class RouteRegistryMenuAccessTest {
         assertEquals(1, registry.getRegisteredRoutes().size(),
                 "One route should be registered.");
 
-        try (MockedStatic<ApplicationConfiguration> config = Mockito.mockStatic(
+        try (MockedStatic<ApplicationConfiguration> config = mockStatic(
                 ApplicationConfiguration.class, Mockito.CALLS_REAL_METHODS)) {
             config.when(() -> ApplicationConfiguration.get(any()))
                     .thenReturn(mock(ApplicationConfiguration.class));

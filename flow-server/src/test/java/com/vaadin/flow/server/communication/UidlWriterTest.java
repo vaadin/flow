@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -43,6 +42,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UITest;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -140,6 +140,17 @@ class UidlWriterTest {
     @JavaScript("childinterface2-JAVASCRIPT")
     @StyleSheet("childinterface2-STYLESHEET")
     public interface ChildComponentInterface2 extends ChildComponentInterface1 {
+    }
+
+    @Tag("used")
+    @Uses(ChildComponent.class)
+    @Uses(UsingComponent.class)
+    public static class UsedComponent extends Component {
+    }
+
+    @Tag("using")
+    @Uses(UsedComponent.class)
+    public static class UsingComponent extends Component {
     }
 
     @Tag("test")
@@ -456,6 +467,34 @@ class UidlWriterTest {
     }
 
     @Test
+    void componentDependencies_productionMode_scanForUsedComponents()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        mocks.getDeploymentConfiguration().setProductionMode(true);
+
+        UidlWriter uidlWriter = new UidlWriter();
+        ui.add(new UsingComponent());
+
+        ObjectNode response = uidlWriter.createUidl(ui, false);
+        Set<String> chunks = getDependenciesMap(response).keySet().stream()
+                .filter(key -> key
+                        .startsWith("return window.Vaadin.Flow.loadOnDemand('"))
+                .map(key -> key
+                        .replace("return window.Vaadin.Flow.loadOnDemand('", "")
+                        .replace("');", ""))
+                .collect(Collectors.toSet());
+
+        Set<String> expectedChunks = Stream
+                .of(TestUI.class, BaseClass.class, UsingComponent.class,
+                        UsedComponent.class, ChildComponent.class,
+                        ActualComponent.class, EmptyClassWithInterface.class,
+                        SuperComponent.class)
+                .map(BundleUtils::getChunkId).collect(Collectors.toSet());
+
+        assertEquals(expectedChunks, chunks);
+    }
+
+    @Test
     void componentDependencies_developmentMode_onlySendComponentSpecificChunks()
             throws Exception {
         UidlWriter uidlWriter = new UidlWriter();
@@ -737,7 +776,7 @@ class UidlWriterTest {
         VaadinServletContext context = (VaadinServletContext) mocks.getService()
                 .getContext();
         Lookup lookup = context.getAttribute(Lookup.class);
-        Mockito.when(lookup.lookup(RoutePathProvider.class))
+        when(lookup.lookup(RoutePathProvider.class))
                 .thenReturn(new RoutePathProviderImpl());
 
         VaadinSession session = mocks.getSession();

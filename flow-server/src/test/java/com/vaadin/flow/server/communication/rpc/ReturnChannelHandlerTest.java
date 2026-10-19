@@ -51,6 +51,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 class ReturnChannelHandlerTest {
     /**
@@ -309,14 +311,14 @@ class ReturnChannelHandlerTest {
             int channelId) {
         List<String> warnings = new ArrayList<>();
         List<String> debugMessages = new ArrayList<>();
-        Logger logger = Mockito.mock(Logger.class,
+        Logger logger = mock(Logger.class,
                 invocation -> record(invocation, warnings, debugMessages));
 
         // Only the handler's own logger is mocked. Invoking a channel runs
         // application and framework code that may log or cache a logger of its
         // own, so everything else keeps using the real logger factory.
-        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
-                .mockStatic(LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class, Mockito.CALLS_REAL_METHODS)) {
             loggerFactory
                     .when(() -> LoggerFactory
                             .getLogger(ReturnChannelHandler.class.getName()))
