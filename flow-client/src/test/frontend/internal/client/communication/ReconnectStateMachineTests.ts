@@ -20,7 +20,7 @@ function makeRegistry(reconnectAttempts = 3) {
       UILifecycle: { isRunning: () => true },
       ReconnectConfiguration: { getReconnectAttempts: () => reconnectAttempts },
       RequestResponseTracker: { hasActiveRequest: () => activeRequest, endRequest: () => log.endRequests++ },
-      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++, loadingDropped: () => {} },
+      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
       Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
     })
   };
@@ -99,7 +99,7 @@ describe('ReconnectStateMachine', () => {
       UILifecycle: { isRunning: () => false },
       ReconnectConfiguration: { getReconnectAttempts: () => 3 },
       RequestResponseTracker: { hasActiveRequest: () => true, endRequest: () => log.endRequests++ },
-      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++, loadingDropped: () => {} },
+      LoadingIndicatorStateHandler: { restoreLoading: () => log.restoreLoadings++ },
       Heartbeat: { setInterval: (i: number) => log.heartbeatIntervals.push(i) }
     });
     const machine = new ReconnectStateMachine(registry, () => {});
@@ -197,6 +197,20 @@ describe('ReconnectStateMachine', () => {
       expect(getState()).to.equal(ConnectionState.CONNECTED);
     });
 
+    it('shows loading for a message queued during a heartbeat reconnect once it is sent', async () => {
+      const { machine, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
+      machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
+      // E.g. a click queued but not yet sent when the heartbeat recovers.
+      loadingIndicatorStateHandler.processMessage(null, null);
+
+      machine.resolveTemporaryError(ConnectionMessageType.HEARTBEAT);
+      await afterDeferred();
+      expect(getState()).to.equal(ConnectionState.CONNECTED);
+      loadingIndicatorStateHandler.startLoading();
+      setActiveRequest(true);
+      expect(getState()).to.equal(ConnectionState.LOADING);
+    });
+
     for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT]) {
       it(`keeps loading started by another party during a ${type} reconnect`, async () => {
         const { machine, connectionState } = makeMachine();
@@ -212,9 +226,10 @@ describe('ReconnectStateMachine', () => {
       });
     }
 
-    // A request finishing after a reconnect, or giving up (e.g. going offline),
-    // dropped its loading must not finish the loading of another party.
-    for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT, 'give-up'] as const) {
+    // A request finishing after a state change (a reconnect, giving up, or
+    // another party going offline) dropped its loading must not finish the
+    // loading of another party.
+    for (const type of [ConnectionMessageType.XHR, ConnectionMessageType.HEARTBEAT, 'give-up', 'offline'] as const) {
       it(`keeps loading started by another party when a request finishes after ${type}`, async () => {
         const { machine, connectionState, loadingIndicatorStateHandler, setActiveRequest } = makeMachine();
         loadingIndicatorStateHandler.processMessage(null, null);
@@ -223,6 +238,8 @@ describe('ReconnectStateMachine', () => {
         await afterDeferred();
         if (type === 'give-up') {
           machine.giveUp();
+        } else if (type === 'offline') {
+          connectionState.state = ConnectionState.CONNECTION_LOST;
         } else {
           machine.handleRecoverableError(type, null);
         }
