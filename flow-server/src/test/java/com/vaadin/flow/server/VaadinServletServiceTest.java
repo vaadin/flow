@@ -169,17 +169,17 @@ class VaadinServletServiceTest {
 
     @Test
     void init_classLoaderIsSetUsingServletContext() throws ServiceException {
-        VaadinServlet servlet = mock(VaadinServlet.class);
+        VaadinServlet vaadinServlet = mock(VaadinServlet.class);
         ServletContext context = mock(ServletContext.class);
-        when(servlet.getServletContext()).thenReturn(context);
-        when(context.getAttribute(Lookup.class.getName()))
-                .thenReturn(mock(Lookup.class));
+        when(vaadinServlet.getServletContext()).thenReturn(context);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class.getName())).thenReturn(lookup);
 
         ClassLoader loader = mock(ClassLoader.class);
         when(context.getClassLoader()).thenReturn(loader);
 
-        VaadinServletService service = new VaadinServletService(servlet,
-                mocks.getDeploymentConfiguration()) {
+        VaadinServletService servletService = new VaadinServletService(
+                vaadinServlet, mocks.getDeploymentConfiguration()) {
             @Override
             protected Instantiator createInstantiator()
                     throws ServiceException {
@@ -193,9 +193,9 @@ class VaadinServletServiceTest {
             }
         };
 
-        service.init();
+        servletService.init();
 
-        assertSame(loader, service.getClassLoader());
+        assertSame(loader, servletService.getClassLoader());
     }
 
     @Test
@@ -331,9 +331,10 @@ class VaadinServletServiceTest {
         HttpServletRequest request = createNonIncludeRequest(base, contextPath,
                 servletPath, pathInfo);
 
-        VaadinServletService service = mock(VaadinServletService.class);
-        doCallRealMethod().when(service).getContextRootRelativePath(any());
-        String location = service.getContextRootRelativePath(
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        doCallRealMethod().when(servletService)
+                .getContextRootRelativePath(any());
+        String location = servletService.getContextRootRelativePath(
                 servlet.createVaadinRequest(request));
         return location;
     }

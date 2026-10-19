@@ -67,7 +67,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -121,11 +120,6 @@ class WebComponentProviderTest {
         VaadinService.setCurrent(service);
         when(service.getInstantiator()).thenReturn(new MockInstantiator());
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
-
-        VaadinServletService service = mock(VaadinServletService.class);
-        doCallRealMethod().when(service).getContextRootRelativePath(any());
-
-        doCallRealMethod().when(service).getContextRootRelativePath(any());
 
         provider = new WebComponentProvider();
     }
@@ -194,11 +188,11 @@ class WebComponentProviderTest {
 
         ByteArrayOutputStream out = spy(new ByteArrayOutputStream());
 
-        DefaultDeploymentConfiguration configuration = mock(
+        DefaultDeploymentConfiguration sessionConfiguration = mock(
                 DefaultDeploymentConfiguration.class);
 
         when(response.getOutputStream()).thenReturn(out);
-        when(session.getConfiguration()).thenReturn(configuration);
+        when(session.getConfiguration()).thenReturn(sessionConfiguration);
 
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
@@ -248,11 +242,11 @@ class WebComponentProviderTest {
         ByteArrayOutputStream out1 = new ByteArrayOutputStream();
         ByteArrayOutputStream out2 = new ByteArrayOutputStream();
 
-        DefaultDeploymentConfiguration configuration = mock(
+        DefaultDeploymentConfiguration sessionConfiguration = mock(
                 DefaultDeploymentConfiguration.class);
 
         when(response.getOutputStream()).thenReturn(out1);
-        when(session.getConfiguration()).thenReturn(configuration);
+        when(session.getConfiguration()).thenReturn(sessionConfiguration);
 
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
@@ -321,21 +315,22 @@ class WebComponentProviderTest {
     }
 
     private VaadinRequest mockRequest(boolean hasConfig) {
-        VaadinContext context = mock(VaadinContext.class);
-        VaadinService service = mock(VaadinService.class);
-        VaadinRequest request = mock(VaadinRequest.class);
-        when(request.getService()).thenReturn(service);
-        when(service.getContext()).thenReturn(context);
+        VaadinContext requestContext = mock(VaadinContext.class);
+        VaadinService requestService = mock(VaadinService.class);
+        VaadinRequest scriptRequest = mock(VaadinRequest.class);
+        when(scriptRequest.getService()).thenReturn(requestService);
+        when(requestService.getContext()).thenReturn(requestContext);
 
-        WebComponentConfigurationRegistry registry = mock(
+        WebComponentConfigurationRegistry requestRegistry = mock(
                 WebComponentConfigurationRegistry.class);
-        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
-                any())).thenReturn(registry);
-        when(registry.hasConfigurations()).thenReturn(hasConfig);
+        when(requestContext.getAttribute(
+                eq(WebComponentConfigurationRegistry.class), any()))
+                .thenReturn(requestRegistry);
+        when(requestRegistry.hasConfigurations()).thenReturn(hasConfig);
 
-        when(request.getPathInfo()).thenReturn("/web-component/a-b.js");
+        when(scriptRequest.getPathInfo()).thenReturn("/web-component/a-b.js");
 
-        return request;
+        return scriptRequest;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
