@@ -28,6 +28,7 @@ import { XhrConnectionError } from './XhrConnectionError';
 import { parseJson } from './MessageHandler';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import { getRelativeTimeMillis, getRelativeTimeString } from '../Profiler';
+import { dispatchMessageEnd } from './VaadinServerMessage';
 
 // com.vaadin.flow.shared.ApplicationConstants / JsonConstants
 const REQUEST_TYPE_PARAMETER = 'v-r';
@@ -130,16 +131,18 @@ export class XhrResponseHandler {
 
     const responseText = xhr.responseText;
 
+    const message = this.#registry.getMessageHandler().announceMessage();
     const json = parseJson(responseText);
     if (json === null) {
       // Invalid JSON string
+      dispatchMessageEnd(message, 'discarded');
       this.#registry.getConnectionStateHandler().xhrInvalidContent(new XhrConnectionError(xhr, this.#payload!, null));
       return;
     }
 
     this.#registry.getConnectionStateHandler().xhrOk();
     Console.debug(`Received xhr message: ${responseText}`);
-    this.#registry.getMessageHandler().handleMessage(json, this.#payload);
+    this.#registry.getMessageHandler().handleMessage(json, message, this.#payload);
   }
 }
 
