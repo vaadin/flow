@@ -838,8 +838,9 @@ public class TaskUpdatePackages extends NodeUpdater {
                             cause runtime errors or a blank page:
                             {}
                             Unless these versions are intentional, remove the entries from \
-                            package.json and run 'mvn vaadin:clean-frontend' to reset the \
-                            frontend to a clean state.""",
+                            package.json and clean the frontend ('mvn vaadin:clean-frontend' \
+                            with Maven, 'gradle vaadinClean' with Gradle) to reset it to a clean \
+                            state.""",
                     String.join("\n", mismatches));
         }
     }
