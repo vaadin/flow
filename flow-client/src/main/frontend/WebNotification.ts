@@ -53,11 +53,13 @@ interface ShownNotification {
   key: string;
   notification: Notification;
   tag?: string;
-  // The application that showed the notification, or the element of the
-  // trigger that showed it, resolved to the application when needed
-  owner: string | Element | null;
+  // The application that showed the notification, null when not known
+  appId: string | null;
+  // The element of the trigger that showed the notification, if any
+  host: Element | null;
   channel: VaadinWebNotificationChannel;
   // Whether the close or error has been reported, after which nothing more is
+  // reported
   done: boolean;
 }
 
@@ -141,9 +143,10 @@ function appIdOf(element: Element): string | null {
 }
 
 function belongsTo(entry: ShownNotification, appId: string | null | undefined): boolean {
-  // A trigger's host may be registered with its application only after the
-  // trigger fired, so it is resolved when closing.
-  const entryAppId = entry.owner instanceof Element ? appIdOf(entry.owner) : entry.owner;
+  // A trigger's host is resolved when shown, since a detached host no longer
+  // belongs to any application, and again when closing, since a host may be
+  // registered with its application only after the trigger fired.
+  const entryAppId = entry.appId ?? (entry.host ? appIdOf(entry.host) : null);
   return entryAppId === (appId ?? null);
 }
 
@@ -215,7 +218,8 @@ $wnd.Vaadin.Flow.webNotification = {
       key: source.key ?? crypto.randomUUID(),
       notification,
       tag: options.tag,
-      owner: source.owner ?? null,
+      appId: source.owner instanceof Element ? appIdOf(source.owner) : (source.owner ?? null),
+      host: source.owner instanceof Element ? source.owner : null,
       channel: report,
       done: false
     };

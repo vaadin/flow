@@ -58,9 +58,10 @@ import com.vaadin.flow.shared.Registration;
  * {@value #MAX_TRACKED_PER_UI} most recently shown notifications: showing
  * another one stops tracking the oldest. A handle also stops being tracked when
  * its UI is closed, for example on a page reload. Either way its close
- * listeners run, and after that no listener runs again. Call {@link #close()}
- * when a notification is no longer relevant, or use a
- * {@linkplain WebNotificationOptions#tag() tag} so the next notification
+ * listeners run, and after that no listener runs again and {@link #close()}
+ * does nothing, since the browser no longer keeps the notification for closing
+ * either. Call {@link #close()} when a notification is no longer relevant, or
+ * use a {@linkplain WebNotificationOptions#tag() tag} so the next notification
  * replaces it.
  */
 public final class WebNotificationHandle implements Serializable {
@@ -78,11 +79,9 @@ public final class WebNotificationHandle implements Serializable {
     private final List<SerializableRunnable> clickListeners = new ArrayList<>();
     private final List<SerializableRunnable> closeListeners = new ArrayList<>();
     private final List<SerializableConsumer<WebNotificationError>> errorListeners = new ArrayList<>();
-    // Whether events from the browser still reach the listeners
+    // Whether events from the browser still reach the listeners and close()
+    // can still close the notification
     private boolean tracked = true;
-    // Whether the notification is known to be gone, so close() has nothing to
-    // close
-    private boolean gone;
 
     WebNotificationHandle(UI ui, String title, WebNotificationOptions options) {
         this.ui = ui;
@@ -148,15 +147,14 @@ public final class WebNotificationHandle implements Serializable {
 
     /**
      * Closes the notification if it is still visible. The close listeners run
-     * once the browser confirms, unless the handle no longer tracks the
-     * notification. Calling this when the notification is already gone, or when
-     * the UI is closed, does nothing.
+     * once the browser confirms. Calling this when the notification is already
+     * gone, or when the handle no longer tracks it, does nothing.
      * <p>
      * Like any change to the UI, the call must hold the session lock, so call
      * it inside {@code ui.access(...)} from a background thread.
      */
     public void close() {
-        if (gone) {
+        if (!tracked) {
             return;
         }
         ui.getElement().executeJs(WebNotificationJs.class).close(key)
@@ -177,7 +175,6 @@ public final class WebNotificationHandle implements Serializable {
         case "click" ->
             List.copyOf(clickListeners).forEach(SerializableRunnable::run);
         case "close" -> {
-            gone = true;
             stopTracking();
         }
         case "error" -> fail(WebNotificationErrorReader.read(args));
@@ -190,7 +187,6 @@ public final class WebNotificationHandle implements Serializable {
         if (!tracked) {
             return;
         }
-        gone = true;
         tracked = false;
         TrackedHandles.of(ui).remove(this);
         List.copyOf(errorListeners).forEach(listener -> listener.accept(error));
@@ -235,11 +231,9 @@ public final class WebNotificationHandle implements Serializable {
                 // A closed UI, also the one a page reload with
                 // @PreserveOnRefresh replaces, never hears from its
                 // notifications again
-                ui.addDetachListener(event -> List
-                        .copyOf(created.handles.values()).forEach(handle -> {
-                            handle.gone = true;
-                            handle.stopTracking();
-                        }));
+                ui.addDetachListener(
+                        event -> List.copyOf(created.handles.values())
+                                .forEach(WebNotificationHandle::stopTracking));
                 tracker = created;
             }
             return tracker;
@@ -248,6 +242,7 @@ public final class WebNotificationHandle implements Serializable {
         private void add(WebNotificationHandle handle) {
             handles.put(handle.key, handle);
             if (handles.size() > MAX_TRACKED_PER_UI) {
+                // The browser has stopped keeping it for closing as well
                 handles.values().iterator().next().stopTracking();
             }
         }

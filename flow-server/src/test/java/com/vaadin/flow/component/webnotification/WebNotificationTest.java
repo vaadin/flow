@@ -286,9 +286,8 @@ class WebNotificationTest {
         assertEquals(List.of("close"), events);
         assertEquals(1, ui.dumpPendingJsInvocations().size());
         oldest.close();
-        assertEquals(oldestShow.getParameters().get(2),
-                ui.onlyScheduledInvocation().getParameters().get(0),
-                "an untracked notification can still be closed");
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
+                "the browser no longer keeps the notification for closing");
     }
 
     @Test
@@ -305,8 +304,36 @@ class WebNotificationTest {
         report(firstShow, "close");
 
         WebNotification.show("Fits again", ui);
+        assertTrue(events.isEmpty(), "the closed handle freed a slot");
 
-        assertTrue(events.isEmpty(), "no handle should stop being tracked");
+        WebNotification.show("One too many", ui);
+        assertEquals(List.of("second closed"), events);
+    }
+
+    @Test
+    void show_severalNotifications_shareOneChannelAndGetTheirOwnEvents() {
+        MockUI ui = new MockUI();
+        List<String> events = new ArrayList<>();
+        WebNotificationHandle first = WebNotification.show("First", ui);
+        first.addClickListener(() -> events.add("first click"));
+        first.addCloseListener(() -> events.add("first close"));
+        JavaScriptInvocation firstShow = showInvocation(ui);
+        WebNotificationHandle second = WebNotification.show("Second", ui);
+        second.addClickListener(() -> events.add("second click"));
+        second.addCloseListener(() -> events.add("second close"));
+        JavaScriptInvocation secondShow = showInvocation(ui);
+
+        report(firstShow, "click");
+        report(firstShow, "close");
+
+        assertEquals(List.of("first click", "first close"), events);
+        assertEquals(firstShow.getParameters().get(3),
+                secondShow.getParameters().get(3));
+        // The browser passes the key first, as the report helper does
+        assertTrue(
+                firstShow.getExpression()
+                        .contains("$3($2, type, reason, message)"),
+                firstShow.getExpression());
     }
 
     @Test

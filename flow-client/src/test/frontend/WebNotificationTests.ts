@@ -121,9 +121,11 @@ describe('webNotification', () => {
     const hostB = document.createElement('button');
     const lateHostA = document.createElement('button');
     let lateHostRegistered = false;
+    let hostAAttached = true;
     $wnd.Vaadin.Flow.clients = {
       appA: {
-        getNodeId: (element: Element) => (element === hostA || (element === lateHostA && lateHostRegistered) ? 1 : -1)
+        getNodeId: (element: Element) =>
+          (element === hostA && hostAAttached) || (element === lateHostA && lateHostRegistered) ? 1 : -1
       },
       appB: { getNodeId: (element: Element) => (element === hostB ? 1 : -1) }
     };
@@ -139,12 +141,18 @@ describe('webNotification', () => {
         owner: document.createElement('div')
       });
       lateHostRegistered = true;
+      // The view that showed a notification may be gone when it is closed
+      hostAAttached = false;
       const closed: string[] = [];
       FakeNotification.instances.forEach((n) => n.addEventListener('close', () => closed.push(n.title)));
 
       $wnd.Vaadin.Flow.webNotification.closeByTag('chat', 'appA');
 
       expect(closed).to.deep.equal(['A from trigger', 'A from server', 'A from late host']);
+
+      // An application with no known id only closes notifications with none
+      $wnd.Vaadin.Flow.webNotification.closeByTag('chat', null);
+      expect(closed).to.deep.equal(['A from trigger', 'A from server', 'A from late host', 'Unknown owner']);
     } finally {
       $wnd.Vaadin.Flow.clients = originalClients;
     }
