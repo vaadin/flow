@@ -175,9 +175,7 @@ public final class WebNotificationHandle implements Serializable {
         switch (type) {
         case "click" ->
             List.copyOf(clickListeners).forEach(SerializableRunnable::run);
-        case "close" -> {
-            stopTracking();
-        }
+        case "close" -> stopTracking();
         case "error" -> fail(WebNotificationErrorReader.read(args));
         default -> LOGGER
                 .debug("Unknown web notification event from client: {}", type);
