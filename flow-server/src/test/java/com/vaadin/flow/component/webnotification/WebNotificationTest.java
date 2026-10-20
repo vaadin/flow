@@ -21,6 +21,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentCaptor;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -36,6 +37,8 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.tests.util.MockUI;
 
@@ -44,6 +47,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class WebNotificationTest {
 
@@ -70,6 +75,27 @@ class WebNotificationTest {
         firePermissionChange(ui, "SOMETHING_NEW");
         assertEquals(WebNotificationPermission.GRANTED, permission.peek(),
                 "an unknown value from a newer client keeps the permission");
+    }
+
+    @Test
+    void permissionSignal_withoutSessionLock_wiresThroughAccess() {
+        MockUI ui = new MockUI();
+        VaadinSession session = ui.getSession();
+        when(session.hasLock()).thenReturn(false);
+
+        Signal<WebNotificationPermission> permission = WebNotification
+                .permissionSignal(ui);
+
+        ArgumentCaptor<Command> access = ArgumentCaptor.forClass(Command.class);
+        verify(session).access(access.capture());
+        firePermissionChange(ui, "GRANTED");
+        assertEquals(WebNotificationPermission.UNKNOWN, permission.peek(),
+                "the UI must not be changed without the session lock");
+
+        when(session.hasLock()).thenReturn(true);
+        access.getValue().execute();
+        firePermissionChange(ui, "GRANTED");
+        assertEquals(WebNotificationPermission.GRANTED, permission.peek());
     }
 
     @Test
@@ -203,16 +229,64 @@ class WebNotificationTest {
     }
 
     @Test
-    void closeByTag_sendsTheTag() {
+    void closeByTag_sendsTheTagAndTheApplication() {
         MockUI ui = new MockUI();
+        ui.getInternals().setFullAppId("myapp-123");
 
         WebNotification.closeByTag("inbox", ui);
 
         List<PendingJavaScriptInvocation> invocations = ui
                 .dumpPendingJsInvocations();
         assertEquals(1, invocations.size());
-        assertEquals("inbox",
-                invocations.get(0).getInvocation().getParameters().get(0));
+        List<Object> parameters = invocations.get(0).getInvocation()
+                .getParameters();
+        assertEquals("inbox", parameters.get(0));
+        assertEquals("myapp", parameters.get(1));
+    }
+
+    @Test
+    void show_uiDetached_disconnectsTheHandle() {
+        MockUI ui = new MockUI();
+        List<String> events = new ArrayList<>();
+        WebNotificationHandle handle = WebNotification.show("Hi", ui);
+        handle.addCloseListener(() -> events.add("close"));
+        ui.dumpPendingJsInvocations();
+
+        // A page reload closes the UI, also when @PreserveOnRefresh moves its
+        // content to a new UI, and the new page never reports on the
+        // notification
+        ui.getInternals().setSession(null);
+
+        assertFalse(ui.getElement().getNode().getFeature(ReturnChannelMap.class)
+                .hasChannels());
+        assertTrue(events.isEmpty());
+    }
+
+    @Test
+    void show_moreThanTheLimit_releasesTheOldestHandle() {
+        MockUI ui = new MockUI();
+        WebNotificationHandle oldest = WebNotification.show("First", ui);
+        JavaScriptInvocation oldestShow = showInvocation(ui);
+        Object oldestKey = oldestShow.getParameters().get(2);
+        ReturnChannelRegistration oldestChannel = channel(oldestShow);
+        for (int i = 1; i < WebNotificationHandle.MAX_CONNECTED_PER_UI; i++) {
+            WebNotification.show("Next", ui);
+        }
+        ui.dumpPendingJsInvocations();
+
+        WebNotification.show("One too many", ui);
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        assertEquals(2, invocations.size());
+        assertEquals(oldestKey,
+                invocations.get(0).getInvocation().getParameters().get(0),
+                "the browser should forget the oldest notification");
+        assertNull(ui.getElement().getNode().getFeature(ReturnChannelMap.class)
+                .get(oldestChannel.getChannelId()));
+        oldest.close();
+        assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
+                "a released handle no longer closes its notification");
     }
 
     @Test
@@ -231,10 +305,13 @@ class WebNotificationTest {
     }
 
     @Test
-    void options_renotifyWithoutTag_throws() {
-        WebNotificationOptions.Builder builder = WebNotificationOptions
+    void options_renotifyWithoutTagOrWithSilent_throws() {
+        WebNotificationOptions.Builder withoutTag = WebNotificationOptions
                 .builder().renotify(true);
-        assertThrows(IllegalArgumentException.class, builder::build);
+        assertThrows(IllegalArgumentException.class, withoutTag::build);
+        WebNotificationOptions.Builder silent = WebNotificationOptions.builder()
+                .tag("inbox").renotify(true).silent(true);
+        assertThrows(IllegalArgumentException.class, silent::build);
     }
 
     private static JsFunction clickHandler(UI ui) {

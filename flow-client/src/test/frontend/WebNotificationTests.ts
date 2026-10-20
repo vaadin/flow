@@ -59,7 +59,7 @@ describe('webNotification', () => {
 
   it('reports a click and then the close it causes', () => {
     const { calls, channel } = recordingChannel();
-    $wnd.Vaadin.Flow.webNotification.show('Report ready', { body: 'March' }, nextKey(), channel);
+    $wnd.Vaadin.Flow.webNotification.show('Report ready', { body: 'March' }, channel, { key: nextKey(), owner: 'app' });
 
     const notification = FakeNotification.instances[0];
     expect(notification.title).to.equal('Report ready');
@@ -70,12 +70,21 @@ describe('webNotification', () => {
     expect(calls).to.deep.equal([['click'], ['close']]);
   });
 
-  it('reports a notification replaced by one with the same tag as closed', () => {
+  it('reports a notification replaced by one with the same tag as closed once the new one is shown', () => {
     const first = recordingChannel();
     const second = recordingChannel();
-    $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, nextKey(), first.channel);
+    $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, first.channel, {
+      key: nextKey(),
+      owner: 'app'
+    });
     const secondKey = nextKey();
-    $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, secondKey, second.channel);
+    $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, second.channel, {
+      key: secondKey,
+      owner: 'app'
+    });
+    expect(first.calls).to.deep.equal([]);
+
+    FakeNotification.instances[1].dispatchEvent(new Event('show'));
 
     expect(first.calls).to.deep.equal([['close']]);
     expect(second.calls).to.deep.equal([]);
@@ -91,55 +100,114 @@ describe('webNotification', () => {
   it('closes only the notifications with the given tag', () => {
     const inbox = recordingChannel();
     const other = recordingChannel();
-    $wnd.Vaadin.Flow.webNotification.show('New message', { tag: 'inbox' }, nextKey(), inbox.channel);
-    $wnd.Vaadin.Flow.webNotification.show('Build done', { tag: 'builds' }, nextKey(), other.channel);
+    $wnd.Vaadin.Flow.webNotification.show('New message', { tag: 'inbox' }, inbox.channel, {
+      key: nextKey(),
+      owner: 'app'
+    });
+    $wnd.Vaadin.Flow.webNotification.show('Build done', { tag: 'builds' }, other.channel, {
+      key: nextKey(),
+      owner: 'app'
+    });
 
-    $wnd.Vaadin.Flow.webNotification.closeByTag('inbox');
+    $wnd.Vaadin.Flow.webNotification.closeByTag('inbox', 'app');
 
     expect(inbox.calls).to.deep.equal([['close']]);
     expect(other.calls).to.deep.equal([]);
   });
 
-  it('tracks notifications shown by a trigger, which passes no key and no channel, by tag', () => {
-    $wnd.Vaadin.Flow.webNotification.show('Build done', { tag: 'builds' }, null, null);
-    $wnd.Vaadin.Flow.webNotification.show('New message', { tag: 'inbox' }, null, null);
-    const closed: string[] = [];
-    FakeNotification.instances.forEach((n) => n.addEventListener('close', () => closed.push(n.title)));
+  it('closes by tag only the notifications of the given application, also those shown by a trigger', () => {
+    const originalClients = $wnd.Vaadin.Flow.clients;
+    const hostA = document.createElement('button');
+    const hostB = document.createElement('button');
+    $wnd.Vaadin.Flow.clients = {
+      appA: { getNodeId: (element: Element) => (element === hostA ? 1 : -1) },
+      appB: { getNodeId: (element: Element) => (element === hostB ? 1 : -1) }
+    };
+    try {
+      // A trigger passes no key and no channel, and its host as the owner
+      $wnd.Vaadin.Flow.webNotification.show('A from trigger', { tag: 'chat' }, null, { owner: hostA });
+      $wnd.Vaadin.Flow.webNotification.show('B from trigger', { tag: 'chat' }, null, { owner: hostB });
+      $wnd.Vaadin.Flow.webNotification.show('A from server', { tag: 'chat' }, null, { key: nextKey(), owner: 'appA' });
+      $wnd.Vaadin.Flow.webNotification.show('B from server', { tag: 'chat' }, null, { key: nextKey(), owner: 'appB' });
+      const closed: string[] = [];
+      FakeNotification.instances.forEach((n) => n.addEventListener('close', () => closed.push(n.title)));
 
-    $wnd.Vaadin.Flow.webNotification.closeByTag('builds');
+      $wnd.Vaadin.Flow.webNotification.closeByTag('chat', 'appA');
 
-    expect(closed).to.deep.equal(['Build done']);
-    $wnd.Vaadin.Flow.webNotification.closeByTag('inbox');
-    expect(closed).to.deep.equal(['Build done', 'New message']);
+      expect(closed).to.deep.equal(['A from trigger', 'A from server']);
+    } finally {
+      $wnd.Vaadin.Flow.clients = originalClients;
+    }
   });
 
-  it('keeps the notification with the same tag when the new one cannot be shown', () => {
-    const first = recordingChannel();
-    const firstKey = nextKey();
-    $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, firstKey, first.channel);
-    $wnd.Notification = class extends FakeNotification {
-      constructor(title: string, options: NotificationOptions) {
-        super(title, options);
-        throw new TypeError('Illegal constructor');
-      }
-    };
-    const second = recordingChannel();
-    const secondKey = nextKey();
+  [
+    [
+      'the constructor throws',
+      () => {
+        $wnd.Notification = class extends FakeNotification {
+          constructor(title: string, options: NotificationOptions) {
+            super(title, options);
+            throw new TypeError('Illegal constructor');
+          }
+        };
+      },
+      ['error', 'UNKNOWN', 'Illegal constructor']
+    ],
+    [
+      'the browser fires an error',
+      () => {
+        $wnd.Notification = class extends FakeNotification {
+          constructor(title: string, options: NotificationOptions) {
+            super(title, options);
+            queueMicrotask(() => this.dispatchEvent(new Event('error')));
+          }
+        };
+      },
+      ['error', 'UNKNOWN', 'The browser could not show the notification']
+    ]
+  ].forEach(([when, failNext, expectedError]) => {
+    it(`keeps the notification with the same tag when the new one cannot be shown because ${when}`, async () => {
+      const first = recordingChannel();
+      const firstKey = nextKey();
+      $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, first.channel, {
+        key: firstKey,
+        owner: 'app'
+      });
+      (failNext as () => void)();
+      const second = recordingChannel();
+      const secondKey = nextKey();
 
-    $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, secondKey, second.channel);
-    $wnd.Vaadin.Flow.webNotification.close(secondKey);
+      $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, second.channel, {
+        key: secondKey,
+        owner: 'app'
+      });
+      await Promise.resolve();
+      $wnd.Vaadin.Flow.webNotification.close(secondKey);
 
-    expect(second.calls).to.deep.equal([['error', 'UNKNOWN', 'Illegal constructor']]);
-    expect(first.calls).to.deep.equal([]);
-    $wnd.Vaadin.Flow.webNotification.close(firstKey);
-    expect(first.calls).to.deep.equal([['close']]);
+      expect(second.calls).to.deep.equal([expectedError]);
+      expect(first.calls).to.deep.equal([]);
+      $wnd.Vaadin.Flow.webNotification.close(firstKey);
+      expect(first.calls).to.deep.equal([['close']]);
+    });
+  });
+
+  it('reports nothing more about a notification the server forgot', () => {
+    const { calls, channel } = recordingChannel();
+    const key = nextKey();
+    $wnd.Vaadin.Flow.webNotification.show('Hi', {}, channel, { key, owner: 'app' });
+
+    $wnd.Vaadin.Flow.webNotification.forget(key);
+    $wnd.Vaadin.Flow.webNotification.close(key);
+    FakeNotification.instances[0].dispatchEvent(new Event('click'));
+
+    expect(calls).to.deep.equal([]);
   });
 
   it('reports an error without showing anything when permission is not granted', () => {
     FakeNotification.permission = 'default';
     const { calls, channel } = recordingChannel();
 
-    $wnd.Vaadin.Flow.webNotification.show('Hi', {}, nextKey(), channel);
+    $wnd.Vaadin.Flow.webNotification.show('Hi', {}, channel, { key: nextKey(), owner: 'app' });
 
     expect(FakeNotification.instances).to.be.empty;
     expect(calls).to.have.length(1);

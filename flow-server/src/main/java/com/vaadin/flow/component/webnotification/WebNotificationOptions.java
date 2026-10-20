@@ -46,7 +46,8 @@ import org.jspecify.annotations.Nullable;
  * @param renotify
  *            whether replacing a notification with the same tag alerts the user
  *            again with sound or vibration, or {@code null} for the browser's
- *            default (no alert); {@code true} requires a {@code tag}
+ *            default (no alert); {@code true} requires a {@code tag} and cannot
+ *            be combined with {@code silent}
  * @param requireInteraction
  *            whether the notification stays visible until the user clicks or
  *            dismisses it, or {@code null} for the browser's default
@@ -64,12 +65,16 @@ public record WebNotificationOptions(@Nullable String body,
      * Validates the combination of settings.
      *
      * @throws IllegalArgumentException
-     *             if {@code renotify} is {@code true} without a {@code tag},
-     *             which browsers reject
+     *             if {@code renotify} is {@code true} without a {@code tag} or
+     *             together with {@code silent}, which browsers reject
      */
     public WebNotificationOptions {
         if (Boolean.TRUE.equals(renotify) && (tag == null || tag.isEmpty())) {
             throw new IllegalArgumentException("renotify requires a tag");
+        }
+        if (Boolean.TRUE.equals(renotify) && Boolean.TRUE.equals(silent)) {
+            throw new IllegalArgumentException(
+                    "renotify cannot be combined with silent");
         }
     }
 
@@ -139,7 +144,8 @@ public record WebNotificationOptions(@Nullable String body,
         /**
          * Sets whether replacing a notification with the same tag alerts the
          * user again with sound or vibration. Without it the replacement is
-         * silent. Requires a {@link #tag(String) tag}.
+         * silent. Requires a {@link #tag(String) tag}, and cannot be combined
+         * with {@link #silent(boolean) silent}.
          *
          * @param renotify
          *            {@code true} to alert the user again
@@ -180,7 +186,8 @@ public record WebNotificationOptions(@Nullable String body,
          *
          * @return the options
          * @throws IllegalArgumentException
-         *             if {@code renotify} is set without a {@code tag}
+         *             if {@code renotify} is set without a {@code tag} or
+         *             together with {@code silent}
          */
         public WebNotificationOptions build() {
             return new WebNotificationOptions(body, icon, tag, renotify,

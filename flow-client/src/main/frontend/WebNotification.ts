@@ -39,15 +39,29 @@ type VaadinWebNotificationChannel = (
   message?: string
 ) => void;
 
+/**
+ * Where a notification comes from: the key the server-side handle closes it by,
+ * and the application showing it, either its id or, from a trigger, the
+ * trigger's host element.
+ */
+interface VaadinWebNotificationSource {
+  key?: string | null;
+  owner?: string | Element | null;
+}
+
 interface ShownNotification {
   notification: Notification;
   tag?: string;
+  // The application that showed the notification, null when not known
+  appId: string | null;
   channel: VaadinWebNotificationChannel;
 }
 
 // Notifications shown by this page, keyed by the id the server generated for
 // the handle, so that close(key) does not need a browser-side id to travel back.
 const shown = new Map<string, ShownNotification>();
+
+const $wnd = window as any;
 
 let cachedPermission: VaadinWebNotificationPermission | null = null;
 let permissionListenersInstalled = false;
@@ -106,6 +120,19 @@ function installPermissionListeners(): void {
   window.addEventListener('focus', () => publishPermission());
 }
 
+/**
+ * Finds the id of the Flow application that renders the given element, so that
+ * notifications are scoped to it when several applications share the page.
+ */
+function appIdOf(element: Element): string | null {
+  const clients: Record<string, any> = ($wnd.Vaadin?.Flow?.clients as Record<string, any>) ?? {};
+  return Object.keys(clients).find((appId) => (clients[appId]?.getNodeId?.(element) ?? -1) >= 0) ?? null;
+}
+
+function belongsTo(entry: ShownNotification, appId: string | null | undefined): boolean {
+  return !appId || entry.appId === null || entry.appId === appId;
+}
+
 function forget(key: string, entry: ShownNotification): boolean {
   if (shown.get(key) !== entry) {
     return false;
@@ -114,7 +141,6 @@ function forget(key: string, entry: ShownNotification): boolean {
   return true;
 }
 
-const $wnd = window as any;
 $wnd.Vaadin ??= {};
 $wnd.Vaadin.Flow ??= {};
 $wnd.Vaadin.Flow.webNotification = {
@@ -139,8 +165,8 @@ $wnd.Vaadin.Flow.webNotification = {
   show(
     title: string,
     options: VaadinWebNotificationOptions,
-    key: string | null,
-    channel: VaadinWebNotificationChannel | null
+    channel: VaadinWebNotificationChannel | null,
+    source: VaadinWebNotificationSource
   ): void {
     // A trigger-bound action passes no key, since it closes notifications by
     // tag only, and no channel when the server is not interested in events.
@@ -168,22 +194,34 @@ $wnd.Vaadin.Flow.webNotification = {
       report('error', 'UNKNOWN', e?.message ? String(e.message) : String(e));
       return;
     }
-    if (options.tag) {
-      // The browser replaced a notification that has the same tag, so the
-      // previous one is gone for the user even though it fires no close event.
-      shown.forEach((previous, previousKey) => {
+    const entryKey = source.key ?? crypto.randomUUID();
+    const owner = source.owner ?? null;
+    const appId = owner instanceof Element ? appIdOf(owner) : owner;
+    const entry: ShownNotification = { notification, tag: options.tag, appId, channel: report };
+    shown.set(entryKey, entry);
+    notification.addEventListener('show', () => {
+      if (!options.tag) {
+        return;
+      }
+      // The browser replaced the notifications shown earlier with the same
+      // tag, so they are gone for the user even though they fire no close
+      // event. Only known once this one is shown: if it fails, the earlier
+      // ones stay on screen.
+      for (const [previousKey, previous] of shown) {
+        if (previous === entry) {
+          break;
+        }
         if (previous.tag === options.tag) {
           shown.delete(previousKey);
           previous.channel('close');
         }
-      });
-    }
-    const entryKey = key ?? crypto.randomUUID();
-    const entry: ShownNotification = { notification, tag: options.tag, channel: report };
-    shown.set(entryKey, entry);
+      }
+    });
     notification.addEventListener('click', () => {
       window.focus();
-      report('click');
+      if (shown.get(entryKey) === entry) {
+        report('click');
+      }
       notification.close();
     });
     notification.addEventListener('close', () => {
@@ -202,9 +240,15 @@ $wnd.Vaadin.Flow.webNotification = {
     shown.get(key)?.notification.close();
   },
 
-  closeByTag(tag: string): void {
+  // The server no longer listens to the notification; it stays visible but
+  // reports nothing more.
+  forget(key: string): void {
+    shown.delete(key);
+  },
+
+  closeByTag(tag: string, appId: string | null | undefined): void {
     shown.forEach((entry) => {
-      if (entry.tag === tag) {
+      if (entry.tag === tag && belongsTo(entry, appId)) {
         entry.notification.close();
       }
     });

@@ -272,8 +272,8 @@ public final class WebNotification implements Serializable {
     public static void closeByTag(String tag, UI ui) {
         Objects.requireNonNull(tag, "tag must not be null");
         Objects.requireNonNull(ui, UI_NOT_NULL);
-        ui.getElement().executeJs(WebNotificationJs.class).closeByTag(tag)
-                .then(ignored -> {
+        ui.getElement().executeJs(WebNotificationJs.class)
+                .closeByTag(tag, ui.getInternals().getAppId()).then(ignored -> {
                 }, err -> LOGGER.debug(
                         "Client-side webNotification.closeByTag failed: {}",
                         err));
@@ -299,13 +299,17 @@ public final class WebNotification implements Serializable {
          * @param channel
          *            the channel the browser reports what happens to the
          *            notification through
+         * @param appId
+         *            the id of the application showing the notification, so
+         *            that {@link #closeByTag(String, String)} only closes the
+         *            notifications of that application
          * @return the pending result, which completes once the notification is
          *         shown or has failed
          */
-        @JsExpression("window.Vaadin.Flow.webNotification.show($0, $1, $2, $3)")
+        @JsExpression("window.Vaadin.Flow.webNotification.show($0, $1, $3, { key: $2, owner: $4 })")
         PendingJavaScriptResult show(String title,
                 WebNotificationOptions options, String key,
-                ReturnChannelRegistration channel);
+                ReturnChannelRegistration channel, String appId);
 
         /**
          * Closes the notification shown under the given key.
@@ -319,14 +323,29 @@ public final class WebNotification implements Serializable {
         PendingJavaScriptResult close(String key);
 
         /**
-         * Closes the notifications shown with the given tag.
+         * Stops reporting what happens to the notification shown under the
+         * given key, without closing it.
+         *
+         * @param key
+         *            the key the notification was shown with
+         * @return the pending result, which completes once the notification is
+         *         forgotten
+         */
+        @JsExpression("window.Vaadin.Flow.webNotification.forget($0)")
+        PendingJavaScriptResult forget(String key);
+
+        /**
+         * Closes the notifications the given application has shown with the
+         * given tag.
          *
          * @param tag
          *            the tag of the notifications to close
+         * @param appId
+         *            the id of the application that showed the notifications
          * @return the pending result, which completes once the close is
          *         requested
          */
-        @JsExpression("window.Vaadin.Flow.webNotification.closeByTag($0)")
-        PendingJavaScriptResult closeByTag(String tag);
+        @JsExpression("window.Vaadin.Flow.webNotification.closeByTag($0, $1)")
+        PendingJavaScriptResult closeByTag(String tag, String appId);
     }
 }

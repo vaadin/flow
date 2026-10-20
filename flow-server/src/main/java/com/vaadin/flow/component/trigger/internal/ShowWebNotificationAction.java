@@ -110,16 +110,23 @@ public class ShowWebNotificationAction extends Action {
     @Override
     protected JsFunction toJs(Trigger trigger) {
         // No key: the client generates one per notification, since only the
-        // tag is used to close notifications shown by a trigger.
+        // tag is used to close notifications shown by a trigger. The host
+        // tells the client which application the notification belongs to, so
+        // that closing by tag stays within that application.
         if (onClick == null) {
             return JsFunction.of(
-                    "window.Vaadin.Flow.webNotification.show($0(event), $1, null, null)",
-                    title.toJs(trigger), options).withArguments("event");
+                    "window.Vaadin.Flow.webNotification.show($0(event), $1, null, { owner: $2 })",
+                    title.toJs(trigger), options, trigger.getHost())
+                    .withArguments("event");
         }
+        // Close events are dropped in the browser: there is no close callback,
+        // so sending them would only make round trips that are ignored.
         return JsFunction.of(
-                "window.Vaadin.Flow.webNotification.show($0(event), $1, null, $2)",
-                title.toJs(trigger), options, channelFor(trigger))
-                .withArguments("event");
+                "window.Vaadin.Flow.webNotification.show($0(event), $1,"
+                        + " (type, reason, message) => type === 'close' || $2(type, reason, message),"
+                        + " { owner: $3 })",
+                title.toJs(trigger), options, channelFor(trigger),
+                trigger.getHost()).withArguments("event");
     }
 
     private ReturnChannelRegistration channelFor(Trigger trigger) {
@@ -135,7 +142,7 @@ public class ShowWebNotificationAction extends Action {
         case "error" -> Objects.requireNonNull(onError)
                 .accept(WebNotificationErrorReader.read(args));
         default -> {
-            // Notifications shown by a trigger have no close callback
+            // Not sent by the client, see toJs
         }
         }
     }
