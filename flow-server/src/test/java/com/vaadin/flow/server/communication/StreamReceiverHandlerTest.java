@@ -440,6 +440,34 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
+    public void noParts_inputStreamIsParsed_fileContentAndMetadataReceived()
+            throws IOException {
+        contentType = "multipart/form-data; boundary=----WebKitFormBoundary7NsWHeCJVZNwi6ll";
+        String body = "------WebKitFormBoundary7NsWHeCJVZNwi6ll\r\n"
+                + "Content-Disposition: form-data; name=\"file\"; filename=\"EBookJP.txt\"\r\n"
+                + "Content-Type: text/plain\r\n" + "\r\n" + "foobar\r\n"
+                + "------WebKitFormBoundary7NsWHeCJVZNwi6ll--\r\n";
+        inputStream = createInputStream(body);
+        outputStream = new ByteArrayOutputStream();
+        contentLength = String.valueOf(body.length());
+
+        handler.handleRequest(session, request, response, streamReceiver,
+                String.valueOf(uiId), expectedSecurityKey);
+
+        ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventArgumentCaptor = ArgumentCaptor
+                .forClass(StreamVariable.StreamingEndEvent.class);
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventArgumentCaptor.capture());
+        Assert.assertEquals("foobar", new String(
+                ((ByteArrayOutputStream) outputStream).toByteArray()));
+        Assert.assertEquals("EBookJP.txt",
+                endEventArgumentCaptor.getValue().getFileName());
+        Assert.assertEquals("text/plain",
+                endEventArgumentCaptor.getValue().getMimeType());
+        Mockito.verify(response, Mockito.times(0)).setStatus(Mockito.anyInt());
+    }
+
+    @Test
     public void handleFileUploadValidationAndData_inputStreamThrowsIOException_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws UploadException {
         InputStream inputStream = new InputStream() {
