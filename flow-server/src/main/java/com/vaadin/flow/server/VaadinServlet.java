@@ -153,12 +153,15 @@ public class VaadinServlet extends HttpServlet {
         if (productionMode) {
             try {
                 LicenseChecker.checkLicense(PROJECT_NAME, frameworkVersion,
-                        BuildType.PRODUCTION, null);
+                        BuildType.RUNTIME, null);
             } catch (LicenseException e) {
                 getLogger().error(
-                        "This Vaadin version requires an extended maintenance subscription."
-                                + "Provide either a server key or an online license checking key,"
-                                + "which you can get from: https://vaadin.com/myaccount/licenses#latest.",
+                        "No valid license found for this Vaadin version, "
+                                + "which requires an extended maintenance subscription. "
+                                + "You can get a server key or an online license checking key from "
+                                + "https://vaadin.com/myaccount/licenses#latest. "
+                                + "For distribution keys and other supported license keys, see "
+                                + "https://vaadin.com/docs/latest/flow/configuration/licenses.",
                         e);
             }
         } else {
