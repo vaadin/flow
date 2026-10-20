@@ -110,6 +110,11 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JsModule("/abs-module.js")
+    private static class AbsoluteJsModule extends Component {
+    }
+
+    @Tag("div")
     @JavaScript(value = "not-bundled-module.js", type = JavaScript.Type.MODULE)
     private static class ProductionRelativeModule extends Component {
     }
@@ -145,6 +150,13 @@ class RuntimeJavaScriptDependencyTest {
         // A bare relative @JavaScript value keeps the legacy interpretation of
         // being bundled, so it must not show up as a page dependency
         assertEquals(List.of(), runtimeDependencies(RelativeScript.class));
+    }
+
+    @Test
+    void absoluteJsModule_notAddedAtRuntime() {
+        // Runtime prefixes only apply to @JavaScript, a '/' @JsModule value is
+        // bundled and must not also be loaded as a page dependency
+        assertEquals(List.of(), runtimeDependencies(AbsoluteJsModule.class));
     }
 
     @Test
