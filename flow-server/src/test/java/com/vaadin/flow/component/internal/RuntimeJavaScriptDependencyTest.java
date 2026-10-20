@@ -214,23 +214,15 @@ class RuntimeJavaScriptDependencyTest {
                 .addComponentDependencies(InlineParentPathModule.class));
     }
 
-    @Test
-    void productionMode_relativeModule_noMissingBundleImportError()
-            throws Exception {
-        String log = productionModeLog(ProductionRelativeModule.class);
+    @ParameterizedTest
+    @ValueSource(classes = { ProductionRelativeModule.class,
+            AbsoluteScript.class, ContextJsModule.class })
+    void productionMode_notBundledValue_noMissingBundleImportError(
+            Class<? extends Component> componentType) throws Exception {
+        String log = productionModeLog(componentType);
 
         assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
-                "A type=MODULE value is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
-                        + log);
-    }
-
-    @Test
-    void productionMode_absoluteScript_noMissingBundleImportError()
-            throws Exception {
-        String log = productionModeLog(AbsoluteScript.class);
-
-        assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
-                "A value with a runtime prefix is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
+                "A type=MODULE or runtime-URL value is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
                         + log);
     }
 
@@ -244,19 +236,6 @@ class RuntimeJavaScriptDependencyTest {
         assertTrue(log.contains(MISSING_FROM_BUNDLE_ERROR),
                 "A bundled type=SCRIPT value missing from the bundle should still be reported. Log was: "
                         + log);
-    }
-
-    @Test
-    void developmentOnlyAbsoluteScript_addedInDevelopmentMode() {
-        assertSingleDependency(DevelopmentOnlyAbsoluteScript.class,
-                Dependency.Type.JAVASCRIPT, "/dev-helper.js", LoadMode.EAGER);
-    }
-
-    @Test
-    void developmentOnlyExternalJsModule_addedInDevelopmentMode() {
-        assertSingleDependency(DevelopmentOnlyExternalJsModule.class,
-                Dependency.Type.JS_MODULE, "https://example.net/dev-helper.js",
-                LoadMode.EAGER);
     }
 
     @ParameterizedTest
@@ -295,7 +274,12 @@ class RuntimeJavaScriptDependencyTest {
                 Arguments.of(ContextJsModule.class, Dependency.Type.JS_MODULE,
                         "context://module.js"),
                 Arguments.of(AbsoluteJsModule.class, Dependency.Type.JS_MODULE,
-                        "/abs/module.js"));
+                        "/abs/module.js"),
+                Arguments.of(DevelopmentOnlyAbsoluteScript.class,
+                        Dependency.Type.JAVASCRIPT, "/dev-helper.js"),
+                Arguments.of(DevelopmentOnlyExternalJsModule.class,
+                        Dependency.Type.JS_MODULE,
+                        "https://example.net/dev-helper.js"));
     }
 
     @ParameterizedTest
@@ -305,16 +289,6 @@ class RuntimeJavaScriptDependencyTest {
             Dependency.Type expectedType, String expectedUrl) {
         assertSingleDependency(componentType, expectedType, expectedUrl,
                 LoadMode.EAGER);
-    }
-
-    @Test
-    void productionMode_contextJsModule_noMissingBundleImportError()
-            throws Exception {
-        String log = productionModeLog(ContextJsModule.class);
-
-        assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
-                "A @JsModule with a runtime URL is not bundled, so it must not be reported as missing. Log was: "
-                        + log);
     }
 
     private void assertSingleDependency(
