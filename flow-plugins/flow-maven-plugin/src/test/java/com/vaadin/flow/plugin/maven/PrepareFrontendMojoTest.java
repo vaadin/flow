@@ -29,7 +29,6 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
@@ -55,6 +54,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 class PrepareFrontendMojoTest {
     @TempDir
@@ -261,12 +263,12 @@ class PrepareFrontendMojoTest {
             throws MojoExecutionException, MojoFailureException,
             IllegalAccessException {
         mojo.project.setPackaging("jar");
-        MavenProject project = Mockito.spy(mojo.project);
+        MavenProject project = spy(mojo.project);
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
 
         mojo.execute();
 
-        Mockito.verify(project, Mockito.atLeastOnce()).getArtifacts();
+        verify(project, atLeastOnce()).getArtifacts();
     }
 
     private void assertPackageJsonContent() throws IOException {
@@ -276,8 +278,7 @@ class PrepareFrontendMojoTest {
                 "@polymer/polymer");
 
         assertContainsPackage(packageJsonObject.get("devDependencies"), "vite",
-                "@rollup/plugin-replace", "rollup-plugin-brotli",
-                "vite-plugin-checker");
+                "rollup-plugin-brotli", "vite-plugin-checker");
     }
 
     @Test

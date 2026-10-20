@@ -22,7 +22,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -49,6 +48,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @Isolated
 class JavaScriptBootstrapHandlerTest {
@@ -202,15 +204,14 @@ class JavaScriptBootstrapHandlerTest {
 
     @Test
     void should_invoke_modifyPushConfiguration() throws Exception {
-        AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
+        AppShellRegistry registry = mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
 
         VaadinRequest request = mocks.createRequest(mocks, "/",
                 "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
-        Mockito.verify(registry)
-                .modifyPushConfiguration(Mockito.any(PushConfiguration.class));
+        verify(registry).modifyPushConfiguration(any(PushConfiguration.class));
     }
 
     @Test

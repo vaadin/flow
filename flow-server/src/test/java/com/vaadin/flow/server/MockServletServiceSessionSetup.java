@@ -40,7 +40,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
 
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.di.Instantiator;
@@ -58,6 +57,14 @@ import com.vaadin.flow.server.AppShellRegistry.AppShellRegistryWrapper;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class MockServletServiceSessionSetup {
 
@@ -152,7 +159,7 @@ public class MockServletServiceSessionSetup {
 
         @Override
         protected Instantiator createInstantiator() throws ServiceException {
-            return Mockito.spy(super.createInstantiator());
+            return spy(super.createInstantiator());
         }
 
         @Override
@@ -218,9 +225,8 @@ public class MockServletServiceSessionSetup {
                                 };
                             }
                         });
-                Mockito.when(getServletContext().getResource(path))
-                        .thenReturn(url);
-                Mockito.when(getServletContext().getResourceAsStream(path))
+                when(getServletContext().getResource(path)).thenReturn(url);
+                when(getServletContext().getResourceAsStream(path))
                         .thenAnswer(i -> streamSupplier.get());
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
@@ -234,13 +240,12 @@ public class MockServletServiceSessionSetup {
         }
 
         public void verifyServletContextResourceLoadedOnce(String resource) {
-            Mockito.verify(servlet.getServletContext())
-                    .getResourceAsStream(resource);
+            verify(servlet.getServletContext()).getResourceAsStream(resource);
 
         }
 
         public void verifyServletContextResourceNotLoaded(String resource) {
-            Mockito.verify(servlet.getServletContext(), Mockito.never())
+            verify(servlet.getServletContext(), never())
                     .getResourceAsStream(resource);
         }
     }
@@ -339,24 +344,21 @@ public class MockServletServiceSessionSetup {
 
         deploymentConfiguration.setXsrfProtectionEnabled(false);
         deploymentConfiguration.setProjectFolder(new File("./"));
-        Mockito.doAnswer(
-                invocation -> servletContext.getClass().getClassLoader())
+        doAnswer(invocation -> servletContext.getClass().getClassLoader())
                 .when(servletContext).getClassLoader();
-        Mockito.when(servletConfig.getServletContext())
-                .thenReturn(servletContext);
+        when(servletConfig.getServletContext()).thenReturn(servletContext);
 
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+        when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
         DefaultRoutePathProvider routePathProvider = new DefaultRoutePathProvider();
-        Mockito.when(lookup.lookup(RoutePathProvider.class))
+        when(lookup.lookup(RoutePathProvider.class))
                 .thenReturn(routePathProvider);
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
+        when(lookup.lookup(StaticFileHandlerFactory.class))
                 .thenReturn(staticFileHandlerFactory);
 
-        Mockito.when(
-                resourceProvider.getApplicationResource(Mockito.anyString()))
+        when(resourceProvider.getApplicationResource(anyString()))
                 .thenAnswer(invocation -> {
                     return MockServletServiceSessionSetup.class
                             .getResource("/" + invocation.getArgument(0));
@@ -371,27 +373,24 @@ public class MockServletServiceSessionSetup {
         }
 
         if (sessionAvailable) {
-            Mockito.when(session.getConfiguration())
+            when(session.getConfiguration())
                     .thenReturn(deploymentConfiguration);
 
-            Mockito.when(session.getBrowser()).thenReturn(browser);
-            Mockito.when(session.getPushId()).thenReturn("fake push id");
-            Mockito.when(session.getLocale()).thenReturn(Locale.ENGLISH);
+            when(session.getBrowser()).thenReturn(browser);
+            when(session.getPushId()).thenReturn("fake push id");
+            when(session.getLocale()).thenReturn(Locale.ENGLISH);
 
-            Mockito.when(wrappedSession.getHttpSession())
-                    .thenReturn(httpSession);
-            Mockito.when(session.getState())
-                    .thenReturn(VaadinSessionState.OPEN);
+            when(wrappedSession.getHttpSession()).thenReturn(httpSession);
+            when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
-            Mockito.when(session.getService()).thenAnswer(i -> service);
-            Mockito.when(session.hasLock()).thenReturn(true);
-            Mockito.when(session.getPendingAccessQueue())
+            when(session.getService()).thenAnswer(i -> service);
+            when(session.hasLock()).thenReturn(true);
+            when(session.getPendingAccessQueue())
                     .thenReturn(new LinkedBlockingDeque<>());
-            Mockito.when(request.getWrappedSession())
-                    .thenReturn(wrappedSession);
+            when(request.getWrappedSession()).thenReturn(wrappedSession);
             SessionRouteRegistry sessionRegistry = (SessionRouteRegistry) SessionRouteRegistry
                     .getSessionRegistry(session);
-            Mockito.when(session.getAttribute(SessionRouteRegistry.class))
+            when(session.getAttribute(SessionRouteRegistry.class))
                     .thenReturn(sessionRegistry);
         } else {
             session = null;
@@ -403,7 +402,7 @@ public class MockServletServiceSessionSetup {
             CurrentInstance.set(VaadinSession.class, session);
         }
 
-        Mockito.when(request.getServletPath()).thenReturn("");
+        when(request.getServletPath()).thenReturn("");
     }
 
     public TestVaadinServlet createVaadinServlet() {
@@ -459,16 +458,16 @@ public class MockServletServiceSessionSetup {
     }
 
     public void setAppShellRegistry(AppShellRegistry appShellRegistry) {
-        Mockito.when(servletContext
+        when(servletContext
                 .getAttribute(AppShellRegistryWrapper.class.getName()))
                 .thenReturn(new AppShellRegistryWrapper(appShellRegistry));
     }
 
     public TestVaadinServletResponse createResponse() throws IOException {
-        HttpServletResponse httpServletResponse = Mockito
-                .mock(HttpServletResponse.class);
+        HttpServletResponse httpServletResponse = mock(
+                HttpServletResponse.class);
         CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(httpServletResponse.getOutputStream()).thenReturn(out);
+        when(httpServletResponse.getOutputStream()).thenReturn(out);
         return new TestVaadinServletResponse(httpServletResponse, getService());
 
     }
@@ -483,8 +482,7 @@ public class MockServletServiceSessionSetup {
 
         QueryParameters queryParams = QueryParameters.fromString(queryString);
         Map<String, List<String>> params = queryParams.getParameters();
-        HttpServletRequest httpServletRequest = Mockito
-                .mock(HttpServletRequest.class);
+        HttpServletRequest httpServletRequest = mock(HttpServletRequest.class);
         return new VaadinServletRequest(httpServletRequest,
                 mocks.getService()) {
             @Override

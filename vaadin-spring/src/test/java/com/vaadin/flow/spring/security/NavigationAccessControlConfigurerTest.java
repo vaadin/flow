@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +33,9 @@ import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 class NavigationAccessControlConfigurerTest {
 
@@ -60,8 +62,8 @@ class NavigationAccessControlConfigurerTest {
     void build_defaults() {
         TestNavigationAccessControl accessControl = configurer.build(factory,
                 registeredCheckers);
-        Assertions.assertThat(accessControl.isEnabled()).isTrue();
-        Assertions.assertThat(accessControl.decisionResolver)
+        assertThat(accessControl.isEnabled()).isTrue();
+        assertThat(accessControl.decisionResolver)
                 .isExactlyInstanceOf(DefaultAccessCheckDecisionResolver.class);
     }
 
@@ -70,7 +72,7 @@ class NavigationAccessControlConfigurerTest {
         TestNavigationAccessControl accessControl = configurer.disabled()
                 .build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.isEnabled()).isFalse();
+        assertThat(accessControl.isEnabled()).isFalse();
     }
 
     @Test
@@ -81,8 +83,7 @@ class NavigationAccessControlConfigurerTest {
                 .withDecisionResolver(customResolver)
                 .build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.decisionResolver)
-                .isSameAs(customResolver);
+        assertThat(accessControl.decisionResolver).isSameAs(customResolver);
     }
 
     @Test
@@ -91,14 +92,14 @@ class NavigationAccessControlConfigurerTest {
                 .withAnnotatedViewAccessChecker()
                 .build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.checkerList)
+        assertThat(accessControl.checkerList)
                 .containsExactly(viewAccessChecker);
     }
 
     @Test
     void build_enableViewAccessChecker_checkerNotAvailable_throws() {
         registeredCheckers.remove(viewAccessChecker);
-        Assertions.assertThatIllegalStateException()
+        assertThatIllegalStateException()
                 .isThrownBy(() -> configurer.withAnnotatedViewAccessChecker()
                         .build(factory, registeredCheckers))
                 .withMessageContaining(
@@ -112,14 +113,14 @@ class NavigationAccessControlConfigurerTest {
                 .withRoutePathAccessChecker()
                 .build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.checkerList)
+        assertThat(accessControl.checkerList)
                 .containsExactly(routePathAccessChecker);
     }
 
     @Test
     void build_enableRoutePathAccessChecker_checkerNotAvailable_throws() {
         registeredCheckers.remove(routePathAccessChecker);
-        Assertions.assertThatIllegalStateException()
+        assertThatIllegalStateException()
                 .isThrownBy(() -> configurer.withRoutePathAccessChecker()
                         .build(factory, registeredCheckers))
                 .withMessageContaining(RoutePathAccessChecker.class.getName())
@@ -133,8 +134,7 @@ class NavigationAccessControlConfigurerTest {
                 .withNavigationAccessChecker(accessChecker)
                 .build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.checkerList)
-                .containsExactly(accessChecker);
+        assertThat(accessControl.checkerList).containsExactly(accessChecker);
     }
 
     @Test
@@ -146,7 +146,7 @@ class NavigationAccessControlConfigurerTest {
                 .withNavigationAccessCheckers(accessCheckers)
                 .build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.checkerList)
+        assertThat(accessControl.checkerList)
                 .containsExactlyElementsOf(accessCheckers);
     }
 
@@ -170,7 +170,7 @@ class NavigationAccessControlConfigurerTest {
         expectedOrder.add(accessChecker2);
         expectedOrder.addAll(accessCheckers);
         expectedOrder.add(accessChecker3);
-        Assertions.assertThat(accessControl.checkerList)
+        assertThat(accessControl.checkerList)
                 .containsExactlyElementsOf(expectedOrder);
     }
 
@@ -188,7 +188,7 @@ class NavigationAccessControlConfigurerTest {
         expectedOrder.add(viewAccessChecker);
         expectedOrder.add(routePathAccessChecker);
         expectedOrder.addAll(accessCheckers);
-        Assertions.assertThat(accessControl.checkerList)
+        assertThat(accessControl.checkerList)
                 .containsExactlyElementsOf(expectedOrder);
     }
 
@@ -201,7 +201,7 @@ class NavigationAccessControlConfigurerTest {
 
         List<NavigationAccessChecker> expectedOrder = new ArrayList<>();
         expectedOrder.addAll(registeredCheckers);
-        Assertions.assertThat(accessControl.checkerList)
+        assertThat(accessControl.checkerList)
                 .containsExactlyElementsOf(expectedOrder);
 
         // Remove all checkers
@@ -210,7 +210,7 @@ class NavigationAccessControlConfigurerTest {
                 .withAvailableNavigationAccessCheckers(checker -> false)
                 .build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.checkerList).isEmpty();
+        assertThat(accessControl.checkerList).isEmpty();
 
         // Custom filter registered checker
         configurer = new NavigationAccessControlConfigurer();
@@ -225,7 +225,7 @@ class NavigationAccessControlConfigurerTest {
         expectedOrder.add(routePathAccessChecker);
         expectedOrder.add(registeredCheckers.get(3));
         expectedOrder.add(registeredCheckers.get(5));
-        Assertions.assertThat(accessControl.checkerList)
+        assertThat(accessControl.checkerList)
                 .containsExactlyElementsOf(expectedOrder);
     }
 
@@ -247,7 +247,7 @@ class NavigationAccessControlConfigurerTest {
         expectedOrder.add(additionalChecker);
         expectedOrder.add(registeredCheckers.get(3));
         expectedOrder.add(registeredCheckers.get(5));
-        Assertions.assertThat(accessControl.checkerList)
+        assertThat(accessControl.checkerList)
                 .containsExactlyElementsOf(expectedOrder);
 
     }
@@ -258,9 +258,8 @@ class NavigationAccessControlConfigurerTest {
                 .withLoginView(LoginView.class)
                 .build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.getLoginView())
-                .isEqualTo(LoginView.class);
-        Assertions.assertThat(accessControl.getLoginUrl()).isNull();
+        assertThat(accessControl.getLoginView()).isEqualTo(LoginView.class);
+        assertThat(accessControl.getLoginUrl()).isNull();
     }
 
     @Test
@@ -268,13 +267,13 @@ class NavigationAccessControlConfigurerTest {
         TestNavigationAccessControl accessControl = configurer
                 .withLoginView("/login").build(factory, registeredCheckers);
 
-        Assertions.assertThat(accessControl.getLoginUrl()).isEqualTo("/login");
-        Assertions.assertThat(accessControl.getLoginView()).isNull();
+        assertThat(accessControl.getLoginUrl()).isEqualTo("/login");
+        assertThat(accessControl.getLoginView()).isNull();
     }
 
     @Test
     void build_bothLoginViewAndPath_throws() {
-        Assertions.assertThatIllegalStateException()
+        assertThatIllegalStateException()
                 .isThrownBy(() -> configurer.withLoginView(LoginView.class)
                         .withLoginView("/login")
                         .build(factory, registeredCheckers))

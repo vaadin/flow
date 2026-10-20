@@ -67,6 +67,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
 
         /**
          * Resumes the page transition associated with the postponed event.
+         * <p>
+         * The resumed navigation is reported as a navigation of its own with
+         * {@link NavigationStartedEvent} and {@link NavigationEndedEvent}.
          */
         public void proceed() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
@@ -83,7 +86,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
                             .callJsFunction("serverConnected", false);
                 }
 
-                handler.handle(event);
+                Router.observeNavigation(event.getUI(), event.getLocation(),
+                        event.getTrigger(), () -> handler.handle(event));
                 setReferences(null, null);
             }
         }

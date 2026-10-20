@@ -102,6 +102,42 @@ class LaunchTest {
         assertFalse(Launch.forwardedToApp("os.name"));
     }
 
+    @Test
+    void forwardedToApp_holdsBackTheJvmArgsProperty() {
+        // The app gets the flags themselves; a -D copy of the raw value would
+        // only carry its | separators into MAVEN_OPTS.
+        assertFalse(Launch.forwardedToApp(Launch.JVM_ARGS_PROPERTY));
+    }
+
+    @Test
+    void configuredJvmFlags_isEmptyWhenUnset() {
+        assertEquals(List.of(), Launch.readConfiguredJvmFlags());
+        setProperty(Launch.JVM_ARGS_PROPERTY, "  ");
+        assertEquals(List.of(), Launch.readConfiguredJvmFlags());
+    }
+
+    @Test
+    void configuredJvmFlags_splitsOnWhitespace() {
+        setProperty(Launch.JVM_ARGS_PROPERTY,
+                " --add-exports java.base/jdk.internal.misc=ALL-UNNAMED\t-Xmx2g ");
+        assertEquals(
+                List.of("--add-exports",
+                        "java.base/jdk.internal.misc=ALL-UNNAMED", "-Xmx2g"),
+                Launch.readConfiguredJvmFlags());
+    }
+
+    @Test
+    void configuredJvmFlags_splitsOnPipe() {
+        // The CLI splits VAADIN_DEV_DAEMON_OPTS on whitespace without honouring
+        // quotes, so through it several flags can only be joined with |. A
+        // comma has to survive: it separates --add-exports targets.
+        setProperty(Launch.JVM_ARGS_PROPERTY,
+                "-Xmx2g|--add-exports=java.base/jdk.internal.misc=a,b||-XX:+UseZGC|");
+        assertEquals(List.of("-Xmx2g",
+                "--add-exports=java.base/jdk.internal.misc=a,b", "-XX:+UseZGC"),
+                Launch.readConfiguredJvmFlags());
+    }
+
     private static String classpath(String... entries) {
         return String.join(File.pathSeparator, entries);
     }
@@ -127,6 +163,9 @@ class LaunchTest {
         });
 
         assertTrue(launch.projectIfResolved().isEmpty());
+        // Nor is anything launched, which leaves a classpath nothing can have
+        // drifted from - answered without resolving either.
+        assertTrue(launch.classpathDrift().isEmpty());
     }
 
     /**
@@ -140,21 +179,7 @@ class LaunchTest {
     @Test
     void jvmFlags_disableHotswapAgentPluginsForEveryClassLoader(
             @TempDir Path repo) throws IOException {
-        Files.writeString(repo.resolve("pom.xml"), """
-                <project>
-                  <artifactId>app</artifactId>
-                  <packaging>jar</packaging>
-                </project>
-                """);
-        Path jar = Files.writeString(repo.resolve("ha.jar"), "");
-        setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, jar.toString());
-        setProperty("vaadin.dev.agentJar", jar.toString());
-        setProperty("vaadin.dev.javaHome", System.getProperty("java.home"));
-        Launch launch = new Launch(Reactor.discover(repo, text -> {
-        }), text -> {
-        });
-
-        List<String> flags = launch.jvmFlags(text -> {
+        List<String> flags = launchWithAgents(repo).jvmFlags(text -> {
         });
 
         String prefix = "-Dhotswapagent.disablePlugin=";
@@ -169,6 +194,46 @@ class LaunchTest {
                 flags.stream().noneMatch(
                         flag -> flag.startsWith("-DdisabledPlugins=")),
                 flags.toString());
+    }
+
+    /**
+     * The developer's flags come after the loop's and the runtime's, the
+     * property's before those of {@code --jvm-args}, because the JVM lets the
+     * last of a repeated flag win.
+     */
+    @Test
+    void composeJvmFlags_putsTheDevelopersFlagsLast(@TempDir Path repo)
+            throws IOException {
+        Launch launch = launchWithAgents(repo);
+        setProperty(Launch.JVM_ARGS_PROPERTY, "-Xmx1g|-Dfrom=property");
+        launch.requestJvmFlags(List.of("-Xmx2g", "-Dfrom=command-line"));
+
+        List<String> flags = launch.composeJvmFlags(text -> {
+        }, List.of("-Druntime=extra"));
+
+        List<String> own = launch.jvmFlags(text -> {
+        });
+        assertEquals(own, flags.subList(0, own.size()), flags.toString());
+        assertEquals(
+                List.of("-Druntime=extra", "-Xmx1g", "-Dfrom=property",
+                        "-Xmx2g", "-Dfrom=command-line"),
+                flags.subList(own.size(), flags.size()));
+    }
+
+    private Launch launchWithAgents(Path repo) throws IOException {
+        Files.writeString(repo.resolve("pom.xml"), """
+                <project>
+                  <artifactId>app</artifactId>
+                  <packaging>jar</packaging>
+                </project>
+                """);
+        Path jar = Files.writeString(repo.resolve("ha.jar"), "");
+        setProperty(HotswapAgentJar.OVERRIDE_PROPERTY, jar.toString());
+        setProperty("vaadin.dev.agentJar", jar.toString());
+        setProperty("vaadin.dev.javaHome", System.getProperty("java.home"));
+        return new Launch(Reactor.discover(repo, text -> {
+        }), text -> {
+        });
     }
 
     private void setProperty(String name, String value) {

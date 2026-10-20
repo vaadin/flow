@@ -122,11 +122,8 @@ public class Input extends AbstractSinglePropertyField<Input, String>
      * @since 25.3
      */
     public void setInputMode(InputMode inputMode) {
-        if (inputMode == null) {
-            getElement().removeAttribute("inputmode");
-        } else {
-            getElement().setAttribute("inputmode", inputMode.getValue());
-        }
+        getElement().setAttribute("inputmode",
+                inputMode == null ? null : inputMode.getValue());
     }
 
     /**
