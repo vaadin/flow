@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import kotlin.KotlinVersion;
 import org.junit.jupiter.api.AfterEach;
@@ -240,6 +241,30 @@ class VaadinServiceTest {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    @Test
+    void init_sessionlessHandlerAddedByInitListener_runsBeforeBuiltInOnes() {
+        SessionlessRequestHandler builtIn = mock(
+                SessionlessRequestHandler.class);
+        SessionlessRequestHandler added = mock(SessionlessRequestHandler.class);
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            protected List<SessionlessRequestHandler> createSessionlessRequestHandlers() {
+                return new ArrayList<>(List.of(builtIn));
+            }
+        };
+
+        service.init(new MockInstantiator(event -> {
+            assertThrows(NullPointerException.class,
+                    () -> event.addSessionlessRequestHandler(null));
+            event.addSessionlessRequestHandler(added);
+        }));
+
+        assertEquals(List.of(added, builtIn),
+                StreamSupport.stream(
+                        service.getSessionlessRequestHandlers().spliterator(),
+                        false).toList());
     }
 
     @Test
