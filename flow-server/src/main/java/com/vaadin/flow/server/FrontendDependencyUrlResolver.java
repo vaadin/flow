@@ -106,6 +106,11 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      * {@code https://}, {@code //}, {@code context://}, {@code base://}, or
      * {@code /}. Returns {@code false} for {@code null}, blank, or any other
      * value (e.g. bare relative paths and bundler import specifiers).
+     * <p>
+     * URLs with any other scheme are not recognized here. The bundler skips
+     * them as well (see {@link com.vaadin.flow.internal.UrlUtil#isExternal}),
+     * so callers deciding whether a {@code @JavaScript} or {@code @JsModule}
+     * value is loaded at runtime must check that too.
      *
      * @param value
      *            the raw annotation value

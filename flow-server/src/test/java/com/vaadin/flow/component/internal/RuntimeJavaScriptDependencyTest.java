@@ -78,6 +78,16 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JavaScript("ftp://example.net/script.js")
+    private static class OtherSchemeScript extends Component {
+    }
+
+    @Tag("div")
+    @JsModule("ftp://example.net/module.js")
+    private static class OtherSchemeJsModule extends Component {
+    }
+
+    @Tag("div")
     @JavaScript("https://example.net/pkg/../dist/script.js")
     private static class ExternalScriptWithParentPath extends Component {
     }
@@ -216,7 +226,8 @@ class RuntimeJavaScriptDependencyTest {
 
     @ParameterizedTest
     @ValueSource(classes = { ProductionRelativeModule.class,
-            AbsoluteScript.class, ContextJsModule.class })
+            AbsoluteScript.class, OtherSchemeScript.class,
+            ContextJsModule.class, OtherSchemeJsModule.class })
     void productionMode_notBundledValue_noMissingBundleImportError(
             Class<? extends Component> componentType) throws Exception {
         String log = productionModeLog(componentType);
@@ -252,6 +263,9 @@ class RuntimeJavaScriptDependencyTest {
         assertEquals(List.of("/script.js"),
                 productionModeDependencies(AbsoluteScript.class).stream()
                         .map(Dependency::getUrl).toList());
+        assertEquals(List.of("ftp://example.net/script.js"),
+                productionModeDependencies(OtherSchemeScript.class).stream()
+                        .map(Dependency::getUrl).toList());
         assertEquals(List.of("https://example.net/module.js"),
                 productionModeDependencies(ExternalJsModule.class).stream()
                         .map(Dependency::getUrl).toList());
@@ -261,6 +275,9 @@ class RuntimeJavaScriptDependencyTest {
         return Stream.of(
                 Arguments.of(ExternalScript.class, Dependency.Type.JAVASCRIPT,
                         "https://example.net/script.js"),
+                Arguments.of(OtherSchemeScript.class,
+                        Dependency.Type.JAVASCRIPT,
+                        "ftp://example.net/script.js"),
                 Arguments.of(AbsoluteScript.class, Dependency.Type.JAVASCRIPT,
                         "/script.js"),
                 Arguments.of(ContextScript.class, Dependency.Type.JAVASCRIPT,
@@ -275,6 +292,9 @@ class RuntimeJavaScriptDependencyTest {
                         "context://module.js"),
                 Arguments.of(AbsoluteJsModule.class, Dependency.Type.JS_MODULE,
                         "/abs/module.js"),
+                Arguments.of(OtherSchemeJsModule.class,
+                        Dependency.Type.JS_MODULE,
+                        "ftp://example.net/module.js"),
                 Arguments.of(DevelopmentOnlyAbsoluteScript.class,
                         Dependency.Type.JAVASCRIPT, "/dev-helper.js"),
                 Arguments.of(DevelopmentOnlyExternalJsModule.class,

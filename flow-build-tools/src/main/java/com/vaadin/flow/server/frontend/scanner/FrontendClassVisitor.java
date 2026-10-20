@@ -30,6 +30,7 @@ import org.objectweb.asm.Type;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.theme.NoTheme;
@@ -115,8 +116,11 @@ final class FrontendClassVisitor extends ClassVisitor {
                 // type=MODULE @JavaScript values are loaded at runtime as
                 // <script type="module"> by UIInternals; skip them entirely.
                 // This visitor is called also for the $Container annotation.
+                // Values with any other scheme are dropped from the bundle
+                // and added at runtime as well, see UrlUtil.isExternal
                 boolean runtimeUrl = FrontendDependencyUrlResolver
-                        .isRuntimeDependencyUrl(currentModule);
+                        .isRuntimeDependencyUrl(currentModule)
+                        || UrlUtil.isExternal(currentModule);
                 if (isJavaScriptAnnotation && runtimeUrl) {
                     // @JavaScript with a runtime prefix: load at runtime, not
                     // bundled. No deprecation — this is the recommended form.
