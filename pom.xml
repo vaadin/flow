@@ -156,6 +156,10 @@
          integrations) set this to true -->
     <jandex.skip>false</jandex.skip>
     <spotless.plugin.version>3.10.4</spotless.plugin.version>
+    <!-- The license header files contain the year as plain text instead of
+         $YEAR, so Spotless updates the header of every file, not only of
+         changed ones. Bump the year in eclipse/*-license-header.txt each
+         January and run spotless:apply. -->
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
     <spotless.ratchetFrom/>
     <spotless.prettier.version>3.9.9</spotless.prettier.version>
