@@ -245,13 +245,15 @@ class VaadinServiceTest {
 
     @Test
     void init_sessionlessHandlerAddedByInitListener_runsBeforeBuiltInOnes() {
-        SessionlessRequestHandler builtIn = mock(
+        SessionlessRequestHandler builtIn1 = mock(
+                SessionlessRequestHandler.class);
+        SessionlessRequestHandler builtIn2 = mock(
                 SessionlessRequestHandler.class);
         SessionlessRequestHandler added = mock(SessionlessRequestHandler.class);
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
             protected List<SessionlessRequestHandler> createSessionlessRequestHandlers() {
-                return new ArrayList<>(List.of(builtIn));
+                return new ArrayList<>(List.of(builtIn1, builtIn2));
             }
         };
 
@@ -261,7 +263,7 @@ class VaadinServiceTest {
             event.addSessionlessRequestHandler(added);
         }));
 
-        assertEquals(List.of(added, builtIn),
+        assertEquals(List.of(added, builtIn2, builtIn1),
                 StreamSupport.stream(
                         service.getSessionlessRequestHandlers().spliterator(),
                         false).toList());
