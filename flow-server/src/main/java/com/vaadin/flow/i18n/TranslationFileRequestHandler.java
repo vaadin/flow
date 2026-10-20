@@ -36,12 +36,10 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.SessionExpiredHandler;
-import com.vaadin.flow.server.SynchronizedRequestHandler;
+import com.vaadin.flow.server.SessionlessRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
@@ -68,8 +66,8 @@ import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
  * @author Vaadin Ltd
  * @since 24.4
  */
-public class TranslationFileRequestHandler extends SynchronizedRequestHandler
-        implements SessionExpiredHandler {
+public class TranslationFileRequestHandler
+        implements SessionlessRequestHandler {
 
     static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
 
@@ -93,18 +91,10 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
         this.classLoader = classLoader;
     }
 
-    @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
-        handleTranslationRequest(request.getService(), request, response);
-        return true;
-    }
-
     /**
-     * Handles translation file requests when the session has expired or does
-     * not exist. Since translations are stateless (they only depend on the
-     * {@link I18NProvider} and locale), they can be served without requiring an
-     * active session.
+     * Handles translation file requests. Translations only depend on the
+     * {@link I18NProvider} and the requested locale, so they are served without
+     * a session.
      *
      * @param request
      *            the request to handle
@@ -114,22 +104,16 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
      *         handler does not handle the given request type
      * @throws IOException
      *             if an IO error occurred
-     * @since 25.0.5
      */
     @Override
-    public boolean handleSessionExpired(VaadinRequest request,
-            VaadinResponse response) throws IOException {
-        if (canHandleRequest(request)) {
-            handleTranslationRequest(request.getService(), request, response);
-            return true;
+    public boolean handleRequest(VaadinRequest request, VaadinResponse response)
+            throws IOException {
+        if (!HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.TRANSLATION_FILE)) {
+            return false;
         }
-        return false;
-    }
-
-    @Override
-    protected boolean canHandleRequest(VaadinRequest request) {
-        return HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.TRANSLATION_FILE);
+        handleTranslationRequest(request.getService(), request, response);
+        return true;
     }
 
     private void handleTranslationRequest(VaadinService service,

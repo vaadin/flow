@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.SessionExpiredHandler;
+import com.vaadin.flow.server.SessionlessRequestHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -48,7 +48,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVA
  * @since 2.0
  */
 public class WebComponentProvider extends SynchronizedRequestHandler
-        implements SessionExpiredHandler {
+        implements SessionlessRequestHandler {
     private static final String WEB_COMPONENT_PATH = "web-component/";
     private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
     private static final String HTML_EXTENSION = "html";
@@ -74,48 +74,35 @@ public class WebComponentProvider extends SynchronizedRequestHandler
     }
 
     /**
-     * {@inheritDoc}
+     * Serves the script of an exported web component. The script is the same
+     * for every user, so it is served without a session. A host page that loads
+     * the scripts of several web components in parallel then does not get a new
+     * session from each of them, leaving the browser with a cookie for a
+     * session other than the one its embedded UI was created in.
      * <p>
-     * This is only called when the request has a session. A web component
-     * script request without a session is served through
-     * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)} instead.
      * Override
      * {@link #handleWebComponentRequest(VaadinRequest, VaadinResponse)} to
-     * customize how the script is served in both cases.
+     * customize how the script is served.
+     */
+    @Override
+    public boolean handleRequest(VaadinRequest request, VaadinResponse response)
+            throws IOException {
+        return canHandleRequest(request)
+                && handleWebComponentRequest(request, response);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The service serves web component requests through
+     * {@link #handleRequest(VaadinRequest, VaadinResponse)} without a session.
+     * This is only called when the provider is used as a regular request
+     * handler.
      */
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         return handleWebComponentRequest(request, response);
-    }
-
-    @Override
-    public boolean handleSessionExpired(VaadinRequest request,
-            VaadinResponse response) throws IOException {
-        // The script is the same for every session. It is served without one
-        // so that a host page loading the scripts of several web components in
-        // parallel does not get a new session from each of them, leaving the
-        // browser with a cookie for a session other than the one its embedded
-        // UI was created in.
-        return isWebComponentScriptRequest(request)
-                && handleWebComponentRequest(request, response);
-    }
-
-    /**
-     * Checks whether the request asks for the script of an exported web
-     * component. Such a request does not need a session, see
-     * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)}.
-     *
-     * @param request
-     *            the request to check
-     * @return {@code true} if the request is for a web component script
-     * @since 25.4
-     */
-    public static boolean isWebComponentScriptRequest(VaadinRequest request) {
-        String pathInfo = request.getPathInfo();
-        return isWebComponentPath(pathInfo)
-                && new ComponentInfo(pathInfo).isJS()
-                && hasWebComponentConfigurations(request);
     }
 
     private static boolean isWebComponentPath(String pathInfo) {
@@ -125,9 +112,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler
     }
 
     /**
-     * Handles a request for a web component script. This is called both for
-     * requests that have a session and for requests that do not, so it must not
-     * depend on {@link VaadinSession#getCurrent()} or on the session lock.
+     * Handles a request for a web component script. This is called without a
+     * session, so it must not depend on {@link VaadinSession#getCurrent()} or
+     * on the session lock.
      *
      * @param request
      *            the request to handle
@@ -230,9 +217,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler
     /**
      * Generate the npm response for the web component.
      * <p>
-     * The script is served without a session when the request has none, so this
-     * may run with no {@link VaadinSession} available. The result is cached per
-     * tag unless caching is disabled with {@link #setCacheEnabled(boolean)}.
+     * The script is served without a session, so this runs with no
+     * {@link VaadinSession} available. The result is cached per tag unless
+     * caching is disabled with {@link #setCacheEnabled(boolean)}.
      *
      * @param tagName
      *            tag name of component
@@ -355,10 +342,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler
 
         boolean isHTML() {
             return HTML_EXTENSION.equals(extension);
-        }
-
-        boolean isJS() {
-            return JS_EXTENSION.equals(extension);
         }
 
     }

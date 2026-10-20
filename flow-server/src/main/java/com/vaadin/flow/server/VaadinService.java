@@ -2124,6 +2124,11 @@ public abstract class VaadinService implements Serializable {
      * Handles the incoming request and writes the response into the response
      * object. Uses {@link #getRequestHandlers()} for handling the request.
      * <p>
+     * The {@link SessionlessRequestHandler sessionless handlers} among them are
+     * asked first, before the session of the request is looked up. The other
+     * handlers are then called with the session, which is created if the
+     * request can create one.
+     * <p>
      * If a session expiration is detected during request handling then each
      * {@link RequestHandler request handler} has an opportunity to handle the
      * expiration event if it implements {@link SessionExpiredHandler}. If no
@@ -2144,16 +2149,39 @@ public abstract class VaadinService implements Serializable {
 
         VaadinSession vaadinSession = null;
         try {
+            // The handler is recorded before it runs, so that a request
+            // ended event names the handler that threw if handling fails
+            boolean observed = eventBus.hasListener(RequestEndedEvent.class);
+
+            // Requests that do not need a session are handled before looking
+            // it up, so that they neither create a session nor wait for its
+            // lock
+            for (RequestHandler handler : getRequestHandlers()) {
+                if (handler instanceof SessionlessRequestHandler sessionless) {
+                    if (observed) {
+                        request.setAttribute(REQUEST_HANDLER_ATTRIBUTE,
+                                handler);
+                    }
+                    if (sessionless.handleRequest(request, response)) {
+                        return;
+                    }
+                }
+            }
+            if (observed) {
+                request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, null);
+            }
+
             // Find out the service session this request is related to
             vaadinSession = findVaadinSession(request);
             if (vaadinSession == null) {
                 return;
             }
 
-            // The handler is recorded before it runs, so that a request
-            // ended event names the handler that threw if handling fails
-            boolean observed = eventBus.hasListener(RequestEndedEvent.class);
             for (RequestHandler handler : getRequestHandlers()) {
+                if (handler instanceof SessionlessRequestHandler) {
+                    // Already asked above
+                    continue;
+                }
                 if (observed) {
                     request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, handler);
                 }
