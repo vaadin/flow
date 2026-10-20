@@ -54,6 +54,8 @@ class EmailValidatorTest extends ValidatorTestBase {
         RegexpValidator v = shouldNotFail();
         assertPasses("johannesd+test@vaadin.com", v);
         assertPasses("johannes.dahlstrom@vaadin.com", v);
+        assertPasses("johannes.k.dahlstrom@vaadin.com", v);
+        assertPasses("johannes.-d+x.y@vaadin.com", v);
         assertPasses("johannes_d@vaadin.com", v);
     }
 
