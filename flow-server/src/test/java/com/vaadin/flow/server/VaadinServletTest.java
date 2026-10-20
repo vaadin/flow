@@ -390,15 +390,16 @@ public class VaadinServletTest {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         triggerLicenseChecking();
         licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
-                Version.getFullVersion(), BuildType.PRODUCTION, null));
+                Version.getFullVersion(), BuildType.RUNTIME, null));
     }
 
     @Test
     public void checkLicense_prodModeCheck_notFails()
             throws ServletException {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
         licenseChecker
                 .when(() -> LicenseChecker.checkLicense("flow",
-                        Version.getFullVersion(), BuildType.PRODUCTION, null))
+                        Version.getFullVersion(), BuildType.RUNTIME, null))
                 .thenThrow(new LicenseException("Test exception"));
         try {
             triggerLicenseChecking();
@@ -406,6 +407,8 @@ public class VaadinServletTest {
             Assert.fail(
                     "License check should not throw exception in prod mode");
         }
+        licenseChecker.verify(() -> LicenseChecker.checkLicense("flow",
+                Version.getFullVersion(), BuildType.RUNTIME, null));
     }
 
     private ServletConfig mockConfig() {
