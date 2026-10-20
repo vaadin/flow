@@ -101,10 +101,15 @@ public class WebComponentProvider extends SynchronizedRequestHandler
                 && handleWebComponentRequest(request, response);
     }
 
+    @Override
+    public boolean canHandleWithoutSession(VaadinRequest request) {
+        return isWebComponentScriptRequest(request);
+    }
+
     /**
      * Checks whether the request asks for the script of an exported web
      * component. Such a request does not need a session, see
-     * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)}.
+     * {@link #canHandleWithoutSession(VaadinRequest)}.
      *
      * @param request
      *            the request to check

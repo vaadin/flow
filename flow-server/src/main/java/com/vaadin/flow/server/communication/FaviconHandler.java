@@ -30,7 +30,7 @@ import com.vaadin.flow.server.VaadinSession;
  * It allows to not produce the same content for the favicon as for any other
  * resource if servlet mapping is "/*". The favicon request does not need a
  * session, so it is answered the same way when there is none, see
- * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)}.
+ * {@link #canHandleWithoutSession(VaadinRequest)}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -51,17 +51,12 @@ public class FaviconHandler implements SessionExpiredHandler {
         return handleFavicon(request, response);
     }
 
-    /**
-     * Checks whether the request asks for the favicon at the root of a servlet
-     * mapped to "/*". Such a request does not need a session, see
-     * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)}.
-     *
-     * @param request
-     *            the request to check
-     * @return {@code true} if the request is for the favicon
-     * @since 25.4
-     */
-    public static boolean isFaviconRequest(VaadinRequest request) {
+    @Override
+    public boolean canHandleWithoutSession(VaadinRequest request) {
+        return isFaviconRequest(request);
+    }
+
+    private static boolean isFaviconRequest(VaadinRequest request) {
         return request instanceof VaadinServletRequest httpRequest
                 && "/favicon.ico".equals(httpRequest.getPathInfo())
                 && "".equals(httpRequest.getContextPath())

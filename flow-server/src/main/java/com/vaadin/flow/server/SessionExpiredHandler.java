@@ -44,4 +44,26 @@ public interface SessionExpiredHandler extends RequestHandler {
     boolean handleSessionExpired(VaadinRequest request, VaadinResponse response)
             throws IOException;
 
+    /**
+     * Checks whether this handler serves the request without a session.
+     * <p>
+     * A request that does not need a session, such as a resource that is the
+     * same for every user, should not create one: a browser that has no session
+     * cookie yet may send several such requests in parallel, and each new
+     * session would replace the cookie of the previous one. When a registered
+     * handler returns {@code true}, the request does not create a session, and
+     * when there is none, its
+     * {@link #handleSessionExpired(VaadinRequest, VaadinResponse)} is called
+     * before that of any other handler.
+     *
+     * @param request
+     *            the request to check
+     * @return {@code true} if this handler serves the request without a
+     *         session, {@code false} by default
+     * @since 25.4
+     */
+    default boolean canHandleWithoutSession(VaadinRequest request) {
+        return false;
+    }
+
 }

@@ -168,12 +168,10 @@ public class VaadinServletService extends VaadinService {
     protected boolean requestCanCreateSession(VaadinRequest request) {
         if (isOtherRequest(request)) {
             /*
-             * I.e URIs that are not RPC calls or static file requests. Web
-             * component scripts and the favicon are served without a session,
-             * see handleSessionExpired.
+             * I.e URIs that are not RPC calls or static file requests, unless a
+             * handler serves them without a session, see handleSessionExpired.
              */
-            return getWebComponentScriptProvider(request).isEmpty()
-                    && getFaviconHandler(request).isEmpty();
+            return findHandlerWithoutSession(request).isEmpty();
         }
 
         return false;
@@ -182,14 +180,11 @@ public class VaadinServletService extends VaadinService {
     @Override
     protected void handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws ServiceException {
-        // The web component provider serves its scripts, and the favicon
-        // handler the favicon, before any other session expired handler gets
-        // the chance to answer them with something else
-        Optional<? extends SessionExpiredHandler> handler = getWebComponentScriptProvider(
+        // A handler that serves the request without a session answers it
+        // before any other session expired handler gets the chance to answer
+        // it with something else
+        Optional<SessionExpiredHandler> handler = findHandlerWithoutSession(
                 request);
-        if (handler.isEmpty()) {
-            handler = getFaviconHandler(request);
-        }
         if (handler.isPresent()) {
             try {
                 if (handler.get().handleSessionExpired(request, response)) {
@@ -204,31 +199,21 @@ public class VaadinServletService extends VaadinService {
     }
 
     /**
-     * Gets the registered web component provider if the request is for a web
-     * component script that it serves.
+     * Gets the first registered handler that serves the request without a
+     * session.
      */
-    private Optional<WebComponentProvider> getWebComponentScriptProvider(
+    private Optional<SessionExpiredHandler> findHandlerWithoutSession(
             VaadinRequest request) {
-        if (!WebComponentProvider.isWebComponentScriptRequest(request)) {
+        Iterable<RequestHandler> handlers = getRequestHandlers();
+        if (handlers == null) {
+            // The service is not initialized yet
             return Optional.empty();
         }
-        return findRequestHandler(WebComponentProvider.class);
-    }
-
-    /**
-     * Gets the registered favicon handler if the request is for the favicon.
-     */
-    private Optional<FaviconHandler> getFaviconHandler(VaadinRequest request) {
-        if (!FaviconHandler.isFaviconRequest(request)) {
-            return Optional.empty();
-        }
-        return findRequestHandler(FaviconHandler.class);
-    }
-
-    private <T extends RequestHandler> Optional<T> findRequestHandler(
-            Class<T> type) {
-        return StreamSupport.stream(getRequestHandlers().spliterator(), false)
-                .filter(type::isInstance).map(type::cast).findFirst();
+        return StreamSupport.stream(handlers.spliterator(), false)
+                .filter(SessionExpiredHandler.class::isInstance)
+                .map(SessionExpiredHandler.class::cast)
+                .filter(handler -> handler.canHandleWithoutSession(request))
+                .findFirst();
     }
 
     private boolean isOtherRequest(VaadinRequest request) {

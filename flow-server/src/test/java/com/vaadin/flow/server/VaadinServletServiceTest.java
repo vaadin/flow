@@ -352,6 +352,31 @@ class VaadinServletServiceTest {
         verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
+    @Test
+    void customHandlerWithoutSession_noSessionCreated_answersBeforeOtherHandlers()
+            throws Exception {
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getPathInfo()).thenReturn("/custom-resource");
+        VaadinResponse response = mock(VaadinResponse.class);
+        CatchAllSessionExpiredHandler catchAllHandler = mock(
+                CatchAllSessionExpiredHandler.class);
+        service.getRequestHandlers().add(0, catchAllHandler);
+        CatchAllSessionExpiredHandler sessionlessHandler = mock(
+                CatchAllSessionExpiredHandler.class);
+        when(sessionlessHandler.canHandleWithoutSession(request))
+                .thenReturn(true);
+        when(sessionlessHandler.handleSessionExpired(request, response))
+                .thenReturn(true);
+        service.getRequestHandlers().add(sessionlessHandler);
+
+        assertFalse(service.requestCanCreateSession(request));
+
+        service.handleSessionExpired(request, response);
+
+        verify(sessionlessHandler).handleSessionExpired(request, response);
+        verify(catchAllHandler, never()).handleSessionExpired(any(), any());
+    }
+
     private static VaadinServletRequest createFaviconRequest() {
         VaadinServletRequest request = mock(VaadinServletRequest.class);
         when(request.getContextPath()).thenReturn("");
