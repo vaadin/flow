@@ -102,11 +102,15 @@ class FullDependenciesScannerTest {
     @JavaScript("context://runtime.js")
     @JavaScript("/absolute.js")
     @JavaScript("base://servlet-relative.js")
+    @JavaScript("https://cdn.example.com/external.js")
+    @JavaScript("//cdn.example.com/protocol-relative.js")
+    @JavaScript("ftp://example.net/other-scheme.js")
     @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
     @JsModule("./bundled-module.js")
     @JsModule("https://cdn.example.com/external-module.js")
     @JsModule("context://runtime-module.js")
     @JsModule("/absolute-module.js")
+    @JsModule("ftp://example.net/other-scheme-module.js")
     public static class RuntimeJavaScriptComponent extends Component {
 
     }

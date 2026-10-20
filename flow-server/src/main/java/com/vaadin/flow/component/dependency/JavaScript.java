@@ -133,6 +133,8 @@ public @interface JavaScript {
      * <li>{@code base://foo.js} — resolved against the page's {@code <base>}
      * URI, i.e. the Vaadin servlet mapping path.</li>
      * <li>{@code /foo.js} — used unchanged as an absolute server path.</li>
+     * <li>A URL with any other scheme (a value containing {@code ://}) — used
+     * unchanged.</li>
      * <li>Any other value (bare relative, {@code "./foo.js"},
      * {@code "../foo.js"}) is currently treated as a bundle source for
      * backwards compatibility — see the deprecation notice on the class

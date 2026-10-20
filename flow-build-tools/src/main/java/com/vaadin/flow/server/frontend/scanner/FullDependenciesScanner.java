@@ -404,10 +404,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
                                 if (FrontendDependencyUrlResolver
                                         .isRuntimeDependencyUrl(value)) {
-                                    // Values with a runtime prefix are loaded
-                                    // at runtime as <script> or <script
-                                    // type="module"> and must not enter the
-                                    // bundle
+                                    // Values with a runtime prefix or any
+                                    // other scheme are loaded at runtime as
+                                    // <script> or <script type="module"> and
+                                    // must not enter the bundle
                                     return;
                                 }
 

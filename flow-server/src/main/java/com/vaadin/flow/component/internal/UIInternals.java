@@ -1538,6 +1538,11 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         boolean productionMode = ui.getSession() != null
                 && ui.getSession().getConfiguration().isProductionMode();
+        // Bundled developmentOnly values are left out of the production bundle
+        // by the build. Runtime values never go through the bundle, so the
+        // same rule has to be applied here (for both @JavaScript and
+        // @JsModule), otherwise a developmentOnly script would be loaded in
+        // production too.
         dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
                 .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> {
@@ -1557,17 +1562,16 @@ public class UIInternals implements Serializable {
                     }
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });
+        // Must match the runtime URL check that keeps @JsModule values out of
+        // the bundle at build time (FrontendClassVisitor and
+        // FullDependenciesScanner), so each value is loaded exactly once.
         dependency.getJsModules().stream()
                 .filter(js -> FrontendDependencyUrlResolver
                         .isRuntimeDependencyUrl(js.value()))
-                .forEach(js -> {
-                    String resolved = resolveRuntimeJavaScript(js.value());
-                    if (resolved == null) {
-                        return;
-                    }
-                    page.addJavaScript(resolved, LoadMode.EAGER,
-                            JavaScript.Type.MODULE);
-                });
+                .filter(js -> !productionMode || !js.developmentOnly())
+                // A runtime URL is already resolved, so it is passed as is
+                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
+                        JavaScript.Type.MODULE));
     }
 
     private boolean isRuntimeJavaScript(JavaScript js) {

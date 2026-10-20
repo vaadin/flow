@@ -52,11 +52,12 @@ import com.vaadin.flow.component.Component;
  * <p>
  * <b>Deprecated runtime URLs:</b> Historically, {@code @JsModule} also accepted
  * runtime URLs ({@code http://}, {@code https://}, {@code //},
- * {@code context://}, {@code base://}, {@code /…}); such values were loaded at
- * runtime as {@code <script type="module">}. This is deprecated. Use
- * {@link JavaScript} for runtime script loading. Existing runtime URLs in
- * {@code @JsModule} keep working for backwards compatibility but are excluded
- * from the bundle and emit a build-time warning.
+ * {@code context://}, {@code base://}, {@code /…}, or any other URL containing
+ * {@code ://}); such values were loaded at runtime as
+ * {@code <script type="module">}. This is deprecated. Use {@link JavaScript}
+ * for runtime script loading. Existing runtime URLs in {@code @JsModule} keep
+ * working for backwards compatibility but are excluded from the bundle and emit
+ * a build-time warning.
  * <p>
  * NOTE: Currently all frontend resources are bundled together into one big
  * bundle. JavaScript files loaded by one class will therefore be present on a
@@ -91,11 +92,11 @@ public @interface JsModule {
      * <p>
      * The value is meant to be resolved by the frontend bundler. Using a
      * runtime URL (one starting with {@code context://}, {@code base://},
-     * {@code /}, {@code http://}, {@code https://} or {@code //}) is
-     * deprecated: such a value is not bundled but loaded at runtime as a
-     * {@code <script type="module">}, and a warning is logged during the build.
-     * Use {@link JavaScript @JavaScript} with {@link JavaScript.Type#MODULE}
-     * for runtime modules instead.
+     * {@code /}, {@code http://}, {@code https://} or {@code //}, or any other
+     * URL containing {@code ://}) is deprecated: such a value is not bundled
+     * but loaded at runtime as a {@code <script type="module">}, and a warning
+     * is logged during the build. Use {@link JavaScript @JavaScript} with
+     * {@link JavaScript.Type#MODULE} for runtime modules instead.
      *
      * @return a JavaScript module identifier
      */
