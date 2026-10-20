@@ -30,7 +30,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 
 /**
@@ -86,9 +86,11 @@ public class JavaScriptHotswapper implements VaadinHotswapper {
         }
         for (Class<? extends Component> type : componentClasses(event)) {
             Set<RuntimeScript> previous = previousScripts.get(type.getName());
-            if (previous == null || runtimeScripts(
-                    AnnotationReader.getJavaScriptAnnotations(type))
-                    .containsAll(previous)) {
+            // Read the same way as the previous values, so that @Uses
+            // dependencies are on both sides
+            if (previous == null || runtimeScripts(new ComponentMetaData(type)
+                    .getDependencyInfo(event.getVaadinService())
+                    .getJavaScripts()).containsAll(previous)) {
                 continue;
             }
             for (UI ui : event.getVaadinSession().getUIs()) {

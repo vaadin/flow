@@ -18,6 +18,8 @@ package com.vaadin.flow.server;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.dependency.JavaScript;
+
 public class FrontendDependencyUrlResolverTest {
 
     @Test
@@ -123,5 +125,43 @@ public class FrontendDependencyUrlResolverTest {
                 FrontendDependencyUrlResolver.isRuntimeDependencyUrl(""));
         Assert.assertFalse(
                 FrontendDependencyUrlResolver.isRuntimeDependencyUrl("   "));
+    }
+
+    @Test
+    public void isRuntimeJavaScript_runtimeUrlOrModule_true() {
+        Assert.assertTrue(isRuntimeJavaScript(AbsoluteScript.class));
+        Assert.assertTrue(isRuntimeJavaScript(OtherSchemeScript.class));
+        Assert.assertTrue(isRuntimeJavaScript(BareModule.class));
+    }
+
+    @Test
+    public void isRuntimeJavaScript_bareClassicScript_false() {
+        Assert.assertFalse(isRuntimeJavaScript(BareScript.class));
+        Assert.assertFalse(isRuntimeJavaScript(DotRelativeScript.class));
+    }
+
+    private static boolean isRuntimeJavaScript(Class<?> annotated) {
+        return FrontendDependencyUrlResolver
+                .isRuntimeJavaScript(annotated.getAnnotation(JavaScript.class));
+    }
+
+    @JavaScript("/foo.js")
+    private static class AbsoluteScript {
+    }
+
+    @JavaScript("ftp://example.net/foo.js")
+    private static class OtherSchemeScript {
+    }
+
+    @JavaScript(value = "foo.js", type = JavaScript.Type.MODULE)
+    private static class BareModule {
+    }
+
+    @JavaScript("foo.js")
+    private static class BareScript {
+    }
+
+    @JavaScript("./foo.js")
+    private static class DotRelativeScript {
     }
 }

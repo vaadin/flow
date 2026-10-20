@@ -28,10 +28,12 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
+import com.vaadin.base.devserver.hotswap.HotswapCompleteEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -77,6 +79,45 @@ class JavaScriptHotswapperTest {
             throws Exception {
         assertEquals(Optional.of(UIUpdateStrategy.RELOAD), hotswap(
                 RuntimeScript.class, RuntimeScriptAsModule.class, true));
+    }
+
+    @Test
+    void moduleScriptChanged_componentInUse_reloadsPage() throws Exception {
+        // A bare Type.MODULE value is loaded at runtime too, unlike a bare
+        // classic script
+        assertEquals(Optional.of(UIUpdateStrategy.RELOAD),
+                hotswap(ModuleScript.class, ModuleScriptChanged.class, true));
+    }
+
+    @Test
+    void usesRuntimeScript_unchanged_noReload() throws Exception {
+        // The script of the @Uses target is part of the dependencies of the
+        // component before and after the redefinition
+        assertEquals(Optional.empty(), hotswap(UsesRuntimeScript.class,
+                UsesRuntimeScript.class, true));
+    }
+
+    @Test
+    void runtimeScriptChanged_uiClosing_noReload() throws Exception {
+        ui.close();
+        assertEquals(Optional.empty(),
+                hotswap(RuntimeScript.class, RuntimeScriptChanged.class, true));
+    }
+
+    @Test
+    void hotswapComplete_previousValuesForgotten() throws Exception {
+        hotswap(RuntimeScript.class, RuntimeScriptChanged.class, true);
+        Class<?> redefined = ui.getChildren().findFirst().orElseThrow()
+                .getClass();
+        hotswapper.onHotswapComplete(
+                new HotswapCompleteEvent(service, Set.of(redefined), true));
+
+        // A later session event without a new class event has nothing to
+        // compare against
+        HotswapClassSessionEvent event = new HotswapClassSessionEvent(service,
+                session, Set.of(redefined), true);
+        hotswapper.onClassesChange(event);
+        assertEquals(Optional.empty(), event.getUIUpdateStrategy(ui));
     }
 
     @Test
@@ -160,6 +201,21 @@ class JavaScriptHotswapperTest {
     @JavaScript("/script.js")
     @JavaScript("/added.js")
     public static class RuntimeScriptAdded extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript(value = "a.js", type = JavaScript.Type.MODULE)
+    public static class ModuleScript extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript(value = "b.js", type = JavaScript.Type.MODULE)
+    public static class ModuleScriptChanged extends Component {
+    }
+
+    @Tag("div")
+    @Uses(RuntimeScript.class)
+    public static class UsesRuntimeScript extends Component {
     }
 
     @Tag("div")
