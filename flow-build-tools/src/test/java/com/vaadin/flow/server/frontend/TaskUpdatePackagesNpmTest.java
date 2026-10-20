@@ -427,7 +427,8 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "25.1.0", "24.3.0", "~25.1.0", "^24.3.0" })
+    @ValueSource(strings = { "25.1.0", "24.3.0", "~25.1.0", "^24.3.0",
+            "25.1.0-beta1" })
     void warnOnVersionRangeMismatch_dependencyOutsideExpectedMinor_warningLogged(
             String declaredVersion) throws IOException {
         createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
@@ -447,9 +448,9 @@ class TaskUpdatePackagesNpmTest {
     // range resolves to the expected minor, and what the other values
     // resolve to is not known: a missing minor resolves to the latest one,
     // and compound ranges can include the expected version
-    @ValueSource(strings = { "25.3.9", "^25.1.0", ">=24.0.0", "25", "~25",
-            "25.1.0 - 25.4.0", "~25.1.0 || ~25.3.0", "latest", "file:../dialog",
-            "$" + VAADIN_DIALOG })
+    @ValueSource(strings = { "25.3.9", "25.3.1-beta1", "^25.1.0", ">=24.0.0",
+            "25", "~25", "25.1.0 - 25.4.0", "~25.1.0 || ~25.3.0", "latest",
+            "file:../dialog", "$" + VAADIN_DIALOG })
     void warnOnVersionRangeMismatch_dependencyNotKnownOutsideExpectedMinor_noWarning(
             String declaredVersion) throws IOException {
         createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
@@ -460,6 +461,45 @@ class TaskUpdatePackagesNpmTest {
                 dependencyPackageJson(declaredVersion, "25.1.4"));
 
         verifyNoRangeWarning(logger);
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_caretRangeOnZeroMajor_warningLogged()
+            throws IOException {
+        // Before 1.0.0, a caret range stays within its minor
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                "0.3.0");
+        ObjectNode packageJson = dependencyPackageJson("25.3.0", "25.3.0");
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(VAADIN_OVERLAY,
+                "^0.2.0");
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_OVERLAY
+                        + ": ^0.2.0 (in dependencies), expected 0.3.0"));
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_packageForAnotherMode_warningLogged()
+            throws IOException, ClassNotFoundException {
+        // The lit dialog is not pinned in React mode, but the overrides still
+        // force the declared version on its transitive uses
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        Mockito.doReturn(Object.class).when(finder).loadClass(
+                "com.vaadin.flow.component.react.ReactAdapterComponent");
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTask(new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
+                .withBundleBuild(true).withReact(true), logger)
+                .warnOnVersionRangeMismatch(
+                        dependencyPackageJson("25.1.0", "25.1.4"));
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_DIALOG
+                        + ": 25.1.0 (in dependencies), expected 25.3.0"));
     }
 
     @Test

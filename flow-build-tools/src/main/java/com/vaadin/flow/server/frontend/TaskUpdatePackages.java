@@ -59,7 +59,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     private final boolean enablePnpm;
     private final File jarResourcesFolder;
     private ObjectNode allPinnedNpmDependencies;
-    private ObjectNode modePinnedNpmDependencies;
+    private ObjectNode pinnedNpmDependencies;
 
     /**
      * A version npm resolves within a known minor or major: an exact version, a
@@ -539,18 +539,19 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Gets the npm packages Vaadin pins in the current mode, as read once for
-     * the whole build, so that the versions files are not merged again.
-     *
-     * @return the version to pin each npm package to, by package name
-     * @throws IOException
-     *             if the versions files cannot be read
+     * {@inheritDoc}
+     * <p>
+     * Read once per run, as merging the versions files warns about the packages
+     * they disagree on and about the ones package.json pins to an older
+     * version.
      */
-    private ObjectNode getModePinnedNpmDependencies() throws IOException {
-        if (modePinnedNpmDependencies == null) {
-            modePinnedNpmDependencies = getPinnedNpmDependencies();
+    @Override
+    ObjectNode getPinnedNpmDependencies() throws IOException {
+        if (pinnedNpmDependencies == null) {
+            pinnedNpmDependencies = super.getPinnedNpmDependencies();
         }
-        return modePinnedNpmDependencies;
+        // A copy, as the callers add to what they get
+        return pinnedNpmDependencies.deepCopy();
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
@@ -683,7 +684,7 @@ public class TaskUpdatePackages extends NodeUpdater {
          * #10572 pin all internal versions
          */
         List<String> pinnedNpmDependencyNames = new ArrayList<>();
-        final ObjectNode pinnedNpmDependencies = getModePinnedNpmDependencies();
+        final ObjectNode pinnedNpmDependencies = getPinnedNpmDependencies();
         for (String key : JacksonUtils.getKeys(pinnedNpmDependencies)) {
             // need to double check that not overriding a scanned
             // dependency since add-ons should be able to downgrade
@@ -812,11 +813,10 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Warns about packages the versions files pin in the current mode, that the
-     * project has declared in the {@code dependencies} or
-     * {@code devDependencies} of {@code package.json} with a version from a
-     * different minor or major range than the one the current Vaadin version
-     * pins them to.
+     * Warns about packages the versions files pin, that the project has
+     * declared in the {@code dependencies} or {@code devDependencies} of
+     * {@code package.json} with a version from a different minor or major range
+     * than the one the current Vaadin version pins them to.
      * <p>
      * This is checked once the dependencies have been updated, so that a
      * version the build overwrites with the one it ships is not reported. Only
@@ -839,10 +839,13 @@ public class TaskUpdatePackages extends NodeUpdater {
      *             if the versions files cannot be read
      */
     void warnOnVersionRangeMismatch(ObjectNode packageJson) throws IOException {
-        // Only the packages Vaadin uses in the current mode, as for example
-        // with npmExcludeWebComponents the web components are the project's
-        // own to manage
-        final ObjectNode expectedVersions = getModePinnedNpmDependencies();
+        // With the web components excluded, Vaadin uses none of them, so they
+        // are the project's own to manage. Otherwise even a package pinned for
+        // another mode is checked, as the overrides still force the declared
+        // version on its transitive uses.
+        final ObjectNode expectedVersions = options.isNpmExcludeWebComponents()
+                ? getPinnedNpmDependencies()
+                : getAllPinnedNpmDependencies();
         final JsonNode vaadin = packageJson.get(VAADIN_DEP_KEY);
 
         // Collect mismatches into a single warning to avoid flooding the log
