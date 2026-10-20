@@ -1571,9 +1571,12 @@ public class UIInternals implements Serializable {
     }
 
     private boolean isRuntimeJavaScript(JavaScript js) {
+        // Values with any other scheme cannot be bundled either, so they are
+        // loaded at runtime as before
         return js.type() == JavaScript.Type.MODULE
                 || FrontendDependencyUrlResolver
-                        .isRuntimeDependencyUrl(js.value());
+                        .isRuntimeDependencyUrl(js.value())
+                || UrlUtil.isExternal(js.value());
     }
 
     /**

@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -403,9 +404,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 }
 
                                 if (hasTypeAttribute
-                                        && FrontendDependencyUrlResolver
-                                                .isRuntimeDependencyUrl(
-                                                        value)) {
+                                        && (FrontendDependencyUrlResolver
+                                                .isRuntimeDependencyUrl(value)
+                                                || UrlUtil.isExternal(value))) {
                                     // @JavaScript values with a runtime prefix
                                     // are loaded at runtime as <script> and
                                     // must not enter the bundle

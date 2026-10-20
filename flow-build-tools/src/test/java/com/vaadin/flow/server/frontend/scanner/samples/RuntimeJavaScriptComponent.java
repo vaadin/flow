@@ -27,6 +27,7 @@ import com.vaadin.flow.router.Route;
 @JavaScript("base://servlet-relative.js")
 @JavaScript("https://cdn.example.com/external.js")
 @JavaScript("//cdn.example.com/protocol-relative.js")
+@JavaScript("ftp://example.net/other-scheme.js")
 @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
 @JsModule("/abs-module.js")
 public class RuntimeJavaScriptComponent extends Component {

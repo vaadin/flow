@@ -75,6 +75,11 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JavaScript("ftp://example.net/script.js")
+    private static class OtherSchemeScript extends Component {
+    }
+
+    @Tag("div")
     @JavaScript("https://example.net/pkg/../dist/script.js")
     private static class ExternalScriptWithParentPath extends Component {
     }
@@ -169,6 +174,15 @@ class RuntimeJavaScriptDependencyTest {
     void absoluteScript_addedAsRuntimeJavaScript() {
         assertSingleDependency(AbsoluteScript.class, Dependency.Type.JAVASCRIPT,
                 "/script.js", LoadMode.EAGER);
+    }
+
+    @Test
+    void otherSchemeScript_addedAsRuntimeJavaScript() {
+        // The bundler skips any value with a scheme, so it has to be loaded at
+        // runtime even though it has none of the documented runtime prefixes
+        assertSingleDependency(OtherSchemeScript.class,
+                Dependency.Type.JAVASCRIPT, "ftp://example.net/script.js",
+                LoadMode.EAGER);
     }
 
     @Test
