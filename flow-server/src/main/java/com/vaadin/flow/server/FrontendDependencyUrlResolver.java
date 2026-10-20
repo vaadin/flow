@@ -21,6 +21,7 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -130,5 +131,21 @@ public final class FrontendDependencyUrlResolver implements Serializable {
                         ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
                 || lower.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)
                 || UrlUtil.isExternal(trimmed);
+    }
+
+    /**
+     * Tells whether the given {@link JavaScript} annotation is loaded at
+     * runtime as a {@code script} element rather than bundled.
+     * <p>
+     * That is the case for {@link JavaScript.Type#MODULE} values and for
+     * runtime URLs (see {@link #isRuntimeDependencyUrl(String)}).
+     *
+     * @param javaScript
+     *            the annotation to check, not {@code null}
+     * @return {@code true} if the value is loaded at runtime
+     */
+    public static boolean isRuntimeJavaScript(JavaScript javaScript) {
+        return javaScript.type() == JavaScript.Type.MODULE
+                || isRuntimeDependencyUrl(javaScript.value());
     }
 }
