@@ -129,12 +129,16 @@ describe('webNotification', () => {
       $wnd.Vaadin.Flow.webNotification.show('B from trigger', { tag: 'chat' }, null, { owner: hostB });
       $wnd.Vaadin.Flow.webNotification.show('A from server', { tag: 'chat' }, null, { key: nextKey(), owner: 'appA' });
       $wnd.Vaadin.Flow.webNotification.show('B from server', { tag: 'chat' }, null, { key: nextKey(), owner: 'appB' });
+      // A host no application knows leaves the notification unscoped
+      $wnd.Vaadin.Flow.webNotification.show('Unknown owner', { tag: 'chat' }, null, {
+        owner: document.createElement('div')
+      });
       const closed: string[] = [];
       FakeNotification.instances.forEach((n) => n.addEventListener('close', () => closed.push(n.title)));
 
       $wnd.Vaadin.Flow.webNotification.closeByTag('chat', 'appA');
 
-      expect(closed).to.deep.equal(['A from trigger', 'A from server']);
+      expect(closed).to.deep.equal(['A from trigger', 'A from server', 'Unknown owner']);
     } finally {
       $wnd.Vaadin.Flow.clients = originalClients;
     }
@@ -191,15 +195,17 @@ describe('webNotification', () => {
     });
   });
 
-  it('reports nothing more about a notification the server forgot', () => {
+  it('reports nothing more about a notification the server forgot, which can still be closed by tag', () => {
     const { calls, channel } = recordingChannel();
     const key = nextKey();
-    $wnd.Vaadin.Flow.webNotification.show('Hi', {}, channel, { key, owner: 'app' });
+    $wnd.Vaadin.Flow.webNotification.show('Hi', { tag: 'inbox' }, channel, { key, owner: 'app' });
+    const closed: string[] = [];
+    FakeNotification.instances[0].addEventListener('close', () => closed.push('Hi'));
 
     $wnd.Vaadin.Flow.webNotification.forget(key);
-    $wnd.Vaadin.Flow.webNotification.close(key);
-    FakeNotification.instances[0].dispatchEvent(new Event('click'));
+    $wnd.Vaadin.Flow.webNotification.closeByTag('inbox', 'app');
 
+    expect(closed).to.deep.equal(['Hi']);
     expect(calls).to.deep.equal([]);
   });
 

@@ -220,18 +220,18 @@ $wnd.Vaadin.Flow.webNotification = {
     notification.addEventListener('click', () => {
       window.focus();
       if (shown.get(entryKey) === entry) {
-        report('click');
+        entry.channel('click');
       }
       notification.close();
     });
     notification.addEventListener('close', () => {
       if (forget(entryKey, entry)) {
-        report('close');
+        entry.channel('close');
       }
     });
     notification.addEventListener('error', () => {
       if (forget(entryKey, entry)) {
-        report('error', 'UNKNOWN', 'The browser could not show the notification');
+        entry.channel('error', 'UNKNOWN', 'The browser could not show the notification');
       }
     });
   },
@@ -240,10 +240,13 @@ $wnd.Vaadin.Flow.webNotification = {
     shown.get(key)?.notification.close();
   },
 
-  // The server no longer listens to the notification; it stays visible but
-  // reports nothing more.
+  // The server no longer listens to the notification; it stays visible and
+  // can still be closed by tag, but reports nothing more.
   forget(key: string): void {
-    shown.delete(key);
+    const entry = shown.get(key);
+    if (entry) {
+      entry.channel = () => {};
+    }
   },
 
   closeByTag(tag: string, appId: string | null | undefined): void {

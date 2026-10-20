@@ -125,12 +125,16 @@ class WebNotificationTest {
         JsFunction handler = clickHandler(ui);
         assertTrue(handler.getBody().contains("webNotification.show("),
                 handler.getBody());
+        assertTrue(handler.getCaptures().contains(button.getElement()),
+                "the host scopes the notification to its application");
+        assertTrue(handler.getBody().contains("type === 'close'"),
+                "close events are dropped in the browser: "
+                        + handler.getBody());
         ReturnChannelRegistration channel = handler.getCaptures().stream()
                 .filter(ReturnChannelRegistration.class::isInstance)
                 .map(ReturnChannelRegistration.class::cast).findFirst()
                 .orElseThrow();
         channel.invoke(args("click"));
-        channel.invoke(args("close"));
         channel.invoke(args("error", "NOT_ALLOWED", "no permission"));
         assertEquals(List.of("click", "error NOT_ALLOWED"), events);
     }
@@ -149,6 +153,8 @@ class WebNotificationTest {
                 handler.getBody());
         assertTrue(handler.getCaptures().stream()
                 .noneMatch(ReturnChannelRegistration.class::isInstance));
+        assertTrue(handler.getCaptures().contains(button.getElement()),
+                "the host scopes the notification to its application");
         assertFalse(button.getElement().getNode()
                 .getFeature(ReturnChannelMap.class).hasChannels());
     }
@@ -156,6 +162,7 @@ class WebNotificationTest {
     @Test
     void show_sendsTitleAndOnlyTheOptionsThatAreSet() {
         MockUI ui = new MockUI();
+        ui.getInternals().setFullAppId("myapp-123");
 
         WebNotification.show("Report ready", WebNotificationOptions.builder()
                 .body("March").tag("report").build(), ui);
@@ -164,6 +171,7 @@ class WebNotificationTest {
         assertEquals("Report ready", parameters.get(0));
         assertEquals("{\"body\":\"March\",\"tag\":\"report\"}", JacksonUtils
                 .getMapper().valueToTree(parameters.get(1)).toString());
+        assertEquals("myapp", parameters.get(4));
     }
 
     @Test
@@ -287,6 +295,23 @@ class WebNotificationTest {
         oldest.close();
         assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
                 "a released handle no longer closes its notification");
+    }
+
+    @Test
+    void show_closedHandle_doesNotCountTowardsTheLimit() {
+        MockUI ui = new MockUI();
+        WebNotification.show("First", ui);
+        ReturnChannelRegistration firstChannel = channel(showInvocation(ui));
+        for (int i = 1; i < WebNotificationHandle.MAX_CONNECTED_PER_UI; i++) {
+            WebNotification.show("Next", ui);
+        }
+        firstChannel.invoke(args("close"));
+        ui.dumpPendingJsInvocations();
+
+        WebNotification.show("Fits again", ui);
+
+        assertEquals(1, ui.dumpPendingJsInvocations().size(),
+                "only the show, no handle is released");
     }
 
     @Test
