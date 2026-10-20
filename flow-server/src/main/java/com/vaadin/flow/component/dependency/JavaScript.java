@@ -53,7 +53,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * Values with a runtime prefix ({@code http://}, {@code https://}, {@code //},
  * {@code context://}, {@code base://} or a leading {@code /}) are never bundled
  * and are loaded at runtime instead, in the same way as
- * {@link Page#addJavaScript(String)}. Whether the resulting {@code script}
+ * {@link Page#addJavaScript(String)}. The same applies to a URL with any other
+ * scheme (a value containing {@code ://}). Whether the resulting {@code script}
  * element is a classic script or a module is decided by {@link #type()}.
  * <p>
  * Other paths used in the {@link JavaScript#value()} method are considered as

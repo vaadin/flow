@@ -245,10 +245,11 @@ class RuntimeJavaScriptDependencyTest {
                         + log);
     }
 
-    @Test
-    void productionMode_absoluteScript_noMissingBundleImportError()
-            throws Exception {
-        String log = productionModeLog(AbsoluteScript.class);
+    @ParameterizedTest
+    @ValueSource(classes = { AbsoluteScript.class, OtherSchemeScript.class })
+    void productionMode_runtimeScript_noMissingBundleImportError(
+            Class<? extends Component> componentType) throws Exception {
+        String log = productionModeLog(componentType);
 
         assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
                 "A value with a runtime prefix is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
@@ -293,6 +294,9 @@ class RuntimeJavaScriptDependencyTest {
         // Control for the test above: only developmentOnly values are dropped
         assertEquals(List.of("/script.js"),
                 productionModeDependencies(AbsoluteScript.class).stream()
+                        .map(Dependency::getUrl).toList());
+        assertEquals(List.of("ftp://example.net/script.js"),
+                productionModeDependencies(OtherSchemeScript.class).stream()
                         .map(Dependency::getUrl).toList());
         assertEquals(List.of("https://example.net/module.js"),
                 productionModeDependencies(ExternalJsModule.class).stream()
