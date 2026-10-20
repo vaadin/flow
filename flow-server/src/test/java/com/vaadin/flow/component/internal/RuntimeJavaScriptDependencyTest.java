@@ -259,17 +259,18 @@ class RuntimeJavaScriptDependencyTest {
             DevelopmentOnlyExternalJsModule.class })
     void productionMode_developmentOnlyRuntimeDependency_notAdded(
             Class<? extends Component> componentType) throws Exception {
-        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
-        mocks.setProductionMode(true);
-        try {
-            UIInternals internals = new MockUI(mocks.getSession())
-                    .getInternals();
-            internals.addComponentDependencies(componentType);
+        assertEquals(List.of(), productionModeDependencies(componentType));
+    }
 
-            assertEquals(List.of(), nonChunkDependencies(internals));
-        } finally {
-            mocks.cleanup();
-        }
+    @Test
+    void productionMode_runtimeDependencies_stillAdded() throws Exception {
+        // Control for the test above: only developmentOnly values are dropped
+        assertEquals(List.of("/script.js"),
+                productionModeDependencies(AbsoluteScript.class).stream()
+                        .map(Dependency::getUrl).toList());
+        assertEquals(List.of("https://example.net/module.js"),
+                productionModeDependencies(ExternalJsModule.class).stream()
+                        .map(Dependency::getUrl).toList());
     }
 
     @Test
@@ -329,6 +330,20 @@ class RuntimeJavaScriptDependencyTest {
             mocks.cleanup();
         }
         return captured.toString(UTF_8);
+    }
+
+    private List<Dependency> productionModeDependencies(
+            Class<? extends Component> componentType) throws Exception {
+        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
+        mocks.setProductionMode(true);
+        try {
+            UIInternals internals = new MockUI(mocks.getSession())
+                    .getInternals();
+            internals.addComponentDependencies(componentType);
+            return nonChunkDependencies(internals);
+        } finally {
+            mocks.cleanup();
+        }
     }
 
     private List<Dependency> runtimeDependencies(
