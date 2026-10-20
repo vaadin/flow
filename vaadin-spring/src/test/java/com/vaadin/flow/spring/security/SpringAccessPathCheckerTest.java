@@ -149,6 +149,13 @@ class SpringAccessPathCheckerTest {
     }
 
     @Test
+    void checkAccess_nullPrincipalWithoutAuthentication_evaluatedAsAnonymous() {
+        SecurityContextHolder.clearContext();
+        assertTrue(accessPathChecker.hasAccess("anon", null, role -> false),
+                "Access to anonymous only path should be allowed when principal is null and there is no authentication");
+    }
+
+    @Test
     void checkAccess_nullPrincipal_customAnonymousAuthenticationPreserved() {
         SecurityContextHolder.getContext()
                 .setAuthentication(new AnonymousAuthenticationToken("key",

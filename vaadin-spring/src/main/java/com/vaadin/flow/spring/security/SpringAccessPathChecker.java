@@ -102,9 +102,11 @@ public class SpringAccessPathChecker implements AccessPathChecker {
                 .getAuthentication();
         // A null principal means the check is done on behalf of an anonymous
         // user (e.g. when detecting public views), so an authenticated user
-        // bound to the current thread must not be used. An anonymous
-        // authentication on the thread is kept to honour its configuration.
-        if (principal == null && authentication != null
+        // bound to the current thread must not be used. The configured
+        // anonymous authentication is only honoured when it is already on the
+        // thread; for a logged-in user, or when there is no authentication,
+        // the default ROLE_ANONYMOUS token is used.
+        if (principal == null
                 && !(authentication instanceof AnonymousAuthenticationToken)) {
             authentication = ANONYMOUS_AUTHENTICATION;
         }
