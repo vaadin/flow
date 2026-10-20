@@ -111,6 +111,7 @@ class FullDependenciesScannerTest {
     @JsModule("context://runtime-module.js")
     @JsModule("/absolute-module.js")
     @JsModule("ftp://example.net/other-scheme-module.js")
+    @JsModule(value = "https://cdn.example.com/dev-module.js", developmentOnly = true)
     public static class RuntimeJavaScriptComponent extends Component {
 
     }
@@ -350,6 +351,9 @@ class FullDependenciesScannerTest {
         // @JsModule values with a runtime URL are loaded at runtime, so they
         // must not end up in the bundle imports
         DepsTests.assertImports(scanner.getModules(), "./bundled-module.js");
+        assertFalse(scanner.getModulesDevelopment().values().stream()
+                .anyMatch(modules -> modules
+                        .contains("https://cdn.example.com/dev-module.js")));
     }
 
     @Test
