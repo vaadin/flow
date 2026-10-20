@@ -209,26 +209,58 @@ describe('webNotification', () => {
     });
   });
 
-  it('keeps track of a limited number of trigger notifications for closing, apart from those of handles', () => {
-    const handle = recordingChannel();
-    const handleKey = nextKey();
-    $wnd.Vaadin.Flow.webNotification.show('Handle', {}, handle.channel, { key: handleKey, owner: 'app' });
-    const trigger = recordingChannel();
-    $wnd.Vaadin.Flow.webNotification.show('First from trigger', { tag: 'old' }, trigger.channel, { owner: 'app' });
-    for (let i = 0; i < 50; i += 1) {
-      $wnd.Vaadin.Flow.webNotification.show('Next from trigger', {}, null, { owner: 'app' });
-    }
+  [
+    ['handles', () => nextKey()],
+    ['triggers', () => null]
+  ].forEach(([kind, keyOf]) => {
+    it(`keeps track of a limited number of notifications of ${kind} for closing, per application and kind`, () => {
+      const show = (title: string, options: object, channel: unknown, owner: string) =>
+        $wnd.Vaadin.Flow.webNotification.show(title, options, channel, {
+          key: (keyOf as () => string | null)(),
+          owner
+        });
+      // Fresh application ids keep notifications left by other tests out
+      const app = `app-${nextKey()}`;
+      const otherApp = `app-${nextKey()}`;
+      const otherKind = recordingChannel();
+      const otherKindKey = nextKey();
+      const otherApplication = recordingChannel();
+      const oldest = recordingChannel();
+      if (kind === 'triggers') {
+        $wnd.Vaadin.Flow.webNotification.show('Handle', {}, otherKind.channel, { key: otherKindKey, owner: app });
+      } else {
+        $wnd.Vaadin.Flow.webNotification.show('Trigger', { tag: 'kind' }, otherKind.channel, { owner: app });
+      }
+      show('Other application', { tag: 'other' }, otherApplication.channel, otherApp);
+      show('Oldest', { tag: 'old' }, oldest.channel, app);
+      const oldestNotification = FakeNotification.instances[FakeNotification.instances.length - 1];
+      for (let i = 0; i < 50; i += 1) {
+        show('Next', {}, null, app);
+      }
 
-    // The oldest trigger notification is no longer kept for closing, but
-    // still reports its own events
-    $wnd.Vaadin.Flow.webNotification.closeByTag('old', 'app');
-    expect(trigger.calls).to.deep.equal([]);
-    FakeNotification.instances[1].dispatchEvent(new Event('click'));
-    expect(trigger.calls).to.deep.equal([['click'], ['close']]);
+      // The oldest is no longer kept for closing, but reports its own events
+      $wnd.Vaadin.Flow.webNotification.closeByTag('old', app);
+      expect(oldest.calls).to.deep.equal([]);
 
-    // The handle, older than all of them, can still be closed
-    $wnd.Vaadin.Flow.webNotification.close(handleKey);
-    expect(handle.calls).to.deep.equal([['close']]);
+      // A late show event of the dropped one replaces nothing
+      const newer = recordingChannel();
+      show('Newer', { tag: 'old' }, newer.channel, app);
+      oldestNotification.dispatchEvent(new Event('show'));
+      expect(newer.calls).to.deep.equal([]);
+
+      oldestNotification.dispatchEvent(new Event('click'));
+      expect(oldest.calls).to.deep.equal([['click'], ['close']]);
+
+      // Neither another kind nor another application was pushed out
+      if (kind === 'triggers') {
+        $wnd.Vaadin.Flow.webNotification.close(otherKindKey);
+      } else {
+        $wnd.Vaadin.Flow.webNotification.closeByTag('kind', app);
+      }
+      expect(otherKind.calls).to.deep.equal([['close']]);
+      $wnd.Vaadin.Flow.webNotification.closeByTag('other', otherApp);
+      expect(otherApplication.calls).to.deep.equal([['close']]);
+    });
   });
 
   it('does not replace anything when a notification that is already closed fires a late show event', () => {
