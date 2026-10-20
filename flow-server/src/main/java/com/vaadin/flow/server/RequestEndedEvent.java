@@ -127,7 +127,8 @@ public class RequestEndedEvent extends EventObject {
      * client-to-server message.
      * <p>
      * A push message is not handled by a request handler, and neither is a
-     * request that failed before a handler accepted it.
+     * request that a {@link SessionlessRequestHandler} handled or that failed
+     * before a handler accepted it.
      *
      * @return the request handler, or an empty optional if no request handler
      *         handled the request

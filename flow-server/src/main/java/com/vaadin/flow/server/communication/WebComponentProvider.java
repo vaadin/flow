@@ -30,7 +30,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SessionlessRequestHandler;
-import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -47,8 +46,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVA
  * @author Vaadin Ltd.
  * @since 2.0
  */
-public class WebComponentProvider extends SynchronizedRequestHandler
-        implements SessionlessRequestHandler {
+public class WebComponentProvider implements SessionlessRequestHandler {
     private static final String WEB_COMPONENT_PATH = "web-component/";
     private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
     private static final String HTML_EXTENSION = "html";
@@ -67,8 +65,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler
     // tag name -> generated html
     private ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
 
-    @Override
-    protected boolean canHandleRequest(VaadinRequest request) {
+    boolean canHandleRequest(VaadinRequest request) {
         return isWebComponentPath(request.getPathInfo())
                 && hasWebComponentConfigurations(request);
     }
@@ -89,20 +86,6 @@ public class WebComponentProvider extends SynchronizedRequestHandler
             throws IOException {
         return canHandleRequest(request)
                 && handleWebComponentRequest(request, response);
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * The service serves web component requests through
-     * {@link #handleRequest(VaadinRequest, VaadinResponse)} without a session.
-     * This is only called when the provider is used as a regular request
-     * handler.
-     */
-    @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
-        return handleWebComponentRequest(request, response);
     }
 
     private static boolean isWebComponentPath(String pathInfo) {

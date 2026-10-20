@@ -47,7 +47,6 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,7 +57,6 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @Isolated
@@ -110,21 +108,6 @@ class TranslationFileRequestHandlerTest {
         configure(true);
         testResponseContent(null, "{\"title\":\"Root bundle lang\"}", "und");
         verify(response).setStatus(HttpStatusCode.OK.getCode());
-    }
-
-    @Test
-    void addedAsRegularHandler_sessionIgnored_responseIsTranslations()
-            throws IOException {
-        configure(true);
-        setRequestParams("fi",
-                HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
-                null, null);
-        VaadinSession session = mock(VaadinSession.class);
-
-        assertTrue(handler.handleRequest(session, request, response));
-
-        assertEquals("{\"title\":\"Suomi\"}", getResponseContent());
-        verifyNoInteractions(session);
     }
 
     @Test

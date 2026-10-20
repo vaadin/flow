@@ -36,7 +36,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -90,15 +89,11 @@ public class VaadinServletService extends VaadinService {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
                     .getDevModeHandler(this);
             if (handlerManager.isPresent()) {
-                DevModeHandler devModeHandler = handlerManager.get();
-                // WebComponentProvider handler should run before DevModeHandler
-                // to avoid responding with html contents when dev bundle is
-                // not ready (e.g. dev-mode-not-ready.html)
-                handlers.stream().filter(WebComponentProvider.class::isInstance)
-                        .findFirst().map(handlers::indexOf)
-                        .ifPresentOrElse(idx -> {
-                            handlers.add(idx, devModeHandler);
-                        }, () -> handlers.add(devModeHandler));
+                // The sessionless WebComponentProvider runs before it, so
+                // that a web component script is not answered with html
+                // contents when the dev bundle is not ready (e.g.
+                // dev-mode-not-ready.html)
+                handlers.add(handlerManager.get());
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
                     && !getDeploymentConfiguration().isBrowserless()) {
                 getLogger()

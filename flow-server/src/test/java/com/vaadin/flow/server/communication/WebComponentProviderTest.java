@@ -54,7 +54,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -78,8 +77,6 @@ import static org.mockito.Mockito.when;
 class WebComponentProviderTest {
 
     @Mock
-    VaadinSession session;
-    @Mock
     VaadinServletRequest request;
     @Mock
     VaadinResponse response;
@@ -101,7 +98,6 @@ class WebComponentProviderTest {
         registry = setUpRegistry(); // same code as used for local variables in
                                     // some tests
         when(request.getService()).thenReturn(service);
-        when(session.getService()).thenReturn(service);
         when(service.getContext()).thenReturn(context);
         when(context.getAttribute(WebComponentConfigurationRegistry.class))
                 .then(invocationOnMock -> registry);
@@ -211,7 +207,7 @@ class WebComponentProviderTest {
     }
 
     @Test
-    void handleWebComponentRequest_overridden_usedWithAndWithoutSession()
+    void handleWebComponentRequest_overridden_usedForRequests()
             throws IOException {
         registry = setupConfigurations(MyComponentExporter.class);
         List<VaadinRequest> handled = new ArrayList<>();
@@ -227,9 +223,7 @@ class WebComponentProviderTest {
                 .thenReturn("/web-component/my-component.js");
 
         assertTrue(customProvider.handleRequest(request, response));
-        assertTrue(customProvider.synchronizedHandleRequest(session, request,
-                response));
-        assertEquals(List.of(request, request), handled);
+        assertEquals(List.of(request), handled);
     }
 
     @Test

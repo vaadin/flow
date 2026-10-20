@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * A request handler for requests that do not need a {@link VaadinSession}, such
@@ -33,16 +34,17 @@ import java.io.IOException;
  * previous one, leaving the browser with a cookie for a session other than the
  * one its UI was created in.
  * <p>
- * Register the handler like any other request handler, for example with
- * {@link ServiceInitEvent#addRequestHandler(RequestHandler)}. All registered
- * sessionless handlers are asked before any handler that gets a session, in the
- * order of {@link VaadinService#getRequestHandlers()}. A request that none of
- * them handles continues to the session lookup and the other handlers.
+ * Register the handler with
+ * {@link ServiceInitEvent#addSessionlessRequestHandler(SessionlessRequestHandler)}.
+ * All registered sessionless handlers are asked before any
+ * {@link RequestHandler}, in the order of
+ * {@link VaadinService#getSessionlessRequestHandlers()}. A request that none of
+ * them handles continues to the session lookup and the request handlers.
  *
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface SessionlessRequestHandler extends RequestHandler {
+public interface SessionlessRequestHandler extends Serializable {
 
     /**
      * Called for every request before the service looks up its session. If a
@@ -61,18 +63,4 @@ public interface SessionlessRequestHandler extends RequestHandler {
     boolean handleRequest(VaadinRequest request, VaadinResponse response)
             throws IOException;
 
-    /**
-     * Calls {@link #handleRequest(VaadinRequest, VaadinResponse)}, ignoring the
-     * session.
-     * <p>
-     * The service only calls the sessionless method of the handlers registered
-     * with it. This method is used when the handler is called as a regular
-     * request handler, for example when it is added to a session with
-     * {@link VaadinSession#addRequestHandler(RequestHandler)}.
-     */
-    @Override
-    default boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
-        return handleRequest(request, response);
-    }
 }

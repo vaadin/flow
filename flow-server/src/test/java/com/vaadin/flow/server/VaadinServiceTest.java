@@ -56,6 +56,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.i18n.DefaultI18NProvider;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.i18n.TranslationFileRequestHandler;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -863,13 +864,17 @@ class VaadinServiceTest {
         when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
         when(service.getInstantiator()).thenReturn(instantiator);
         doCallRealMethod().when(service).createRequestHandlers();
+        doCallRealMethod().when(service).createSessionlessRequestHandlers();
 
         List<RequestHandler> handlers = service.createRequestHandlers();
         Set<?> set = handlers.stream().map(Object::getClass)
                 .collect(Collectors.toSet());
         assertTrue(set.contains(PwaHandler.class));
-        assertTrue(set.contains(WebComponentProvider.class));
         assertTrue(set.contains(WebComponentBootstrapHandler.class));
+        Set<?> sessionless = service.createSessionlessRequestHandlers().stream()
+                .map(Object::getClass).collect(Collectors.toSet());
+        assertEquals(Set.of(WebComponentProvider.class,
+                TranslationFileRequestHandler.class), sessionless);
     }
 
     @Test

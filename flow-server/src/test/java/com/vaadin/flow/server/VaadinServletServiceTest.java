@@ -46,7 +46,6 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -191,6 +190,12 @@ class VaadinServletServiceTest {
                     throws ServiceException {
                 return Collections.emptyList();
             }
+
+            @Override
+            protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+                    throws ServiceException {
+                return Collections.emptyList();
+            }
         };
 
         servletService.init();
@@ -238,17 +243,17 @@ class VaadinServletServiceTest {
                 .thenReturn(true);
         service.getRequestHandlers().clear();
         service.getRequestHandlers().add(handler);
-        service.getRequestHandlers().add(sessionlessHandler);
+        service.getSessionlessRequestHandlers().clear();
+        service.getSessionlessRequestHandlers().add(sessionlessHandler);
         List<RequestEndedEvent> ended = new ArrayList<>();
         service.getEventBus().addListener(RequestEndedEvent.class, ended::add);
 
         service.handleRequest(request, response);
 
-        // Asked before the handlers that come first but need a session
         verify(handler, never()).handleRequest(any(), any(), any());
         verify(httpRequest, never()).getSession();
         verify(httpRequest, never()).getSession(anyBoolean());
-        assertSame(sessionlessHandler, ended.get(0).getHandler().orElseThrow());
+        assertFalse(ended.get(0).getHandler().isPresent());
         assertFalse(ended.get(0).getSession().isPresent());
 
         // A request it declines gets a session and reaches the other handlers
@@ -259,20 +264,7 @@ class VaadinServletServiceTest {
         service.handleRequest(request, response);
 
         verify(handler).handleRequest(notNull(), eq(request), eq(response));
-        verify(sessionlessHandler, never())
-                .handleRequest(any(VaadinSession.class), any(), any());
         assertSame(handler, ended.get(1).getHandler().orElseThrow());
-
-        // A declined request that finds no session names no handler
-        when(httpRequest
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
-                .thenReturn(ApplicationConstants.REQUEST_TYPE_HEARTBEAT);
-        when(httpRequest.getSession(anyBoolean())).thenReturn(null);
-
-        service.handleRequest(request, response);
-
-        assertFalse(ended.get(2).getHandler().isPresent());
-        assertFalse(ended.get(2).getSession().isPresent());
     }
 
     @Test
