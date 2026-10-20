@@ -151,6 +151,9 @@ class FrontendDependenciesTest {
 
         DepsTests.assertImportsExcludingUI(dependencies.getModules(),
                 "./bundled-module.js");
+        assertFalse(dependencies.getModulesDevelopment().values().stream()
+                .anyMatch(modules -> modules
+                        .contains("https://cdn.example.com/dev-module.js")));
     }
 
     @Test
@@ -191,7 +194,9 @@ class FrontendDependenciesTest {
                 + ": \"https://cdn.example.com/external-module.js\"\n  - "
                 + component + ": \"context://runtime-module.js\"\n  - "
                 + component + ": \"/absolute-module.js\"\n  - " + component
-                + ": \"ftp://example.net/other-scheme-module.js\""), listed);
+                + ": \"ftp://example.net/other-scheme-module.js\"\n  - "
+                + component + ": \"https://cdn.example.com/dev-module.js\""),
+                listed);
         assertFalse(listed.contains("bundled-module.js"), listed);
     }
 
