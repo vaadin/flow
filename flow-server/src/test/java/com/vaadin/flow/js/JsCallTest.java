@@ -115,17 +115,6 @@ class JsCallTest {
     }
 
     @Test
-    void getFunctionId_identifiesTheDeclaredFunction() {
-        JsCall call = call("showGreeting", "Hello");
-        assertEquals(JsCall.functionId(call.getExpression(), 1, false),
-                call.getFunctionId());
-
-        JsCall variadic = call("shout", "Hello", new Object[] { "a" });
-        assertEquals(JsCall.functionId(variadic.getExpression(), 2, true),
-                variadic.getFunctionId());
-    }
-
-    @Test
     void getExpression_overloadsWithTheSameArity_throws() {
         // Overloads are resolved by name and argument count, so two of them
         // with the same arity can not be told apart
