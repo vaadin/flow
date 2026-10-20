@@ -160,14 +160,8 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected boolean requestCanCreateSession(VaadinRequest request) {
-        if (isOtherRequest(request)) {
-            /*
-             * I.e URIs that are not RPC calls or static file requests.
-             */
-            return true;
-        }
-
-        return false;
+        // I.e URIs that are not RPC calls or static file requests
+        return isOtherRequest(request);
     }
 
     private boolean isOtherRequest(VaadinRequest request) {

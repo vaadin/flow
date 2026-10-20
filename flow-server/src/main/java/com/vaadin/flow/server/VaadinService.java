@@ -176,7 +176,7 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<RequestHandler> requestHandlers;
 
-    private Iterable<SessionlessRequestHandler> sessionlessRequestHandlers;
+    private Collection<SessionlessRequestHandler> sessionlessRequestHandlers;
 
     private transient Iterable<IndexHtmlRequestListener> indexHtmlRequestListeners;
 
@@ -341,8 +341,8 @@ public abstract class VaadinService implements Serializable {
 
             requestHandlers = Collections.unmodifiableCollection(handlers);
 
-            event.getAddedSessionlessRequestHandlers()
-                    .forEach(sessionlessHandlers::add);
+            sessionlessHandlers.addAll(
+                    event.getAddedSessionlessRequestHandlers().toList());
             Collections.reverse(sessionlessHandlers);
             sessionlessRequestHandlers = Collections
                     .unmodifiableCollection(sessionlessHandlers);
