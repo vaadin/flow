@@ -36,7 +36,7 @@ import com.vaadin.flow.server.VaadinSession;
  * HTTP session. {@link jakarta.annotation.PreDestroy} called after
  * {@link com.vaadin.flow.server.SessionDestroyEvent} fired.
  *
- * @since 3.0
+ * @since 10.0
  */
 @NormalScope
 @Inherited

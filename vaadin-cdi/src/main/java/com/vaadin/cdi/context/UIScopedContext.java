@@ -31,11 +31,19 @@ import com.vaadin.flow.server.VaadinSession;
 
 /**
  * UIScopedContext is the context for {@link UIScoped @UIScoped} beans.
+ * 
+ * @since 10.0
  */
 public class UIScopedContext extends AbstractContext {
 
     private ContextualStorageManager contextualStorageManager;
 
+    /**
+     * Creates a new UI scoped context.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public UIScopedContext(final BeanManager beanManager) {
         super(beanManager);
     }
@@ -46,6 +54,12 @@ public class UIScopedContext extends AbstractContext {
         return contextualStorageManager.getContextualStorage(createIfNotExist);
     }
 
+    /**
+     * Initializes the context by looking up its storage manager.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public void init(BeanManager beanManager) {
         contextualStorageManager = BeanProvider.getContextualReference(
                 beanManager, ContextualStorageManager.class, false);
@@ -62,25 +76,42 @@ public class UIScopedContext extends AbstractContext {
                 && contextualStorageManager != null;
     }
 
+    /**
+     * Manages the contextual storages of UI scoped beans within a Vaadin
+     * session, keyed by UI id.
+     */
     @VaadinSessionScoped
     public static class ContextualStorageManager
             extends AbstractContextualStorageManager<Integer> {
 
+        /**
+         * Creates a new storage manager.
+         */
         public ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
             // getting the session attribute of this beans context.
             super(false);
         }
 
+        /**
+         * Gets the contextual storage of the current UI.
+         *
+         * @param createIfNotExist
+         *            whether to create the storage if it does not exist yet
+         * @return the contextual storage, or {@code null} if it does not exist
+         *         and {@code createIfNotExist} is {@code false}
+         * @throws IllegalStateException
+         *             if there is no current UI
+         */
         public ContextualStorage getContextualStorage(
                 boolean createIfNotExist) {
-            final Integer uiId = UI.getCurrent().getUIId();
+            final Integer uiId = UI.getCurrentOrThrow().getUIId();
             return super.getContextualStorage(uiId, createIfNotExist);
         }
 
         @Override
         protected ContextualStorage newContextualStorage(Integer uiId) {
-            UI.getCurrent().addDetachListener(this::destroy);
+            UI.getCurrentOrThrow().addDetachListener(this::destroy);
             return super.newContextualStorage(uiId);
         }
 

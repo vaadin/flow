@@ -28,12 +28,21 @@ import com.vaadin.cdi.util.AbstractContext;
  * all context-related operations to it's underlying instance, apart from
  * getting the scope of the context.
  *
+ * @since 10.0
  */
 public class ContextWrapper implements AlterableContext {
 
     private final AbstractContext context;
     private final Class<? extends Annotation> scope;
 
+    /**
+     * Creates a new wrapper binding the given scope to the given context.
+     *
+     * @param context
+     *            the context to delegate to
+     * @param scope
+     *            the scope annotation to report for this context
+     */
     public ContextWrapper(AbstractContext context,
             Class<? extends Annotation> scope) {
         this.context = context;

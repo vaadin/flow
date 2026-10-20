@@ -44,6 +44,8 @@ import com.vaadin.flow.router.RouterLayout;
  * The sister annotation to this is the {@link RouteScoped}. Both annotations
  * reference the same underlying scope, so it is possible to get both a proxy
  * and a direct reference to the same object by using different annotations.
+ * 
+ * @since 10.0
  */
 @NormalScope
 @Inherited

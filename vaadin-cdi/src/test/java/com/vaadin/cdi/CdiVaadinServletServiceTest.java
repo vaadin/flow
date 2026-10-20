@@ -31,11 +31,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.cdi.annotation.VaadinServiceEnabled;
@@ -51,6 +48,7 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.CustomizedSystemMessages;
 import com.vaadin.flow.server.DefaultSystemMessagesProvider;
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.SystemMessagesInfo;
@@ -60,6 +58,11 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import static com.vaadin.cdi.SerializationUtils.serializeAndDeserialize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
@@ -134,7 +137,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
             throws ServiceException {
         initService(beanManager);
         final Instantiator instantiator = service.getInstantiator();
-        Assertions.assertTrue(CdiInstantiator.class
+        assertTrue(CdiInstantiator.class
                 .isAssignableFrom(instantiator.getClass()));
     }
 
@@ -146,7 +149,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
 
     @Test
     public void init_instantiatorUnsatisfied_ExceptionThrown() {
-        Assertions.assertThrows(ServiceException.class,
+        assertThrows(ServiceException.class,
                 () -> initServiceWithoutBeanFor(InstantiatorFactory.class));
     }
 
@@ -167,8 +170,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
         when(mockContext.get(same(mockBean), any()))
                 .thenReturn(mockInstantiatorFactory);
         when(mockInstantiatorFactory.createInstantitor(any())).thenReturn(null);
-        Assertions.assertThrows(ServiceException.class,
-                () -> initService(mockBm));
+        assertThrows(ServiceException.class, () -> initService(mockBm));
         verify(mockInstantiatorFactory, times(1))
                 .createInstantitor(same(service));
     }
@@ -179,7 +181,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
         initService(beanManager);
         SystemMessagesProvider systemMessagesProvider = service
                 .getSystemMessagesProvider();
-        Assertions.assertTrue(CdiSystemMessagesProvider.class
+        assertTrue(CdiSystemMessagesProvider.class
                 .isAssignableFrom(systemMessagesProvider.getClass()));
     }
 
@@ -190,11 +192,10 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
 
     @Test
     public void init_SystemMessagesProviderMissing_defaultConfigured() {
-        Assertions.assertThrows(ServiceException.class, () -> {
+        assertThrows(ServiceException.class, () -> {
             initServiceWithoutBeanFor(SystemMessagesProvider.class);
-            Assertions.assertTrue(
-                    DefaultSystemMessagesProvider.class.isAssignableFrom(
-                            service.getSystemMessagesProvider().getClass()));
+            assertTrue(DefaultSystemMessagesProvider.class.isAssignableFrom(
+                    service.getSystemMessagesProvider().getClass()));
         });
     }
 
@@ -234,8 +235,8 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
                 .thenReturn(mockInstantiator);
 
         Optional<Instantiator> maybeInstantiator = service.loadInstantiators();
-        Assertions.assertTrue(maybeInstantiator.isPresent());
-        Assertions.assertEquals(mockInstantiator, maybeInstantiator.get());
+        assertTrue(maybeInstantiator.isPresent());
+        assertEquals(mockInstantiator, maybeInstantiator.get());
     }
 
     @Test
@@ -250,13 +251,13 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
         initUI(ui, session);
 
         ComponentUtil.fireEvent(ui, new PollEvent(ui, false));
-        Assertions.assertEquals(ui, uiListenerEventReceiver.pollEventUI);
+        assertEquals(ui, uiListenerEventReceiver.pollEventUI);
 
         UI ui2 = serializeAndDeserialize(ui);
-        Assertions.assertNotNull(ui2);
+        assertNotNull(ui2);
 
         ComponentUtil.fireEvent(ui2, new PollEvent(ui2, false));
-        Assertions.assertEquals(ui2, uiListenerEventReceiver.pollEventUI);
+        assertEquals(ui2, uiListenerEventReceiver.pollEventUI);
     }
 
     @Test
@@ -271,7 +272,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
         VaadinSession session = new MockVaadinSession(service);
         initUI(ui, session);
 
-        Assertions.assertEquals(ui, uiInitEventReceiver.initEventUI);
+        assertEquals(ui, uiInitEventReceiver.initEventUI);
 
         session.getLockInstance().lock();
         try {
@@ -280,7 +281,7 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
             session.getLockInstance().unlock();
         }
 
-        Assertions.assertEquals(ui, uiDetachEventReceiver.detachEventUI);
+        assertEquals(ui, uiDetachEventReceiver.detachEventUI);
     }
 
     @Test
@@ -294,21 +295,18 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
         initUI(ui, new MockVaadinSession(service));
 
         Object listener = getSingleListener(ui, AfterNavigationHandler.class);
-        Assertions.assertSame(listener,
-                getSingleListener(ui, BeforeEnterHandler.class),
+        assertSame(listener, getSingleListener(ui, BeforeEnterHandler.class),
                 "The same listener should observe all navigation events");
-        Assertions.assertSame(listener,
-                getSingleListener(ui, BeforeLeaveHandler.class),
+        assertSame(listener, getSingleListener(ui, BeforeLeaveHandler.class),
                 "The same listener should observe all navigation events");
 
-        Assertions.assertEquals(1,
-                uiInitEventReceiver.navigationListenersOnInit,
+        assertEquals(1, uiInitEventReceiver.navigationListenersOnInit,
                 "UI listeners should be attached before the CDI event");
     }
 
     private Object getSingleListener(UI ui, Class<?> handlerType) {
         List<?> listeners = ui.getInternals().getListeners(handlerType);
-        Assertions.assertEquals(1, listeners.size(), "Expecting a single "
+        assertEquals(1, listeners.size(), "Expecting a single "
                 + handlerType.getSimpleName() + " registered on the UI");
         return listeners.get(0);
     }
@@ -372,23 +370,8 @@ public class CdiVaadinServletServiceTest extends AbstractWeldTest {
         // noinspection unchecked
         when(mockBm.resolve(same(beans)))
                 .thenThrow(AmbiguousResolutionException.class);
-        Assertions.assertThrows(ServiceException.class,
-                () -> initService(mockBm));
+        assertThrows(ServiceException.class, () -> initService(mockBm));
 
         verify(mockBm, times(1)).resolve(same(beans));
-    }
-
-    private static class MockVaadinSession extends VaadinSession {
-
-        ReentrantLock lock = new ReentrantLock();
-
-        public MockVaadinSession(VaadinService service) {
-            super(service);
-        }
-
-        @Override
-        public Lock getLockInstance() {
-            return lock;
-        }
     }
 }

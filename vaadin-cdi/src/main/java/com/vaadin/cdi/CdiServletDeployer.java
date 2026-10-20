@@ -48,9 +48,18 @@ import com.vaadin.flow.server.startup.ServletDeployer;
  * the default one.
  * <p>
  * The rest of this class is copied from {@link ServletDeployer}.
+ * 
+ * @since 10.0
  */
 @HandlesTypes(Route.class)
 public class CdiServletDeployer implements ServletContainerInitializer {
+
+    /**
+     * Creates a new CDI servlet deployer.
+     */
+    public CdiServletDeployer() {
+        // Nothing to initialize
+    }
 
     @Override
     public void onStartup(Set<Class<?>> classSet, ServletContext ctx) {

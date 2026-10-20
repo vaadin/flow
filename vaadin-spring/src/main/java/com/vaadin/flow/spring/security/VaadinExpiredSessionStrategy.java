@@ -36,11 +36,20 @@ import org.springframework.security.web.session.SessionInformationExpiredStrateg
  * request with a session expired message, a heartbeat with 403 and a push
  * request through its own handler, while a request for a view ends in the login
  * view of the application.
+ * 
+ * @since 25.4
  */
 public class VaadinExpiredSessionStrategy
         implements SessionInformationExpiredStrategy {
 
     private static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy();
+
+    /**
+     * Creates the strategy.
+     */
+    public VaadinExpiredSessionStrategy() {
+        // Default constructor
+    }
 
     @Override
     public void onExpiredSessionDetected(SessionInformationExpiredEvent event)

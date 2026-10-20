@@ -35,6 +35,9 @@ import com.vaadin.flow.component.Tag;
  */
 @Deprecated(since = "25.3", forRemoval = true)
 @Tag(Tag.TR)
+// The deprecated HasOrderedComponents goes away in 26 together with this
+// type
+@SuppressWarnings("removal")
 public class NativeTableRow extends HtmlContainer
         implements HasOrderedComponents, ClickNotifier<NativeTableRow> {
 

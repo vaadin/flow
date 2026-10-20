@@ -42,6 +42,8 @@ import java.lang.annotation.Target;
  * If the explicit bean archive strategy is in use (via an empty beans.xml or
  * the one containing bean-discovery-mode="all"), CDI can manage and inject any
  * bean, except those annotated with @Vetoed.
+ * 
+ * @since 14.1
  */
 @Stereotype
 @Inherited

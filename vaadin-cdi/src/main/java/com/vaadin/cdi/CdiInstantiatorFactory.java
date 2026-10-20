@@ -31,6 +31,7 @@ import com.vaadin.flow.server.VaadinService;
  * Alternative/Specializes, or can be customized with a Decorator.
  *
  * @see Instantiator
+ * @since 15.0
  */
 @VaadinServiceScoped
 @VaadinServiceEnabled
@@ -38,6 +39,13 @@ public class CdiInstantiatorFactory implements InstantiatorFactory {
 
     @Inject
     private BeanManager beanManager;
+
+    /**
+     * Creates a new CDI instantiator factory.
+     */
+    public CdiInstantiatorFactory() {
+        // Nothing to initialize
+    }
 
     @Override
     public Instantiator createInstantitor(VaadinService service) {
@@ -48,6 +56,13 @@ public class CdiInstantiatorFactory implements InstantiatorFactory {
         return new CdiInstantiator(beanManager, service);
     }
 
+    /**
+     * Gets the service class this factory creates instantiators for. The
+     * factory only creates an instantiator for services that are instances of
+     * this class.
+     *
+     * @return the supported service class
+     */
     public Class<? extends VaadinService> getServiceClass() {
         return CdiVaadinServletService.class;
     }

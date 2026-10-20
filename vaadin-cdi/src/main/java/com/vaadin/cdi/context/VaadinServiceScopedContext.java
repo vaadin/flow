@@ -35,15 +35,29 @@ import static jakarta.enterprise.event.Reception.IF_EXISTS;
 
 /**
  * Context for {@link VaadinServiceScoped @VaadinServiceScoped} beans.
+ * 
+ * @since 10.0
  */
 public class VaadinServiceScopedContext extends AbstractContext {
 
     private ContextualStorageManager contextManager;
 
+    /**
+     * Creates a new Vaadin service scoped context.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public VaadinServiceScopedContext(BeanManager beanManager) {
         super(beanManager);
     }
 
+    /**
+     * Initializes the context by looking up its storage manager.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public void init(BeanManager beanManager) {
         contextManager = BeanProvider.getContextualReference(beanManager,
                 ContextualStorageManager.class, false);
@@ -76,10 +90,17 @@ public class VaadinServiceScopedContext extends AbstractContext {
                 && CdiVaadinServlet.getCurrentServletName() != null);
     }
 
+    /**
+     * Manages the contextual storages of Vaadin service scoped beans, keyed by
+     * servlet name.
+     */
     @ApplicationScoped
     public static class ContextualStorageManager
             extends AbstractContextualStorageManager<String> {
 
+        /**
+         * Creates a new storage manager.
+         */
         public ContextualStorageManager() {
             super(true);
         }

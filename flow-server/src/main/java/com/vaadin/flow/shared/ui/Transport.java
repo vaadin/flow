@@ -47,6 +47,8 @@ public enum Transport {
      * {@code com.vaadin.experimental.ssePushTransport} feature flag to be
      * enabled. Selecting it while the feature flag is disabled throws a
      * {@code DisabledFeatureException}.
+     * 
+     * @since 25.3
      */
     SERVER_SENT_EVENTS("sse");
 

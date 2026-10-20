@@ -70,6 +70,13 @@ public class DevLoopHotswapper implements VaadinHotswapper {
     private volatile boolean pageReloadRequired;
 
     /**
+     * Creates the hotswapper. It is found through the service loader.
+     */
+    public DevLoopHotswapper() {
+        // Default constructor
+    }
+
+    /**
      * The instance receiving hotswap events, or {@code null} before Flow's
      * hotswapper has initialized.
      *

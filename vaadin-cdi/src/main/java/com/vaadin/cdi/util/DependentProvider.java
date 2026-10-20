@@ -38,12 +38,23 @@ import java.io.Serializable;
  *
  * @see BeanProvider#getDependent(java.lang.Class,
  *      java.lang.annotation.Annotation...)
+ * @param <T>
+ *            the type of the contextual instance
+ * @since 15.0
  */
 public class DependentProvider<T> implements Provider<T>, Serializable {
     private static final long serialVersionUID = 23423413412001L;
 
+    /**
+     * The wrapped contextual instance.
+     */
     private T instance;
+
+    /**
+     * The creational context used for destroying the instance.
+     */
     private CreationalContext<T> creationalContext;
+
     private transient Bean<T> bean;
 
     DependentProvider(Bean<T> bean, CreationalContext<T> creationalContext,
@@ -70,6 +81,15 @@ public class DependentProvider<T> implements Provider<T>, Serializable {
         }
     }
 
+    /**
+     * Serializes this provider, writing the passivation id of the bean together
+     * with the instance and its creational context.
+     *
+     * @param out
+     *            the stream to write to
+     * @throws IOException
+     *             if the bean is not passivation capable or writing fails
+     */
     private void writeObject(ObjectOutputStream out) throws IOException {
         if (!(bean instanceof PassivationCapable)) {
             throw new NotSerializableException(
@@ -86,6 +106,16 @@ public class DependentProvider<T> implements Provider<T>, Serializable {
         out.writeObject(creationalContext);
     }
 
+    /**
+     * Deserializes this provider, restoring the bean from its passivation id.
+     *
+     * @param in
+     *            the stream to read from
+     * @throws IOException
+     *             if the serial version does not match or reading fails
+     * @throws ClassNotFoundException
+     *             if a serialized class cannot be found
+     */
     @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream in)
             throws IOException, ClassNotFoundException {

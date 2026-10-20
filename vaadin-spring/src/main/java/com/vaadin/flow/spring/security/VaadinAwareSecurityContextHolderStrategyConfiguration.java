@@ -34,4 +34,11 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 @Deprecated(since = "25.0", forRemoval = true)
 @Configuration
 public class VaadinAwareSecurityContextHolderStrategyConfiguration {
+
+    /**
+     * Creates the configuration, which does nothing.
+     */
+    public VaadinAwareSecurityContextHolderStrategyConfiguration() {
+        // Default constructor
+    }
 }

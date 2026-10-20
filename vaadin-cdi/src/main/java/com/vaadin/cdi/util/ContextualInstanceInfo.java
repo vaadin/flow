@@ -22,6 +22,10 @@ import java.io.Serializable;
 /**
  * This data holder contains all necessary data you need to store a Contextual
  * Instance in a CDI Context.
+ *
+ * @param <T>
+ *            the type of the contextual instance
+ * @since 15.0
  */
 public class ContextualInstanceInfo<T> implements Serializable {
     private static final long serialVersionUID = 6384932199958645324L;
@@ -39,6 +43,15 @@ public class ContextualInstanceInfo<T> implements Serializable {
     private CreationalContext<T> creationalContext;
 
     /**
+     * Creates a new empty contextual instance info.
+     */
+    public ContextualInstanceInfo() {
+        // Nothing to initialize
+    }
+
+    /**
+     * Gets the CreationalContext of the bean.
+     *
      * @return the CreationalContext of the bean
      */
     public CreationalContext<T> getCreationalContext() {
@@ -46,6 +59,8 @@ public class ContextualInstanceInfo<T> implements Serializable {
     }
 
     /**
+     * Sets the CreationalContext of the bean.
+     *
      * @param creationalContext
      *            the CreationalContext of the bean
      */
@@ -54,6 +69,8 @@ public class ContextualInstanceInfo<T> implements Serializable {
     }
 
     /**
+     * Gets the contextual instance.
+     *
      * @return the contextual instance itself
      */
     public T getContextualInstance() {
@@ -61,6 +78,8 @@ public class ContextualInstanceInfo<T> implements Serializable {
     }
 
     /**
+     * Sets the contextual instance.
+     *
      * @param contextualInstance
      *            the contextual instance itself
      */

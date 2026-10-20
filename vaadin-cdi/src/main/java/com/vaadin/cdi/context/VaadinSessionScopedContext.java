@@ -43,16 +43,29 @@ import com.vaadin.flow.server.VaadinSession;
  * acquiring the session lock is operating outside the supported usage of the
  * framework; behavior in that case is not guaranteed.
  *
- * @since 3.0
+ * @since 10.0
  */
 public class VaadinSessionScopedContext extends AbstractContext {
 
     private ContextualStorageManager contextManager;
 
+    /**
+     * Creates a new Vaadin session scoped context.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public VaadinSessionScopedContext(BeanManager beanManager) {
         super(beanManager);
     }
 
+    /**
+     * Initializes the context by looking up its storage manager.
+     *
+     * @param beanManager
+     *            the bean manager
+     * @since 16.0.2
+     */
     public void init(BeanManager beanManager) {
         contextManager = BeanProvider.getContextualReference(beanManager,
                 ContextualStorageManager.class, false);
@@ -75,6 +88,12 @@ public class VaadinSessionScopedContext extends AbstractContext {
         return contextManager != null && contextManager.isActive();
     }
 
+    /**
+     * Destroys all session scoped beans of the given session.
+     *
+     * @param session
+     *            the session whose beans are destroyed
+     */
     public static void destroy(VaadinSession session) {
         ContextualStorageManager.destroy(session);
     }
@@ -98,24 +117,55 @@ public class VaadinSessionScopedContext extends AbstractContext {
 
     /**
      * For internal use only.
+     * 
+     * @since 16.0.2
      */
     @ApplicationScoped
     public static class ContextualStorageManager {
 
+        /**
+         * Name of the session attribute holding the contextual storage.
+         */
         protected static final String ATTRIBUTE_NAME = VaadinSessionScopedContext.class
                 .getName();
 
         @Inject
         private BeanManager beanManager;
 
+        /**
+         * Creates a new storage manager.
+         */
+        public ContextualStorageManager() {
+            // Nothing to initialize
+        }
+
+        /**
+         * Checks whether the context is active, i.e. there is a current session
+         * and it is locked by the current thread.
+         *
+         * @return {@code true} if the context is active, {@code false}
+         *         otherwise
+         */
         protected boolean isActive() {
             VaadinSession session = VaadinSession.getCurrent();
             return session != null && session.hasLock();
         }
 
+        /**
+         * Gets the contextual storage of the current session.
+         *
+         * @param contextual
+         *            the contextual the storage is requested for
+         * @param createIfNotExist
+         *            whether to create the storage if it does not exist yet
+         * @return the contextual storage, or {@code null} if it does not exist
+         *         and {@code createIfNotExist} is {@code false}
+         * @throws IllegalStateException
+         *             if there is no current session
+         */
         protected ContextualStorage getContextualStorage(
                 Contextual<?> contextual, boolean createIfNotExist) {
-            VaadinSession session = VaadinSession.getCurrent();
+            VaadinSession session = VaadinSession.getCurrentOrThrow();
             ContextualStorage storage = findContextualStorage(session);
             if (storage == null && createIfNotExist) {
                 storage = new ContextualStorage(beanManager, false, true);

@@ -37,6 +37,10 @@ import com.vaadin.flow.signals.Signal;
  * @since 1.0
  */
 @Tag(Tag.DIV)
+// The deprecated HasOrderedComponents is declared until its removal in 26,
+// so that applications typing this component as HasOrderedComponents keep
+// compiling
+@SuppressWarnings("removal")
 public class Div extends HtmlContainer
         implements ClickNotifier<Div>, HasOrderedComponents {
 

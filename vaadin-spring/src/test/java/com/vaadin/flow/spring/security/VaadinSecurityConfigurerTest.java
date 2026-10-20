@@ -20,6 +20,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -60,11 +60,14 @@ import org.springframework.security.config.annotation.web.configurers.RequestCac
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -72,6 +75,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.savedrequest.RequestCacheAwareFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -91,9 +95,13 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
@@ -188,6 +196,51 @@ class VaadinSecurityConfigurerTest {
 
         assertThat(filters).hasAtLeastOneElementOfType(
                 OAuth2LoginAuthenticationFilter.class);
+    }
+
+    @Test
+    void keycloakRoleMapping_withOAuth2LoginPage_oidcUserServiceMapsRoles()
+            throws Exception {
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
+                        .keycloakRoleMapping())
+                .build();
+
+        var oidcUserService = http.getSharedObject(OidcUserService.class);
+
+        assertThat(oidcUserService).isNotNull();
+        assertThat(getOidcUserConverter(oidcUserService))
+                .isInstanceOf(KeycloakOidcUserMapper.class);
+    }
+
+    @Test
+    void keycloakRoleMapping_withoutOAuth2LoginPage_notConfigured() {
+        http.with(configurer, VaadinSecurityConfigurer::keycloakRoleMapping)
+                .build();
+
+        assertNull(http.getSharedObject(OidcUserService.class));
+    }
+
+    @Test
+    void keycloakRoleMapping_rolePrefixOfChain_isUsedForRoles()
+            throws Exception {
+        var rolePrefixHolder = new VaadinRolePrefixHolder(null);
+        http.setSharedObject(VaadinRolePrefixHolder.class, rolePrefixHolder);
+
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/keycloak")
+                        .keycloakRoleMapping())
+                .build();
+        // The prefix of the filter chain is only known to the holder after the
+        // chain has been configured, so the mapper must pick it up afterwards
+        var securityContextFilter = new SecurityContextHolderAwareRequestFilter();
+        securityContextFilter.setRolePrefix("AUTHORITY_");
+        rolePrefixHolder.resetRolePrefix(securityContextFilter);
+
+        var mapper = (KeycloakOidcUserMapper) getOidcUserConverter(
+                http.getSharedObject(OidcUserService.class));
+
+        assertThat(mapper.rolePrefix()).isEqualTo("AUTHORITY_");
     }
 
     @Test
@@ -300,7 +353,7 @@ class VaadinSecurityConfigurerTest {
         VaadinDefaultRequestCache requestCache = applicationContext
                 .getBean(VaadinDefaultRequestCache.class);
 
-        var mockSuccessHandler = Mockito.mock(
+        var mockSuccessHandler = mock(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
         http.setSharedObject(
                 VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
@@ -310,14 +363,13 @@ class VaadinSecurityConfigurerTest {
             c.loginView("/login");
         }).build();
 
-        Mockito.verify(mockSuccessHandler, times(1))
-                .setRequestCache(Mockito.eq(requestCache));
+        verify(mockSuccessHandler, times(1)).setRequestCache(eq(requestCache));
     }
 
     @Test
     void hillaAnonymousEndpointRequest_arePermitted() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -329,7 +381,7 @@ class VaadinSecurityConfigurerTest {
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
 
-            Mockito.when(endpointRequestUtil.isAnonymousEndpoint(request))
+            when(endpointRequestUtil.isAnonymousEndpoint(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
@@ -346,8 +398,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hillaEndpointRequest_areAuthenticated() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -359,7 +411,7 @@ class VaadinSecurityConfigurerTest {
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
 
-            Mockito.when(endpointRequestUtil.isEndpointRequest(request))
+            when(endpointRequestUtil.isEndpointRequest(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
@@ -376,8 +428,8 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void hilla_checkAllowedRoutes() {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = mockStatic(
+                EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
                     .when(EndpointRequestUtil::isHillaAvailable)
                     .thenReturn(true);
@@ -390,7 +442,7 @@ class VaadinSecurityConfigurerTest {
             request.setPathInfo(path);
 
             // Simulate usage of Hilla API, providing file-router request info
-            Mockito.when(fileRouterRequestUtil.isAnonymousRoute(request))
+            when(fileRouterRequestUtil.isAnonymousRoute(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
@@ -488,6 +540,60 @@ class VaadinSecurityConfigurerTest {
         assertThat(handler).isNotNull();
         assertThat(getDefaultTargetUrl(handler)).isEqualTo("/");
         assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @Test
+    void successUrlResolver_withLoginViewAndAlwaysUseDefaultTargetUrl_redirectsToResolvedUrl()
+            throws Exception {
+        http.with(configurer, c -> c.loginView("/login")
+                .defaultSuccessUrl("/dashboard", true)
+                .successUrlResolver((request, authentication,
+                        savedUrl) -> "/landing-" + authentication.getName()))
+                .build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isTrue();
+        var loginResponse = new MockHttpServletResponse();
+        handler.onAuthenticationSuccess(
+                new MockHttpServletRequest("POST", "/login"), loginResponse,
+                new TestingAuthenticationToken("john", "pwd"));
+
+        assertThat(loginResponse.getRedirectedUrl()).isEqualTo("/landing-john");
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    void failureHandler_customHandlerIsUsedByAuthenticationFilter(
+            boolean oauth2) throws Exception {
+        var failureHandler = mock(AuthenticationFailureHandler.class);
+
+        var filters = http.with(configurer, c -> {
+            if (oauth2) {
+                c.oauth2LoginPage("/oauth2/login");
+            } else {
+                c.loginView("/login");
+            }
+            c.failureHandler(failureHandler);
+        }).build().getFilters();
+
+        var filter = filters.stream().filter(
+                AbstractAuthenticationProcessingFilter.class::isInstance)
+                .map(AbstractAuthenticationProcessingFilter.class::cast)
+                .findFirst().orElseThrow();
+        assertThat(invokeGetter(filter, "getFailureHandler"))
+                .isSameAs(failureHandler);
+    }
+
+    @Test
+    void withoutOAuth2ClientOnClasspath_configurerStillLinks() {
+        // spring-security-oauth2-client is an optional dependency, and a class
+        // is verified as a whole when it is loaded, so a reference to one of
+        // its types here would break every application that does not have it
+        assertThatCode(
+                () -> Class.forName(VaadinSecurityConfigurer.class.getName(),
+                        true, new OAuth2ClientHidingClassLoader()))
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -599,7 +705,66 @@ class VaadinSecurityConfigurerTest {
         return mockResponse;
     }
 
+    /**
+     * Loads the Vaadin security classes itself, so that they are verified
+     * against a classpath without {@code spring-security-oauth2-client}.
+     */
+    private static class OAuth2ClientHidingClassLoader extends ClassLoader {
+
+        private static final String HIDDEN_PACKAGE = "org.springframework.security.oauth2.client.";
+
+        private static final String RELOADED_PACKAGE = "com.vaadin.flow.spring.security.";
+
+        OAuth2ClientHidingClassLoader() {
+            super(VaadinSecurityConfigurer.class.getClassLoader());
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve)
+                throws ClassNotFoundException {
+            if (name.startsWith(HIDDEN_PACKAGE)) {
+                throw new ClassNotFoundException(name);
+            }
+            if (name.startsWith(RELOADED_PACKAGE)) {
+                synchronized (getClassLoadingLock(name)) {
+                    var loaded = findLoadedClass(name);
+                    if (loaded == null) {
+                        loaded = defineClass(name, readBytes(name));
+                    }
+                    if (resolve) {
+                        resolveClass(loaded);
+                    }
+                    return loaded;
+                }
+            }
+            return super.loadClass(name, resolve);
+        }
+
+        private Class<?> defineClass(String name, byte[] bytes) {
+            return defineClass(name, bytes, 0, bytes.length);
+        }
+
+        private byte[] readBytes(String name) throws ClassNotFoundException {
+            var resource = name.replace('.', '/') + ".class";
+            try (var stream = getParent().getResourceAsStream(resource)) {
+                if (stream == null) {
+                    throw new ClassNotFoundException(name);
+                }
+                return stream.readAllBytes();
+            } catch (IOException e) {
+                throw new ClassNotFoundException(name, e);
+            }
+        }
+    }
+
     // Helper methods to access protected fields using reflection
+    private Object getOidcUserConverter(OidcUserService oidcUserService)
+            throws Exception {
+        var field = OidcUserService.class.getDeclaredField("oidcUserConverter");
+        field.setAccessible(true);
+        return field.get(oidcUserService);
+    }
+
     private String getDefaultTargetUrl(
             VaadinSavedRequestAwareAuthenticationSuccessHandler handler)
             throws Exception {
@@ -607,6 +772,14 @@ class VaadinSecurityConfigurerTest {
                 .getDeclaredMethod("getDefaultTargetUrl");
         method.setAccessible(true);
         return (String) method.invoke(handler);
+    }
+
+    private Object invokeGetter(AbstractAuthenticationProcessingFilter filter,
+            String getterName) throws Exception {
+        Method method = AbstractAuthenticationProcessingFilter.class
+                .getDeclaredMethod(getterName);
+        method.setAccessible(true);
+        return method.invoke(filter);
     }
 
     private boolean isAlwaysUseDefaultTargetUrl(

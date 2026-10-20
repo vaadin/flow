@@ -23,6 +23,8 @@ import java.util.List;
 
 /**
  * Helper for proxies
+ * 
+ * @since 15.0
  */
 @Typed()
 public abstract class ProxyUtils {
@@ -31,6 +33,9 @@ public abstract class ProxyUtils {
     }
 
     /**
+     * Gets the real implementation class of the given class by unwrapping any
+     * proxy classes.
+     *
      * @param currentClass
      *            current class
      * @return class of the real implementation
@@ -64,6 +69,15 @@ public abstract class ProxyUtils {
                         || name.contains("$HibernateProxy$")); // Hibernate
     }
 
+    /**
+     * Gets the given proxy class together with its base types, i.e. the proxied
+     * interfaces for interface proxies or the chain of superclasses up to the
+     * real implementation class otherwise.
+     *
+     * @param proxyClass
+     *            the proxy class
+     * @return a list containing the proxy class and its base types
+     */
     public static List<Class<?>> getProxyAndBaseTypes(Class<?> proxyClass) {
         List<Class<?>> result = new ArrayList<Class<?>>();
         result.add(proxyClass);
@@ -87,6 +101,14 @@ public abstract class ProxyUtils {
         return result;
     }
 
+    /**
+     * Analyses if the given class is a proxy class implementing an interface
+     * rather than extending a concrete class.
+     *
+     * @param proxyClass
+     *            the class to check
+     * @return true if the given class is an interface proxy, false otherwise
+     */
     public static boolean isInterfaceProxy(Class<?> proxyClass) {
         Class<?>[] interfaces = proxyClass.getInterfaces();
         if (Proxy.class.equals(proxyClass.getSuperclass()) && interfaces != null

@@ -28,7 +28,6 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -44,6 +43,11 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 
 class GenerateNpmBOMMojoTest {
 
@@ -63,7 +67,7 @@ class GenerateNpmBOMMojoTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        this.mojo = Mockito.spy(new GenerateNpmBOMMojo());
+        this.mojo = spy(new GenerateNpmBOMMojo());
 
         File projectBase = tempDir.toFile();
         File frontendDirectory = new File(projectBase,
@@ -112,20 +116,19 @@ class GenerateNpmBOMMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "productionMode", false);
-        Mockito.doReturn(
-                Set.of(jarResourcesSource.getParentFile().getParentFile()))
+        doReturn(Set.of(jarResourcesSource.getParentFile().getParentFile()))
                 .when(mojo).getJarFiles();
 
         FileUtils.fileWrite(manifestFilePath, "UTF-8",
                 TestUtils.getInitialPackageJson().toString());
-        lookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
+        lookup = mock(Lookup.class);
+        doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.doAnswer(invocation -> {
-            Mockito.doReturn(invocation.getArguments()[0]).when(lookup)
+        doAnswer(invocation -> {
+            doReturn(invocation.getArguments()[0]).when(lookup)
                     .lookup(ClassFinder.class);
             return lookup;
-        }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
+        }).when(mojo).createLookup(any(ClassFinder.class));
 
         setProject(mojo, projectBase);
         // Prevent unwanted resources to be present on classpath

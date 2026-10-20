@@ -197,7 +197,7 @@ public interface DragSource<T extends Component> extends HasElement {
                     });
             Registration endListenerRegistration = addDragEndListener(
                     event -> getDragSourceComponent().getUI()
-                            .orElse(UI.getCurrent()).getInternals()
+                            .orElseGet(UI::getCurrentOrThrow).getInternals()
                             .setActiveDragSourceComponent(null));
             ComponentUtil.setData(getDragSourceComponent(),
                     DndUtil.START_LISTENER_REGISTRATION_KEY,
@@ -391,8 +391,7 @@ public interface DragSource<T extends Component> extends HasElement {
         }
         ComponentUtil.setData(getDragSourceComponent(),
                 DndUtil.DRAG_SOURCE_IMAGE, dragImage);
-        getDraggableElement().executeJs(
-                "window.Vaadin.Flow.dndConnector.setDragImage($0, $1, $2, this)",
+        getDraggableElement().executeJs(DndUtil.DndJs.class).setDragImage(
                 dragImage, (dragImage == null ? 0 : offsetX),
                 (dragImage == null ? 0 : offsetY));
     }

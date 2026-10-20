@@ -78,11 +78,25 @@ import static com.vaadin.cdi.BeanLookup.SERVICE;
  * </ul>
  *
  * @see CdiVaadinServlet
+ * @since 10.0
  */
 public class CdiVaadinServletService extends VaadinServletService {
 
+    /**
+     * The delegate implementing the CDI specific functionality.
+     */
     private final CdiVaadinServiceDelegate delegate;
 
+    /**
+     * Creates a new CDI Vaadin servlet service.
+     *
+     * @param servlet
+     *            the servlet this service belongs to
+     * @param configuration
+     *            the deployment configuration
+     * @param beanManager
+     *            the bean manager used for looking up CDI beans
+     */
     public CdiVaadinServletService(CdiVaadinServlet servlet,
             DeploymentConfiguration configuration, BeanManager beanManager) {
         super(servlet, configuration);
@@ -167,18 +181,42 @@ public class CdiVaadinServletService extends VaadinServletService {
     /**
      * This class implements the actual instantiation and event brokering
      * functionality of {@link CdiVaadinServletService}.
+     * 
+     * @since 11.2
      */
     public static class CdiVaadinServiceDelegate implements Serializable {
 
         private transient BeanManager beanManager;
 
+        /**
+         * The listener forwarding UI events as CDI events.
+         */
         private final UIEventListener uiEventListener;
 
+        /**
+         * Creates a new delegate using the given bean manager.
+         *
+         * @param beanManager
+         *            the bean manager used for looking up CDI beans
+         * @since 15.0.1
+         */
         public CdiVaadinServiceDelegate(BeanManager beanManager) {
             this.beanManager = beanManager;
             uiEventListener = new UIEventListener(this);
         }
 
+        /**
+         * Initializes the given service: sets the CDI provided
+         * {@link SystemMessagesProvider} if available and registers the
+         * listeners that fire the corresponding CDI events.
+         *
+         * @param vaadinService
+         *            the service to initialize
+         * @throws ServiceException
+         *             if multiple eligible {@link SystemMessagesProvider} beans
+         *             are found
+         * @since 15.0.1
+         */
         public void init(VaadinService vaadinService) throws ServiceException {
             lookup(SystemMessagesProvider.class)
                     .ifPresent(vaadinService::setSystemMessagesProvider);
@@ -188,6 +226,13 @@ public class CdiVaadinServletService extends VaadinServletService {
             vaadinService.addServiceDestroyListener(this::fireCdiDestroyEvent);
         }
 
+        /**
+         * Adds listeners to the given UI that fire navigation, poll and detach
+         * events as CDI events.
+         *
+         * @param ui
+         *            the UI to add the listeners to
+         */
         public void addUIListeners(UI ui) {
             ui.addAfterNavigationListener(uiEventListener);
             ui.addBeforeLeaveListener(uiEventListener);
@@ -197,6 +242,18 @@ public class CdiVaadinServletService extends VaadinServletService {
                     .fire(new UIDetachEvent(e)));
         }
 
+        /**
+         * Looks up a {@link VaadinServiceEnabled} CDI bean of the given type.
+         *
+         * @param <T>
+         *            the bean type
+         * @param type
+         *            the bean type to look up
+         * @return an optional containing the bean, or an empty optional if no
+         *         such bean exists
+         * @throws ServiceException
+         *             if multiple eligible beans are found
+         */
         public <T> Optional<T> lookup(Class<T> type) throws ServiceException {
             try {
                 T instance = new BeanLookup<>(getBeanManager(), type, SERVICE)
@@ -208,6 +265,12 @@ public class CdiVaadinServletService extends VaadinServletService {
             }
         }
 
+        /**
+         * Gets the bean manager, resolving it with {@link BeanManagerProvider}
+         * if it is not available, for example after deserialization.
+         *
+         * @return the bean manager
+         */
         public BeanManager getBeanManager() {
             if (beanManager == null) {
                 beanManager = BeanManagerProvider.getInstance()

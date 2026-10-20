@@ -27,7 +27,10 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -278,14 +281,88 @@ public class ExecJavaScriptView extends AbstractDivView {
                                     """);
                 });
 
+        NativeButton variadicButton = createButton(
+                "Variadic JavaScript definition", "variadicButton",
+                e -> getElement().executeJs(JoinJs.class)
+                        .join("a", 1, true, "b")
+                        .then(String.class, this::addVariadicResult));
+
+        NativeButton variadicNoArgumentsButton = createButton(
+                "Variadic JavaScript definition without a tail",
+                "variadicNoArgumentsButton",
+                e -> getElement().executeJs(JoinJs.class).join("a")
+                        .then(String.class, this::addVariadicResult));
+
+        // A target carrying a function of its own and one on a property, so
+        // that a call can be followed by what the browser ran
+        Div callTarget = new Div();
+        callTarget.setId("callTarget");
+        callTarget.getElement().executeJs("""
+                this.join = function () {
+                    return [...arguments].join('-');
+                };
+                this.$connector = {
+                    label: 'connector',
+                    describe(suffix) {
+                        return this.label + suffix;
+                    }
+                };
+                """);
+
+        NativeButton callFunctionButton = createButton(
+                "Call a function with arguments", "callFunctionButton",
+                e -> callTarget.getElement()
+                        .callJsFunction("join", "a", 1, true)
+                        .then(String.class, this::addCallResult));
+
+        NativeButton callOnPropertyButton = createButton(
+                "Call a function through a property", "callOnPropertyButton",
+                e -> callTarget.getElement()
+                        .callJsFunction("$connector.describe", "!")
+                        .then(String.class, this::addCallResult));
+
+        NativeButton callMissingButton = createButton(
+                "Call a function that is not there", "callMissingButton",
+                e -> callTarget.getElement().callJsFunction("missing").then(
+                        value -> addCallResult("resolved: " + value),
+                        error -> addCallResult("failed")));
+
+        add(callTarget);
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
                 elementAwaitButton, pageAwaitButton, beanButton,
                 returnBeanButton, listButton, returnListButton, mapButton,
                 returnMapButton, componentArrayButton, beanWithComponentButton,
                 clientCallableBeanButton, clientCallableListButton,
                 clientCallableNestedButton, returnBeanButton2,
-                returnListButton2, returnNestedButton2,
-                returnIntegerListButton);
+                returnListButton2, returnNestedButton2, returnIntegerListButton,
+                variadicButton, variadicNoArgumentsButton, callFunctionButton,
+                callOnPropertyButton, callMissingButton);
+    }
+
+    private void addCallResult(String value) {
+        Div result = new Div();
+        result.setId("callResult");
+        result.setText("Function call: " + value);
+        add(result);
+    }
+
+    private void addVariadicResult(String joined) {
+        Div result = new Div();
+        result.setId("variadicResult");
+        result.setText("Variadic call: " + joined);
+        add(result);
+    }
+
+    /**
+     * Joins what it is called with, so that what the browser received of a call
+     * is what the server reads back.
+     */
+    @JsDefinition
+    public interface JoinJs extends Serializable {
+
+        @JsExpression("return [$0, ...$1].join('-')")
+        PendingJavaScriptResult join(String first, Object... rest);
     }
 
     private void testBeanSerialization() {

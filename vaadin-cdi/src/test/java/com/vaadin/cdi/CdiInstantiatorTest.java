@@ -31,10 +31,8 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.cdi.annotation.VaadinServiceEnabled;
 import com.vaadin.cdi.context.ServiceUnderTestContext;
@@ -47,6 +45,15 @@ import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.MenuAccessControl;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class CdiInstantiatorTest extends AbstractWeldTest {
 
@@ -186,71 +193,68 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
     @Test
     public void getI18NProvider_beanEnabled_instanceReturned() {
         I18NProvider i18NProvider = instantiator.getI18NProvider();
-        Assertions.assertNotNull(i18NProvider);
-        Assertions.assertTrue((i18NProvider instanceof I18NTestProvider));
+        assertNotNull(i18NProvider);
+        assertTrue((i18NProvider instanceof I18NTestProvider));
     }
 
     @Test
     public void getMenuAccessControl_beanEnabled_instanceReturned() {
         MenuAccessControl menuAccessControl = instantiator
                 .getMenuAccessControl();
-        Assertions.assertNotNull(menuAccessControl);
-        Assertions.assertInstanceOf(TestMenuAccessControl.class,
-                menuAccessControl);
+        assertNotNull(menuAccessControl);
+        assertInstanceOf(TestMenuAccessControl.class, menuAccessControl);
     }
 
     @Test
     public void getPageTitleGenerator_beanEnabled_instanceReturned() {
         PageTitleGenerator pageTitleGenerator = instantiator
                 .getPageTitleGenerator();
-        Assertions.assertNotNull(pageTitleGenerator);
-        Assertions.assertInstanceOf(TestPageTitleGenerator.class,
-                pageTitleGenerator);
+        assertNotNull(pageTitleGenerator);
+        assertInstanceOf(TestPageTitleGenerator.class, pageTitleGenerator);
     }
 
     @Test
     public void getServiceInitListeners_javaSPIListenerExists_containsJavaSPIListener() {
-        Assertions.assertTrue(instantiator.getServiceInitListeners().anyMatch(
+        assertTrue(instantiator.getServiceInitListeners().anyMatch(
                 listener -> listener instanceof JavaSPIVaadinServiceInitListener));
     }
 
     @Test
     public void getServiceInitListeners_eventFired_cdiObserverCalled() {
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
         ServiceInitEvent event = new ServiceInitEvent(service);
         instantiator.getServiceInitListeners()
                 .filter(listener -> listener.getClass().getPackage()
                         .equals(CdiInstantiator.class.getPackage()))
                 .forEach(listener -> listener.serviceInit(event));
-        Assertions.assertSame(event, serviceInitObserver.getEvent());
+        assertSame(event, serviceInitObserver.getEvent());
     }
 
     @Test
     public void getOrCreate_beanSingleton_sameInstanceReturned() {
-        Assertions.assertSame(singleton,
-                instantiator.getOrCreate(SomeCdiBean.class));
+        assertSame(singleton, instantiator.getOrCreate(SomeCdiBean.class));
     }
 
     @Test
     public void getOrCreate_beanUnsatisfied_instantiatedAndInjectionOccurred() {
         NotACdiBean instance = instantiator.getOrCreate(NotACdiBean.class);
-        Assertions.assertNotNull(instance);
-        Assertions.assertNotNull(instance.getBm());
+        assertNotNull(instance);
+        assertNotNull(instance.getBm());
     }
 
     @Test
     public void getOrCreate_beanAmbiguous_instantiatedAndInjectionOccurred() {
         ParentBean instance = instantiator.getOrCreate(ParentBean.class);
-        Assertions.assertNotNull(instance);
-        Assertions.assertNotNull(instance.getBm());
+        assertNotNull(instance);
+        assertNotNull(instance.getBm());
     }
 
     @Test
     public void createComponent_componentIsCreated() {
         SingletonComponent component = instantiator
                 .createComponent(SingletonComponent.class);
-        Assertions.assertNotNull(component);
-        Assertions.assertNotNull(component.beanManager);
+        assertNotNull(component);
+        assertNotNull(component.beanManager);
     }
 
     @Test
@@ -258,11 +262,11 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
             throws ServletException {
         SingletonComponent component = instantiator
                 .createComponent(SingletonComponent.class);
-        Assertions.assertNotNull(component);
+        assertNotNull(component);
 
         SingletonComponent anotherComponent = instantiator
                 .createComponent(SingletonComponent.class);
-        Assertions.assertNotEquals(component, anotherComponent);
+        assertNotEquals(component, anotherComponent);
     }
 
     @Test
@@ -272,19 +276,19 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
         List<UsageStatistics.UsageEntry> entries = UsageStatistics.getEntries()
                 .filter(entry -> entry.getName().contains("Cdi"))
                 .collect(Collectors.toList());
-        Assertions.assertEquals(1, entries.size());
+        assertEquals(1, entries.size());
 
         UsageStatistics.UsageEntry entry = entries.get(0);
-        Assertions.assertEquals("flow/CdiInstantiator", entry.getName());
+        assertEquals("flow/CdiInstantiator", entry.getName());
     }
 
     @Test
     public void getApplicationClass_regularClass_getsSameClass()
             throws ServletException {
         SomeCdiBean instance = instantiator.getOrCreate(SomeCdiBean.class);
-        Assertions.assertSame(SomeCdiBean.class,
+        assertSame(SomeCdiBean.class,
                 instantiator.getApplicationClass(instance));
-        Assertions.assertSame(SomeCdiBean.class,
+        assertSame(SomeCdiBean.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
@@ -292,9 +296,9 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
     public void getApplicationClass_scopedBean_getsApplicationClass()
             throws ServletException {
         ScopedCdiBean instance = instantiator.getOrCreate(ScopedCdiBean.class);
-        Assertions.assertSame(ScopedCdiBean.class,
+        assertSame(ScopedCdiBean.class,
                 instantiator.getApplicationClass(instance));
-        Assertions.assertSame(ScopedCdiBean.class,
+        assertSame(ScopedCdiBean.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 
@@ -304,10 +308,10 @@ public class CdiInstantiatorTest extends AbstractWeldTest {
         InterceptedCdiBean instance = instantiator
                 .getOrCreate(InterceptedCdiBean.class);
         instance.exec();
-        Assertions.assertNotSame(InterceptedCdiBean.class, instance.getClass());
-        Assertions.assertSame(InterceptedCdiBean.class,
+        assertNotSame(InterceptedCdiBean.class, instance.getClass());
+        assertSame(InterceptedCdiBean.class,
                 instantiator.getApplicationClass(instance));
-        Assertions.assertSame(InterceptedCdiBean.class,
+        assertSame(InterceptedCdiBean.class,
                 instantiator.getApplicationClass(instance.getClass()));
     }
 

@@ -30,8 +30,10 @@ import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.pro.licensechecker.MachineId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 @Isolated
 class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
@@ -251,6 +253,26 @@ class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
     }
 
     @Test
+    void aiAgentIsKeptOverStartWithoutAgent() {
+        assumeTrue(ProjectHelpers.getAiAgent(System.getenv()).isEmpty(),
+                "Requires a test run that is not started by an AI agent");
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+        assertFalse(new StatisticsContainer(storage.readProject())
+                .containsField(StatisticsConstants.FIELD_AI_AGENT));
+
+        // An earlier start in the same report interval was made by an agent
+        storage.update((global, project) -> project.setValue(
+                StatisticsConstants.FIELD_AI_AGENT,
+                StatisticsConstants.AI_AGENT_CODEX));
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        assertEquals(StatisticsConstants.AI_AGENT_CODEX, storage.readProject()
+                .get(StatisticsConstants.FIELD_AI_AGENT).asString());
+    }
+
+    @Test
     void mavenProjectProjectId() {
         File mavenProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1");
@@ -298,6 +320,37 @@ class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
         String source2 = ProjectHelpers.getProjectSource(gradleProjectFolder2);
         assertEquals("https://start.vaadin.com/test/3", source1);
         assertEquals("https://start.vaadin.com/test/4", source2);
+    }
+
+    @Test
+    void gradleKotlinProject() {
+        File gradleKotlinProjectFolder = TestUtils
+                .getTestFolder("stats-data/gradle-kotlin-project-folder");
+        assertEquals("gradle" + ProjectHelpers.createHash("KotlinProjectName"),
+                ProjectHelpers.generateProjectId(gradleKotlinProjectFolder));
+        assertEquals("https://start.vaadin.com/test/5",
+                ProjectHelpers.getProjectSource(gradleKotlinProjectFolder));
+    }
+
+    @Test
+    void buildTool() throws Exception {
+        File mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1");
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        assertEquals(StatisticsConstants.BUILD_TOOL_MAVEN, storage.readProject()
+                .get(StatisticsConstants.FIELD_BUILD_TOOL).asString());
+        assertEquals(StatisticsConstants.BUILD_TOOL_GRADLE,
+                ProjectHelpers.getBuildTool(TestUtils
+                        .getTestFolder("stats-data/gradle-project-folder1")));
+        assertEquals(StatisticsConstants.BUILD_TOOL_GRADLE,
+                ProjectHelpers.getBuildTool(TestUtils.getTestFolder(
+                        "stats-data/gradle-kotlin-project-folder")));
+        assertEquals(StatisticsConstants.BUILD_TOOL_GRADLE,
+                ProjectHelpers.getBuildTool(TestUtils.getTestFolder(
+                        "stats-data/gradle-build-script-only-folder")));
+        assertEquals(StatisticsConstants.MISSING_DATA, ProjectHelpers
+                .getBuildTool(TestUtils.getTestFolder("stats-data/empty")));
     }
 
     @Test

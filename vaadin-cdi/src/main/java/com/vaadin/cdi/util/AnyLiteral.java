@@ -18,6 +18,18 @@ package com.vaadin.cdi.util;
 import jakarta.enterprise.inject.Any;
 import jakarta.enterprise.util.AnnotationLiteral;
 
+/**
+ * Annotation literal for the {@link Any} qualifier.
+ *
+ * @since 15.0
+ */
 public class AnyLiteral extends AnnotationLiteral<Any> implements Any {
     private static final long serialVersionUID = -8623640277155878657L;
+
+    /**
+     * Creates a new {@link Any} annotation literal.
+     */
+    public AnyLiteral() {
+        // Nothing to initialize
+    }
 }

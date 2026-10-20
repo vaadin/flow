@@ -39,6 +39,8 @@ public class MainView extends Div {
     public static final String HIDEPLANT = "hideplant";
     public static final String OUTSIDE = "outsideButton";
     public static final String OUTSIDE_RESULT = "outsideResult";
+    public static final String FORCED_LIGHT = "forcedLight";
+    public static final String FORCED_DARK = "forcedDark";
 
     public MainView() {
         Image img = new Image("themes/vite-production/images/plant.png",
@@ -68,6 +70,22 @@ public class MainView extends Div {
         Paragraph outsideStatus = new Paragraph();
         outsideStatus.setId(OUTSIDE_RESULT);
         add(outsideStatus);
+
+        add(createForcedColorScheme("lightScheme", FORCED_LIGHT));
+        add(createForcedColorScheme("darkScheme", FORCED_DARK));
+    }
+
+    /**
+     * Creates a subtree with a color scheme of its own, containing a paragraph
+     * that takes its color from a light-dark() value on the document.
+     */
+    private static Div createForcedColorScheme(String schemeId,
+            String paragraphId) {
+        Paragraph paragraph = new Paragraph("Forced color scheme");
+        paragraph.setId(paragraphId);
+        Div scheme = new Div(paragraph);
+        scheme.setId(schemeId);
+        return scheme;
     }
 
 }

@@ -23,11 +23,19 @@ import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class DefaultErrorHandlerTest {
 
@@ -36,14 +44,13 @@ class DefaultErrorHandlerTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        logger = Mockito
-                .spy(LoggerFactory.getLogger(DefaultErrorHandler.class));
-        loggerFactory = Mockito.mockStatic(LoggerFactory.class);
+        logger = spy(LoggerFactory.getLogger(DefaultErrorHandler.class));
+        loggerFactory = mockStatic(LoggerFactory.class);
         loggerFactory
                 .when(() -> LoggerFactory
                         .getLogger(DefaultErrorHandler.class.getName()))
                 .thenReturn(logger);
-        Mockito.when(logger.isDebugEnabled()).thenReturn(false);
+        when(logger.isDebugEnabled()).thenReturn(false);
     }
 
     @AfterEach
@@ -53,75 +60,73 @@ class DefaultErrorHandlerTest {
 
     @Test
     void error_acceptedException_errorHandled() {
-        DefaultErrorHandler errorHandler = Mockito
-                .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
+        DefaultErrorHandler errorHandler = spy(
+                new DefaultErrorHandler(Set.of(IOException.class.getName(),
                         MalformedURLException.class.getName())));
 
         Throwable throwable = new RuntimeException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
+        verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new IllegalArgumentException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
+        verify(logger).error("Unexpected error: {}", null, throwable);
     }
 
     @Test
     void error_ignoredException_notHandled() {
-        DefaultErrorHandler errorHandler = Mockito
-                .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
-                        MalformedURLException.class.getName(),
-                        "com.vaadin.flow.server.DefaultErrorHandlerTest$InnerException")));
+        DefaultErrorHandler errorHandler = spy(new DefaultErrorHandler(Set.of(
+                IOException.class.getName(),
+                MalformedURLException.class.getName(),
+                "com.vaadin.flow.server.DefaultErrorHandlerTest$InnerException")));
 
         errorHandler.error(new ErrorEvent(new IOException()));
         errorHandler.error(new ErrorEvent(new MalformedURLException()));
         errorHandler.error(new ErrorEvent(new InnerException()));
 
-        Mockito.verify(logger, Mockito.never()).error(
-                ArgumentMatchers.anyString(),
-                ArgumentMatchers.any(Throwable.class));
+        verify(logger, never()).error(anyString(), any(Throwable.class));
     }
 
     @Test
     void error_subclassOfIgnoredException_errorHandled() {
-        DefaultErrorHandler errorHandler = Mockito.spy(
+        DefaultErrorHandler errorHandler = spy(
                 new DefaultErrorHandler(Set.of(IOException.class.getName())));
 
         Throwable throwable = new MalformedURLException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
+        verify(logger).error("Unexpected error: {}", null, throwable);
     }
 
     @Test
     void error_loggerAtDebugLevel_errorHandled() {
-        Mockito.reset(logger);
-        Mockito.doReturn(true).when(logger).isDebugEnabled();
+        reset(logger);
+        doReturn(true).when(logger).isDebugEnabled();
 
-        DefaultErrorHandler errorHandler = Mockito
-                .spy(new DefaultErrorHandler(Set.of(IOException.class.getName(),
-                        MalformedURLException.class.getName(),
-                        "com.vaadin.flow.server.DefaultErrorHandlerTest$InnerException")));
+        DefaultErrorHandler errorHandler = spy(new DefaultErrorHandler(Set.of(
+                IOException.class.getName(),
+                MalformedURLException.class.getName(),
+                "com.vaadin.flow.server.DefaultErrorHandlerTest$InnerException")));
 
         Throwable throwable = new RuntimeException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
+        verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new IOException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
+        verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new MalformedURLException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
+        verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new InnerException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
+        verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new UncheckedIOException(new IOException());
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("Unexpected error: {}",
-                "java.io.IOException", throwable);
+        verify(logger).error("Unexpected error: {}", "java.io.IOException",
+                throwable);
     }
 
     public static class InnerException extends Exception {

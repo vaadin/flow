@@ -58,6 +58,8 @@ import com.vaadin.flow.router.RouterLayout;
  * annotations reference the same underlying scope, so it is possible to get
  * both a proxy and a direct reference to the same object by using different
  * annotations.
+ * 
+ * @since 10.0
  */
 @Scope
 @Inherited
