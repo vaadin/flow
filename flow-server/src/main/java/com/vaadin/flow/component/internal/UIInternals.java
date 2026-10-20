@@ -1499,9 +1499,9 @@ public class UIInternals implements Serializable {
         // type=MODULE values and values with a runtime prefix are deliberately
         // kept out of the bundle and are loaded at runtime instead, so their
         // absence is not a problem
-        jsDeps.addAll(dependencies.getJavaScripts().stream()
-                .filter(js -> !isRuntimeJavaScript(js)).map(JavaScript::value)
-                .collect(Collectors.toList()));
+        jsDeps.addAll(dependencies.getJavaScripts().stream().filter(
+                js -> !FrontendDependencyUrlResolver.isRuntimeJavaScript(js))
+                .map(JavaScript::value).collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
                 .collect(Collectors.toList()));
@@ -1541,7 +1541,8 @@ public class UIInternals implements Serializable {
         // same rule has to be applied here (for both @JavaScript and
         // @JsModule), otherwise a developmentOnly script would be loaded in
         // production too.
-        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+        dependency.getJavaScripts().stream()
+                .filter(FrontendDependencyUrlResolver::isRuntimeJavaScript)
                 .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> {
                     // Checked before resolving the value so that an
@@ -1568,15 +1569,6 @@ public class UIInternals implements Serializable {
                 .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
                         JavaScript.Type.MODULE));
-    }
-
-    private boolean isRuntimeJavaScript(JavaScript js) {
-        // Values with any other scheme cannot be bundled either, so they are
-        // loaded at runtime as before
-        return js.type() == JavaScript.Type.MODULE
-                || FrontendDependencyUrlResolver
-                        .isRuntimeDependencyUrl(js.value())
-                || UrlUtil.isExternal(js.value());
     }
 
     /**
