@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarEntry;
@@ -44,6 +45,8 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -258,6 +261,47 @@ class VaadinServletServiceTest {
         verify(handler).handleRequest(notNull(), eq(request), eq(response));
         verify(sessionlessHandler, never())
                 .handleRequest(any(VaadinSession.class), any(), any());
+        assertSame(handler, ended.get(1).getHandler().orElseThrow());
+
+        // A declined request that finds no session names no handler
+        when(httpRequest
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(ApplicationConstants.REQUEST_TYPE_HEARTBEAT);
+        when(httpRequest.getSession(anyBoolean())).thenReturn(null);
+
+        service.handleRequest(request, response);
+
+        assertFalse(ended.get(2).getHandler().isPresent());
+        assertFalse(ended.get(2).getSession().isPresent());
+    }
+
+    @Test
+    void handleRequest_webComponentScript_servedWithoutSession()
+            throws Exception {
+        WebComponentConfigurationRegistry registry = mock(
+                WebComponentConfigurationRegistry.class);
+        when(registry.hasConfigurations()).thenReturn(true);
+        when(registry.getConfiguration("my-component"))
+                .thenReturn(Optional.empty());
+        when(mocks.getServletContext().getAttribute(
+                WebComponentConfigurationRegistry.class.getName()))
+                .thenReturn(registry);
+        HttpServletRequest httpRequest = createRequest(
+                "http://dummy.host:8080/", "/contextpath", "/servlet",
+                "/web-component/my-component.js");
+        VaadinResponse response = mock(VaadinResponse.class);
+        // Handlers added through ServiceInitEvent come first
+        RequestHandler customHandler = mock(RequestHandler.class);
+        service.getRequestHandlers().add(0, customHandler);
+
+        service.handleRequest(servlet.createVaadinRequest(httpRequest),
+                response);
+
+        verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(),
+                "No web component for my-component");
+        verify(customHandler, never()).handleRequest(any(), any(), any());
+        verify(httpRequest, never()).getSession();
+        verify(httpRequest, never()).getSession(anyBoolean());
     }
 
     private String testLocation(String base, String contextPath,

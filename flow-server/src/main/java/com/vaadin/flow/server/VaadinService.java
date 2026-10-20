@@ -2086,7 +2086,9 @@ public abstract class VaadinService implements Serializable {
     /**
      * Returns the request handlers that are registered with this service. The
      * iteration order of the returned collection is the same as the order in
-     * which the request handlers will be invoked when a request is handled.
+     * which the request handlers will be invoked when a request is handled,
+     * except that all {@link SessionlessRequestHandler sessionless handlers}
+     * are invoked, in that order, before the handlers that get a session.
      *
      * @return a collection of request handlers in the order they are invoked
      * @see #createRequestHandlers()

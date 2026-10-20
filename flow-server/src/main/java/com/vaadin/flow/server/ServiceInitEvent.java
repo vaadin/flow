@@ -56,8 +56,11 @@ public class ServiceInitEvent extends EventObject {
 
     /**
      * Adds a new request handler that will be used by this service. The added
-     * handler will be run before any of the framework's own request handlers,
-     * but the ordering relative to other custom handlers is not guaranteed.
+     * handler will be run before any of the framework's own request handlers of
+     * the same kind, but the ordering relative to other custom handlers is not
+     * guaranteed. {@link SessionlessRequestHandler Sessionless handlers},
+     * including the framework's own, run before all handlers that get a
+     * session.
      *
      * @param requestHandler
      *            the request handler to add, not <code>null</code>
