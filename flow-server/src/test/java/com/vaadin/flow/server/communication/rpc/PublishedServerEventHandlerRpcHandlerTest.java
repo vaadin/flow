@@ -21,6 +21,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -125,6 +127,26 @@ class PublishedServerEventHandlerRpcHandlerTest {
          * No {@link ClientCallable} annotation.
          */
         public void operation() {
+        }
+    }
+
+    @Tag("div")
+    public static class SelfRemovingComponent extends Component {
+        @ClientCallable
+        private void removeInHook() {
+            getUI().get().beforeClientResponse(this,
+                    ctx -> getElement().removeFromParent());
+        }
+
+        @ClientCallable
+        private void removeInUiHook() {
+            UI ui = getUI().get();
+            ui.beforeClientResponse(ui, ctx -> getElement().removeFromParent());
+        }
+
+        @ClientCallable
+        private void removeDirectly() {
+            getElement().removeFromParent();
         }
     }
 
@@ -362,6 +384,27 @@ class PublishedServerEventHandlerRpcHandlerTest {
                 "Promise value should be sqrt(36) = 6");
         assertEquals(component.getElement(), parameters.get(2),
                 "Target should be the component's element");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "removeInHook", "removeInUiHook",
+            "removeDirectly" })
+    void promise_ownerRemovedBeforeResponse_noCallbackSent(String method) {
+        SelfRemovingComponent component = new SelfRemovingComponent();
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+        ui.add(component);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), method, JacksonUtils.createArrayNode(),
+                4);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertFalse(component.isAttached());
+        assertEquals(List.of(),
+                ui.getInternals().dumpPendingJavaScriptInvocations());
     }
 
     @Test

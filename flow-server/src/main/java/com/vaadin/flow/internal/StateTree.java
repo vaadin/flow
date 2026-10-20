@@ -401,6 +401,15 @@ public class StateTree implements NodeOwner {
                     discard(entry);
                     return;
                 }
+                StateNode node = entry.getStateNode();
+                if (!node.isAttached()) {
+                    // Detached by an execution that ran earlier in this round,
+                    // so it waits on the node like an entry that had not been
+                    // flushed yet, to run if the node is attached again
+                    node.addBeforeClientResponseEntry(entry);
+                    discard(entry);
+                    return;
+                }
                 try {
                     ExecutionContext context = new ExecutionContext(getUI(),
                             entry.getStateNode().isClientSideInitialized());
