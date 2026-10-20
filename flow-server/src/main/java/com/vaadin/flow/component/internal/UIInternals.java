@@ -1560,6 +1560,9 @@ public class UIInternals implements Serializable {
                     }
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });
+        // Runtime prefixes do not apply to @JsModule: '/' values are still
+        // bundled. This must match the external check that keeps @JsModule
+        // values out of the bundle at build time (AbstractUpdateImports).
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
                 .filter(js -> !productionMode || !js.developmentOnly())
