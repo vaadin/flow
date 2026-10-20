@@ -445,9 +445,11 @@ class TaskUpdatePackagesNpmTest {
     @ParameterizedTest
     // Another maintenance release of the same minor is supported, a caret
     // range resolves to the expected minor, and what the other values
-    // resolve to is not known
-    @ValueSource(strings = { "25.3.9", "^25.1.0", ">=24.0.0", "latest",
-            "file:../dialog", "$" + VAADIN_DIALOG })
+    // resolve to is not known: a missing minor resolves to the latest one,
+    // and compound ranges can include the expected version
+    @ValueSource(strings = { "25.3.9", "^25.1.0", ">=24.0.0", "25", "~25",
+            "25.1.0 - 25.4.0", "~25.1.0 || ~25.3.0", "latest", "file:../dialog",
+            "$" + VAADIN_DIALOG })
     void warnOnVersionRangeMismatch_dependencyNotKnownOutsideExpectedMinor_noWarning(
             String declaredVersion) throws IOException {
         createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
@@ -457,7 +459,27 @@ class TaskUpdatePackagesNpmTest {
         createTaskWithLogger(logger).warnOnVersionRangeMismatch(
                 dependencyPackageJson(declaredVersion, "25.1.4"));
 
-        Mockito.verifyNoInteractions(logger);
+        verifyNoRangeWarning(logger);
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_webComponentsExcluded_noWarning()
+            throws IOException {
+        // With the web components excluded, Vaadin does not use the lit
+        // dialog, so the version the project declares is its own choice.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        ObjectNode packageJson = dependencyPackageJson("24.3.0", "24.3.0");
+        ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).set(DEPENDENCIES,
+                JacksonUtils.createObjectNode());
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTask(new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
+                .withBundleBuild(true).withReact(false)
+                .withNpmExcludeWebComponents(true), logger)
+                .warnOnVersionRangeMismatch(packageJson);
+
+        verifyNoRangeWarning(logger);
     }
 
     @Test
@@ -479,7 +501,8 @@ class TaskUpdatePackagesNpmTest {
                         + ": 3.1.0 (in dependencies), expected "
                         + PINNED_OVERLAY_VERSION + "\n  - " + VAADIN_DIALOG
                         + ": 25.1.0 (in dependencies), expected 25.3.0"));
-        Mockito.verifyNoMoreInteractions(logger);
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.any(Object.class));
     }
 
     @Test
@@ -496,7 +519,7 @@ class TaskUpdatePackagesNpmTest {
         createTaskWithLogger(logger).warnOnVersionRangeMismatch(
                 dependencyPackageJson("25.1.4", "25.1.4"));
 
-        Mockito.verifyNoInteractions(logger);
+        verifyNoRangeWarning(logger);
     }
 
     @Test
@@ -563,7 +586,7 @@ class TaskUpdatePackagesNpmTest {
         Logger logger = Mockito.mock(Logger.class);
         createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
 
-        Mockito.verifyNoInteractions(logger);
+        verifyNoRangeWarning(logger);
     }
 
     @Test
@@ -582,7 +605,7 @@ class TaskUpdatePackagesNpmTest {
         Logger logger = Mockito.mock(Logger.class);
         createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
 
-        Mockito.verifyNoInteractions(logger);
+        verifyNoRangeWarning(logger);
     }
 
     /**
@@ -618,6 +641,15 @@ class TaskUpdatePackagesNpmTest {
                 "25.1.4");
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toPrettyString(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Verifies that no warning was logged, while the reading of package.json
+     * may log other messages.
+     */
+    private void verifyNoRangeWarning(Logger logger) {
+        Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
+                Mockito.any(Object.class));
     }
 
     private TaskUpdatePackages createTaskWithLogger(Logger logger) {
@@ -1591,6 +1623,14 @@ class TaskUpdatePackagesNpmTest {
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
                 .withBundleBuild(true).withReact(false)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        return createTask(options, taskLogger);
+    }
+
+    /**
+     * Creates the task with the given options, logging through the given logger
+     * when one is given.
+     */
+    private TaskUpdatePackages createTask(Options options, Logger taskLogger) {
         return new TaskUpdatePackages(options) {
             @Override
             Logger log() {

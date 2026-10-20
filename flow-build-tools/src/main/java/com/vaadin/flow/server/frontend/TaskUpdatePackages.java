@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +59,14 @@ public class TaskUpdatePackages extends NodeUpdater {
     private final boolean enablePnpm;
     private final File jarResourcesFolder;
     private ObjectNode allPinnedNpmDependencies;
+    private ObjectNode modePinnedNpmDependencies;
+
+    /**
+     * A version npm resolves within a known minor or major: an exact version, a
+     * tilde range or a caret range, each with a full major.minor.patch.
+     */
+    private static final Pattern RANGE_CHECKED_VERSION = Pattern
+            .compile("[~^]?\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?");
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -529,6 +538,21 @@ public class TaskUpdatePackages extends NodeUpdater {
         return allPinnedNpmDependencies;
     }
 
+    /**
+     * Gets the npm packages Vaadin pins in the current mode, as read once for
+     * the whole build, so that the versions files are not merged again.
+     *
+     * @return the version to pin each npm package to, by package name
+     * @throws IOException
+     *             if the versions files cannot be read
+     */
+    private ObjectNode getModePinnedNpmDependencies() throws IOException {
+        if (modePinnedNpmDependencies == null) {
+            modePinnedNpmDependencies = getPinnedNpmDependencies();
+        }
+        return modePinnedNpmDependencies;
+    }
+
     private boolean isInternalPseudoDependency(String dependencyVersion) {
         return dependencyVersion != null && dependencyVersion
                 .startsWith("./" + options.getBuildDirectoryName());
@@ -659,7 +683,7 @@ public class TaskUpdatePackages extends NodeUpdater {
          * #10572 pin all internal versions
          */
         List<String> pinnedNpmDependencyNames = new ArrayList<>();
-        final ObjectNode pinnedNpmDependencies = getPinnedNpmDependencies();
+        final ObjectNode pinnedNpmDependencies = getModePinnedNpmDependencies();
         for (String key : JacksonUtils.getKeys(pinnedNpmDependencies)) {
             // need to double check that not overriding a scanned
             // dependency since add-ons should be able to downgrade
@@ -788,10 +812,11 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Warns about packages the versions files pin, that the project has
-     * declared in the {@code dependencies} or {@code devDependencies} of
-     * {@code package.json} with a version from a different minor or major range
-     * than the one the current Vaadin version pins them to.
+     * Warns about packages the versions files pin in the current mode, that the
+     * project has declared in the {@code dependencies} or
+     * {@code devDependencies} of {@code package.json} with a version from a
+     * different minor or major range than the one the current Vaadin version
+     * pins them to.
      * <p>
      * This is checked once the dependencies have been updated, so that a
      * version the build overwrites with the one it ships is not reported. Only
@@ -814,7 +839,10 @@ public class TaskUpdatePackages extends NodeUpdater {
      *             if the versions files cannot be read
      */
     void warnOnVersionRangeMismatch(ObjectNode packageJson) throws IOException {
-        final ObjectNode expectedVersions = getAllPinnedNpmDependencies();
+        // Only the packages Vaadin uses in the current mode, as for example
+        // with npmExcludeWebComponents the web components are the project's
+        // own to manage
+        final ObjectNode expectedVersions = getModePinnedNpmDependencies();
         final JsonNode vaadin = packageJson.get(VAADIN_DEP_KEY);
 
         // Collect mismatches into a single warning to avoid flooding the log
@@ -886,16 +914,16 @@ public class TaskUpdatePackages extends NodeUpdater {
      * minor or major version than the expected one. An exact version and a
      * tilde range stay within their minor, while a caret range accepts any
      * later minor of its major (from 1.0.0 on), so for it only the major is
-     * compared. Other ranges, tags, URLs and file links are not reported, as
-     * what they resolve to is not known here.
+     * compared. Versions without a minor or patch, compound and other ranges,
+     * tags, URLs and file links are not reported, as what they resolve to is
+     * not known here.
      */
     private boolean resolvesOutsideRange(String declared,
             FrontendVersion expected) {
-        final boolean caret = declared.startsWith("^");
-        if (!caret && !declared.startsWith("~") && (declared.isEmpty()
-                || !Character.isDigit(declared.charAt(0)))) {
+        if (!RANGE_CHECKED_VERSION.matcher(declared).matches()) {
             return false;
         }
+        final boolean caret = declared.startsWith("^");
         final FrontendVersion actual = parseVersion(declared);
         if (actual == null) {
             return false;
