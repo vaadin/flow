@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.router;
 
+import java.lang.reflect.Field;
+
 import org.junit.jupiter.api.Test;
+
+import com.vaadin.flow.internal.ReflectionCache;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -64,6 +68,28 @@ class ParameterDeserializerTest {
                 OptionalParameter.class));
         assertTrue(ParameterDeserializer.isAnnotatedParameter(
                 GenericAnnotated.class, OptionalParameter.class));
+    }
+
+    @Test
+    void clearBeforeHotswap_parameterAnnotationsCleared() throws Exception {
+        Field field = ParameterDeserializer.class
+                .getDeclaredField("parameterAnnotationsCache");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        ReflectionCache<Object, ?> cache = (ReflectionCache<Object, ?>) field
+                .get(null);
+
+        ParameterDeserializer.isAnnotatedParameter(SimpleAnnotated.class,
+                OptionalParameter.class);
+        ParameterDeserializer.isAnnotatedParameter(Simple.class,
+                OptionalParameter.class);
+        assertTrue(cache.contains(SimpleAnnotated.class));
+
+        ReflectionCache.clearBeforeHotswap(SimpleAnnotated.class);
+
+        assertFalse(cache.contains(SimpleAnnotated.class),
+                "Route templates are computed from these annotations while hotswappers run, so they must be cleared before");
+        assertTrue(cache.contains(Simple.class));
     }
 
     @Test

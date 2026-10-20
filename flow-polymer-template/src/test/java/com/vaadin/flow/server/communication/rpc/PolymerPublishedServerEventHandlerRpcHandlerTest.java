@@ -14,7 +14,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -42,6 +41,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class PolymerPublishedServerEventHandlerRpcHandlerTest {
@@ -181,21 +182,21 @@ class PolymerPublishedServerEventHandlerRpcHandlerTest {
     @BeforeEach
     void setUp() throws ServiceException {
         assertNull(System.getSecurityManager());
-        service = Mockito.mock(VaadinService.class);
+        service = mock(VaadinService.class);
 
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(configuration.isProductionMode()).thenReturn(false);
         Properties properties = new Properties();
-        Mockito.when(configuration.getInitParameters()).thenReturn(properties);
+        when(configuration.getInitParameters()).thenReturn(properties);
 
         service = new MockVaadinServletService(configuration);
 
         VaadinService.setCurrent(service);
 
-        session = Mockito.mock(VaadinSession.class);
-        Mockito.when(session.hasLock()).thenReturn(true);
-        Mockito.when(session.getService()).thenReturn(service);
+        session = mock(VaadinSession.class);
+        when(session.hasLock()).thenReturn(true);
+        when(session.getService()).thenReturn(service);
     }
 
     @AfterEach

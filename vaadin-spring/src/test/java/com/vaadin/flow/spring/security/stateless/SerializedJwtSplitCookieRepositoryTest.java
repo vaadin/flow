@@ -24,14 +24,19 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class SerializedJwtSplitCookieRepositoryTest {
     private static final int DEFAULT_MAX_AGE = 1800;
@@ -59,15 +64,15 @@ class SerializedJwtSplitCookieRepositoryTest {
     @BeforeEach
     void setup() {
         serializedJwtSplitCookieRepository = new SerializedJwtSplitCookieRepository();
-        request = Mockito.mock(HttpServletRequest.class);
-        Mockito.doReturn(CONTEXT_PATH).when(request).getContextPath();
-        Mockito.doReturn(true).when(request).isSecure();
-        response = Mockito.mock(HttpServletResponse.class);
+        request = mock(HttpServletRequest.class);
+        doReturn(CONTEXT_PATH).when(request).getContextPath();
+        doReturn(true).when(request).isSecure();
+        response = mock(HttpServletResponse.class);
     }
 
     @Test
     void containsSerializedJwt_true_when_bothCookiesPreset() {
-        Mockito.doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE,
+        doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE,
                 JWT_SIGNATURE_COOKIE }).when(request).getCookies();
         assertTrue(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
@@ -75,15 +80,15 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void containsSerializedJwt_false_when_signatureCookieMissing() {
-        Mockito.doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE })
-                .when(request).getCookies();
+        doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE }).when(request)
+                .getCookies();
         assertFalse(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
     }
 
     @Test
     void containsSerializedJwt_false_when_headerAndPayloadCookieMissing() {
-        Mockito.doReturn(new Cookie[] { JWT_SIGNATURE_COOKIE }).when(request)
+        doReturn(new Cookie[] { JWT_SIGNATURE_COOKIE }).when(request)
                 .getCookies();
         assertFalse(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
@@ -91,21 +96,21 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void containsSerializedJwt_false_when_bothCookiesMissing() {
-        Mockito.doReturn(new Cookie[] {}).when(request).getCookies();
+        doReturn(new Cookie[] {}).when(request).getCookies();
         assertFalse(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
     }
 
     @Test
     void containsSerializedJwt_false_when_cookiesNull() {
-        Mockito.doReturn(null).when(request).getCookies();
+        doReturn(null).when(request).getCookies();
         assertFalse(serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request));
     }
 
     @Test
     void loadSerializedJwt_returnsString_when_cookiesPresent() {
-        Mockito.doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE,
+        doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE,
                 JWT_SIGNATURE_COOKIE }).when(request).getCookies();
 
         String serializedJwt = serializedJwtSplitCookieRepository
@@ -115,7 +120,7 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void loadSerializedJwt_returnsNull_when_headerAndPayloadCookieMissing() {
-        Mockito.doReturn(new Cookie[] { JWT_SIGNATURE_COOKIE }).when(request)
+        doReturn(new Cookie[] { JWT_SIGNATURE_COOKIE }).when(request)
                 .getCookies();
 
         String serializedJwt;
@@ -126,8 +131,8 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void loadSerializedJwt_returnsNull_when_signatureCookieMissing() {
-        Mockito.doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE })
-                .when(request).getCookies();
+        doReturn(new Cookie[] { JWT_HEADER_AND_PAYLOAD_COOKIE }).when(request)
+                .getCookies();
 
         String serializedJwt;
         serializedJwt = serializedJwtSplitCookieRepository
@@ -137,7 +142,7 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void loadSerializedJwt_returnsNull_when_bothCookiesMissing() {
-        Mockito.doReturn(new Cookie[] {}).when(request).getCookies();
+        doReturn(new Cookie[] {}).when(request).getCookies();
 
         String serializedJwt;
         serializedJwt = serializedJwtSplitCookieRepository
@@ -147,7 +152,7 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void loadSerializedJwt_returnsNull_when_cookiesNull() {
-        Mockito.doReturn(null).when(request).getCookies();
+        doReturn(null).when(request).getCookies();
 
         String serializedJwt;
         serializedJwt = serializedJwtSplitCookieRepository
@@ -167,13 +172,12 @@ class SerializedJwtSplitCookieRepositoryTest {
     void saveSerializedJwt_unauthenticatedRequest_doNotSet_cookiePair() {
         serializedJwtSplitCookieRepository.saveSerializedJwt(null, request,
                 response);
-        Mockito.verify(response, Mockito.never())
-                .addCookie(ArgumentMatchers.any());
+        verify(response, never()).addCookie(any());
     }
 
     @Test
     void saveSerializedJwt_authenticatedRequest_resets_cookiePair() {
-        Mockito.when(request.getCookies()).thenReturn(new Cookie[] {
+        when(request.getCookies()).thenReturn(new Cookie[] {
                 JWT_SIGNATURE_COOKIE, JWT_HEADER_AND_PAYLOAD_COOKIE });
         serializedJwtSplitCookieRepository.saveSerializedJwt(null, request,
                 response);
@@ -191,7 +195,7 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void saveSerializedJwt_resetsWithoutMaxAge_after_setExpireIn() {
-        Mockito.when(request.getCookies()).thenReturn(new Cookie[] {
+        when(request.getCookies()).thenReturn(new Cookie[] {
                 JWT_SIGNATURE_COOKIE, JWT_HEADER_AND_PAYLOAD_COOKIE });
         serializedJwtSplitCookieRepository.setExpiresIn(CUSTOM_MAX_AGE);
         serializedJwtSplitCookieRepository.saveSerializedJwt(null, request,
@@ -201,7 +205,7 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void saveSerializedJwt_sets_withNonSecure_request() {
-        Mockito.doReturn(false).when(request).isSecure();
+        doReturn(false).when(request).isSecure();
         serializedJwtSplitCookieRepository.saveSerializedJwt(JWT, request,
                 response);
         checkResponseCookiePair(JWT_HEADER_AND_PAYLOAD, JWT_SIGNATURE, false,
@@ -210,7 +214,7 @@ class SerializedJwtSplitCookieRepositoryTest {
 
     @Test
     void saveSerializedJwt_sets_withEmptyContextPath() {
-        Mockito.doReturn("").when(request).getContextPath();
+        doReturn("").when(request).getContextPath();
         serializedJwtSplitCookieRepository.saveSerializedJwt(JWT, request,
                 response);
         checkResponseCookiePair(JWT_HEADER_AND_PAYLOAD, JWT_SIGNATURE, true,
@@ -222,8 +226,7 @@ class SerializedJwtSplitCookieRepositoryTest {
             String expectedPath) {
         ArgumentCaptor<Cookie> cookieArgumentCaptor = ArgumentCaptor
                 .forClass(Cookie.class);
-        Mockito.verify(response, Mockito.times(2))
-                .addCookie(cookieArgumentCaptor.capture());
+        verify(response, times(2)).addCookie(cookieArgumentCaptor.capture());
         List<Cookie> cookieList = cookieArgumentCaptor.getAllValues();
 
         Cookie headerAndPayloadCookie = cookieList.get(0);

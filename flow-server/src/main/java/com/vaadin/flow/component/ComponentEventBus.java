@@ -308,17 +308,8 @@ public class ComponentEventBus implements Serializable {
 
         registration.setDisabledUpdateMode(mode);
 
-        LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
-                .getEventDataExpressions(eventType);
-
-        eventDataExpressions.forEach((expression, type) -> {
-            if (Component.class.isAssignableFrom(type)
-                    || type == Element.class) {
-                registration.addEventDataElement(expression);
-            } else {
-                registration.addEventData(expression);
-            }
-        });
+        registration.addEventData(
+                ComponentEventBusUtil.getListenerEventData(eventType));
 
         if (!"".equals(filter)) {
             registration.setFilter(filter);

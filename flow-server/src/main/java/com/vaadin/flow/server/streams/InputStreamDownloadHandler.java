@@ -126,7 +126,7 @@ public class InputStreamDownloadHandler
 
         String downloadName = download.getFileName();
         String contentType = download.getContentType() == null
-                ? getContentType(downloadName, response)
+                ? resolveContentType(downloadName, response)
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
 
@@ -171,6 +171,7 @@ public class InputStreamDownloadHandler
      * {@link java.io.FileInputStream}, but reads them for other streams.
      *
      * @return this instance for method chaining
+     * @since 25.4
      */
     public InputStreamDownloadHandler enableRangeRequests() {
         rangeRequestsEnabled = true;
@@ -183,6 +184,8 @@ public class InputStreamDownloadHandler
      * Range requests are answered after {@link #enableRangeRequests()}, but
      * only for a {@link DownloadResponse} with a known content length. When the
      * callback reports the length as {@code -1}, the whole content is sent.
+     * 
+     * @since 25.4
      */
     @Override
     public boolean isRangeRequestsEnabled() {

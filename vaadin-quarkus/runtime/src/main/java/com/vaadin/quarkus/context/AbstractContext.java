@@ -229,6 +229,14 @@ public abstract class AbstractContext implements InjectableContext {
         return state;
     }
 
+    /**
+     * Destroys a contextual instance of the given bean.
+     *
+     * @param bean
+     *            the bean the instance belongs to
+     * @param contextualInstanceInfo
+     *            the instance and its creational context
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static void destroyBean(Contextual bean,
             ContextualInstanceInfo<?> contextualInstanceInfo) {

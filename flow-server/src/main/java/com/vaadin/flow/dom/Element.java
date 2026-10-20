@@ -60,6 +60,7 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
@@ -332,18 +333,26 @@ public class Element extends Node<Element> {
      * Note that attribute changes made on the server are sent to the client but
      * attribute changes made on the client side are not reflected back to the
      * server.
+     * <p>
+     * Passing a <code>null</code> value removes the attribute. A bare
+     * <code>null</code> literal is ambiguous between the
+     * <code>setAttribute</code> overloads and needs a cast, e.g.
+     * <code>setAttribute(name, (String) null)</code>; prefer
+     * {@link #removeAttribute(String)} in that case.
      *
      * @param attribute
      *            the name of the attribute
      * @param value
-     *            the value of the attribute, not null
+     *            the value of the attribute, or <code>null</code> to remove the
+     *            attribute
      * @return this element
+     * @see #removeAttribute(String)
      */
-    public Element setAttribute(String attribute, String value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
-        }
+    public Element setAttribute(String attribute, @Nullable String value) {
         String lowerCaseAttribute = validateAttribute(attribute);
+        if (value == null) {
+            return removeAttribute(lowerCaseAttribute);
+        }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -400,14 +409,16 @@ public class Element extends Node<Element> {
      * @param attribute
      *            the name of the attribute
      * @param resource
-     *            the resource value, not null
+     *            the resource value, or <code>null</code> to remove the
+     *            attribute
      * @return this element
+     * @see #removeAttribute(String)
      */
     public Element setAttribute(String attribute,
-            AbstractStreamResource resource) {
+            @Nullable AbstractStreamResource resource) {
         String lowerCaseAttribute = validateAttribute(attribute);
         if (resource == null) {
-            throw new IllegalArgumentException("Value cannot be null");
+            return removeAttribute(lowerCaseAttribute);
         }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
@@ -575,6 +586,12 @@ public class Element extends Node<Element> {
                 getStateProvider().removeAttribute(getNode(),
                         lowerCaseAttribute);
             }
+        } else if (getNode().hasFeature(ElementAttributeMap.class) && getNode()
+                .getFeatureIfInitialized(ElementAttributeMap.class)
+                .filter(map -> map.hasSignal(lowerCaseAttribute)).isPresent()) {
+            // A bound attribute whose signal value is null is not present,
+            // but removing it must still fail while the binding is active
+            getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
         }
         return this;
     }

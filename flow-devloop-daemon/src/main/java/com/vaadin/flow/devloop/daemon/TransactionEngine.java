@@ -267,12 +267,26 @@ final class TransactionEngine {
     }
 
     /**
-     * The compile leg for the current module set, seeded from disk the moment
-     * it is built, so an untouched project reports "no changes" on its first
-     * apply. A changed module set - someone edited a pom - starts a new
-     * baseline rather than carrying stamps that describe a different build.
+     * The compile leg for the current module set, seeded the moment it is
+     * built, so an untouched project reports "no changes" on its first apply. A
+     * changed module set - someone edited a pom - starts a new baseline rather
+     * than carrying stamps that describe a different build.
      */
     private Compile compileFor(Launch.Project project, Launch.Log log) {
+        return compileFor(project, log, app.launchSnapshot());
+    }
+
+    /**
+     * The compile leg for the current module set, as
+     * {@link #compileFor(Launch.Project, Launch.Log)}, with a new one seeded
+     * from the given launch snapshot rather than from the running process's.
+     *
+     * @param launched
+     *            the snapshot of the launch whose application is running, or
+     *            empty when none is
+     */
+    private Compile compileFor(Launch.Project project, Launch.Log log,
+            Optional<Compile.Snapshot> launched) {
         Compile current = compile;
         if (current != null && current.modules().equals(project.modules())) {
             return current;
@@ -286,13 +300,14 @@ final class TransactionEngine {
         // and that is the very move the compile leg has to see.
         Compile fresh = Compile.configured(project, current, launch);
         log.line("compiler: " + fresh.compiler().label());
-        // A baseline built while the app is already running must not swallow a
-        // frontend edit made since it started - that is exactly the "start,
+        // A baseline built while the app is already running must not swallow
+        // an edit made since it was launched - that is exactly the "start,
         // edit, first apply" sequence, and answering "no changes" to it is the
-        // bug the frontend leg exists to fix. With no app running there is
-        // nothing to be newer than: starting it re-seeds through onConnector.
-        long started = app.startedAtMillis().orElse(Long.MAX_VALUE);
-        fresh.seedFromDisk(started, started);
+        // bug the frontend leg exists to fix. So it is seeded from what the
+        // launch stamped, not from the disk as it is now. With no app running
+        // there is nothing to be behind: starting it re-seeds through
+        // onConnector.
+        launched.ifPresentOrElse(fresh::seedFromDisk, fresh::seedFromDisk);
         // Said once per baseline rather than per apply: "why did apply not see
         // my edit?" is answerable from daemon.log only if the folder the daemon
         // decided on is written down somewhere.
@@ -1301,7 +1316,17 @@ final class TransactionEngine {
         return true;
     }
 
-    void onConnector(Connector connector) {
+    /**
+     * Called when the in-app connector of a launch has registered.
+     *
+     * @param connector
+     *            the registered connector, or {@code null} to clear it
+     * @param launched
+     *            what the registering launch was spawned with - taken from its
+     *            own run, since the current one can already be gone or replaced
+     *            by the time this is handled
+     */
+    void onConnector(Connector connector, Compile.Snapshot launched) {
         this.connector = connector;
         if (connector == null) {
             return;
@@ -1322,25 +1347,31 @@ final class TransactionEngine {
             // Maven. A project that is mid-resolve leaves the baseline to the
             // first apply, exactly as before.
             //
-            // Seeded by compileFor as it is built, and deliberately not seeded
-            // again below: that seed carries the startup cutoff which keeps a
-            // frontend file edited while the application was starting visible
-            // to the first apply, and a second pass with no cutoff would
-            // declare it live and answer "no changes" over it.
+            // Seeded by compileFor as it is built, from the same launch
+            // snapshot the seed below would use.
             if (launch != null) {
-                launch.projectIfResolved().ifPresent(
-                        project -> compileFor(project, launch.log()));
+                launch.projectIfResolved()
+                        .ifPresent(project -> compileFor(project, launch.log(),
+                                Optional.of(launched)));
             }
             return;
         }
-        // An app that has just registered is running exactly what is on disk -
-        // for the frontend, which a restart re-reads whole, so the cutoff
-        // there is open. Not for the Java side: this is handled a moment after
-        // the command that waited for the registration returned, and a source
-        // written in that moment is not something the application started
-        // with.
-        current.seedFromDisk(app.startedAtMillis().orElse(Long.MAX_VALUE),
-                Long.MAX_VALUE);
+        // An app that has just registered is running what it was launched
+        // with, which is not what is on disk now: this is handled a moment
+        // after the command that waited for the registration returned, and a
+        // file written in that moment is not something the application
+        // started with. That holds for the frontend too: an edit made while
+        // the app was starting is reported, at the price of one restart more
+        // when a bundle had already folded it in.
+        //
+        // Once per launch, though. A connector that reconnects, or a server
+        // that redeploys inside the JVM, registers the same launch again, and
+        // seeding again from its spawn-time stamps would offer every edit
+        // applied since a second time - and restart the app for a bundled
+        // frontend file it has already folded in.
+        if (!current.isSeededFrom(launched)) {
+            current.seedFromDisk(launched);
+        }
     }
 
     /**
@@ -1360,6 +1391,10 @@ final class TransactionEngine {
 
     Connector connector() {
         return connector;
+    }
+
+    Compile compile() {
+        return compile;
     }
 
     /**

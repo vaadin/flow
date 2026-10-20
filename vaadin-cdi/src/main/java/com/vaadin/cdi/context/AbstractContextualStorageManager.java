@@ -35,6 +35,9 @@ import com.vaadin.cdi.util.ContextualStorage;
  *
  * This class is responsible for - creating, and providing the ContextualStorage
  * for a context key - destroying ContextualStorages
+ *
+ * @param <K>
+ *            the type of the context key
  */
 @SuppressWarnings("CdiManagedBeanInconsistencyInspection")
 abstract class AbstractContextualStorageManager<K> implements Serializable {
@@ -43,6 +46,12 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
     private final boolean concurrent;
     private final Map<K, ContextualStorage> storageMap;
 
+    /**
+     * Creates a new storage manager.
+     *
+     * @param concurrent
+     *            whether the storages may be accessed concurrently
+     */
     protected AbstractContextualStorageManager(boolean concurrent) {
         if (concurrent) {
             this.storageMap = new ConcurrentHashMap<>();
@@ -52,6 +61,16 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
         this.concurrent = concurrent;
     }
 
+    /**
+     * Gets the contextual storage for the given key.
+     *
+     * @param key
+     *            the context key
+     * @param createIfNotExist
+     *            whether to create the storage if it does not exist yet
+     * @return the contextual storage, or {@code null} if it does not exist and
+     *         {@code createIfNotExist} is {@code false}
+     */
     protected ContextualStorage getContextualStorage(K key,
             boolean createIfNotExist) {
         if (createIfNotExist) {
@@ -61,6 +80,15 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
         }
     }
 
+    /**
+     * Moves the contextual storage stored for one key to another key. Does
+     * nothing if there is no storage for the source key.
+     *
+     * @param from
+     *            the current key of the storage
+     * @param to
+     *            the new key of the storage
+     */
     protected void relocate(K from, K to) {
         ContextualStorage storage = storageMap.remove(from);
         if (storage != null) {
@@ -68,6 +96,13 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
         }
     }
 
+    /**
+     * Creates a new contextual storage for the given key.
+     *
+     * @param key
+     *            the context key
+     * @return the new contextual storage
+     */
     protected ContextualStorage newContextualStorage(K key) {
         // Not required by the spec, but in reality beans are
         // PassivationCapable.
@@ -78,6 +113,10 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
         return new ContextualStorage(beanManager, concurrent, true);
     }
 
+    /**
+     * Destroys all active beans in all managed storages and removes the
+     * storages.
+     */
     @PreDestroy
     protected void destroyAll() {
         Collection<ContextualStorage> storages = storageMap.values();
@@ -87,6 +126,13 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
         storageMap.clear();
     }
 
+    /**
+     * Destroys all active beans in the storage of the given key and removes the
+     * storage.
+     *
+     * @param key
+     *            the context key
+     */
     protected void destroy(K key) {
         ContextualStorage storage = storageMap.remove(key);
         if (storage != null) {
@@ -94,6 +140,11 @@ abstract class AbstractContextualStorageManager<K> implements Serializable {
         }
     }
 
+    /**
+     * Gets the keys of all managed storages.
+     *
+     * @return an unmodifiable set of the context keys
+     */
     protected Set<K> getKeySet() {
         return Collections.unmodifiableSet(storageMap.keySet());
     }

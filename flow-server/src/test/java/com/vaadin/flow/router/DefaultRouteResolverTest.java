@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -42,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 class DefaultRouteResolverTest extends RoutingTestBase {
 
@@ -131,8 +131,8 @@ class DefaultRouteResolverTest extends RoutingTestBase {
 
         router.getRegistry().setLayout(DefaultLayout.class);
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
                     .thenReturn(Collections.singletonMap("/route",
                             new AvailableViewInfo("", null, false, "/route",
@@ -151,8 +151,8 @@ class DefaultRouteResolverTest extends RoutingTestBase {
 
         router.getRegistry().setLayout(DefaultWithParentLayout.class);
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
                     .thenReturn(Collections.singletonMap("/route",
                             new AvailableViewInfo("", null, false, "/route",
@@ -175,8 +175,8 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     void clientRouteRequest_withRouteParameters_getDefinedLayout() {
         router.getRegistry().setLayout(DefaultLayout.class);
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
             // @formatter:off
                     .thenReturn(buildClientRoutes(
@@ -220,8 +220,8 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     void clientRouteRequest_withRouteParameters_noLayout() {
         router.getRegistry().setLayout(DefaultLayout.class);
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
             // @formatter:off
                     .thenReturn(buildClientRoutes(
@@ -261,8 +261,8 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     void clientRouteRequest_withRouteParameters_ambiguousRoutesFirstAddedWins() {
         router.getRegistry().setLayout(DefaultLayout.class);
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
             // @formatter:off
                     .thenReturn(buildClientRoutes(
@@ -313,8 +313,8 @@ class DefaultRouteResolverTest extends RoutingTestBase {
     void clientRouteRequest_noLayoutForPath_Throws() {
         String path = "route";
 
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
             menuRegistry.when(() -> MenuRegistry.getClientRoutes(false))
                     .thenReturn(Collections.singletonMap("/route",
                             new AvailableViewInfo("", null, false, "/route",
