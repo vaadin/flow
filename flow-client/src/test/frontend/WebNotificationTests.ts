@@ -209,20 +209,41 @@ describe('webNotification', () => {
     });
   });
 
-  it('keeps track of a limited number of notifications for closing, while still reporting their events', () => {
-    const first = recordingChannel();
-    const firstKey = nextKey();
-    $wnd.Vaadin.Flow.webNotification.show('First', { tag: 'old' }, first.channel, { key: firstKey, owner: 'app' });
+  it('keeps track of a limited number of trigger notifications for closing, apart from those of handles', () => {
+    const handle = recordingChannel();
+    const handleKey = nextKey();
+    $wnd.Vaadin.Flow.webNotification.show('Handle', {}, handle.channel, { key: handleKey, owner: 'app' });
+    const trigger = recordingChannel();
+    $wnd.Vaadin.Flow.webNotification.show('First from trigger', { tag: 'old' }, trigger.channel, { owner: 'app' });
     for (let i = 0; i < 50; i += 1) {
-      $wnd.Vaadin.Flow.webNotification.show('Next', {}, null, { key: nextKey(), owner: 'app' });
+      $wnd.Vaadin.Flow.webNotification.show('Next from trigger', {}, null, { owner: 'app' });
     }
 
-    $wnd.Vaadin.Flow.webNotification.close(firstKey);
+    // The oldest trigger notification is no longer kept for closing, but
+    // still reports its own events
     $wnd.Vaadin.Flow.webNotification.closeByTag('old', 'app');
-    expect(first.calls).to.deep.equal([]);
+    expect(trigger.calls).to.deep.equal([]);
+    FakeNotification.instances[1].dispatchEvent(new Event('click'));
+    expect(trigger.calls).to.deep.equal([['click'], ['close']]);
 
-    FakeNotification.instances[0].dispatchEvent(new Event('click'));
-    expect(first.calls).to.deep.equal([['click'], ['close']]);
+    // The handle, older than all of them, can still be closed
+    $wnd.Vaadin.Flow.webNotification.close(handleKey);
+    expect(handle.calls).to.deep.equal([['close']]);
+  });
+
+  it('does not replace anything when a notification that is already closed fires a late show event', () => {
+    const first = recordingChannel();
+    $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, first.channel, {
+      key: nextKey(),
+      owner: 'app'
+    });
+    const secondKey = nextKey();
+    $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, null, { key: secondKey, owner: 'app' });
+    $wnd.Vaadin.Flow.webNotification.close(secondKey);
+
+    FakeNotification.instances[1].dispatchEvent(new Event('show'));
+
+    expect(first.calls).to.deep.equal([]);
   });
 
   it('reports an error without showing anything when permission is not granted', () => {

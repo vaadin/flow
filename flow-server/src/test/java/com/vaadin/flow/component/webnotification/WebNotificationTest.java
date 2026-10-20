@@ -266,7 +266,7 @@ class WebNotificationTest {
     }
 
     @Test
-    void show_moreThanTheLimit_stopsTrackingTheOldest() {
+    void show_moreThanTheLimit_closesTheOldest() {
         MockUI ui = new MockUI();
         List<String> events = new ArrayList<>();
         WebNotificationHandle oldest = WebNotification.show("First", ui);
@@ -281,10 +281,16 @@ class WebNotificationTest {
         WebNotification.show("One too many", ui);
 
         assertEquals(List.of("close"), events);
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        assertEquals(2, invocations.size());
+        assertEquals(oldestShow.getParameters().get(2),
+                invocations.get(0).getInvocation().getParameters().get(0),
+                "the oldest notification is closed before the next is shown");
         // An event the browser sent before it heard of this is ignored
         report(oldestShow, "click");
+        report(oldestShow, "close");
         assertEquals(List.of("close"), events);
-        assertEquals(1, ui.dumpPendingJsInvocations().size());
         oldest.close();
         assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
                 "the browser no longer keeps the notification for closing");

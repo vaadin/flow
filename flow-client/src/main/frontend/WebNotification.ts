@@ -57,16 +57,21 @@ interface ShownNotification {
   appId: string | null;
   // The element of the trigger that showed the notification, if any
   host: Element | null;
+  // Whether a server-side handle showed the notification, rather than a trigger
+  fromServer: boolean;
   channel: VaadinWebNotificationChannel;
   // Whether the close or error has been reported, after which nothing more is
   // reported
   done: boolean;
 }
 
-// How many notifications the page keeps track of for closing them. A
+// How many notifications the page keeps track of for closing them, counted
+// separately per application for the server-side handles and for triggers. A
 // notification the browser never reports as closed, for example because the
 // operating system moved it to its notification center, would otherwise stay
-// here for the life of the page.
+// here for the life of the page. Matches the limit of the server, which closes
+// its oldest handle before showing one more, so a handle is never dropped here
+// while the server still tracks it.
 const MAX_SHOWN = 50;
 
 // Notifications shown by this page, in the order they were shown, keyed by the
@@ -220,17 +225,24 @@ $wnd.Vaadin.Flow.webNotification = {
       tag: options.tag,
       appId: source.owner instanceof Element ? appIdOf(source.owner) : (source.owner ?? null),
       host: source.owner instanceof Element ? source.owner : null,
+      fromServer: source.key != null,
       channel: report,
       done: false
     };
     shown.set(entry.key, entry);
-    if (shown.size > MAX_SHOWN) {
+    const group = [...shown.values()].filter(
+      (other) => other.appId === entry.appId && other.fromServer === entry.fromServer
+    );
+    if (group.length > MAX_SHOWN) {
       // Only stops tracking the oldest one for closing; its own events are
       // still reported.
-      shown.delete(shown.keys().next().value!);
+      shown.delete(group[0].key);
     }
     notification.addEventListener('show', () => {
-      if (!options.tag) {
+      // Nothing to replace for a notification without a tag, or one that is
+      // already gone or no longer tracked, which would otherwise be taken for
+      // the newest one.
+      if (!options.tag || entry.done || shown.get(entry.key) !== entry) {
         return;
       }
       // The browser replaced the notifications shown earlier with the same

@@ -56,12 +56,13 @@ import com.vaadin.flow.shared.Registration;
  * in the operating system's notification center for a long time, and the
  * browser does not always report when it is gone, so a UI tracks at most the
  * {@value #MAX_TRACKED_PER_UI} most recently shown notifications: showing
- * another one stops tracking the oldest. A handle also stops being tracked when
- * its UI is closed, for example on a page reload. Either way its close
- * listeners run, and after that no listener runs again and {@link #close()}
- * does nothing, since the browser no longer keeps the notification for closing
- * either. Call {@link #close()} when a notification is no longer relevant, or
- * use a {@linkplain WebNotificationOptions#tag() tag} so the next notification
+ * another one closes the oldest, and its close listeners run. A handle also
+ * stops being tracked when its UI is closed, for example on a page reload; its
+ * close listeners then run as well, although the notification may still be on
+ * screen, since nothing can be reported from it anymore. After that no listener
+ * runs again and {@link #close()} does nothing. Call {@link #close()} when a
+ * notification is no longer relevant, or use a
+ * {@linkplain WebNotificationOptions#tag() tag} so the next notification
  * replaces it.
  */
 public final class WebNotificationHandle implements Serializable {
@@ -117,9 +118,9 @@ public final class WebNotificationHandle implements Serializable {
      * Adds a listener that runs when the notification is gone: the user
      * dismissed it or clicked it, {@link #close()} closed it, or a notification
      * with the same {@linkplain WebNotificationOptions#tag() tag} replaced it.
-     * Also runs when the handle stops tracking the notification, because the UI
-     * is closed or has shown too many newer notifications; see the class
-     * documentation. Not called when the notification failed to show; see
+     * Also runs when the UI closes the notification because it has shown too
+     * many newer ones, and when the UI is closed; see the class documentation.
+     * Not called when the notification failed to show; see
      * {@link #addErrorListener(SerializableConsumer)}.
      *
      * @param listener
@@ -242,8 +243,14 @@ public final class WebNotificationHandle implements Serializable {
         private void add(WebNotificationHandle handle) {
             handles.put(handle.key, handle);
             if (handles.size() > MAX_TRACKED_PER_UI) {
-                // The browser has stopped keeping it for closing as well
-                handles.values().iterator().next().stopTracking();
+                // Closed rather than only forgotten, so that its close
+                // listeners tell the truth. Sent before the new notification
+                // is shown, so the browser, which has the same limit, still
+                // has it.
+                WebNotificationHandle oldest = handles.values().iterator()
+                        .next();
+                oldest.close();
+                oldest.stopTracking();
             }
         }
 
