@@ -102,6 +102,8 @@ class FullDependenciesScannerTest {
     @JavaScript("context://runtime.js")
     @JavaScript("/absolute.js")
     @JavaScript("base://servlet-relative.js")
+    @JavaScript("https://cdn.example.com/external.js")
+    @JavaScript("//cdn.example.com/protocol-relative.js")
     @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
     @JsModule("./bundled-module.js")
     @JsModule("https://cdn.example.com/external-module.js")

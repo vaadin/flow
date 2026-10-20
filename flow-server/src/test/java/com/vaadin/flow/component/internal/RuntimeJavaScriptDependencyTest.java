@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -146,6 +147,11 @@ class RuntimeJavaScriptDependencyTest {
     private static class DevelopmentOnlyAbsoluteScript extends Component {
     }
 
+    @Tag("div")
+    @JsModule(value = "https://example.net/dev-helper.js", developmentOnly = true)
+    private static class DevelopmentOnlyExternalJsModule extends Component {
+    }
+
     @AfterEach
     void after() {
         UI.setCurrent(null);
@@ -247,20 +253,29 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
-    void productionMode_developmentOnlyAbsoluteScript_notAdded()
-            throws Exception {
-        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
-        mocks.setProductionMode(true);
-        try {
-            UIInternals internals = new MockUI(mocks.getSession())
-                    .getInternals();
-            internals.addComponentDependencies(
-                    DevelopmentOnlyAbsoluteScript.class);
+    void developmentOnlyExternalJsModule_addedInDevelopmentMode() {
+        assertSingleDependency(DevelopmentOnlyExternalJsModule.class,
+                Dependency.Type.JS_MODULE, "https://example.net/dev-helper.js",
+                LoadMode.EAGER);
+    }
 
-            assertEquals(List.of(), nonChunkDependencies(internals));
-        } finally {
-            mocks.cleanup();
-        }
+    @ParameterizedTest
+    @ValueSource(classes = { DevelopmentOnlyAbsoluteScript.class,
+            DevelopmentOnlyExternalJsModule.class })
+    void productionMode_developmentOnlyRuntimeDependency_notAdded(
+            Class<? extends Component> componentType) throws Exception {
+        assertEquals(List.of(), productionModeDependencies(componentType));
+    }
+
+    @Test
+    void productionMode_runtimeDependencies_stillAdded() throws Exception {
+        // Control for the test above: only developmentOnly values are dropped
+        assertEquals(List.of("/script.js"),
+                productionModeDependencies(AbsoluteScript.class).stream()
+                        .map(Dependency::getUrl).toList());
+        assertEquals(List.of("https://example.net/module.js"),
+                productionModeDependencies(ExternalJsModule.class).stream()
+                        .map(Dependency::getUrl).toList());
     }
 
     static Stream<Arguments> runtimePrefixedValues() {
@@ -352,6 +367,20 @@ class RuntimeJavaScriptDependencyTest {
             mocks.cleanup();
         }
         return captured.toString(UTF_8);
+    }
+
+    private List<Dependency> productionModeDependencies(
+            Class<? extends Component> componentType) throws Exception {
+        MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
+        mocks.setProductionMode(true);
+        try {
+            UIInternals internals = new MockUI(mocks.getSession())
+                    .getInternals();
+            internals.addComponentDependencies(componentType);
+            return nonChunkDependencies(internals);
+        } finally {
+            mocks.cleanup();
+        }
     }
 
     private List<Dependency> runtimeDependencies(
