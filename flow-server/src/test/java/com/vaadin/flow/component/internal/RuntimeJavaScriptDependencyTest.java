@@ -25,6 +25,8 @@ import java.util.Set;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -120,6 +122,11 @@ class RuntimeJavaScriptDependencyTest {
     @Tag("div")
     @JavaScript(value = "/dev-helper.js", developmentOnly = true)
     private static class DevelopmentOnlyAbsoluteScript extends Component {
+    }
+
+    @Tag("div")
+    @JsModule(value = "https://example.net/dev-helper.js", developmentOnly = true)
+    private static class DevelopmentOnlyExternalJsModule extends Component {
     }
 
     @AfterEach
@@ -241,15 +248,23 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
-    void productionMode_developmentOnlyAbsoluteScript_notAdded()
-            throws Exception {
+    void developmentOnlyExternalJsModule_addedInDevelopmentMode() {
+        assertSingleDependency(DevelopmentOnlyExternalJsModule.class,
+                Dependency.Type.JS_MODULE, "https://example.net/dev-helper.js",
+                LoadMode.EAGER);
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = { DevelopmentOnlyAbsoluteScript.class,
+            DevelopmentOnlyExternalJsModule.class })
+    void productionMode_developmentOnlyRuntimeDependency_notAdded(
+            Class<? extends Component> componentType) throws Exception {
         MockServletServiceSessionSetup mocks = new MockServletServiceSessionSetup();
         mocks.setProductionMode(true);
         try {
             UIInternals internals = new MockUI(mocks.getSession())
                     .getInternals();
-            internals.addComponentDependencies(
-                    DevelopmentOnlyAbsoluteScript.class);
+            internals.addComponentDependencies(componentType);
 
             assertEquals(List.of(), nonChunkDependencies(internals));
         } finally {

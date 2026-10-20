@@ -1538,8 +1538,9 @@ public class UIInternals implements Serializable {
                 && ui.getSession().getConfiguration().isProductionMode();
         // Bundled developmentOnly values are left out of the production bundle
         // by the build. Runtime values never go through the bundle, so the
-        // same rule has to be applied here, otherwise a developmentOnly
-        // script would be loaded in production too.
+        // same rule has to be applied here (for both @JavaScript and
+        // @JsModule), otherwise a developmentOnly script would be loaded in
+        // production too.
         dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
                 .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> {
@@ -1561,6 +1562,7 @@ public class UIInternals implements Serializable {
                 });
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
+                .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
                         JavaScript.Type.MODULE));
     }
