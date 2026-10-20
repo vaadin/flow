@@ -1562,6 +1562,9 @@ public class UIInternals implements Serializable {
                     }
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });
+        // Must match the runtime URL check that keeps @JsModule values out of
+        // the bundle at build time (FrontendClassVisitor and
+        // FullDependenciesScanner), so each value is loaded exactly once.
         dependency.getJsModules().stream()
                 .filter(js -> FrontendDependencyUrlResolver
                         .isRuntimeDependencyUrl(js.value()))
