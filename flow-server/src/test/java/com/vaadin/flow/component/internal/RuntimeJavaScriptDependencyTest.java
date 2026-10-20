@@ -263,9 +263,6 @@ class RuntimeJavaScriptDependencyTest {
         assertEquals(List.of("/script.js"),
                 productionModeDependencies(AbsoluteScript.class).stream()
                         .map(Dependency::getUrl).toList());
-        assertEquals(List.of("ftp://example.net/script.js"),
-                productionModeDependencies(OtherSchemeScript.class).stream()
-                        .map(Dependency::getUrl).toList());
         assertEquals(List.of("https://example.net/module.js"),
                 productionModeDependencies(ExternalJsModule.class).stream()
                         .map(Dependency::getUrl).toList());

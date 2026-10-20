@@ -174,6 +174,7 @@ class FrontendDependenciesTest {
                                 + ": \"b.js\"\n  - " + jsOrder + ": \"c.js\""),
                 listed);
         assertFalse(listed.contains("runtime.js"), listed);
+        assertFalse(listed.contains("other-scheme.js"), listed);
     }
 
     @Test
@@ -189,7 +190,8 @@ class FrontendDependenciesTest {
         assertTrue(listed.contains("\n  - " + component
                 + ": \"https://cdn.example.com/external-module.js\"\n  - "
                 + component + ": \"context://runtime-module.js\"\n  - "
-                + component + ": \"/absolute-module.js\""), listed);
+                + component + ": \"/absolute-module.js\"\n  - " + component
+                + ": \"ftp://example.net/other-scheme-module.js\""), listed);
         assertFalse(listed.contains("bundled-module.js"), listed);
     }
 

@@ -77,11 +77,11 @@ public @interface JsModule {
      * <p>
      * The value is meant to be resolved by the frontend bundler. Using a
      * runtime URL (one starting with {@code context://}, {@code base://},
-     * {@code /}, {@code http://}, {@code https://} or {@code //}) is
-     * deprecated: such a value is not bundled but loaded at runtime as a
-     * {@code <script type="module">}, and a warning is logged during the build.
-     * Use {@link JavaScript @JavaScript} with {@link JavaScript.Type#MODULE}
-     * for runtime modules instead.
+     * {@code /}, {@code http://}, {@code https://} or {@code //}, or any other
+     * URL containing {@code ://}) is deprecated: such a value is not bundled
+     * but loaded at runtime as a {@code <script type="module">}, and a warning
+     * is logged during the build. Use {@link JavaScript @JavaScript} with
+     * {@link JavaScript.Type#MODULE} for runtime modules instead.
      *
      * @return a JavaScript module identifier
      */

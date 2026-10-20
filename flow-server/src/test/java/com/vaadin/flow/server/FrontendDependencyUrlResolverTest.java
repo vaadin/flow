@@ -46,6 +46,8 @@ public class FrontendDependencyUrlResolverTest {
                 .resolveToContextRoot("https://cdn/x.css"));
         Assert.assertEquals("//cdn/x.css", FrontendDependencyUrlResolver
                 .resolveToContextRoot("//cdn/x.css"));
+        Assert.assertEquals("ftp://cdn/x.css", FrontendDependencyUrlResolver
+                .resolveToContextRoot("ftp://cdn/x.css"));
     }
 
     @Test
@@ -101,6 +103,8 @@ public class FrontendDependencyUrlResolverTest {
                 .isRuntimeDependencyUrl("  /foo.js"));
         Assert.assertTrue(FrontendDependencyUrlResolver
                 .isRuntimeDependencyUrl("HTTPS://cdn/foo.js"));
+        Assert.assertTrue(FrontendDependencyUrlResolver
+                .isRuntimeDependencyUrl("ftp://cdn/foo.js"));
     }
 
     @Test

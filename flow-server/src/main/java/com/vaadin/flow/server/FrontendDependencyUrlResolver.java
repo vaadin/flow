@@ -21,6 +21,7 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -104,13 +105,11 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      * <p>
      * Returns {@code true} for values starting with any of: {@code http://},
      * {@code https://}, {@code //}, {@code context://}, {@code base://}, or
-     * {@code /}. Returns {@code false} for {@code null}, blank, or any other
-     * value (e.g. bare relative paths and bundler import specifiers).
-     * <p>
-     * URLs with any other scheme are not recognized here. The bundler skips
-     * them as well (see {@link com.vaadin.flow.internal.UrlUtil#isExternal}),
-     * so callers deciding whether a {@code @JavaScript} or {@code @JsModule}
-     * value is loaded at runtime must check that too.
+     * {@code /}, and for URLs with any other scheme (a value containing
+     * {@code ://}), which the bundler skips as well (see
+     * {@link UrlUtil#isExternal}). Returns {@code false} for {@code null},
+     * blank, or any other value (e.g. bare relative paths and bundler import
+     * specifiers).
      *
      * @param value
      *            the raw annotation value
@@ -129,6 +128,7 @@ public final class FrontendDependencyUrlResolver implements Serializable {
                 || lower.startsWith("//")
                 || lower.startsWith(
                         ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || lower.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX);
+                || lower.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)
+                || UrlUtil.isExternal(trimmed);
     }
 }

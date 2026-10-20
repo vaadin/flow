@@ -33,5 +33,6 @@ import com.vaadin.flow.router.Route;
 @JsModule("https://cdn.example.com/external-module.js")
 @JsModule("context://runtime-module.js")
 @JsModule("/absolute-module.js")
+@JsModule("ftp://example.net/other-scheme-module.js")
 public class RuntimeJavaScriptComponent extends Component {
 }

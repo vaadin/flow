@@ -1504,7 +1504,8 @@ public class UIInternals implements Serializable {
                 .filter(js -> !isRuntimeJavaScript(js)).map(JavaScript::value)
                 .collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream().map(JsModule::value)
-                .filter(src -> !isRuntimeUrl(src))
+                .filter(src -> !FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(src))
                 .collect(Collectors.toList()));
 
         if (!jsDeps.isEmpty()) {
@@ -1565,22 +1566,18 @@ public class UIInternals implements Serializable {
         // the bundle at build time (FrontendClassVisitor and
         // FullDependenciesScanner), so each value is loaded exactly once.
         dependency.getJsModules().stream()
-                .filter(js -> isRuntimeUrl(js.value()))
+                .filter(js -> FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(js.value()))
                 .filter(js -> !productionMode || !js.developmentOnly())
                 // A runtime URL is already resolved, so it is passed as is
                 .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
                         JavaScript.Type.MODULE));
     }
 
-    private static boolean isRuntimeUrl(String value) {
-        // Values with any other scheme cannot be bundled either, so they are
-        // loaded at runtime too
-        return FrontendDependencyUrlResolver.isRuntimeDependencyUrl(value)
-                || UrlUtil.isExternal(value);
-    }
-
     private boolean isRuntimeJavaScript(JavaScript js) {
-        return js.type() == JavaScript.Type.MODULE || isRuntimeUrl(js.value());
+        return js.type() == JavaScript.Type.MODULE
+                || FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(js.value());
     }
 
     /**

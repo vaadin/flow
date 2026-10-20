@@ -110,6 +110,7 @@ class FullDependenciesScannerTest {
     @JsModule("https://cdn.example.com/external-module.js")
     @JsModule("context://runtime-module.js")
     @JsModule("/absolute-module.js")
+    @JsModule("ftp://example.net/other-scheme-module.js")
     public static class RuntimeJavaScriptComponent extends Component {
 
     }
