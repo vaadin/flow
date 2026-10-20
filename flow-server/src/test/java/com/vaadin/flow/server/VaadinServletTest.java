@@ -396,6 +396,7 @@ public class VaadinServletTest {
     @Test
     public void checkLicense_prodModeCheck_notFails()
             throws ServletException {
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
         licenseChecker
                 .when(() -> LicenseChecker.checkLicense("flow",
                         Version.getFullVersion(), BuildType.RUNTIME, null))
