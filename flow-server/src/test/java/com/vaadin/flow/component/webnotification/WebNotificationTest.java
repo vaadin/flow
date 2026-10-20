@@ -44,7 +44,6 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -175,23 +174,21 @@ class WebNotificationTest {
     }
 
     @Test
-    void show_clickAndClose_runListenersAndDisconnect() {
+    void show_clickAndClose_runListenersAndStopTracking() {
         MockUI ui = new MockUI();
         List<String> events = new ArrayList<>();
         WebNotificationHandle handle = WebNotification.show("Hi", ui);
         handle.addClickListener(() -> events.add("click"));
         handle.addCloseListener(() -> events.add("close"));
         handle.addErrorListener(error -> events.add("error"));
-        ReturnChannelRegistration channel = channel(showInvocation(ui));
+        JavaScriptInvocation show = showInvocation(ui);
 
-        channel.invoke(args("click"));
-        channel.invoke(args("close"));
+        report(show, "click");
+        report(show, "close");
+        report(show, "click");
 
-        assertEquals(List.of("click", "close"), events);
-        assertNull(
-                ui.getElement().getNode().getFeature(ReturnChannelMap.class)
-                        .get(channel.getChannelId()),
-                "a closed notification no longer listens to the browser");
+        assertEquals(List.of("click", "close"), events,
+                "a closed notification no longer reports");
         handle.close();
         assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
                 "closing a closed notification does nothing");
@@ -202,18 +199,18 @@ class WebNotificationTest {
     void show_errorFromClient_runsErrorListenersWithReason(String sent,
             WebNotificationError.Reason expected) {
         MockUI ui = new MockUI();
-        List<WebNotificationError> errors = new ArrayList<>();
+        List<Object> events = new ArrayList<>();
         WebNotificationHandle handle = WebNotification.show("Hi", ui);
-        handle.addErrorListener(errors::add);
-        ReturnChannelRegistration channel = channel(showInvocation(ui));
+        handle.addErrorListener(events::add);
+        handle.addCloseListener(() -> events.add("close"));
+        JavaScriptInvocation show = showInvocation(ui);
 
-        channel.invoke(args("error", sent, "no permission"));
+        report(show, "error", sent, "no permission");
+        report(show, "close");
 
         assertEquals(
                 List.of(new WebNotificationError(expected, "no permission")),
-                errors);
-        assertFalse(ui.getElement().getNode().getFeature(ReturnChannelMap.class)
-                .hasChannels());
+                events);
     }
 
     @Test
@@ -232,8 +229,6 @@ class WebNotificationTest {
                 errors.get(0).reason());
         assertTrue(errors.get(0).message().contains("boom"),
                 "the failure should be passed on: " + errors.get(0));
-        assertFalse(ui.getElement().getNode().getFeature(ReturnChannelMap.class)
-                .hasChannels());
     }
 
     @Test
@@ -253,65 +248,65 @@ class WebNotificationTest {
     }
 
     @Test
-    void show_uiDetached_disconnectsTheHandle() {
+    void show_uiDetached_stopsTrackingAndRunsCloseListeners() {
         MockUI ui = new MockUI();
         List<String> events = new ArrayList<>();
         WebNotificationHandle handle = WebNotification.show("Hi", ui);
         handle.addCloseListener(() -> events.add("close"));
-        ui.dumpPendingJsInvocations();
+        handle.addClickListener(() -> events.add("click"));
+        JavaScriptInvocation show = showInvocation(ui);
 
         // A page reload closes the UI, also when @PreserveOnRefresh moves its
         // content to a new UI, and the new page never reports on the
         // notification
         ui.getInternals().setSession(null);
+        report(show, "click");
 
-        assertFalse(ui.getElement().getNode().getFeature(ReturnChannelMap.class)
-                .hasChannels());
-        assertTrue(events.isEmpty());
+        assertEquals(List.of("close"), events);
     }
 
     @Test
-    void show_moreThanTheLimit_releasesTheOldestHandle() {
+    void show_moreThanTheLimit_stopsTrackingTheOldest() {
         MockUI ui = new MockUI();
+        List<String> events = new ArrayList<>();
         WebNotificationHandle oldest = WebNotification.show("First", ui);
+        oldest.addCloseListener(() -> events.add("close"));
+        oldest.addClickListener(() -> events.add("click"));
         JavaScriptInvocation oldestShow = showInvocation(ui);
-        Object oldestKey = oldestShow.getParameters().get(2);
-        ReturnChannelRegistration oldestChannel = channel(oldestShow);
-        for (int i = 1; i < WebNotificationHandle.MAX_CONNECTED_PER_UI; i++) {
+        for (int i = 1; i < WebNotificationHandle.MAX_TRACKED_PER_UI; i++) {
             WebNotification.show("Next", ui);
         }
         ui.dumpPendingJsInvocations();
 
         WebNotification.show("One too many", ui);
 
-        List<PendingJavaScriptInvocation> invocations = ui
-                .dumpPendingJsInvocations();
-        assertEquals(2, invocations.size());
-        assertEquals(oldestKey,
-                invocations.get(0).getInvocation().getParameters().get(0),
-                "the browser should forget the oldest notification");
-        assertNull(ui.getElement().getNode().getFeature(ReturnChannelMap.class)
-                .get(oldestChannel.getChannelId()));
+        assertEquals(List.of("close"), events);
+        // An event the browser sent before it heard of this is ignored
+        report(oldestShow, "click");
+        assertEquals(List.of("close"), events);
+        assertEquals(1, ui.dumpPendingJsInvocations().size());
         oldest.close();
-        assertTrue(ui.dumpPendingJsInvocations().isEmpty(),
-                "a released handle no longer closes its notification");
+        assertEquals(oldestShow.getParameters().get(2),
+                ui.onlyScheduledInvocation().getParameters().get(0),
+                "an untracked notification can still be closed");
     }
 
     @Test
     void show_closedHandle_doesNotCountTowardsTheLimit() {
         MockUI ui = new MockUI();
         WebNotification.show("First", ui);
-        ReturnChannelRegistration firstChannel = channel(showInvocation(ui));
-        for (int i = 1; i < WebNotificationHandle.MAX_CONNECTED_PER_UI; i++) {
+        JavaScriptInvocation firstShow = showInvocation(ui);
+        List<String> events = new ArrayList<>();
+        WebNotification.show("Second", ui)
+                .addCloseListener(() -> events.add("second closed"));
+        for (int i = 2; i < WebNotificationHandle.MAX_TRACKED_PER_UI; i++) {
             WebNotification.show("Next", ui);
         }
-        firstChannel.invoke(args("close"));
-        ui.dumpPendingJsInvocations();
+        report(firstShow, "close");
 
         WebNotification.show("Fits again", ui);
 
-        assertEquals(1, ui.dumpPendingJsInvocations().size(),
-                "only the show, no handle is released");
+        assertTrue(events.isEmpty(), "no handle should stop being tracked");
     }
 
     @Test
@@ -356,9 +351,14 @@ class WebNotificationTest {
         return invocations.get(0).getInvocation();
     }
 
-    private static ReturnChannelRegistration channel(
-            JavaScriptInvocation invocation) {
-        return (ReturnChannelRegistration) invocation.getParameters().get(3);
+    /**
+     * Reports an event the way the browser does: through the channel of the UI,
+     * preceded by the key of the notification.
+     */
+    private static void report(JavaScriptInvocation show, String... event) {
+        ArrayNode args = args(event);
+        args.insert(0, (String) show.getParameters().get(2));
+        ((ReturnChannelRegistration) show.getParameters().get(3)).invoke(args);
     }
 
     private static ArrayNode args(String... values) {

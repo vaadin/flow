@@ -50,15 +50,26 @@ interface VaadinWebNotificationSource {
 }
 
 interface ShownNotification {
+  key: string;
   notification: Notification;
   tag?: string;
-  // The application that showed the notification, null when not known
-  appId: string | null;
+  // The application that showed the notification, or the element of the
+  // trigger that showed it, resolved to the application when needed
+  owner: string | Element | null;
   channel: VaadinWebNotificationChannel;
+  // Whether the close or error has been reported, after which nothing more is
+  done: boolean;
 }
 
-// Notifications shown by this page, keyed by the id the server generated for
-// the handle, so that close(key) does not need a browser-side id to travel back.
+// How many notifications the page keeps track of for closing them. A
+// notification the browser never reports as closed, for example because the
+// operating system moved it to its notification center, would otherwise stay
+// here for the life of the page.
+const MAX_SHOWN = 50;
+
+// Notifications shown by this page, in the order they were shown, keyed by the
+// id the server generated for the handle, so that close(key) does not need a
+// browser-side id to travel back.
 const shown = new Map<string, ShownNotification>();
 
 const $wnd = window as any;
@@ -130,14 +141,20 @@ function appIdOf(element: Element): string | null {
 }
 
 function belongsTo(entry: ShownNotification, appId: string | null | undefined): boolean {
-  return !appId || entry.appId === null || entry.appId === appId;
+  // A trigger's host may be registered with its application only after the
+  // trigger fired, so it is resolved when closing.
+  const entryAppId = entry.owner instanceof Element ? appIdOf(entry.owner) : entry.owner;
+  return entryAppId === (appId ?? null);
 }
 
-function forget(key: string, entry: ShownNotification): boolean {
-  if (shown.get(key) !== entry) {
+function finish(entry: ShownNotification): boolean {
+  if (entry.done) {
     return false;
   }
-  shown.delete(key);
+  entry.done = true;
+  if (shown.get(entry.key) === entry) {
+    shown.delete(entry.key);
+  }
   return true;
 }
 
@@ -194,11 +211,20 @@ $wnd.Vaadin.Flow.webNotification = {
       report('error', 'UNKNOWN', e?.message ? String(e.message) : String(e));
       return;
     }
-    const entryKey = source.key ?? crypto.randomUUID();
-    const owner = source.owner ?? null;
-    const appId = owner instanceof Element ? appIdOf(owner) : owner;
-    const entry: ShownNotification = { notification, tag: options.tag, appId, channel: report };
-    shown.set(entryKey, entry);
+    const entry: ShownNotification = {
+      key: source.key ?? crypto.randomUUID(),
+      notification,
+      tag: options.tag,
+      owner: source.owner ?? null,
+      channel: report,
+      done: false
+    };
+    shown.set(entry.key, entry);
+    if (shown.size > MAX_SHOWN) {
+      // Only stops tracking the oldest one for closing; its own events are
+      // still reported.
+      shown.delete(shown.keys().next().value!);
+    }
     notification.addEventListener('show', () => {
       if (!options.tag) {
         return;
@@ -207,46 +233,36 @@ $wnd.Vaadin.Flow.webNotification = {
       // tag, so they are gone for the user even though they fire no close
       // event. Only known once this one is shown: if it fails, the earlier
       // ones stay on screen.
-      for (const [previousKey, previous] of shown) {
+      for (const previous of [...shown.values()]) {
         if (previous === entry) {
           break;
         }
-        if (previous.tag === options.tag) {
-          shown.delete(previousKey);
+        if (previous.tag === options.tag && finish(previous)) {
           previous.channel('close');
         }
       }
     });
     notification.addEventListener('click', () => {
       window.focus();
-      if (shown.get(entryKey) === entry) {
-        entry.channel('click');
+      if (!entry.done) {
+        report('click');
       }
       notification.close();
     });
     notification.addEventListener('close', () => {
-      if (forget(entryKey, entry)) {
-        entry.channel('close');
+      if (finish(entry)) {
+        report('close');
       }
     });
     notification.addEventListener('error', () => {
-      if (forget(entryKey, entry)) {
-        entry.channel('error', 'UNKNOWN', 'The browser could not show the notification');
+      if (finish(entry)) {
+        report('error', 'UNKNOWN', 'The browser could not show the notification');
       }
     });
   },
 
   close(key: string): void {
     shown.get(key)?.notification.close();
-  },
-
-  // The server no longer listens to the notification; it stays visible and
-  // can still be closed by tag, but reports nothing more.
-  forget(key: string): void {
-    const entry = shown.get(key);
-    if (entry) {
-      entry.channel = () => {};
-    }
   },
 
   closeByTag(tag: string, appId: string | null | undefined): void {

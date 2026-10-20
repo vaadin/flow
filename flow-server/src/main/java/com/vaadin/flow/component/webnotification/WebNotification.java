@@ -298,7 +298,7 @@ public final class WebNotification implements Serializable {
          *            what {@link #close(String)} closes the notification by
          * @param channel
          *            the channel the browser reports what happens to the
-         *            notification through
+         *            notification through, preceded by the key
          * @param appId
          *            the id of the application showing the notification, so
          *            that {@link #closeByTag(String, String)} only closes the
@@ -306,7 +306,7 @@ public final class WebNotification implements Serializable {
          * @return the pending result, which completes once the notification is
          *         shown or has failed
          */
-        @JsExpression("window.Vaadin.Flow.webNotification.show($0, $1, $3, { key: $2, owner: $4 })")
+        @JsExpression("window.Vaadin.Flow.webNotification.show($0, $1, (type, reason, message) => $3($2, type, reason, message), { key: $2, owner: $4 })")
         PendingJavaScriptResult show(String title,
                 WebNotificationOptions options, String key,
                 ReturnChannelRegistration channel, String appId);
@@ -321,18 +321,6 @@ public final class WebNotification implements Serializable {
          */
         @JsExpression("window.Vaadin.Flow.webNotification.close($0)")
         PendingJavaScriptResult close(String key);
-
-        /**
-         * Stops reporting what happens to the notification shown under the
-         * given key, without closing it.
-         *
-         * @param key
-         *            the key the notification was shown with
-         * @return the pending result, which completes once the notification is
-         *         forgotten
-         */
-        @JsExpression("window.Vaadin.Flow.webNotification.forget($0)")
-        PendingJavaScriptResult forget(String key);
 
         /**
          * Closes the notifications the given application has shown with the

@@ -17,12 +17,11 @@ package com.vaadin.flow.component.webnotification;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
@@ -52,23 +51,24 @@ import com.vaadin.flow.shared.Registration;
  * listener added right after {@code show} never misses an event. Every listener
  * runs on the UI thread.
  * <p>
- * The handle stays connected to the browser until the notification is closed or
- * fails to show, the UI is closed, or the page is reloaded; after that its
- * listeners no longer run and {@link #close()} does nothing. A notification the
- * user neither clicks nor dismisses can stay in the operating system's
- * notification center for a long time, and the browser does not always report
- * when it is gone, so a UI keeps at most the {@value #MAX_CONNECTED_PER_UI}
- * most recently shown handles connected: showing another one disconnects the
- * oldest. Call {@link #close()} when a notification is no longer relevant, or
- * use a {@linkplain WebNotificationOptions#tag() tag} so the next notification
+ * The handle reports what happens to the notification until it is closed or
+ * fails to show. A notification the user neither clicks nor dismisses can stay
+ * in the operating system's notification center for a long time, and the
+ * browser does not always report when it is gone, so a UI tracks at most the
+ * {@value #MAX_TRACKED_PER_UI} most recently shown notifications: showing
+ * another one stops tracking the oldest. A handle also stops being tracked when
+ * its UI is closed, for example on a page reload. Either way its close
+ * listeners run, and after that no listener runs again. Call {@link #close()}
+ * when a notification is no longer relevant, or use a
+ * {@linkplain WebNotificationOptions#tag() tag} so the next notification
  * replaces it.
  */
 public final class WebNotificationHandle implements Serializable {
 
     /**
-     * How many handles a UI keeps connected to the browser at most.
+     * How many notifications a UI tracks at most.
      */
-    static final int MAX_CONNECTED_PER_UI = 50;
+    static final int MAX_TRACKED_PER_UI = 50;
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(WebNotificationHandle.class);
@@ -78,17 +78,18 @@ public final class WebNotificationHandle implements Serializable {
     private final List<SerializableRunnable> clickListeners = new ArrayList<>();
     private final List<SerializableRunnable> closeListeners = new ArrayList<>();
     private final List<SerializableConsumer<WebNotificationError>> errorListeners = new ArrayList<>();
-    private @Nullable ReturnChannelRegistration channel;
+    // Whether events from the browser still reach the listeners
+    private boolean tracked = true;
+    // Whether the notification is known to be gone, so close() has nothing to
+    // close
+    private boolean gone;
 
     WebNotificationHandle(UI ui, String title, WebNotificationOptions options) {
         this.ui = ui;
-        ReturnChannelRegistration registration = ui.getElement().getNode()
-                .getFeature(ReturnChannelMap.class)
-                .registerChannel(this::dispatch);
-        channel = registration;
-        ConnectedHandles.of(ui).add(this);
+        TrackedHandles tracker = TrackedHandles.of(ui);
+        tracker.add(this);
         ui.getElement().executeJs(WebNotificationJs.class).show(title, options,
-                key, registration, ui.getInternals().getAppId())
+                key, tracker.channel, ui.getInternals().getAppId())
                 .then(ignored -> {
                 }, err -> {
                     LOGGER.debug("Client-side webNotification.show failed: {}",
@@ -117,7 +118,9 @@ public final class WebNotificationHandle implements Serializable {
      * Adds a listener that runs when the notification is gone: the user
      * dismissed it or clicked it, {@link #close()} closed it, or a notification
      * with the same {@linkplain WebNotificationOptions#tag() tag} replaced it.
-     * Not called when the notification failed to show; see
+     * Also runs when the handle stops tracking the notification, because the UI
+     * is closed or has shown too many newer notifications; see the class
+     * documentation. Not called when the notification failed to show; see
      * {@link #addErrorListener(SerializableConsumer)}.
      *
      * @param listener
@@ -145,14 +148,15 @@ public final class WebNotificationHandle implements Serializable {
 
     /**
      * Closes the notification if it is still visible. The close listeners run
-     * once the browser confirms. Calling this when the notification is already
-     * gone does nothing.
+     * once the browser confirms, unless the handle no longer tracks the
+     * notification. Calling this when the notification is already gone, or when
+     * the UI is closed, does nothing.
      * <p>
      * Like any change to the UI, the call must hold the session lock, so call
      * it inside {@code ui.access(...)} from a background thread.
      */
     public void close() {
-        if (channel == null) {
+        if (gone) {
             return;
         }
         ui.getElement().executeJs(WebNotificationJs.class).close(key)
@@ -173,8 +177,8 @@ public final class WebNotificationHandle implements Serializable {
         case "click" ->
             List.copyOf(clickListeners).forEach(SerializableRunnable::run);
         case "close" -> {
-            disconnect();
-            List.copyOf(closeListeners).forEach(SerializableRunnable::run);
+            gone = true;
+            stopTracking();
         }
         case "error" -> fail(WebNotificationErrorReader.read(args));
         default -> LOGGER
@@ -183,64 +187,89 @@ public final class WebNotificationHandle implements Serializable {
     }
 
     private void fail(WebNotificationError error) {
-        disconnect();
+        if (!tracked) {
+            return;
+        }
+        gone = true;
+        tracked = false;
+        TrackedHandles.of(ui).remove(this);
         List.copyOf(errorListeners).forEach(listener -> listener.accept(error));
     }
 
-    private void disconnect() {
-        if (channel != null) {
-            channel.remove();
-            channel = null;
-            ConnectedHandles.of(ui).remove(this);
+    /**
+     * Stops reporting events to the listeners, running the close listeners for
+     * the last time.
+     */
+    private void stopTracking() {
+        if (!tracked) {
+            return;
         }
+        tracked = false;
+        TrackedHandles.of(ui).remove(this);
+        List.copyOf(closeListeners).forEach(SerializableRunnable::run);
     }
 
     /**
-     * Disconnects the handle when the UI no longer keeps it, and tells the
-     * browser to stop reporting what happens to the notification, which stays
-     * visible.
+     * The handles of a UI that are still tracked, in the order they were shown,
+     * and the channel the browser reports their events through. A single
+     * channel keyed by handle lets an event for a handle that is no longer
+     * tracked be ignored quietly.
      */
-    private void release() {
-        disconnect();
-        ui.getElement().executeJs(WebNotificationJs.class).forget(key)
-                .then(ignored -> {
-                }, err -> LOGGER.debug(
-                        "Client-side webNotification.forget failed: {}", err));
-    }
+    private static final class TrackedHandles implements Serializable {
 
-    /**
-     * The handles of a UI that are still connected to the browser, in the order
-     * they were shown.
-     */
-    private static final class ConnectedHandles implements Serializable {
+        private final LinkedHashMap<String, WebNotificationHandle> handles = new LinkedHashMap<>();
+        private final ReturnChannelRegistration channel;
 
-        private final LinkedHashSet<WebNotificationHandle> handles = new LinkedHashSet<>();
+        private TrackedHandles(UI ui) {
+            channel = ui.getElement().getNode()
+                    .getFeature(ReturnChannelMap.class)
+                    .registerChannel(this::dispatch);
+        }
 
-        private static ConnectedHandles of(UI ui) {
-            ConnectedHandles connected = ComponentUtil.getData(ui,
-                    ConnectedHandles.class);
-            if (connected == null) {
-                ConnectedHandles created = new ConnectedHandles();
-                ComponentUtil.setData(ui, ConnectedHandles.class, created);
+        private static TrackedHandles of(UI ui) {
+            TrackedHandles tracker = ComponentUtil.getData(ui,
+                    TrackedHandles.class);
+            if (tracker == null) {
+                TrackedHandles created = new TrackedHandles(ui);
+                ComponentUtil.setData(ui, TrackedHandles.class, created);
                 // A closed UI, also the one a page reload with
                 // @PreserveOnRefresh replaces, never hears from its
                 // notifications again
-                ui.addDetachListener(event -> List.copyOf(created.handles)
-                        .forEach(WebNotificationHandle::disconnect));
-                connected = created;
+                ui.addDetachListener(event -> List
+                        .copyOf(created.handles.values()).forEach(handle -> {
+                            handle.gone = true;
+                            handle.stopTracking();
+                        }));
+                tracker = created;
             }
-            return connected;
+            return tracker;
         }
 
         private void add(WebNotificationHandle handle) {
-            handles.add(handle);
-            if (handles.size() > MAX_CONNECTED_PER_UI) {
-                handles.iterator().next().release();
+            handles.put(handle.key, handle);
+            if (handles.size() > MAX_TRACKED_PER_UI) {
+                handles.values().iterator().next().stopTracking();
             }
         }
 
         private void remove(WebNotificationHandle handle) {
-            handles.remove(handle);
+            handles.remove(handle.key);
+        }
+
+        // The browser reports (key, type, reason, message)
+        private void dispatch(ArrayNode args) {
+            String key = args.get(0).asString();
+            WebNotificationHandle handle = handles.get(key);
+            if (handle == null) {
+                LOGGER.debug(
+                        "Ignoring an event for a web notification that is no"
+                                + " longer tracked: {}",
+                        args);
+                return;
+            }
+            ArrayNode event = args.deepCopy();
+            event.remove(0);
+            handle.dispatch(event);
         }
     }
 }

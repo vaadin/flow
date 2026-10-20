@@ -119,8 +119,12 @@ describe('webNotification', () => {
     const originalClients = $wnd.Vaadin.Flow.clients;
     const hostA = document.createElement('button');
     const hostB = document.createElement('button');
+    const lateHostA = document.createElement('button');
+    let lateHostRegistered = false;
     $wnd.Vaadin.Flow.clients = {
-      appA: { getNodeId: (element: Element) => (element === hostA ? 1 : -1) },
+      appA: {
+        getNodeId: (element: Element) => (element === hostA || (element === lateHostA && lateHostRegistered) ? 1 : -1)
+      },
       appB: { getNodeId: (element: Element) => (element === hostB ? 1 : -1) }
     };
     try {
@@ -129,16 +133,18 @@ describe('webNotification', () => {
       $wnd.Vaadin.Flow.webNotification.show('B from trigger', { tag: 'chat' }, null, { owner: hostB });
       $wnd.Vaadin.Flow.webNotification.show('A from server', { tag: 'chat' }, null, { key: nextKey(), owner: 'appA' });
       $wnd.Vaadin.Flow.webNotification.show('B from server', { tag: 'chat' }, null, { key: nextKey(), owner: 'appB' });
-      // A host no application knows leaves the notification unscoped
+      // A host that fires before its application has registered it
+      $wnd.Vaadin.Flow.webNotification.show('A from late host', { tag: 'chat' }, null, { owner: lateHostA });
       $wnd.Vaadin.Flow.webNotification.show('Unknown owner', { tag: 'chat' }, null, {
         owner: document.createElement('div')
       });
+      lateHostRegistered = true;
       const closed: string[] = [];
       FakeNotification.instances.forEach((n) => n.addEventListener('close', () => closed.push(n.title)));
 
       $wnd.Vaadin.Flow.webNotification.closeByTag('chat', 'appA');
 
-      expect(closed).to.deep.equal(['A from trigger', 'A from server', 'Unknown owner']);
+      expect(closed).to.deep.equal(['A from trigger', 'A from server', 'A from late host']);
     } finally {
       $wnd.Vaadin.Flow.clients = originalClients;
     }
@@ -195,18 +201,20 @@ describe('webNotification', () => {
     });
   });
 
-  it('reports nothing more about a notification the server forgot, which can still be closed by tag', () => {
-    const { calls, channel } = recordingChannel();
-    const key = nextKey();
-    $wnd.Vaadin.Flow.webNotification.show('Hi', { tag: 'inbox' }, channel, { key, owner: 'app' });
-    const closed: string[] = [];
-    FakeNotification.instances[0].addEventListener('close', () => closed.push('Hi'));
+  it('keeps track of a limited number of notifications for closing, while still reporting their events', () => {
+    const first = recordingChannel();
+    const firstKey = nextKey();
+    $wnd.Vaadin.Flow.webNotification.show('First', { tag: 'old' }, first.channel, { key: firstKey, owner: 'app' });
+    for (let i = 0; i < 50; i += 1) {
+      $wnd.Vaadin.Flow.webNotification.show('Next', {}, null, { key: nextKey(), owner: 'app' });
+    }
 
-    $wnd.Vaadin.Flow.webNotification.forget(key);
-    $wnd.Vaadin.Flow.webNotification.closeByTag('inbox', 'app');
+    $wnd.Vaadin.Flow.webNotification.close(firstKey);
+    $wnd.Vaadin.Flow.webNotification.closeByTag('old', 'app');
+    expect(first.calls).to.deep.equal([]);
 
-    expect(closed).to.deep.equal(['Hi']);
-    expect(calls).to.deep.equal([]);
+    FakeNotification.instances[0].dispatchEvent(new Event('click'));
+    expect(first.calls).to.deep.equal([['click'], ['close']]);
   });
 
   it('reports an error without showing anything when permission is not granted', () => {
