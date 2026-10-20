@@ -60,7 +60,6 @@ public interface SessionExpiredHandler extends RequestHandler {
      *            the request to check
      * @return {@code true} if this handler serves the request without a
      *         session, {@code false} by default
-     * @since 25.4
      */
     default boolean canHandleWithoutSession(VaadinRequest request) {
         return false;

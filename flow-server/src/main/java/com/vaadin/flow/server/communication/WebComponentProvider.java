@@ -108,15 +108,9 @@ public class WebComponentProvider extends SynchronizedRequestHandler
 
     /**
      * Checks whether the request asks for the script of an exported web
-     * component. Such a request does not need a session, see
-     * {@link #canHandleWithoutSession(VaadinRequest)}.
-     *
-     * @param request
-     *            the request to check
-     * @return {@code true} if the request is for a web component script
-     * @since 25.4
+     * component.
      */
-    public static boolean isWebComponentScriptRequest(VaadinRequest request) {
+    private static boolean isWebComponentScriptRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
         return isWebComponentPath(pathInfo)
                 && new ComponentInfo(pathInfo).isJS()

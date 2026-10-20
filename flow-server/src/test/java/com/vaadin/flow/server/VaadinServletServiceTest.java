@@ -375,6 +375,12 @@ class VaadinServletServiceTest {
 
         verify(sessionlessHandler).handleSessionExpired(request, response);
         verify(catchAllHandler, never()).handleSessionExpired(any(), any());
+
+        // When it doesn't answer after all, the other handlers get the chance
+        when(sessionlessHandler.handleSessionExpired(request, response))
+                .thenReturn(false);
+        service.handleSessionExpired(request, response);
+        verify(catchAllHandler).handleSessionExpired(request, response);
     }
 
     private static VaadinServletRequest createFaviconRequest() {
