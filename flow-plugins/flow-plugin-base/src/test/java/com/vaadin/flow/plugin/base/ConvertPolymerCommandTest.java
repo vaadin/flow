@@ -26,12 +26,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
+
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 class ConvertPolymerCommandTest {
     @TempDir
@@ -79,26 +81,26 @@ class ConvertPolymerCommandTest {
 
             FrontendConverter frontendConverter = frontendConverterMock
                     .constructed().get(0);
-            Mockito.verify(frontendConverter)
+            verify(frontendConverter)
                     .convertFile(getTmpFilePath("component.js"), false, false);
-            Mockito.verify(frontendConverter).convertFile(
+            verify(frontendConverter).convertFile(
                     getTmpFilePath("nested/component.js"), false, false);
-            Mockito.verify(frontendConverter, Mockito.never()).convertFile(
+            verify(frontendConverter, never()).convertFile(
                     getTmpFilePath("node_modules/component.js"), false, false);
-            Mockito.verify(frontendConverter, Mockito.never()).convertFile(
+            verify(frontendConverter, never()).convertFile(
                     getTmpFilePath("Component.java"), false, false);
-            Mockito.verify(frontendConverter, Mockito.never()).convertFile(
+            verify(frontendConverter, never()).convertFile(
                     getTmpFilePath("nested/Component.java"), false, false);
 
             ServerConverter serverConverter = serverConverterMock.constructed()
                     .get(0);
-            Mockito.verify(serverConverter)
+            verify(serverConverter)
                     .convertFile(getTmpFilePath("Component.java"));
-            Mockito.verify(serverConverter)
+            verify(serverConverter)
                     .convertFile(getTmpFilePath("nested/Component.java"));
-            Mockito.verify(serverConverter, Mockito.never())
+            verify(serverConverter, never())
                     .convertFile(getTmpFilePath("component.js"));
-            Mockito.verify(serverConverter, Mockito.never())
+            verify(serverConverter, never())
                     .convertFile(getTmpFilePath("nested/component.js"));
         }
     }
@@ -112,16 +114,16 @@ class ConvertPolymerCommandTest {
 
             FrontendConverter frontendConverter = frontendConverterMock
                     .constructed().get(0);
-            Mockito.verify(frontendConverter, Mockito.never())
+            verify(frontendConverter, never())
                     .convertFile(getTmpFilePath("component.js"), false, false);
-            Mockito.verify(frontendConverter).convertFile(
+            verify(frontendConverter).convertFile(
                     getTmpFilePath("nested/component.js"), false, false);
 
             ServerConverter serverConverter = serverConverterMock.constructed()
                     .get(0);
-            Mockito.verify(serverConverter, Mockito.never())
+            verify(serverConverter, never())
                     .convertFile(getTmpFilePath("Component.java"));
-            Mockito.verify(serverConverter, Mockito.never())
+            verify(serverConverter, never())
                     .convertFile(getTmpFilePath("nested/Component.java"));
         }
     }
@@ -135,16 +137,16 @@ class ConvertPolymerCommandTest {
 
             FrontendConverter frontendConverter = frontendConverterMock
                     .constructed().get(0);
-            Mockito.verify(frontendConverter, Mockito.never())
+            verify(frontendConverter, never())
                     .convertFile(getTmpFilePath("component.js"), true, false);
-            Mockito.verify(frontendConverter, Mockito.never()).convertFile(
+            verify(frontendConverter, never()).convertFile(
                     getTmpFilePath("nested/component.js"), true, false);
 
             ServerConverter serverConverter = serverConverterMock.constructed()
                     .get(0);
-            Mockito.verify(serverConverter, Mockito.never())
+            verify(serverConverter, never())
                     .convertFile(getTmpFilePath("Component.java"));
-            Mockito.verify(serverConverter)
+            verify(serverConverter)
                     .convertFile(getTmpFilePath("nested/Component.java"));
         }
     }
@@ -158,9 +160,9 @@ class ConvertPolymerCommandTest {
 
             FrontendConverter frontendConverter = frontendConverterMock
                     .constructed().get(0);
-            Mockito.verify(frontendConverter)
+            verify(frontendConverter)
                     .convertFile(getTmpFilePath("component.js"), true, false);
-            Mockito.verify(frontendConverter).convertFile(
+            verify(frontendConverter).convertFile(
                     getTmpFilePath("nested/component.js"), true, false);
         }
     }
@@ -174,9 +176,9 @@ class ConvertPolymerCommandTest {
 
             FrontendConverter frontendConverter = frontendConverterMock
                     .constructed().get(0);
-            Mockito.verify(frontendConverter)
+            verify(frontendConverter)
                     .convertFile(getTmpFilePath("component.js"), false, true);
-            Mockito.verify(frontendConverter).convertFile(
+            verify(frontendConverter).convertFile(
                     getTmpFilePath("nested/component.js"), false, true);
         }
     }

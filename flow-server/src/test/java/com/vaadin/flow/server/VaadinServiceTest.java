@@ -44,7 +44,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.DetachEvent;
@@ -88,6 +87,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -210,15 +217,15 @@ class VaadinServiceTest {
         };
         service.init();
 
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinRequest request = mock(VaadinRequest.class);
+        VaadinResponse response = mock(VaadinResponse.class);
         service.requestStart(request, response);
 
         assertSame(service, VaadinService.getCurrent());
         assertSame(request, VaadinRequest.getCurrent());
         assertSame(response, VaadinResponse.getCurrent());
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
         VaadinSession.setCurrent(session);
 
         try {
@@ -236,14 +243,14 @@ class VaadinServiceTest {
 
     @Test
     void requestEnd_interceptorFailure_allInterceptorsInvoked_doNotThrowAndThreadLocalsCleared() {
-        VaadinRequestInterceptor interceptor1 = Mockito
-                .mock(VaadinRequestInterceptor.class);
-        VaadinRequestInterceptor interceptor2 = Mockito
-                .mock(VaadinRequestInterceptor.class);
-        Mockito.doThrow(new RuntimeException("BOOM")).when(interceptor2)
+        VaadinRequestInterceptor interceptor1 = mock(
+                VaadinRequestInterceptor.class);
+        VaadinRequestInterceptor interceptor2 = mock(
+                VaadinRequestInterceptor.class);
+        doThrow(new RuntimeException("BOOM")).when(interceptor2)
                 .requestEnd(any(), any(), any());
-        VaadinRequestInterceptor interceptor3 = Mockito
-                .mock(VaadinRequestInterceptor.class);
+        VaadinRequestInterceptor interceptor3 = mock(
+                VaadinRequestInterceptor.class);
 
         VaadinServiceInitListener initListener = event -> {
             event.addVaadinRequestInterceptor(interceptor1);
@@ -255,20 +262,20 @@ class VaadinServiceTest {
         service.init(instantiator);
 
         Map<String, Object> attributes = new HashMap<>();
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request.getAttribute(anyString()))
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getAttribute(anyString()))
                 .then(i -> attributes.get(i.getArgument(0, String.class)));
-        Mockito.doAnswer(i -> attributes.put(i.getArgument(0, String.class),
+        doAnswer(i -> attributes.put(i.getArgument(0, String.class),
                 i.getArgument(1))).when(request)
                 .setAttribute(anyString(), any());
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinResponse response = mock(VaadinResponse.class);
         service.requestStart(request, response);
 
         assertSame(service, VaadinService.getCurrent());
         assertSame(request, VaadinRequest.getCurrent());
         assertSame(response, VaadinResponse.getCurrent());
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        VaadinSession session = mock(VaadinSession.class);
         VaadinSession.setCurrent(session);
 
         try {
@@ -517,8 +524,8 @@ class VaadinServiceTest {
 
     private void runWithClientRoute(String route, boolean flowLayout,
             MockVaadinServletService service, Runnable runnable) {
-        try (MockedStatic<MenuRegistry> menuRegistry = Mockito
-                .mockStatic(MenuRegistry.class)) {
+        try (MockedStatic<MenuRegistry> menuRegistry = mockStatic(
+                MenuRegistry.class)) {
             menuRegistry
                     .when(() -> MenuRegistry.collectClientMenuItems(false,
                             service.getDeploymentConfiguration()))
@@ -548,7 +555,7 @@ class VaadinServiceTest {
         assertEquals(1, vaadinSession.getCloseCount(),
                 "'fireSessionDestroy' method doesn't call 'close' for the session");
 
-        vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(mock(HttpSessionBindingEvent.class));
 
         assertEquals(1, vaadinSession.getCloseCount(),
                 "'fireSessionDestroy' method may not call 'close' "
@@ -723,13 +730,11 @@ class VaadinServiceTest {
     void serviceContainsStreamRequestHandler()
             throws ServiceException, ServletException {
         ServletConfig servletConfig = new MockServletConfig();
-        Lookup lookup = Mockito.mock(Lookup.class);
+        Lookup lookup = mock(Lookup.class);
         servletConfig.getServletContext().setAttribute(Lookup.class.getName(),
                 lookup);
-        StaticFileHandlerFactory factory = Mockito
-                .mock(StaticFileHandlerFactory.class);
-        Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
-                .thenReturn(factory);
+        StaticFileHandlerFactory factory = mock(StaticFileHandlerFactory.class);
+        when(lookup.lookup(StaticFileHandlerFactory.class)).thenReturn(factory);
         VaadinServlet servlet = new VaadinServlet() {
             @Override
             protected DeploymentConfiguration createDeploymentConfiguration() {
@@ -823,7 +828,7 @@ class VaadinServiceTest {
 
         InstantiatorFactory factory = createInstantiatorFactory();
 
-        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
+        when(lookup.lookupAll(InstantiatorFactory.class))
                 .thenReturn(Collections.singletonList(factory));
 
         Optional<Instantiator> loadedInstantiator = service.loadInstantiators();
@@ -843,7 +848,7 @@ class VaadinServiceTest {
         InstantiatorFactory factory1 = createInstantiatorFactory();
         InstantiatorFactory factory2 = createInstantiatorFactory();
 
-        Mockito.when(lookup.lookupAll(InstantiatorFactory.class))
+        when(lookup.lookupAll(InstantiatorFactory.class))
                 .thenReturn(Arrays.asList(factory1, factory2));
 
         assertThrows(ServiceException.class, () -> service.loadInstantiators());
@@ -852,12 +857,12 @@ class VaadinServiceTest {
     @Test
     void createRequestHandlers_pwaHandlerIsInList_webComponentHandlersAreInList()
             throws ServiceException {
-        TestVaadinService service = Mockito.mock(TestVaadinService.class);
-        I18NProvider i18NProvider = Mockito.mock(DefaultI18NProvider.class);
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
-        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
-        Mockito.doCallRealMethod().when(service).createRequestHandlers();
+        TestVaadinService service = mock(TestVaadinService.class);
+        I18NProvider i18NProvider = mock(DefaultI18NProvider.class);
+        Instantiator instantiator = mock(Instantiator.class);
+        when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
+        when(service.getInstantiator()).thenReturn(instantiator);
+        doCallRealMethod().when(service).createRequestHandlers();
 
         List<RequestHandler> handlers = service.createRequestHandlers();
         Set<?> set = handlers.stream().map(Object::getClass)
@@ -887,8 +892,8 @@ class VaadinServiceTest {
     @Test
     void removeFromHttpSession_setExplicitSessionCloseAttribute()
             throws ServiceException {
-        WrappedSession httpSession = Mockito.mock(WrappedSession.class);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
+        WrappedSession httpSession = mock(WrappedSession.class);
+        VaadinSession session = mock(VaadinSession.class);
         VaadinService service = new MockVaadinServletService() {
 
             @Override
@@ -907,26 +912,26 @@ class VaadinServiceTest {
 
     @Test
     void reinitializeSession_setVaadinSessionAttriuteWithLock() {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinRequest request = mock(VaadinRequest.class);
 
-        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
-        VaadinSession newVaadinSession = Mockito.mock(VaadinSession.class);
+        VaadinSession vaadinSession = mock(VaadinSession.class);
+        VaadinSession newVaadinSession = mock(VaadinSession.class);
 
         WrappedSession session = mockSession(request, vaadinSession, "foo");
 
-        Mockito.doAnswer(invocation -> {
+        doAnswer(invocation -> {
             mockSession(request, newVaadinSession, "bar");
             return null;
         }).when(session).invalidate();
 
         VaadinService.reinitializeSession(request);
 
-        Mockito.verify(vaadinSession, Mockito.times(2)).lock();
-        Mockito.verify(vaadinSession).setAttribute(
+        verify(vaadinSession, times(2)).lock();
+        verify(vaadinSession).setAttribute(
                 VaadinService.PRESERVE_UNBOUND_SESSION_ATTRIBUTE, Boolean.TRUE);
-        Mockito.verify(vaadinSession).setAttribute(
+        verify(vaadinSession).setAttribute(
                 VaadinService.PRESERVE_UNBOUND_SESSION_ATTRIBUTE, null);
-        Mockito.verify(vaadinSession, Mockito.times(2)).unlock();
+        verify(vaadinSession, times(2)).unlock();
     }
 
     @Test
@@ -1042,18 +1047,17 @@ class VaadinServiceTest {
 
     private WrappedSession mockSession(VaadinRequest request,
             VaadinSession vaadinSession, String attributeName) {
-        WrappedSession session = Mockito.mock(WrappedSession.class);
-        Mockito.when(request.getWrappedSession()).thenReturn(session);
+        WrappedSession session = mock(WrappedSession.class);
+        when(request.getWrappedSession()).thenReturn(session);
 
-        Mockito.when(session.getAttributeNames())
+        when(session.getAttributeNames())
                 .thenReturn(Collections.singleton(attributeName));
 
-        Mockito.when(session.getAttribute(attributeName))
-                .thenReturn(vaadinSession);
+        when(session.getAttribute(attributeName)).thenReturn(vaadinSession);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
+        VaadinService service = mock(VaadinService.class);
 
-        Mockito.when(vaadinSession.getService()).thenReturn(service);
+        when(vaadinSession.getService()).thenReturn(service);
         return session;
     }
 
@@ -1147,11 +1151,10 @@ class VaadinServiceTest {
     }
 
     private InstantiatorFactory createInstantiatorFactory() {
-        InstantiatorFactory factory = Mockito.mock(InstantiatorFactory.class);
+        InstantiatorFactory factory = mock(InstantiatorFactory.class);
 
-        Instantiator instantiator = Mockito.mock(Instantiator.class);
-        Mockito.when((factory.createInstantitor(any())))
-                .thenReturn(instantiator);
+        Instantiator instantiator = mock(Instantiator.class);
+        when((factory.createInstantitor(any()))).thenReturn(instantiator);
 
         return factory;
     }

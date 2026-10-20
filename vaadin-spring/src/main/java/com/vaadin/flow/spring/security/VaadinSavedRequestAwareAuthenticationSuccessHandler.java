@@ -127,6 +127,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      * works for form and OAuth2 login as well as for login from a Hilla client.
      *
      * @see #setSuccessUrlResolver(SuccessUrlResolver)
+     * @since 25.4
      */
     @FunctionalInterface
     public interface SuccessUrlResolver {
@@ -365,6 +366,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      * @param successUrlResolver
      *            the resolver to use, or {@code null} to remove a previously
      *            set resolver
+     * @since 25.4
      */
     public void setSuccessUrlResolver(SuccessUrlResolver successUrlResolver) {
         this.successUrlResolver = successUrlResolver;

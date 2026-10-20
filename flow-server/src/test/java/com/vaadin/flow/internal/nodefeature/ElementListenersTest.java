@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -56,8 +55,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class ElementListenersTest
         extends AbstractNodeFeatureTest<ElementListenerMap> {
@@ -170,7 +171,7 @@ public class ElementListenersTest
         Registration handle2 = ns.add("eventType", del2).addEventData("data2");
         Registration handle3 = ns.add("eventTypeOther", del3)
                 .addEventData("data3");
-        Mockito.reset(ns);
+        reset(ns);
 
         Set<String> expressions = getExpressions("eventType");
         expressions.addAll(getExpressions("eventTypeOther"));
@@ -181,8 +182,7 @@ public class ElementListenersTest
 
         handle1.remove();
 
-        Mockito.verify(ns, times(1)).put(eq("eventType"),
-                any(Serializable.class));
+        verify(ns, times(1)).put(eq("eventType"), any(Serializable.class));
 
         expressions = getExpressions("eventType");
         expressions.addAll(getExpressions("eventTypeOther"));
@@ -193,8 +193,7 @@ public class ElementListenersTest
 
         handle2.remove();
         // updating settings does not take place a second time
-        Mockito.verify(ns, times(1)).put(eq("eventType"),
-                any(Serializable.class));
+        verify(ns, times(1)).put(eq("eventType"), any(Serializable.class));
 
         expressions = getExpressions("eventType");
         expressions.addAll(getExpressions("eventTypeOther"));

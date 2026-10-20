@@ -62,6 +62,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      * {@link #initAtmosphereForVaadinServlet(ServletRegistration, ServletContext)}.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @since 25.4
      */
     public static final String SKIP_INITIALIZATION_ATTRIBUTE = "com.vaadin.flow.server.communication.skipAtmosphereInitialization";
 

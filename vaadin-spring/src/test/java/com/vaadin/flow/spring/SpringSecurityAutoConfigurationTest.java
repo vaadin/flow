@@ -23,10 +23,7 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 import java.util.function.Function;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -59,6 +56,14 @@ import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class SpringSecurityAutoConfigurationTest {
 
@@ -218,30 +223,26 @@ class SpringSecurityAutoConfigurationTest {
         assertThat(context).hasSingleBean(NavigationAccessControl.class);
         NavigationAccessControl control = context
                 .getBean(NavigationAccessControl.class);
-        NavigationContext navigationContext = Mockito
-                .mock(NavigationContext.class);
-        Mockito.when(navigationContext.getNavigationTarget())
+        NavigationContext navigationContext = mock(NavigationContext.class);
+        when(navigationContext.getNavigationTarget())
                 .thenReturn((Class) Component.class);
-        Mockito.when(navigationContext.getLocation())
-                .thenReturn(new Location("path"));
-        Mockito.when(navigationContext.allow()).thenCallRealMethod();
-        Mockito.when(navigationContext.neutral()).thenCallRealMethod();
-        Mockito.when(navigationContext.deny(ArgumentMatchers.anyString()))
-                .thenCallRealMethod();
+        when(navigationContext.getLocation()).thenReturn(new Location("path"));
+        when(navigationContext.allow()).thenCallRealMethod();
+        when(navigationContext.neutral()).thenCallRealMethod();
+        when(navigationContext.deny(anyString())).thenCallRealMethod();
 
         AccessCheckResult result = control.checkAccess(navigationContext,
                 false);
         assertThat(result.decision()).isEqualTo(AccessCheckDecision.DENY);
         assertThat(result.reason()).isEqualTo("Custom Implementation");
 
-        Mockito.verify(navigationContext, Mockito.times(2))
-                .deny(ArgumentMatchers.anyString());
-        Mockito.verify(navigationContext, Mockito.never()).allow();
-        Mockito.verify(navigationContext, Mockito.never()).neutral();
+        verify(navigationContext, times(2)).deny(anyString());
+        verify(navigationContext, never()).allow();
+        verify(navigationContext, never()).neutral();
     }
 
     private <T> void assertObjectIsSerializable(T instance) {
-        Object deserialized = Assertions.assertDoesNotThrow(() -> {
+        Object deserialized = assertDoesNotThrow(() -> {
             ByteArrayOutputStream bs = new ByteArrayOutputStream();
             try (ObjectOutputStream out = new ObjectOutputStream(bs)) {
                 out.writeObject(instance);
@@ -255,7 +256,7 @@ class SpringSecurityAutoConfigurationTest {
                 return readObject;
             }
         });
-        Assertions.assertNotNull(deserialized, "Deserialized object is null");
+        assertNotNull(deserialized, "Deserialized object is null");
     }
 
     @TestConfiguration(proxyBeanMethods = false)

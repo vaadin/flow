@@ -36,6 +36,7 @@ import java.util.EventObject;
  * </pre>
  *
  * @see UnsupportedBrowserHandler
+ * @since 25.3.3
  */
 public class UnsupportedBrowserEvent extends EventObject {
 
