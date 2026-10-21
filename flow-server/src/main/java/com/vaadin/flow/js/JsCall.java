@@ -22,9 +22,7 @@ import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
@@ -64,16 +62,22 @@ public record JsCall(Class<?> definitionType, String methodName,
         List<Object> arguments) implements Serializable {
 
     /**
-     * The methods of each JavaScript definition, mapped to the identifier of
-     * the function each one declares, or to <code>null</code> for a method that
-     * declares no JavaScript. Cached since a call is resolved several times
+     * The methods of each JavaScript definition, each with the identifier of
+     * the function it declares. Cached since a call is resolved several times
      * when it is sent, and resolving it otherwise copies the methods of the
      * interface and hashes the declared JavaScript every time. Keyed by any
      * class, since a JavaScript definition is marked by an annotation rather
      * than by a common supertype.
      */
-    private static final ReflectionCache<Object, Map<Method, @Nullable String>> functionIds = new ReflectionCache<>(
-            JsCall::collectFunctionIds);
+    private static final ReflectionCache<Object, List<DeclaredMethod>> declaredMethods = new ReflectionCache<>(
+            JsCall::collectDeclaredMethods);
+
+    /**
+     * A method of a JavaScript definition and the identifier of the function it
+     * declares, or <code>null</code> for a method that declares no JavaScript.
+     */
+    private record DeclaredMethod(Method method, @Nullable String functionId) {
+    }
 
     /**
      * Creates a call of the given method of the given JavaScript definition.
@@ -129,8 +133,7 @@ public record JsCall(Class<?> definitionType, String methodName,
      * @return the function identifier, not <code>null</code>
      */
     public String getFunctionId() {
-        String functionId = functionIds.get(definitionType)
-                .get(resolveMethod());
+        String functionId = resolveMethod().functionId();
         if (functionId == null) {
             throw notDeclaredException();
         }
@@ -149,7 +152,7 @@ public record JsCall(Class<?> definitionType, String methodName,
      * @return <code>true</code> when the called method is variadic
      */
     public boolean isVariadic() {
-        return resolveMethod().isVarArgs();
+        return resolveMethod().method().isVarArgs();
     }
 
     /**
@@ -217,7 +220,7 @@ public record JsCall(Class<?> definitionType, String methodName,
      * @return the JavaScript expression, not <code>null</code>
      */
     public String getExpression() {
-        return expressionOf(resolveMethod());
+        return expressionOf(resolveMethod().method());
     }
 
     private String expressionOf(Method method) {
@@ -255,7 +258,8 @@ public record JsCall(Class<?> definitionType, String methodName,
                             + definitionType.getName());
         }
         try {
-            return resolveMethod().invoke(implementation, arguments.toArray());
+            return resolveMethod().method().invoke(implementation,
+                    arguments.toArray());
         } catch (IllegalAccessException | InvocationTargetException e) {
             Throwable cause = e instanceof InvocationTargetException
                     ? e.getCause()
@@ -275,11 +279,13 @@ public record JsCall(Class<?> definitionType, String methodName,
      * only in parameter types are not distinguishable this way, which is a
      * limitation of the prototype rather than of the idea.
      */
-    private Method resolveMethod() {
-        List<Method> candidates = functionIds.get(definitionType).keySet()
+    private DeclaredMethod resolveMethod() {
+        List<DeclaredMethod> candidates = declaredMethods.get(definitionType)
                 .stream()
-                .filter(method -> method.getName().equals(methodName)
-                        && method.getParameterCount() == arguments.size())
+                .filter(declared -> declared.method().getName()
+                        .equals(methodName)
+                        && declared.method().getParameterCount() == arguments
+                                .size())
                 .toList();
         if (candidates.size() != 1) {
             throw new IllegalStateException("Expected exactly one method named "
@@ -290,17 +296,17 @@ public record JsCall(Class<?> definitionType, String methodName,
         return candidates.get(0);
     }
 
-    private static Map<Method, @Nullable String> collectFunctionIds(
+    private static List<DeclaredMethod> collectDeclaredMethods(
             Class<?> definitionType) {
-        Map<Method, @Nullable String> functionIds = new LinkedHashMap<>();
+        List<DeclaredMethod> declared = new ArrayList<>();
         for (Method method : definitionType.getMethods()) {
             JsExpression annotation = method.getAnnotation(JsExpression.class);
-            functionIds.put(method,
+            declared.add(new DeclaredMethod(method,
                     annotation == null ? null
                             : functionId(annotation.value(),
                                     method.getParameterCount(),
-                                    method.isVarArgs()));
+                                    method.isVarArgs())));
         }
-        return Collections.unmodifiableMap(functionIds);
+        return List.copyOf(declared);
     }
 }
