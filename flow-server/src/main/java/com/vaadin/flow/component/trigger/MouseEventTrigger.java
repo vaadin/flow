@@ -18,35 +18,26 @@ package com.vaadin.flow.component.trigger;
 import com.vaadin.flow.component.Component;
 
 /**
- * Common super class for triggers that fire on a DOM {@code MouseEvent} —
- * {@link ClickTrigger}, {@link DoubleClickTrigger}, and any future mouse-event
- * trigger.
- * <p>
- * Example — run a server-side callback when the pointer enters a panel:
- *
- * <pre>{@code
- * new MouseEventTrigger(panel, "mouseenter")
- *         .triggers(new CallbackAction<>(() -> showHint()));
- * }</pre>
+ * Common super class for triggers that fire on a DOM {@code MouseEvent}:
+ * {@link ClickTrigger} and {@link DoubleClickTrigger}. To listen for another
+ * mouse event, such as {@code "mouseenter"}, use {@link DomEventTrigger}.
  *
  * @since 25.4
  */
-public class MouseEventTrigger extends DomEventTrigger {
+public abstract sealed class MouseEventTrigger extends DomEventTrigger
+        permits ClickTrigger, DoubleClickTrigger {
 
     /**
      * Creates a mouse-event trigger that fires when the host receives a DOM
-     * event with the given name. Subclasses such as {@link ClickTrigger} bind a
-     * specific event name; instantiate this class directly only when none of
-     * the dedicated subclasses fits (e.g. for {@code "mouseover"}).
+     * event with the given name.
      *
      * @param host
      *            the component whose root element listens for the event, not
      *            {@code null}
      * @param eventName
-     *            the DOM mouse-event name (e.g. {@code "click"},
-     *            {@code "mousedown"}), not {@code null}
+     *            the DOM mouse-event name, not {@code null}
      */
-    public MouseEventTrigger(Component host, String eventName) {
+    MouseEventTrigger(Component host, String eventName) {
         super(host, eventName);
     }
 }

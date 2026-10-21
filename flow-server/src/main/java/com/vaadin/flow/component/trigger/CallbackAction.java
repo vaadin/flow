@@ -33,7 +33,10 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 /**
- * Runs a server-side callback on the UI thread when the trigger fires.
+ * Runs a server-side callback on the UI thread when the trigger fires. Each
+ * firing is a round trip: the rendered JS calls a
+ * {@link ReturnChannelRegistration}, and the server runs the callback when the
+ * call arrives.
  * <p>
  * Example — run a callback when the button is clicked:
  *
@@ -45,11 +48,11 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * <p>
  * Forwarding a value from the client to the callback, with the
  * {@link #CallbackAction(Class, SerializableConsumer, ActionInput)}
- * constructor, is for internal use only. The rendered JS then calls a
- * {@link ReturnChannelRegistration} that, on the server, decodes the JSON value
- * as {@code T} and invokes the callback. A null value on the wire (a JSON
+ * constructor, is for internal use only. The server then decodes the JSON value
+ * as {@code T} before invoking the callback. A null value on the wire (a JSON
  * {@code null} or a missing argument) is rejected with
  * {@link IllegalStateException} — callbacks see decoded, non-null values only.
+ * <p>
  * A separate channel is registered per host node, so the same action instance
  * can be wired to triggers hosted on different elements without leaking
  * registrations across them.
