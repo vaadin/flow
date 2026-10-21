@@ -54,7 +54,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -208,7 +207,6 @@ class WebComponentProviderTest {
     }
 
     @Test
-    @SuppressWarnings("removal")
     void handleWebComponentRequest_overridden_usedForRequests()
             throws IOException {
         registry = setupConfigurations(MyComponentExporter.class);
@@ -225,10 +223,7 @@ class WebComponentProviderTest {
                 .thenReturn("/web-component/my-component.js");
 
         assertTrue(customProvider.handleRequest(request, response));
-        // Still used when the provider is called as a regular request handler
-        assertTrue(customProvider.synchronizedHandleRequest(
-                mock(VaadinSession.class), request, response));
-        assertEquals(List.of(request, request), handled);
+        assertEquals(List.of(request), handled);
     }
 
     @Test
