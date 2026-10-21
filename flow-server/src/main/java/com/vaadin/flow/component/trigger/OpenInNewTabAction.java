@@ -82,7 +82,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  *         "noopener,noreferrer,width=600,height=400"));
  * }</pre>
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class OpenInNewTabAction extends Action {
 

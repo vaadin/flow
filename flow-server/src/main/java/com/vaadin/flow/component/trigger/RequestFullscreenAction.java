@@ -63,7 +63,7 @@ import com.vaadin.flow.function.SerializableRunnable;
  * new ClickTrigger(button).triggers(goFs);
  * }</pre>
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class RequestFullscreenAction extends PromiseAction<Void> {
 

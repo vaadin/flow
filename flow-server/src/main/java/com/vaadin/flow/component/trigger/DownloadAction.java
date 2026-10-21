@@ -73,7 +73,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * new ClickTrigger(button).triggers(new DownloadAction(currentUrl));
  * }</pre>
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class DownloadAction extends Action {
 

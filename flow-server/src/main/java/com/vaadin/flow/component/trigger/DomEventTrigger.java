@@ -37,7 +37,7 @@ import com.vaadin.flow.shared.Registration;
  * }</pre>
  *
  *
- * @since 25.2
+ * @since 25.4
  */
 public class DomEventTrigger extends Trigger {
 

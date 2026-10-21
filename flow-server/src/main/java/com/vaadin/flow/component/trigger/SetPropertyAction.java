@@ -49,7 +49,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * @param <T>
  *            the runtime type of the value to assign
- * @since 25.2
+ * @since 25.4
  */
 public final class SetPropertyAction<T> extends Action {
 

@@ -64,7 +64,7 @@ import com.vaadin.flow.shared.Registration;
  * {@link #addCleanup(Registration)} are for internal use only and may be
  * changed or removed in any release.
  *
- * @since 25.2
+ * @since 25.4
  */
 public abstract class Trigger implements Serializable {
 
@@ -95,7 +95,6 @@ public abstract class Trigger implements Serializable {
      *
      * @param host
      *            the element the trigger fires on, not {@code null}
-     * @since 25.3
      */
     protected Trigger(Element host) {
         this.host = Objects.requireNonNull(host, "host must not be null");
@@ -189,7 +188,6 @@ public abstract class Trigger implements Serializable {
      * @param action
      *            supplies the action to wire once {@code attachTarget} is
      *            attached, not {@code null}
-     * @since 25.2.1
      */
     public final void triggers(Component attachTarget,
             SerializableSupplier<Action> action) {

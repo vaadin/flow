@@ -57,7 +57,7 @@ import com.vaadin.flow.signals.Signal;
  *
  * @param <T>
  *            the runtime type of the value produced
- * @since 25.2
+ * @since 25.4
  */
 public final class SignalInput<T> extends Action.Input<T> {
 

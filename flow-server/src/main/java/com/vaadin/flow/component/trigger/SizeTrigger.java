@@ -47,7 +47,7 @@ import com.vaadin.flow.shared.Registration;
  * }</pre>
  *
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class SizeTrigger extends Trigger {
 
@@ -66,7 +66,6 @@ public final class SizeTrigger extends Trigger {
      *
      * @param host
      *            the element that is observed, not {@code null}
-     * @since 25.3
      */
     public SizeTrigger(Element host) {
         super(host);

@@ -13,18 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger.internal;
+package com.vaadin.flow.component;
 
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.Action;
 import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.component.trigger.DomEventTrigger;
 import com.vaadin.flow.component.trigger.MouseEventTrigger;
 import com.vaadin.flow.component.trigger.Trigger;
+import com.vaadin.flow.component.trigger.internal.HandlerInput;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -32,12 +32,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Verifies that the trigger framework can be extended from outside its own
- * package: a custom {@link Action} can consume any {@link Action.Input} it
- * receives as a parameter (via the public {@link Action.Input#toJs(Trigger)}),
- * and a custom trigger family can reuse {@link HandlerInput} for its
- * handler-scoped event properties instead of subclassing {@code Action.Input}
- * by hand.
+ * Verifies that framework code in other packages can extend the trigger API
+ * through its internal hooks: a custom {@link Action} can consume any
+ * {@link Action.Input} it receives as a parameter (via
+ * {@link Action.Input#toJs(Trigger)}), and a custom trigger family can reuse
+ * {@link HandlerInput} for its handler-scoped event properties instead of
+ * subclassing {@code Action.Input} by hand.
  */
 class CrossPackageExtensionTest {
 
@@ -49,7 +49,7 @@ class CrossPackageExtensionTest {
 
     /**
      * A custom action that takes an arbitrary input and embeds it in its own JS
-     * — the shape a component author outside the trigger package writes.
+     * — the shape framework code outside the trigger package writes.
      */
     private static class LogAction extends Action {
 

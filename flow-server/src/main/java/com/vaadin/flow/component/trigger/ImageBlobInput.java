@@ -33,7 +33,7 @@ import com.vaadin.flow.dom.JsFunction;
  * network — the action calls the TS helper with the live {@link Element}
  * reference and the canvas conversion happens entirely on the client.
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class ImageBlobInput extends Action.Input<Object> {
 

@@ -50,7 +50,7 @@ import com.vaadin.flow.function.SerializableRunnable;
  * {@code onError} receives a {@link PromiseAction.Error} record with the
  * browser's error name and message.
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class WriteToClipboardAction extends PromiseAction<String> {
 

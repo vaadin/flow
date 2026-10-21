@@ -34,7 +34,7 @@ import com.vaadin.flow.shared.Registration;
  * elapses; because it lives in the browser, it also never fires if the host's
  * client DOM goes away (page reload, navigation, …) first.
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class TimeoutTrigger extends Trigger {
 

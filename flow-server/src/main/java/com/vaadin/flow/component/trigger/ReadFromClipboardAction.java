@@ -54,7 +54,7 @@ import com.vaadin.flow.function.SerializableConsumer;
  *                 .show("Clipboard read denied: " + err.message())));
  * }</pre>
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class ReadFromClipboardAction
         extends PromiseAction<ClipboardPayload> {

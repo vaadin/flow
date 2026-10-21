@@ -50,7 +50,7 @@ import com.vaadin.flow.dom.JsFunction;
  * inputs through {@link Input#toJs(Trigger)} so the same value-supplier
  * abstractions work with every action.
  *
- * @since 25.2
+ * @since 25.4
  */
 public abstract class Action implements Serializable {
 

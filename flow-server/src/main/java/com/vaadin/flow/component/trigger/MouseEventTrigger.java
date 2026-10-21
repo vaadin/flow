@@ -42,7 +42,7 @@ import com.vaadin.flow.component.Component;
  * }</pre>
  *
  *
- * @since 25.2
+ * @since 25.4
  */
 public class MouseEventTrigger extends DomEventTrigger {
 

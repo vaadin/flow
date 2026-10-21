@@ -36,7 +36,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * @param <T>
  *            the runtime type of the value produced
- * @since 25.2
+ * @since 25.4
  */
 public final class PropertyInput<T> extends Action.Input<T> {
 

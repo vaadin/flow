@@ -43,7 +43,7 @@ import com.vaadin.flow.function.SerializableRunnable;
  * (no gesture, permissions policy block) and for the {@code AbortError} the
  * browser reports when the user dismisses the sheet without picking a target.
  *
- * @since 25.2
+ * @since 25.4
  */
 public final class ShareAction extends PromiseAction<Void> {
 
