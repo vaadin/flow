@@ -6,6 +6,14 @@ on:
     - cron: '0 4 * * 1'
   workflow_dispatch:  # Allow manual trigger
 
+env:
+  # The same flags validation.yml sets, for the same reason: a 403 from Central
+  # is retried rather than failing the build outright. See the note there.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
+    -Daether.connector.http.connectionMaxTtl=25
+
 jobs:
   update-dependencies:
     runs-on: ubuntu-26.04
@@ -41,22 +49,36 @@ jobs:
           java-version-file: .tool-versions
           distribution: 'temurin'
 
-      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      # Restore only: scheduled runs save into the default branch's scope,
+      # which warm-caches.yml maintains.
+      - uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
 
-      # The script only edits the dependency templates in flow-server. Build
-      # the modules the test-npm production build needs, then run that build
-      # so npm install regenerates the checked-in package-lock.json against
-      # the updated templates.
+      # The script only edits the dependency templates in flow-server. The
+      # test-npm production build runs npm install against them, which
+      # regenerates its checked-in package-lock.json. flow-maven-plugin is not
+      # a dependency of the module, so -am does not build it on its own.
+      # -DsharedModules and -Prun-tests put the module in the reactor, which
+      # -DskipTests would leave out; -Djetty.skip keeps install from starting
+      # the integration test server. If the build fails, keep the old lock and
+      # still open the PR, so a bump that breaks the build gets reviewed.
       - name: Update package lock files
         run: |
-          mvn install -B -ntp -q -DskipTests -Dmaven.javadoc.skip=true \
-            -pl flow-tests/test-resources,flow-polymer-template,flow-lit-template,flow-plugins/flow-maven-plugin -am
-          mvn prepare-package -B -ntp -DskipTests \
-            -f flow-tests/test-frontend/test-npm/pom-production.xml
+          cmd="mvn install -B -ntp -DskipTests -DsharedModules -Prun-tests -Djetty.skip -pl flow-plugins/flow-maven-plugin,:flow-test-npm-production -am"
+          if ! { $cmd -T 2C -q || $cmd; }; then
+            git checkout -- flow-tests/test-frontend/test-npm/package-lock.json
+            echo "::warning::Frontend build failed, package-lock.json was not updated"
+            {
+              echo "LOCK_WARNING<<LOCK_WARNING_EOF"
+              echo ""
+              echo "Warning: the frontend build failed, so package-lock.json was not"
+              echo "updated. See the workflow run for details."
+              echo "LOCK_WARNING_EOF"
+            } >> "$GITHUB_ENV"
+          fi
 
       - name: Determine update strategy description
         run: |
@@ -75,6 +97,7 @@ jobs:
           commit-message: |
             chore: Update frontend dependencies (${{ matrix.branch }})
             ${{ env.DEPRECATION_WARNING }}
+            ${{ env.LOCK_WARNING }}
           title: "chore: Update frontend dependencies (${{ matrix.branch }})"
           body: |
             ## Automated Frontend Dependency Updates
