@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,6 +59,15 @@ public class TaskUpdatePackages extends NodeUpdater {
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
     private final File jarResourcesFolder;
+    private ObjectNode allPinnedNpmDependencies;
+    private ObjectNode pinnedNpmDependencies;
+
+    /**
+     * A version npm resolves within a known minor or major: an exact version, a
+     * tilde range or a caret range, each with a full major.minor.patch.
+     */
+    private static final Pattern RANGE_CHECKED_VERSION = Pattern
+            .compile("[~^]?\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?");
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -85,6 +95,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies,
                     scannedApplicationDevDependencies);
+            warnOnVersionRangeMismatch(packageJson);
+
             generateVersionsJson(packageJson);
             modified = pinVersionsForNpm(packageJson) || modified;
 
@@ -544,7 +556,29 @@ public class TaskUpdatePackages extends NodeUpdater {
      * @see PinnedNpmVersions
      */
     private ObjectNode getAllPinnedNpmDependencies() throws IOException {
-        return getPinnedNpmVersions().getAllDependencies();
+        // Read once per run, as merging the versions files warns about the
+        // packages they disagree on
+        if (allPinnedNpmDependencies == null) {
+            allPinnedNpmDependencies = getPinnedNpmVersions()
+                    .getAllDependencies();
+        }
+        return allPinnedNpmDependencies;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Read once per run, as merging the versions files warns about the packages
+     * they disagree on and about the ones package.json pins to an older
+     * version.
+     */
+    @Override
+    ObjectNode getPinnedNpmDependencies() throws IOException {
+        if (pinnedNpmDependencies == null) {
+            pinnedNpmDependencies = super.getPinnedNpmDependencies();
+        }
+        // A copy, as the callers add to what they get
+        return pinnedNpmDependencies.deepCopy();
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
@@ -805,6 +839,146 @@ public class TaskUpdatePackages extends NodeUpdater {
         packageJsonDeps.put(pkg, pinnedVersion);
         vaadinDeps.put(pkg, pinnedVersion);
         return true;
+    }
+
+    /**
+     * Warns about packages the versions files pin, that the project has
+     * declared in the {@code dependencies} or {@code devDependencies} of
+     * {@code package.json} with a version from a different minor or major range
+     * than the one the current Vaadin version pins them to.
+     * <p>
+     * This is checked once the dependencies have been updated, so that a
+     * version the build overwrites with the one it ships is not reported. Only
+     * values that differ from the ones Vaadin manages (kept in the
+     * {@code vaadin} section) are considered, as those are the explicit
+     * opt-outs that the build leaves untouched. Entries in the
+     * {@code overrides} section are intentionally not reported here, as those
+     * are reconciled with the pinned versions by the override management.
+     * Declaring a package with another maintenance (patch) release of the same
+     * minor is a supported way of picking up a fix early, but using a different
+     * minor or major version is usually a mistake, since the rest of the
+     * platform is built and tested against the pinned version. Such mismatches
+     * can lead to runtime errors or broken generated frontend files (a blank
+     * page).
+     *
+     * @param packageJson
+     *            the package.json with the dependencies updated, before the
+     *            overrides pin the versions
+     * @throws IOException
+     *             if the versions files cannot be read
+     */
+    void warnOnVersionRangeMismatch(ObjectNode packageJson) throws IOException {
+        // With the web components excluded, Vaadin uses none of them, so they
+        // are the project's own to manage. Otherwise even a package pinned for
+        // another mode is checked, as the overrides still force the declared
+        // version on its transitive uses.
+        final ObjectNode expectedVersions = options.isNpmExcludeWebComponents()
+                ? getPinnedNpmDependencies()
+                : getAllPinnedNpmDependencies();
+        final JsonNode vaadin = packageJson.get(VAADIN_DEP_KEY);
+
+        // Collect mismatches into a single warning to avoid flooding the log
+        // when a whole platform worth of packages has drifted.
+        final List<String> mismatches = new ArrayList<>();
+        collectRangeMismatches(sectionToMap(packageJson.get(DEPENDENCIES)),
+                sectionToMap(vaadin == null ? null : vaadin.get(DEPENDENCIES)),
+                expectedVersions, DEPENDENCIES, mismatches);
+        collectRangeMismatches(sectionToMap(packageJson.get(DEV_DEPENDENCIES)),
+                sectionToMap(
+                        vaadin == null ? null : vaadin.get(DEV_DEPENDENCIES)),
+                expectedVersions, DEV_DEPENDENCIES, mismatches);
+
+        if (!mismatches.isEmpty()) {
+            log().warn(
+                    """
+                            The following packages are pinned in package.json to a different \
+                            minor/major version than the version expected by the current Vaadin \
+                            version. Pinning to another maintenance release is supported, but \
+                            using a different minor or major version is usually a mistake and may \
+                            cause runtime errors or a blank page:
+                            {}
+                            Unless these versions are intentional, remove the entries from \
+                            package.json and clean the frontend ('mvn vaadin:clean-frontend' \
+                            with Maven, 'gradle vaadinClean' with Gradle) to reset it to a clean \
+                            state.""",
+                    String.join("\n", mismatches));
+        }
+    }
+
+    private void collectRangeMismatches(Map<String, String> projectSection,
+            Map<String, String> vaadinSection, ObjectNode expectedVersions,
+            String location, List<String> mismatches) {
+        for (Map.Entry<String, String> entry : projectSection.entrySet()) {
+            final String pkg = entry.getKey();
+            final FrontendVersion expected = parseVersion(
+                    expectedVersions.has(pkg)
+                            ? expectedVersions.get(pkg).asString()
+                            : null);
+            if (expected == null) {
+                continue;
+            }
+            // Skip values managed by Vaadin: the build updates those itself, so
+            // any range difference is transient and not a user mistake.
+            if (entry.getValue().equals(vaadinSection.get(pkg))) {
+                continue;
+            }
+            if (resolvesOutsideRange(entry.getValue(), expected)) {
+                mismatches.add(String.format("  - %s: %s (in %s), expected %s",
+                        pkg, entry.getValue(), location,
+                        expected.getFullVersion()));
+            }
+        }
+    }
+
+    private FrontendVersion parseVersion(String version) {
+        if (version == null) {
+            return null;
+        }
+        try {
+            return new FrontendVersion(version);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Tells whether a version declared in package.json resolves to a different
+     * minor or major version than the expected one. An exact version and a
+     * tilde range stay within their minor, while a caret range accepts any
+     * later minor of its major (from 1.0.0 on), so for it only the major is
+     * compared. Versions without a minor or patch, compound and other ranges,
+     * tags, URLs and file links are not reported, as what they resolve to is
+     * not known here.
+     */
+    private boolean resolvesOutsideRange(String declared,
+            FrontendVersion expected) {
+        if (!RANGE_CHECKED_VERSION.matcher(declared).matches()) {
+            return false;
+        }
+        final boolean caret = declared.startsWith("^");
+        final FrontendVersion actual = parseVersion(declared);
+        if (actual == null) {
+            return false;
+        }
+        if (expected.getMajorVersion() != actual.getMajorVersion()) {
+            return true;
+        }
+        final boolean anyMinor = caret && actual.getMajorVersion() > 0;
+        return !anyMinor
+                && expected.getMinorVersion() != actual.getMinorVersion();
+    }
+
+    private Map<String, String> sectionToMap(JsonNode section) {
+        if (section == null) {
+            return Map.of();
+        }
+        // Keeps the package.json order, so that the warning lists the
+        // packages the same way from one build to the next
+        final Map<String, String> map = new LinkedHashMap<>();
+        for (String key : JacksonUtils.getKeys(section)) {
+            map.put(key, section.get(key).asString());
+        }
+        return map;
     }
 
     /**

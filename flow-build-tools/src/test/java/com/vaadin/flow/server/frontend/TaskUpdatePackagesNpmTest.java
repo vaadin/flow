@@ -411,6 +411,299 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    void execute_dependencyPinnedToDifferentMinor_warningLogged()
+            throws IOException {
+        // The project pins dialog in 'dependencies' to an older minor (25.1.0)
+        // than the versions file pins it to (25.3.0), and nothing scanned
+        // declares it. The version pinning respects the pin and even enforces
+        // it for the transitive uses, so the build should warn about it.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        writePinnedDependencyPackageJson("25.1.0");
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger, Collections.emptyMap()).execute();
+
+        Mockito.verify(logger, Mockito.atLeastOnce()).warn(Mockito.anyString(),
+                Mockito.contains(VAADIN_DIALOG + ": 25.1.0 (in dependencies)"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "25.1.0", "24.3.0", "~25.1.0", "^24.3.0",
+            "25.1.0-beta1" })
+    void warnOnVersionRangeMismatch_dependencyOutsideExpectedMinor_warningLogged(
+            String declaredVersion) throws IOException {
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(
+                dependencyPackageJson(declaredVersion, "25.1.4"));
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_DIALOG + ": " + declaredVersion
+                        + " (in dependencies), expected 25.3.0"));
+    }
+
+    @ParameterizedTest
+    // Another maintenance release of the same minor is supported, a caret
+    // range resolves to the expected minor, and what the other values
+    // resolve to is not known: a missing minor resolves to the latest one,
+    // and compound ranges can include the expected version
+    @ValueSource(strings = { "25.3.9", "25.3.1-beta1", "^25.1.0", ">=24.0.0",
+            "25", "~25", "25.1.0 - 25.4.0", "~25.1.0 || ~25.3.0", "latest",
+            "file:../dialog", "$" + VAADIN_DIALOG })
+    void warnOnVersionRangeMismatch_dependencyNotKnownOutsideExpectedMinor_noWarning(
+            String declaredVersion) throws IOException {
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(
+                dependencyPackageJson(declaredVersion, "25.1.4"));
+
+        verifyNoRangeWarning(logger);
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_caretRangeOnZeroMajor_warningLogged()
+            throws IOException {
+        // Before 1.0.0, a caret range stays within its minor
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                "0.3.0");
+        ObjectNode packageJson = dependencyPackageJson("25.3.0", "25.3.0");
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(VAADIN_OVERLAY,
+                "^0.2.0");
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_OVERLAY
+                        + ": ^0.2.0 (in dependencies), expected 0.3.0"));
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_packageForAnotherMode_warningLogged()
+            throws IOException, ClassNotFoundException {
+        // The lit dialog is not pinned in React mode, but the overrides still
+        // force the declared version on its transitive uses
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        Mockito.doReturn(Object.class).when(finder).loadClass(
+                "com.vaadin.flow.component.react.ReactAdapterComponent");
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTask(new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
+                .withBundleBuild(true).withReact(true), logger)
+                .warnOnVersionRangeMismatch(
+                        dependencyPackageJson("25.1.0", "25.1.4"));
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_DIALOG
+                        + ": 25.1.0 (in dependencies), expected 25.3.0"));
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_webComponentsExcluded_noWarning()
+            throws IOException {
+        // With the web components excluded, Vaadin does not use the lit
+        // dialog, so the version the project declares is its own choice.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        ObjectNode packageJson = dependencyPackageJson("24.3.0", "24.3.0");
+        ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).set(DEPENDENCIES,
+                JacksonUtils.createObjectNode());
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTask(new MockOptions(finder, npmFolder).withBuildDirectory(TARGET)
+                .withBundleBuild(true).withReact(false)
+                .withNpmExcludeWebComponents(true), logger)
+                .warnOnVersionRangeMismatch(packageJson);
+
+        verifyNoRangeWarning(logger);
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_severalMismatches_singleWarningInPackageJsonOrder()
+            throws IOException {
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        ObjectNode packageJson = dependencyPackageJson("25.1.0", "25.1.4");
+        ObjectNode dependencies = JacksonUtils.createObjectNode();
+        dependencies.put(VAADIN_OVERLAY, "3.1.0");
+        dependencies.setAll((ObjectNode) packageJson.get(DEPENDENCIES));
+        packageJson.set(DEPENDENCIES, dependencies);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_OVERLAY
+                        + ": 3.1.0 (in dependencies), expected "
+                        + PINNED_OVERLAY_VERSION + "\n  - " + VAADIN_DIALOG
+                        + ": 25.1.0 (in dependencies), expected 25.3.0"));
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.any(Object.class));
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_dependencyManagedByVaadin_noWarning()
+            throws IOException {
+        // The dependency matches the Vaadin-managed version, so it is not a
+        // user opt-out: the build updates it itself and no warning should be
+        // emitted, even though it is currently from an older minor than the
+        // version it is pinned to.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(
+                dependencyPackageJson("25.1.4", "25.1.4"));
+
+        verifyNoRangeWarning(logger);
+    }
+
+    @Test
+    void execute_pinnedDependencyUpdatedByScannedVersion_noWarning()
+            throws IOException {
+        // The scanned version is newer than the pin, so the dependency update
+        // overwrites the pin in this very run. Warning about a pin that is no
+        // longer there would send the user looking for nothing.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        writePinnedDependencyPackageJson("25.1.0");
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger,
+                Collections.singletonMap(VAADIN_DIALOG, "25.3.0")).execute();
+
+        Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
+                Mockito.contains(VAADIN_DIALOG));
+        assertEquals("25.3.0", getOrCreatePackageJson().get(DEPENDENCIES)
+                .get(VAADIN_DIALOG).asString());
+    }
+
+    @Test
+    void execute_devDependencyPinnedToDifferentMinor_warningLogged()
+            throws IOException {
+        // A devDependency the project added itself has no counterpart in the
+        // Vaadin-managed section, so the build leaves it in place and the
+        // check applies to it the same way as to dependencies.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        ObjectNode packageJson = dependencyPackageJson("25.3.0", "25.3.0");
+        ObjectNode devDependencies = JacksonUtils.createObjectNode();
+        devDependencies.put(VAADIN_DIALOG, "25.1.0");
+        packageJson.set(DEV_DEPENDENCIES, devDependencies);
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toPrettyString(), StandardCharsets.UTF_8);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger,
+                Collections.singletonMap(VAADIN_DIALOG, "25.3.0")).execute();
+
+        Mockito.verify(logger).warn(Mockito.anyString(),
+                Mockito.eq("  - " + VAADIN_DIALOG
+                        + ": 25.1.0 (in devDependencies), expected 25.3.0"));
+        assertEquals("25.1.0", getOrCreatePackageJson().get(DEV_DEPENDENCIES)
+                .get(VAADIN_DIALOG).asString());
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_devDependencyManagedByVaadin_noWarning()
+            throws IOException {
+        // A scanned dev package keeps its vaadin.devDependencies entry, so
+        // the value managed by Vaadin must be skipped there too.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+        ObjectNode devDependencies = JacksonUtils.createObjectNode();
+        devDependencies.put(VAADIN_DIALOG, "25.1.0");
+        packageJson.set(DEV_DEPENDENCIES, devDependencies);
+        ObjectNode vaadin = JacksonUtils.createObjectNode();
+        vaadin.set(DEV_DEPENDENCIES, devDependencies.deepCopy());
+        packageJson.set(VAADIN_DEP_KEY, vaadin);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
+
+        verifyNoRangeWarning(logger);
+    }
+
+    @Test
+    void warnOnVersionRangeMismatch_overrideFromDifferentMinor_noWarning()
+            throws IOException {
+        // The overrides are reconciled with the pinned versions by the
+        // override management, so a version range difference there is not for
+        // this warning to report.
+        createVaadinVersionsJson("25.3.0", PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        ObjectNode packageJson = dependencyPackageJson("25.3.0", "25.3.0");
+        ObjectNode overrides = JacksonUtils.createObjectNode();
+        overrides.put(VAADIN_DIALOG, "25.1.0");
+        packageJson.set(OVERRIDES, overrides);
+
+        Logger logger = Mockito.mock(Logger.class);
+        createTaskWithLogger(logger).warnOnVersionRangeMismatch(packageJson);
+
+        verifyNoRangeWarning(logger);
+    }
+
+    /**
+     * Builds a package.json where {@link #VAADIN_DIALOG} is declared in
+     * {@code dependencies} at {@code dependencyVersion} while the
+     * Vaadin-managed {@code vaadin.dependencies} section references
+     * {@code vaadinVersion}.
+     */
+    private ObjectNode dependencyPackageJson(String dependencyVersion,
+            String vaadinVersion) {
+        ObjectNode packageJson = JacksonUtils.createObjectNode();
+        ObjectNode dependencies = JacksonUtils.createObjectNode();
+        dependencies.put(VAADIN_DIALOG, dependencyVersion);
+        packageJson.set(DEPENDENCIES, dependencies);
+
+        ObjectNode vaadin = JacksonUtils.createObjectNode();
+        ObjectNode vaadinDependencies = JacksonUtils.createObjectNode();
+        vaadinDependencies.put(VAADIN_DIALOG, vaadinVersion);
+        vaadin.set(DEPENDENCIES, vaadinDependencies);
+        packageJson.set(VAADIN_DEP_KEY, vaadin);
+        return packageJson;
+    }
+
+    /**
+     * Writes a package.json where {@link #VAADIN_DIALOG} is pinned in
+     * {@code dependencies} to {@code dependencyVersion}, while the
+     * Vaadin-managed section still references 25.1.4 (simulating a project
+     * upgraded from 25.1 with a user pin).
+     */
+    private void writePinnedDependencyPackageJson(String dependencyVersion)
+            throws IOException {
+        ObjectNode packageJson = dependencyPackageJson(dependencyVersion,
+                "25.1.4");
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toPrettyString(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Verifies that no warning was logged, while the reading of package.json
+     * may log other messages.
+     */
+    private void verifyNoRangeWarning(Logger logger) {
+        Mockito.verify(logger, Mockito.never()).warn(Mockito.anyString(),
+                Mockito.any(Object.class));
+    }
+
+    private TaskUpdatePackages createTaskWithLogger(Logger logger) {
+        return createTaskWithLogger(logger, createApplicationDependencies());
+    }
+
+    private TaskUpdatePackages createTaskWithLogger(Logger logger,
+            Map<String, String> applicationDependencies) {
+        return createTask(applicationDependencies, false, logger);
+    }
+
+    @Test
     void pnpmIsInUse_versionsJsonAdded_dependenciesAdded() throws IOException {
         verifyPinnedDependenciesAreAdded(true);
     }
@@ -1407,13 +1700,31 @@ class TaskUpdatePackagesNpmTest {
             Map<String, String> applicationDependencies, boolean enablePnpm,
             boolean allowExoticVersions) {
         return createTask(applicationDependencies, Map.of(), enablePnpm,
-                allowExoticVersions);
+                allowExoticVersions, null);
+    }
+
+    /**
+     * Creates the task, logging through the given logger when one is given.
+     */
+    private TaskUpdatePackages createTask(
+            Map<String, String> applicationDependencies, boolean enablePnpm,
+            Logger taskLogger) {
+        return createTask(applicationDependencies, Map.of(), enablePnpm,
+                false, taskLogger);
     }
 
     private TaskUpdatePackages createTask(
             Map<String, String> applicationDependencies,
             Map<String, String> applicationDevDependencies, boolean enablePnpm,
             boolean allowExoticVersions) {
+        return createTask(applicationDependencies, applicationDevDependencies,
+                enablePnpm, allowExoticVersions, null);
+    }
+
+    private TaskUpdatePackages createTask(
+            Map<String, String> applicationDependencies,
+            Map<String, String> applicationDevDependencies, boolean enablePnpm,
+            boolean allowExoticVersions, Logger taskLogger) {
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
@@ -1425,7 +1736,19 @@ class TaskUpdatePackagesNpmTest {
                 .withBundleBuild(true).withReact(false)
                 .withNpmAllowExoticVersions(allowExoticVersions)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner);
+        return createTask(options, taskLogger);
+    }
+
+    /**
+     * Creates the task with the given options, logging through the given logger
+     * when one is given.
+     */
+    private TaskUpdatePackages createTask(Options options, Logger taskLogger) {
         return new TaskUpdatePackages(options) {
+            @Override
+            Logger log() {
+                return taskLogger == null ? super.log() : taskLogger;
+            }
         };
     }
 
