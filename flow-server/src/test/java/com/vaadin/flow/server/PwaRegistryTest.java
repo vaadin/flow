@@ -487,6 +487,8 @@ class PwaRegistryTest {
         PwaIcon largestCachedIcon = registry.getIcons().stream()
                 .filter(PwaIcon::shouldBeCached)
                 .max(Comparator.comparingInt(PwaIcon::getWidth)).get();
+        // The 512x512 manifest icon is the largest one the default @PWA caches
+        assertEquals(512, largestCachedIcon.getWidth());
 
         String html = registry.getOfflineHtml();
 
