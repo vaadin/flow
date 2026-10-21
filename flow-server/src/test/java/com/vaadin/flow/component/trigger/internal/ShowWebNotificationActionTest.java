@@ -20,12 +20,15 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webnotification.WebNotificationOptions;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.server.communication.ReturnChannelHandler;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
 import static com.vaadin.flow.component.trigger.internal.TriggerTestUtil.actionOf;
@@ -37,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 class ShowWebNotificationActionTest {
 
     @Test
-    void sharedOnSameHost_removingOneTriggerKeepsReportingToTheOther() {
+    void sharedOnSameHost_keepsReportingAfterATriggerIsRemovedAndWhileDisabled() {
         UI ui = new MockUI();
         TagComponent button = new TagComponent("button");
         ui.getElement().appendChild(button.getElement());
@@ -73,5 +76,16 @@ class ShowWebNotificationActionTest {
         args.add("click");
         channel.invoke(args);
         assertEquals(List.of("click"), clicks);
+
+        // A host that disabled itself on the click that showed the
+        // notification still gets the click on the notification
+        button.getElement().setEnabled(false);
+        ObjectNode invocation = JacksonUtils.createObjectNode();
+        invocation.put(JsonConstants.RPC_NODE,
+                button.getElement().getNode().getId());
+        invocation.put(JsonConstants.RPC_CHANNEL, channel.getChannelId());
+        invocation.set(JsonConstants.RPC_CHANNEL_ARGUMENTS, args);
+        new ReturnChannelHandler().handle(ui, invocation);
+        assertEquals(List.of("click", "click"), clicks);
     }
 }

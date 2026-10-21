@@ -24,6 +24,7 @@ import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.webnotification.WebNotificationError;
 import com.vaadin.flow.component.webnotification.WebNotificationOptions;
+import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -45,8 +46,8 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * of the notifications the action showed, or when the browser did not show one.
  * The callbacks are shared by every notification the action shows. They are
  * reported through the trigger's host, so they only run while the host is
- * attached, visible and enabled; a notification clicked after the user left the
- * view runs no callback.
+ * attached and visible, also while it is disabled; a notification clicked after
+ * the user left the view runs no callback.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -132,7 +133,10 @@ public class ShowWebNotificationAction extends Action {
     private ReturnChannelRegistration channelFor(Trigger trigger) {
         return channelByNode.computeIfAbsent(trigger.getHost().getNode(),
                 node -> node.getFeature(ReturnChannelMap.class)
-                        .registerChannel(this::dispatch));
+                        .registerChannel(this::dispatch)
+                        // A host may disable itself on the click that showed
+                        // the notification, which the user clicks later
+                        .setDisabledUpdateMode(DisabledUpdateMode.ALWAYS));
     }
 
     private void dispatch(ArrayNode args) {

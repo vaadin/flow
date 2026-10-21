@@ -81,10 +81,12 @@ public final class WebNotificationBinding implements Serializable {
      * {@link #show(String, WebNotificationOptions)} otherwise. The callbacks
      * are shared by every notification shown through this binding.
      * <p>
-     * The callbacks only run while the bound component is attached, visible and
-     * enabled. A notification can outlive the view that showed it; to react to
-     * a click after the user left the view, show the notification from the
-     * server with {@link WebNotification#show(String, UI)} instead.
+     * The callbacks only run while the bound component is attached and visible,
+     * also while it is disabled, for example by
+     * {@code setDisableOnClick(true)}. A notification can outlive the view that
+     * showed it; to react to a click after the user left the view, show the
+     * notification from the server with
+     * {@link WebNotification#show(String, UI)} instead.
      *
      * @param title
      *            the title of the notification, not {@code null}
