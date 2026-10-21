@@ -76,8 +76,7 @@ public record JsCall(Class<?> definitionType, String methodName,
      * A method of a JavaScript definition and the identifier of the function it
      * declares, or <code>null</code> for a method that declares no JavaScript.
      */
-    private record DeclaredMethod(Method method,
-            @Nullable String functionId) implements Serializable {
+    private record DeclaredMethod(Method method, @Nullable String functionId) {
     }
 
     /**
