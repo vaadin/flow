@@ -89,10 +89,6 @@ public class VaadinServletService extends VaadinService {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
                     .getDevModeHandler(this);
             if (handlerManager.isPresent()) {
-                // The sessionless WebComponentProvider runs before it, so
-                // that a web component script is not answered with html
-                // contents when the dev bundle is not ready (e.g.
-                // dev-mode-not-ready.html)
                 handlers.add(handlerManager.get());
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
                     && !getDeploymentConfiguration().isBrowserless()) {
