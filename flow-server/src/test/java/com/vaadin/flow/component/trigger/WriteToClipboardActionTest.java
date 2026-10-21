@@ -25,6 +25,11 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
+import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
+import com.vaadin.flow.component.trigger.internal.LiteralInput;
+import com.vaadin.flow.component.trigger.internal.PropertyInput;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.tests.util.MockUI;
@@ -293,8 +298,8 @@ class WriteToClipboardActionTest {
     @Test
     void constructor_allSlotsNull_rejected() {
         assertThrows(IllegalArgumentException.class,
-                () -> new WriteToClipboardAction((Action.Input<String>) null,
-                        (Action.Input<String>) null, (Action.Input<?>) null));
+                () -> new WriteToClipboardAction((ActionInput<String>) null,
+                        (ActionInput<String>) null, (ActionInput<?>) null));
     }
 
 }

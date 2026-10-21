@@ -13,12 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.trigger.PromiseAction;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -62,9 +64,9 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
     private static final JsFunction NULL_INPUT_FN = JsFunction
             .of("return null");
 
-    private final Action.@Nullable Input<String> textInput;
-    private final Action.@Nullable Input<String> htmlInput;
-    private final Action.@Nullable Input<?> imageInput;
+    private final @Nullable ActionInput<String> textInput;
+    private final @Nullable ActionInput<String> htmlInput;
+    private final @Nullable ActionInput<?> imageInput;
 
     /**
      * Creates a fire-and-forget text/HTML clipboard-copy action.
@@ -78,8 +80,8 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
      * @throws IllegalArgumentException
      *             if both inputs are {@code null}
      */
-    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
-            Action.@Nullable Input<String> htmlInput) {
+    public WriteToClipboardAction(@Nullable ActionInput<String> textInput,
+            @Nullable ActionInput<String> htmlInput) {
         this(textInput, htmlInput, null);
     }
 
@@ -104,8 +106,8 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
      * @throws IllegalArgumentException
      *             if both inputs are {@code null}
      */
-    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
-            Action.@Nullable Input<String> htmlInput,
+    public WriteToClipboardAction(@Nullable ActionInput<String> textInput,
+            @Nullable ActionInput<String> htmlInput,
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         this(textInput, htmlInput, null, onCopied, onError);
@@ -119,7 +121,7 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
      *            {@code image/png} payload (typically an
      *            {@link ImageBlobInput}), not {@code null}
      */
-    public WriteToClipboardAction(Action.Input<?> imageInput) {
+    public WriteToClipboardAction(ActionInput<?> imageInput) {
         this(null, null, Objects.requireNonNull(imageInput,
                 "imageInput must not be null"));
     }
@@ -140,7 +142,7 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
      *            invoked on the UI thread with the browser's error after the
      *            client reports the write rejected, not {@code null}
      */
-    public WriteToClipboardAction(Action.Input<?> imageInput,
+    public WriteToClipboardAction(ActionInput<?> imageInput,
             SerializableRunnable onCopied,
             SerializableConsumer<Error> onError) {
         this(null, null,
@@ -165,9 +167,9 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
      * @throws IllegalArgumentException
      *             if all inputs are {@code null}
      */
-    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
-            Action.@Nullable Input<String> htmlInput,
-            Action.@Nullable Input<?> imageInput) {
+    public WriteToClipboardAction(@Nullable ActionInput<String> textInput,
+            @Nullable ActionInput<String> htmlInput,
+            @Nullable ActionInput<?> imageInput) {
         super();
         validate(textInput, htmlInput, imageInput);
         this.textInput = textInput;
@@ -200,9 +202,9 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
      * @throws IllegalArgumentException
      *             if all inputs are {@code null}
      */
-    public WriteToClipboardAction(Action.@Nullable Input<String> textInput,
-            Action.@Nullable Input<String> htmlInput,
-            Action.@Nullable Input<?> imageInput,
+    public WriteToClipboardAction(@Nullable ActionInput<String> textInput,
+            @Nullable ActionInput<String> htmlInput,
+            @Nullable ActionInput<?> imageInput,
             SerializableConsumer<@Nullable String> onCopied,
             SerializableConsumer<Error> onError) {
         super(String.class, onCopied, onError);
@@ -218,9 +220,9 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
         return ignored -> onCopied.run();
     }
 
-    private static void validate(Action.@Nullable Input<String> text,
-            Action.@Nullable Input<String> html,
-            Action.@Nullable Input<?> image) {
+    private static void validate(@Nullable ActionInput<String> text,
+            @Nullable ActionInput<String> html,
+            @Nullable ActionInput<?> image) {
         if (text == null && html == null && image == null) {
             throw new IllegalArgumentException(
                     "At least one of textInput, htmlInput, imageInput must be non-null");

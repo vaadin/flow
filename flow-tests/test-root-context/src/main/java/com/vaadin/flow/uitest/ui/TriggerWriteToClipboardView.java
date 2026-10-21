@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import javax.imageio.ImageIO;
 
 import java.awt.Color;
@@ -38,11 +39,11 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.trigger.Action;
 import com.vaadin.flow.component.trigger.ClickTrigger;
-import com.vaadin.flow.component.trigger.ImageBlobInput;
-import com.vaadin.flow.component.trigger.LiteralInput;
-import com.vaadin.flow.component.trigger.PropertyInput;
-import com.vaadin.flow.component.trigger.SignalInput;
-import com.vaadin.flow.component.trigger.WriteToClipboardAction;
+import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
+import com.vaadin.flow.component.trigger.internal.LiteralInput;
+import com.vaadin.flow.component.trigger.internal.PropertyInput;
+import com.vaadin.flow.component.trigger.internal.SignalInput;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.DownloadResponse;
@@ -212,7 +213,7 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
 
         // --- Wire up triggers ------------------------------------------
 
-        Action.Input<String> value = new PropertyInput<>(field, "value",
+        ActionInput<String> value = new PropertyInput<>(field, "value",
                 String.class);
         new ClickTrigger(copyButton).triggers(new WriteToClipboardAction(value,
                 null, copied -> status.setText("ok:" + copied), err -> status

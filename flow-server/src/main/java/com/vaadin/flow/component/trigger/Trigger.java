@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -242,7 +243,7 @@ public abstract class Trigger implements Serializable {
     /**
      * Adds a cleanup that runs when this trigger is removed. Actions and inputs
      * call it from {@link Action#toJs(Trigger)} or
-     * {@link Action.Input#toJs(Trigger)} for state they set up besides the
+     * {@link ActionInput#toJs(Trigger)} for state they set up besides the
      * client-side listener, such as a registered stream resource.
      * <p>
      * For internal use only. May be changed or removed in any release.

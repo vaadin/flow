@@ -15,32 +15,19 @@
  */
 package com.vaadin.flow.component.trigger;
 
-import java.io.Serializable;
-
 import com.vaadin.flow.component.Component;
 
 /**
  * Common super class for triggers that fire on a DOM {@code MouseEvent} —
  * {@link ClickTrigger}, {@link DoubleClickTrigger}, and any future mouse-event
- * trigger. Exposes the {@code MouseEvent} properties shared by all of them as
- * static {@link Action.Input} fields on {@link EventData}.
+ * trigger.
  * <p>
- * The {@code EventData} fields are bound to {@code MouseEventTrigger.class}, so
- * the same field instance can be used as the source for any
- * {@code MouseEventTrigger} subclass — both snippets below mirror the click's
- * screen X coordinate into {@code xField.value}, one on single click, one on
- * double click:
+ * Example — run a server-side callback when the pointer enters a panel:
  *
  * <pre>{@code
- * ClickTrigger click = new ClickTrigger(button);
- * click.triggers(new SetPropertyAction<>(xField, "value",
- *         ClickTrigger.EventData.screenX));
- *
- * DoubleClickTrigger dbl = new DoubleClickTrigger(button);
- * dbl.triggers(new SetPropertyAction<>(xField, "value",
- *         DoubleClickTrigger.EventData.screenX));
+ * new MouseEventTrigger(panel, "mouseenter")
+ *         .triggers(new CallbackAction<>(() -> showHint()));
  * }</pre>
- *
  *
  * @since 25.4
  */
@@ -61,73 +48,5 @@ public class MouseEventTrigger extends DomEventTrigger {
      */
     public MouseEventTrigger(Component host, String eventName) {
         super(host, eventName);
-    }
-
-    /**
-     * The {@code MouseEvent} properties exposed as static {@link Action.Input}
-     * sources. Each field reads one property off the DOM event that fires the
-     * trigger; pass any of them as the value source of an {@link Action} wired
-     * to a {@link MouseEventTrigger} subclass.
-     * <p>
-     * Each field is bound to {@link MouseEventTrigger}; using it in the handler
-     * of an unrelated trigger (e.g. a keyboard trigger) throws
-     * {@link IllegalArgumentException} at {@link Trigger#triggers(Action...)}
-     * time.
-     * <p>
-     * Trigger subclasses that need their own properties may declare their own
-     * nested {@code EventData} extending this class — the inherited static
-     * fields remain reachable through the subclass, so
-     * {@code ClickTrigger.EventData.screenX} continues to resolve to
-     * {@link #screenX}.
-     */
-    public abstract static class EventData implements Serializable {
-
-        /**
-         * The class exists purely as a namespace for the static
-         * {@link Action.Input} fields.
-         */
-        protected EventData() {
-        }
-
-        /** {@code event.screenX} — X coordinate relative to the screen. */
-        public static final Action.Input<Integer> screenX = eventProperty(
-                "screenX", MouseEventTrigger.class);
-
-        /** {@code event.screenY} — Y coordinate relative to the screen. */
-        public static final Action.Input<Integer> screenY = eventProperty(
-                "screenY", MouseEventTrigger.class);
-
-        /** {@code event.clientX} — X coordinate relative to the viewport. */
-        public static final Action.Input<Integer> clientX = eventProperty(
-                "clientX", MouseEventTrigger.class);
-
-        /** {@code event.clientY} — Y coordinate relative to the viewport. */
-        public static final Action.Input<Integer> clientY = eventProperty(
-                "clientY", MouseEventTrigger.class);
-
-        /**
-         * {@code event.button} — which mouse button changed state: {@code 0}
-         * main (usually left), {@code 1} auxiliary (usually middle), {@code 2}
-         * secondary (usually right), {@code 3}/{@code 4} fourth (back) / fifth
-         * (forward) browser buttons.
-         */
-        public static final Action.Input<Integer> button = eventProperty(
-                "button", MouseEventTrigger.class);
-
-        /** {@code event.shiftKey} — whether shift was held during the event. */
-        public static final Action.Input<Boolean> shiftKey = eventProperty(
-                "shiftKey", MouseEventTrigger.class);
-
-        /** {@code event.ctrlKey} — whether ctrl was held during the event. */
-        public static final Action.Input<Boolean> ctrlKey = eventProperty(
-                "ctrlKey", MouseEventTrigger.class);
-
-        /** {@code event.altKey} — whether alt was held during the event. */
-        public static final Action.Input<Boolean> altKey = eventProperty(
-                "altKey", MouseEventTrigger.class);
-
-        /** {@code event.metaKey} — whether meta was held during the event. */
-        public static final Action.Input<Boolean> metaKey = eventProperty(
-                "metaKey", MouseEventTrigger.class);
     }
 }

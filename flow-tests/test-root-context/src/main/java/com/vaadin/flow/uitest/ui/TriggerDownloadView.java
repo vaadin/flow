@@ -24,7 +24,7 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.component.trigger.DownloadAction;
-import com.vaadin.flow.component.trigger.PropertyInput;
+import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.streams.DownloadHandler;

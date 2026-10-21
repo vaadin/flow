@@ -18,10 +18,11 @@
  * {@link com.vaadin.flow.component.trigger.ClickTrigger} running a
  * {@link com.vaadin.flow.component.trigger.DownloadAction}.
  * <p>
- * Creating triggers, actions and inputs and wiring them together is public API.
- * Implementing custom ones is not yet: the methods that render them to
- * JavaScript are for internal use only and may be changed or removed in any
- * release.
+ * Creating triggers and actions and wiring them together is public API. Passing
+ * data from a trigger or from the page into an action, and implementing custom
+ * triggers and actions, is not yet: the input types live in the internal
+ * package, and the methods that render triggers and actions to JavaScript are
+ * for internal use only. Both may be changed or removed in any release.
  */
 @NullMarked
 package com.vaadin.flow.component.trigger;

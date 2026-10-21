@@ -19,7 +19,6 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.trigger.Action;
 import com.vaadin.flow.component.trigger.DomEventTrigger;
-import com.vaadin.flow.component.trigger.MouseEventTrigger;
 import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -32,10 +31,10 @@ import com.vaadin.flow.dom.JsFunction;
  * trigger family into the handler of an unrelated trigger (where the referenced
  * variable would not be in scope). Class-based scoping lets a single input
  * instance be exposed as a {@code public static final} field (see
- * {@link MouseEventTrigger.EventData}) and reused across every instance of the
- * owning class and its subclasses. Custom trigger families expose their event
- * state the same way: declare a {@code HandlerInput} per property instead of
- * subclassing {@link Action.Input} by hand.
+ * {@link MouseEventData}) and reused across every instance of the owning class
+ * and its subclasses. Custom trigger families expose their event state the same
+ * way: declare a {@code HandlerInput} per property instead of subclassing
+ * {@link ActionInput} by hand.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -43,7 +42,7 @@ import com.vaadin.flow.dom.JsFunction;
  *            the runtime type of the value produced
  * @since 25.2
  */
-public final class HandlerInput<T> extends Action.Input<T> {
+public final class HandlerInput<T> extends ActionInput<T> {
 
     private final String propertyName;
     private final Class<? extends Trigger> ownerClass;

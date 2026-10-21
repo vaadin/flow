@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.SignalInput;
+import com.vaadin.flow.component.trigger.internal.WriteToClipboardAction;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.MockVaadinServletService;

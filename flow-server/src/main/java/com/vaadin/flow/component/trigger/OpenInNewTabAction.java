@@ -18,6 +18,8 @@ package com.vaadin.flow.component.trigger;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import com.vaadin.flow.component.trigger.internal.ActionInput;
+import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
@@ -32,10 +34,10 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * <p>
  * Two axes of configuration:
  * <ul>
- * <li><b>URL</b> — a known {@link String}, a {@link DownloadHandler} for
- * server-generated content, or an {@link Action.Input} of {@code String}
- * resolved on the client at fire time (e.g. the current value of an input
- * field, or a {@code blob:} URL the client just minted).</li>
+ * <li><b>URL</b> — a known {@link String} or a {@link DownloadHandler} for
+ * server-generated content. Resolving the URL on the client at fire time, with
+ * the constructors that take an {@link ActionInput}, is for internal use
+ * only.</li>
  * <li><b>Features</b> — the third argument to {@code window.open}, controlling
  * popup characteristics such as opener access (the standard {@code "noopener"}
  * / {@code "noreferrer"} tokens) and window sizing
@@ -53,13 +55,13 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * windows, call {@code window.open} via {@code executeJs} directly.
  * <p>
  * {@code javascript:} URLs are rejected: static-{@link String} URLs throw
- * {@link IllegalArgumentException} from the constructor, and {@link Input} URLs
+ * {@link IllegalArgumentException} from the constructor, and input URLs
  * resolved on the client are silently dropped at fire time (the generated JS
  * short-circuits {@code window.open}). This prevents an attacker-controlled
- * value flowing through a {@link PropertyInput} from executing arbitrary script
- * in the opener's origin. The check mirrors the URL parser's leading-whitespace
- * handling (C0 controls and ASCII space are stripped before the scheme) so a
- * leading tab/newline can't smuggle one through.
+ * value read from the page from executing arbitrary script in the opener's
+ * origin. The check mirrors the URL parser's leading-whitespace handling (C0
+ * controls and ASCII space are stripped before the scheme) so a leading
+ * tab/newline can't smuggle one through.
  * <p>
  * No outcome callback: the browser does not reliably report whether the popup
  * was blocked (the spec lets {@code window.open} return {@code null}, but not
@@ -69,11 +71,6 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * // Open a known URL in a new tab.
  * new ClickTrigger(button)
  *         .triggers(new OpenInNewTabAction("https://vaadin.com/docs"));
- *
- * // Open whatever URL the user typed into a field.
- * Action.Input<String> urlInput = new PropertyInput<>(urlField, "value",
- *         String.class);
- * new ClickTrigger(button).triggers(new OpenInNewTabAction(urlInput));
  *
  * // Open a sized popup window with custom features. Note that supplying
  * // features replaces the noopener/noreferrer defaults — include them
@@ -109,13 +106,13 @@ public final class OpenInNewTabAction extends Action {
      * controls and ASCII space the URL parser strips before the scheme, and
      * {@code /i} catches any casing. {@code String(u)} coerces non-string
      * inputs so {@code .test} never throws. Used to short-circuit
-     * {@code window.open} so an attacker-controlled {@link Input} value can't
-     * execute script in the opener's origin.
+     * {@code window.open} so an attacker-controlled {@link ActionInput} value
+     * can't execute script in the opener's origin.
      */
     private static final String JAVASCRIPT_SCHEME_JS_GUARD = "/^[\\x00-\\x20]*javascript:/i.test(String(u))";
 
-    private final Action.Input<String> urlInput;
-    private final Action.Input<String> featuresInput;
+    private final ActionInput<String> urlInput;
+    private final ActionInput<String> featuresInput;
 
     /**
      * Opens {@code url} in a new tab with the default features
@@ -175,12 +172,14 @@ public final class OpenInNewTabAction extends Action {
      * Opens a URL resolved on the client at fire time, with the default
      * features ({@value #DEFAULT_FEATURES}). {@code javascript:} URLs produced
      * by the input are blocked on the client.
+     * <p>
+     * For internal use only. May be changed or removed in any release.
      *
      * @param url
      *            input supplying the URL when the trigger fires, not
      *            {@code null}
      */
-    public OpenInNewTabAction(Action.Input<String> url) {
+    public OpenInNewTabAction(ActionInput<String> url) {
         this(Objects.requireNonNull(url, "url must not be null"),
                 new LiteralInput<>(DEFAULT_FEATURES));
     }
@@ -189,6 +188,8 @@ public final class OpenInNewTabAction extends Action {
      * Opens a URL resolved on the client at fire time, with features also
      * resolved on the client. {@code javascript:} URLs produced by the input
      * are blocked on the client.
+     * <p>
+     * For internal use only. May be changed or removed in any release.
      *
      * @param url
      *            input supplying the URL when the trigger fires, not
@@ -197,8 +198,8 @@ public final class OpenInNewTabAction extends Action {
      *            input supplying the features string when the trigger fires,
      *            not {@code null}
      */
-    public OpenInNewTabAction(Action.Input<String> url,
-            Action.Input<String> features) {
+    public OpenInNewTabAction(ActionInput<String> url,
+            ActionInput<String> features) {
         this.urlInput = Objects.requireNonNull(url, "url must not be null");
         this.featuresInput = Objects.requireNonNull(features,
                 "features must not be null");

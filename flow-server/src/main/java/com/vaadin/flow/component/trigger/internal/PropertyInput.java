@@ -13,11 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -38,7 +39,7 @@ import com.vaadin.flow.dom.JsFunction;
  *            the runtime type of the value produced
  * @since 25.4
  */
-public final class PropertyInput<T> extends Action.Input<T> {
+public final class PropertyInput<T> extends ActionInput<T> {
 
     private final Element target;
     private final String propertyName;

@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.trigger.PromiseAction.Error;
-import com.vaadin.flow.component.trigger.ShareAction;
 import com.vaadin.flow.component.trigger.Trigger;
+import com.vaadin.flow.component.trigger.internal.ShareAction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
 

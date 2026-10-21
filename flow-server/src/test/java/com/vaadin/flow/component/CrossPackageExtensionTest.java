@@ -22,9 +22,10 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.trigger.Action;
 import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.component.trigger.DomEventTrigger;
-import com.vaadin.flow.component.trigger.MouseEventTrigger;
 import com.vaadin.flow.component.trigger.Trigger;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import com.vaadin.flow.component.trigger.internal.HandlerInput;
+import com.vaadin.flow.component.trigger.internal.MouseEventData;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -34,10 +35,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * Verifies that framework code in other packages can extend the trigger API
  * through its internal hooks: a custom {@link Action} can consume any
- * {@link Action.Input} it receives as a parameter (via
- * {@link Action.Input#toJs(Trigger)}), and a custom trigger family can reuse
+ * {@link ActionInput} it receives as a parameter (via
+ * {@link ActionInput#toJs(Trigger)}), and a custom trigger family can reuse
  * {@link HandlerInput} for its handler-scoped event properties instead of
- * subclassing {@code Action.Input} by hand.
+ * subclassing {@code ActionInput} by hand.
  */
 class CrossPackageExtensionTest {
 
@@ -53,9 +54,9 @@ class CrossPackageExtensionTest {
      */
     private static class LogAction extends Action {
 
-        private final Action.Input<?> message;
+        private final ActionInput<?> message;
 
-        LogAction(Action.Input<?> message) {
+        LogAction(ActionInput<?> message) {
             this.message = message;
         }
 
@@ -77,7 +78,7 @@ class CrossPackageExtensionTest {
      */
     private static class InputEventTrigger extends DomEventTrigger {
 
-        static final Action.Input<String> data = new HandlerInput<>("data",
+        static final ActionInput<String> data = new HandlerInput<>("data",
                 InputEventTrigger.class);
 
         InputEventTrigger(Component host) {
@@ -88,7 +89,7 @@ class CrossPackageExtensionTest {
     @Test
     void customAction_consumesInputItDidNotCreate() {
         ClickTrigger click = new ClickTrigger(new Div());
-        LogAction action = new LogAction(MouseEventTrigger.EventData.screenX);
+        LogAction action = new LogAction(MouseEventData.screenX);
 
         JsFunction rendered = action.render(click);
 

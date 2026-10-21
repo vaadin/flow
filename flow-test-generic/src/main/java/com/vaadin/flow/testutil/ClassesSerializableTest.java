@@ -142,6 +142,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.CustomElementNameValidator",
                 "com\\.vaadin\\.flow\\.router\\.HighlightActions",
                 "com\\.vaadin\\.flow\\.router\\.HighlightConditions",
+                "com\\.vaadin\\.flow\\.component\\.trigger\\.internal\\.(Mouse|Size)EventData",
                 "com\\.vaadin\\.flow\\.router\\.ParameterDeserializer",
                 "com\\.vaadin\\.flow\\.router\\.NavigationStateBuilder",
                 "com\\.vaadin\\.flow\\.router\\.AbstractRouteNotFoundError\\$LazyInit",

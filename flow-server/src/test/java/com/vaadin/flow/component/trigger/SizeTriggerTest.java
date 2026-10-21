@@ -20,6 +20,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.trigger.internal.SizeEventData;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -39,8 +40,8 @@ class SizeTriggerTest {
         ui.getElement().appendChild(panel.getElement(), field.getElement());
 
         SizeTrigger resize = new SizeTrigger(panel);
-        resize.triggers(new SetPropertyAction<>(field, "value",
-                SizeTrigger.EventData.width));
+        resize.triggers(
+                new SetPropertyAction<>(field, "value", SizeEventData.width));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -66,10 +67,8 @@ class SizeTriggerTest {
 
         SizeTrigger resize = new SizeTrigger(panel);
         resize.triggers(
-                new SetPropertyAction<>(xField, "value",
-                        SizeTrigger.EventData.width),
-                new SetPropertyAction<>(yField, "value",
-                        SizeTrigger.EventData.height));
+                new SetPropertyAction<>(xField, "value", SizeEventData.width),
+                new SetPropertyAction<>(yField, "value", SizeEventData.height));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -101,7 +100,7 @@ class SizeTriggerTest {
         // source-input function returns `event` directly, with no property
         // capture.
         resize.triggers(new SetPropertyAction<>(field, "data-size",
-                SizeTrigger.EventData.size));
+                SizeEventData.size));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -121,10 +120,10 @@ class SizeTriggerTest {
         TagComponent panel2 = new TagComponent("div");
         TagComponent field = new TagComponent("input");
 
-        new SizeTrigger(panel1).triggers(new SetPropertyAction<>(field, "value",
-                SizeTrigger.EventData.width));
+        new SizeTrigger(panel1).triggers(
+                new SetPropertyAction<>(field, "value", SizeEventData.width));
         new SizeTrigger(panel2).triggers(new SetPropertyAction<>(field,
-                "data-size", SizeTrigger.EventData.size));
+                "data-size", SizeEventData.size));
     }
 
     @Test
@@ -135,9 +134,8 @@ class SizeTriggerTest {
         // EventData.width is bound to SizeTrigger; a plain DomEventTrigger is
         // not a SizeTrigger, so wiring it through such a handler must fail.
         DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
-        assertThrows(IllegalArgumentException.class,
-                () -> keypress.triggers(new SetPropertyAction<>(field, "value",
-                        SizeTrigger.EventData.width)));
+        assertThrows(IllegalArgumentException.class, () -> keypress.triggers(
+                new SetPropertyAction<>(field, "value", SizeEventData.width)));
     }
 
     @Test
@@ -148,6 +146,6 @@ class SizeTriggerTest {
         DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
         assertThrows(IllegalArgumentException.class,
                 () -> keypress.triggers(new SetPropertyAction<>(field,
-                        "data-size", SizeTrigger.EventData.size)));
+                        "data-size", SizeEventData.size)));
     }
 }

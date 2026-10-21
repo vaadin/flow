@@ -19,6 +19,7 @@ import java.net.URI;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -41,7 +42,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * host element. The URI baked into the JS is the same one the framework
  * re-publishes on the attribute, kept stable by the resource's id.
  */
-final class DownloadHandlerInput extends Action.Input<String> {
+final class DownloadHandlerInput extends ActionInput<String> {
 
     private static final String ATTR_PREFIX = "data-flow-download-";
 

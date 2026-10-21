@@ -22,9 +22,9 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.trigger.Action;
-import com.vaadin.flow.component.trigger.LiteralInput;
-import com.vaadin.flow.component.trigger.PropertyInput;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
+import com.vaadin.flow.component.trigger.internal.LiteralInput;
+import com.vaadin.flow.component.trigger.internal.PropertyInput;
 
 /**
  * Payload for {@link WebShareBinding#share}. Any combination of {@code title},
@@ -42,9 +42,9 @@ import com.vaadin.flow.component.trigger.PropertyInput;
  */
 public final class ShareContent implements Serializable {
 
-    private Action.@Nullable Input<String> titleInput;
-    private Action.@Nullable Input<String> textInput;
-    private Action.@Nullable Input<String> urlInput;
+    private @Nullable ActionInput<String> titleInput;
+    private @Nullable ActionInput<String> textInput;
+    private @Nullable ActionInput<String> urlInput;
 
     private ShareContent() {
     }
@@ -154,15 +154,18 @@ public final class ShareContent implements Serializable {
         return this;
     }
 
-    Action.@Nullable Input<String> getTitleInput() {
+    @Nullable
+    ActionInput<String> getTitleInput() {
         return titleInput;
     }
 
-    Action.@Nullable Input<String> getTextInput() {
+    @Nullable
+    ActionInput<String> getTextInput() {
         return textInput;
     }
 
-    Action.@Nullable Input<String> getUrlInput() {
+    @Nullable
+    ActionInput<String> getUrlInput() {
         return urlInput;
     }
 }

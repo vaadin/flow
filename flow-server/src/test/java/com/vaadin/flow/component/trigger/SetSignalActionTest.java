@@ -19,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.trigger.internal.PropertyInput;
+import com.vaadin.flow.component.trigger.internal.SetSignalAction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;

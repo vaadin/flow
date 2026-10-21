@@ -18,6 +18,7 @@ package com.vaadin.flow.component.trigger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.trigger.internal.MouseEventData;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -35,7 +36,7 @@ class DoubleClickTriggerTest {
         ui.getElement().appendChild(panel.getElement(), field.getElement());
 
         new DoubleClickTrigger(panel).triggers(new SetPropertyAction<>(field,
-                "value", DoubleClickTrigger.EventData.clientX));
+                "value", MouseEventData.clientX));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -49,7 +50,7 @@ class DoubleClickTriggerTest {
                 install.getBody());
         assertEquals("dblclick", install.getCaptures().get(1));
 
-        // The EventData field is inherited from MouseEventTrigger.EventData and
+        // The EventData field is inherited from MouseEventData and
         // resolves to the same event[clientX] expression as on ClickTrigger.
         JsFunction source = (JsFunction) actionOf(install).getCaptures().get(2);
         assertEquals("clientX", source.getCaptures().get(0));

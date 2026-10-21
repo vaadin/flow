@@ -13,10 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.trigger.CallbackAction;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -59,7 +60,7 @@ public final class SetSignalAction<T> extends CallbackAction<T> {
      *            fires, not {@code null}
      */
     public SetSignalAction(ValueSignal<? super T> signal, Class<T> valueType,
-            Action.Input<? extends T> source) {
+            ActionInput<? extends T> source) {
         super(valueType,
                 Objects.requireNonNull(signal, "signal must not be null")::set,
                 source);

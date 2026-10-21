@@ -18,20 +18,13 @@ package com.vaadin.flow.component.trigger;
 import com.vaadin.flow.component.Component;
 
 /**
- * Fires on the host component's {@code dblclick} DOM event. The event's
- * coordinates and modifier-key state are available as static
- * {@link Action.Input} sources on {@link MouseEventTrigger.EventData} (also
- * reachable as {@code DoubleClickTrigger.EventData} through inheritance).
+ * Fires on the host component's {@code dblclick} DOM event.
  * <p>
- * Example — on double-click, mirror the viewport X coordinate into a field's
- * {@code value} property:
+ * Example — open the help page in a new tab when a panel is double-clicked:
  *
  * <pre>{@code
- * DoubleClickTrigger dbl = new DoubleClickTrigger(panel);
- * dbl.triggers(new SetPropertyAction<>(field, "value",
- *         DoubleClickTrigger.EventData.clientX));
+ * new DoubleClickTrigger(panel).triggers(new OpenInNewTabAction("/help"));
  * }</pre>
- *
  *
  * @since 25.4
  */

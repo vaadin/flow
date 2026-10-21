@@ -19,6 +19,8 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.trigger.internal.ActionInput;
+import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.server.streams.DownloadHandler;
 
@@ -28,7 +30,7 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * synchronously inside the trigger's handler — so the call happens inside the
  * user gesture and is not subject to popup blockers.
  * <p>
- * Three ways to specify what to download:
+ * Two ways to specify what to download:
  * <ul>
  * <li><b>A URL the application already knows</b> — a server endpoint, an
  * external CDN, a {@code blob:} URL minted on the client, anything addressable.
@@ -44,12 +46,9 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * unregisters the resource for good, so its URL stops serving the file.
  * Filename comes from the {@link DownloadHandler} itself (its URL postfix
  * and/or {@code Content-Disposition} header).</li>
- * <li><b>A value resolved from client state at fire time</b> — use
- * {@link #DownloadAction(Action.Input)} or
- * {@link #DownloadAction(Action.Input, Action.Input)} when the URL (or
- * filename) is only known on the client, e.g. the current value of an input
- * field, or a {@code blob:} URL the client just produced.</li>
  * </ul>
+ * Resolving the URL or filename from client state at fire time, with the
+ * constructors that take an {@link ActionInput}, is for internal use only.
  * <p>
  * The {@code download} attribute that suggests a filename is honoured only for
  * same-origin URLs. For cross-origin downloads the server must send the
@@ -66,19 +65,14 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * // Server-generated content
  * new ClickTrigger(button)
  *         .triggers(new DownloadAction(DownloadHandler.forFile(reportFile)));
- *
- * // URL taken from a text field at fire time
- * Action.Input<String> currentUrl = new PropertyInput<>(urlField, "value",
- *         String.class);
- * new ClickTrigger(button).triggers(new DownloadAction(currentUrl));
  * }</pre>
  *
  * @since 25.4
  */
 public final class DownloadAction extends Action {
 
-    private final Action.Input<String> urlInput;
-    private final Action.@Nullable Input<String> filenameInput;
+    private final ActionInput<String> urlInput;
+    private final @Nullable ActionInput<String> filenameInput;
 
     /**
      * Downloads from a known URL with no filename hint.
@@ -126,19 +120,23 @@ public final class DownloadAction extends Action {
      * Downloads from a URL resolved on the client at fire time. Use this when
      * the URL is only known in the browser — for example, the current contents
      * of an input field, or a {@code blob:} URL the client just minted.
+     * <p>
+     * For internal use only. May be changed or removed in any release.
      *
      * @param url
      *            input supplying the URL when the trigger fires, not
      *            {@code null}
      */
-    public DownloadAction(Action.Input<String> url) {
+    public DownloadAction(ActionInput<String> url) {
         this.urlInput = Objects.requireNonNull(url, "url must not be null");
         this.filenameInput = null;
     }
 
     /**
-     * Like {@link #DownloadAction(Action.Input)} but also resolves the
-     * suggested filename on the client.
+     * Like {@link #DownloadAction(ActionInput)} but also resolves the suggested
+     * filename on the client.
+     * <p>
+     * For internal use only. May be changed or removed in any release.
      *
      * @param url
      *            input supplying the URL when the trigger fires, not
@@ -147,8 +145,8 @@ public final class DownloadAction extends Action {
      *            input supplying the suggested filename when the trigger fires,
      *            not {@code null}
      */
-    public DownloadAction(Action.Input<String> url,
-            Action.Input<String> filename) {
+    public DownloadAction(ActionInput<String> url,
+            ActionInput<String> filename) {
         this.urlInput = Objects.requireNonNull(url, "url must not be null");
         this.filenameInput = Objects.requireNonNull(filename,
                 "filename must not be null");

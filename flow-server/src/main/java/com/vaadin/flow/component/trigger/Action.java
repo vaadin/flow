@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import com.vaadin.flow.dom.JsFunction;
 
 /**
@@ -33,22 +34,12 @@ import com.vaadin.flow.dom.JsFunction;
  * {@code trigger.triggers(action)}) and the framework wires the action to run
  * whenever the trigger fires.
  * <p>
- * An Action usually consumes one or more {@linkplain Input inputs} that supply
- * its values — a literal, the current value of a DOM property, an event-scoped
- * expression — so the data the action acts on is read on the client at fire
- * time rather than captured on the server. A trigger family may expose its
- * event state as one or more {@code Input}s, typically as
- * {@code public static final} fields (for example
- * {@link MouseEventTrigger.EventData#screenX}); other inputs read state
- * independent of any trigger (for example {@link PropertyInput}).
- * <p>
- * Creating actions and wiring them to triggers is public API. Implementing a
- * custom action is not yet: the methods that render an action or an input to
+ * Creating actions and wiring them to triggers is public API. Passing data from
+ * a trigger or from the page into an action, and implementing a custom action,
+ * is not yet: the input types and the methods that render an action to
  * JavaScript are for internal use only and may be changed or removed in any
  * release. Within the framework, implementors override {@link #toJs(Trigger)}
- * to produce the JavaScript that the trigger handler invokes and reference
- * inputs through {@link Input#toJs(Trigger)} so the same value-supplier
- * abstractions work with every action.
+ * to produce the JavaScript that the trigger handler invokes.
  *
  * @since 25.4
  */
@@ -63,8 +54,9 @@ public abstract class Action implements Serializable {
      * handler); subclasses do not declare argument names themselves.
      * <p>
      * The body is one statement. To embed a value produced on the client,
-     * capture an {@link Input}'s {@link Input#toJs(Trigger) JsFunction} as a
-     * capture and invoke it inside the body as {@code $N(event)}.
+     * capture an {@link ActionInput}'s {@link ActionInput#toJs(Trigger)
+     * JsFunction} as a capture and invoke it inside the body as
+     * {@code $N(event)}.
      * <p>
      * For internal use only. May be changed or removed in any release.
      *
@@ -104,48 +96,5 @@ public abstract class Action implements Serializable {
                             + "trigger.",
                     target.getClass().getName(), actionDescription);
         }
-    }
-
-    /**
-     * A value an {@link Action} consumes at fire time. Renders into a
-     * {@link JsFunction} that, when called, evaluates to the input's value — a
-     * literal, the current value of a DOM property, an event-scoped expression,
-     * anything the producer chooses.
-     * <p>
-     * Some inputs are bound to a specific trigger's handler scope (see
-     * {@link MouseEventTrigger.EventData}) and may only be used in actions
-     * wired to that trigger; others are independent of any trigger (see
-     * {@link PropertyInput}, {@link LiteralInput}) and may be used freely.
-     * <p>
-     * Creating inputs and passing them to actions is public API. Implementing a
-     * custom input is not yet, as {@link #toJs(Trigger)} is for internal use
-     * only.
-     *
-     * @param <T>
-     *            the runtime type of the value produced
-     */
-    public abstract static class Input<T> implements Serializable {
-
-        /**
-         * Builds the {@link JsFunction} that yields this input's value when
-         * called. The function may take {@code event} as a runtime argument
-         * (declared by the subclass via
-         * {@link JsFunction#withArguments(String...)}); inputs that don't need
-         * {@code event} simply omit the declaration and ignore the argument the
-         * caller passes.
-         *
-         * <p>
-         * Public so that {@link Action} implementations in any package can
-         * consume inputs they receive as parameters, not only inputs they
-         * created themselves.
-         * <p>
-         * For internal use only. May be changed or removed in any release.
-         *
-         * @param trigger
-         *            the surrounding trigger this render is for, not
-         *            {@code null}
-         * @return the input's JS function, not {@code null}
-         */
-        public abstract JsFunction toJs(Trigger trigger);
     }
 }

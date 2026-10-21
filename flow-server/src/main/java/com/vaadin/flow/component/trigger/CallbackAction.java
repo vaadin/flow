@@ -23,6 +23,7 @@ import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -32,39 +33,26 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 /**
- * Forwards a value from the trigger's handler scope back to the server and
- * hands it to a {@link SerializableConsumer} on the UI thread. The generic
- * counterpart to client-side actions like {@link SetPropertyAction} — same
- * input/source story, except the destination is a Java callback instead of a JS
- * assignment.
+ * Runs a server-side callback on the UI thread when the trigger fires.
  * <p>
- * Use this as the bridge from a trigger to arbitrary server-side state — log a
- * value, fire a custom event, push to a queue, etc. The {@link SetSignalAction}
- * subclass is the named convenience for the common case of forwarding into a
- * {@link com.vaadin.flow.signals.local.ValueSignal}.
- * <p>
- * Example — log the screen-X coordinate of each click:
+ * Example — run a callback when the button is clicked:
  *
  * <pre>{@code
- * ClickTrigger click = new ClickTrigger(button);
- * click.triggers(new CallbackAction<>(Integer.class,
- *         x -> logger.info("clicked at {}", x),
- *         ClickTrigger.EventData.screenX));
+ * new ClickTrigger(button)
+ *         .triggers(new CallbackAction<>(() -> logger.info("clicked")));
  * }</pre>
  *
  * <p>
- * The rendered JS calls a {@link ReturnChannelRegistration} that, on the
- * server, decodes the JSON value as {@code T} and invokes the callback. A null
- * value on the wire (a JSON {@code null} or a missing argument) is rejected
- * with {@link IllegalStateException} — callbacks see decoded, non-null values
- * only. A separate channel is registered per host node, so the same action
- * instance can be wired to triggers hosted on different elements without
- * leaking registrations across them.
- * <p>
- * A value-less variant — constructed with just a {@link SerializableRunnable} —
- * forwards no value: the trigger firing is the whole signal. It renders
- * {@code $0()} and runs the callback when invoked. Useful for triggers that
- * carry no payload, such as {@link TimeoutTrigger}.
+ * Forwarding a value from the client to the callback, with the
+ * {@link #CallbackAction(Class, SerializableConsumer, ActionInput)}
+ * constructor, is for internal use only. The rendered JS then calls a
+ * {@link ReturnChannelRegistration} that, on the server, decodes the JSON value
+ * as {@code T} and invokes the callback. A null value on the wire (a JSON
+ * {@code null} or a missing argument) is rejected with
+ * {@link IllegalStateException} — callbacks see decoded, non-null values only.
+ * A separate channel is registered per host node, so the same action instance
+ * can be wired to triggers hosted on different elements without leaking
+ * registrations across them.
  *
  * @param <T>
  *            the type the JSON value is decoded to and the callback receives;
@@ -73,7 +61,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  */
 public class CallbackAction<T> extends Action {
 
-    private final Action.@Nullable Input<? extends T> source;
+    private final @Nullable ActionInput<? extends T> source;
     private final SerializableConsumer<ArrayNode> dispatch;
     private final Map<StateNode, ReturnChannelRegistration> channelByNode = new IdentityHashMap<>();
 
@@ -81,6 +69,8 @@ public class CallbackAction<T> extends Action {
      * Creates an action that, when the trigger fires, evaluates {@code source}
      * on the client, sends the value to the server, decodes it as
      * {@code valueType}, and hands it to {@code callback} on the UI thread.
+     * <p>
+     * For internal use only. May be changed or removed in any release.
      *
      * @param valueType
      *            runtime type the JSON value is decoded to before being passed
@@ -93,7 +83,7 @@ public class CallbackAction<T> extends Action {
      *            fires, not {@code null}
      */
     public CallbackAction(Class<T> valueType, SerializableConsumer<T> callback,
-            Action.Input<? extends T> source) {
+            ActionInput<? extends T> source) {
         Objects.requireNonNull(valueType, "valueType must not be null");
         Objects.requireNonNull(callback, "callback must not be null");
         this.source = Objects.requireNonNull(source, "source must not be null");

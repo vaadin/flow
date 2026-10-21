@@ -46,8 +46,9 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
-import com.vaadin.flow.component.trigger.SetSignalAction;
 import com.vaadin.flow.component.trigger.SizeTrigger;
+import com.vaadin.flow.component.trigger.internal.SetSignalAction;
+import com.vaadin.flow.component.trigger.internal.SizeEventData;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
@@ -1778,8 +1779,8 @@ public class Element extends Node<Element> {
         // browser-side observer.
         feature.setBinding(SignalBindingFeature.SIZE, readonly);
 
-        new SizeTrigger(this).triggers(new SetSignalAction<>(signal, Size.class,
-                SizeTrigger.EventData.size));
+        new SizeTrigger(this).triggers(
+                new SetSignalAction<>(signal, Size.class, SizeEventData.size));
 
         return readonly;
     }

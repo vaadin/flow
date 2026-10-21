@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.trigger;
+package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -35,7 +36,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * @since 25.4
  */
-public final class ImageBlobInput extends Action.Input<Object> {
+public final class ImageBlobInput extends ActionInput<Object> {
 
     private final Element source;
 

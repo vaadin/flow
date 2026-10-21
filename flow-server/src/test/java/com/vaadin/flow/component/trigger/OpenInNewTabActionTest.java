@@ -18,6 +18,7 @@ package com.vaadin.flow.component.trigger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.trigger.internal.PropertyInput;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 

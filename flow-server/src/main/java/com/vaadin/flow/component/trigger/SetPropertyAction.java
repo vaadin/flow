@@ -20,28 +20,22 @@ import java.util.Objects;
 import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
+import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
 /**
  * Assigns a value to a JavaScript property on a target element when the bound
- * trigger fires. Pure client-side — no server round-trip.
- * <p>
- * Symmetric with {@link PropertyInput}: the same property name space
- * (DOM/custom-element properties such as {@code value}, {@code checked},
- * {@code disabled}).
- * <p>
- * The value to assign can be either a literal (constant, serialised at build
- * time) or an {@link Action.Input} that produces the value on the client when
- * the trigger fires — for example, {@link MouseEventTrigger.EventData#screenX}
- * feeds the click's screen coordinate.
+ * trigger fires. Pure client-side — no server round-trip. The property name
+ * space is that of DOM and custom-element properties such as {@code value},
+ * {@code checked} or {@code disabled}.
  * <p>
  * Common idioms:
  * <ul>
- * <li>Disable a button: {@code new SetPropertyAction(button, "disabled", true)}
- * <li>Clear an input: {@code new SetPropertyAction(input, "value", "")}
- * <li>Mirror a click coordinate:
- * {@code new SetPropertyAction(field, "value", ClickTrigger.EventData.screenX)}
+ * <li>Disable a button:
+ * {@code new SetPropertyAction<>(button, "disabled", true)}
+ * <li>Clear an input: {@code new SetPropertyAction<>(input, "value", "")}
  * </ul>
  *
  * Server-side state is not updated by this action; the change lives in the
@@ -58,7 +52,7 @@ public final class SetPropertyAction<T> extends Action {
      * {@link #SetPropertyAction(Component, String, Object) null-accepting
      * convenience constructor} so {@link LiteralInput} can stay non-null.
      */
-    private static final Action.Input<Object> NULL_LITERAL = new Action.Input<>() {
+    private static final ActionInput<Object> NULL_LITERAL = new ActionInput<>() {
         @Override
         public JsFunction toJs(Trigger trigger) {
             return JsFunction.of("return null");
@@ -66,13 +60,13 @@ public final class SetPropertyAction<T> extends Action {
     };
 
     @SuppressWarnings("unchecked")
-    private static <T> Action.Input<T> nullLiteral() {
-        return (Action.Input<T>) NULL_LITERAL;
+    private static <T> ActionInput<T> nullLiteral() {
+        return (ActionInput<T>) NULL_LITERAL;
     }
 
     private final Element target;
     private final String propertyName;
-    private final Action.Input<? extends T> source;
+    private final ActionInput<? extends T> source;
 
     /**
      * Creates an action that assigns the given literal value to the given JS
@@ -98,6 +92,8 @@ public final class SetPropertyAction<T> extends Action {
     /**
      * Creates an action that assigns the value produced by {@code source} to
      * the given JS property on {@code target} when the trigger fires.
+     * <p>
+     * For internal use only. May be changed or removed in any release.
      *
      * @param target
      *            the component whose root element to modify, not {@code null}
@@ -107,7 +103,7 @@ public final class SetPropertyAction<T> extends Action {
      *            input that produces the value to assign, not {@code null}
      */
     public SetPropertyAction(Component target, String propertyName,
-            Action.Input<? extends T> source) {
+            ActionInput<? extends T> source) {
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
         this.source = Objects.requireNonNull(source);

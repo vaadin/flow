@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
+import com.vaadin.flow.component.trigger.internal.MouseEventData;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.tests.util.MockUI;
 
@@ -42,9 +44,9 @@ class ClickTriggerTest {
 
         new ClickTrigger(button).triggers(
                 new SetPropertyAction<>(xField, "value",
-                        ClickTrigger.EventData.screenX),
+                        MouseEventData.screenX),
                 new SetPropertyAction<>(yField, "value",
-                        ClickTrigger.EventData.screenY));
+                        MouseEventData.screenY));
 
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
@@ -75,7 +77,7 @@ class ClickTriggerTest {
         ui.getElement().appendChild(button1.getElement(), button2.getElement(),
                 field.getElement());
 
-        Action.Input<Integer> sharedX = ClickTrigger.EventData.screenX;
+        ActionInput<Integer> sharedX = MouseEventData.screenX;
         new ClickTrigger(button1)
                 .triggers(new SetPropertyAction<>(field, "value", sharedX));
         new ClickTrigger(button2)
@@ -100,7 +102,7 @@ class ClickTriggerTest {
         ClickTrigger click = new ClickTrigger(button);
         // Same static EventData field used across two separate triggers() calls
         // on the same trigger instance.
-        Action.Input<Integer> x = ClickTrigger.EventData.screenX;
+        ActionInput<Integer> x = MouseEventData.screenX;
         click.triggers(new SetPropertyAction<>(xField, "value", x));
         click.triggers(new SetPropertyAction<>(yField, "value", x));
 
@@ -113,7 +115,7 @@ class ClickTriggerTest {
 
     @Test
     void mouseEventData_rejectedInNonMouseEventTrigger() {
-        // ClickTrigger.EventData.screenX is bound to MouseEventTrigger; a plain
+        // MouseEventData.screenX is bound to MouseEventTrigger; a plain
         // DomEventTrigger is not a MouseEventTrigger so wiring it through such
         // a handler must fail at triggers() time.
         TagComponent input = new TagComponent("input");
@@ -122,7 +124,7 @@ class ClickTriggerTest {
         DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
         assertThrows(IllegalArgumentException.class,
                 () -> keypress.triggers(new SetPropertyAction<>(field, "value",
-                        ClickTrigger.EventData.screenX)));
+                        MouseEventData.screenX)));
     }
 
 }

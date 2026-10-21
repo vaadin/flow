@@ -18,7 +18,6 @@ package com.vaadin.flow.component.trigger;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.HandlerInput;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.shared.Registration;
 
@@ -57,27 +56,6 @@ public class DomEventTrigger extends Trigger {
     public DomEventTrigger(Component host, String eventName) {
         super(host);
         this.eventName = Objects.requireNonNull(eventName);
-    }
-
-    /**
-     * Returns an {@link Action.Input} that yields {@code event[name]} at fire
-     * time, valid in the handler of any trigger that is an instance of
-     * {@code ownerClass}. Used by trigger families that expose their event
-     * properties as {@code public static final} fields — see
-     * {@link MouseEventTrigger.EventData}.
-     *
-     * @param name
-     *            the event property name, not {@code null}
-     * @param ownerClass
-     *            the trigger class the expression is valid for, not
-     *            {@code null}
-     * @param <T>
-     *            the runtime type of the value produced
-     * @return an input that resolves to {@code event[name]} on fire
-     */
-    static <T> Action.Input<T> eventProperty(String name,
-            Class<? extends DomEventTrigger> ownerClass) {
-        return new HandlerInput<>(name, ownerClass);
     }
 
     @Override
