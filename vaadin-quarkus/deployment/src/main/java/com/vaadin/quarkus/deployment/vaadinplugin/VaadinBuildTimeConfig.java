@@ -278,6 +278,9 @@ public interface VaadinBuildTimeConfig {
      * Whether npm packages may be declared with an exotic version, such as a
      * tarball URL or a git repository, rather than a registry version or a
      * local path.
+     *
+     * @return {@code true} if exotic npm versions are allowed, {@code false}
+     *         otherwise
      */
     @WithDefault("false")
     boolean npmAllowExoticVersions();
