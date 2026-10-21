@@ -30,8 +30,6 @@ import com.vaadin.flow.component.trigger.Trigger;
  * {@link IllegalArgumentException} at {@link Trigger#triggers(Action...)} time.
  * <p>
  * For internal use only. May be renamed or removed in any release.
- *
- * @since 25.4
  */
 public final class MouseEventData {
 
