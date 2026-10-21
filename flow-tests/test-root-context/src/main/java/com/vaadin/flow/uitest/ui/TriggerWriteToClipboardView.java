@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.trigger.internal.ActionInput;
 import javax.imageio.ImageIO;
 
 import java.awt.Color;
@@ -37,8 +36,8 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.trigger.Action;
 import com.vaadin.flow.component.trigger.ClickTrigger;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
