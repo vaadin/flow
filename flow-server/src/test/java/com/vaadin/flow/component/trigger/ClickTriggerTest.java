@@ -122,9 +122,10 @@ class ClickTriggerTest {
         TagComponent field = new TagComponent("input");
 
         DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
+        SetPropertyAction<Integer> action = new SetPropertyAction<>(field,
+                "value", MouseEventData.screenX);
         assertThrows(IllegalArgumentException.class,
-                () -> keypress.triggers(new SetPropertyAction<>(field, "value",
-                        MouseEventData.screenX)));
+                () -> keypress.triggers(action));
     }
 
 }
