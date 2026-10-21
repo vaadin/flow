@@ -35,9 +35,6 @@ import com.vaadin.flow.dom.JsFunction;
  */
 public final class SizeEventData {
 
-    private SizeEventData() {
-    }
-
     /**
      * {@code event.width} — the element's rounded content-box width in pixels.
      */
@@ -68,4 +65,7 @@ public final class SizeEventData {
             return JsFunction.of("return event").withArguments("event");
         }
     };
+
+    private SizeEventData() {
+    }
 }

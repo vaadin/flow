@@ -59,11 +59,6 @@ public final class SetPropertyAction<T> extends Action {
         }
     };
 
-    @SuppressWarnings("unchecked")
-    private static <T> ActionInput<T> nullLiteral() {
-        return (ActionInput<T>) NULL_LITERAL;
-    }
-
     private final Element target;
     private final String propertyName;
     private final ActionInput<? extends T> source;
@@ -107,6 +102,11 @@ public final class SetPropertyAction<T> extends Action {
         this.target = Objects.requireNonNull(target).getElement();
         this.propertyName = Objects.requireNonNull(propertyName);
         this.source = Objects.requireNonNull(source);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> ActionInput<T> nullLiteral() {
+        return (ActionInput<T>) NULL_LITERAL;
     }
 
     @Override

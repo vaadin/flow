@@ -33,9 +33,6 @@ import com.vaadin.flow.component.trigger.Trigger;
  */
 public final class MouseEventData {
 
-    private MouseEventData() {
-    }
-
     /** {@code event.screenX} — X coordinate relative to the screen. */
     public static final ActionInput<Integer> screenX = new HandlerInput<>(
             "screenX", MouseEventTrigger.class);
@@ -76,4 +73,7 @@ public final class MouseEventData {
     /** {@code event.metaKey} — whether meta was held during the event. */
     public static final ActionInput<Boolean> metaKey = new HandlerInput<>(
             "metaKey", MouseEventTrigger.class);
+
+    private MouseEventData() {
+    }
 }

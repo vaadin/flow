@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.component.Size;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.trigger.internal.SizeEventData;
 import com.vaadin.flow.dom.JsFunction;
@@ -134,8 +135,10 @@ class SizeTriggerTest {
         // EventData.width is bound to SizeTrigger; a plain DomEventTrigger is
         // not a SizeTrigger, so wiring it through such a handler must fail.
         DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
-        assertThrows(IllegalArgumentException.class, () -> keypress.triggers(
-                new SetPropertyAction<>(field, "value", SizeEventData.width)));
+        SetPropertyAction<Integer> action = new SetPropertyAction<>(field,
+                "value", SizeEventData.width);
+        assertThrows(IllegalArgumentException.class,
+                () -> keypress.triggers(action));
     }
 
     @Test
@@ -144,8 +147,9 @@ class SizeTriggerTest {
         TagComponent field = new TagComponent("input");
 
         DomEventTrigger keypress = new DomEventTrigger(input, "keypress");
+        SetPropertyAction<Size> action = new SetPropertyAction<>(field,
+                "data-size", SizeEventData.size);
         assertThrows(IllegalArgumentException.class,
-                () -> keypress.triggers(new SetPropertyAction<>(field,
-                        "data-size", SizeEventData.size)));
+                () -> keypress.triggers(action));
     }
 }
