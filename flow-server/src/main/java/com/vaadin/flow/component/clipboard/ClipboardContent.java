@@ -22,10 +22,10 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.trigger.internal.Action;
-import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
-import com.vaadin.flow.component.trigger.internal.LiteralInput;
-import com.vaadin.flow.component.trigger.internal.PropertyInput;
+import com.vaadin.flow.component.trigger.Action;
+import com.vaadin.flow.component.trigger.ImageBlobInput;
+import com.vaadin.flow.component.trigger.LiteralInput;
+import com.vaadin.flow.component.trigger.PropertyInput;
 
 /**
  * Multi-format payload for {@link ClipboardBinding#write}. Any combination of

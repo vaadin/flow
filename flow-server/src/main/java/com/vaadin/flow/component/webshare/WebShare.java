@@ -21,7 +21,7 @@ import java.util.Objects;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.trigger.internal.ClickTrigger;
+import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.signals.Signal;
 
 /**

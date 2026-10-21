@@ -20,9 +20,9 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.component.trigger.internal.OpenInNewTabAction;
-import com.vaadin.flow.component.trigger.internal.Trigger;
+import com.vaadin.flow.component.trigger.ClickTrigger;
+import com.vaadin.flow.component.trigger.OpenInNewTabAction;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.shared.Registration;

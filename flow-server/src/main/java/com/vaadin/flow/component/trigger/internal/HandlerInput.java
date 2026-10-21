@@ -17,6 +17,10 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.trigger.Action;
+import com.vaadin.flow.component.trigger.DomEventTrigger;
+import com.vaadin.flow.component.trigger.MouseEventTrigger;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.JsFunction;
 
 /**
