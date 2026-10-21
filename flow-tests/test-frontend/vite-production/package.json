@@ -35,7 +35,7 @@
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "6.0.3",
-    "vite": "8.0.16",
+    "vite": "8.1.6",
     "vite-plugin-checker": "0.14.4"
   },
   "vaadin": {
@@ -64,7 +64,7 @@
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "6.0.3",
-      "vite": "8.0.16",
+      "vite": "8.1.6",
       "vite-plugin-checker": "0.14.4"
     },
     "hash": "d30e148b8cac2720a95e16dabfb6b35c72b018ac0886fa86c3a71c7a60d869eb"
