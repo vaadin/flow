@@ -24,9 +24,15 @@ import java.io.Serializable;
  * <p>
  * The service calls {@link #handleRequest(VaadinRequest, VaadinResponse)}
  * before it looks up the session of the request, so the handler runs the same
- * way whether or not the request has a session, never creates one and never
- * waits for the session lock. {@link VaadinSession#getCurrent()} is
- * {@code null} while it runs.
+ * way whether or not the request has a session, never creates one and does not
+ * lock it. {@link VaadinSession#getCurrent()} is {@code null} while it runs.
+ * <p>
+ * {@link VaadinRequestInterceptor Request interceptors} still run for the
+ * request before the handler. An interceptor that uses an existing session,
+ * such as the daily active user tracking, may lock that session in
+ * {@link VaadinRequestInterceptor#requestStart(VaadinRequest, VaadinResponse)},
+ * so the request can then wait for the session lock before the handler is
+ * called.
  * <p>
  * Not creating a session matters when a browser that has no session cookie yet
  * sends several requests in parallel, for example a page that embeds an
