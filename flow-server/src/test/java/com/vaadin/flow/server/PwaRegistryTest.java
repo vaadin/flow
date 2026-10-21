@@ -19,6 +19,7 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -476,6 +477,23 @@ class PwaRegistryTest {
         String sw = runtimeServiceWorkerJs(
                 PwaRegistryTest.class.getAnnotation(PWA.class));
         assertTrue(sw.contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    void pwaWithoutCustomOfflinePath_offlineHtmlShowsAppNameAndLargestIcon()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class));
+        PwaIcon largestCachedIcon = registry.getIcons().stream()
+                .filter(PwaIcon::shouldBeCached)
+                .max(Comparator.comparingInt(PwaIcon::getWidth)).get();
+
+        String html = registry.getOfflineHtml();
+
+        assertTrue(html.contains("<div class=\"app-name\">foo</div>"), html);
+        assertTrue(html.contains("<img class=\"app-icon\" src=\""
+                + largestCachedIcon.getHref() + "\""), html);
+        assertFalse(html.contains("%%%"), html);
     }
 
     @Test
