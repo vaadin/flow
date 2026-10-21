@@ -53,6 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -268,6 +269,23 @@ class VaadinServletServiceTest {
         verify(handler).handleRequest(notNull(), eq(request), eq(response));
         assertSame(handler, ended.get(1).getHandler().orElseThrow());
         assertFalse(ended.get(1).getSessionlessHandler().isPresent());
+
+        // A handler that throws is named together with the failure
+        VaadinRequest failingRequest = servlet
+                .createVaadinRequest(createRequest("http://dummy.host:8080/",
+                        "/contextpath", "/servlet", "/resource"));
+        when(sessionlessHandler.handleRequest(failingRequest, response))
+                .thenThrow(new IOException("BOOM!"));
+
+        assertThrows(ServiceException.class,
+                () -> service.handleRequest(failingRequest, response));
+
+        RequestEndedEvent failed = ended.get(2);
+        assertSame(sessionlessHandler,
+                failed.getSessionlessHandler().orElseThrow());
+        assertEquals("BOOM!", failed.getFailure().orElseThrow().getMessage());
+        assertFalse(failed.getHandler().isPresent());
+        assertFalse(failed.getSession().isPresent());
     }
 
     @Test
