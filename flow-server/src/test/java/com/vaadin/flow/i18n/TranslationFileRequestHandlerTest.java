@@ -47,6 +47,7 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -404,6 +405,28 @@ class TranslationFileRequestHandlerTest {
         when(configuration.isProductionMode()).thenReturn(isProductionMode);
         when(service.getDeploymentConfiguration()).thenReturn(configuration);
         when(request.getService()).thenReturn(service);
+    }
+
+    @Test
+    @SuppressWarnings("removal")
+    void deprecatedRequestHandlerMethods_stillServeTranslations()
+            throws IOException {
+        configure(true);
+        setRequestParams("fi",
+                HandlerHelper.RequestType.TRANSLATION_FILE.getIdentifier(),
+                null, null);
+        VaadinSession session = mock(VaadinSession.class);
+
+        assertTrue(
+                handler.synchronizedHandleRequest(session, request, response));
+        assertTrue(handler.handleSessionExpired(request, response));
+
+        assertEquals("{\"title\":\"Suomi\"}{\"title\":\"Suomi\"}",
+                getResponseContent());
+        Mockito.verifyNoInteractions(session);
+
+        setRequestParams(null, "other", null, null);
+        assertFalse(handler.handleSessionExpired(request, response));
     }
 
     @Test

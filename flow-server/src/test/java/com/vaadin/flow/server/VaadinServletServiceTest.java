@@ -254,6 +254,8 @@ class VaadinServletServiceTest {
         verify(httpRequest, never()).getSession();
         verify(httpRequest, never()).getSession(anyBoolean());
         assertFalse(ended.get(0).getHandler().isPresent());
+        assertSame(sessionlessHandler,
+                ended.get(0).getSessionlessHandler().orElseThrow());
         assertFalse(ended.get(0).getSession().isPresent());
 
         // A request it declines gets a session and reaches the other handlers
@@ -265,6 +267,7 @@ class VaadinServletServiceTest {
 
         verify(handler).handleRequest(notNull(), eq(request), eq(response));
         assertSame(handler, ended.get(1).getHandler().orElseThrow());
+        assertFalse(ended.get(1).getSessionlessHandler().isPresent());
     }
 
     @Test

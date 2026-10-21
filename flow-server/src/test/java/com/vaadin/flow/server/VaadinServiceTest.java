@@ -253,7 +253,8 @@ class VaadinServiceTest {
         MockVaadinServletService service = new MockVaadinServletService() {
             @Override
             protected List<SessionlessRequestHandler> createSessionlessRequestHandlers() {
-                return new ArrayList<>(List.of(builtIn1, builtIn2));
+                // An immutable list must not break adding handlers
+                return List.of(builtIn1, builtIn2);
             }
         };
 

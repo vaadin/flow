@@ -45,6 +45,7 @@ public class RequestEndedEvent extends EventObject {
     private final transient VaadinResponse response;
     private final transient VaadinSession session;
     private final transient RequestHandler handler;
+    private final transient SessionlessRequestHandler sessionlessHandler;
     private final transient Exception failure;
     private final Duration duration;
 
@@ -63,6 +64,9 @@ public class RequestEndedEvent extends EventObject {
      * @param handler
      *            the request handler that handled the request, or {@code null}
      *            if no request handler handled it
+     * @param sessionlessHandler
+     *            the sessionless request handler that handled the request, or
+     *            {@code null} if no sessionless request handler handled it
      * @param failure
      *            the exception that made handling the request fail, or
      *            {@code null} if handling it did not fail
@@ -72,12 +76,15 @@ public class RequestEndedEvent extends EventObject {
      */
     public RequestEndedEvent(VaadinService service, VaadinRequest request,
             VaadinResponse response, VaadinSession session,
-            RequestHandler handler, Exception failure, Duration duration) {
+            RequestHandler handler,
+            SessionlessRequestHandler sessionlessHandler, Exception failure,
+            Duration duration) {
         super(service);
         this.request = request;
         this.response = response;
         this.session = session;
         this.handler = handler;
+        this.sessionlessHandler = sessionlessHandler;
         this.failure = failure;
         this.duration = duration;
     }
@@ -127,14 +134,28 @@ public class RequestEndedEvent extends EventObject {
      * client-to-server message.
      * <p>
      * A push message is not handled by a request handler, and neither is a
-     * request that a {@link SessionlessRequestHandler} handled or that failed
-     * before a handler accepted it.
+     * request that a {@link SessionlessRequestHandler} handled, see
+     * {@link #getSessionlessHandler()}, or that failed before a handler
+     * accepted it.
      *
      * @return the request handler, or an empty optional if no request handler
      *         handled the request
      */
     public Optional<RequestHandler> getHandler() {
         return Optional.ofNullable(handler);
+    }
+
+    /**
+     * Gets the sessionless request handler that handled the request, for
+     * example {@link com.vaadin.flow.i18n.TranslationFileRequestHandler} for a
+     * translation file request. Such a request does not use a session and is
+     * not handled by any {@link #getHandler() request handler}.
+     *
+     * @return the sessionless request handler, or an empty optional if no
+     *         sessionless request handler handled the request
+     */
+    public Optional<SessionlessRequestHandler> getSessionlessHandler() {
+        return Optional.ofNullable(sessionlessHandler);
     }
 
     /**

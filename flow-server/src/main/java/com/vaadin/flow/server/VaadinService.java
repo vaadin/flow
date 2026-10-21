@@ -150,6 +150,9 @@ public abstract class VaadinService implements Serializable {
     private static final String REQUEST_HANDLER_ATTRIBUTE = VaadinService.class
             .getName() + ".requestHandler";
 
+    private static final String SESSIONLESS_REQUEST_HANDLER_ATTRIBUTE = VaadinService.class
+            .getName() + ".sessionlessRequestHandler";
+
     private static final String REQUEST_FAILURE_ATTRIBUTE = VaadinService.class
             .getName() + ".requestFailure";
 
@@ -291,7 +294,8 @@ public abstract class VaadinService implements Serializable {
         router = new Router(getRouteRegistry());
 
         List<RequestHandler> handlers = createRequestHandlers();
-        List<SessionlessRequestHandler> sessionlessHandlers = createSessionlessRequestHandlers();
+        List<SessionlessRequestHandler> sessionlessHandlers = new ArrayList<>(
+                createSessionlessRequestHandlers());
 
         // If the user has already provided interceptors we will add them to the
         // list
@@ -2078,6 +2082,8 @@ public abstract class VaadinService implements Serializable {
                     request, response, session,
                     (RequestHandler) request
                             .getAttribute(REQUEST_HANDLER_ATTRIBUTE),
+                    (SessionlessRequestHandler) request.getAttribute(
+                            SESSIONLESS_REQUEST_HANDLER_ATTRIBUTE),
                     (Exception) request.getAttribute(REQUEST_FAILURE_ATTRIBUTE),
                     duration));
         }
@@ -2192,10 +2198,21 @@ public abstract class VaadinService implements Serializable {
             // Requests that do not need a session are handled before looking
             // it up, so that they neither create a session nor wait for its
             // lock
+            // The handler is recorded before it runs, so that a request
+            // ended event names the handler that threw if handling fails
+            boolean observed = eventBus.hasListener(RequestEndedEvent.class);
             for (SessionlessRequestHandler handler : getSessionlessRequestHandlers()) {
+                if (observed) {
+                    request.setAttribute(SESSIONLESS_REQUEST_HANDLER_ATTRIBUTE,
+                            handler);
+                }
                 if (handler.handleRequest(request, response)) {
                     return;
                 }
+            }
+            if (observed) {
+                request.setAttribute(SESSIONLESS_REQUEST_HANDLER_ATTRIBUTE,
+                        null);
             }
 
             // Find out the service session this request is related to
@@ -2204,9 +2221,6 @@ public abstract class VaadinService implements Serializable {
                 return;
             }
 
-            // The handler is recorded before it runs, so that a request
-            // ended event names the handler that threw if handling fails
-            boolean observed = eventBus.hasListener(RequestEndedEvent.class);
             for (RequestHandler handler : getRequestHandlers()) {
                 if (observed) {
                     request.setAttribute(REQUEST_HANDLER_ATTRIBUTE, handler);

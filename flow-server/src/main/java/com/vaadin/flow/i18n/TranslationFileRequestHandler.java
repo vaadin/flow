@@ -36,10 +36,13 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SessionlessRequestHandler;
+import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
@@ -61,13 +64,20 @@ import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
  * <li>Default bundle (root bundle)</li>
  * </ul>
  * <p>
+ * The service registers this handler as a {@link SessionlessRequestHandler}, so
+ * the {@link I18NProvider} is called without a {@link VaadinSession}: it gets
+ * the requested locale and must not depend on
+ * {@link VaadinSession#getCurrent()}. The handler is still a
+ * {@link SynchronizedRequestHandler} and a {@link SessionExpiredHandler} for
+ * backwards compatibility, but the service no longer calls it as either.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 24.4
  */
-public class TranslationFileRequestHandler
-        implements SessionlessRequestHandler {
+public class TranslationFileRequestHandler extends SynchronizedRequestHandler
+        implements SessionExpiredHandler, SessionlessRequestHandler {
 
     static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
 
@@ -108,12 +118,57 @@ public class TranslationFileRequestHandler
     @Override
     public boolean handleRequest(VaadinRequest request, VaadinResponse response)
             throws IOException {
-        if (!HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.TRANSLATION_FILE)) {
+        if (!canHandleRequest(request)) {
             return false;
         }
         handleTranslationRequest(request.getService(), request, response);
         return true;
+    }
+
+    /**
+     * Handles a translation file request that is passed to this handler as a
+     * regular request handler. The session is not used.
+     *
+     * @deprecated the service calls this handler as a
+     *             {@link SessionlessRequestHandler}, use
+     *             {@link #handleRequest(VaadinRequest, VaadinResponse)} instead
+     */
+    @Deprecated(since = "25.4", forRemoval = true)
+    @Override
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
+        handleTranslationRequest(request.getService(), request, response);
+        return true;
+    }
+
+    /**
+     * Handles translation file requests when the session has expired or does
+     * not exist.
+     *
+     * @param request
+     *            the request to handle
+     * @param response
+     *            the response object to which a response can be written
+     * @return {@code true} if the request was handled, {@code false} if this
+     *         handler does not handle the given request type
+     * @throws IOException
+     *             if an IO error occurred
+     * @since 25.0.5
+     * @deprecated the service calls this handler as a
+     *             {@link SessionlessRequestHandler}, use
+     *             {@link #handleRequest(VaadinRequest, VaadinResponse)} instead
+     */
+    @Deprecated(since = "25.4", forRemoval = true)
+    @Override
+    public boolean handleSessionExpired(VaadinRequest request,
+            VaadinResponse response) throws IOException {
+        return handleRequest(request, response);
+    }
+
+    @Override
+    protected boolean canHandleRequest(VaadinRequest request) {
+        return HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.TRANSLATION_FILE);
     }
 
     private void handleTranslationRequest(VaadinService service,
