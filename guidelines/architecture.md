@@ -8,6 +8,7 @@ The more involved features have their own architecture notes next to the code:
 | Feature                               | Note                                                         |
 | ------------------------------------- | ------------------------------------------------------------ |
 | Client-side bootstrap and routing     | [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md) |
+| Connection state and loading indicator | [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md#connection-state-and-loading-indicator) |
 
 ## State management
 

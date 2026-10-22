@@ -1,4 +1,4 @@
-# Client-side bootstrap and routing
+# Client-side bootstrap, routing and connection state
 
 ## Overview
 
@@ -193,8 +193,8 @@ navigation at a time, after the current one has finished its round trip.
   constructor, before anything can navigate.
 - **Offline.** When the connection is down or `?v-r=init` fails, the route
   renders the offline stub (`offline-stub.html` in an iframe) instead of the
-  container, and re-renders when the connection comes back. The service
-  worker side of this is in the PWA notes.
+  container, and re-renders when the connection comes back. See
+  [Connection state and loading indicator](#connection-state-and-loading-indicator).
 
 ## Working on it
 
@@ -214,3 +214,129 @@ navigation at a time, after the current one has finished its round trip.
 - Related: [Browser Integration](../guidelines/browser-integration.md),
   [Wire Protocol](../guidelines/wire-protocol.md),
   [Frontend Hotswap](../guidelines/frontend-hotswap.md) (for `layouts.json`).
+
+## Connection state and loading indicator
+
+### Overview
+
+The thin bar at the top of a Vaadin application and the "Connection lost"
+popup are one element, `<vaadin-connection-indicator>`. It shows one shared
+value: the connection state of the browser tab. Several parties write that
+value, and none of them know about each other:
+
+- the Flow router in `Flow.ts`, while a server navigation is in progress;
+- the Flow engine, while a UIDL request is in flight, and while it
+  reconnects;
+- Hilla's `ConnectClient`, while an endpoint call is in flight;
+- the service worker, which may know that the server was unreachable before
+  the page even loaded.
+
+When the user clicks a button, the engine announces loading. If the response
+takes longer than `firstDelay`, the bar appears, and it gets more prominent
+after `secondDelay` and `thirdDelay`. If the request fails, the engine
+switches to reconnecting and retries. It ends in connected again, or in
+connection lost once it gives up.
+
+### Design goals
+
+- **One state for the whole tab.** Flow and Hilla requests show the same
+  indicator, and an offline page looks the same in a Flow and a Hilla view.
+- **Loading is counted, not set.** Each party starts and finishes its own
+  loading. The indicator goes back to connected only when every party is done,
+  so a finishing endpoint call doesn't hide the bar while a UIDL request is
+  still running.
+- **No noise from high-frequency events.** A request triggered only by
+  `mousemove`, `keydown`, `input`, `scroll` and similar events does not show
+  loading. These requests are frequent and short, and a flickering bar would
+  only distract.
+- **Configurable from Java**, without custom client code: the delays and the
+  default theme (`UI.getLoadingIndicatorConfiguration()`), and the reconnect
+  texts, attempts and interval (`UI.getReconnectDialogConfiguration()`).
+
+### The pieces
+
+| Piece | Where | Role |
+| ----- | ----- | ---- |
+| `ConnectionStateStore`, `ConnectionState` | `@vaadin/common-frontend` (npm) | The shared store at `window.Vaadin.connectionState`. Created on first import, starting as connected (always on localhost) or as connection lost when `navigator.onLine` is false. On a service worker message saying the server was unreachable, it switches to connection lost. |
+| `ConnectionIndicator` (element) | `@vaadin/common-frontend` | `<vaadin-connection-indicator>`, created by the `Flow` constructor. Renders the loading bar with the three delays, and the reconnecting and offline messages. Exposed as `window.Vaadin.connectionIndicator`. |
+| `internal/client/ConnectionIndicator.ts` | `flow-client/src/main/frontend/` | The engine's access to the store and the element. Every call is a no-op when they are missing. |
+| `LoadingIndicatorStateHandler` | `internal/client/communication/` | Decides when a UIDL request announces loading. |
+| `LoadingIndicatorConfigurator` | same | Binds the `LOADING_INDICATOR_CONFIGURATION` node feature of the UI to the element properties. |
+| `DefaultConnectionStateHandler`, `ReconnectStateMachine`, `ReconnectConfiguration` | same | Reconnect after XHR, push or heartbeat errors, and the `online` / `offline` events, once the engine has loaded. |
+| `Flow.ts` | `flow-client/src/main/frontend/` | Announces loading for server navigations. Before the engine has loaded, it handles `online` / `offline` itself and shows the offline stub. |
+| `sw.ts` | `flow-server/.../server/frontend/` | Answers `Vaadin.ServiceWorker.isConnectionLost` from the outcome of its last network request. |
+
+### Loading
+
+The store has a counter. `loadingStarted()` sets the state to loading and adds
+one. `loadingFinished()` and `loadingFailed()` subtract one, and when the
+count reaches zero, they set connected or connection lost. Any direct state
+change (`state = …`) resets the counter to zero.
+
+In the engine, the decision is made per request:
+
+1. `ServerConnector` passes each queued RPC to
+   `LoadingIndicatorStateHandler.processMessage`. Any message that is not an
+   event from the silent list marks the next request as one that shows
+   loading.
+2. When `MessageSender` sends the request, `startLoading()` announces it,
+   unless every message in it was silent.
+3. When `MessageHandler` has processed the response, `stopLoading()` finishes
+   it. This happens only when no other request is active, and is deferred
+   through the `TrackingScheduler`, so a follow-up request keeps the bar
+   without a flicker. TestBench sees the deferred update as activity.
+
+The handler always uses `loadingStarted` / `loadingFinished`, never sets the
+state directly, so it does not cancel what the router or Hilla announced. It
+remembers whether its own loading is still counted (`#announced`). A state
+change by anyone, such as reconnecting, clears that, so the handler never
+finishes a loading that the store has already dropped.
+
+### Reconnecting
+
+Once the engine has loaded, `DefaultConnectionStateHandler` owns
+reconnection:
+
+- A recoverable XHR, push or heartbeat error goes to `ReconnectStateMachine`.
+  The machine keeps the highest-priority cause, sets reconnecting, and counts
+  attempts. The first attempt runs immediately, and the rest run every
+  `reconnectInterval`. An attempt re-sends the queued messages or sends a
+  heartbeat.
+- After `reconnectAttempts`, the machine gives up: connection lost, and
+  heartbeats stop.
+- A successful response resolves the error. `restoreLoading()` then
+  re-announces a loading that was still ongoing (#26452), or shows connected
+  (#26308).
+- The `offline` event gives up at once. The `online` event resumes heartbeats,
+  and the next heartbeat decides.
+- A 403 heartbeat means the session expired, and a 404 means the UI is gone.
+  Neither triggers a reconnect.
+
+Before the engine has loaded, `Flow.ts` handles `online` with a `HEAD sw.js`
+request (any HTTP answer counts as reachable) and `offline` by setting
+connection lost. A server route shows the offline stub until the state is
+online again.
+
+### Decisions and gotchas
+
+- **Silent events are a fixed list** in `LoadingIndicatorStateHandler`. The
+  decision is per request, not per message: one non-silent message is enough
+  for the whole request to show loading (#24230).
+- **Don't set the state to connected to end loading.** It would also end
+  everyone else's loading. Use `loadingFinished()` or `loadingFailed()`.
+- **The store and the element are not in this repository.** Changes to the
+  counting or rendering go to `@vaadin/common-frontend`, then the version is
+  updated here and in the default `package.json` of `flow-server`.
+- **The element's texts come from `ReconnectDialogConfiguration`**, applied in
+  `DefaultConnectionStateHandler.configurationUpdated()`. The name is
+  historical: there is no reconnect dialog any more, the indicator took its
+  place (#9481).
+
+### Working on it
+
+- Unit tests: `flow-client/src/test/frontend/internal/client/communication/`
+  (`LoadingIndicatorStateHandlerTests.ts`, `ReconnectStateMachineTests.ts`,
+  `DefaultConnectionStateHandlerTests.ts` and others).
+- Integration tests: `LoadingIndicatorIT` in `flow-tests/test-default`,
+  `ConnectionIndicatorIT` and `LoadingIndicatorNavigationIT` in
+  `flow-tests/test-ccdm-flow-navigation`.
