@@ -74,8 +74,9 @@ abstract class AbstractDependenciesScanner
     /**
      * Tells whether runtime URL {@code @JsModule} values declared on the given
      * class are added to the page at runtime. That is only done for components
-     * and the app shell, so for any other class such values are left to the
-     * bundle as before.
+     * and the app shell, which also inherit annotations from the interfaces
+     * they implement, so for any other class such values are left to the bundle
+     * as before.
      *
      * @param clazz
      *            the class declaring the annotation, loaded through the finder
@@ -84,8 +85,9 @@ abstract class AbstractDependenciesScanner
      */
     protected boolean loadsRuntimeModules(Class<?> clazz) {
         try {
-            return finder.loadClass(Component.class.getName())
-                    .isAssignableFrom(clazz)
+            return clazz.isInterface()
+                    || finder.loadClass(Component.class.getName())
+                            .isAssignableFrom(clazz)
                     || finder.loadClass(AppShellConfigurator.class.getName())
                             .isAssignableFrom(clazz);
         } catch (ClassNotFoundException ignore) { // NOSONAR

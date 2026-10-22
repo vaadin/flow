@@ -216,9 +216,30 @@ class FrontendDependenciesTest {
         DepsTests.assertImportsExcludingUI(dependencies.getModules(),
                 "/absolute-module.js");
 
+        // Scans the service listener stubbed above again, with a spy logger
         Logger logger = scanWithSpyLogger(Collections.emptySet());
         verify(logger, never()).warn(contains(RUNTIME_JS_MODULE_WARNING),
                 ArgumentMatchers.<Object> any());
+    }
+
+    @Test
+    void jsModuleWithRuntimeUrlOnComponentInterfaceOrAppShell_warnedAbout() {
+        // Components inherit annotations from their interfaces, and the app
+        // shell adds its own runtime modules to the page, so these values are
+        // runtime modules like the ones declared on a component
+        when(classFinder.getSubTypesOf(AppShellConfigurator.class)).thenReturn(
+                Collections.singleton(RuntimeJsModuleAppShell.class));
+        Logger logger = scanWithSpyLogger(
+                Collections.singleton(RuntimeJsModuleMixinComponent.class));
+
+        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
+        verify(logger).warn(contains(RUNTIME_JS_MODULE_WARNING),
+                usages.capture());
+        String listed = (String) usages.getValue();
+        assertTrue(listed.contains(RuntimeJsModuleMixin.class.getName()
+                + ": \"/mixin-module.js\""), listed);
+        assertTrue(listed.contains(RuntimeJsModuleAppShell.class.getName()
+                + ": \"context://shell-module.js\""), listed);
     }
 
     @Test
@@ -683,6 +704,20 @@ class FrontendDependenciesTest {
     }
 
     public static class MyComponent extends Component {
+    }
+
+    @JsModule("/mixin-module.js")
+    public interface RuntimeJsModuleMixin {
+    }
+
+    @Route("mixin")
+    public static class RuntimeJsModuleMixinComponent extends Component
+            implements RuntimeJsModuleMixin {
+    }
+
+    @JsModule("context://shell-module.js")
+    public static class RuntimeJsModuleAppShell
+            implements AppShellConfigurator {
     }
 
     @JsModule("/absolute-module.js")

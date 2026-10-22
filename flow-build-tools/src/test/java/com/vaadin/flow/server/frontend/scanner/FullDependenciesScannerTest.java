@@ -119,6 +119,18 @@ class FullDependenciesScannerTest {
 
     }
 
+    @JsModule("/mixin-module.js")
+    public interface RuntimeJsModuleMixin {
+
+    }
+
+    @JsModule("context://shell-module.js")
+    public static class RuntimeJsModuleAppShell
+            implements AppShellConfigurator {
+
+    }
+
+    @JavaScript("context://listener.js")
     @JsModule("/absolute-module.js")
     public static class RuntimeJsModuleServiceListener
             implements VaadinServiceInitListener {
@@ -341,14 +353,16 @@ class FullDependenciesScannerTest {
         when(finder.loadClass(JavaScript.class.getName()))
                 .thenReturn(fakeAnnotation);
         when(finder.getAnnotatedClasses(fakeAnnotation)).thenReturn(
-                Collections.singleton(RuntimeJavaScriptComponent.class));
+                new LinkedHashSet<>(List.of(RuntimeJavaScriptComponent.class,
+                        RuntimeJsModuleServiceListener.class)));
 
         FullDependenciesScanner scanner = new FullDependenciesScanner(finder,
                 (type, annotation) -> findAnnotations(type, JavaScript.class),
                 null, true);
 
         // Runtime-prefixed values and module-runtime.js are loaded at runtime
-        // as <script> tags, so they must not end up in the bundle imports
+        // as <script> tags, so they must not end up in the bundle imports,
+        // whichever class declares them
         DepsTests.assertImports(scanner.getScripts(), "bundled.js");
     }
 
@@ -360,6 +374,8 @@ class FullDependenciesScannerTest {
                 .thenReturn(fakeAnnotation);
         when(finder.getAnnotatedClasses(fakeAnnotation)).thenReturn(
                 new LinkedHashSet<>(List.of(RuntimeJavaScriptComponent.class,
+                        RuntimeJsModuleMixin.class,
+                        RuntimeJsModuleAppShell.class,
                         RuntimeJsModuleServiceListener.class)));
 
         FullDependenciesScanner scanner = new FullDependenciesScanner(finder,
@@ -367,8 +383,9 @@ class FullDependenciesScannerTest {
                 null, true);
 
         // @JsModule values with a runtime URL are loaded at runtime, so they
-        // must not end up in the bundle imports. Nothing loads them at runtime
-        // for a class that is not a component, so that one is still bundled.
+        // must not end up in the bundle imports. That includes the app shell
+        // and interfaces, which components inherit annotations from. Nothing
+        // loads them at runtime for any other class, so that one is bundled.
         DepsTests.assertImports(scanner.getModules(), "./bundled-module.js",
                 "/absolute-module.js");
         assertFalse(scanner.getModulesDevelopment().values().stream()
