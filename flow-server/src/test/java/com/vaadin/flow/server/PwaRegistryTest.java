@@ -17,6 +17,10 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletContext;
 
+import javax.imageio.ImageIO;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -130,6 +134,21 @@ class PwaRegistryTest {
         pwaIcon.write(stream);
         // the default image has 47 on the position 36
         assertEquals(26, stream.toByteArray()[36]);
+    }
+
+    @Test
+    void pwaWithoutIcon_iconsDrawnFromAppName() throws IOException {
+        // No image exists at the icon path, so the icons show the initials of
+        // the application name on the theme color, a default blue here
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithCustomIconPath.class.getAnnotation(PWA.class));
+        PwaIcon icon = registry.getIcons().stream()
+                .filter(i -> i.getWidth() == 512).findFirst().get();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        icon.write(stream);
+        BufferedImage image = ImageIO
+                .read(new ByteArrayInputStream(stream.toByteArray()));
+        assertEquals(0x0d72f8, image.getRGB(0, 511) & 0xffffff);
     }
 
     private static PwaRegistry preparePwaRegistry(PWA pwa) throws IOException {
