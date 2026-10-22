@@ -315,7 +315,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             repositories {
                 mavenLocal()
                 mavenCentral()
-                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
 
             dependencies {
@@ -768,7 +768,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             repositories {
                 mavenLocal()
                 mavenCentral()
-                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
 
             sourceSets {
