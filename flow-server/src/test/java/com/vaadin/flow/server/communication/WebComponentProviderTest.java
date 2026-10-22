@@ -45,7 +45,6 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinContext;
@@ -55,7 +54,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -79,8 +77,6 @@ import static org.mockito.Mockito.when;
 class WebComponentProviderTest {
 
     @Mock
-    VaadinSession session;
-    @Mock
     VaadinServletRequest request;
     @Mock
     VaadinResponse response;
@@ -102,7 +98,6 @@ class WebComponentProviderTest {
         registry = setUpRegistry(); // same code as used for local variables in
                                     // some tests
         when(request.getService()).thenReturn(service);
-        when(session.getService()).thenReturn(service);
         when(service.getContext()).thenReturn(context);
         when(context.getAttribute(WebComponentConfigurationRegistry.class))
                 .then(invocationOnMock -> registry);
@@ -148,37 +143,35 @@ class WebComponentProviderTest {
 
     @Test
     void faultyTag_handlerInformsNotHandled() throws IOException {
+        registry = setupConfigurations(MyComponentExporter.class);
         when(request.getPathInfo())
                 .thenReturn("/web-component" + "/extensionless-component");
 
-        assertFalse(
-                provider.synchronizedHandleRequest(session, request, response),
+        assertFalse(provider.handleRequest(request, response),
                 "Provider shouldn't handle path without extension");
 
         when(request.getPathInfo()).thenReturn("/web-component/component.js");
 
-        assertFalse(
-                provider.synchronizedHandleRequest(session, request, response),
+        assertFalse(provider.handleRequest(request, response),
                 "Provider shouldn't handle request for non-custom element name");
 
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.html");
 
-        assertFalse(
-                provider.synchronizedHandleRequest(session, request, response),
+        assertFalse(provider.handleRequest(request, response),
                 "Provider shouldn't handle html extensions in npm mode");
     }
 
     @Test
     void webComponentNotPresent_responseReturns404() throws IOException {
+        registry = setupConfigurations(OtherComponentExporter.class);
         ServletContext servletContext = mock(ServletContext.class);
 
         when(request.getServletContext()).thenReturn(servletContext);
 
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
-        assertTrue(
-                provider.synchronizedHandleRequest(session, request, response),
+        assertTrue(provider.handleRequest(request, response),
                 "Provider should handle web-component request");
         verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(),
                 "No web component for my-component");
@@ -190,16 +183,11 @@ class WebComponentProviderTest {
 
         ByteArrayOutputStream out = spy(new ByteArrayOutputStream());
 
-        DefaultDeploymentConfiguration sessionConfiguration = mock(
-                DefaultDeploymentConfiguration.class);
-
         when(response.getOutputStream()).thenReturn(out);
-        when(session.getConfiguration()).thenReturn(sessionConfiguration);
 
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
-        assertTrue(
-                provider.synchronizedHandleRequest(session, request, response),
+        assertTrue(provider.handleRequest(request, response),
                 "Provider should handle web-component request");
 
         String generatedScript = out.toString();
@@ -212,29 +200,14 @@ class WebComponentProviderTest {
         verify(response).getOutputStream();
         verify(out).write(any(), anyInt(), anyInt());
 
-    }
-
-    @Test
-    void handleSessionExpired_webComponentScriptRequest_writesScriptWithoutSession()
-            throws IOException {
-        registry = setupConfigurations(MyComponentExporter.class);
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        when(response.getOutputStream()).thenReturn(out);
-
-        when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.js");
-        assertTrue(provider.handleSessionExpired(request, response));
-        assertTrue(out.toString().contains("web-component-bootstrap.js"),
-                "Response should contain the web component script");
-
         when(request.getPathInfo())
                 .thenReturn("/web-component/web-component-bootstrap.js");
-        assertFalse(provider.handleSessionExpired(request, response),
+        assertFalse(provider.handleRequest(request, response),
                 "Bootstrap request needs a session and should not be handled");
     }
 
     @Test
-    void handleWebComponentRequest_overridden_usedWithAndWithoutSession()
+    void handleWebComponentRequest_overridden_usedForRequests()
             throws IOException {
         registry = setupConfigurations(MyComponentExporter.class);
         List<VaadinRequest> handled = new ArrayList<>();
@@ -249,10 +222,8 @@ class WebComponentProviderTest {
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
 
-        assertTrue(customProvider.handleSessionExpired(request, response));
-        assertTrue(customProvider.synchronizedHandleRequest(session, request,
-                response));
-        assertEquals(List.of(request, request), handled);
+        assertTrue(customProvider.handleRequest(request, response));
+        assertEquals(List.of(request), handled);
     }
 
     @Test
@@ -266,24 +237,18 @@ class WebComponentProviderTest {
         ByteArrayOutputStream out1 = new ByteArrayOutputStream();
         ByteArrayOutputStream out2 = new ByteArrayOutputStream();
 
-        DefaultDeploymentConfiguration sessionConfiguration = mock(
-                DefaultDeploymentConfiguration.class);
-
         when(response.getOutputStream()).thenReturn(out1);
-        when(session.getConfiguration()).thenReturn(sessionConfiguration);
 
         when(request.getPathInfo())
                 .thenReturn("/web-component/my-component.js");
-        assertTrue(
-                provider.synchronizedHandleRequest(session, request, response),
+        assertTrue(provider.handleRequest(request, response),
                 "Provider should handle first web-component request");
 
         when(response.getOutputStream()).thenReturn(out2);
 
         when(request.getPathInfo())
                 .thenReturn("/web-component/other-component.js");
-        assertTrue(
-                provider.synchronizedHandleRequest(session, request, response),
+        assertTrue(provider.handleRequest(request, response),
                 "Provider should handle second web-component request");
 
         verify(response, times(2)).getOutputStream();
