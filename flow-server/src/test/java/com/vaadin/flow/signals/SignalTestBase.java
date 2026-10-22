@@ -132,9 +132,13 @@ public class SignalTestBase {
     protected TestExecutor useTestEffectDispatcher() {
         TestExecutor dispatcher = new TestExecutor();
 
-        currentEffectDispatcher.set(dispatcher);
+        useEffectDispatcher(dispatcher);
 
         return dispatcher;
+    }
+
+    protected void useEffectDispatcher(Executor dispatcher) {
+        currentEffectDispatcher.set(dispatcher);
     }
 
     protected void assertNoUncaughtException() {

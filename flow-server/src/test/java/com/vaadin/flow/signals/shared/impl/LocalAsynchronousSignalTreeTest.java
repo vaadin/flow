@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree.Type;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LocalAsynchronousSignalTreeTest extends SignalTestBase {
@@ -128,6 +130,49 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
         dispatcher.runPendingTasks();
 
         assertTrue(firstResult.get().accepted());
+        assertEquals(new StringNode("second"),
+                TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
+    void submit_dispatcherRejectsTask_confirmedByNextTask() {
+        useEffectDispatcher(task -> {
+            throw new RejectedExecutionException();
+        });
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+        AtomicReference<CommandResult> firstResult = new AtomicReference<>();
+
+        assertThrows(RejectedExecutionException.class,
+                () -> tree.commitSingleCommand(
+                        TestUtil.writeRootValueCommand("first"),
+                        firstResult::set));
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"));
+
+        dispatcher.runPendingTasks();
+
+        assertTrue(firstResult.get().accepted());
+        assertEquals(new StringNode("second"),
+                TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
+    void confirm_resultHandlerThrows_laterBatchesStillConfirmed() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+        AtomicReference<CommandResult> secondResult = new AtomicReference<>();
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
+                result -> {
+                    throw new IllegalStateException();
+                });
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"),
+                secondResult::set);
+
+        assertThrows(IllegalStateException.class,
+                dispatcher::runPendingTasksInReverseOrder);
+
+        assertTrue(secondResult.get().accepted());
         assertEquals(new StringNode("second"),
                 TestUtil.readConfirmedRootValue(tree));
     }

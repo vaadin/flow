@@ -58,9 +58,25 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
     }
 
     private void confirmUpTo(long sequence) {
+        /*
+         * Keep going if a listener throws since a task that runs later might
+         * already be done, which would leave the remaining batches unconfirmed.
+         */
+        RuntimeException failure = null;
         while (confirmedCount < sequence) {
             confirmedCount++;
-            confirm(pendingConfirmations.remove());
+            try {
+                confirm(pendingConfirmations.remove());
+            } catch (RuntimeException e) {
+                if (failure == null) {
+                    failure = e;
+                } else {
+                    failure.addSuppressed(e);
+                }
+            }
+        }
+        if (failure != null) {
+            throw failure;
         }
     }
 }
