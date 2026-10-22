@@ -184,7 +184,7 @@ public class ThemeListImpl implements ThemeList, Serializable {
         List<String>[] previousValue = new List[] { initialNames };
         Element ownerElement = Element.get(element.getNode());
 
-        ElementEffect.effect(ownerElement, ctx -> {
+        new ElementEffect(ownerElement, ctx -> {
             List<String> signalNames = names.get();
             Set<String> newNames = new HashSet<>();
             if (signalNames != null) {

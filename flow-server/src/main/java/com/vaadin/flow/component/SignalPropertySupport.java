@@ -22,6 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.dom.BindingContext;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.SignalBinding;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
@@ -144,7 +145,7 @@ public class SignalPropertySupport<T extends @Nullable Object>
         @SuppressWarnings("unchecked")
         T[] previousValue = (T[]) new Object[] { signal.peek() };
         Element element = owner.getElement();
-        registration = Signal.effect(owner, ctx -> {
+        registration = new ElementEffect(element, ctx -> {
             T newValue = signal.get();
             T oldValue = previousValue[0];
             value = newValue;
@@ -158,7 +159,7 @@ public class SignalPropertySupport<T extends @Nullable Object>
                 }
             }
             previousValue[0] = newValue;
-        });
+        })::close;
         return binding;
     }
 
