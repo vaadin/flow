@@ -3,6 +3,12 @@
 How the core pieces of Flow fit together, and what to keep in mind when
 touching them.
 
+The more involved features have their own architecture notes next to the code:
+
+| Feature                               | Note                                                         |
+| ------------------------------------- | ------------------------------------------------------------ |
+| Client-side bootstrap and routing     | [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md) |
+
 ## State management
 
 Flow keeps the server-side representation of the UI in a tree and synchronizes
@@ -57,6 +63,10 @@ Push uses a WebSocket-based connection (`PushConnection`,
 before-leave, before-enter and after-navigation observers. Route resolution is
 driven by `@Route` annotations, discovered at startup or registered
 programmatically.
+
+In the browser, the router of the application (React Router by default) owns
+the URL, and server-side routes are its catch-all fallback. See
+[Client-side bootstrap and routing](../flow-client/ARCHITECTURE.md).
 
 ## Instantiation and lookup
 
