@@ -19,7 +19,6 @@
     "@babel/plugin-transform-react-jsx-development": "7.29.7",
     "@babel/preset-react": "7.29.7",
     "@babel/types": "7.29.8",
-    "@preact/signals-react": "3.12.0",
     "@preact/signals-react-transform": "0.8.3",
     "@rolldown/plugin-babel": "0.2.4",
     "@rollup/plugin-replace": "6.0.3",
@@ -27,7 +26,6 @@
     "@types/node": "26.6.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "@typescript/native": "npm:typescript@7.0.2",
     "@vitejs/plugin-react": "6.1.2",
     "magic-string": "1.4.3",
     "rollup-plugin-brotli": "3.1.0",
@@ -36,7 +34,9 @@
     "transform-ast": "2.4.4",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "vite": "8.3.4",
-    "vite-plugin-checker": "0.14.5"
+    "vite-plugin-checker": "0.14.5",
+    "@typescript/native": "npm:typescript@7.0.2",
+    "@preact/signals-react": "3.12.0"
   },
   "vaadin": {
     "dependencies": {
@@ -52,7 +52,6 @@
       "@babel/plugin-transform-react-jsx-development": "7.29.7",
       "@babel/preset-react": "7.29.7",
       "@babel/types": "7.29.8",
-      "@preact/signals-react": "3.12.0",
       "@preact/signals-react-transform": "0.8.3",
       "@rolldown/plugin-babel": "0.2.4",
       "@rollup/plugin-replace": "6.0.3",
@@ -60,7 +59,6 @@
       "@types/node": "26.6.5",
       "@types/react": "19.3.0",
       "@types/react-dom": "19.3.0",
-      "@typescript/native": "npm:typescript@7.0.2",
       "@vitejs/plugin-react": "6.1.2",
       "magic-string": "1.4.3",
       "rollup-plugin-brotli": "3.1.0",
@@ -69,8 +67,10 @@
       "transform-ast": "2.4.4",
       "typescript": "npm:@typescript/typescript6@6.0.2",
       "vite": "8.3.4",
-      "vite-plugin-checker": "0.14.5"
+      "vite-plugin-checker": "0.14.5",
+      "@typescript/native": "npm:typescript@7.0.2",
+      "@preact/signals-react": "3.12.0"
     },
-    "hash": "5bd9e37abfd297a67e79b10ad4969e72d530df31ea6feaebc51f72fb1a0caa6a"
+    "hash": "1a7321bc240baac5865077998cd556c5c85a22ad494ef032bd6403dcbb7dee37"
   }
 }
