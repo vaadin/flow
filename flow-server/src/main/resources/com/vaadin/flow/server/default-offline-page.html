@@ -49,12 +49,11 @@
             width: 4rem;
             height: 4rem;
             object-fit: cover;
-            /* Shown once the script below has checked the icon */
-            visibility: hidden;
         }
 
-        .offline .app-icon.checked {
-            visibility: visible;
+        /* Hidden only while the script below checks the icon */
+        .offline .app-icon.checking {
+            visibility: hidden;
         }
 
         /* An opaque icon gets an app icon shape, a transparent one is shown as is */
@@ -132,6 +131,7 @@
 <script>
     (function () {
         var icon = document.querySelector('.app-icon');
+        icon.classList.add('checking');
         function checkIcon() {
             /* Treat the icon as opaque unless its top-left pixel is fully transparent */
             try {
@@ -146,12 +146,16 @@
             } catch (e) {
                 /* The pixel can not be read, show the icon as is */
             }
-            icon.classList.add('checked');
+            icon.classList.remove('checking');
         }
-        if (icon.complete && icon.naturalWidth > 0) {
+        if (icon.complete) {
             checkIcon();
         } else {
             icon.addEventListener('load', checkIcon);
+            icon.addEventListener('error', function () {
+                icon.hidden = true;
+                icon.classList.remove('checking');
+            });
         }
     })();
     window.addEventListener('online', function () {
