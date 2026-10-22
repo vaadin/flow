@@ -187,6 +187,8 @@ public class SpringSecurityAutoConfiguration {
      *            vaadin configuration properties
      * @param evaluator
      *            URI privileges evaluator
+     * @param securityContextHolderStrategy
+     *            the strategy to read the current authentication from
      * @return the default route path access checker
      * @since 24.3
      */
@@ -194,9 +196,11 @@ public class SpringSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     public AccessPathChecker accessPatchChecker(
             VaadinConfigurationProperties vaadinProperties,
-            @Lazy WebInvocationPrivilegeEvaluator evaluator) {
+            @Lazy WebInvocationPrivilegeEvaluator evaluator,
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
         return new SpringAccessPathChecker(evaluator,
-                vaadinProperties.getUrlMapping());
+                vaadinProperties.getUrlMapping(),
+                securityContextHolderStrategy);
     }
 
     /**
@@ -245,8 +249,9 @@ public class SpringSecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    AuthenticationContext authenticationContext() {
-        return new AuthenticationContext();
+    AuthenticationContext authenticationContext(
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        return new AuthenticationContext(securityContextHolderStrategy);
     }
 
     @Bean

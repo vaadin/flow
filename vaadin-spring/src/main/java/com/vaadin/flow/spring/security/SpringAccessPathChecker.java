@@ -16,9 +16,11 @@
 package com.vaadin.flow.spring.security;
 
 import java.security.Principal;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
 import com.vaadin.flow.server.auth.AccessPathChecker;
@@ -57,10 +59,18 @@ public class SpringAccessPathChecker implements AccessPathChecker {
     private final transient WebInvocationPrivilegeEvaluator evaluator;
     /** The Vaadin servlet url mapping the checked paths are relative to. */
     private final String urlMapping;
+    /**
+     * The strategy to read the security context from, or {@literal null} to use
+     * the one installed in {@link SecurityContextHolder} at check time.
+     */
+    private final transient SecurityContextHolderStrategy securityContextHolderStrategy;
 
     /**
      * Creates a new instance that uses the given
      * {@link WebInvocationPrivilegeEvaluator} to check path permissions.
+     * <p>
+     * The current authentication is read from the strategy installed in
+     * {@link SecurityContextHolder}.
      *
      * @param evaluator
      *            evaluator to check path permissions.
@@ -74,7 +84,8 @@ public class SpringAccessPathChecker implements AccessPathChecker {
      * {@link WebInvocationPrivilegeEvaluator} to check path permissions.
      *
      * It applies the given Vaadin servlet url mapping to the input path before
-     * delegating the check to the evaluator.
+     * delegating the check to the evaluator. The current authentication is read
+     * from the strategy installed in {@link SecurityContextHolder}.
      *
      * @param evaluator
      *            evaluator to check path permissions.
@@ -85,13 +96,47 @@ public class SpringAccessPathChecker implements AccessPathChecker {
             String urlMapping) {
         this.urlMapping = urlMapping;
         this.evaluator = evaluator;
+        this.securityContextHolderStrategy = null;
+    }
+
+    /**
+     * Creates a new instance that uses the given
+     * {@link WebInvocationPrivilegeEvaluator} to check path permissions.
+     *
+     * It applies the given Vaadin servlet url mapping to the input path before
+     * delegating the check to the evaluator. The current authentication is read
+     * from the given {@link SecurityContextHolderStrategy} instead of the one
+     * installed in {@link SecurityContextHolder}.
+     *
+     * @param evaluator
+     *            evaluator to check path permissions.
+     * @param urlMapping
+     *            Vaadin servlet url mapping
+     * @param securityContextHolderStrategy
+     *            the strategy to read the current authentication from, not
+     *            {@literal null}
+     */
+    public SpringAccessPathChecker(WebInvocationPrivilegeEvaluator evaluator,
+            String urlMapping,
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        this.urlMapping = urlMapping;
+        this.evaluator = evaluator;
+        this.securityContextHolderStrategy = Objects.requireNonNull(
+                securityContextHolderStrategy,
+                "securityContextHolderStrategy must not be null");
     }
 
     @Override
     public boolean hasAccess(String path, Principal principal,
             Predicate<String> roleChecker) {
         path = RequestUtil.applyUrlMapping(urlMapping, path);
-        return evaluator.isAllowed(path,
-                SecurityContextHolder.getContext().getAuthentication());
+        return evaluator.isAllowed(path, getSecurityContextHolderStrategy()
+                .getContext().getAuthentication());
+    }
+
+    private SecurityContextHolderStrategy getSecurityContextHolderStrategy() {
+        return securityContextHolderStrategy != null
+                ? securityContextHolderStrategy
+                : SecurityContextHolder.getContextHolderStrategy();
     }
 }

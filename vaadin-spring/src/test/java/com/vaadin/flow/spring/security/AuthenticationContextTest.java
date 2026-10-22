@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
@@ -34,6 +35,8 @@ import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -149,6 +152,20 @@ class AuthenticationContextTest {
         Optional<String> maybePrincipalName = authContext.getPrincipalName();
         assertTrue(maybePrincipalName.isPresent());
         assertEquals("the-username", maybePrincipalName.get());
+    }
+
+    @Test
+    void getPrincipalName_strategyGiven_readsAuthenticationFromStrategy() {
+        SecurityContextHolderStrategy strategy = mock(
+                SecurityContextHolderStrategy.class);
+        when(strategy.getContext()).thenReturn(
+                new SecurityContextImpl(new UsernamePasswordAuthenticationToken(
+                        "strategy-user", null, List.of())));
+        var authContext = new AuthenticationContext(strategy);
+
+        assertTrue(authContext.isAuthenticated());
+        assertEquals(Optional.of("strategy-user"),
+                authContext.getPrincipalName());
     }
 
     @Test
