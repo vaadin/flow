@@ -394,7 +394,6 @@ public class PwaIcon implements Serializable {
      * @return a new {@link BufferedImage} to generate the icons from
      * @throws IOException
      *             if the bundled logo is needed and can not be read
-     * @since 25.4
      */
     public static BufferedImage drawDefaultBaseImage(String appName,
             String themeColor) throws IOException {
