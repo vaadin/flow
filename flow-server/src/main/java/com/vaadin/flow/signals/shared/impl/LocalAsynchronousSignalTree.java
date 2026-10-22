@@ -47,7 +47,19 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
 
         pendingConfirmations.add(commands);
 
-        SignalEnvironment.getDefaultEffectDispatcher().execute(
-                wrapWithLock(() -> confirm(pendingConfirmations.remove())));
+        try {
+            SignalEnvironment.getDefaultEffectDispatcher().execute(
+                    wrapWithLock(() -> confirm(pendingConfirmations.remove())));
+        } catch (RuntimeException e) {
+            /*
+             * Drop the entry if no task was scheduled for it so that later
+             * tasks don't fall one batch behind. An immediate dispatcher may
+             * already have consumed it before failing.
+             */
+            if (pendingConfirmations.peekLast() == commands) {
+                pendingConfirmations.removeLast();
+            }
+            throw e;
+        }
     }
 }
