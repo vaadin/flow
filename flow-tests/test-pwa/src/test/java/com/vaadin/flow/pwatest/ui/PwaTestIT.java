@@ -241,13 +241,19 @@ public class PwaTestIT extends ChromeDeviceTest {
 
     @Test
     public void testPrecachedBundleOffline() {
+        // The dev bundle and the production bundle are precached, while the
+        // frontend served by the Vite dev server is not. Skip on the
+        // configuration rather than on an empty precache, so that a precache
+        // that stops matching fails the test instead of skipping it.
+        Assume.assumeFalse("Nothing is precached with hotdeploy",
+                Boolean.getBoolean("vaadin.frontend.hotdeploy"));
+
         open();
         waitForServiceWorkerReady();
 
-        // The dev bundle and the production bundle are precached, while the
-        // frontend served by the Vite dev server is not
         List<String> bundleUrls = getPrecachedBundleUrls();
-        Assume.assumeFalse("No precached bundle files", bundleUrls.isEmpty());
+        Assert.assertFalse("Expected precached bundle files",
+                bundleUrls.isEmpty());
 
         // Do not fetch the files online first: files the page loaded before
         // the service worker took control are not in its runtime cache, so
@@ -275,10 +281,13 @@ public class PwaTestIT extends ChromeDeviceTest {
                     .then(requests => resolve(requests.flat()
                         .map(request => request.url.replace(/[?&]__WB_REVISION__=.*$/, ''))
                         .filter(url => url.includes('/VAADIN/build/'))))
-                    .catch(() => resolve([]));
+                    .catch(error => resolve(String(error)));
                 """;
-        return (List<String>) ((JavascriptExecutor) getDriver())
+        Object result = ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(script);
+        Assert.assertTrue("Reading the precache failed: " + result,
+                result instanceof List);
+        return (List<String>) result;
     }
 
     @Test
