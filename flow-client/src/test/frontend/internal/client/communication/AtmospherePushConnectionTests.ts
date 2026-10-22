@@ -1,4 +1,5 @@
 import { expect } from '@open-wc/testing';
+import sinon from 'sinon';
 import { testRegistry } from '../testRegistry';
 import {
   AtmospherePushConnection,
@@ -229,19 +230,29 @@ describe('AtmospherePushConnection', () => {
       expect(log.disconnected.length).to.equal(1);
       expect(connection.isActive()).to.be.false; // DISCONNECTED
     });
-    it('resets the websocket error retries whenever the connection is re-established', async () => {
+    it('resets the websocket error retries only when a stable connection is lost', async () => {
       // atmosphere.js falls back to long-polling for good once the retries
-      // reach maxWebsocketErrorRetries, so errors from earlier outages must not
-      // count against a later one.
+      // reach maxWebsocketErrorRetries. Errors from earlier outages must not
+      // count against a later one, but a connection that keeps failing right
+      // after opening must still fall back.
       const { registry, capture, fakeSocket } = setupPush();
       new AtmospherePushConnection(registry);
       await tick();
-      capture.config!.onOpen(response('websocket'));
+      const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
+      try {
+        capture.config!.onOpen(response('websocket'));
+        fakeSocket.request.curWebsocketErrorRetries = 7;
+        clock.tick(1000);
+        capture.config!.onClose(response('websocket'));
+        expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(7);
 
-      fakeSocket.request.curWebsocketErrorRetries = 7;
-      capture.config!.onClose(response('websocket'));
-      capture.config!.onReopen(response('websocket'));
-      expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(0);
+        capture.config!.onReopen(response('websocket'));
+        clock.tick(5 * 60 * 1000);
+        capture.config!.onClose(response('websocket'));
+        expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(0);
+      } finally {
+        clock.restore();
+      }
     });
 
     it('unsubscribes from the same url it subscribed to', async () => {
