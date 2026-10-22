@@ -1555,7 +1555,8 @@ public class UIInternals implements Serializable {
                                 + componentClass.getName()
                                 + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
                     }
-                    String resolved = resolveRuntimeJavaScript(js.value());
+                    String resolved = FrontendDependencyUrlResolver
+                            .resolveRuntimeJavaScript(js.value());
                     if (resolved == null) {
                         return;
                     }
@@ -1569,25 +1570,6 @@ public class UIInternals implements Serializable {
                 .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
                         JavaScript.Type.MODULE));
-    }
-
-    /**
-     * Normalizes a runtime {@link JavaScript} annotation value so that the
-     * bootstrap URI resolver can expand it.
-     * <p>
-     * Values with a protocol (external URLs but also {@code context://} and
-     * {@code base://}) are passed through untouched, the same way they were
-     * before {@link JavaScript.Type#MODULE} existed. All other values, such as
-     * absolute paths or bare relative {@code Type.MODULE} values, go through
-     * {@link FrontendDependencyUrlResolver#resolveToContextRoot(String)}.
-     *
-     * @return the normalized value, or {@code null} if the value was rejected
-     */
-    private String resolveRuntimeJavaScript(String value) {
-        if (UrlUtil.isExternal(value)) {
-            return value;
-        }
-        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
     }
 
     /**

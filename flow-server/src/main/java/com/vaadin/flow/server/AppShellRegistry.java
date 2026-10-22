@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.jsoup.nodes.Document;
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
@@ -51,6 +54,7 @@ import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.Theme;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
@@ -314,6 +318,7 @@ public class AppShellRegistry implements Serializable {
 
         addStyleSheets(request, getStyleSheets(request.getService()),
                 getStyleSheetLayers(), settings);
+        addJavaScripts(request, settings);
         return settings;
     }
 
@@ -331,17 +336,7 @@ public class AppShellRegistry implements Serializable {
      */
     private static String resolveStyleSheetHref(String normalized,
             VaadinRequest request) {
-        // Use the servlet-relative path (e.g. "./", "../") rather than the
-        // absolute context path. The emitted href is then resolved by the
-        // browser against <base>, which Vaadin sets from the actual request
-        // URL (honoring X-Forwarded-* headers). This matches how the
-        // bootstrap CONTEXT_ROOT_URL is computed for the UIDL path and works
-        // correctly behind reverse proxies that rewrite the public path.
-        String servletPathToContextRoot = request.getService()
-                .getContextRootRelativePath(request);
-        BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
-                servletPathToContextRoot, null);
-        String resolved = resolver.resolveVaadinUri(normalized);
+        String resolved = resolveVaadinUri(normalized, request);
         if (resolved == null) {
             return null;
         }
@@ -355,6 +350,21 @@ public class AppShellRegistry implements Serializable {
                     ApplicationConstants.CONTENT_HASH_PARAMETER, hash);
         }
         return resolved;
+    }
+
+    private static String resolveVaadinUri(String normalized,
+            VaadinRequest request) {
+        // Use the servlet-relative path (e.g. "./", "../") rather than the
+        // absolute context path. The emitted URL is then resolved by the
+        // browser against <base>, which Vaadin sets from the actual request
+        // URL (honoring X-Forwarded-* headers). This matches how the
+        // bootstrap CONTEXT_ROOT_URL is computed for the UIDL path and works
+        // correctly behind reverse proxies that rewrite the public path.
+        String servletPathToContextRoot = request.getService()
+                .getContextRootRelativePath(request);
+        BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
+                servletPathToContextRoot, null);
+        return resolver.resolveVaadinUri(normalized);
     }
 
     /**
@@ -509,6 +519,47 @@ public class AppShellRegistry implements Serializable {
         if (!config.isProductionMode()) {
             ActiveStyleSheetTracker.get(request.getService())
                     .trackForAppShell(trackedUrls);
+        }
+    }
+
+    /**
+     * Adds the {@link JavaScript} values of the app shell that are loaded at
+     * runtime as script elements. Bundled values are loaded through the bundle,
+     * but runtime values are never bundled and the app shell is not a
+     * component, so nothing else adds them to the page.
+     */
+    private void addJavaScripts(VaadinRequest request,
+            AppShellSettings settings) {
+        if (appShellClass == null) {
+            return;
+        }
+        boolean productionMode = request.getService()
+                .getDeploymentConfiguration().isProductionMode();
+        Set<String> added = new HashSet<>();
+        for (JavaScript js : appShellClass
+                .getAnnotationsByType(JavaScript.class)) {
+            // Bundled developmentOnly values are left out of the production
+            // bundle by the build, the same rule is applied to runtime values
+            if (!FrontendDependencyUrlResolver.isRuntimeJavaScript(js)
+                    || productionMode && js.developmentOnly()) {
+                continue;
+            }
+            if (js.loadMode() == LoadMode.INLINE) {
+                throw new InvalidApplicationConfigurationException(
+                        "The @JavaScript('" + js.value() + "') annotation on "
+                                + appShellClass.getName()
+                                + " uses LoadMode.INLINE, which is not supported on the app shell. Use @Inline to inline the contents of a file into the page.");
+            }
+            String normalized = FrontendDependencyUrlResolver
+                    .resolveRuntimeJavaScript(js.value());
+            if (normalized == null || !added.add(normalized)) {
+                continue;
+            }
+            String src = resolveVaadinUri(normalized, request);
+            if (src != null) {
+                settings.addScript(Position.APPEND, src, js.type(),
+                        js.loadMode() == LoadMode.LAZY);
+            }
         }
     }
 }
