@@ -240,6 +240,48 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     @Test
+    public void testPrecachedBundleOffline() {
+        open();
+        waitForServiceWorkerReady();
+
+        // The dev bundle and the production bundle are precached, while the
+        // frontend served by the Vite dev server is not
+        List<String> bundleUrls = getPrecachedBundleUrls();
+        Assume.assumeFalse("No precached bundle files", bundleUrls.isEmpty());
+
+        // Do not fetch the files online first: files the page loaded before
+        // the service worker took control are not in its runtime cache, so
+        // only the precache can serve them offline
+        getDevTools().setOfflineEnabled(true);
+        try {
+            checkResources(bundleUrls.toArray(new String[] {}));
+        } finally {
+            getDevTools().setOfflineEnabled(false);
+        }
+    }
+
+    /**
+     * Gets the URLs of the precached bundle files, as stored by the service
+     * worker.
+     */
+    @SuppressWarnings("unchecked")
+    private List<String> getPrecachedBundleUrls() {
+        String script = """
+                const resolve = arguments[0];
+                caches.keys()
+                    .then(names => names.filter(name => name.includes('precache')))
+                    .then(names => Promise.all(names.map(name => caches.open(name)
+                        .then(cache => cache.keys()))))
+                    .then(requests => resolve(requests.flat()
+                        .map(request => request.url.replace(/[?&]__WB_REVISION__=.*$/, ''))
+                        .filter(url => url.includes('/VAADIN/build/'))))
+                    .catch(() => resolve([]));
+                """;
+        return (List<String>) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(script);
+    }
+
+    @Test
     public void testPwaOfflinePath() {
         open();
         waitForServiceWorkerReady();
