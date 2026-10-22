@@ -25,6 +25,7 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -476,9 +477,9 @@ public class PwaIcon implements Serializable {
                     RenderingHints.VALUE_STROKE_PURE);
 
             // A slightly lighter top gives the flat color some depth
-            graphics.setPaint(new GradientPaint(0, 0,
-                    blend(background, Color.WHITE, 0.12f), 0, (float) size,
-                    background));
+            graphics.setPaint(new GradientPaint(new Point2D.Double(0, 0),
+                    blend(background, Color.WHITE, 0.12f),
+                    new Point2D.Double(0, size), background));
             graphics.fillRect(0, 0, size, size);
 
             // Scale the outline of the text to a fixed share of the icon, so
