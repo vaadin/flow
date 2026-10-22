@@ -137,3 +137,84 @@ version can't block an upgrade (#24137, #24718).
 - Most bugs here show up only in an upgrade from one Vaadin version to
   another, with an existing `package.json`. Test with the `package.json` of
   the previous version, not only with an empty project.
+
+## Tailwind CSS
+
+### Overview
+
+With the `tailwindCss` feature flag on, an application can style its views
+with Tailwind's utility classes, from Java and from client-side code alike:
+
+```java
+layout.addClassNames("flex", "gap-4", "p-6", "bg-gray-50");
+```
+
+Tailwind doesn't ship a stylesheet with every class. Its compiler scans the
+sources for the class names that are used, and generates only those. Flow
+puts that compiler into the frontend build:
+
+1. The build adds `tailwindcss` and `@tailwindcss/vite` to `package.json` and
+   the Tailwind plugin to `vite.generated.ts`.
+2. It generates `frontend/generated/tailwind.css`, the Tailwind entry point.
+   That file tells the compiler to scan the project's `src` folder, Java
+   files included, and imports the application's own CSS, so that `@apply`
+   and `@theme` work there too.
+3. It generates `frontend/generated/tailwind.js`, which injects the compiled
+   CSS into the page, and imports it from the app shell imports.
+4. In development, a change to a scanned file makes Vite recompile the CSS,
+   and `tailwind.js` swaps it in place through HMR, without a reload.
+
+### Design goals
+
+- **Utility classes from Java.** The class names in Java code are found by
+  the Tailwind compiler itself, so no list of classes has to be kept.
+- **No configuration to start**, and one optional file to customize: a
+  `frontend/tailwind-custom.css` with `@theme` and other Tailwind directives
+  is imported when it exists (#22969).
+- **Play well with Lumo and the application's styles.** The entry point
+  imports Tailwind's theme and utilities only, not Preflight, Tailwind's base
+  reset, so the base styles of the application stay as they are. The
+  utilities are injected after the `@CssImport` styles, so a utility class
+  wins over them.
+- **Fast feedback.** Editing a Java file that adds a class updates the styles
+  through HMR (#22927).
+
+### The pieces
+
+| Piece | Role |
+| ----- | ---- |
+| `CoreFeatureFlagProvider.TAILWIND_CSS`, `FrontendBuildUtils.isTailwindCssEnabled` | The feature flag, and the check every other piece uses. |
+| `NodeUpdater` | Adds the dependencies from `dependencies/tailwindcss/package.json` in `flow-server`. |
+| `TaskUpdateVite.updateTailwindCssVitePlugin` | Replaces the `//#tailwindcssVitePlugin…#` placeholders in `vite.generated.ts`. |
+| `TaskGenerateTailwindCss` + `tailwind.css` template | Writes the entry point: `@source` for the `src` folder, the import of `tailwind-custom.css`, and imports of the theme's `styles.css`, the `@CssImport` files and the local `@StyleSheet` files. |
+| `TaskGenerateTailwindJs` + `tailwind.js` template | Writes the module that imports `tailwind.css?inline` and injects it with `injectGlobalCss`, before the `CSSImport end` marker. On HMR, it replaces the previous style tag. |
+| `AbstractUpdateImports` | Adds the `tailwind.js` import to the app shell imports. |
+| `ApplicationConfiguration.getMode` | Turns the development bundle mode into frontend hot deploy when the flag is on. |
+
+### Decisions and gotchas
+
+- **Development needs the Vite dev server.** A pre-built development bundle
+  can't know which classes the application's Java code will use. So with the
+  flag on, `ApplicationConfiguration.getMode()` returns
+  `DEVELOPMENT_FRONTEND_LIVERELOAD` instead of `DEVELOPMENT_BUNDLE` (#22853).
+  A production build compiles Tailwind as part of the normal Vite build.
+- **Only class names written out in full are found.** Tailwind reads the
+  sources as text. A class name built at run time, such as `"p-" + size`, is
+  not in the CSS.
+- **The application's CSS is imported for `@apply`.** Tailwind only resolves
+  `@apply` in files it compiles, so `tailwind.css` imports the theme's
+  `styles.css`, the `@CssImport` files and the local `@StyleSheet` files.
+  Each is looked up in the frontend folder, the jar resources and
+  `src/main/resources/META-INF/resources`, and imported only if found
+  (#23303). External stylesheets are left out.
+- **Both files are always regenerated**, on every build, so they follow
+  changes in the project.
+- **Imports go through the `Frontend/` alias** in the app shell imports, so
+  the path doesn't depend on where the generated folder is (#23481).
+
+### Working on it
+
+- Integration test: `flow-tests/test-tailwindcss` (`TailwindCssIT`), with a
+  `tailwind-custom.css` in its frontend folder.
+- The `tailwind.css` and `tailwind.js` templates are in
+  `flow-server/src/main/resources/com/vaadin/flow/server/frontend/`.

@@ -15,6 +15,7 @@ The more involved features have their own architecture notes next to the code:
 | Spring Security for client-side views | [`vaadin-spring/.../security/ARCHITECTURE.md`](../vaadin-spring/src/main/java/com/vaadin/flow/spring/security/ARCHITECTURE.md) |
 | Stateless authentication with JWT     | [`vaadin-spring/.../security/stateless/ARCHITECTURE.md`](../vaadin-spring/src/main/java/com/vaadin/flow/spring/security/stateless/ARCHITECTURE.md) |
 | npm dependency pinning                | [`flow-build-tools/ARCHITECTURE.md`](../flow-build-tools/ARCHITECTURE.md#npm-dependency-pinning) |
+| Tailwind CSS                          | [`flow-build-tools/ARCHITECTURE.md`](../flow-build-tools/ARCHITECTURE.md#tailwind-css) |
 
 ## State management
 
