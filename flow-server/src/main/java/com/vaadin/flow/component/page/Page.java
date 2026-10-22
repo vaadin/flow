@@ -156,8 +156,7 @@ public class Page implements Serializable {
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory. See {@link StyleSheet#value()} for the full prefix
-     * resolution table used by the annotation path.
+     * frontend directory.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -185,8 +184,7 @@ public class Page implements Serializable {
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory. See {@link StyleSheet#value()} for the full prefix
-     * resolution table used by the annotation path.
+     * frontend directory.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -287,8 +285,7 @@ public class Page implements Serializable {
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory. See {@link JavaScript#value()} for the full prefix
-     * resolution table used by the annotation path.
+     * frontend directory.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -315,8 +312,7 @@ public class Page implements Serializable {
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory. See {@link JavaScript#value()} for the full prefix
-     * resolution table used by the annotation path.
+     * frontend directory.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.

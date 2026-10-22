@@ -35,11 +35,8 @@ import com.vaadin.flow.component.Component;
  * <p>
  * Source locations:
  * <ul>
- * <li>Application projects: {@code src/main/frontend/} (recommended), or the
- * legacy top-level {@code frontend/} directory.</li>
- * <li>Add-on JARs: {@code META-INF/frontend/} (recommended). The legacy
- * location {@code META-INF/resources/frontend/} is still supported but
- * deprecated and emits a build-time warning.</li>
+ * <li>Application projects: {@code src/main/frontend/}.</li>
+ * <li>Add-on JARs: {@code META-INF/frontend/}.</li>
  * </ul>
  * <p>
  * For adding multiple JavaScript module files for a single component, use this
