@@ -78,10 +78,17 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
+    protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+            throws ServiceException {
+        List<SessionlessRequestHandler> handlers = super.createSessionlessRequestHandlers();
+        handlers.add(0, new FaviconHandler());
+        return handlers;
+    }
+
+    @Override
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
-        handlers.add(0, new FaviconHandler());
 
         Mode mode = getDeploymentConfiguration().getMode();
         if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
