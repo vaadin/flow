@@ -47,7 +47,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * {@code context://}, {@code base://}, absolute URLs, and bare relative paths
  * are all supported. Use {@code context://foo.js} to load
  * {@code META-INF/resources/foo.js} regardless of the Vaadin servlet mapping.
- * External URLs ({@code https://cdn.example/foo.js}) work the same way.
+ * External URLs ({@code https://cdn.example/foo.js}) work the same way. On an
+ * {@link com.vaadin.flow.component.page.AppShellConfigurator}, values loaded at
+ * runtime are added to the initial page as {@code script} elements;
+ * {@link LoadMode#INLINE} is not supported there.
  * <p>
  * For adding multiple JavaScript files for a single component, use this
  * annotation multiple times. It is guaranteed that dependencies will be loaded

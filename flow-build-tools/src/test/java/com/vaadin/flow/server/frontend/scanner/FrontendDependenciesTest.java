@@ -198,6 +198,9 @@ class FrontendDependenciesTest {
                 + component + ": \"https://cdn.example.com/dev-module.js\""),
                 listed);
         assertFalse(listed.contains("bundled-module.js"), listed);
+        // Runtime @JavaScript values are not deprecated
+        assertFalse(listed.contains("runtime.js"), listed);
+        assertFalse(listed.contains("other-scheme.js"), listed);
     }
 
     @Test
