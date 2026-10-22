@@ -12,6 +12,8 @@ The more involved features have their own architecture notes next to the code:
 | React component adapter               | [`flow-react/ARCHITECTURE.md`](../flow-react/ARCHITECTURE.md) |
 | `@PWA` and the offline service worker | [`vite-plugin-service-worker/ARCHITECTURE.md`](../flow-build-tools/src/main/resources/plugins/vite-plugin-service-worker/ARCHITECTURE.md) |
 | Translations for Hilla views          | [`rollup-plugin-vaadin-i18n/ARCHITECTURE.md`](../flow-build-tools/src/main/resources/plugins/rollup-plugin-vaadin-i18n/ARCHITECTURE.md) |
+| Spring Security for client-side views | [`vaadin-spring/.../security/ARCHITECTURE.md`](../vaadin-spring/src/main/java/com/vaadin/flow/spring/security/ARCHITECTURE.md) |
+| Stateless authentication with JWT     | [`vaadin-spring/.../security/stateless/ARCHITECTURE.md`](../vaadin-spring/src/main/java/com/vaadin/flow/spring/security/stateless/ARCHITECTURE.md) |
 
 ## State management
 
