@@ -27,39 +27,40 @@ import com.vaadin.flow.signals.SignalEnvironment;
  * {@link SignalEnvironment}. This makes the behavior consistent with clustered
  * implementations where confirmation happens asynchronously. Submitted commands
  * are confirmed in submission order even if the dispatcher runs tasks
- * concurrently or out of order.
+ * concurrently or out of order, or drops a task.
  * 
  * @since 25.1
  */
 public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
 
     /*
-     * Commands waiting to be confirmed, in submission order. Guarded by the
-     * tree lock. Each dispatched task confirms the oldest entry rather than the
-     * commands it was created for since the dispatcher is not required to
-     * preserve ordering.
+     * Commands waiting to be confirmed, in submission order, and counters
+     * numbering the submitted and confirmed batches. Guarded by the tree lock.
+     * Each dispatched task confirms all batches up to and including its own
+     * since the dispatcher is not required to preserve ordering and might also
+     * reject or drop a task.
      */
     private final ArrayDeque<List<SignalCommand>> pendingConfirmations = new ArrayDeque<>();
+
+    private long submittedCount;
+
+    private long confirmedCount;
 
     @Override
     protected void submit(List<SignalCommand> commands) {
         assert hasLock();
 
         pendingConfirmations.add(commands);
+        long sequence = ++submittedCount;
 
-        try {
-            SignalEnvironment.getDefaultEffectDispatcher().execute(
-                    wrapWithLock(() -> confirm(pendingConfirmations.remove())));
-        } catch (RuntimeException e) {
-            /*
-             * Drop the entry if no task was scheduled for it so that later
-             * tasks don't fall one batch behind. An immediate dispatcher may
-             * already have consumed it before failing.
-             */
-            if (pendingConfirmations.peekLast() == commands) {
-                pendingConfirmations.removeLast();
-            }
-            throw e;
+        SignalEnvironment.getDefaultEffectDispatcher()
+                .execute(wrapWithLock(() -> confirmUpTo(sequence)));
+    }
+
+    private void confirmUpTo(long sequence) {
+        while (confirmedCount < sequence) {
+            confirmedCount++;
+            confirm(pendingConfirmations.remove());
         }
     }
 }

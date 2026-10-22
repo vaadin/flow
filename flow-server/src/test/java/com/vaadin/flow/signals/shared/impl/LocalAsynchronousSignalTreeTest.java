@@ -112,4 +112,23 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
         assertEquals(new StringNode("second"),
                 TestUtil.readSubmittedRootValue(tree));
     }
+
+    @Test
+    void submit_dispatcherDropsTask_confirmedByNextTask() {
+        useTestEffectDispatcher();
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+        AtomicReference<CommandResult> firstResult = new AtomicReference<>();
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
+                firstResult::set);
+        // Replacing the dispatcher drops the task for the first write
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"));
+
+        dispatcher.runPendingTasks();
+
+        assertTrue(firstResult.get().accepted());
+        assertEquals(new StringNode("second"),
+                TestUtil.readConfirmedRootValue(tree));
+    }
 }
