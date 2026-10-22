@@ -34,7 +34,7 @@
     "@web/test-runner-junit-reporter": "^0.8.0",
     "@web/test-runner-playwright": "^0.11.1",
     "eslint": "9.39.4",
-    "eslint-config-vaadin": "1.0.0-beta.6",
+    "eslint-config-vaadin": "1.0.0-beta.7",
     "eslint-plugin-tsdoc": "^0.4.0",
     "globals": "^17.6.0",
     "mock-xmlhttprequest": "^8.4.1",
