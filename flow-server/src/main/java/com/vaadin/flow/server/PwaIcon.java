@@ -19,13 +19,11 @@ import javax.imageio.ImageIO;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -476,10 +474,9 @@ public class PwaIcon implements Serializable {
             graphics.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
                     RenderingHints.VALUE_STROKE_PURE);
 
-            // A slightly lighter top gives the flat color some depth
-            graphics.setPaint(new GradientPaint(new Point2D.Double(0, 0),
-                    blend(background, Color.WHITE, 0.12f),
-                    new Point2D.Double(0, size), background));
+            // A flat fill, since the top-left pixel also fills the rest of
+            // the larger splash screen images
+            graphics.setColor(background);
             graphics.fillRect(0, 0, size, size);
 
             // Scale the outline of the text to a fixed share of the icon, so
@@ -505,16 +502,6 @@ public class PwaIcon implements Serializable {
             graphics.dispose();
         }
         return image;
-    }
-
-    private static Color blend(Color color, Color other, float amount) {
-        return new Color(
-                Math.round(color.getRed()
-                        + (other.getRed() - color.getRed()) * amount),
-                Math.round(color.getGreen()
-                        + (other.getGreen() - color.getGreen()) * amount),
-                Math.round(color.getBlue()
-                        + (other.getBlue() - color.getBlue()) * amount));
     }
 
     private static double getLuminance(Color color) {

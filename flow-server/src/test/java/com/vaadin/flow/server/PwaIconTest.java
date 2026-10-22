@@ -56,9 +56,12 @@ class PwaIconTest {
 
         assertEquals(512, image.getWidth());
         assertEquals(512, image.getHeight());
-        // The background fades to the theme color at the bottom
+        // The corners are filled with the theme color, which is also what
+        // the larger splash screen images are filled with
         assertEquals(Integer.parseInt(background, 16),
-                image.getRGB(0, 511) & 0xffffff);
+                image.getRGB(0, 0) & 0xffffff);
+        assertEquals(Integer.parseInt(background, 16),
+                image.getRGB(511, 511) & 0xffffff);
         // The initials are drawn across the middle, in white or, on a light
         // color, in near black
         long textPixels = 0;
