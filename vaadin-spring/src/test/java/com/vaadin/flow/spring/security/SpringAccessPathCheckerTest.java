@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -160,6 +161,37 @@ class SpringAccessPathCheckerTest {
                 "Access to admin only path should be allowed to admin user from the given strategy");
         assertFalse(checker.hasAccess("anon", admin, role -> false),
                 "Access to anonymous only path should not be allowed to admin user from the given strategy");
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void checkAccess_nullPrincipal_evaluatedAsAnonymous() {
+        assertFalse(accessPathChecker.hasAccess("admin", null, role -> false),
+                "Access to admin only path should not be allowed when principal is null");
+        assertTrue(accessPathChecker.hasAccess("anon", null, role -> false),
+                "Access to anonymous only path should be allowed when principal is null");
+    }
+
+    @Test
+    void checkAccess_nullPrincipalWithoutAuthentication_evaluatedAsAnonymous() {
+        SecurityContextHolder.clearContext();
+        assertTrue(accessPathChecker.hasAccess("anon", null, role -> false),
+                "Access to anonymous only path should be allowed when principal is null and there is no authentication");
+    }
+
+    @Test
+    void checkAccess_nullPrincipal_customAnonymousAuthenticationPreserved() {
+        SecurityContextHolder.getContext()
+                .setAuthentication(new AnonymousAuthenticationToken("key",
+                        "anonymousUser",
+                        AuthorityUtils.createAuthorityList("ROLE_GUEST")));
+        try {
+            assertTrue(
+                    accessPathChecker.hasAccess("guest", null, role -> false),
+                    "Access to guest only path should be allowed to anonymous user with GUEST role");
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     private boolean checkAccess(String admin) {
