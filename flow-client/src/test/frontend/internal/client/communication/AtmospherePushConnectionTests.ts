@@ -24,7 +24,11 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     disconnected: [] as string[]
   };
   const capture: AtmosphereConfigCapture = { config: null };
-  const fakeSocket = { push: (message: string) => log.pushed.push(message) };
+  const fakeSocket = {
+    push: (message: string) => log.pushed.push(message),
+    // The live atmosphere.js request, exposed by the socket.
+    request: { curWebsocketErrorRetries: 0 }
+  };
   // Install a fake Atmosphere library.
   (window as unknown as { vaadinPush?: unknown }).vaadinPush = {
     atmosphere: {
@@ -70,7 +74,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/') {
     },
     ResourceLoader: { loadScript: () => {} }
   });
-  return { registry, log, capture };
+  return { registry, log, capture, fakeSocket };
 }
 
 function response(transport: string, body = ''): { transport: string; responseBody: string } {
@@ -225,6 +229,21 @@ describe('AtmospherePushConnection', () => {
       expect(log.disconnected.length).to.equal(1);
       expect(connection.isActive()).to.be.false; // DISCONNECTED
     });
+    it('resets the websocket error retries whenever the connection is re-established', async () => {
+      // atmosphere.js falls back to long-polling for good once the retries
+      // reach maxWebsocketErrorRetries, so errors from earlier outages must not
+      // count against a later one.
+      const { registry, capture, fakeSocket } = setupPush();
+      new AtmospherePushConnection(registry);
+      await tick();
+      capture.config!.onOpen(response('websocket'));
+
+      fakeSocket.request.curWebsocketErrorRetries = 7;
+      capture.config!.onClose(response('websocket'));
+      capture.config!.onReopen(response('websocket'));
+      expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(0);
+    });
+
     it('unsubscribes from the same url it subscribed to', async () => {
       // Ported from testDisconnect_disconnectUrlIsSameAsInConnect.
       const { registry, log, capture } = setupPush('context://foo', 'bar/');

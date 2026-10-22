@@ -139,6 +139,19 @@ function doPush(socket: unknown, message: string): void {
   (socket as { push: (message: string) => void }).push(message);
 }
 
+/**
+ * Resets the websocket error retry counter of the given Atmosphere socket.
+ * atmosphere.js only resets it when the request is closed, so errors from
+ * separate outages would otherwise add up until it permanently downgrades to
+ * the fallback transport.
+ */
+function resetWebsocketErrorRetries(socket: unknown): void {
+  const request = (socket as { request?: { curWebsocketErrorRetries?: number } } | null)?.request;
+  if (request) {
+    request.curWebsocketErrorRetries = 0;
+  }
+}
+
 /** Unsubscribes the Atmosphere connection for the given url. */
 function doDisconnect(url: string): void {
   // Java dereferences $wnd.vaadinPush.atmosphere unconditionally here: the
@@ -364,6 +377,7 @@ export class AtmospherePushConnection implements PushConnection {
    */
   protected onConnect(response: AtmosphereResponse): void {
     this.#transport = response.transport;
+    resetWebsocketErrorRetries(this.#socket);
     switch (this.#state) {
       case State.CONNECT_PENDING:
         this.#state = State.CONNECTED;
