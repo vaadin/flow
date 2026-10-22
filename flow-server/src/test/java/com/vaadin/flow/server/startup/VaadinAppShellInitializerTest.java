@@ -600,11 +600,11 @@ public class VaadinAppShellInitializerTest {
         classes.add(MyAppShellWithInlineJavaScript.class);
         initializer.process(classes, servletContext);
         VaadinServletRequest request = createVaadinRequest("/");
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
 
         InvalidApplicationConfigurationException exception = assertThrows(
                 InvalidApplicationConfigurationException.class,
-                () -> AppShellRegistry.getInstance(context)
-                        .modifyIndexHtml(document, request));
+                () -> registry.modifyIndexHtml(document, request));
         assertTrue(exception.getMessage().contains("@Inline"));
     }
 

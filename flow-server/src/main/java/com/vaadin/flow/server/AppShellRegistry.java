@@ -540,26 +540,30 @@ public class AppShellRegistry implements Serializable {
                 .getAnnotationsByType(JavaScript.class)) {
             // Bundled developmentOnly values are left out of the production
             // bundle by the build, the same rule is applied to runtime values
-            if (!FrontendDependencyUrlResolver.isRuntimeJavaScript(js)
-                    || productionMode && js.developmentOnly()) {
-                continue;
+            if (FrontendDependencyUrlResolver.isRuntimeJavaScript(js)
+                    && !(productionMode && js.developmentOnly())) {
+                addJavaScript(request, settings, js, added);
             }
-            if (js.loadMode() == LoadMode.INLINE) {
-                throw new InvalidApplicationConfigurationException(
-                        "The @JavaScript('" + js.value() + "') annotation on "
-                                + appShellClass.getName()
-                                + " uses LoadMode.INLINE, which is not supported on the app shell. Use @Inline to inline the contents of a file into the page.");
-            }
-            String normalized = FrontendDependencyUrlResolver
-                    .resolveRuntimeJavaScript(js.value());
-            if (normalized == null || !added.add(normalized)) {
-                continue;
-            }
-            String src = resolveVaadinUri(normalized, request);
-            if (src != null) {
-                settings.addScript(Position.APPEND, src, js.type(),
-                        js.loadMode() == LoadMode.LAZY);
-            }
+        }
+    }
+
+    private void addJavaScript(VaadinRequest request, AppShellSettings settings,
+            JavaScript js, Set<String> added) {
+        if (js.loadMode() == LoadMode.INLINE) {
+            throw new InvalidApplicationConfigurationException(
+                    "The @JavaScript('" + js.value() + "') annotation on "
+                            + appShellClass.getName()
+                            + " uses LoadMode.INLINE, which is not supported on the app shell. Use @Inline to inline the contents of a file into the page.");
+        }
+        String normalized = FrontendDependencyUrlResolver
+                .resolveRuntimeJavaScript(js.value());
+        if (normalized == null || !added.add(normalized)) {
+            return;
+        }
+        String src = resolveVaadinUri(normalized, request);
+        if (src != null) {
+            settings.addScript(Position.APPEND, src, js.type(),
+                    js.loadMode() == LoadMode.LAZY);
         }
     }
 }

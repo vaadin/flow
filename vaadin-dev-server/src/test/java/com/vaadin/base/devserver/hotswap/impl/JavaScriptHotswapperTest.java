@@ -88,7 +88,7 @@ class JavaScriptHotswapperTest {
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         CurrentInstance.clearAll();
         AppShellRegistry.getInstance(service.getContext()).reset();
     }
