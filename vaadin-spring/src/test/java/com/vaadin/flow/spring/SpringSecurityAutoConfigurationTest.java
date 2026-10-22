@@ -34,10 +34,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
@@ -50,6 +52,7 @@ import com.vaadin.flow.server.auth.NavigationAccessChecker;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
@@ -59,6 +62,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -190,6 +194,52 @@ class SpringSecurityAutoConfigurationTest {
             // getContext() lazily stores an empty context in the thread local
             // shared by all instances, which would otherwise be inherited by
             // the tests running afterwards on this thread
+            SecurityContextHolder.clearContext();
+            SecurityContextHolder.setContextHolderStrategy(installedStrategy);
+        }
+    }
+
+    @Test
+    void securityBeans_readAuthenticationFromStrategyBean() {
+        SecurityContextHolderStrategy installedStrategy = SecurityContextHolder
+                .getContextHolderStrategy();
+        WebInvocationPrivilegeEvaluator evaluator = mock(
+                WebInvocationPrivilegeEvaluator.class);
+        try {
+            this.contextRunner.withBean(WebInvocationPrivilegeEvaluator.class,
+                    () -> evaluator).run((context) -> {
+                        SecurityContextHolderStrategy strategyBean = context
+                                .getBean(SecurityContextHolderStrategy.class);
+                        // The installed strategy sees no authentication, so the
+                        // beans
+                        // only find the user through the injected strategy bean
+                        SecurityContextHolderStrategy otherStrategy = mock(
+                                SecurityContextHolderStrategy.class);
+                        when(otherStrategy.getContext()).thenReturn(
+                                SecurityContextHolder.createEmptyContext());
+                        SecurityContextHolder
+                                .setContextHolderStrategy(otherStrategy);
+
+                        var user = new UsernamePasswordAuthenticationToken(
+                                "user", "n/a", AuthorityUtils
+                                        .createAuthorityList("ROLE_USER"));
+                        SecurityContext securityContext = strategyBean
+                                .createEmptyContext();
+                        securityContext.setAuthentication(user);
+                        strategyBean.setContext(securityContext);
+                        try {
+                            assertThat(
+                                    context.getBean(AuthenticationContext.class)
+                                            .getPrincipalName())
+                                    .contains("user");
+                            context.getBean(AccessPathChecker.class).hasAccess(
+                                    "protected", user, role -> false);
+                            verify(evaluator).isAllowed(anyString(), eq(user));
+                        } finally {
+                            strategyBean.clearContext();
+                        }
+                    });
+        } finally {
             SecurityContextHolder.clearContext();
             SecurityContextHolder.setContextHolderStrategy(installedStrategy);
         }

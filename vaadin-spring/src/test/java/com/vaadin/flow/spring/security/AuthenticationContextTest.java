@@ -480,6 +480,41 @@ class AuthenticationContextTest {
     }
 
     @Test
+    void logout_strategyGiven_handlersReceiveAuthenticationFromStrategy()
+            throws Exception {
+        SetupForLogoutTest setup = getSetupForLogoutTest();
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                "strategy-user", null, List.of());
+        SecurityContextHolderStrategy strategy = mock(
+                SecurityContextHolderStrategy.class);
+        when(strategy.getContext())
+                .thenReturn(new SecurityContextImpl(authentication));
+        var authContext = new AuthenticationContext(strategy);
+        authContext.setLogoutHandlers(setup.successHandler(),
+                List.of(setup.handler1(), setup.handler2()));
+
+        UI ui = mock(UI.class);
+        doAnswer(i -> {
+            i.<Command> getArgument(0).execute();
+            return null;
+        }).when(ui).accessSynchronously(any());
+        mockPush(ui);
+        try {
+            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
+            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
+            UI.setCurrent(ui);
+            authContext.logout();
+
+            verify(setup.successHandler()).onLogoutSuccess(setup.request(),
+                    setup.response(), authentication);
+            verify(setup.handler1()).logout(setup.request(), setup.response(),
+                    authentication);
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @Test
     @WithMockUser()
     void logout_pushWithWebsocket_handlersEngaged() throws Exception {
         SetupForLogoutTest setup = getSetupForLogoutTest();
