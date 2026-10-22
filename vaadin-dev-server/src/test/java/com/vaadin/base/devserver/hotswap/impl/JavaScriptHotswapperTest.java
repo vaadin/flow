@@ -17,11 +17,16 @@ package com.vaadin.base.devserver.hotswap.impl;
 
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.agent.ByteBuddyAgent;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,10 +36,12 @@ import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.base.devserver.hotswap.HotswapCompleteEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -45,7 +52,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JavaScriptHotswapperTest {
 
-    private JavaScriptHotswapper hotswapper;
+    // Records what a change is warned about instead of logging it.
+    private static class TestHotswapper extends JavaScriptHotswapper {
+        private final List<String> warned = new ArrayList<>();
+
+        @Override
+        void warnAboutChangedBundledScripts(Class<?> type) {
+            warned.add(type.getName());
+        }
+    }
+
+    private TestHotswapper hotswapper;
     private MockVaadinServletService service;
     private VaadinSession session;
     private MockUI ui;
@@ -56,7 +73,7 @@ class JavaScriptHotswapperTest {
         service = new MockVaadinServletService(
                 new MockDeploymentConfiguration());
         session = new AlwaysLockedVaadinSession(service);
-        hotswapper = new JavaScriptHotswapper();
+        hotswapper = new TestHotswapper();
 
         ui = new MockUI(session);
         ui.doInit(null, 42, "foo");
@@ -64,14 +81,20 @@ class JavaScriptHotswapperTest {
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws Exception {
         CurrentInstance.clearAll();
+        for (Class<?> type : List.of(Base.class, Helper.class)) {
+            ClassReloadingStrategy.fromInstalledAgent().reset(type);
+        }
+        List.of(Base.class, Helper.class, ExtendsBase.class, UsesHelper.class)
+                .forEach(ReflectionCache::clearAll);
     }
 
     @Test
     void runtimeScriptChanged_componentInUse_reloadsPage() throws Exception {
         assertEquals(Optional.of(UIUpdateStrategy.RELOAD),
                 hotswap(RuntimeScript.class, RuntimeScriptChanged.class, true));
+        assertEquals(List.of(), hotswapper.warned);
     }
 
     @Test
@@ -129,9 +152,45 @@ class JavaScriptHotswapperTest {
     }
 
     @Test
-    void bundledScriptChanged_noReload() throws Exception {
+    void bundledScriptChanged_warnsWithoutReload() throws Exception {
         assertEquals(Optional.empty(),
                 hotswap(BundledScript.class, BundledScriptChanged.class, true));
+        assertEquals(List.of(BundledScript.class.getName()), hotswapper.warned);
+    }
+
+    @Test
+    void bundledScriptMovedToRuntime_warnsWithoutReload() throws Exception {
+        // The bundle still runs the script, so the added runtime script runs
+        // it a second time until a restart
+        assertEquals(Optional.empty(), hotswap(BundledScript.class,
+                BundledScriptAsRuntime.class, true));
+        assertEquals(List.of(BundledScript.class.getName()), hotswapper.warned);
+    }
+
+    @Test
+    void runtimeScriptMovedToBundled_warnsAndReloads() throws Exception {
+        assertEquals(Optional.of(UIUpdateStrategy.RELOAD), hotswap(
+                RuntimeScript.class, RuntimeScriptAsBundled.class, true));
+        assertEquals(List.of(RuntimeScript.class.getName()), hotswapper.warned);
+    }
+
+    @Test
+    void superclassRuntimeScriptChanged_subclassInUse_reloadsWithNewValue()
+            throws Exception {
+        assertEquals(Optional.of(UIUpdateStrategy.RELOAD), hotswapInPlace(
+                new ExtendsBase(), Base.class, BaseChanged.class));
+        // The cached metadata of the subclass was read before the change, so
+        // it is cleared for a new page to get the new value
+        assertEquals(Set.of("/changed.js"),
+                javaScriptValues(ExtendsBase.class));
+    }
+
+    @Test
+    void usesTargetRuntimeScriptChanged_componentInUse_reloadsWithNewValue()
+            throws Exception {
+        assertEquals(Optional.of(UIUpdateStrategy.RELOAD), hotswapInPlace(
+                new UsesHelper(), Helper.class, HelperChanged.class));
+        assertEquals(Set.of("/changed.js"), javaScriptValues(UsesHelper.class));
     }
 
     @Test
@@ -168,6 +227,38 @@ class JavaScriptHotswapperTest {
                 session, Set.of(redefined), true);
         hotswapper.onClassesChange(event);
         return event.getUIUpdateStrategy(ui);
+    }
+
+    /**
+     * Runs the hotswap sequence for {@code original} being redefined in place
+     * with the annotations of {@code modified}, the way the JVM redefines a
+     * class, while {@code inUse} is in the UI. Returns the update requested for
+     * the UI.
+     */
+    private Optional<UIUpdateStrategy> hotswapInPlace(Component inUse,
+            Class<?> original, Class<?> modified) {
+        ui.add(inUse);
+        ui.getInternals().addComponentDependencies(inUse.getClass());
+
+        hotswapper.onClassesChange(
+                new HotswapClassEvent(service, Set.of(original), true));
+
+        ByteBuddyAgent.install();
+        new ByteBuddy().redefine(modified).name(original.getName()).make().load(
+                original.getClassLoader(),
+                ClassReloadingStrategy.fromInstalledAgent());
+        // Done by ReflectionCacheHotswapper before the session events
+        ReflectionCache.clearAll(original);
+
+        HotswapClassSessionEvent event = new HotswapClassSessionEvent(service,
+                session, Set.of(original), true);
+        hotswapper.onClassesChange(event);
+        return event.getUIUpdateStrategy(ui);
+    }
+
+    private Set<String> javaScriptValues(Class<? extends Component> type) {
+        return ComponentUtil.getDependencies(service, type).getJavaScripts()
+                .stream().map(JavaScript::value).collect(Collectors.toSet());
     }
 
     /**
@@ -226,5 +317,45 @@ class JavaScriptHotswapperTest {
     @Tag("div")
     @JavaScript("changed-bundled.js")
     public static class BundledScriptChanged extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript("script.js")
+    public static class RuntimeScriptAsBundled extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript("context://bundled.js")
+    public static class BundledScriptAsRuntime extends Component {
+    }
+
+    // Redefined in place, so only used by hotswapInPlace
+    @Tag("div")
+    @JavaScript("/script.js")
+    public static class Base extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript("/changed.js")
+    public static class BaseChanged extends Component {
+    }
+
+    public static class ExtendsBase extends Base {
+    }
+
+    // Redefined in place, so only used by hotswapInPlace
+    @Tag("div")
+    @JavaScript("/script.js")
+    public static class Helper extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript("/changed.js")
+    public static class HelperChanged extends Component {
+    }
+
+    @Tag("div")
+    @Uses(Helper.class)
+    public static class UsesHelper extends Component {
     }
 }
