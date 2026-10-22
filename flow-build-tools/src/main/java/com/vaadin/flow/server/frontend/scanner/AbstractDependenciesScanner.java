@@ -75,8 +75,9 @@ abstract class AbstractDependenciesScanner
      * Tells whether runtime {@code @JsModule} and {@code @JavaScript} values
      * declared on the given class are added to the page at runtime. That is
      * only done for components and the app shell, which also inherit
-     * annotations from the interfaces they implement, so for any other class
-     * such values are left to the bundle as before.
+     * annotations from the interfaces they implement. For any other class,
+     * runtime URL {@code @JsModule} values are left to the bundle as before,
+     * while runtime {@code @JavaScript} values are not loaded at all.
      *
      * @param clazz
      *            the class declaring the annotation, loaded through the finder

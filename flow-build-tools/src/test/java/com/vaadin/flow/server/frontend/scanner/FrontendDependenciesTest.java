@@ -216,7 +216,7 @@ class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
         DepsTests.assertImportsExcludingUI(dependencies.getModules(),
-                "/absolute-module.js");
+                "./listener-bundled.js", "/absolute-module.js");
 
         // Scans the service listener stubbed above again, with a spy logger
         Logger logger = scanWithSpyLogger(Collections.emptySet());
@@ -226,11 +226,14 @@ class FrontendDependenciesTest {
         verify(logger).warn(contains(UNLOADED_RUNTIME_WARNING),
                 usages.capture());
         String listener = RuntimeJsModuleServiceListener.class.getName();
-        assertEquals(
-                "\n  - " + listener + ": @JsModule(\"/absolute-module.js\")"
-                        + "\n  - " + listener
-                        + ": @JavaScript(\"context://listener.js\")" + "\n  - "
-                        + listener + ": @JavaScript(\"listener-module.js\")",
+        // Bundled values are fine on any class and not listed
+        String prefix = "\n  - " + listener + ": ";
+        assertEquals(prefix + "@JsModule(value = \"/absolute-module.js\")"
+                + prefix
+                + "@JsModule(value = \"/dev-module.js\", developmentOnly = true)"
+                + prefix + "@JavaScript(value = \"context://listener.js\")"
+                + prefix
+                + "@JavaScript(value = \"listener-module.js\", type = MODULE)",
                 usages.getValue());
     }
 
@@ -734,7 +737,10 @@ class FrontendDependenciesTest {
             implements AppShellConfigurator {
     }
 
+    @JsModule("./listener-bundled.js")
     @JsModule("/absolute-module.js")
+    @JsModule(value = "/dev-module.js", developmentOnly = true)
+    @JavaScript("listener-bundled.js")
     @JavaScript("context://listener.js")
     @JavaScript(value = "listener-module.js", type = JavaScript.Type.MODULE)
     public static class RuntimeJsModuleServiceListener

@@ -123,7 +123,10 @@ final class FrontendClassVisitor extends ClassVisitor {
                 // Nothing adds runtime values of this class to the page
                 unloadedRuntimeTarget.add("@"
                         + (isJavaScriptAnnotation ? "JavaScript" : "JsModule")
-                        + "(\"" + currentModule + "\")");
+                        + "(value = \"" + currentModule + "\""
+                        + (currentTypeIsModule ? ", type = MODULE" : "")
+                        + (currentDevOnly ? ", developmentOnly = true" : "")
+                        + ")");
             }
             if (currentModule != null && !currentTypeIsModule) {
                 // type=MODULE @JavaScript values are loaded at runtime as
