@@ -71,8 +71,9 @@ import com.vaadin.flow.shared.ui.LoadMode;
  *
  *     OR
  *
- *     &#64;StyleSheet("styles.css") // e.g. src/main/webapp/styles.css (WAR) or
- *                                   // src/main/resources/META-INF/resources/styles.css (Spring Boot)
+ *     // styles.css from src/main/webapp/ (WAR) or
+ *     // src/main/resources/META-INF/resources/ (Spring Boot)
+ *     &#64;StyleSheet("styles.css")
  *     public class Application implements AppShellConfigurator {
  *         ...
  *     }
