@@ -30,7 +30,9 @@ import org.objectweb.asm.Type;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
@@ -71,13 +73,16 @@ final class FrontendClassVisitor extends ClassVisitor {
         private String currentModule;
         private boolean currentTypeIsModule = false;
 
-        private LinkedHashSet<String> target;
-        private LinkedHashSet<String> targetDevelopmentOnly;
+        private final LinkedHashSet<String> target;
+        private final LinkedHashSet<String> targetDevelopmentOnly;
+        private final boolean isJavaScriptAnnotation;
 
         public JSAnnotationVisitor(LinkedHashSet<String> target,
-                LinkedHashSet<String> targetDevelopmentOnly) {
+                LinkedHashSet<String> targetDevelopmentOnly,
+                boolean isJavaScriptAnnotation) {
             this.target = target;
             this.targetDevelopmentOnly = targetDevelopmentOnly;
+            this.isJavaScriptAnnotation = isJavaScriptAnnotation;
         }
 
         @Override
@@ -104,12 +109,19 @@ final class FrontendClassVisitor extends ClassVisitor {
         @Override
         public void visitEnd() {
             super.visitEnd();
-            // type=MODULE values are loaded at runtime as <script
-            // type="module">
-            // by UIInternals; they must not enter the bundle.
             if (currentModule != null && !currentTypeIsModule) {
-                // This visitor is called also for the $Container annotation
-                if (currentDevOnly) {
+                // type=MODULE @JavaScript values are loaded at runtime as
+                // <script type="module"> by UIInternals; skip them entirely.
+                // This visitor is called also for the $Container annotation.
+                // Values with any other scheme are dropped from the bundle
+                // and added at runtime as well, see UrlUtil.isExternal
+                boolean runtimeUrl = FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(currentModule)
+                        || UrlUtil.isExternal(currentModule);
+                if (isJavaScriptAnnotation && runtimeUrl) {
+                    // @JavaScript with a runtime prefix: load at runtime, not
+                    // bundled. No deprecation — this is the recommended form.
+                } else if (currentDevOnly) {
                     targetDevelopmentOnly.add(currentModule);
                 } else {
                     target.add(currentModule);
@@ -240,10 +252,10 @@ final class FrontendClassVisitor extends ClassVisitor {
         };
         // Visitor for @JsModule annotations
         jsModuleVisitor = new JSAnnotationVisitor(classInfo.modules,
-                classInfo.modulesDevelopmentOnly);
+                classInfo.modulesDevelopmentOnly, false);
         // Visitor for @JavaScript annotations
         jScriptVisitor = new JSAnnotationVisitor(classInfo.scripts,
-                classInfo.scriptsDevelopmentOnly);
+                classInfo.scriptsDevelopmentOnly, true);
         // Visitor all other annotations
         annotationVisitor = new RepeatedAnnotationVisitor() {
             @Override
