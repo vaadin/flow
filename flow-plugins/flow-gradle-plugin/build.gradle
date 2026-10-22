@@ -140,12 +140,12 @@ task functionalTest(type: Test) {
     // project version.
     environment('vaadin.version', version.toString())
     // Each test runs nested builds with --stacktrace --info, several of them
-    // failing on purpose. Their output only matters for a test that fails,
-    // and TestKit puts it in that test's failure, so it is not streamed to the
-    // log by default. Pass -PfunctionalTest.forwardOutput to stream it as the
-    // nested builds run; see TestProject.
-    def forwardOutput = providers.gradleProperty('functionalTest.forwardOutput').isPresent()
-    systemProperty('functionalTest.forwardOutput', forwardOutput)
+    // failing on purpose, and TestProject forwards their output to stdout.
+    // Keep it out of the console so the log lists the tests and their
+    // failures; the test reports still record it per test. Pass
+    // -PfunctionalTest.forwardOutput to also stream it to the console.
+    def forwardOutput = providers.gradleProperty('functionalTest.forwardOutput')
+            .map { it.isEmpty() || it.toBoolean() }.getOrElse(false)
     testLogging {
         events 'passed', 'skipped', 'failed'
         exceptionFormat = 'full'
