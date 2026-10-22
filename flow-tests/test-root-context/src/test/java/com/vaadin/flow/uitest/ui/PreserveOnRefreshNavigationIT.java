@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -48,6 +49,26 @@ public class PreserveOnRefreshNavigationIT extends ChromeBrowserTest {
         Assert.assertTrue(driver.getCurrentUrl().contains("?param=three"));
 
         assertBackNavigatesThroughEachUrl();
+    }
+
+    @Test
+    public void reload_preservedViewWithQueryParams_historyIsNotChanged() {
+        open();
+        $(TestBenchElement.class).id("link-one").click();
+        waitForUrlEndingWith("?param=one");
+        long historyLength = getHistoryLength();
+
+        driver.navigate().refresh();
+        waitForElementPresent(By.id("link-one"));
+
+        Assert.assertEquals("Reload should not add a history entry",
+                historyLength, getHistoryLength());
+        driver.navigate().back();
+        waitForUrlEndingWith(PreserveOnRefreshNavigationView.VIEW_PATH);
+    }
+
+    private long getHistoryLength() {
+        return (Long) executeScript("return window.history.length");
     }
 
     private void assertBackNavigatesThroughEachUrl() {
