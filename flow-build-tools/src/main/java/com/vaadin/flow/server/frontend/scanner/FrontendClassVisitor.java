@@ -120,13 +120,12 @@ final class FrontendClassVisitor extends ClassVisitor {
                 if (isJavaScriptAnnotation && runtimeUrl) {
                     // @JavaScript with a runtime prefix: load at runtime, not
                     // bundled. No deprecation — this is the recommended form.
-                } else if (!isJavaScriptAnnotation && runtimeUrl) {
+                } else if (!isJavaScriptAnnotation && runtimeUrl
+                        && deprecatedRuntimeTarget != null) {
                     // @JsModule with a runtime URL: keep loading it at runtime
                     // as a script module, but skip it from the bundle and warn
                     // users to migrate to @JavaScript.
-                    if (deprecatedRuntimeTarget != null) {
-                        deprecatedRuntimeTarget.add(currentModule);
-                    }
+                    deprecatedRuntimeTarget.add(currentModule);
                 } else if (currentDevOnly) {
                     targetDevelopmentOnly.add(currentModule);
                 } else {
@@ -259,7 +258,11 @@ final class FrontendClassVisitor extends ClassVisitor {
         // Visitor for @JsModule annotations
         jsModuleVisitor = new JSAnnotationVisitor(classInfo.modules,
                 classInfo.modulesDevelopmentOnly, false,
-                classInfo.deprecatedRuntimeModules);
+                // Nothing loads runtime URL modules of other classes at
+                // runtime, so those are left to the bundle
+                classInfo.loadsRuntimeModules
+                        ? classInfo.deprecatedRuntimeModules
+                        : null);
         // Visitor for @JavaScript annotations
         jScriptVisitor = new JSAnnotationVisitor(classInfo.scripts,
                 classInfo.scriptsDevelopmentOnly, true, null);

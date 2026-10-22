@@ -35,7 +35,10 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.NodeTestComponents;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExtraImport;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlatImport;
@@ -116,11 +119,25 @@ class FullDependenciesScannerTest {
 
     }
 
+    @JsModule("/absolute-module.js")
+    public static class RuntimeJsModuleServiceListener
+            implements VaadinServiceInitListener {
+
+        @Override
+        public void serviceInit(ServiceInitEvent event) {
+        }
+
+    }
+
     @BeforeEach
     void setUp() throws ClassNotFoundException {
         finder = mock(ClassFinder.class);
         when(finder.loadClass(AbstractTheme.class.getName()))
                 .thenReturn((Class) AbstractTheme.class);
+        when(finder.loadClass(Component.class.getName()))
+                .thenReturn((Class) Component.class);
+        when(finder.loadClass(AppShellConfigurator.class.getName()))
+                .thenReturn((Class) AppShellConfigurator.class);
     }
 
     @Test
@@ -342,15 +359,18 @@ class FullDependenciesScannerTest {
         when(finder.loadClass(JsModule.class.getName()))
                 .thenReturn(fakeAnnotation);
         when(finder.getAnnotatedClasses(fakeAnnotation)).thenReturn(
-                Collections.singleton(RuntimeJavaScriptComponent.class));
+                new LinkedHashSet<>(List.of(RuntimeJavaScriptComponent.class,
+                        RuntimeJsModuleServiceListener.class)));
 
         FullDependenciesScanner scanner = new FullDependenciesScanner(finder,
                 (type, annotation) -> findAnnotations(type, JsModule.class),
                 null, true);
 
         // @JsModule values with a runtime URL are loaded at runtime, so they
-        // must not end up in the bundle imports
-        DepsTests.assertImports(scanner.getModules(), "./bundled-module.js");
+        // must not end up in the bundle imports. Nothing loads them at runtime
+        // for a class that is not a component, so that one is still bundled.
+        DepsTests.assertImports(scanner.getModules(), "./bundled-module.js",
+                "/absolute-module.js");
         assertFalse(scanner.getModulesDevelopment().values().stream()
                 .anyMatch(modules -> modules
                         .contains("https://cdn.example.com/dev-module.js")));

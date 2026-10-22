@@ -975,10 +975,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
         ClassInfo info = new ClassInfo(className);
         try {
-            if (AbstractTheme.class
-                    .isAssignableFrom(getFinder().loadClass(className))) {
+            Class<?> clazz = getFinder().loadClass(className);
+            if (AbstractTheme.class.isAssignableFrom(clazz)) {
                 info.loadCss = false;
             }
+            info.loadsRuntimeModules = loadsRuntimeModules(clazz);
         } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
             // NO-OP
         }

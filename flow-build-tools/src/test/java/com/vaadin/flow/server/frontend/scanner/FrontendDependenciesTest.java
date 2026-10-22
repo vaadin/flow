@@ -49,6 +49,7 @@ import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.scanner.samples.ErrorComponent;
@@ -201,6 +202,23 @@ class FrontendDependenciesTest {
         // Runtime @JavaScript values are not deprecated
         assertFalse(listed.contains("runtime.js"), listed);
         assertFalse(listed.contains("other-scheme.js"), listed);
+    }
+
+    @Test
+    void jsModuleWithRuntimeUrlOnNonComponentEntryPoint_stillBundledWithoutWarning() {
+        // Nothing loads the value at runtime for a class that is not a
+        // component or the app shell, so it must stay in the bundle
+        when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
+                .thenReturn(Collections
+                        .singleton(RuntimeJsModuleServiceListener.class));
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(),
+                "/absolute-module.js");
+
+        Logger logger = scanWithSpyLogger(Collections.emptySet());
+        verify(logger, never()).warn(contains(RUNTIME_JS_MODULE_WARNING),
+                ArgumentMatchers.<Object> any());
     }
 
     @Test
@@ -665,6 +683,14 @@ class FrontendDependenciesTest {
     }
 
     public static class MyComponent extends Component {
+    }
+
+    @JsModule("/absolute-module.js")
+    public static class RuntimeJsModuleServiceListener
+            implements VaadinServiceInitListener {
+        @Override
+        public void serviceInit(ServiceInitEvent event) {
+        }
     }
 
     public static class MyExporter extends WebComponentExporter<MyComponent> {

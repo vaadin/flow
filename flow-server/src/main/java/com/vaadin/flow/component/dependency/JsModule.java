@@ -78,12 +78,15 @@ public @interface JsModule {
      * The value is meant to be resolved by the frontend bundler. Using a
      * runtime URL (one starting with {@code context://}, {@code base://},
      * {@code /}, {@code http://}, {@code https://} or {@code //}, or any other
-     * URL containing {@code ://}) is deprecated: such a value is not bundled
-     * but loaded at runtime as a {@code <script type="module">}, and a warning
-     * is logged during the production build. Use {@link JavaScript @JavaScript}
-     * with {@link JavaScript.Type#MODULE} for runtime modules instead. To keep
-     * bundling a file in the frontend folder that is referenced with a leading
-     * {@code /}, use a relative value such as {@code ./foo.js} instead.
+     * URL containing {@code ://}) is deprecated: on a component or the app
+     * shell, such a value is not bundled but loaded at runtime as a
+     * {@code <script type="module">}, and a warning is logged during the
+     * production build. On any other class, nothing loads the value at runtime,
+     * so it is passed to the bundler unchanged. Use
+     * {@link JavaScript @JavaScript} with {@link JavaScript.Type#MODULE} for
+     * runtime modules instead. To keep bundling a file in the frontend folder
+     * that is referenced with a leading {@code /}, use a relative value such as
+     * {@code ./foo.js} instead.
      *
      * @return a JavaScript module identifier
      */

@@ -37,7 +37,8 @@ public class ClassInfo {
      * {@code @JsModule} values with a runtime URL prefix ({@code context://},
      * {@code base://}, {@code http(s)://}, {@code //}, {@code /}). These are
      * filtered out of the bundle and emit a build-time deprecation warning
-     * recommending migration to {@code @JavaScript}.
+     * recommending migration to {@code @JavaScript}. Only used when
+     * {@link #loadsRuntimeModules} is set.
      */
     final LinkedHashSet<String> deprecatedRuntimeModules = new LinkedHashSet<>();
     final transient List<CssData> css = new ArrayList<>();
@@ -46,6 +47,12 @@ public class ClassInfo {
     ThemeData theme = new ThemeData();
     Set<String> children = new LinkedHashSet<>();
     boolean loadCss = true;
+    /**
+     * Whether runtime URL {@code @JsModule} values of the class are added to
+     * the page at runtime, which is the case for components and the app shell.
+     * Otherwise they are kept in {@link #modules} as before.
+     */
+    boolean loadsRuntimeModules = true;
 
     public ClassInfo(String className) {
         this.className = className;

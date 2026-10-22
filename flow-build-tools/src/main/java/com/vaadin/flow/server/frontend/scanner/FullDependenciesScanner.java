@@ -403,11 +403,17 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 }
 
                                 if (FrontendDependencyUrlResolver
-                                        .isRuntimeDependencyUrl(value)) {
+                                        .isRuntimeDependencyUrl(value)
+                                        && (hasTypeAttribute
+                                                || loadsRuntimeModules(
+                                                        clazz))) {
                                     // Values with a runtime prefix or any
                                     // other scheme are loaded at runtime as
                                     // <script> or <script type="module"> and
-                                    // must not enter the bundle
+                                    // must not enter the bundle. Nothing
+                                    // loads @JsModule values of other classes
+                                    // than components and the app shell at
+                                    // runtime, so those are left to the bundle
                                     return;
                                 }
 
