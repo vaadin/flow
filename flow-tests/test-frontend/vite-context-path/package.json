@@ -6,13 +6,13 @@
     "@polymer/polymer": "3.5.2",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
     "@vaadin/common-frontend": "0.0.19",
-    "@vaadin/polymer-legacy-adapter": "24.8.2",
+    "@vaadin/polymer-legacy-adapter": "24.7.6",
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
     "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
-    "@vaadin/text-field": "24.8.2",
-    "@vaadin/vaadin-lumo-styles": "24.8.2",
-    "@vaadin/vaadin-themable-mixin": "24.8.2",
+    "@vaadin/text-field": "24.7.6",
+    "@vaadin/vaadin-lumo-styles": "24.7.6",
+    "@vaadin/vaadin-themable-mixin": "24.7.6",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "3.3.3",
     "react": "18.3.1",
@@ -21,8 +21,6 @@
   },
   "devDependencies": {
     "@babel/preset-react": "7.29.7",
-    "@babel/types": "7.29.8",
-    "@preact/signals-react": "3.12.0",
     "@preact/signals-react-transform": "0.5.2",
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/pluginutils": "5.4.0",
@@ -31,7 +29,6 @@
     "@vitejs/plugin-react": "4.7.0",
     "async": "3.2.6",
     "glob": "12.0.0",
-    "magic-string": "0.30.21",
     "rollup-plugin-brotli": "3.1.0",
     "rollup-plugin-visualizer": "5.14.0",
     "strip-css-comments": "5.0.0",
@@ -41,16 +38,19 @@
     "vite-plugin-checker": "0.14.5",
     "workbox-build": "7.4.1",
     "workbox-core": "7.4.1",
-    "workbox-precaching": "7.4.1"
+    "workbox-precaching": "7.4.1",
+    "@babel/types": "7.29.8",
+    "@preact/signals-react": "3.12.0",
+    "magic-string": "0.30.21"
   },
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.2",
       "@vaadin/common-frontend": "0.0.19",
-      "@vaadin/polymer-legacy-adapter": "24.8.2",
-      "@vaadin/text-field": "24.8.2",
-      "@vaadin/vaadin-lumo-styles": "24.8.2",
-      "@vaadin/vaadin-themable-mixin": "24.8.2",
+      "@vaadin/polymer-legacy-adapter": "24.7.6",
+      "@vaadin/text-field": "24.7.6",
+      "@vaadin/vaadin-lumo-styles": "24.7.6",
+      "@vaadin/vaadin-themable-mixin": "24.7.6",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "3.3.3",
       "react": "18.3.1",
@@ -59,8 +59,6 @@
     },
     "devDependencies": {
       "@babel/preset-react": "7.29.7",
-      "@babel/types": "7.29.8",
-      "@preact/signals-react": "3.12.0",
       "@preact/signals-react-transform": "0.5.2",
       "@rollup/plugin-replace": "6.0.3",
       "@rollup/pluginutils": "5.4.0",
@@ -69,7 +67,6 @@
       "@vitejs/plugin-react": "4.7.0",
       "async": "3.2.6",
       "glob": "12.0.0",
-      "magic-string": "0.30.21",
       "rollup-plugin-brotli": "3.1.0",
       "rollup-plugin-visualizer": "5.14.0",
       "strip-css-comments": "5.0.0",
@@ -79,25 +76,26 @@
       "vite-plugin-checker": "0.14.5",
       "workbox-build": "7.4.1",
       "workbox-core": "7.4.1",
-      "workbox-precaching": "7.4.1"
+      "workbox-precaching": "7.4.1",
+      "@babel/types": "7.29.8",
+      "@preact/signals-react": "3.12.0",
+      "magic-string": "0.30.21"
     },
-    "hash": "8fb36de2e79f1ff250fd5d466cc11fe005ca0f28fe466cafbe67519962f7675b"
+    "hash": "1ed8a460d059c9970a2b4bd85c850a98cb05c141b46869be7ea55347ace520c7"
   },
-  "pnpm": {
-    "overrides": {
-      "@polymer/polymer": "$@polymer/polymer",
-      "@vaadin/common-frontend": "$@vaadin/common-frontend",
-      "@vaadin/polymer-legacy-adapter": "$@vaadin/polymer-legacy-adapter",
-      "@vaadin/text-field": "$@vaadin/text-field",
-      "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
-      "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
-      "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
-      "lit": "$lit",
-      "react-dom": "$react-dom",
-      "@types/react-dom": "$@types/react-dom",
-      "@types/react": "$@types/react",
-      "react": "$react",
-      "react-router": "$react-router"
-    }
+  "overrides": {
+    "@polymer/polymer": "$@polymer/polymer",
+    "@vaadin/common-frontend": "$@vaadin/common-frontend",
+    "@vaadin/polymer-legacy-adapter": "$@vaadin/polymer-legacy-adapter",
+    "@vaadin/text-field": "$@vaadin/text-field",
+    "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
+    "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
+    "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
+    "lit": "$lit",
+    "react-dom": "$react-dom",
+    "@types/react-dom": "$@types/react-dom",
+    "@types/react": "$@types/react",
+    "react": "$react",
+    "react-router": "$react-router"
   }
 }
