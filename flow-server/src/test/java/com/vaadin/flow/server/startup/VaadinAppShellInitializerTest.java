@@ -45,6 +45,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
@@ -67,6 +68,7 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
@@ -249,6 +251,23 @@ public class VaadinAppShellInitializerTest {
 
     @StyleSheet("../secrets.css")
     public static class MyAppShellWithTraversal
+            implements AppShellConfigurator {
+    }
+
+    @JavaScript("./bundled.js")
+    @JavaScript("context://js/eager.js")
+    @JavaScript(value = "/js/lazy.js", loadMode = LoadMode.LAZY)
+    @JavaScript(value = "js/module.js", type = JavaScript.Type.MODULE)
+    @JavaScript("https://cdn.example.com/remote.js")
+    @JavaScript(value = "./js/module.js", type = JavaScript.Type.MODULE)
+    @JavaScript(value = "js/lazy-module.js", type = JavaScript.Type.MODULE, loadMode = LoadMode.LAZY)
+    @JavaScript(value = "context://js/dev.js", developmentOnly = true)
+    public static class MyAppShellWithJavaScripts
+            implements AppShellConfigurator {
+    }
+
+    @JavaScript(value = "context://js/inline.js", loadMode = LoadMode.INLINE)
+    public static class MyAppShellWithInlineJavaScript
             implements AppShellConfigurator {
     }
 
@@ -534,6 +553,66 @@ public class VaadinAppShellInitializerTest {
         assertEquals("./my-styles.css", links.get(0).attr("href"));
         assertEquals("https://cdn.example.com/ui.css",
                 links.get(1).attr("href"));
+    }
+
+    @Test
+    public void runtimeJavaScriptOnAppShell_injectedAsScriptsInOrder()
+            throws Exception {
+        classes.add(MyAppShellWithJavaScripts.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        // The bundled value is loaded through the bundle, and
+        // "./js/module.js" denotes the same module as "js/module.js"
+        List<Element> scripts = document.head().select("script");
+        assertEquals(6, scripts.size());
+        assertScript(scripts.get(0), "./js/eager.js", null, false);
+        assertScript(scripts.get(1), "/js/lazy.js", null, true);
+        assertScript(scripts.get(2), "./js/module.js", "module", false);
+        assertScript(scripts.get(3), "https://cdn.example.com/remote.js", null,
+                false);
+        // A module script is deferred anyway
+        assertScript(scripts.get(4), "./js/lazy-module.js", "module", false);
+        assertScript(scripts.get(5), "./js/dev.js", null, false);
+    }
+
+    @Test
+    public void runtimeJavaScriptOnAppShell_productionMode_developmentOnlySkipped()
+            throws Exception {
+        mocks.setProductionMode(true);
+        classes.add(MyAppShellWithJavaScripts.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        List<String> srcs = document.head().select("script").stream()
+                .map(script -> script.attr("src")).toList();
+        assertEquals(List.of("./js/eager.js", "/js/lazy.js", "./js/module.js",
+                "https://cdn.example.com/remote.js", "./js/lazy-module.js"),
+                srcs);
+    }
+
+    @Test
+    public void inlineJavaScriptOnAppShell_throws() throws Exception {
+        classes.add(MyAppShellWithInlineJavaScript.class);
+        initializer.process(classes, servletContext);
+        VaadinServletRequest request = createVaadinRequest("/");
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+
+        InvalidApplicationConfigurationException exception = assertThrows(
+                InvalidApplicationConfigurationException.class,
+                () -> registry.modifyIndexHtml(document, request));
+        assertTrue(exception.getMessage().contains("@Inline"));
+    }
+
+    private static void assertScript(Element script, String src, String type,
+            boolean defer) {
+        assertEquals(src, script.attr("src"));
+        assertEquals(type, script.hasAttr("type") ? script.attr("type") : null);
+        assertEquals(defer, script.hasAttr("defer"));
     }
 
     @Test

@@ -148,4 +148,25 @@ public final class FrontendDependencyUrlResolver implements Serializable {
         return javaScript.type() == JavaScript.Type.MODULE
                 || isRuntimeDependencyUrl(javaScript.value());
     }
+
+    /**
+     * Normalizes the value of a {@link JavaScript} annotation that is loaded at
+     * runtime (see {@link #isRuntimeJavaScript(JavaScript)}) so that the
+     * bootstrap URI resolver can expand it.
+     * <p>
+     * Values with a protocol (external URLs but also {@code context://} and
+     * {@code base://}) are returned unchanged. All other values, such as
+     * absolute paths or bare relative {@link JavaScript.Type#MODULE} values, go
+     * through {@link #resolveToContextRoot(String)}.
+     *
+     * @param value
+     *            the raw annotation value
+     * @return the normalized value, or {@code null} if the value was rejected
+     */
+    public static String resolveRuntimeJavaScript(String value) {
+        if (UrlUtil.isExternal(value)) {
+            return value;
+        }
+        return resolveToContextRoot(value);
+    }
 }

@@ -55,7 +55,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * and are loaded at runtime instead, in the same way as
  * {@link Page#addJavaScript(String)}. The same applies to a URL with any other
  * scheme (a value containing {@code ://}). Whether the resulting {@code script}
- * element is a classic script or a module is decided by {@link #type()}.
+ * element is a classic script or a module is decided by {@link #type()}. On an
+ * {@link com.vaadin.flow.component.page.AppShellConfigurator}, such values are
+ * added to the initial page as {@code script} elements; {@link LoadMode#INLINE}
+ * is not supported there.
  * <p>
  * Other paths used in the {@link JavaScript#value()} method are considered as
  * relative to {@code frontend} directory and they are bundled and added to the
