@@ -70,6 +70,8 @@ public class PwaIcon implements Serializable {
     private static final int DEFAULT_BASE_IMAGE_SIZE = 512;
     private static final Color DEFAULT_INITIALS_BACKGROUND = new Color(
             0x0d72f8);
+    private static final Pattern WORD_SEPARATOR = Pattern
+            .compile("[^\\p{L}\\p{N}]+");
     private static final Pattern HEX_COLOR = Pattern
             .compile("#(\\p{XDigit}{3}|\\p{XDigit}{6})");
 
@@ -422,7 +424,7 @@ public class PwaIcon implements Serializable {
     }
 
     static String getInitials(String appName) {
-        List<String> words = Arrays.stream(appName.split("[^\\p{L}\\p{N}]+"))
+        List<String> words = Arrays.stream(WORD_SEPARATOR.split(appName))
                 .filter(word -> !word.isEmpty()).toList();
         int[] initials;
         if (words.isEmpty()) {
@@ -476,7 +478,7 @@ public class PwaIcon implements Serializable {
 
             // A slightly lighter top gives the flat color some depth
             graphics.setPaint(new GradientPaint(0, 0,
-                    blend(background, Color.WHITE, 0.12f), 0, size,
+                    blend(background, Color.WHITE, 0.12f), 0, (float) size,
                     background));
             graphics.fillRect(0, 0, size, size);
 

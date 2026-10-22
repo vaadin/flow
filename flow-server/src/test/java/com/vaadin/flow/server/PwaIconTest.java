@@ -23,6 +23,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PwaIconTest {
@@ -71,6 +72,6 @@ class PwaIconTest {
 
         // The bundled Vaadin logo, not a square in the theme color
         assertEquals(512, image.getWidth());
-        assertTrue((image.getRGB(0, 511) & 0xffffff) != 0xe0552e);
+        assertNotEquals(0xe0552e, image.getRGB(0, 511) & 0xffffff);
     }
 }
