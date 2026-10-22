@@ -142,10 +142,10 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
         AtomicReference<CommandResult> firstResult = new AtomicReference<>();
 
+        SignalCommand first = TestUtil.writeRootValueCommand("first");
+
         assertThrows(RejectedExecutionException.class,
-                () -> tree.commitSingleCommand(
-                        TestUtil.writeRootValueCommand("first"),
-                        firstResult::set));
+                () -> tree.commitSingleCommand(first, firstResult::set));
         TestExecutor dispatcher = useTestEffectDispatcher();
         tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"));
 
