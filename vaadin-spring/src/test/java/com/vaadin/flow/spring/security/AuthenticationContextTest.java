@@ -161,11 +161,11 @@ class AuthenticationContextTest {
         when(strategy.getContext()).thenReturn(
                 new SecurityContextImpl(new UsernamePasswordAuthenticationToken(
                         "strategy-user", null, List.of())));
-        var authContext = new AuthenticationContext(strategy);
+        var strategyAuthContext = new AuthenticationContext(strategy);
 
-        assertTrue(authContext.isAuthenticated());
+        assertTrue(strategyAuthContext.isAuthenticated());
         assertEquals(Optional.of("strategy-user"),
-                authContext.getPrincipalName());
+                strategyAuthContext.getPrincipalName());
     }
 
     @Test
@@ -489,8 +489,8 @@ class AuthenticationContextTest {
                 SecurityContextHolderStrategy.class);
         when(strategy.getContext())
                 .thenReturn(new SecurityContextImpl(authentication));
-        var authContext = new AuthenticationContext(strategy);
-        authContext.setLogoutHandlers(setup.successHandler(),
+        var strategyAuthContext = new AuthenticationContext(strategy);
+        strategyAuthContext.setLogoutHandlers(setup.successHandler(),
                 List.of(setup.handler1(), setup.handler2()));
 
         UI ui = mock(UI.class);
@@ -503,7 +503,7 @@ class AuthenticationContextTest {
             CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
             CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
             UI.setCurrent(ui);
-            authContext.logout();
+            strategyAuthContext.logout();
 
             verify(setup.successHandler()).onLogoutSuccess(setup.request(),
                     setup.response(), authentication);
