@@ -405,7 +405,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 if (FrontendDependencyUrlResolver
                                         .isRuntimeDependencyUrl(value)
                                         && (hasTypeAttribute
-                                                || loadsRuntimeModules(
+                                                || loadsRuntimeDependencies(
                                                         clazz))) {
                                     // Values with a runtime prefix or any
                                     // other scheme are loaded at runtime as

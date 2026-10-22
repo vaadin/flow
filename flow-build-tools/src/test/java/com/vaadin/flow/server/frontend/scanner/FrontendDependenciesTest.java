@@ -38,6 +38,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -82,6 +83,7 @@ import static org.mockito.Mockito.when;
 class FrontendDependenciesTest {
 
     private static final String RUNTIME_JS_MODULE_WARNING = "@JsModule values with a runtime URL";
+    private static final String UNLOADED_RUNTIME_WARNING = "neither components nor the app shell";
 
     private ClassFinder classFinder = mock(ClassFinder.class);
 
@@ -205,9 +207,9 @@ class FrontendDependenciesTest {
     }
 
     @Test
-    void jsModuleWithRuntimeUrlOnNonComponentEntryPoint_stillBundledWithoutWarning() {
-        // Nothing loads the value at runtime for a class that is not a
-        // component or the app shell, so it must stay in the bundle
+    void runtimeValuesOnNonComponentEntryPoint_moduleStillBundledAndWarnedAbout() {
+        // Nothing loads runtime values at runtime for a class that is not a
+        // component or the app shell, so the module must stay in the bundle
         when(classFinder.getSubTypesOf(VaadinServiceInitListener.class))
                 .thenReturn(Collections
                         .singleton(RuntimeJsModuleServiceListener.class));
@@ -220,6 +222,16 @@ class FrontendDependenciesTest {
         Logger logger = scanWithSpyLogger(Collections.emptySet());
         verify(logger, never()).warn(contains(RUNTIME_JS_MODULE_WARNING),
                 ArgumentMatchers.<Object> any());
+        ArgumentCaptor<Object> usages = ArgumentCaptor.forClass(Object.class);
+        verify(logger).warn(contains(UNLOADED_RUNTIME_WARNING),
+                usages.capture());
+        String listener = RuntimeJsModuleServiceListener.class.getName();
+        assertEquals(
+                "\n  - " + listener + ": @JsModule(\"/absolute-module.js\")"
+                        + "\n  - " + listener
+                        + ": @JavaScript(\"context://listener.js\")" + "\n  - "
+                        + listener + ": @JavaScript(\"listener-module.js\")",
+                usages.getValue());
     }
 
     @Test
@@ -240,6 +252,8 @@ class FrontendDependenciesTest {
                 + ": \"/mixin-module.js\""), listed);
         assertTrue(listed.contains(RuntimeJsModuleAppShell.class.getName()
                 + ": \"context://shell-module.js\""), listed);
+        verify(logger, never()).warn(contains(UNLOADED_RUNTIME_WARNING),
+                ArgumentMatchers.<Object> any());
     }
 
     @Test
@@ -721,6 +735,8 @@ class FrontendDependenciesTest {
     }
 
     @JsModule("/absolute-module.js")
+    @JavaScript("context://listener.js")
+    @JavaScript(value = "listener-module.js", type = JavaScript.Type.MODULE)
     public static class RuntimeJsModuleServiceListener
             implements VaadinServiceInitListener {
         @Override
