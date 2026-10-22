@@ -662,6 +662,9 @@ jobs:
     # production mode builds the functional tests run, so the job writes the
     # TestBench license and, like the other test jobs, is skipped for pull
     # requests from forks.
+    permissions:
+      contents: read
+      checks: write
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
@@ -844,6 +847,18 @@ jobs:
           name: gradle-tests-report
           path: gradle-tests-report.tgz
           if-no-files-found: ignore
+      - name: Publish Gradle Test Results
+        # The functional tests print little to the log by default, so this
+        # check run and the job summary are where a failing test and its
+        # nested build output are found. The PR comment is left to the
+        # test-results job.
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+        with:
+          check_name: Gradle Test Results
+          junit_files: 'flow-plugins/flow-gradle-plugin/build/test-results/**/TEST-*.xml'
+          comment_mode: 'off'
+          check_run_annotations: all tests, skipped tests
   sonar-analysis:
     name: Sonar Analysis
     # Runs after the unit tests so the analysis can reuse their JaCoCo

@@ -139,9 +139,17 @@ task functionalTest(type: Test) {
     // the command line. Override with -Pvaadin.version, which also sets the
     // project version.
     environment('vaadin.version', version.toString())
+    // Each test runs nested builds with --stacktrace --info, several of them
+    // failing on purpose. Their output only matters for a test that fails,
+    // and TestKit puts it in that test's failure, so it is not streamed to the
+    // log by default. Pass -PfunctionalTest.forwardOutput to stream it as the
+    // nested builds run; see TestProject.
+    def forwardOutput = providers.gradleProperty('functionalTest.forwardOutput').isPresent()
+    systemProperty('functionalTest.forwardOutput', forwardOutput)
     testLogging {
+        events 'passed', 'skipped', 'failed'
         exceptionFormat = 'full'
-        showStandardStreams = true
+        showStandardStreams = forwardOutput
     }
 }
 check.dependsOn functionalTest
@@ -179,14 +187,6 @@ gradlePlugin {
 wrapper {
     gradleVersion = '9.8.0'
     distributionType = Wrapper.DistributionType.ALL
-}
-
-// Travis kills the build if there's no stdout for 10 minutes: https://docs.travis-ci.com/user/common-build-problems/#build-times-out-because-no-output-was-received
-// This will print ongoing tests, taken from https://stackoverflow.com/a/4292739/377320
-functionalTest {
-    testLogging {
-        info.events "passed", "skipped", "failed"
-    }
 }
 
 kotlin {

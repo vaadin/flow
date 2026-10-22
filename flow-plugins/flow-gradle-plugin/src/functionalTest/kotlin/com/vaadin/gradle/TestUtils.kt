@@ -236,11 +236,20 @@ class TestProject(val gradleVersion: String = FlowPlugin.GRADLE_MINIMUM_SUPPORTE
     val settingsFile: File get() = File(dir, "settings.gradle")
 
 
+    /**
+     * Whether the nested builds stream their output while they run. A must on
+     * Windows, otherwise `./gradlew check` freezes there. Elsewhere it is only
+     * on with `-PfunctionalTest.forwardOutput`: the output of a build that
+     * fails unexpectedly is part of the test failure anyway.
+     */
+    private val forwardBuildOutput: Boolean = OsUtils.isWindows ||
+            System.getProperty("functionalTest.forwardOutput").toBoolean()
+
     private fun createGradleRunner(debug: Boolean): GradleRunner = GradleRunner.create()
         .withProjectDir(dir)
         .withPluginClasspath()
         .withDebug(debug)
-        .forwardOutput()   // a must, otherwise ./gradlew check freezes on windows!
+        .apply { if (forwardBuildOutput) forwardOutput() }
         .withGradleVersion(gradleVersion)
 
     override fun toString(): String = "TestProject(dir=$dir)"
