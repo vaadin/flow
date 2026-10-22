@@ -125,7 +125,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
         expect("app-" + StringUtil.getHash("web",
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
     }
 
     @Test
@@ -294,7 +294,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
         expect("app-" + StringUtil.getHash("MY_APP_ID",
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
     }
 
     @Test
@@ -344,7 +344,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
 
         val tokenFile = File(testProject.dir, "web/build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
-        expect("MY_APP_ID") { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        expect("MY_APP_ID") { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
     }
 
     @Test

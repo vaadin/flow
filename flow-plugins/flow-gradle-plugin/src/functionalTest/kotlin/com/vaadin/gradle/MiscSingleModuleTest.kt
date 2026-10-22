@@ -76,7 +76,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
     }
 
     @Test
@@ -87,7 +87,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash("my-test-project",
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
     }
 
     /**
@@ -939,7 +939,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val tokenFileContent = JacksonUtils.readTree(tokenJson!!)
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
 
         // Delete the cached token file so that Gradle's up-to-date check
         // detects a missing output and re-executes vaadinBuildFrontend.
@@ -958,7 +958,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val newTokenFileContent = JacksonUtils.readTree(cachedTokenFile.readText())
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
     }
 
     @Test

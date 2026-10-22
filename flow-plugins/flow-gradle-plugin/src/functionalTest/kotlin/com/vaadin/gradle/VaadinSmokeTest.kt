@@ -131,7 +131,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true, buildInfo.toString()) { buildInfo.get(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE).booleanValue() }
         expect("app-" + StringUtil.getHash(testProject.dir.name,
             java.nio.charset.StandardCharsets.UTF_8
-        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        ), buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
     }
 
     @Test
@@ -143,7 +143,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         // Read from cached copy since the task deletes the original
         val tokenFile = File(testProject.dir, "build/${VaadinBuildFrontendTask.CACHED_BUILD_INFO_FILE}")
         val buildInfo: JsonNode = JacksonUtils.readTree(tokenFile.readText())
-        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+        expect("MY_APP_ID", buildInfo.toString()) { buildInfo.get(InitParameters.APPLICATION_IDENTIFIER).asString() }
     }
 
     @Test
