@@ -164,6 +164,20 @@ class SpringAccessPathCheckerTest {
     }
 
     @Test
+    @WithAnonymousUser
+    void checkAccess_strategyGivenNullPrincipal_anonymousAuthenticationFromStrategyPreserved() {
+        SecurityContextHolderStrategy strategy = mock(
+                SecurityContextHolderStrategy.class);
+        when(strategy.getContext()).thenReturn(new SecurityContextImpl(
+                new AnonymousAuthenticationToken("key", "anonymousUser",
+                        AuthorityUtils.createAuthorityList("ROLE_GUEST"))));
+        var checker = new SpringAccessPathChecker(evaluator, null, strategy);
+
+        assertTrue(checker.hasAccess("guest", null, role -> false),
+                "Access to guest only path should be allowed to anonymous user with GUEST role from the given strategy");
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     void checkAccess_nullPrincipal_evaluatedAsAnonymous() {
         assertFalse(accessPathChecker.hasAccess("admin", null, role -> false),

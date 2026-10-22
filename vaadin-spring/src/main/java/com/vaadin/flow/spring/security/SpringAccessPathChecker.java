@@ -44,6 +44,14 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * configured using
  * {@link NavigationAccessControlConfigurer#withRoutePathAccessChecker()}
  * method.
+ * <p>
+ *
+ * The current authentication is read from a
+ * {@link SecurityContextHolderStrategy}. When the principal passed to
+ * {@link #hasAccess(String, Principal, Predicate)} is {@literal null}, the
+ * check is done for an anonymous user: an anonymous authentication from the
+ * strategy is kept, any other authentication is replaced by a default
+ * {@code ROLE_ANONYMOUS} one.
  *
  * <pre>
  * {@code
