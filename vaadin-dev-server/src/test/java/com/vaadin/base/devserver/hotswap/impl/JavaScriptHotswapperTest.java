@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
@@ -37,11 +38,14 @@ import com.vaadin.base.devserver.hotswap.HotswapCompleteEvent;
 import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -83,10 +87,12 @@ class JavaScriptHotswapperTest {
     @AfterEach
     void tearDown() throws Exception {
         CurrentInstance.clearAll();
+        AppShellRegistry.getInstance(service.getContext()).reset();
         for (Class<?> type : List.of(Base.class, Helper.class)) {
             ClassReloadingStrategy.fromInstalledAgent().reset(type);
         }
-        List.of(Base.class, Helper.class, ExtendsBase.class, UsesHelper.class)
+        List.of(Base.class, Helper.class, ExtendsBase.class,
+                AlsoExtendsBase.class, UsesHelper.class)
                 .forEach(ReflectionCache::clearAll);
     }
 
@@ -156,6 +162,14 @@ class JavaScriptHotswapperTest {
         assertEquals(Optional.empty(),
                 hotswap(BundledScript.class, BundledScriptChanged.class, true));
         assertEquals(List.of(BundledScript.class.getName()), hotswapper.warned);
+
+        // Warned once per hotswap, also when another session event sees the
+        // same change
+        Class<?> redefined = ui.getChildren().findFirst().orElseThrow()
+                .getClass();
+        hotswapper.onClassesChange(new HotswapClassSessionEvent(service,
+                session, Set.of(redefined), true));
+        assertEquals(1, hotswapper.warned.size());
     }
 
     @Test
@@ -183,6 +197,47 @@ class JavaScriptHotswapperTest {
         // it is cleared for a new page to get the new value
         assertEquals(Set.of("/changed.js"),
                 javaScriptValues(ExtendsBase.class));
+    }
+
+    @Test
+    void superclassRuntimeScriptChanged_nestedSubclassesInUse_reloadsWithNewValues()
+            throws Exception {
+        Layout layout = new Layout();
+        layout.add(new ExtendsBase(), new AlsoExtendsBase());
+        assertEquals(Optional.of(UIUpdateStrategy.RELOAD),
+                hotswapInPlace(layout, Base.class, BaseChanged.class));
+        // Both are read again, not only the first one needing a reload
+        assertEquals(Set.of("/changed.js"),
+                javaScriptValues(ExtendsBase.class));
+        assertEquals(Set.of("/changed.js"),
+                javaScriptValues(AlsoExtendsBase.class));
+    }
+
+    @Test
+    void usesCycleInUse_unrelatedClassChanged_noReload() throws Exception {
+        ui.add(new UsesCycleA());
+        assertEquals(Optional.empty(), hotswap(RuntimeScript.class,
+                RuntimeScriptChanged.class, false));
+    }
+
+    @Test
+    void appShellRuntimeScriptAdded_reloadsAllUIs() {
+        AppShellRegistry.getInstance(service.getContext())
+                .setShell(AppShell.class);
+        hotswapper.onInit(service);
+
+        Class<?> redefined = redefine(AppShell.class, AppShellChanged.class);
+        hotswapper.onClassesChange(
+                new HotswapClassEvent(service, Set.of(redefined), true));
+        HotswapClassSessionEvent event = new HotswapClassSessionEvent(service,
+                session, Set.of(redefined), true);
+        hotswapper.onClassesChange(event);
+
+        // The app shell scripts are rendered into the initial page, so even
+        // an added one needs a reload
+        assertEquals(Optional.of(UIUpdateStrategy.RELOAD),
+                event.getUIUpdateStrategy(ui));
+        assertEquals(List.of(AppShell.class.getName()), hotswapper.warned);
     }
 
     @Test
@@ -238,7 +293,9 @@ class JavaScriptHotswapperTest {
     private Optional<UIUpdateStrategy> hotswapInPlace(Component inUse,
             Class<?> original, Class<?> modified) {
         ui.add(inUse);
-        ui.getInternals().addComponentDependencies(inUse.getClass());
+        Stream.concat(Stream.of(inUse), inUse.getChildren())
+                .forEach(component -> ui.getInternals()
+                        .addComponentDependencies(component.getClass()));
 
         hotswapper.onClassesChange(
                 new HotswapClassEvent(service, Set.of(original), true));
@@ -341,6 +398,33 @@ class JavaScriptHotswapperTest {
     }
 
     public static class ExtendsBase extends Base {
+    }
+
+    public static class AlsoExtendsBase extends Base {
+    }
+
+    @Tag("div")
+    public static class Layout extends Component implements HasComponents {
+    }
+
+    @Tag("div")
+    @Uses(UsesCycleB.class)
+    public static class UsesCycleA extends Component {
+    }
+
+    @Tag("div")
+    @Uses(UsesCycleA.class)
+    public static class UsesCycleB extends Component {
+    }
+
+    @JavaScript("context://shell.js")
+    @JavaScript("bundled.js")
+    public static class AppShell implements AppShellConfigurator {
+    }
+
+    @JavaScript("context://shell.js")
+    @JavaScript("context://added.js")
+    public static class AppShellChanged implements AppShellConfigurator {
     }
 
     // Redefined in place, so only used by hotswapInPlace

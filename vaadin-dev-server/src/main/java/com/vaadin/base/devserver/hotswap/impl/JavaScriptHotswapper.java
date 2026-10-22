@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver.hotswap.impl;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,8 +39,10 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.ComponentMetaData;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
+import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.VaadinService;
 
@@ -61,7 +64,11 @@ import com.vaadin.flow.server.VaadinService;
  * A component in use is also affected when the change is in one of its
  * superclasses or in a class it refers to with {@link Uses}. The cached
  * metadata of such a component still holds the previous values, so it is read
- * as the previous values and then cleared.
+ * as the previous values and then cleared. Components that are not in use keep
+ * their cached metadata.
+ * <p>
+ * Runtime values on the {@link AppShellConfigurator} are rendered into the
+ * initial page, so any change to them reloads all UIs.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -77,6 +84,13 @@ public class JavaScriptHotswapper implements VaadinHotswapper {
     // during the ongoing hotswap
     private final Set<String> warnedClasses = ConcurrentHashMap.newKeySet();
 
+    // app shell class name -> its scripts, as rendered into the initial page
+    private final ConcurrentHashMap<String, Set<Script>> appShellScripts = new ConcurrentHashMap<>();
+
+    // whether the runtime values of the app shell changed in the ongoing
+    // hotswap
+    private volatile boolean appShellChanged;
+
     private record Script(String value, JavaScript.Type type, boolean runtime) {
     }
 
@@ -88,23 +102,46 @@ public class JavaScriptHotswapper implements VaadinHotswapper {
     }
 
     @Override
+    public void onInit(VaadinService vaadinService) {
+        Class<? extends AppShellConfigurator> appShellClass = AppShellRegistry
+                .getInstance(vaadinService.getContext()).getShell();
+        if (appShellClass != null) {
+            appShellScripts.put(appShellClass.getName(),
+                    appShellScripts(appShellClass));
+        }
+    }
+
+    @Override
     public void onClassesChange(HotswapClassEvent event) {
         if (!event.isRedefined()) {
             return;
         }
-        // The component metadata cache of the changed classes is cleared only
-        // after all hotswappers have handled this event, so it still holds
-        // the values from before the redefinition
+        VaadinService service = event.getVaadinService();
         for (Class<?> type : event.getChangedClasses()) {
             if (Component.class.isAssignableFrom(type)) {
-                previousScripts
-                        .put(type.getName(),
-                                scripts(ComponentUtil
-                                        .getDependencies(
-                                                event.getVaadinService(),
-                                                type.asSubclass(
-                                                        Component.class))
-                                        .getJavaScripts()));
+                Class<? extends Component> componentClass = type
+                        .asSubclass(Component.class);
+                // The component metadata cache of the changed classes is
+                // cleared only after all hotswappers have handled this event,
+                // so it still holds the values from before the redefinition
+                Set<Script> previous = scripts(
+                        ComponentUtil.getDependencies(service, componentClass)
+                                .getJavaScripts());
+                previousScripts.put(type.getName(), previous);
+                // Checked here as well as for the components in use, as a
+                // restart is needed whether the component is in use or not
+                checkBundled(type, previous,
+                        currentScripts(service, componentClass));
+            } else if (AppShellConfigurator.class.isAssignableFrom(type)) {
+                Set<Script> current = appShellScripts(type);
+                Set<Script> previous = appShellScripts.put(type.getName(),
+                        current);
+                if (previous != null) {
+                    checkBundled(type, previous, current);
+                    if (!runtime(current).equals(runtime(previous))) {
+                        appShellChanged = true;
+                    }
+                }
             }
         }
     }
@@ -121,10 +158,14 @@ public class JavaScriptHotswapper implements VaadinHotswapper {
             if (ui.isClosing()) {
                 continue;
             }
-            boolean reload = componentClassesInUse(ui).stream()
-                    .anyMatch(type -> reloadNeeded.computeIfAbsent(type,
-                            key -> isReloadNeeded(event.getVaadinService(),
-                                    type, changedClasses)));
+            // Every class in use is checked, also after one needs a reload,
+            // so that the stale metadata of each is cleared
+            boolean reload = appShellChanged;
+            for (Class<? extends Component> type : componentClassesInUse(ui)) {
+                reload |= reloadNeeded.computeIfAbsent(type,
+                        key -> isReloadNeeded(event.getVaadinService(), type,
+                                changedClasses));
+            }
             if (reload) {
                 event.triggerUpdate(ui, UIUpdateStrategy.RELOAD);
             }
@@ -135,6 +176,7 @@ public class JavaScriptHotswapper implements VaadinHotswapper {
     public void onHotswapComplete(HotswapCompleteEvent event) {
         previousScripts.clear();
         warnedClasses.clear();
+        appShellChanged = false;
     }
 
     private boolean isReloadNeeded(VaadinService service,
@@ -148,23 +190,38 @@ public class JavaScriptHotswapper implements VaadinHotswapper {
         if (previous == null) {
             return false;
         }
+        Set<Script> current = currentScripts(service, type);
+        checkBundled(type, previous, current);
+        return !runtime(current).containsAll(runtime(previous));
+    }
+
+    private static Set<Script> currentScripts(VaadinService service,
+            Class<? extends Component> type) {
         // Read the same way as the previous values, so that @Uses
         // dependencies are on both sides
-        Set<Script> current = scripts(new ComponentMetaData(type)
-                .getDependencyInfo(service).getJavaScripts());
+        return scripts(new ComponentMetaData(type).getDependencyInfo(service)
+                .getJavaScripts());
+    }
+
+    private static Set<Script> appShellScripts(Class<?> appShellClass) {
+        return scripts(Arrays
+                .asList(appShellClass.getAnnotationsByType(JavaScript.class)));
+    }
+
+    private void checkBundled(Class<?> type, Set<Script> previous,
+            Set<Script> current) {
         if (!bundled(current).equals(bundled(previous))
                 && warnedClasses.add(type.getName())) {
             warnAboutChangedBundledScripts(type);
         }
-        return !runtime(current).containsAll(runtime(previous));
     }
 
     /**
      * Warns that the bundled {@link JavaScript} values used by the given
-     * component class changed, which needs a restart.
+     * component or app shell class changed, which needs a restart.
      *
      * @param type
-     *            the component class whose bundled values changed
+     *            the class whose bundled values changed
      */
     void warnAboutChangedBundledScripts(Class<?> type) {
         getLogger().warn("The bundled @JavaScript values used by {} changed. "

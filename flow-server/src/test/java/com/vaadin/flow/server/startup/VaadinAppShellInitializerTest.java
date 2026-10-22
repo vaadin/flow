@@ -260,6 +260,7 @@ public class VaadinAppShellInitializerTest {
     @JavaScript(value = "js/module.js", type = JavaScript.Type.MODULE)
     @JavaScript("https://cdn.example.com/remote.js")
     @JavaScript(value = "./js/module.js", type = JavaScript.Type.MODULE)
+    @JavaScript(value = "js/lazy-module.js", type = JavaScript.Type.MODULE, loadMode = LoadMode.LAZY)
     @JavaScript(value = "context://js/dev.js", developmentOnly = true)
     public static class MyAppShellWithJavaScripts
             implements AppShellConfigurator {
@@ -566,13 +567,15 @@ public class VaadinAppShellInitializerTest {
         // The bundled value is loaded through the bundle, and
         // "./js/module.js" denotes the same module as "js/module.js"
         List<Element> scripts = document.head().select("script");
-        assertEquals(5, scripts.size());
+        assertEquals(6, scripts.size());
         assertScript(scripts.get(0), "./js/eager.js", null, false);
         assertScript(scripts.get(1), "/js/lazy.js", null, true);
         assertScript(scripts.get(2), "./js/module.js", "module", false);
         assertScript(scripts.get(3), "https://cdn.example.com/remote.js", null,
                 false);
-        assertScript(scripts.get(4), "./js/dev.js", null, false);
+        // A module script is deferred anyway
+        assertScript(scripts.get(4), "./js/lazy-module.js", "module", false);
+        assertScript(scripts.get(5), "./js/dev.js", null, false);
     }
 
     @Test
@@ -588,7 +591,8 @@ public class VaadinAppShellInitializerTest {
         List<String> srcs = document.head().select("script").stream()
                 .map(script -> script.attr("src")).toList();
         assertEquals(List.of("./js/eager.js", "/js/lazy.js", "./js/module.js",
-                "https://cdn.example.com/remote.js"), srcs);
+                "https://cdn.example.com/remote.js", "./js/lazy-module.js"),
+                srcs);
     }
 
     @Test
