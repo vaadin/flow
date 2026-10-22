@@ -80,8 +80,10 @@ public @interface JsModule {
      * {@code /}, {@code http://}, {@code https://} or {@code //}, or any other
      * URL containing {@code ://}) is deprecated: such a value is not bundled
      * but loaded at runtime as a {@code <script type="module">}, and a warning
-     * is logged during the build. Use {@link JavaScript @JavaScript} with
-     * {@link JavaScript.Type#MODULE} for runtime modules instead.
+     * is logged during the production build. Use {@link JavaScript @JavaScript}
+     * with {@link JavaScript.Type#MODULE} for runtime modules instead. To keep
+     * bundling a file in the frontend folder that is referenced with a leading
+     * {@code /}, use a relative value such as {@code ./foo.js} instead.
      *
      * @return a JavaScript module identifier
      */
