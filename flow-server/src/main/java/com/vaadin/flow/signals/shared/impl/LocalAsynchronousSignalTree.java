@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.util.ArrayDeque;
 import java.util.List;
 
 import com.vaadin.flow.signals.SignalCommand;
@@ -24,15 +25,29 @@ import com.vaadin.flow.signals.SignalEnvironment;
  * An asynchronous signal tree for single-JVM use that dispatches
  * {@link #confirm(List)} using the default effect dispatcher from
  * {@link SignalEnvironment}. This makes the behavior consistent with clustered
- * implementations where confirmation happens asynchronously.
+ * implementations where confirmation happens asynchronously. Submitted commands
+ * are confirmed in submission order even if the dispatcher runs tasks
+ * concurrently or out of order.
  * 
  * @since 25.1
  */
 public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
 
+    /*
+     * Commands waiting to be confirmed, in submission order. Guarded by the
+     * tree lock. Each dispatched task confirms the oldest entry rather than the
+     * commands it was created for since the dispatcher is not required to
+     * preserve ordering.
+     */
+    private final ArrayDeque<List<SignalCommand>> pendingConfirmations = new ArrayDeque<>();
+
     @Override
     protected void submit(List<SignalCommand> commands) {
-        SignalEnvironment.getDefaultEffectDispatcher()
-                .execute(() -> confirm(commands));
+        assert hasLock();
+
+        pendingConfirmations.add(commands);
+
+        SignalEnvironment.getDefaultEffectDispatcher().execute(
+                wrapWithLock(() -> confirm(pendingConfirmations.remove())));
     }
 }

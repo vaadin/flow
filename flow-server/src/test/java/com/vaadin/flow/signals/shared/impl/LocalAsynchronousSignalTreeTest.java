@@ -18,6 +18,7 @@ package com.vaadin.flow.signals.shared.impl;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalTestBase;
@@ -91,5 +92,24 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
         dispatcher.runPendingTasks();
 
         assertNotNull(TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
+    void submit_dispatcherRunsTasksOutOfOrder_lastWriteWins() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+        AtomicReference<CommandResult> firstResult = new AtomicReference<>();
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
+                firstResult::set);
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"));
+
+        dispatcher.runPendingTasksInReverseOrder();
+
+        assertTrue(firstResult.get().accepted());
+        assertEquals(new StringNode("second"),
+                TestUtil.readConfirmedRootValue(tree));
+        assertEquals(new StringNode("second"),
+                TestUtil.readSubmittedRootValue(tree));
     }
 }
