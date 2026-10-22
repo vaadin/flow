@@ -66,8 +66,11 @@ jobs:
       #   lock next to it (kept for its hand-written local package links) is
       #   rewritten in place by Flow. Without this, its pinned versions fall
       #   behind the templates and Dependabot security updates target them.
-      # The production pom is preferred when a module has one; a directory
-      # without a pom is skipped so it cannot fail the whole build. flow-maven-plugin is not a dependency of the
+      #   The development pom is used: prepare-frontend already updates the
+      #   template versions, while a production build would also rewrite
+      #   the overrides and drop entries in the hand-maintained file.
+      # For locks the production pom is preferred when a module has one; a
+      # directory without a pom is skipped so it cannot fail the whole build. flow-maven-plugin is not a dependency of the
       # test modules, so -am does not build it on its own.
       # -DsharedModules and -Prun-tests put the test modules in the reactor,
       # which -DskipTests would leave out; -Djetty.skip keeps install from
@@ -111,10 +114,9 @@ jobs:
               continue
             fi
             # Test fixtures outside a Maven module are not generated files
-            pom=$(module_of "$dir")
-            [ -n "$pom" ] || continue
+            [ -f "$dir/pom.xml" ] || continue
             packages+=("$package")
-            modules+=",$pom"
+            modules+=",$dir"
           done
           if [ ${#locks[@]} -eq 0 ] && [ ${#packages[@]} -eq 0 ]; then
             echo "No generated package-lock.json or package.json files found"
