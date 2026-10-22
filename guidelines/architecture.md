@@ -11,6 +11,7 @@ The more involved features have their own architecture notes next to the code:
 | Connection state and loading indicator | [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md#connection-state-and-loading-indicator) |
 | React component adapter               | [`flow-react/ARCHITECTURE.md`](../flow-react/ARCHITECTURE.md) |
 | `@PWA` and the offline service worker | [`vite-plugin-service-worker/ARCHITECTURE.md`](../flow-build-tools/src/main/resources/plugins/vite-plugin-service-worker/ARCHITECTURE.md) |
+| Translations for Hilla views          | [`rollup-plugin-vaadin-i18n/ARCHITECTURE.md`](../flow-build-tools/src/main/resources/plugins/rollup-plugin-vaadin-i18n/ARCHITECTURE.md) |
 
 ## State management
 
