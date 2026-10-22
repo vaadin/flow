@@ -48,8 +48,19 @@
         .offline .app-icon {
             width: 4rem;
             height: 4rem;
-            border-radius: 22%;
             object-fit: cover;
+            /* Shown once the script below has checked the icon */
+            visibility: hidden;
+        }
+
+        .offline .app-icon.checked {
+            visibility: visible;
+        }
+
+        /* An opaque icon gets an app icon shape, a transparent one is shown as is */
+        .offline .app-icon.opaque {
+            border-radius: 22%;
+            box-shadow: 0 1px 2px hsla(0, 0%, 0%, 0.12), 0 2px 8px hsla(0, 0%, 0%, 0.08);
         }
 
         /* No cached icon is available */
@@ -119,6 +130,30 @@
     <p>Check your network connection and try reloading the page.</p>
 </main>
 <script>
+    (function () {
+        var icon = document.querySelector('.app-icon');
+        function checkIcon() {
+            /* Treat the icon as opaque unless its top-left pixel is fully transparent */
+            try {
+                var canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = 1;
+                var context = canvas.getContext('2d');
+                context.drawImage(icon, 0, 0);
+                if (context.getImageData(0, 0, 1, 1).data[3] !== 0) {
+                    icon.classList.add('opaque');
+                }
+            } catch (e) {
+                /* The pixel can not be read, show the icon as is */
+            }
+            icon.classList.add('checked');
+        }
+        if (icon.complete && icon.naturalWidth > 0) {
+            checkIcon();
+        } else {
+            icon.addEventListener('load', checkIcon);
+        }
+    })();
     window.addEventListener('online', function () {
         window.location.reload();
     });
