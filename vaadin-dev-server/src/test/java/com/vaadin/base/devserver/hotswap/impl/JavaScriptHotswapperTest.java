@@ -217,23 +217,44 @@ class JavaScriptHotswapperTest {
     }
 
     @Test
-    void appShellRuntimeScriptAdded_reloadsAllUIs() {
+    void appShellRuntimeScriptAdded_reloadsAllUIs() throws Exception {
+        // The app shell scripts are rendered into the initial page, so even
+        // an added one needs a reload
+        assertEquals(Optional.of(UIUpdateStrategy.RELOAD),
+                hotswapAppShell(AppShellChanged.class));
+        assertEquals(List.of(AppShell.class.getName()), hotswapper.warned);
+
+        // A later hotswap does not reload because of the app shell again
+        hotswapper.onHotswapComplete(new HotswapCompleteEvent(service,
+                Set.of(AppShell.class), true));
+        assertEquals(Optional.empty(), hotswap(RuntimeScript.class,
+                RuntimeScriptChanged.class, false));
+    }
+
+    @Test
+    void appShellBundledScriptChanged_warnsWithoutReload() {
+        assertEquals(Optional.empty(),
+                hotswapAppShell(AppShellBundledChanged.class));
+        assertEquals(List.of(AppShell.class.getName()), hotswapper.warned);
+    }
+
+    /**
+     * Runs the hotswap sequence for {@link AppShell} being redefined with the
+     * annotations of {@code modified}, and returns the update requested for the
+     * UI.
+     */
+    private Optional<UIUpdateStrategy> hotswapAppShell(Class<?> modified) {
         AppShellRegistry.getInstance(service.getContext())
                 .setShell(AppShell.class);
         hotswapper.onInit(service);
 
-        Class<?> redefined = redefine(AppShell.class, AppShellChanged.class);
+        Class<?> redefined = redefine(AppShell.class, modified);
         hotswapper.onClassesChange(
                 new HotswapClassEvent(service, Set.of(redefined), true));
         HotswapClassSessionEvent event = new HotswapClassSessionEvent(service,
                 session, Set.of(redefined), true);
         hotswapper.onClassesChange(event);
-
-        // The app shell scripts are rendered into the initial page, so even
-        // an added one needs a reload
-        assertEquals(Optional.of(UIUpdateStrategy.RELOAD),
-                event.getUIUpdateStrategy(ui));
-        assertEquals(List.of(AppShell.class.getName()), hotswapper.warned);
+        return event.getUIUpdateStrategy(ui);
     }
 
     @Test
@@ -458,6 +479,11 @@ class JavaScriptHotswapperTest {
     @JavaScript("context://shell.js")
     @JavaScript("context://added.js")
     public static class AppShellChanged implements AppShellConfigurator {
+    }
+
+    @JavaScript("context://shell.js")
+    @JavaScript("changed-bundled.js")
+    public static class AppShellBundledChanged implements AppShellConfigurator {
     }
 
     // Copies are redefined in place by hotswapInPlace
