@@ -1,0 +1,413 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.quarkus.context;
+
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.inject.Inject;
+
+import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Supplier;
+
+import io.quarkus.arc.InjectableBean;
+import io.quarkus.test.junit.QuarkusTest;
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.SyntheticState;
+import net.bytebuddy.description.modifier.Visibility;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.LocationChangeEvent;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.quarkus.annotation.RouteScopeOwner;
+import com.vaadin.quarkus.context.RouteScopedContext.NavigationData;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+@QuarkusTest
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public class RouteContextualStorageManagerTest {
+
+    private static final String STATE = "hello";
+
+    @Route("group1")
+    public static class Group1 extends TestHasElement {
+    }
+
+    @RouteScopeOwner(Group1.class)
+    public static class MemberOfGroup1 extends TestBean {
+
+    }
+
+    public static class NoOwnerBean extends TestBean {
+
+    }
+
+    @Route("group2")
+    public static class Group2 extends TestHasElement {
+    }
+
+    @Route("")
+    @Tag(Tag.A)
+    public static class InitialRoute extends Component {
+
+    }
+
+    private UIUnderTestContext uiUnderTestContext;
+
+    @Inject
+    private Event<BeforeEnterEvent> beforeNavigationTrigger;
+
+    @Inject
+    private Event<AfterNavigationEvent> afterNavigationTrigger;
+
+    private TestRouteScopedContext routeContext = new TestRouteScopedContext();
+
+    final CreationalContext<TestBean> creationalContext = mock(
+            CreationalContext.class);
+    final InjectableBean<TestBean> contextual = mock(InjectableBean.class);
+
+    private Set<TestBean> destroyedBeans = new HashSet<>();
+
+    private BeforeEnterEvent event;
+    private AfterNavigationEvent afterEvent;
+    private LocationChangeEvent changeEvent;
+
+    private NavigationData data = mock(NavigationData.class);
+
+    @BeforeEach
+    public void setUp() {
+        doSetUp(null, null);
+
+        // create a contextual storage manager as a bean and store it in the
+        // session
+        BeanProvider.getContextualReference(routeContext.getBeanManager(),
+                TestContextualStorageManager.class, false);
+    }
+
+    @AfterEach
+    public void tearDown() {
+        uiUnderTestContext.tearDownAll();
+    }
+
+    @Test
+    public void onBeforeEnter_initialNavigationTarget_scopeDoesNotExist_Throws() {
+        when(event.getNavigationTarget())
+                .thenReturn((Class) InitialRoute.class);
+        beforeNavigationTrigger.fire(event);
+
+        Supplier<MemberOfGroup1> producer = getMemberOfGroupProducer(
+                contextual);
+        assertThrows(IllegalStateException.class, producer::get);
+    }
+
+    @Test
+    public void afterNavigation_initialNavigationTarget_scopeDoesNotExist_Throws() {
+        when(afterEvent.getActiveChain())
+                .thenReturn(Collections.singletonList(new InitialRoute()));
+        afterNavigationTrigger.fire(afterEvent);
+
+        Supplier<MemberOfGroup1> producer = getMemberOfGroupProducer(
+                contextual);
+        assertThrows(IllegalStateException.class, producer::get);
+    }
+
+    @Test
+    public void noNavigationDataYet_ownedBean_scopeDoesNotExist_Throws() {
+        // Nothing has navigated on this UI, so there is no chain for the owner
+        // to be part of. Both the creating and the looking up path have to
+        // report that as the missing scope they already report for a chain
+        // that does not hold the owner, rather than failing on the absent
+        // navigation data - the lookup one is how the container resolves an
+        // IF_EXISTS observer, so it is reachable before any navigation.
+        ComponentUtil.setData(uiUnderTestContext.getUi(), NavigationData.class,
+                null);
+
+        Supplier<MemberOfGroup1> producer = getMemberOfGroupProducer(
+                contextual);
+        assertThrows(IllegalStateException.class, producer::get);
+        assertThrows(IllegalStateException.class,
+                () -> routeContext.get(contextual));
+    }
+
+    @Test
+    public void onBeforeEnter_group1Navigation_beansAreScoped() {
+        when(event.getNavigationTarget()).thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        Supplier<MemberOfGroup1> producer = getMemberOfGroupProducer(
+                contextual);
+        MemberOfGroup1 bean = producer.get();
+        bean.setState(STATE);
+        MemberOfGroup1 anotherBean = (MemberOfGroup1) routeContext
+                .get(contextual);
+        assertEquals(STATE, anotherBean.getState());
+
+        Supplier<NoOwnerBean> noOwnerProducer = getNoOwnerProducer();
+        NoOwnerBean noOwner = noOwnerProducer.get();
+        noOwner.setState(STATE);
+
+        NoOwnerBean anotherNoOwner = noOwnerProducer.get();
+
+        assertEquals(STATE, anotherNoOwner.getState());
+    }
+
+    @Test
+    public void onBeforeEnter_group2NavigationAfterGroup1_beansAreDestroyed() {
+        when(event.getNavigationTarget()).thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        MemberOfGroup1 bean1 = getMemberOfGroupProducer(contextual).get();
+        bean1.setState(STATE);
+
+        Supplier<NoOwnerBean> noOwnerProducer = getNoOwnerProducer();
+        NoOwnerBean bean2 = noOwnerProducer.get();
+        bean2.setState(STATE);
+
+        when(event.getNavigationTarget()).thenReturn((Class) Group2.class);
+        beforeNavigationTrigger.fire(event);
+
+        assertTrue(destroyedBeans.contains(bean1));
+        assertTrue(destroyedBeans.contains(bean2));
+
+        NoOwnerBean anotherNoOwner = noOwnerProducer.get();
+
+        // no owner bean is not preserved: the new one is created
+        assertNotEquals(STATE, anotherNoOwner.getState());
+    }
+
+    @Test
+    public void afterNavigation_group2NavigationAftergroup1_beansAreDestroyed() {
+        when(event.getNavigationTarget()).thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        MemberOfGroup1 bean1 = getMemberOfGroupProducer(contextual).get();
+        bean1.setState(STATE);
+
+        Supplier<NoOwnerBean> noOwnerProducer = getNoOwnerProducer();
+        NoOwnerBean bean2 = noOwnerProducer.get();
+        bean2.setState(STATE);
+
+        when(afterEvent.getActiveChain())
+                .thenReturn(Collections.singletonList(new Group2()));
+        afterNavigationTrigger.fire(afterEvent);
+
+        assertTrue(destroyedBeans.contains(bean1));
+        assertTrue(destroyedBeans.contains(bean2));
+    }
+
+    @Test
+    public void afterNavigation_proxySubclassInActiveChain_beansArePreserved()
+            throws Exception {
+        when(event.getNavigationTarget()).thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        MemberOfGroup1 bean1 = getMemberOfGroupProducer(contextual).get();
+        bean1.setState(STATE);
+
+        // Simulate Arc proxy subclass in active chain:
+        // Arc creates a synthetic subclass (e.g. FooView_Subclass) when
+        // proxying a view annotated with security annotations.
+        // Use ByteBuddy with ACC_SYNTHETIC to match Arc's behavior.
+        Class<? extends Group1> proxyClass = new ByteBuddy()
+                .subclass(Group1.class)
+                .modifiers(Visibility.PUBLIC, SyntheticState.SYNTHETIC).make()
+                .load(Group1.class.getClassLoader()).getLoaded()
+                .asSubclass(Group1.class);
+        assertTrue(proxyClass.isSynthetic(),
+                "Generated proxy class should be synthetic");
+        Group1 proxyInstance = proxyClass.getDeclaredConstructor()
+                .newInstance();
+
+        when(afterEvent.getActiveChain())
+                .thenReturn(Collections.singletonList(proxyInstance));
+        afterNavigationTrigger.fire(afterEvent);
+
+        assertFalse(destroyedBeans.contains(bean1),
+                "Route-scoped bean should not be destroyed when the active "
+                        + "chain contains a proxy subclass of the owner");
+    }
+
+    @Test
+    public void preserveOnRefresh_anotherUIHasSameWindowName_beanIsPreserved() {
+        UI ui = doSetUp("foo", null);
+        when(event.getNavigationTarget()).thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        MemberOfGroup1 bean1 = getMemberOfGroupProducer(contextual).get();
+        bean1.setState(STATE);
+
+        // set another UI instance with the same window name into the context
+        doSetUp("foo", ui.getSession());
+        when(event.getNavigationTarget()).thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        ComponentUtil.onComponentDetach(ui);
+
+        MemberOfGroup1 anotherBean = (MemberOfGroup1) routeContext
+                .get(contextual, creationalContext);
+
+        assertFalse(destroyedBeans.contains(bean1));
+        assertEquals(STATE, anotherBean.getState());
+    }
+
+    @Test
+    public void onBeforeEnter_anotherUIHasNoWindowName_beanIsDestroyedOnUiDestroy() {
+        UI ui = doSetUp("foo", null);
+        when(event.getNavigationTarget()).thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        MemberOfGroup1 bean1 = getMemberOfGroupProducer(contextual).get();
+        bean1.setState(STATE);
+
+        // set another UI instance with the same window name into the context
+        doSetUp(null, ui.getSession());
+        when(event.getNavigationTarget()).thenReturn((Class) Group1.class);
+        beforeNavigationTrigger.fire(event);
+
+        ComponentUtil.onComponentDetach(ui);
+
+        MemberOfGroup1 anotherBean = (MemberOfGroup1) routeContext
+                .get(contextual, creationalContext);
+
+        assertTrue(destroyedBeans.contains(bean1));
+        assertNotEquals(STATE, anotherBean.getState());
+    }
+
+    @Test
+    public void noNavigationDataYet_beanWithoutOwner_scopeDoesNotExist_Throws() {
+        // A bean with no @RouteScopeOwner is scoped to whatever the UI is
+        // showing, so before any navigation it has no scope at all. The
+        // message has to say that rather than fail on the absent data.
+        ComponentUtil.setData(uiUnderTestContext.getUi(), NavigationData.class,
+                null);
+
+        Supplier<NoOwnerBean> producer = getNoOwnerProducer();
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, producer::get);
+        assertTrue(exception.getMessage().contains(NoOwnerBean.class.getName()),
+                "the message has to name the bean: " + exception.getMessage());
+    }
+
+    @Test
+    public void get_contextualIsNotABean_reportsWhatWasPassed() {
+        Contextual<?> notABean = mock(Contextual.class);
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> routeContext.get(notABean));
+        assertTrue(exception.getMessage().contains(Bean.class.getName()),
+                "the message has to say what was expected instead: "
+                        + exception.getMessage());
+    }
+
+    private UI doSetUp(String windowName, VaadinSession session) {
+        changeEvent = mock(LocationChangeEvent.class);
+
+        when(data.getNavigationTarget()).thenReturn((Class) InitialRoute.class);
+        event = mock(BeforeEnterEvent.class);
+        uiUnderTestContext = new UIUnderTestContext(session) {
+
+            @Override
+            public void activate() {
+                super.activate();
+
+                if (windowName != null) {
+                    ExtendedClientDetails details = mock(
+                            ExtendedClientDetails.class);
+                    when(details.getWindowName()).thenReturn(windowName);
+                    getUi().getInternals().setExtendedClientDetails(details);
+                }
+
+                ComponentUtil.setData(getUi(), NavigationData.class, data);
+                when(changeEvent.getUI()).thenReturn(getUi());
+                when(event.getUI()).thenReturn(uiUnderTestContext.getUi());
+            }
+        };
+        uiUnderTestContext.activate();
+
+        UI ui = uiUnderTestContext.getUi();
+
+        uiUnderTestContext.getUi().getSession().addUI(ui);
+
+        afterEvent = mock(AfterNavigationEvent.class);
+        when(afterEvent.getLocationChangeEvent()).thenReturn(changeEvent);
+
+        return uiUnderTestContext.getUi();
+    }
+
+    private Supplier<NoOwnerBean> getNoOwnerProducer() {
+        InjectableBean injectableBean = mock(InjectableBean.class);
+        mockRouteScopeOwner(NoOwnerBean.class, NoOwnerBean::new,
+                injectableBean);
+        return () -> (NoOwnerBean) routeContext.get(injectableBean,
+                (CreationalContext) creationalContext);
+    }
+
+    private Supplier<MemberOfGroup1> getMemberOfGroupProducer(
+            InjectableBean injectableBean) {
+        mockRouteScopeOwner(MemberOfGroup1.class, MemberOfGroup1::new,
+                injectableBean);
+        return () -> (MemberOfGroup1) routeContext.get(injectableBean,
+                (CreationalContext) creationalContext);
+    }
+
+    private <T extends TestBean> void mockRouteScopeOwner(Class<T> beanType,
+            Supplier<T> supplier, InjectableBean<T> bean) {
+        doAnswer(invocation -> supplier.get()).when(bean)
+                .create((CreationalContext) creationalContext);
+
+        Annotation owher = getOwner(beanType);
+        if (owher != null) {
+            when(bean.getQualifiers())
+                    .thenReturn(Collections.singleton(getOwner(beanType)));
+        }
+
+        when(bean.getBeanClass()).thenReturn((Class) beanType);
+
+        doAnswer(invocation -> {
+            destroyedBeans.add(invocation.getArgument(0));
+            return null;
+        }).when((InjectableBean) bean).destroy(any(), eq(creationalContext));
+    }
+
+    private Annotation getOwner(Class<?> beanClass) {
+        return beanClass.getAnnotation(RouteScopeOwner.class);
+    }
+}

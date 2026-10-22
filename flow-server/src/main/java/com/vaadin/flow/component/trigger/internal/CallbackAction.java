@@ -71,6 +71,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * @param <T>
  *            the type the JSON value is decoded to and the callback receives;
  *            unused by the value-less variant
+ * @since 25.2
  */
 public class CallbackAction<T> extends Action {
 

@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.vaadin.example.addon.AddonLitComponent;
+import org.vaadin.example.addon.AddonLitDecoratorComponent;
 
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
@@ -53,6 +54,14 @@ public class TemplateIT extends ChromeBrowserTest {
                 .$(SpanElement.class).first();
         Assert.assertEquals(initialValue, addonLitSpan.getText());
 
+        // The add-on component uses TypeScript decorators in its jar-resources
+        // .ts file. If the decorators are not transpiled the browser cannot
+        // parse the chunk and the element never upgrades, so it renders
+        // nothing.
+        SpanElement addonLitDecoratorSpan = $(AddonLitDecoratorComponent.TAG)
+                .first().$(SpanElement.class).first();
+        Assert.assertEquals(initialValue, addonLitDecoratorSpan.getText());
+
         final String newLabel = "New label";
         $(InputTextElement.class).first().setValue(newLabel);
         $(NativeButtonElement.class).first().click();
@@ -60,6 +69,12 @@ public class TemplateIT extends ChromeBrowserTest {
         Assert.assertEquals(newLabel, litSpan.getText());
         Assert.assertEquals(newLabel, polymerSpan.getText());
         Assert.assertEquals(newLabel, addonLitSpan.getText());
+        // The decorator component's value is a Lit reactive property. It only
+        // updates in the DOM when the decorator-defined accessor works; if the
+        // transpiled class field shadows that accessor (decorators emitted
+        // without useDefineForClassFields:false), the update never arrives.
+        waitUntil(driver -> newLabel.equals($(AddonLitDecoratorComponent.TAG)
+                .first().$(SpanElement.class).first().getText()));
     }
 
 }

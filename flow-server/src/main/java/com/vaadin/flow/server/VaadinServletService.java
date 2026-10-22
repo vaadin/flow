@@ -36,7 +36,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -79,10 +78,17 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
+    protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+            throws ServiceException {
+        List<SessionlessRequestHandler> handlers = super.createSessionlessRequestHandlers();
+        handlers.add(0, new FaviconHandler());
+        return handlers;
+    }
+
+    @Override
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
-        handlers.add(0, new FaviconHandler());
 
         Mode mode = getDeploymentConfiguration().getMode();
         if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
@@ -90,15 +96,7 @@ public class VaadinServletService extends VaadinService {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
                     .getDevModeHandler(this);
             if (handlerManager.isPresent()) {
-                DevModeHandler devModeHandler = handlerManager.get();
-                // WebComponentProvider handler should run before DevModeHandler
-                // to avoid responding with html contents when dev bundle is
-                // not ready (e.g. dev-mode-not-ready.html)
-                handlers.stream().filter(WebComponentProvider.class::isInstance)
-                        .findFirst().map(handlers::indexOf)
-                        .ifPresentOrElse(idx -> {
-                            handlers.add(idx, devModeHandler);
-                        }, () -> handlers.add(devModeHandler));
+                handlers.add(handlerManager.get());
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
                     && !getDeploymentConfiguration().isBrowserless()) {
                 getLogger()
@@ -165,14 +163,8 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected boolean requestCanCreateSession(VaadinRequest request) {
-        if (isOtherRequest(request)) {
-            /*
-             * I.e URIs that are not RPC calls or static file requests.
-             */
-            return true;
-        }
-
-        return false;
+        // I.e URIs that are not RPC calls or static file requests
+        return isOtherRequest(request);
     }
 
     private boolean isOtherRequest(VaadinRequest request) {
@@ -278,6 +270,7 @@ public class VaadinServletService extends VaadinService {
      *            the path inside servlet context
      * @return a URL for the resource or <code>null</code> if no resource was
      *         found
+     * @since 3.0
      */
     public URL getResourceInServletContext(String path) {
         ServletContext servletContext = getServlet().getServletContext();

@@ -23,12 +23,11 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
@@ -40,10 +39,14 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 abstract class AbstractScopeTest {
 
@@ -66,6 +69,7 @@ abstract class AbstractScopeTest {
     @AfterEach
     void clearSession() {
         session = null;
+        CurrentInstance.clearAll();
     }
 
     @Test
@@ -73,7 +77,7 @@ abstract class AbstractScopeTest {
         Scope scope = getScope();
 
         assertThrows(IllegalStateException.class, () -> {
-            scope.get("foo", Mockito.mock(ObjectFactory.class));
+            scope.get("foo", mock(ObjectFactory.class));
         });
     }
 
@@ -82,8 +86,7 @@ abstract class AbstractScopeTest {
         Scope scope = getScope();
 
         assertThrows(IllegalStateException.class, () -> {
-            scope.registerDestructionCallback("foo",
-                    Mockito.mock(Runnable.class));
+            scope.registerDestructionCallback("foo", mock(Runnable.class));
         });
     }
 
@@ -98,7 +101,7 @@ abstract class AbstractScopeTest {
 
     @SuppressWarnings("rawtypes")
     void get_currentScopeIsSet_objectIsStored(Scope scope) {
-        ObjectFactory factory = Mockito.mock(ObjectFactory.class);
+        ObjectFactory factory = mock(ObjectFactory.class);
 
         Object object = new Object();
 
@@ -117,7 +120,7 @@ abstract class AbstractScopeTest {
 
     @SuppressWarnings("rawtypes")
     protected void remove_currentScopeIsSet_objectIsStored(Scope scope) {
-        ObjectFactory factory = Mockito.mock(ObjectFactory.class);
+        ObjectFactory factory = mock(ObjectFactory.class);
 
         Object object = new Object();
 
@@ -147,20 +150,17 @@ abstract class AbstractScopeTest {
 
     @SuppressWarnings("unchecked")
     protected VaadinSession mockSession() {
-        MockService service = Mockito.spy(MockService.class);
-        Mockito.when(service.getRouteRegistry())
-                .thenReturn(Mockito.mock(RouteRegistry.class));
+        MockService service = spy(MockService.class);
+        when(service.getRouteRegistry()).thenReturn(mock(RouteRegistry.class));
 
-        VaadinSession session = Mockito.mock(TestSession.class,
-                Mockito.withSettings().useConstructor(service));
-        doCallRealMethod().when(session).setAttribute(Mockito.any(Class.class),
-                Mockito.any());
-        doCallRealMethod().when(session).getAttribute(Mockito.any(Class.class));
-        doCallRealMethod().when(session)
-                .getAttribute(Mockito.any(String.class));
+        VaadinSession session = mock(TestSession.class,
+                withSettings().useConstructor(service));
+        doCallRealMethod().when(session).setAttribute(any(Class.class), any());
+        doCallRealMethod().when(session).getAttribute(any(Class.class));
+        doCallRealMethod().when(session).getAttribute(any(String.class));
 
-        doCallRealMethod().when(session).addUI(Mockito.any());
-        doCallRealMethod().when(session).removeUI(Mockito.any());
+        doCallRealMethod().when(session).addUI(any());
+        doCallRealMethod().when(session).removeUI(any());
 
         doCallRealMethod().when(session).getService();
         doCallRealMethod().when(session).getUIs();
@@ -168,18 +168,17 @@ abstract class AbstractScopeTest {
         when(session.getState()).thenReturn(VaadinSessionState.OPEN);
 
         final Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-        Mockito.when(context.getAttribute(ArgumentMatchers.any(Class.class),
-                ArgumentMatchers.any(Supplier.class)))
+        VaadinContext context = mock(VaadinContext.class);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(context.getAttribute(any(Class.class), any(Supplier.class)))
                 .then(i -> i.getArgument(1, Supplier.class).get());
 
-        Mockito.when(appConfig.getContext()).thenReturn(context);
+        when(appConfig.getContext()).thenReturn(context);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 appConfig, getClass(), initParameters);
         when(session.getConfiguration()).thenReturn(config);

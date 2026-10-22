@@ -94,6 +94,79 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Locates the field with the given name declared by the given class or by
+     * one of its superclasses, {@link Object} excluded.
+     * <p>
+     * Only classes are searched, not interfaces, and the first matching field
+     * found when walking up the hierarchy is returned. The field is made
+     * accessible, so that also a private field declared by a superclass can be
+     * read and written.
+     *
+     * @param cls
+     *            the class to start the lookup from
+     * @param fieldName
+     *            the name of the field
+     * @return an optional containing the field, or an empty optional if no
+     *         class in the hierarchy declares a field with that name
+     */
+    // S3011: reaching also private members is the point of the lookup, the
+    // callers read and write internal state of Vaadin's own classes
+    @SuppressWarnings("java:S3011")
+    public static Optional<Field> findDeclaredField(Class<?> cls,
+            String fieldName) {
+        for (Class<?> current = cls; current != null
+                && current != Object.class; current = current.getSuperclass()) {
+            try {
+                Field field = current.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return Optional.of(field);
+            } catch (NoSuchFieldException e) { // NOSONAR
+                // declared further up the hierarchy, if at all
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Locates the method with the given name and parameter types declared by
+     * the given class or by one of its superclasses, {@link Object} excluded.
+     * <p>
+     * Only classes are searched, not interfaces, and the first matching method
+     * found when walking up the hierarchy is returned. The method is made
+     * accessible, so that also a private method declared by a superclass can be
+     * invoked. Unlike {@link #findMethod(Class, String, Class...)}, not finding
+     * a method is not an error.
+     *
+     * @param cls
+     *            the class to start the lookup from
+     * @param methodName
+     *            the name of the method
+     * @param parameterTypes
+     *            the parameter types of the method
+     * @return an optional containing the method, or an empty optional if no
+     *         class in the hierarchy declares a method with that name and those
+     *         parameter types
+     */
+    // S3011: reaching also private members is the point of the lookup, the
+    // callers invoke internal methods of Vaadin's own classes
+    @SuppressWarnings("java:S3011")
+    public static Optional<Method> findDeclaredMethod(Class<?> cls,
+            String methodName, Class<?>... parameterTypes) {
+        for (Class<?> current = cls; current != null
+                && current != Object.class; current = current.getSuperclass()) {
+            try {
+                Method method = current.getDeclaredMethod(methodName,
+                        parameterTypes);
+                method.setAccessible(true);
+                return Optional.of(method);
+            } catch (NoSuchMethodException e) { // NOSONAR
+                // declared further up the hierarchy, if at all
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Returns the value of the java field.
      * <p>
      * Uses getter if present, otherwise tries to access even private fields
@@ -513,6 +586,7 @@ public class ReflectTools implements Serializable {
      * @param clazz
      *            instantiation target class
      * @return an IllegalArgumentException with descriptive message
+     * @since 24.5
      */
     public static IllegalArgumentException convertInstantiationException(
             Exception exception, Class<?> clazz) {
@@ -625,6 +699,7 @@ public class ReflectTools implements Serializable {
      * @param interfaceType
      *            class type of interface to get generic for
      * @return List of Class if found else empty List, never {@literal null}
+     * @since 23.1
      */
     public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
             Class<?> interfaceType) {
@@ -785,6 +860,7 @@ public class ReflectTools implements Serializable {
      *         if there is no shared ancestor. Or if the implementation treats
      *         bootstrap loaders as {@code null} (as per
      *         {@link ClassLoader#getParent()}).
+     * @since 2.0.1
      */
     public static Optional<ClassLoader> findClosestCommonClassLoaderAncestor(
             ClassLoader classLoaderA, ClassLoader classLoaderB) {
@@ -824,6 +900,7 @@ public class ReflectTools implements Serializable {
      *            annotation FQN
      * @return {@code true} is {@code element} has annotation whose FQN is
      *         {@code annotationFqn}, {@code false} otherwise
+     * @since 5.0
      */
     public static boolean hasAnnotation(AnnotatedElement element,
             String annotationFqn) {
@@ -840,6 +917,7 @@ public class ReflectTools implements Serializable {
      *            annotation simple name
      * @return {@code true} is {@code element} has annotation whose simple name
      *         is {@code simpleName}, {@code false} otherwise
+     * @since 6.0
      */
     public static boolean hasAnnotationWithSimpleName(AnnotatedElement element,
             String simpleName) {
@@ -856,6 +934,7 @@ public class ReflectTools implements Serializable {
      *            the method name
      * @return an optional value, or an empty optional if element has no
      *         annotation with required {@code annotationFqn}
+     * @since 5.0
      */
     public static Object getAnnotationMethodValue(Annotation annotation,
             String methodName) {
@@ -881,6 +960,7 @@ public class ReflectTools implements Serializable {
      *            annotation FQN
      * @return an optional annotation, or an empty optional if element has no
      *         annotation with required {@code annotationFqn}
+     * @since 5.0
      */
     public static Optional<Annotation> getAnnotation(AnnotatedElement element,
             String annotationFqn) {
@@ -899,6 +979,7 @@ public class ReflectTools implements Serializable {
      * @param clazz
      *            the class to check
      * @return true if the class can be instantiated, otherwise false
+     * @since 6.0
      */
     public static boolean isInstantiableService(Class<?> clazz) {
         if (clazz.isInterface()) {

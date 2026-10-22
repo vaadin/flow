@@ -60,11 +60,14 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @since 3.0
  */
 public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
     /**
      * Custom BootstrapContext for {@link JavaScriptBootstrapHandler}.
+     * 
+     * @since 7.0
      */
     public static class JavaScriptBootstrapContext extends BootstrapContext {
 
@@ -159,18 +162,20 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         String requestURL = getRequestUrl(request);
 
-        PushConfiguration pushConfiguration = context.getUI()
-                .getPushConfiguration();
-        pushConfiguration.setPushServletMapping(
-                BootstrapHandlerHelper.determinePushServletMapping(session));
-
-        AppShellRegistry registry = AppShellRegistry
-                .getInstance(session.getService().getContext());
-        registry.modifyPushConfiguration(pushConfiguration);
-
         config.put("requestURL", requestURL);
 
         return context;
+    }
+
+    @Override
+    protected void modifyPushConfiguration(BootstrapContext context,
+            PushConfiguration pushConfiguration) {
+        // The @Push annotation of the app shell is not reachable through the
+        // page configuration annotations of the context, so it is applied
+        // separately here
+        AppShellRegistry
+                .getInstance(context.getSession().getService().getContext())
+                .modifyPushConfiguration(pushConfiguration);
     }
 
     @Override

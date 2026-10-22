@@ -26,16 +26,29 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.tests.util.MockOptions;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.contains;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @TempDir
@@ -92,6 +105,57 @@ class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         JsonNode deps = task.getPackageJson().get("dependencies");
         assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_DEPS));
         assertFalse(deps.has(NodeUpdater.DEP_NAME_FLOW_JARS));
+    }
+
+    @Test
+    void should_warnOnceAboutLegacyLayout_whenJarUsesLegacyLocation() {
+        File legacyJar = TestUtils
+                .getTestJar("jar-with-frontend-resources.jar");
+        TaskCopyFrontendFiles task = taskFor(legacyJar);
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactoryMocked
+                    .when(() -> LoggerFactory.getLogger(task.getClass()))
+                    .thenReturn(logger);
+
+            // Two runs of the same task instance should still warn only once
+            task.execute();
+            task.execute();
+
+            verify(logger, times(1)).warn(contains("deprecated"),
+                    eq(legacyJar.getName()),
+                    eq(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT),
+                    eq(RESOURCES_FRONTEND_DEFAULT));
+        }
+    }
+
+    @Test
+    void should_notWarnAboutLegacyLayout_whenJarUsesModernLocation() {
+        TaskCopyFrontendFiles task = taskFor(
+                TestUtils.getTestJar("jar-with-modern-frontend.jar"));
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = mockStatic(
+                LoggerFactory.class)) {
+            loggerFactoryMocked
+                    .when(() -> LoggerFactory.getLogger(task.getClass()))
+                    .thenReturn(logger);
+
+            task.execute();
+
+            verify(logger, never()).warn(contains("deprecated"),
+                    Mockito.<Object> any(), Mockito.<Object> any(),
+                    Mockito.<Object> any());
+        }
+    }
+
+    private TaskCopyFrontendFiles taskFor(File... locations) {
+        Options options = new MockOptions(null);
+        options.withJarFrontendResourcesFolder(frontendDepsFolder)
+                .copyResources(jars(locations));
+        return new TaskCopyFrontendFiles(options);
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,

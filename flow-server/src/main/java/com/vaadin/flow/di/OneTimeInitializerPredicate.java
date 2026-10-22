@@ -35,6 +35,7 @@ package com.vaadin.flow.di;
  *
  * @author Vaadin Ltd
  *
+ * @since 6.0.1
  */
 @FunctionalInterface
 public interface OneTimeInitializerPredicate {

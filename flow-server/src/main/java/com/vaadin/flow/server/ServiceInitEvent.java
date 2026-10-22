@@ -38,6 +38,7 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 public class ServiceInitEvent extends EventObject {
 
     private List<RequestHandler> addedRequestHandlers = new ArrayList<>();
+    private List<SessionlessRequestHandler> addedSessionlessRequestHandlers = new ArrayList<>();
     private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
     private List<VaadinRequestInterceptor> addedVaadinRequestInterceptors = new ArrayList<>();
@@ -58,6 +59,8 @@ public class ServiceInitEvent extends EventObject {
      * Adds a new request handler that will be used by this service. The added
      * handler will be run before any of the framework's own request handlers,
      * but the ordering relative to other custom handlers is not guaranteed.
+     * Request handlers run after all sessionless request handlers, see
+     * {@link #addSessionlessRequestHandler(SessionlessRequestHandler)}.
      *
      * @param requestHandler
      *            the request handler to add, not <code>null</code>
@@ -70,11 +73,31 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
+     * Adds a new sessionless request handler that will be used by this service.
+     * Sessionless handlers are asked before the session of a request is looked
+     * up, so they run before all request handlers. The added handler will be
+     * run before any of the framework's own sessionless request handlers, but
+     * the ordering relative to other custom sessionless handlers is not
+     * guaranteed.
+     *
+     * @param sessionlessRequestHandler
+     *            the sessionless request handler to add, not <code>null</code>
+     */
+    public void addSessionlessRequestHandler(
+            SessionlessRequestHandler sessionlessRequestHandler) {
+        Objects.requireNonNull(sessionlessRequestHandler,
+                "Sessionless request handler cannot be null");
+
+        addedSessionlessRequestHandlers.add(sessionlessRequestHandler);
+    }
+
+    /**
      * Adds a new Index HTML request listener that will be used by this service.
      * The ordering of multiple added bootstrap listeners is not guaranteed.
      *
      * @param indexHtmlRequestListener
      *            the Index HTML request listener to be added.
+     * @since 3.0
      */
     public void addIndexHtmlRequestListener(
             IndexHtmlRequestListener indexHtmlRequestListener) {
@@ -101,6 +124,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param vaadinRequestInterceptor
      *            the request interceptor to add, not <code>null</code>
+     * @since 24.3
      */
     public void addVaadinRequestInterceptor(
             VaadinRequestInterceptor vaadinRequestInterceptor) {
@@ -126,6 +150,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @param executor
      *            the executor to set.
+     * @since 24.8
      */
     public void setExecutor(Executor executor) {
         this.executor = executor;
@@ -142,10 +167,21 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
+     * Gets a stream of all custom sessionless request handlers that have been
+     * added for the service.
+     *
+     * @return the stream of added sessionless request handlers
+     */
+    public Stream<SessionlessRequestHandler> getAddedSessionlessRequestHandlers() {
+        return addedSessionlessRequestHandlers.stream();
+    }
+
+    /**
      * Gets a stream of all Index HTML request listeners that have been added
      * for the service.
      *
      * @return the stream of added Index HTML request listeners
+     * @since 3.0
      */
     public Stream<IndexHtmlRequestListener> getAddedIndexHtmlRequestListeners() {
         return addedIndexHtmlRequestListeners.stream();
@@ -166,6 +202,7 @@ public class ServiceInitEvent extends EventObject {
      * the service.
      *
      * @return the stream of added request interceptors
+     * @since 24.3
      */
     public Stream<VaadinRequestInterceptor> getAddedVaadinRequestInterceptor() {
         return addedVaadinRequestInterceptors.stream();
@@ -177,6 +214,7 @@ public class ServiceInitEvent extends EventObject {
      *
      * @return an {@link Optional} containing the {@link Executor}, or an empty
      *         {@link Optional} if no executor is set.
+     * @since 24.8
      */
     public Optional<Executor> getExecutor() {
         return Optional.ofNullable(executor);

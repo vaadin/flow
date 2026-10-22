@@ -45,6 +45,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * @param <T>
  *            the runtime type of the value
+ * @since 25.2
  */
 public final class LiteralInput<T> extends Action.Input<T> {
 
@@ -61,7 +62,7 @@ public final class LiteralInput<T> extends Action.Input<T> {
     }
 
     @Override
-    protected JsFunction toJs(Trigger trigger) {
+    public JsFunction toJs(Trigger trigger) {
         // The value is captured (not stringified into the body), so Jackson
         // handles all encoding — quoting, escaping, nested objects, etc.
         return JsFunction.of("return $0", value);

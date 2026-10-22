@@ -26,10 +26,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarEntry;
@@ -39,19 +41,32 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -154,21 +169,21 @@ class VaadinServletServiceTest {
 
     @Test
     void init_classLoaderIsSetUsingServletContext() throws ServiceException {
-        VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
-        ServletContext context = Mockito.mock(ServletContext.class);
-        when(servlet.getServletContext()).thenReturn(context);
-        when(context.getAttribute(Lookup.class.getName()))
-                .thenReturn(Mockito.mock(Lookup.class));
+        VaadinServlet vaadinServlet = mock(VaadinServlet.class);
+        ServletContext context = mock(ServletContext.class);
+        when(vaadinServlet.getServletContext()).thenReturn(context);
+        Lookup lookup = mock(Lookup.class);
+        when(context.getAttribute(Lookup.class.getName())).thenReturn(lookup);
 
-        ClassLoader loader = Mockito.mock(ClassLoader.class);
+        ClassLoader loader = mock(ClassLoader.class);
         when(context.getClassLoader()).thenReturn(loader);
 
-        VaadinServletService service = new VaadinServletService(servlet,
-                mocks.getDeploymentConfiguration()) {
+        VaadinServletService servletService = new VaadinServletService(
+                vaadinServlet, mocks.getDeploymentConfiguration()) {
             @Override
             protected Instantiator createInstantiator()
                     throws ServiceException {
-                return Mockito.mock(Instantiator.class);
+                return mock(Instantiator.class);
             }
 
             @Override
@@ -176,17 +191,23 @@ class VaadinServletServiceTest {
                     throws ServiceException {
                 return Collections.emptyList();
             }
+
+            @Override
+            protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+                    throws ServiceException {
+                return Collections.emptyList();
+            }
         };
 
-        service.init();
+        servletService.init();
 
-        assertSame(loader, service.getClassLoader());
+        assertSame(loader, servletService.getClassLoader());
     }
 
     @Test
     void getPwaRegistry_servletInitialized_getsRegistry() {
-        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
-                .spy(mocks.getServlet());
+        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = spy(
+                mocks.getServlet());
         // Restore original behavior of getServletContext
         when(vaadinServlet.getServletContext()).thenAnswer(
                 i -> vaadinServlet.getServletConfig().getServletContext());
@@ -197,8 +218,8 @@ class VaadinServletServiceTest {
 
     @Test
     void getPwaRegistry_servletNotInitialized_getsNull() {
-        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
-                .spy(mocks.getServlet());
+        MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = spy(
+                mocks.getServlet());
         // Restore original behavior of getServletContext
         when(vaadinServlet.getServletContext()).thenAnswer(
                 i -> vaadinServlet.getServletConfig().getServletContext());
@@ -208,18 +229,133 @@ class VaadinServletServiceTest {
         assertNull(service.getPwaRegistry());
     }
 
+    @Test
+    void handleRequest_sessionlessHandler_handlesRequestWithoutSession()
+            throws Exception {
+        HttpServletRequest httpRequest = createRequest(
+                "http://dummy.host:8080/", "/contextpath", "/servlet",
+                "/resource");
+        VaadinRequest request = servlet.createVaadinRequest(httpRequest);
+        VaadinResponse response = mock(VaadinResponse.class);
+        RequestHandler handler = mock(RequestHandler.class);
+        SessionlessRequestHandler sessionlessHandler = mock(
+                SessionlessRequestHandler.class);
+        when(sessionlessHandler.handleRequest(request, response))
+                .thenReturn(true);
+        service.getRequestHandlers().clear();
+        service.getRequestHandlers().add(handler);
+        service.getSessionlessRequestHandlers().clear();
+        service.getSessionlessRequestHandlers().add(sessionlessHandler);
+        List<RequestEndedEvent> ended = new ArrayList<>();
+        service.getEventBus().addListener(RequestEndedEvent.class, ended::add);
+
+        service.handleRequest(request, response);
+
+        verify(handler, never()).handleRequest(any(), any(), any());
+        verify(httpRequest, never()).getSession();
+        verify(httpRequest, never()).getSession(anyBoolean());
+        assertFalse(ended.get(0).getHandler().isPresent());
+        assertSame(sessionlessHandler,
+                ended.get(0).getSessionlessHandler().orElseThrow());
+        assertFalse(ended.get(0).getSession().isPresent());
+
+        // A request it declines gets a session and reaches the other handlers
+        when(sessionlessHandler.handleRequest(request, response))
+                .thenReturn(false);
+        when(handler.handleRequest(any(), any(), any())).thenReturn(true);
+
+        service.handleRequest(request, response);
+
+        verify(handler).handleRequest(notNull(), eq(request), eq(response));
+        assertSame(handler, ended.get(1).getHandler().orElseThrow());
+        assertFalse(ended.get(1).getSessionlessHandler().isPresent());
+
+        // A handler that throws is named together with the failure
+        VaadinRequest failingRequest = servlet
+                .createVaadinRequest(createRequest("http://dummy.host:8080/",
+                        "/contextpath", "/servlet", "/resource"));
+        when(sessionlessHandler.handleRequest(failingRequest, response))
+                .thenThrow(new IOException("BOOM!"));
+
+        assertThrows(ServiceException.class,
+                () -> service.handleRequest(failingRequest, response));
+
+        RequestEndedEvent failed = ended.get(2);
+        assertSame(sessionlessHandler,
+                failed.getSessionlessHandler().orElseThrow());
+        assertEquals("BOOM!", failed.getFailure().orElseThrow().getMessage());
+        assertFalse(failed.getHandler().isPresent());
+        assertFalse(failed.getSession().isPresent());
+    }
+
+    @Test
+    void handleRequest_webComponentScript_servedWithoutSession()
+            throws Exception {
+        WebComponentConfigurationRegistry registry = mock(
+                WebComponentConfigurationRegistry.class);
+        when(registry.hasConfigurations()).thenReturn(true);
+        when(registry.getConfiguration("my-component"))
+                .thenReturn(Optional.empty());
+        when(mocks.getServletContext().getAttribute(
+                WebComponentConfigurationRegistry.class.getName()))
+                .thenReturn(registry);
+        HttpServletRequest httpRequest = createRequest(
+                "http://dummy.host:8080/", "/contextpath", "/servlet",
+                "/web-component/my-component.js");
+        VaadinResponse response = mock(VaadinResponse.class);
+        // Handlers added through ServiceInitEvent come first
+        RequestHandler customHandler = mock(RequestHandler.class);
+        service.getRequestHandlers().add(0, customHandler);
+
+        service.handleRequest(servlet.createVaadinRequest(httpRequest),
+                response);
+
+        verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(),
+                "No web component for my-component");
+        verify(customHandler, never()).handleRequest(any(), any(), any());
+        verify(httpRequest, never()).getSession();
+        verify(httpRequest, never()).getSession(anyBoolean());
+    }
+
+    @Test
+    void handleRequest_favicon_notFoundWithoutSession() throws Exception {
+        HttpServletRequest httpRequest = createRequest("http://dummy.host:8080",
+                "", "", "/favicon.ico");
+        VaadinResponse response = mock(VaadinResponse.class);
+        // Handlers added through ServiceInitEvent come first
+        RequestHandler customHandler = mock(RequestHandler.class);
+        when(customHandler.handleRequest(any(), any(), any())).thenReturn(true);
+        service.getRequestHandlers().add(0, customHandler);
+
+        service.handleRequest(servlet.createVaadinRequest(httpRequest),
+                response);
+
+        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        verify(customHandler, never()).handleRequest(any(), any(), any());
+        verify(httpRequest, never()).getSession();
+        verify(httpRequest, never()).getSession(anyBoolean());
+
+        // Below a context path, the favicon is a request like any other
+        HttpServletRequest contextRequest = createRequest(
+                "http://dummy.host:8080", "/contextpath", "", "/favicon.ico");
+
+        service.handleRequest(servlet.createVaadinRequest(contextRequest),
+                response);
+
+        verify(customHandler).handleRequest(notNull(), any(), eq(response));
+    }
+
     private String testLocation(String base, String contextPath,
             String servletPath, String pathInfo) throws Exception {
 
         HttpServletRequest request = createNonIncludeRequest(base, contextPath,
                 servletPath, pathInfo);
 
-        VaadinServletService service = Mockito.mock(VaadinServletService.class);
-        Mockito.doCallRealMethod().when(service)
-                .getContextRootRelativePath(Mockito.any());
-        String location = service.getContextRootRelativePath(
+        VaadinServletService servletService = mock(VaadinServletService.class);
+        doCallRealMethod().when(servletService)
+                .getContextRootRelativePath(any());
+        return servletService.getContextRootRelativePath(
                 servlet.createVaadinRequest(request));
-        return location;
     }
 
     private HttpServletRequest createNonIncludeRequest(String base,
@@ -254,7 +390,7 @@ class VaadinServletServiceTest {
     private HttpServletRequest createRequest(String base, String contextPath,
             String servletPath, String pathInfo) throws MalformedURLException {
         URL url = new URL(base + contextPath + pathInfo);
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("null.lock", new ReentrantLock()); // for session
         attributes.put("requestStartTime", System.currentTimeMillis()); // for
@@ -268,9 +404,9 @@ class VaadinServletServiceTest {
         when(request.getContextPath()).thenReturn(contextPath);
         when(request.getPathInfo()).thenReturn(pathInfo);
         when(request.getServletPath()).thenReturn(servletPath);
-        HttpSession session = Mockito.mock(HttpSession.class);
+        HttpSession session = mock(HttpSession.class);
         when(request.getSession()).thenReturn(session);
-        when(request.getSession(Mockito.anyBoolean())).thenReturn(session);
+        when(request.getSession(anyBoolean())).thenReturn(session);
         stubSessionAttributes(session, attributes);
         stubAttributes(request, attributes);
         return request;
@@ -278,24 +414,24 @@ class VaadinServletServiceTest {
 
     private static void stubSessionAttributes(HttpSession session,
             Map<String, Object> attributes) {
-        when(session.getAttribute(Mockito.anyString())).thenAnswer(
+        when(session.getAttribute(anyString())).thenAnswer(
                 invocation -> attributes.get(invocation.getArgument(0)));
-        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+        doAnswer(invocation -> attributes.put(invocation.getArgument(0),
                 invocation.getArgument(1))).when(session)
-                .setAttribute(Mockito.anyString(), Mockito.anyString());
+                .setAttribute(anyString(), anyString());
     }
 
     private static void stubAttributes(HttpServletRequest request,
             Map<String, Object> attributes) {
-        when(request.getAttribute(Mockito.anyString())).thenAnswer(
+        when(request.getAttribute(anyString())).thenAnswer(
                 invocation -> attributes.get(invocation.getArgument(0)));
-        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+        doAnswer(invocation -> attributes.put(invocation.getArgument(0),
                 invocation.getArgument(1))).when(request)
-                .setAttribute(Mockito.anyString(), Mockito.anyString());
+                .setAttribute(anyString(), any());
     }
 
     @Test
-    void filtersAreCalledWhenHandlingARequest() throws Exception {
+    void filtersAreCalledAndEventsFiredWhenHandlingARequest() throws Exception {
         mocks = new MockServletServiceSessionSetup() {
             @Override
             public TestVaadinServlet createVaadinServlet() {
@@ -320,9 +456,15 @@ class VaadinServletServiceTest {
 
         VaadinRequest request = servlet.createVaadinRequest(createRequest(
                 "http://dummy.host:8080/", "/contextpath", "/servlet", "/"));
-        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+        VaadinResponse response = mock(VaadinResponse.class);
         service.getRequestHandlers().clear();
-        service.getRequestHandlers().add(new ExceptionThrowingRequestHandler());
+        RequestHandler handler = new ExceptionThrowingRequestHandler();
+        service.getRequestHandlers().add(handler);
+        List<RequestStartedEvent> started = new ArrayList<>();
+        List<RequestEndedEvent> ended = new ArrayList<>();
+        service.getEventBus().addListener(RequestStartedEvent.class,
+                started::add);
+        service.getEventBus().addListener(RequestEndedEvent.class, ended::add);
 
         try {
             service.handleRequest(request, response);
@@ -337,6 +479,16 @@ class VaadinServletServiceTest {
                 "Filter was called on exception handling");
         assertEquals("true", request.getAttribute("ended"),
                 "Filter was called in the finally block");
+
+        assertEquals(1, started.size());
+        assertSame(request, started.get(0).getRequest());
+        assertEquals(1, ended.size());
+        RequestEndedEvent end = ended.get(0);
+        assertSame(request, end.getRequest());
+        assertSame(response, end.getResponse().orElseThrow());
+        assertSame(handler, end.getHandler().orElseThrow());
+        assertEquals("BOOM!", end.getFailure().orElseThrow().getMessage());
+        assertTrue(end.getSession().isPresent());
     }
 
     @Test
@@ -363,7 +515,7 @@ class VaadinServletServiceTest {
         URL jarResourceUrl = URI
                 .create("jar:" + jarFile.toUri() + "!/" + resourcePath).toURL();
 
-        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        ServletContext servletContext = mock(ServletContext.class);
         when(servletContext.getServerInfo()).thenReturn("jetty/12.1.9");
         when(servletContext.getResource("/VAADIN/static/push/vaadinPush.js"))
                 .thenReturn(jarResourceUrl);

@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
@@ -34,6 +35,8 @@ import com.vaadin.flow.server.VaadinSession;
  * Helper methods for use in bootstrapping.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 4.0
  */
 public final class BootstrapHandlerHelper implements Serializable {
 
@@ -147,6 +150,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      * @param pushServletMapping
      *            Original pushServletMapping value
      * @return cleaned-up value, or null if the original value is blank.
+     * @since 23.3.5
      */
     public static String getCleanedPushServletMapping(
             String pushServletMapping) {
@@ -174,6 +178,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      *            {@link ServletConfig} to find the registration for.
      * @return an optional {@link ServletRegistration}, or an empty optional if
      *         a registration is not available.
+     * @since 23.3.5
      */
     public static Optional<ServletRegistration> getServletRegistration(
             ServletConfig servletConfig) {
@@ -198,6 +203,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      *            {@link ServletRegistration} from which to look up the
      *            mappings.
      * @return first URL mapping, ignoring '/VAADIN/*' and '/vaadinServlet/*'
+     * @since 23.3.5
      */
     public static String findFirstUrlMapping(ServletRegistration registration) {
         String firstMapping = registration.getMappings().stream()
@@ -205,5 +211,35 @@ public final class BootstrapHandlerHelper implements Serializable {
                         && !mapping.equals("/vaadinServlet/*"))
                 .sorted().findFirst().orElse("/");
         return firstMapping.replace("/*", "/");
+    }
+
+    /**
+     * Gets the path that the push WebSocket endpoint of the given servlet is
+     * registered at.
+     * <p>
+     * The path is the push servlet mapping init parameter of the servlet, or
+     * the first URL mapping of the servlet if the parameter is not set,
+     * followed by {@link Constants#PUSH_MAPPING}.
+     *
+     * @param servletConfig
+     *            the configuration of the servlet
+     * @return the path of the push WebSocket endpoint, or {@code null} if the
+     *         servlet has neither the init parameter nor a registration to read
+     *         the URL mapping from
+     * @since 25.4
+     */
+    public static String getPushEndpointPath(ServletConfig servletConfig) {
+        String pushServletMapping = getCleanedPushServletMapping(
+                servletConfig.getInitParameter(
+                        InitParameters.SERVLET_PARAMETER_PUSH_SERVLET_MAPPING));
+        if (pushServletMapping == null) {
+            pushServletMapping = getServletRegistration(servletConfig)
+                    .map(BootstrapHandlerHelper::findFirstUrlMapping)
+                    .orElse(null);
+        }
+        if (pushServletMapping == null) {
+            return null;
+        }
+        return pushServletMapping + Constants.PUSH_MAPPING;
     }
 }

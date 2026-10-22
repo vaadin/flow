@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.SynchronizedRequestHandler;
+import com.vaadin.flow.server.SessionlessRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -46,7 +46,7 @@ import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVA
  * @author Vaadin Ltd.
  * @since 2.0
  */
-public class WebComponentProvider extends SynchronizedRequestHandler {
+public class WebComponentProvider implements SessionlessRequestHandler {
     private static final String WEB_COMPONENT_PATH = "web-component/";
     private static final String PATH_PREFIX = "/" + WEB_COMPONENT_PATH;
     private static final String HTML_EXTENSION = "html";
@@ -65,32 +65,51 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
     // tag name -> generated html
     private ConcurrentHashMap<String, String> cache = new ConcurrentHashMap<>();
 
-    @Override
-    protected boolean canHandleRequest(VaadinRequest request) {
-        if (!hasWebComponentConfigurations(request)) {
-            return false;
-        }
-        String pathInfo = request.getPathInfo();
-
-        if (pathInfo == null || pathInfo.isEmpty()) {
-            return false;
-        }
-
-        if (!pathInfo.startsWith(PATH_PREFIX)) {
-            return false;
-        }
-
-        if (WebComponentBootstrapHandler.PATH_PATTERN.matcher(pathInfo)
-                .find()) {
-            return false;
-        }
-
-        return true;
+    boolean canHandleRequest(VaadinRequest request) {
+        return isWebComponentPath(request.getPathInfo())
+                && hasWebComponentConfigurations(request);
     }
 
+    /**
+     * Serves the script of an exported web component. The script is the same
+     * for every user, so it is served without a session. A host page that loads
+     * the scripts of several web components in parallel then does not get a new
+     * session from each of them, leaving the browser with a cookie for a
+     * session other than the one its embedded UI was created in.
+     * <p>
+     * Override
+     * {@link #handleWebComponentRequest(VaadinRequest, VaadinResponse)} to
+     * customize how the script is served.
+     */
     @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+    public boolean handleRequest(VaadinRequest request, VaadinResponse response)
+            throws IOException {
+        return canHandleRequest(request)
+                && handleWebComponentRequest(request, response);
+    }
+
+    private static boolean isWebComponentPath(String pathInfo) {
+        return pathInfo != null && pathInfo.startsWith(PATH_PREFIX)
+                && !WebComponentBootstrapHandler.PATH_PATTERN.matcher(pathInfo)
+                        .find();
+    }
+
+    /**
+     * Handles a request for a web component script. This is called without a
+     * session, so it must not depend on {@link VaadinSession#getCurrent()} or
+     * on the session lock.
+     *
+     * @param request
+     *            the request to handle
+     * @param response
+     *            the response to write the script to
+     * @return {@code true} if the request was handled, {@code false} otherwise
+     * @throws IOException
+     *             if writing the response fails
+     * @since 25.4
+     */
+    protected boolean handleWebComponentRequest(VaadinRequest request,
+            VaadinResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
 
         final ComponentInfo componentInfo = new ComponentInfo(pathInfo);
@@ -156,6 +175,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      * Enabled by default.
      *
      * @return true iff bootstrap fragment caching is enabled
+     * @since 2.2
      */
     public boolean isCacheEnabled() {
         return cache != null;
@@ -167,6 +187,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      *
      * @param cacheEnabled
      *            whether bootstrap fragments should be cached per tag
+     * @since 2.2
      */
     public void setCacheEnabled(boolean cacheEnabled) {
         if (cacheEnabled) {
@@ -178,6 +199,10 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
 
     /**
      * Generate the npm response for the web component.
+     * <p>
+     * The script is served without a session, so this runs with no
+     * {@link VaadinSession} available. The result is cached per tag unless
+     * caching is disabled with {@link #setCacheEnabled(boolean)}.
      *
      * @param tagName
      *            tag name of component
@@ -186,6 +211,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
      * @param response
      *            current VaadinResponse
      * @return npm response script
+     * @since 2.2
      */
     protected String generateNPMResponse(String tagName, VaadinRequest request,
             VaadinResponse response) {
@@ -247,7 +273,8 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         return bootstrapJS;
     }
 
-    private boolean hasWebComponentConfigurations(VaadinRequest request) {
+    private static boolean hasWebComponentConfigurations(
+            VaadinRequest request) {
         WebComponentConfigurationRegistry registry = WebComponentConfigurationRegistry
                 .getInstance(request.getService().getContext());
         return registry.hasConfigurations();

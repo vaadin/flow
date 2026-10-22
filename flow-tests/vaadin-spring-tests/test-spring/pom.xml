@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>vaadin-spring-tests</artifactId>
-    <version>25.3-SNAPSHOT</version>
+    <version>25.4-SNAPSHOT</version>
   </parent>
   <artifactId>vaadin-test-spring</artifactId>
   <packaging>war</packaging>
@@ -35,6 +35,11 @@
           <artifactId>spring-beans</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
     </dependency>
 
     <dependency>

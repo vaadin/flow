@@ -1,0 +1,86 @@
+# test-devloop
+
+End-to-end tests for the `vaadin-dev` CLI and the dev-loop daemon
+(`flow-devloop-daemon`, plus the in-app connector in
+`vaadin-dev-server/.../devserver/devloop/`).
+
+One fixture per shape of Vaadin application, because the shape is the thing the
+daemon has to tell apart — and almost everything that has broken here broke on
+one shape while the other stayed green:
+
+| Module | The application it stands in for |
+|---|---|
+| [test-devloop-spring](test-devloop-spring/README.md) | an application with an entry point of its own: Spring Boot, launched as `java -cp … <MainClass>` |
+| [test-devloop-jetty](test-devloop-jetty/README.md) | a WAR with no entry point, run by the project's own build plugin, with the servlet container nowhere on its classpath |
+| [test-devloop-cargo](test-devloop-cargo/README.md) | the same WAR, but deployed: the container is installed and started as a process of its own and handed a packaged copy, rather than serving the module's output in place |
+| [test-devloop-tomee](test-devloop-tomee/README.md) | that deployed WAR on Apache TomEE, whose run goal cannot be named on a command line at all |
+| [test-devloop-jbosseap](test-devloop-jbosseap/README.md) | that deployed WAR on Red Hat JBoss EAP, provisioned through Galleon and run by `wildfly-maven-plugin` |
+| [test-devloop-liberty](test-devloop-liberty/README.md) | that deployed WAR on Open Liberty, whose JVM flags travel one per property into `jvm.options` |
+| [test-devloop-payara](test-devloop-payara/README.md) | that deployed WAR on Payara Server |
+| [test-devloop-payara-micro](test-devloop-payara-micro/README.md) | that deployed WAR on Payara Micro, whose JVM flags travel in `exec.args` |
+| test-devloop-support | everything they all run: the CLI driver (`VaadinDevCli`), the source patcher (`SourcePatch`), and the ITs themselves, published as a test-jar |
+
+Each fixture is its own multi-module reactor with a sibling library beside the
+application, because the case worth testing — an edit in a sibling reaching the
+running page — only exists if there is a sibling. All of them are laid out
+identically, down to the module directory names and the fixture files
+(`TaskListView`, `TaskService`, `DueDateFormatter`, `task-list.css`), so that
+the tests which are about the loop rather than about a container can be written
+once and run in each. Those ITs are ordinary classes in `test-devloop-support` -
+`DevLoopApplyIT`, `DevLoopCssIT`, `DevLoopMultiModuleIT`, `DevLoopLifecycleIT`,
+`DevLoopBrowserIT`, `DevLoopCliContractIT`, `DevLoopDaemonSurvivalIT`,
+`DevLoopDeletionIT`, `DevLoopPomEditIT`, `DevLoopFrontendIT` - test sources
+there, published as a test-jar, and each
+fixture's failsafe runs them straight out of it with `<dependenciesToScan>`,
+against its own application. No module declares a subclass of them, and the
+support module runs none of them itself (`skipITs`): it has no application to
+drive. What is left in a fixture is only what is true of its own
+shape, in a `DevLoopSpring*IT`, `DevLoopJetty*IT` or `DevLoopCargo*IT` class of
+its own - and, where a shape genuinely cannot answer a shared question, an
+exclusion with a replacement beside it: `test-devloop-cargo` excludes
+`DevLoopCssIT`, because a container reading a deployed WAR cannot see a resource
+refreshed in the module's own output, and the other forked servers exclude it
+for the same reason. Every fixture runs in dev-bundle mode
+(`vaadin.frontend.hotdeploy=false`), so that nothing but the daemon can push to
+the browser. They run on different ports - spring 8899, jetty 8898, cargo
+8897, payara-micro 8896, liberty 8894, jbosseap 8893, tomee 8892 and payara on
+its domain's fixed 8080 - so that none can take another's, and none uses the
+usual `spring-boot:start` / `jetty:start` / `cargo:start` IT lifecycle: the
+daemon owns the application process, and a second launcher would fight it for
+the port. Liberty alone is served under a context root (`/devloop`), which
+`AbstractDevLoopIT` reads from the fixture's `devloop.context.path`.
+
+`test-devloop-support` is listed among the modules `flow-tests` builds
+regardless of `-DskipTests`, rather than in this aggregator's `<modules>`. That
+is how CI gets it into the local repository: the IT jobs build no test module at
+all, so anything they resolve has to have been installed by the workspace build,
+which runs with `-DskipTests`.
+
+## Running
+
+From the repository root, after one `mvn install -DskipTests`:
+
+```bash
+# every fixture
+mvn -o -pl flow-tests/test-devloop/test-devloop-spring/devloop-app,flow-tests/test-devloop/test-devloop-jetty/devloop-app,flow-tests/test-devloop/test-devloop-cargo/devloop-app,flow-tests/test-devloop/test-devloop-tomee/devloop-app,flow-tests/test-devloop/test-devloop-jbosseap/devloop-app,flow-tests/test-devloop/test-devloop-liberty/devloop-app,flow-tests/test-devloop/test-devloop-payara/devloop-app,flow-tests/test-devloop/test-devloop-payara-micro/devloop-app verify
+```
+
+Each fixture runs its ITs twice. The default failsafe execution runs every IT
+with the daemon compiling applies by javac, its default; a second execution,
+`maven-compile`, runs the ITs that exercise the compile leg (`DevLoopApplyIT`,
+`DevLoopMultiModuleIT`, `DevLoopDeletionIT`) with `-Dvaadin.dev.compiler=maven`.
+Each IT checks through `status` that the daemon really runs the compiler the
+execution asked for. To run the whole suite with Maven compiling, and nothing
+with javac:
+
+```bash
+mvn -o -pl flow-tests/test-devloop/test-devloop-jetty/devloop-app -Pdevloop-maven-compile verify
+# a subset: add "-Ddevloop.maven-compile.its=**/DevLoopApplyIT.java, **/DevLoopCssIT.java"
+```
+
+`-Dit.test=` narrows both executions, so the named ITs run once with each
+compiler.
+
+Each fixture's README has the rest: what it pins and why, how to drive the loop
+by hand, and the patch-and-revert rule the ITs follow so that a failed run never
+leaves the working tree dirty.

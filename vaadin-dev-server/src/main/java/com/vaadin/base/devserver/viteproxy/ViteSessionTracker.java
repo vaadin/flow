@@ -30,6 +30,8 @@ import com.vaadin.flow.shared.Registration;
  * This class is meant only for testing purposes. Do not use it in production.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
+ * 
+ * @since 25.0.6
  */
 public class ViteSessionTracker {
 
@@ -54,6 +56,13 @@ public class ViteSessionTracker {
     }
 
     private final List<SessionCloseListener> listeners = new CopyOnWriteArrayList<>();
+
+    /**
+     * Creates the tracker.
+     */
+    public ViteSessionTracker() {
+        // Default constructor
+    }
 
     /**
      * Adds a listener that will be notified when an HTTP session is closed.

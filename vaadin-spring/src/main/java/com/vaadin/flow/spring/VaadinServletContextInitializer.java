@@ -57,6 +57,8 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
@@ -64,6 +66,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
@@ -104,6 +107,7 @@ import com.vaadin.flow.theme.Theme;
  *
  * @see ServletContainerInitializer
  * @see RouteRegistry
+ * @since 10.0
  */
 public class VaadinServletContextInitializer
         implements ServletContextInitializer {
@@ -111,6 +115,7 @@ public class VaadinServletContextInitializer
     private static boolean devModeCachingEnabled;
     private ApplicationContext appContext;
     private ResourceLoader customLoader;
+    private MetadataReaderFactory metadataReaderFactory;
 
     /**
      * Packages that should be excluded when scanning all packages.
@@ -149,8 +154,14 @@ public class VaadinServletContextInitializer
             .of(Component.class.getPackage().getName(),
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
-                    "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap",
-                    "com.vaadin.copilot.startup", "com.vaadin.hilla.startup")
+                    "com.vaadin.flow.data.renderer",
+                    // hold JavaScript definitions of the framework, which
+                    // development mode generates from the scanned classes
+                    Element.class.getPackage().getName(),
+                    Route.class.getPackage().getName(),
+                    IndexHtmlRequestHandler.class.getPackage().getName(),
+                    "com.vaadin.shrinkwrap", "com.vaadin.copilot.startup",
+                    "com.vaadin.hilla.startup")
             .collect(Collectors.toList());
 
     /**
@@ -166,10 +177,16 @@ public class VaadinServletContextInitializer
             extends ClassPathScanningCandidateComponentProvider {
         private ClassPathScanner(Environment environment,
                 ResourceLoader resourceLoader,
+                MetadataReaderFactory metadataReaderFactory,
                 Collection<Class<? extends Annotation>> annotations,
                 Collection<Class<?>> types) {
             super(false, environment);
             setResourceLoader(resourceLoader);
+            // Keep the filtering resource loader as the pattern resolver, but
+            // override the metadata reader factory (which setResourceLoader
+            // just replaced) so class metadata is read through a cache shared
+            // across all scan passes. Must be called after setResourceLoader.
+            setMetadataReaderFactory(metadataReaderFactory);
 
             annotations.stream().map(AnnotationTypeFilter::new)
                     .forEach(this::addIncludeFilter);
@@ -642,6 +659,19 @@ public class VaadinServletContextInitializer
 
     }
 
+    /**
+     * Scans the given packages for the classes development mode needs, which is
+     * a wider set than what a production build scans for.
+     *
+     * @param basePackages
+     *            the packages to scan
+     * @param annotations
+     *            the annotations a matching class is annotated with
+     * @param superTypes
+     *            the types a matching class extends or implements
+     * @return the classes found, never {@code null}
+     * @since 24.5
+     */
     protected Set<Class<?>> findClassesForDevMode(Set<String> basePackages,
             List<Class<? extends Annotation>> annotations,
             List<Class<?>> superTypes) {
@@ -883,9 +913,30 @@ public class VaadinServletContextInitializer
             Collection<Class<? extends Annotation>> annotations,
             Collection<Class<?>> types) {
         ClassPathScanner scanner = new ClassPathScanner(
-                appContext.getEnvironment(), loader, annotations, types);
+                appContext.getEnvironment(), loader, getMetadataReaderFactory(),
+                annotations, types);
         return packages.stream().map(scanner::findCandidateComponents)
                 .flatMap(Collection::stream).map(this::getBeanClass);
+    }
+
+    /**
+     * Returns a shared {@link MetadataReaderFactory} reused by every scan pass.
+     * <p>
+     * It is backed by the application context, which is a
+     * {@link org.springframework.core.io.DefaultResourceLoader}, so that
+     * {@link CachingMetadataReaderFactory} stores parsed class metadata in the
+     * context's shared, unbounded resource cache instead of a per-scan cache
+     * bounded to {@value CachingMetadataReaderFactory#DEFAULT_CACHE_LIMIT}
+     * entries. This avoids re-parsing the same classes for each of the many
+     * scan passes (routes, error handlers, web components, ...) done at
+     * startup.
+     */
+    private MetadataReaderFactory getMetadataReaderFactory() {
+        if (metadataReaderFactory == null) {
+            metadataReaderFactory = new CachingMetadataReaderFactory(
+                    appContext);
+        }
+        return metadataReaderFactory;
     }
 
     private Class<?> getBeanClass(BeanDefinition beanDefinition) {

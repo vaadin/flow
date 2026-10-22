@@ -34,6 +34,8 @@ package com.vaadin.flow.component.webshare;
  * bootstrap handshake completes; treat the same as {@link #UNSUPPORTED} until a
  * real value arrives.</li>
  * </ul>
+ * 
+ * @since 25.2
  */
 public enum WebShareSupport {
 

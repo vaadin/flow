@@ -17,6 +17,7 @@ package com.vaadin.base.devserver;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -25,7 +26,6 @@ import org.atmosphere.cpr.Broadcaster;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -52,6 +52,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 class DebugWindowConnectionLicenseCheckTest {
 
@@ -182,6 +187,50 @@ class DebugWindowConnectionLicenseCheckTest {
                 receiver.messages.get(0).getData().toString());
     }
 
+    @Test
+    void downloadLicenseKey_timeoutFromClient_passedToChecker() {
+        AtomicInteger usedTimeout = captureDownloadTimeout(
+                downloadCommand(600));
+        assertEquals(600, usedTimeout.get());
+    }
+
+    @Test
+    void downloadLicenseKey_noTimeout_usesCheckerDefault() {
+        ObjectNode command = OBJECT_MAPPER.createObjectNode();
+        command.put("command", "downloadLicense");
+        command.putPOJO("data", TEST_PRODUCT);
+        AtomicInteger usedTimeout = captureDownloadTimeout(command);
+        assertEquals(LicenseChecker.DEFAULT_KEY_URL_HANDLER_TIMEOUT_SECONDS,
+                usedTimeout.get());
+    }
+
+    private AtomicInteger captureDownloadTimeout(ObjectNode command) {
+        AtomicInteger usedTimeout = new AtomicInteger();
+        DebugWindowMessage message = sendAndReceive(command,
+                licenseChecker -> licenseChecker
+                        .when(() -> LicenseChecker.checkLicenseAsync(
+                                eq(TEST_PRODUCT.getName()),
+                                eq(TEST_PRODUCT.getVersion()),
+                                eq(BuildType.DEVELOPMENT),
+                                any(LicenseChecker.Callback.class), anyInt()))
+                        .then(i -> {
+                            usedTimeout.set(i.getArgument(4, Integer.class));
+                            return null;
+                        }));
+        assertEquals("license-download-started", message.getCommand());
+        return usedTimeout;
+    }
+
+    private static ObjectNode downloadCommand(int timeout) {
+        ObjectNode command = OBJECT_MAPPER.createObjectNode();
+        command.put("command", "downloadLicense");
+        ObjectNode data = command.putObject("data");
+        data.put("name", TEST_PRODUCT.getName());
+        data.put("version", TEST_PRODUCT.getVersion());
+        data.put("timeout", timeout);
+        return command;
+    }
+
     private enum LicenseCheckResult {
         VALID, INVALID, MISSING_KEYS
     }
@@ -220,11 +269,12 @@ class DebugWindowConnectionLicenseCheckTest {
         command.put("command", "downloadLicense");
         command.putPOJO("data", TEST_PRODUCT);
         return sendAndReceive(command,
-                licenseChecker -> licenseChecker.when(() -> LicenseChecker
-                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
+                licenseChecker -> licenseChecker
+                        .when(() -> LicenseChecker.checkLicenseAsync(
+                                eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class)))
+                                any(LicenseChecker.Callback.class), anyInt()))
                         .then(i -> {
                             LicenseChecker.Callback callback = i.getArgument(3,
                                     LicenseChecker.Callback.class);
@@ -255,8 +305,8 @@ class DebugWindowConnectionLicenseCheckTest {
     private void withMockedLicenseChecker(
             Consumer<MockedStatic<LicenseChecker>> instrumenter,
             Runnable test) {
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class, Answers.RETURNS_MOCKS)) {
+        try (MockedStatic<LicenseChecker> licenseChecker = mockStatic(
+                LicenseChecker.class, Answers.RETURNS_MOCKS)) {
             instrumenter.accept(licenseChecker);
             test.run();
         }
@@ -265,11 +315,9 @@ class DebugWindowConnectionLicenseCheckTest {
     private Consumer<MockedStatic<LicenseChecker>> mockCheckLicense(
             LicenseCheckResult licenseCheckResult) {
         return licenseChecker -> {
-            licenseChecker
-                    .when(() -> LicenseChecker.checkLicense(anyString(),
-                            anyString(), Mockito.any(BuildType.class),
-                            Mockito.isNull(), Mockito.any(Capabilities.class)))
-                    .then(i -> {
+            licenseChecker.when(() -> LicenseChecker.checkLicense(anyString(),
+                    anyString(), any(BuildType.class), isNull(),
+                    any(Capabilities.class))).then(i -> {
                         switch (licenseCheckResult) {
                         case INVALID ->
                             throw new LicenseException(INVALID_LICENSE_ERROR);
@@ -287,9 +335,9 @@ class DebugWindowConnectionLicenseCheckTest {
 
     private VaadinContext getMockContext() {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class, appConfig);
         context.setAttribute(Lookup.class,
                 Lookup.of(appConfig, ApplicationConfiguration.class));
@@ -301,15 +349,14 @@ class DebugWindowConnectionLicenseCheckTest {
         private final AtmosphereResource resource;
 
         private ClientMessageReceiver() {
-            this.resource = Mockito.mock(AtmosphereResource.class);
-            Broadcaster broadcaster = Mockito.mock(Broadcaster.class);
-            Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-            Mockito.when(broadcaster.broadcast(anyString(), same(resource)))
-                    .then(i -> {
-                        messages.add(deserializeMessage(
-                                i.getArgument(0, String.class)));
-                        return null;
-                    });
+            this.resource = mock(AtmosphereResource.class);
+            Broadcaster broadcaster = mock(Broadcaster.class);
+            when(resource.getBroadcaster()).thenReturn(broadcaster);
+            when(broadcaster.broadcast(anyString(), same(resource))).then(i -> {
+                messages.add(
+                        deserializeMessage(i.getArgument(0, String.class)));
+                return null;
+            });
         }
 
         private DebugWindowMessage deserializeMessage(String message)

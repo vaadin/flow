@@ -19,12 +19,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
@@ -46,8 +45,11 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-@NotThreadSafe
+@Isolated
 class ErrorHandlerUtilTest {
 
     @Mock
@@ -123,39 +125,35 @@ class ErrorHandlerUtilTest {
         ErrorView.initialized = false;
 
         Element body = new Element("body");
-        Mockito.when(ui.getElement()).thenReturn(body);
-        Mockito.when(ui.isNavigationSupported()).thenReturn(true);
+        when(ui.getElement()).thenReturn(body);
+        when(ui.isNavigationSupported()).thenReturn(true);
 
         internals = new UIInternals(ui);
 
-        Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
-        Mockito.when(ui.getInternals()).thenReturn(internals);
+        when(ui.getUI()).thenReturn(Optional.of(ui));
+        when(ui.getUIOrThrow()).thenCallRealMethod();
+        when(ui.getInternals()).thenReturn(internals);
 
-        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(routeRegistry.getRegisteredRoutes())
-                .thenReturn(new ArrayList<>());
-        Mockito.when(vaadinService.getRouteRegistry())
-                .thenReturn(routeRegistry);
+        RouteRegistry routeRegistry = mock(RouteRegistry.class);
+        when(routeRegistry.getRegisteredRoutes()).thenReturn(new ArrayList<>());
+        when(vaadinService.getRouteRegistry()).thenReturn(routeRegistry);
 
         session = new AlwaysLockedVaadinSession(vaadinService);
         VaadinContext context = new MockVaadinContext();
-        Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(vaadinService.getInstantiator())
+        when(vaadinService.getContext()).thenReturn(context);
+        when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
         internals.setSession(session);
-        Mockito.when(vaadinService.getRouter())
-                .thenReturn(Mockito.mock(Router.class));
+        when(vaadinService.getRouter()).thenReturn(mock(Router.class));
 
-        Mockito.when(ui.getSession()).thenReturn(session);
+        when(ui.getSession()).thenReturn(session);
+        when(ui.getSessionOrThrow()).thenCallRealMethod();
 
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(config);
+        when(vaadinService.getDeploymentConfiguration()).thenReturn(config);
 
-        Mockito.when(vaadinService.accessSession(
-                Mockito.any(VaadinSession.class), Mockito.any(Command.class)))
-                .thenCallRealMethod();
-        Mockito.when(ui.access(Mockito.any(Command.class)))
-                .thenCallRealMethod();
+        when(vaadinService.accessSession(any(VaadinSession.class),
+                any(Command.class))).thenCallRealMethod();
+        when(ui.access(any(Command.class))).thenCallRealMethod();
 
         registry = ApplicationRouteRegistry.getInstance(context);
 

@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.lang.reflect.Field;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,9 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
@@ -35,11 +36,13 @@ import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.component.page.History.HistoryJs;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -54,10 +57,18 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class UIInternalsTest {
 
@@ -133,17 +144,31 @@ class UIInternalsTest {
     void init() {
         MockitoAnnotations.initMocks(this);
 
-        Mockito.when(ui.getUI()).thenReturn(Optional.of(ui));
+        when(ui.getUI()).thenReturn(Optional.of(ui));
+        when(ui.getUIOrThrow()).thenCallRealMethod();
         Element body = new Element("body");
-        Mockito.when(ui.getElement()).thenReturn(body);
+        when(ui.getElement()).thenReturn(body);
 
         vaadinService = new MockVaadinServletService();
         internals = new UIInternals(ui);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
         internals.setSession(session);
-        Mockito.when(ui.getSession()).thenReturn(session);
-        Mockito.when(ui.getInternals()).thenReturn(internals);
+        when(ui.getSession()).thenReturn(session);
+        when(ui.getSessionOrThrow()).thenCallRealMethod();
+        when(ui.getInternals()).thenReturn(internals);
+        Page page = new Page(ui);
+        when(ui.getPage()).thenReturn(page);
+    }
+
+    @Test
+    public void setLastProcessedClientToServerId_forgetsTheRecordedResponse() {
+        internals.setLastRequestResponse("{\"syncId\":0}");
+
+        internals.setLastProcessedClientToServerId(1, new byte[0]);
+
+        assertNull(internals.getLastRequestResponse(),
+                "The recorded response answers the previous message, so it must not be sent as this one's");
     }
 
     @Test
@@ -188,10 +213,10 @@ class UIInternalsTest {
     void showRouteTarget_clientSideBootstrap() {
         PushConfiguration pushConfig = setUpInitialPush();
 
-        internals.showRouteTarget(Mockito.mock(Location.class),
-                new RouteTarget(), Collections.emptyList());
+        internals.showRouteTarget(mock(Location.class), new RouteTarget(),
+                Collections.emptyList());
 
-        Mockito.verify(pushConfig, Mockito.never()).setPushMode(Mockito.any());
+        verify(pushConfig, never()).setPushMode(any());
     }
 
     @Test
@@ -204,7 +229,7 @@ class UIInternalsTest {
         List<RouterLayout> oldLayouts = Arrays.asList(subLayout, mainLayout);
         List<RouterLayout> newLayouts = Collections.singletonList(mainLayout);
 
-        Location location = Mockito.mock(Location.class);
+        Location location = mock(Location.class);
         setUpInitialPush();
 
         internals.showRouteTarget(location, firstView, oldLayouts);
@@ -265,7 +290,7 @@ class UIInternalsTest {
         List<RouterLayout> newLayouts = Collections
                 .singletonList(anotherLayout);
 
-        Location location = Mockito.mock(Location.class);
+        Location location = mock(Location.class);
         setUpInitialPush();
 
         // Initial navigation
@@ -287,109 +312,129 @@ class UIInternalsTest {
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_detachListenerRegisteredOnce() {
-        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+    void dumpPendingJavaScriptInvocations_retainedInvocationBecomesVisible_notSubscribedToReturnValue()
+            throws Exception {
+        StateNode node = new StateNode(ElementData.class);
         node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation(""));
+        internals.addJavaScriptInvocation(invocation);
+
+        // The owner is invisible, so the invocation is retained in the queue
+        assertEquals(0, internals.dumpPendingJavaScriptInvocations().size());
+
+        node.getFeature(ElementData.class).setVisible(true);
+
+        List<PendingJavaScriptInvocation> dumped = internals
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(List.of(invocation), dumped);
+        assertFalse(dumped.get(0).isSubscribed(),
+                "Retaining an invocation should not subscribe to its return value, since that makes the client send back a value that the server has no use for");
+        assertEquals(0, invocationOwners(internals).size(),
+                "Sending an invocation should stop tracking its owner");
+    }
+
+    @Test
+    void dumpPendingJavaScriptInvocations_treePreparedForResync_retainedInvocationDiscarded()
+            throws Exception {
+        StateNode node = new StateNode(ElementData.class);
+        node.getFeature(ElementData.class).setVisible(false);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation(""));
+        internals.addJavaScriptInvocation(invocation);
+        internals.dumpPendingJavaScriptInvocations();
+
+        internals.getStateTree().prepareForResync();
+        node.getFeature(ElementData.class).setVisible(true);
+
+        assertEquals(0, internals.dumpPendingJavaScriptInvocations().size(),
+                "Resynchronizing should discard what was queued before it, "
+                        + "since components reinitialize the client side from "
+                        + "the initial attach event");
+        assertEquals(0, invocationOwners(internals).size(),
+                "Resynchronizing should stop tracking the discarded owner");
+    }
+
+    @Test
+    void prepareForResync_attachListenerAddsInvocation_invocationKept() {
+        StateNode node = new StateNode(ElementData.class);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation reinitialization = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation("reinitialize"));
+        node.addAttachListener(
+                () -> internals.addJavaScriptInvocation(reinitialization));
+
+        internals.getStateTree().prepareForResync();
+
+        assertEquals(List.of(reinitialization),
+                internals.dumpPendingJavaScriptInvocations(),
+                "What a component queues while reinitializing on the resync "
+                        + "attach event has to survive the discard");
+    }
+
+    @Test
+    void dumpPendingJavaScriptInvocations_ownerDetached_onlyItsInvocationsDiscarded()
+            throws Exception {
+        ElementChildrenList children = internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class);
+
+        StateNode detachedNode = new StateNode(ElementData.class);
+        detachedNode.getFeature(ElementData.class).setVisible(false);
+        children.add(0, detachedNode);
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(
+                detachedNode, new UIInternals.JavaScriptInvocation("1")));
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(
+                detachedNode, new UIInternals.JavaScriptInvocation("2")));
+
+        StateNode otherNode = new StateNode(ElementData.class);
+        otherNode.getFeature(ElementData.class).setVisible(false);
+        children.add(1, otherNode);
+        PendingJavaScriptInvocation otherInvocation = new PendingJavaScriptInvocation(
+                otherNode, new UIInternals.JavaScriptInvocation("3"));
+        internals.addJavaScriptInvocation(otherInvocation);
+
+        internals.dumpPendingJavaScriptInvocations();
+
+        assertEquals(3, internals.getPendingJavaScriptInvocations().count(),
+                "Invocations of invisible components should be retained");
+
+        detachedNode.setParent(null);
+
+        assertEquals(List.of(otherInvocation),
+                internals.getPendingJavaScriptInvocations().toList(),
+                "Only the invocations of the detached owner should be discarded");
+        assertEquals(List.of(otherNode),
+                List.copyOf(invocationOwners(internals)),
+                "Only the detached owner should stop being tracked");
+    }
+
+    @Test
+    void addJavaScriptInvocation_ownerDetachedBeforeDump_invocationDiscarded() {
+        StateNode node = new StateNode(ElementData.class);
         internals.getStateTree().getRootNode()
                 .getFeature(ElementChildrenList.class).add(0, node);
 
         internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
                 new UIInternals.JavaScriptInvocation("")));
-        internals.dumpPendingJavaScriptInvocations();
-        internals.dumpPendingJavaScriptInvocations();
-        internals.dumpPendingJavaScriptInvocations();
 
-        Mockito.verify(node, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
-    }
+        node.setParent(null);
 
-    @Test
-    void dumpPendingJavaScriptInvocations_multipleInvocationPerNode_onlyOneDetachListenerRegistered() {
-        StateNode node = Mockito.spy(new StateNode(ElementData.class));
-        node.getFeature(ElementData.class).setVisible(false);
-        internals.getStateTree().getRootNode()
-                .getFeature(ElementChildrenList.class).add(0, node);
-
-        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
-                new UIInternals.JavaScriptInvocation("1")));
-        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
-                new UIInternals.JavaScriptInvocation("2")));
-        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node,
-                new UIInternals.JavaScriptInvocation("3")));
-        internals.dumpPendingJavaScriptInvocations();
-
-        Mockito.verify(node, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
-    }
-
-    @Test
-    void dumpPendingJavaScriptInvocations_registerOneDetachListenerPerNode() {
-        StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
-        node1.getFeature(ElementData.class).setVisible(false);
-        internals.getStateTree().getRootNode()
-                .getFeature(ElementChildrenList.class).add(0, node1);
-        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node1,
-                new UIInternals.JavaScriptInvocation("1")));
-
-        StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
-        node2.getFeature(ElementData.class).setVisible(false);
-        internals.getStateTree().getRootNode()
-                .getFeature(ElementChildrenList.class).add(0, node2);
-        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(node2,
-                new UIInternals.JavaScriptInvocation("1")));
-
-        internals.dumpPendingJavaScriptInvocations();
-
-        Mockito.verify(node1, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
-        Mockito.verify(node2, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
-    }
-
-    @Test
-    void dumpPendingJavaScriptInvocations_invocationCompletes_pendingListPurged() {
-        StateNode node = Mockito.spy(new StateNode(ElementData.class));
-        node.getFeature(ElementData.class).setVisible(false);
-        internals.getStateTree().getRootNode()
-                .getFeature(ElementChildrenList.class).add(0, node);
-
-        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
-                node, new UIInternals.JavaScriptInvocation(""));
-        internals.addJavaScriptInvocation(invocation);
-        internals.dumpPendingJavaScriptInvocations();
-
-        Mockito.verify(node, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
-
-        invocation.complete(JacksonCodec.encodeWithTypeInfo("OK"));
-
-        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
-    }
-
-    @Test
-    void dumpPendingJavaScriptInvocations_invocationFails_pendingListPurged() {
-        StateNode node = Mockito.spy(new StateNode(ElementData.class));
-        node.getFeature(ElementData.class).setVisible(false);
-        internals.getStateTree().getRootNode()
-                .getFeature(ElementChildrenList.class).add(0, node);
-
-        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
-                node, new UIInternals.JavaScriptInvocation(""));
-        internals.addJavaScriptInvocation(invocation);
-        internals.dumpPendingJavaScriptInvocations();
-
-        Mockito.verify(node, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
-
-        invocation.completeExceptionally(
-                JacksonCodec.encodeWithTypeInfo("ERROR"));
-
-        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
+        assertEquals(0, internals.dumpPendingJavaScriptInvocations().size(),
+                "An invocation that never reached a dump should be discarded "
+                        + "as well, since the client does not know the node");
     }
 
     @Test
     void dumpPendingJavaScriptInvocations_invocationCanceled_pendingListPurged() {
-        StateNode node = Mockito.spy(new StateNode(ElementData.class));
+        StateNode node = new StateNode(ElementData.class);
         node.getFeature(ElementData.class).setVisible(false);
         internals.getStateTree().getRootNode()
                 .getFeature(ElementChildrenList.class).add(0, node);
@@ -398,9 +443,6 @@ class UIInternalsTest {
                 node, new UIInternals.JavaScriptInvocation(""));
         internals.addJavaScriptInvocation(invocation);
         internals.dumpPendingJavaScriptInvocations();
-
-        Mockito.verify(node, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
 
         invocation.cancelExecution();
 
@@ -408,55 +450,143 @@ class UIInternalsTest {
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_nodeDetached_pendingListPurged() {
-        StateNode node = Mockito.spy(new StateNode(ElementData.class));
-        node.getFeature(ElementData.class).setVisible(false);
-        internals.getStateTree().getRootNode()
-                .getFeature(ElementChildrenList.class).add(0, node);
+    void executeJs_elementMovedBeforeDump_invocationStillSent() {
+        UI realUI = new UI();
+        UIInternals realInternals = realUI.getInternals();
+        realInternals.setSession(new AlwaysLockedVaadinSession(vaadinService));
 
-        PendingJavaScriptInvocation invocation = new PendingJavaScriptInvocation(
-                node, new UIInternals.JavaScriptInvocation(""));
-        internals.addJavaScriptInvocation(invocation);
-        internals.dumpPendingJavaScriptInvocations();
+        Element first = new Element("div");
+        Element second = new Element("div");
+        realUI.getElement().appendChild(first, second);
 
-        Mockito.verify(node, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
+        Element child = new Element("span");
+        first.appendChild(child);
+        child.executeJs("this.foo = $0", "bar");
 
-        node.setParent(null);
+        // Moving the child detaches it from one parent before attaching it to
+        // the other, which happens before the invocation reaches the queue
+        second.appendChild(child);
 
-        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
+        realInternals.getStateTree().runExecutionsBeforeClientResponse();
+
+        assertEquals(1, realInternals.dumpPendingJavaScriptInvocations().size(),
+                "Moving an element should not drop its pending JavaScript");
     }
 
     @Test
-    void dumpPendingJavaScriptInvocations_multipleInvocation_detachListenerRegisteredOnce() {
-        StateNode node = Mockito.spy(new StateNode(ElementData.class));
-        node.getFeature(ElementData.class).setVisible(false);
-        internals.getStateTree().getRootNode()
-                .getFeature(ElementChildrenList.class).add(0, node);
+    void closedUI_retainedInvocationCanceled_noNullPointerException() {
+        UI closedUI = new UI();
+        UIInternals closedInternals = closedUI.getInternals();
+        closedInternals
+                .setSession(new AlwaysLockedVaadinSession(vaadinService));
 
-        PendingJavaScriptInvocation invocation = Mockito
-                .spy(new PendingJavaScriptInvocation(node,
-                        new UIInternals.JavaScriptInvocation("")));
-        internals.addJavaScriptInvocation(invocation);
-        internals.dumpPendingJavaScriptInvocations();
-        internals.dumpPendingJavaScriptInvocations();
-        internals.dumpPendingJavaScriptInvocations();
-        internals.dumpPendingJavaScriptInvocations();
+        Element element = new Element("div");
+        element.setVisible(false);
+        closedUI.getElement().appendChild(element);
+        PendingJavaScriptResult pending = element.executeJs("this.foo = $0",
+                "bar");
 
-        Mockito.verify(node, Mockito.times(1))
-                .addDetachListener(ArgumentMatchers.any());
-        Mockito.verify(invocation, Mockito.times(1)).then(
-                ArgumentMatchers.any(SerializableConsumer.class),
-                ArgumentMatchers.any(SerializableConsumer.class));
+        // The invocation is owned by an invisible component, so it is retained
+        // in the queue
+        closedInternals.getStateTree().runExecutionsBeforeClientResponse();
+        closedInternals.dumpPendingJavaScriptInvocations();
 
-        node.setParent(null);
-        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
+        closedInternals.setSession(null);
+
+        // The component may be reused in another UI and cancel the invocation
+        // that it still references
+        assertDoesNotThrow(pending::cancelExecution,
+                "Canceling an invocation retained by a closed UI should not fail");
+    }
+
+    @Test
+    void closedUI_detachListenerThrows_pendingInvocationsCleanedUp()
+            throws Exception {
+        UI closedUI = new UI();
+        UIInternals closedInternals = closedUI.getInternals();
+        closedInternals
+                .setSession(new AlwaysLockedVaadinSession(vaadinService));
+
+        Element element = new Element("div");
+        element.setVisible(false);
+        closedUI.getElement().appendChild(element);
+
+        // A listener that throws aborts detaching the UI element tree
+        element.getNode().addDetachListener(() -> {
+            throw new IllegalStateException("detach listener failure");
+        });
+        element.executeJs("this.foo = $0", "bar");
+
+        closedInternals.getStateTree().runExecutionsBeforeClientResponse();
+        closedInternals.dumpPendingJavaScriptInvocations();
+
+        assertEquals(1, pendingInvocations(closedInternals).size(),
+                "Invocation of invisible component should be retained");
+
+        closedInternals.setSession(null);
+
+        assertEquals(0, pendingInvocations(closedInternals).size(),
+                "Detaching the UI should discard the retained invocations");
+    }
+
+    @Test
+    void elementRemovedFromTree_uiClosed_reusedInAnotherUI_invocationReleased()
+            throws Exception {
+        UI firstUI = new UI();
+        UIInternals firstInternals = firstUI.getInternals();
+        firstInternals.setSession(new AlwaysLockedVaadinSession(vaadinService));
+
+        Element element = new Element("div");
+        element.setVisible(false);
+        firstUI.getElement().appendChild(element);
+        PendingJavaScriptResult pending = element.executeJs("this.foo = $0",
+                "bar");
+
+        firstInternals.getStateTree().runExecutionsBeforeClientResponse();
+        firstInternals.dumpPendingJavaScriptInvocations();
+
+        // Detaches the element before resetting its node, which releases the
+        // invocation from the queue of the first UI
+        element.removeFromTree(false);
+
+        assertEquals(0, pendingInvocations(firstInternals).size(),
+                "Detaching the element should release the invocation");
+
+        firstInternals.setSession(null);
+
+        // The element is reused in a new UI and cancels the invocation it still
+        // references while attaching
+        UI secondUI = new UI();
+        secondUI.getInternals()
+                .setSession(new AlwaysLockedVaadinSession(vaadinService));
+        secondUI.getElement().appendChild(element);
+
+        assertDoesNotThrow(pending::cancelExecution,
+                "Canceling an invocation retained by a closed UI should not fail");
+    }
+
+    private static Collection<?> pendingInvocations(UIInternals internals)
+            throws Exception {
+        return (Collection<?>) readField(internals, "pendingJsInvocations");
+    }
+
+    private static Collection<?> invocationOwners(UIInternals internals)
+            throws Exception {
+        return (Collection<?>) readField(internals,
+                "pendingJsInvocationOwners");
+    }
+
+    private static Object readField(UIInternals internals, String name)
+            throws Exception {
+        Field field = UIInternals.class.getDeclaredField(name);
+        field.setAccessible(true);
+        return field.get(internals);
     }
 
     @Test
     void isDirty_noPendingJsInvocation_returnsFalse() {
-        StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
-        StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
+        StateNode node1 = spy(new StateNode(ElementData.class));
+        StateNode node2 = spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
         ElementChildrenList childrenList = internals.getStateTree()
                 .getRootNode().getFeature(ElementChildrenList.class);
@@ -474,8 +604,8 @@ class UIInternalsTest {
 
     @Test
     void isDirty_pendingJsInvocationReadyToSend_returnsTrue() {
-        StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
-        StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
+        StateNode node1 = spy(new StateNode(ElementData.class));
+        StateNode node2 = spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
         ElementChildrenList childrenList = internals.getStateTree()
                 .getRootNode().getFeature(ElementChildrenList.class);
@@ -497,8 +627,8 @@ class UIInternalsTest {
 
     @Test
     void isDirty_pendingJsInvocationNotReadyToSend_returnsFalse() {
-        StateNode node1 = Mockito.spy(new StateNode(ElementData.class));
-        StateNode node2 = Mockito.spy(new StateNode(ElementData.class));
+        StateNode node1 = spy(new StateNode(ElementData.class));
+        StateNode node2 = spy(new StateNode(ElementData.class));
         node2.getFeature(ElementData.class).setVisible(false);
         ElementChildrenList childrenList = internals.getStateTree()
                 .getRootNode().getFeature(ElementChildrenList.class);
@@ -518,6 +648,62 @@ class UIInternalsTest {
 
         assertFalse(internals.isDirty(),
                 "No pending JS invocations to send to the client, expecting UI not to be dirty");
+    }
+
+    @Test
+    void addUndeliveredJsInvocations_uncountingMoreThanCounted_clampedToZero() {
+        internals.addUndeliveredJsInvocations(1);
+
+        assertEquals(0, internals.addUndeliveredJsInvocations(-2),
+                "the count should never go negative");
+        assertEquals(1, internals.addUndeliveredJsInvocations(1),
+                "counting should continue from zero after being clamped");
+    }
+
+    @Test
+    void markUndeliveredJsInvocationsWarningLogged_onlyTheFirstCallReturnsTrue() {
+        assertTrue(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should be logged when the threshold is first exceeded");
+        assertFalse(internals.markUndeliveredJsInvocationsWarningLogged(),
+                "the warning should not be logged again for the same UI");
+    }
+
+    @Test
+    void lastUpdateSentTimestamp_initializedOnCreation() {
+        Instant before = Instant.now();
+        UIInternals freshInternals = new UIInternals(ui);
+
+        assertFalse(
+                freshInternals.getLastUpdateSentTimestamp().isBefore(before),
+                "a UI that has not sent anything yet should report its creation time");
+        assertFalse(freshInternals.getLastUpdateSentTimestamp()
+                .isAfter(Instant.now()));
+    }
+
+    @Test
+    void dumpPendingJavaScriptInvocations_updatesLastUpdateSentTimestamp() {
+        Instant initialTimestamp = internals.getLastUpdateSentTimestamp();
+
+        internals.dumpPendingJavaScriptInvocations();
+
+        assertTrue(
+                internals.getLastUpdateSentTimestamp()
+                        .isAfter(initialTimestamp),
+                "purging the pending invocations should update the timestamp");
+        assertFalse(
+                internals.getLastUpdateSentTimestamp().isAfter(Instant.now()));
+    }
+
+    @Test
+    void pendingJsInvocationNotPurged_lastUpdateSentTimestampNotUpdated() {
+        Instant initialTimestamp = internals.getLastUpdateSentTimestamp();
+
+        internals.addJavaScriptInvocation(new PendingJavaScriptInvocation(
+                internals.getStateTree().getRootNode(),
+                new UIInternals.JavaScriptInvocation("")));
+
+        assertEquals(initialTimestamp, internals.getLastUpdateSentTimestamp(),
+                "scheduling an invocation should not update the timestamp");
     }
 
     @Test
@@ -548,36 +734,62 @@ class UIInternalsTest {
     }
 
     private PushConfiguration setUpInitialPush() {
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
+        DeploymentConfiguration config = mock(DeploymentConfiguration.class);
         vaadinService.setConfiguration(config);
 
-        PushConfiguration pushConfig = Mockito.mock(PushConfiguration.class);
-        Mockito.when(ui.getPushConfiguration()).thenReturn(pushConfig);
+        PushConfiguration pushConfig = mock(PushConfiguration.class);
+        when(ui.getPushConfiguration()).thenReturn(pushConfig);
 
-        Mockito.when(config.getPushMode()).thenReturn(PushMode.DISABLED);
+        when(config.getPushMode()).thenReturn(PushMode.DISABLED);
         return pushConfig;
     }
 
     @Test
     void getDeploymentConfiguration() {
-        AlwaysLockedVaadinSession session = Mockito
-                .mock(AlwaysLockedVaadinSession.class);
-        MockVaadinServletService mockVaadinServletService = Mockito
-                .mock(MockVaadinServletService.class);
+        AlwaysLockedVaadinSession session = mock(
+                AlwaysLockedVaadinSession.class);
+        MockVaadinServletService mockVaadinServletService = mock(
+                MockVaadinServletService.class);
 
         internals = new UIInternals(ui);
         internals.setSession(session);
 
-        Mockito.when(session.getService()).thenReturn(mockVaadinServletService);
+        when(session.getService()).thenReturn(mockVaadinServletService);
         DeploymentConfiguration config = new MockDeploymentConfiguration();
-        Mockito.when(mockVaadinServletService.getDeploymentConfiguration())
+        when(mockVaadinServletService.getDeploymentConfiguration())
                 .thenReturn(config);
 
         DeploymentConfiguration result = internals.getDeploymentConfiguration();
 
-        Mockito.verify(session).getService();
-        Mockito.verify(mockVaadinServletService).getDeploymentConfiguration();
+        verify(session).getService();
+        verify(mockVaadinServletService).getDeploymentConfiguration();
         assertEquals(config, result);
+    }
+
+    @Test
+    void containsPendingJsCall_recognizesTheLocationReplaceOfEitherRouter() {
+        // The router checks this before scheduling a second location replace
+        History history = new History(ui);
+        MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) vaadinService
+                .getDeploymentConfiguration();
+
+        assertFalse(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "replaceState"),
+                "nothing should be pending before anything is scheduled");
+
+        configuration.setReactEnabled(false);
+        history.replaceState(null, "somewhere");
+        assertTrue(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "replaceState"),
+                "the replace the router scheduled should be recognized");
+
+        configuration.setReactEnabled(true);
+        history.replaceState(null, "elsewhere");
+        assertTrue(
+                internals.containsPendingJsCall(HistoryJs.class,
+                        "navigateReplacing"),
+                "the replace the React router scheduled should be recognized");
     }
 }

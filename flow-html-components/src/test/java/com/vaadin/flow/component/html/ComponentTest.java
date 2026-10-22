@@ -140,6 +140,7 @@ abstract class ComponentTest {
         return component;
     }
 
+    @SuppressWarnings("removal")
     protected void testHasOrderedComponents() {
         if (!(component instanceof HasOrderedComponents)) {
             fail("Component " + component.getClass()

@@ -51,7 +51,7 @@ public class InitialExtendedClientDetailsView extends Div {
         addSpan("rawTimezoneOffset", details.getRawTimezoneOffset());
         addSpan("DSTSavings", details.getDSTSavings());
         addSpan("DSTInEffect", details.isDSTInEffect());
-        addSpan("currentDate", details.getCurrentDate());
+        addSpan("browserTime", details.getBrowserTime());
         addSpan("touchDevice", details.isTouchDevice());
         addSpan("devicePixelRatio", details.getDevicePixelRatio());
         addSpan("windowName", details.getWindowName());

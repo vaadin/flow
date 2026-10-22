@@ -27,8 +27,17 @@ import com.vaadin.flow.server.menu.AvailableViewInfo;
  *
  * In Spring Boot application, a {@link SpringMenuAccessControl} is provided by
  * default, if Spring Security is available.
+ * 
+ * @since 24.5.1
  */
 public class SpringMenuAccessControl extends DefaultMenuAccessControl {
+
+    /**
+     * Creates the access control. Spring instantiates it as a bean.
+     */
+    public SpringMenuAccessControl() {
+        // Default constructor
+    }
 
     @Override
     public boolean canAccessView(AvailableViewInfo viewInfo) {

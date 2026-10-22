@@ -15,11 +15,18 @@
  */
 package com.vaadin.flow.spring.test;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.WrapsElement;
+import org.openqa.selenium.remote.LocalFileDetector;
+import org.openqa.selenium.remote.RemoteWebElement;
+
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public abstract class AbstractSpringTest extends ChromeBrowserTest {
 
@@ -75,6 +82,44 @@ public abstract class AbstractSpringTest extends ChromeBrowserTest {
         }
         return properties.getProperty(key);
 
+    }
+
+    /**
+     * Selects the given file in the native {@code <input type="file">} located
+     * by id. The file is transferred to the browser first, so this works with
+     * both locally run and remote browsers.
+     *
+     * @param inputId
+     *            the id of the file input element
+     * @param file
+     *            the local file to upload
+     */
+    protected void uploadFileToNativeInput(String inputId, File file) {
+        TestBenchElement input = $(TestBenchElement.class).id(inputId);
+        setLocalFileDetector(input);
+        input.sendKeys(file.getAbsolutePath());
+    }
+
+    /*
+     * A remote browser cannot read a file path typed into the input, so the
+     * local file has to be transferred to it. On a locally run browser this is
+     * a no-op.
+     */
+    private void setLocalFileDetector(WebElement element) {
+        if (getRunLocallyBrowser() != null) {
+            return;
+        }
+        if (element instanceof WrapsElement) {
+            element = ((WrapsElement) element).getWrappedElement();
+        }
+        if (element instanceof RemoteWebElement) {
+            ((RemoteWebElement) element)
+                    .setFileDetector(new LocalFileDetector());
+        } else {
+            throw new IllegalArgumentException(
+                    "Expected argument of type RemoteWebElement, received "
+                            + element.getClass().getName());
+        }
     }
 
 }
