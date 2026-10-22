@@ -34,6 +34,7 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.auth.NavigationContext.Phase;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
@@ -127,10 +128,17 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
 
         boolean hasAccess = accessAnnotationChecker.hasAccess(targetView,
                 context.getPrincipal(), context::hasRole);
-        LOGGER.debug("Access to view '{}' with path '{}' is {}",
-                context.getNavigationTarget().getName(),
-                context.getLocation().getPath(),
-                ((hasAccess) ? "allowed" : "denied"));
+        if (context.getPhase() == Phase.PUBLIC_ROUTE_CHECK) {
+            LOGGER.debug("Public route check: view '{}' with path '{}' is {}",
+                    context.getNavigationTarget().getName(),
+                    context.getLocation().getPath(),
+                    ((hasAccess) ? "public" : "not public"));
+        } else {
+            LOGGER.debug("Access to view '{}' with path '{}' is {}",
+                    context.getNavigationTarget().getName(),
+                    context.getLocation().getPath(),
+                    ((hasAccess) ? "allowed" : "denied"));
+        }
         if (hasAccess) {
             return context.allow();
         }
@@ -168,6 +176,15 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
 
     private void logDeniedByLayoutAccessRules(NavigationContext context,
             Class<?> layoutClass, String msg) {
+        if (context.getPhase() == Phase.PUBLIC_ROUTE_CHECK) {
+            // The layout restricts anonymous access on purpose, so this is
+            // neither an access problem nor a configuration error
+            LOGGER.debug(
+                    "Public route check: view '{}' is not public due to layout '{}' access rules",
+                    context.getNavigationTarget().getName(),
+                    layoutClass.getName());
+            return;
+        }
         if (isViewBroaderThanLayout(context.getNavigationTarget(),
                 layoutClass)) {
             LOGGER.warn(
