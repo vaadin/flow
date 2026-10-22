@@ -591,8 +591,8 @@ class NavigationStateRendererTest {
 
     @ParameterizedTest
     @EnumSource(value = NavigationTrigger.class, names = { "ROUTER_LINK",
-            "HISTORY", "UI_NAVIGATE" })
-    void handle_preserveOnRefresh_queryChange_keepsTriggerAndPushesOnlyForUINavigate(
+            "HISTORY", "UI_NAVIGATE", "PAGE_LOAD" })
+    void handle_preserveOnRefresh_queryChange_onlyReloadIsRefreshAndOnlyUINavigatePushes(
             NavigationTrigger trigger) {
         MockVaadinServletService service = createMockServiceWithInstantiator();
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
@@ -637,17 +637,18 @@ class NavigationStateRendererTest {
 
         assertSame(view, ui.getInternals().getActiveRouterTargetsChain().get(0),
                 "Preserved view should be reused");
-        assertFalse(view.refreshBeforeEnter,
-                "Navigation within the view should not be a refresh");
-        assertFalse(view.refreshAfterNavigation,
-                "Navigation within the view should not be a refresh");
+        boolean reload = trigger == NavigationTrigger.PAGE_LOAD;
+        assertEquals(reload, view.refreshBeforeEnter,
+                "Only a reload should be a refresh for " + trigger);
+        assertEquals(reload, view.refreshAfterNavigation,
+                "Only a reload should be a refresh for " + trigger);
         assertEquals(
                 trigger == NavigationTrigger.UI_NAVIGATE
                         ? List.of("preserved?id=1")
                         : List.of(),
                 pushedLocations,
                 "Only server initiated navigation should push history state, "
-                        + "the client has already updated history for "
+                        + "the browser has already updated history for "
                         + trigger);
     }
 

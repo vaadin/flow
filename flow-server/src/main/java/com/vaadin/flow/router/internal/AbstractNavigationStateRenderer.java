@@ -495,7 +495,6 @@ public abstract class AbstractNavigationStateRenderer
         boolean reactEnabled = ui.getInternals().getSession().getService()
                 .getDeploymentConfiguration().isReactEnabled();
         Location currentLocation = ui.getInternals().getActiveViewLocation();
-        NavigationTrigger eventTrigger = event.getTrigger();
         if (event instanceof ErrorNavigationEvent errorEvent) {
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
                 // #8544
@@ -503,11 +502,9 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (NavigationTrigger.REFRESH != eventTrigger
-                && !event.isForwardTo()
-                && (currentLocation == null || !event.getLocation()
-                        .getPathWithQueryParameters().equals(currentLocation
-                                .getPathWithQueryParameters()))) {
+        } else if (!event.isForwardTo() && (currentLocation == null
+                || !event.getLocation().getPathWithQueryParameters().equals(
+                        currentLocation.getPathWithQueryParameters()))) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
@@ -525,8 +522,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())
-                || NavigationTrigger.REFRESH.equals(event.getTrigger());
+        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
     }
 
     private boolean isRouterLinkNotFoundNavigationError(
