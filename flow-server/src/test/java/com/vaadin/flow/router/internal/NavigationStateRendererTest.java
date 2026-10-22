@@ -589,6 +589,68 @@ class NavigationStateRendererTest {
                 "Reload should be flagged for after");
     }
 
+    @ParameterizedTest
+    @EnumSource(value = NavigationTrigger.class, names = { "ROUTER_LINK",
+            "HISTORY", "UI_NAVIGATE" })
+    void handle_preserveOnRefresh_queryChange_keepsTriggerAndPushesOnlyForUINavigate(
+            NavigationTrigger trigger) {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        List<String> pushedLocations = new ArrayList<>();
+        MockUI ui = new MockUI(session) {
+            final Page page = new Page(this) {
+                final History history = new History(getUI().get()) {
+                    @Override
+                    public void pushState(BaseJsonNode state,
+                            Location location) {
+                        pushedLocations
+                                .add(location.getPathWithQueryParameters());
+                    }
+                };
+
+                @Override
+                public History getHistory() {
+                    return history;
+                }
+            };
+
+            @Override
+            public Page getPage() {
+                return page;
+            }
+        };
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
+        ui.getInternals().setExtendedClientDetails(details);
+
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(PreservedEventView.class));
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("preserved"), ui, NavigationTrigger.PAGE_LOAD));
+        final PreservedEventView view = (PreservedEventView) ui.getInternals()
+                .getActiveRouterTargetsChain().get(0);
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("preserved", QueryParameters.of("id", "1")), ui,
+                trigger));
+
+        assertSame(view, ui.getInternals().getActiveRouterTargetsChain().get(0),
+                "Preserved view should be reused");
+        assertFalse(view.refreshBeforeEnter,
+                "Navigation within the view should not be a refresh");
+        assertFalse(view.refreshAfterNavigation,
+                "Navigation within the view should not be a refresh");
+        assertEquals(
+                trigger == NavigationTrigger.UI_NAVIGATE
+                        ? List.of("preserved?id=1")
+                        : List.of(),
+                pushedLocations,
+                "Only server initiated navigation should push history state, "
+                        + "the client has already updated history for "
+                        + trigger);
+    }
+
     @Test
     void handle_preserveOnRefresh_otherUIChildrenAreMoved() {
         // given a service with instantiator
