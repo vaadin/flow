@@ -27,12 +27,13 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * Loads a style sheet into the browser at runtime as a
- * {@code <link rel="stylesheet">} element, or as a {@code <style>} element with
- * an {@code @import} rule when a {@link #layer()} is set. The referenced file
- * is served as a static resource by the servlet container; it is not bundled.
- * Use {@link CssImport} when the CSS file should be processed as a bundle
- * source by Vite at build time.
+ * Loads a style sheet into the browser at runtime, by default as a
+ * {@code <link rel="stylesheet">} element. With {@link LoadMode#INLINE} the
+ * contents of the file are inlined in a {@code <style>} element instead, and a
+ * style sheet with a {@link #layer()} that is not inlined is loaded with an
+ * {@code @import} rule. The referenced file is served as a static resource by
+ * the servlet container; it is not bundled. Use {@link CssImport} when the CSS
+ * file should be processed as a bundle source by Vite at build time.
  * <p>
  * Source locations:
  * <ul>
