@@ -4,15 +4,15 @@
   "type": "module",
   "dependencies": {
     "@polymer/polymer": "3.5.2",
-    "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
-    "@vaadin/common-frontend": "0.0.19",
-    "@vaadin/polymer-legacy-adapter": "24.6.7",
     "@vaadin/testscope-all": "../vite-test-assets/packages/@vaadin/testscope-all",
     "@vaadin/testscope-button": "../vite-test-assets/packages/@vaadin/testscope-button",
     "@vaadin/testscope-map": "../vite-test-assets/packages/@vaadin/testscope-map",
-    "@vaadin/text-field": "24.6.7",
-    "@vaadin/vaadin-lumo-styles": "24.6.7",
-    "@vaadin/vaadin-themable-mixin": "24.6.7",
+    "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
+    "@vaadin/common-frontend": "0.0.19",
+    "@vaadin/polymer-legacy-adapter": "24.4.9",
+    "@vaadin/text-field": "24.4.9",
+    "@vaadin/vaadin-lumo-styles": "24.4.9",
+    "@vaadin/vaadin-themable-mixin": "24.4.9",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "3.3.3",
     "react": "18.3.1",
@@ -21,8 +21,6 @@
   },
   "devDependencies": {
     "@babel/preset-react": "7.29.7",
-    "@babel/types": "7.29.8",
-    "@preact/signals-react": "3.12.0",
     "@preact/signals-react-transform": "0.5.2",
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/pluginutils": "5.4.0",
@@ -40,16 +38,18 @@
     "vite-plugin-checker": "0.14.5",
     "workbox-build": "7.3.0",
     "workbox-core": "7.3.0",
-    "workbox-precaching": "7.3.0"
+    "workbox-precaching": "7.3.0",
+    "@babel/types": "7.29.8",
+    "@preact/signals-react": "3.12.0"
   },
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.5.2",
       "@vaadin/common-frontend": "0.0.19",
-      "@vaadin/polymer-legacy-adapter": "24.6.7",
-      "@vaadin/text-field": "24.6.7",
-      "@vaadin/vaadin-lumo-styles": "24.6.7",
-      "@vaadin/vaadin-themable-mixin": "24.6.7",
+      "@vaadin/polymer-legacy-adapter": "24.4.9",
+      "@vaadin/text-field": "24.4.9",
+      "@vaadin/vaadin-lumo-styles": "24.4.9",
+      "@vaadin/vaadin-themable-mixin": "24.4.9",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "3.3.3",
       "react": "18.3.1",
@@ -58,8 +58,6 @@
     },
     "devDependencies": {
       "@babel/preset-react": "7.29.7",
-      "@babel/types": "7.29.8",
-      "@preact/signals-react": "3.12.0",
       "@preact/signals-react-transform": "0.5.2",
       "@rollup/plugin-replace": "6.0.3",
       "@rollup/pluginutils": "5.4.0",
@@ -77,9 +75,11 @@
       "vite-plugin-checker": "0.14.5",
       "workbox-build": "7.3.0",
       "workbox-core": "7.3.0",
-      "workbox-precaching": "7.3.0"
+      "workbox-precaching": "7.3.0",
+      "@babel/types": "7.29.8",
+      "@preact/signals-react": "3.12.0"
     },
-    "hash": "f85592201e439b08313cac21864f58c1d669aaca5dbcdba82fb3ec9852988549"
+    "hash": "40d6c597777a52f9e2889724347641d5be02fd06c9a1ae15479d6ebcf12bec2b"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",
