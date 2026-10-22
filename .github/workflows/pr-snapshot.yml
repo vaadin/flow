@@ -253,7 +253,7 @@ jobs:
           </dependencyManagement>
           \`\`\`
 
-          \`flow-bom\` has to come before \`vaadin-bom\`: Maven takes the first version it finds for an artifact, so the other order leaves the platform's own Flow version in use. \`$PLATFORM_VERSION\` is the platform snapshot of the same minor version as this one.
+          Replace the application's own \`vaadin-bom\` import with these two rather than adding them next to it: with two \`vaadin-bom\` imports, the first one decides the platform version. \`flow-bom\` has to come before \`vaadin-bom\`: Maven takes the first version it finds for an artifact, so the other order leaves the platform's own Flow version in use. \`$PLATFORM_VERSION\` is the unreleased platform snapshot of the same minor version as this one, so this also moves the application off its released platform version.
           </details>
           EOF
           # One comment per pull request, edited in place, so a series of pushes
