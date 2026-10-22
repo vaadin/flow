@@ -1496,11 +1496,12 @@ public class UIInternals implements Serializable {
         }
 
         List<String> jsDeps = new ArrayList<>();
-        // type=MODULE values are deliberately kept out of the bundle and are
-        // loaded at runtime instead, so their absence is not a problem
-        jsDeps.addAll(dependencies.getJavaScripts().stream()
-                .filter(js -> !isRuntimeJavaScript(js)).map(dep -> dep.value())
-                .collect(Collectors.toList()));
+        // type=MODULE values and values with a runtime prefix are deliberately
+        // kept out of the bundle and are loaded at runtime instead, so their
+        // absence is not a problem
+        jsDeps.addAll(dependencies.getJavaScripts().stream().filter(
+                js -> !FrontendDependencyUrlResolver.isRuntimeJavaScript(js))
+                .map(JavaScript::value).collect(Collectors.toList()));
         jsDeps.addAll(dependencies.getJsModules().stream()
                 .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
                 .collect(Collectors.toList()));
@@ -1533,7 +1534,16 @@ public class UIInternals implements Serializable {
             Class<? extends Component> componentClass,
             DependencyInfo dependency) {
         Page page = ui.getPage();
-        dependency.getJavaScripts().stream().filter(this::isRuntimeJavaScript)
+        boolean productionMode = ui.getSession() != null
+                && ui.getSession().getConfiguration().isProductionMode();
+        // Bundled developmentOnly values are left out of the production bundle
+        // by the build. Runtime values never go through the bundle, so the
+        // same rule has to be applied here (for both @JavaScript and
+        // @JsModule), otherwise a developmentOnly script would be loaded in
+        // production too.
+        dependency.getJavaScripts().stream()
+                .filter(FrontendDependencyUrlResolver::isRuntimeJavaScript)
+                .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> {
                     // Checked before resolving the value so that an
                     // unsupported combination is reported even when the value
@@ -1545,41 +1555,21 @@ public class UIInternals implements Serializable {
                                 + componentClass.getName()
                                 + " uses LoadMode.INLINE together with Type.MODULE, which is not supported. Use LoadMode.EAGER or LoadMode.LAZY, or Type.SCRIPT if the contents must be inlined into the page.");
                     }
-                    String resolved = resolveRuntimeJavaScript(js.value());
+                    String resolved = FrontendDependencyUrlResolver
+                            .resolveRuntimeJavaScript(js.value());
                     if (resolved == null) {
                         return;
                     }
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });
+        // Runtime prefixes do not apply to @JsModule: '/' values are still
+        // bundled. This must match the external check that keeps @JsModule
+        // values out of the bundle at build time (AbstractUpdateImports).
         dependency.getJsModules().stream()
                 .filter(js -> UrlUtil.isExternal(js.value()))
+                .filter(js -> !productionMode || !js.developmentOnly())
                 .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
                         JavaScript.Type.MODULE));
-    }
-
-    private boolean isRuntimeJavaScript(JavaScript js) {
-        return js.type() == JavaScript.Type.MODULE
-                || FrontendDependencyUrlResolver
-                        .isRuntimeDependencyUrl(js.value());
-    }
-
-    /**
-     * Normalizes a runtime {@link JavaScript} annotation value so that the
-     * bootstrap URI resolver can expand it.
-     * <p>
-     * Values with a protocol (external URLs but also {@code context://} and
-     * {@code base://}) are passed through untouched, the same way they were
-     * before {@link JavaScript.Type#MODULE} existed. Other values (absolute
-     * server paths, and bare relative values of {@code Type.MODULE}) are
-     * normalized through {@link FrontendDependencyUrlResolver}.
-     *
-     * @return the normalized value, or {@code null} if the value was rejected
-     */
-    private String resolveRuntimeJavaScript(String value) {
-        if (UrlUtil.isExternal(value)) {
-            return value;
-        }
-        return FrontendDependencyUrlResolver.resolveToContextRoot(value);
     }
 
     /**

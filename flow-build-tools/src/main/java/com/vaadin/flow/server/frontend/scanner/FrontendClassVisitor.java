@@ -30,6 +30,7 @@ import org.objectweb.asm.Type;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.theme.NoTheme;
@@ -74,17 +75,14 @@ final class FrontendClassVisitor extends ClassVisitor {
 
         private final LinkedHashSet<String> target;
         private final LinkedHashSet<String> targetDevelopmentOnly;
-        private final LinkedHashSet<String> deprecatedRuntimeTarget;
         private final boolean isJavaScriptAnnotation;
 
         public JSAnnotationVisitor(LinkedHashSet<String> target,
                 LinkedHashSet<String> targetDevelopmentOnly,
-                boolean isJavaScriptAnnotation,
-                LinkedHashSet<String> deprecatedRuntimeTarget) {
+                boolean isJavaScriptAnnotation) {
             this.target = target;
             this.targetDevelopmentOnly = targetDevelopmentOnly;
             this.isJavaScriptAnnotation = isJavaScriptAnnotation;
-            this.deprecatedRuntimeTarget = deprecatedRuntimeTarget;
         }
 
         @Override
@@ -115,18 +113,14 @@ final class FrontendClassVisitor extends ClassVisitor {
                 // type=MODULE @JavaScript values are loaded at runtime as
                 // <script type="module"> by UIInternals; skip them entirely.
                 // This visitor is called also for the $Container annotation.
+                // Values with any other scheme are dropped from the bundle
+                // and added at runtime as well, see UrlUtil.isExternal
                 boolean runtimeUrl = FrontendDependencyUrlResolver
-                        .isRuntimeDependencyUrl(currentModule);
+                        .isRuntimeDependencyUrl(currentModule)
+                        || UrlUtil.isExternal(currentModule);
                 if (isJavaScriptAnnotation && runtimeUrl) {
                     // @JavaScript with a runtime prefix: load at runtime, not
                     // bundled. No deprecation — this is the recommended form.
-                } else if (!isJavaScriptAnnotation && runtimeUrl) {
-                    // @JsModule with a runtime URL: keep working at runtime
-                    // via Page.addJsModule, but skip from the bundle and warn
-                    // users to migrate to @JavaScript.
-                    if (deprecatedRuntimeTarget != null) {
-                        deprecatedRuntimeTarget.add(currentModule);
-                    }
                 } else if (currentDevOnly) {
                     targetDevelopmentOnly.add(currentModule);
                 } else {
@@ -258,11 +252,10 @@ final class FrontendClassVisitor extends ClassVisitor {
         };
         // Visitor for @JsModule annotations
         jsModuleVisitor = new JSAnnotationVisitor(classInfo.modules,
-                classInfo.modulesDevelopmentOnly, false,
-                classInfo.deprecatedRuntimeModules);
+                classInfo.modulesDevelopmentOnly, false);
         // Visitor for @JavaScript annotations
         jScriptVisitor = new JSAnnotationVisitor(classInfo.scripts,
-                classInfo.scriptsDevelopmentOnly, true, null);
+                classInfo.scriptsDevelopmentOnly, true);
         // Visitor all other annotations
         annotationVisitor = new RepeatedAnnotationVisitor() {
             @Override

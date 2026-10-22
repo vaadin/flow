@@ -50,13 +50,10 @@ import com.vaadin.flow.component.Component;
  * different orders relative to each other). {@code @JsModule} files load before
  * {@link JavaScript} and {@link CssImport}.
  * <p>
- * <b>Deprecated runtime URLs:</b> Historically, {@code @JsModule} also accepted
- * runtime URLs ({@code http://}, {@code https://}, {@code //},
- * {@code context://}, {@code base://}, {@code /…}); such values were loaded at
- * runtime as {@code <script type="module">}. This is deprecated. Use
- * {@link JavaScript} for runtime script loading. Existing runtime URLs in
- * {@code @JsModule} keep working for backwards compatibility but are excluded
- * from the bundle and emit a build-time warning.
+ * URLs with a scheme ({@code https://}, {@code context://}, {@code base://} and
+ * so on) and protocol-relative URLs ({@code //}) are not bundled; they are
+ * loaded at runtime as {@code <script type="module">} instead. Prefer
+ * {@link JavaScript} with {@link JavaScript.Type#MODULE} for such files.
  * <p>
  * NOTE: Currently all frontend resources are bundled together into one big
  * bundle. JavaScript files loaded by one class will therefore be present on a
@@ -85,10 +82,10 @@ public @interface JsModule {
      * (e.g. {@code "@scope/pkg/foo.js"}), or an alias. The bundler resolves
      * these against the configured frontend directory.
      * <p>
-     * Values with a runtime URL prefix ({@code http://}, {@code https://},
-     * {@code //}, {@code context://}, {@code base://}, or a leading {@code /})
-     * are deprecated; they are excluded from the bundle and emit a build-time
-     * warning. Migrate them to {@link JavaScript}.
+     * URLs with a scheme and protocol-relative URLs are loaded at runtime
+     * instead of being bundled; prefer {@link JavaScript} with
+     * {@link JavaScript.Type#MODULE} for those. A value starting with {@code /}
+     * is still a bundler import specifier.
      * <p>
      * NOTE: In the case of using JsModule with LitTemplate, the value needs to
      * point to a real file as it will be copied to the templates folder under
