@@ -194,7 +194,9 @@ navigation at a time, after the current one has finished its round trip.
 - **Offline.** When the connection is down or `?v-r=init` fails, the route
   renders the offline stub (`offline-stub.html` in an iframe) instead of the
   container, and re-renders when the connection comes back. See
-  [Connection state and loading indicator](#connection-state-and-loading-indicator).
+  [Connection state and loading indicator](#connection-state-and-loading-indicator)
+  and, for the service worker, the
+  [`@PWA` note](../flow-build-tools/src/main/resources/plugins/vite-plugin-service-worker/ARCHITECTURE.md).
 
 ## Working on it
 
