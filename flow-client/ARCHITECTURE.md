@@ -159,7 +159,7 @@ navigation at a time, after the current one has finished its round trip.
 - **React inside server views.** React adapter elements in the container
   render through `flow-portal-add` events into the `Flow` component's own
   React tree, so they share React Router and context with the rest of the
-  application.
+  application. See [`flow-react/ARCHITECTURE.md`](../flow-react/ARCHITECTURE.md).
 
 ## Decisions and gotchas
 
@@ -203,8 +203,9 @@ navigation at a time, after the current one has finished its round trip.
   modules below, not only in the unit tests.
 - Unit tests for `Flow.ts`: `flow-client/src/test/frontend/FlowTests.ts`
   (`npm test` in `flow-client`).
-- Integration tests: `flow-tests/test-react-router` (React Router
-  navigation, guards, queued navigation), `flow-tests/test-vaadin-router`
+- Integration tests: the routing ITs in `flow-tests/test-default`
+  (`com.vaadin.flow.test.routing`: `NavigationIT`, `BackNavIT`, `StateIT` and
+  others, under React Router), `flow-tests/test-vaadin-router`
   (vaadin-router mode), `flow-tests/test-ccdm` and
   `flow-tests/test-ccdm-flow-navigation` (bootstrap and navigation with
   client views), `flow-tests/test-react-adapter` (portals).
