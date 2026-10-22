@@ -493,8 +493,10 @@ class PwaRegistryTest {
         String html = registry.getOfflineHtml();
 
         assertTrue(html.contains("<div class=\"app-name\">foo</div>"), html);
-        assertTrue(html.contains("<img class=\"app-icon\" src=\""
-                + largestCachedIcon.getHref() + "\""), html);
+        assertTrue(
+                html.contains(
+                        "<img src=\"" + largestCachedIcon.getHref() + "\""),
+                html);
         assertFalse(html.contains("%%%"), html);
     }
 

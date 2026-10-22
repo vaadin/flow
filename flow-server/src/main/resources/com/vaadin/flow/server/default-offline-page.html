@@ -78,7 +78,7 @@
         }
 
         /* No cached icon is available */
-        .offline .app-icon img[src=""] {
+        .offline .app-icon:has(> img[src=""]) {
             display: none;
         }
 
@@ -160,7 +160,7 @@
                 canvas.width = 1;
                 canvas.height = 1;
                 var context = canvas.getContext('2d');
-                context.drawImage(icon, 0, 0);
+                context.drawImage(img, 0, 0);
                 if (context.getImageData(0, 0, 1, 1).data[3] !== 0) {
                     icon.classList.add('opaque');
                 }
