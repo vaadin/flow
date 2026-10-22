@@ -19,13 +19,14 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.agent.ByteBuddyAgent;
+import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.dynamic.loading.ClassReloadingStrategy;
 import org.junit.jupiter.api.AfterEach;
@@ -67,6 +68,8 @@ class JavaScriptHotswapperTest {
     }
 
     private TestHotswapper hotswapper;
+    // class name -> copy redefined in place by hotswapInPlace
+    private Map<String, Class<?>> copies;
     private MockVaadinServletService service;
     private VaadinSession session;
     private MockUI ui;
@@ -88,12 +91,6 @@ class JavaScriptHotswapperTest {
     void tearDown() throws Exception {
         CurrentInstance.clearAll();
         AppShellRegistry.getInstance(service.getContext()).reset();
-        for (Class<?> type : List.of(Base.class, Helper.class)) {
-            ClassReloadingStrategy.fromInstalledAgent().reset(type);
-        }
-        List.of(Base.class, Helper.class, ExtendsBase.class,
-                AlsoExtendsBase.class, UsesHelper.class)
-                .forEach(ReflectionCache::clearAll);
     }
 
     @Test
@@ -192,7 +189,7 @@ class JavaScriptHotswapperTest {
     void superclassRuntimeScriptChanged_subclassInUse_reloadsWithNewValue()
             throws Exception {
         assertEquals(Optional.of(UIUpdateStrategy.RELOAD), hotswapInPlace(
-                new ExtendsBase(), Base.class, BaseChanged.class));
+                Base.class, BaseChanged.class, null, ExtendsBase.class));
         // The cached metadata of the subclass was read before the change, so
         // it is cleared for a new page to get the new value
         assertEquals(Set.of("/changed.js"),
@@ -202,10 +199,9 @@ class JavaScriptHotswapperTest {
     @Test
     void superclassRuntimeScriptChanged_nestedSubclassesInUse_reloadsWithNewValues()
             throws Exception {
-        Layout layout = new Layout();
-        layout.add(new ExtendsBase(), new AlsoExtendsBase());
         assertEquals(Optional.of(UIUpdateStrategy.RELOAD),
-                hotswapInPlace(layout, Base.class, BaseChanged.class));
+                hotswapInPlace(Base.class, BaseChanged.class, new Layout(),
+                        ExtendsBase.class, AlsoExtendsBase.class));
         // Both are read again, not only the first one needing a reload
         assertEquals(Set.of("/changed.js"),
                 javaScriptValues(ExtendsBase.class));
@@ -244,7 +240,7 @@ class JavaScriptHotswapperTest {
     void usesTargetRuntimeScriptChanged_componentInUse_reloadsWithNewValue()
             throws Exception {
         assertEquals(Optional.of(UIUpdateStrategy.RELOAD), hotswapInPlace(
-                new UsesHelper(), Helper.class, HelperChanged.class));
+                Helper.class, HelperChanged.class, null, UsesHelper.class));
         assertEquals(Set.of("/changed.js"), javaScriptValues(UsesHelper.class));
     }
 
@@ -287,35 +283,72 @@ class JavaScriptHotswapperTest {
     /**
      * Runs the hotswap sequence for {@code original} being redefined in place
      * with the annotations of {@code modified}, the way the JVM redefines a
-     * class, while {@code inUse} is in the UI. Returns the update requested for
-     * the UI.
+     * class, while instances of {@code inUse} are in the UI, inside
+     * {@code container} if given. Returns the update requested for the UI.
+     * <p>
+     * Copies of {@code original} and {@code inUse} are redefined rather than
+     * the classes themselves. The copies are defined from the class files
+     * without a code source, so a coverage agent does not instrument them with
+     * methods that the redefinition would then delete.
      */
-    private Optional<UIUpdateStrategy> hotswapInPlace(Component inUse,
-            Class<?> original, Class<?> modified) {
-        ui.add(inUse);
-        Stream.concat(Stream.of(inUse), inUse.getChildren())
-                .forEach(component -> ui.getInternals()
-                        .addComponentDependencies(component.getClass()));
+    private Optional<UIUpdateStrategy> hotswapInPlace(Class<?> original,
+            Class<?> modified, Component container, Class<?>... inUse)
+            throws Exception {
+        DynamicType.Unloaded<?> types = new ByteBuddy().redefine(original)
+                .make();
+        for (Class<?> type : inUse) {
+            types = types.include(new ByteBuddy().redefine(type).make());
+        }
+        copies = types
+                .load(new URLClassLoader(new URL[0],
+                        getClass().getClassLoader()),
+                        ClassLoadingStrategy.Default.CHILD_FIRST)
+                .getAllLoaded().values().stream()
+                .collect(Collectors.toMap(Class::getName, type -> type));
 
+        HasComponents parent = ui;
+        if (container != null) {
+            ui.add(container);
+            parent = (HasComponents) container;
+        }
+        for (Class<?> type : inUse) {
+            Component component = (Component) copy(type).getConstructor()
+                    .newInstance();
+            parent.add(component);
+            ui.getInternals().addComponentDependencies(component.getClass());
+        }
+
+        Class<?> originalCopy = copy(original);
         hotswapper.onClassesChange(
-                new HotswapClassEvent(service, Set.of(original), true));
+                new HotswapClassEvent(service, Set.of(originalCopy), true));
 
         ByteBuddyAgent.install();
         new ByteBuddy().redefine(modified).name(original.getName()).make().load(
-                original.getClassLoader(),
+                originalCopy.getClassLoader(),
                 ClassReloadingStrategy.fromInstalledAgent());
         // Done by ReflectionCacheHotswapper before the session events
-        ReflectionCache.clearAll(original);
+        ReflectionCache.clearAll(originalCopy);
 
         HotswapClassSessionEvent event = new HotswapClassSessionEvent(service,
-                session, Set.of(original), true);
+                session, Set.of(originalCopy), true);
         hotswapper.onClassesChange(event);
         return event.getUIUpdateStrategy(ui);
     }
 
+    private Class<?> copy(Class<?> type) {
+        return copies.get(type.getName());
+    }
+
+    /**
+     * Gets the values of the copy of the given class used by the last
+     * {@link #hotswapInPlace} call, as a new page would read them.
+     */
     private Set<String> javaScriptValues(Class<? extends Component> type) {
-        return ComponentUtil.getDependencies(service, type).getJavaScripts()
-                .stream().map(JavaScript::value).collect(Collectors.toSet());
+        return ComponentUtil
+                .getDependencies(service,
+                        copy(type).asSubclass(Component.class))
+                .getJavaScripts().stream().map(JavaScript::value)
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -386,7 +419,7 @@ class JavaScriptHotswapperTest {
     public static class BundledScriptAsRuntime extends Component {
     }
 
-    // Redefined in place, so only used by hotswapInPlace
+    // Copies are redefined in place by hotswapInPlace
     @Tag("div")
     @JavaScript("/script.js")
     public static class Base extends Component {
@@ -427,7 +460,7 @@ class JavaScriptHotswapperTest {
     public static class AppShellChanged implements AppShellConfigurator {
     }
 
-    // Redefined in place, so only used by hotswapInPlace
+    // Copies are redefined in place by hotswapInPlace
     @Tag("div")
     @JavaScript("/script.js")
     public static class Helper extends Component {
