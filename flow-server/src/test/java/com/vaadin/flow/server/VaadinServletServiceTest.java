@@ -45,8 +45,6 @@ import org.junit.jupiter.api.io.TempDir;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
-import com.vaadin.flow.server.communication.FaviconHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.theme.AbstractTheme;
 
@@ -55,18 +53,19 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -192,6 +191,12 @@ class VaadinServletServiceTest {
                     throws ServiceException {
                 return Collections.emptyList();
             }
+
+            @Override
+            protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+                    throws ServiceException {
+                return Collections.emptyList();
+            }
         };
 
         servletService.init();
@@ -225,186 +230,119 @@ class VaadinServletServiceTest {
     }
 
     @Test
-    void requestCanCreateSession_webComponentScript_doesNotCreateSession() {
-        WebComponentConfigurationRegistry registry = mock(
-                WebComponentConfigurationRegistry.class);
-        when(registry.hasConfigurations()).thenReturn(true);
-        VaadinRequest request = createWebComponentRequest(registry);
+    void handleRequest_sessionlessHandler_handlesRequestWithoutSession()
+            throws Exception {
+        HttpServletRequest httpRequest = createRequest(
+                "http://dummy.host:8080/", "/contextpath", "/servlet",
+                "/resource");
+        VaadinRequest request = servlet.createVaadinRequest(httpRequest);
+        VaadinResponse response = mock(VaadinResponse.class);
+        RequestHandler handler = mock(RequestHandler.class);
+        SessionlessRequestHandler sessionlessHandler = mock(
+                SessionlessRequestHandler.class);
+        when(sessionlessHandler.handleRequest(request, response))
+                .thenReturn(true);
+        service.getRequestHandlers().clear();
+        service.getRequestHandlers().add(handler);
+        service.getSessionlessRequestHandlers().clear();
+        service.getSessionlessRequestHandlers().add(sessionlessHandler);
+        List<RequestEndedEvent> ended = new ArrayList<>();
+        service.getEventBus().addListener(RequestEndedEvent.class, ended::add);
 
-        when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.js");
-        assertFalse(service.requestCanCreateSession(request));
+        service.handleRequest(request, response);
 
-        when(request.getPathInfo())
-                .thenReturn("/web-component/web-component-bootstrap.js");
-        assertTrue(service.requestCanCreateSession(request));
+        verify(handler, never()).handleRequest(any(), any(), any());
+        verify(httpRequest, never()).getSession();
+        verify(httpRequest, never()).getSession(anyBoolean());
+        assertFalse(ended.get(0).getHandler().isPresent());
+        assertSame(sessionlessHandler,
+                ended.get(0).getSessionlessHandler().orElseThrow());
+        assertFalse(ended.get(0).getSession().isPresent());
 
-        for (String path : new String[] { "/web-component/",
-                "/web-component/my-component",
-                "/web-component/my-component.html" }) {
-            when(request.getPathInfo()).thenReturn(path);
-            assertTrue(service.requestCanCreateSession(request), path);
-        }
+        // A request it declines gets a session and reaches the other handlers
+        when(sessionlessHandler.handleRequest(request, response))
+                .thenReturn(false);
+        when(handler.handleRequest(any(), any(), any())).thenReturn(true);
 
-        when(registry.hasConfigurations()).thenReturn(false);
-        when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.js");
-        assertTrue(service.requestCanCreateSession(request));
+        service.handleRequest(request, response);
 
-        // Without a provider, nothing serves the script without a session
-        when(registry.hasConfigurations()).thenReturn(true);
-        service.getRequestHandlers()
-                .removeIf(WebComponentProvider.class::isInstance);
-        assertTrue(service.requestCanCreateSession(request));
+        verify(handler).handleRequest(notNull(), eq(request), eq(response));
+        assertSame(handler, ended.get(1).getHandler().orElseThrow());
+        assertFalse(ended.get(1).getSessionlessHandler().isPresent());
+
+        // A handler that throws is named together with the failure
+        VaadinRequest failingRequest = servlet
+                .createVaadinRequest(createRequest("http://dummy.host:8080/",
+                        "/contextpath", "/servlet", "/resource"));
+        when(sessionlessHandler.handleRequest(failingRequest, response))
+                .thenThrow(new IOException("BOOM!"));
+
+        assertThrows(ServiceException.class,
+                () -> service.handleRequest(failingRequest, response));
+
+        RequestEndedEvent failed = ended.get(2);
+        assertSame(sessionlessHandler,
+                failed.getSessionlessHandler().orElseThrow());
+        assertEquals("BOOM!", failed.getFailure().orElseThrow().getMessage());
+        assertFalse(failed.getHandler().isPresent());
+        assertFalse(failed.getSession().isPresent());
     }
 
     @Test
-    void handleSessionExpired_webComponentScript_servedBeforeCustomHandlers()
+    void handleRequest_webComponentScript_servedWithoutSession()
             throws Exception {
         WebComponentConfigurationRegistry registry = mock(
                 WebComponentConfigurationRegistry.class);
         when(registry.hasConfigurations()).thenReturn(true);
         when(registry.getConfiguration("my-component"))
                 .thenReturn(Optional.empty());
-        VaadinRequest request = createWebComponentRequest(registry);
-        when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.js");
+        when(mocks.getServletContext().getAttribute(
+                WebComponentConfigurationRegistry.class.getName()))
+                .thenReturn(registry);
+        HttpServletRequest httpRequest = createRequest(
+                "http://dummy.host:8080/", "/contextpath", "/servlet",
+                "/web-component/my-component.js");
         VaadinResponse response = mock(VaadinResponse.class);
         // Handlers added through ServiceInitEvent come first
-        CatchAllSessionExpiredHandler customHandler = mock(
-                CatchAllSessionExpiredHandler.class);
+        RequestHandler customHandler = mock(RequestHandler.class);
         service.getRequestHandlers().add(0, customHandler);
 
-        service.handleSessionExpired(request, response);
+        service.handleRequest(servlet.createVaadinRequest(httpRequest),
+                response);
 
-        verify(customHandler, never()).handleSessionExpired(any(), any());
-        verify(response).sendError(eq(HttpStatusCode.NOT_FOUND.getCode()),
-                anyString());
+        verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(),
+                "No web component for my-component");
+        verify(customHandler, never()).handleRequest(any(), any(), any());
+        verify(httpRequest, never()).getSession();
+        verify(httpRequest, never()).getSession(anyBoolean());
     }
 
     @Test
-    void handleSessionExpired_notServedByProvider_reachesCustomHandlers()
-            throws Exception {
-        WebComponentConfigurationRegistry registry = mock(
-                WebComponentConfigurationRegistry.class);
-        when(registry.hasConfigurations()).thenReturn(true);
-        VaadinRequest request = createWebComponentRequest(registry);
-        VaadinResponse response = mock(VaadinResponse.class);
-        CatchAllSessionExpiredHandler customHandler = mock(
-                CatchAllSessionExpiredHandler.class);
-        when(customHandler.handleSessionExpired(request, response))
-                .thenReturn(true);
-        service.getRequestHandlers().add(0, customHandler);
-
-        when(request.getPathInfo())
-                .thenReturn("/web-component/web-component-bootstrap.js");
-        service.handleSessionExpired(request, response);
-        verify(customHandler).handleSessionExpired(request, response);
-
-        // Without a provider, nothing else serves the script
-        service.getRequestHandlers()
-                .removeIf(WebComponentProvider.class::isInstance);
-        when(request.getPathInfo())
-                .thenReturn("/web-component/my-component.js");
-        service.handleSessionExpired(request, response);
-        verify(customHandler, times(2)).handleSessionExpired(request, response);
-    }
-
-    @Test
-    void requestCanCreateSession_favicon_doesNotCreateSession() {
-        VaadinServletRequest request = createFaviconRequest();
-        assertFalse(service.requestCanCreateSession(request));
-
-        // Below a servlet path, the favicon is a request like any other
-        when(request.getServletPath()).thenReturn("/vaadin");
-        assertTrue(service.requestCanCreateSession(request));
-
-        // Below a context path as well
-        when(request.getServletPath()).thenReturn("");
-        when(request.getContextPath()).thenReturn("/ctx");
-        assertTrue(service.requestCanCreateSession(request));
-
-        // Without the handler, nothing answers the favicon without a session
-        when(request.getContextPath()).thenReturn("");
-        service.getRequestHandlers().removeIf(FaviconHandler.class::isInstance);
-        assertTrue(service.requestCanCreateSession(request));
-    }
-
-    @Test
-    void handleSessionExpired_favicon_notFoundBeforeCustomHandlers()
-            throws Exception {
-        VaadinServletRequest request = createFaviconRequest();
+    void handleRequest_favicon_notFoundWithoutSession() throws Exception {
+        HttpServletRequest httpRequest = createRequest("http://dummy.host:8080",
+                "", "", "/favicon.ico");
         VaadinResponse response = mock(VaadinResponse.class);
         // Handlers added through ServiceInitEvent come first
-        CatchAllSessionExpiredHandler customHandler = mock(
-                CatchAllSessionExpiredHandler.class);
+        RequestHandler customHandler = mock(RequestHandler.class);
+        when(customHandler.handleRequest(any(), any(), any())).thenReturn(true);
         service.getRequestHandlers().add(0, customHandler);
 
-        service.handleSessionExpired(request, response);
+        service.handleRequest(servlet.createVaadinRequest(httpRequest),
+                response);
 
-        verify(customHandler, never()).handleSessionExpired(any(), any());
         verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
+        verify(customHandler, never()).handleRequest(any(), any(), any());
+        verify(httpRequest, never()).getSession();
+        verify(httpRequest, never()).getSession(anyBoolean());
 
-        // Without the handler, the custom handlers answer it
-        service.getRequestHandlers().removeIf(FaviconHandler.class::isInstance);
-        service.handleSessionExpired(request, response);
-        verify(customHandler).handleSessionExpired(request, response);
-        verify(response).setStatus(HttpStatusCode.NOT_FOUND.getCode());
-    }
+        // Below a context path, the favicon is a request like any other
+        HttpServletRequest contextRequest = createRequest(
+                "http://dummy.host:8080", "/contextpath", "", "/favicon.ico");
 
-    @Test
-    void customHandlerWithoutSession_noSessionCreated_answersBeforeOtherHandlers()
-            throws Exception {
-        VaadinRequest request = mock(VaadinRequest.class);
-        when(request.getPathInfo()).thenReturn("/custom-resource");
-        VaadinResponse response = mock(VaadinResponse.class);
-        CatchAllSessionExpiredHandler catchAllHandler = mock(
-                CatchAllSessionExpiredHandler.class);
-        service.getRequestHandlers().add(0, catchAllHandler);
-        CatchAllSessionExpiredHandler sessionlessHandler = mock(
-                CatchAllSessionExpiredHandler.class);
-        when(sessionlessHandler.canHandleWithoutSession(request))
-                .thenReturn(true);
-        when(sessionlessHandler.handleSessionExpired(request, response))
-                .thenReturn(true);
-        service.getRequestHandlers().add(sessionlessHandler);
+        service.handleRequest(servlet.createVaadinRequest(contextRequest),
+                response);
 
-        assertFalse(service.requestCanCreateSession(request));
-
-        service.handleSessionExpired(request, response);
-
-        verify(sessionlessHandler).handleSessionExpired(request, response);
-        verify(catchAllHandler, never()).handleSessionExpired(any(), any());
-
-        // When it doesn't answer after all, the other handlers get the chance
-        when(sessionlessHandler.handleSessionExpired(request, response))
-                .thenReturn(false);
-        service.handleSessionExpired(request, response);
-        verify(catchAllHandler).handleSessionExpired(request, response);
-    }
-
-    private static VaadinServletRequest createFaviconRequest() {
-        VaadinServletRequest request = mock(VaadinServletRequest.class);
-        when(request.getContextPath()).thenReturn("");
-        when(request.getServletPath()).thenReturn("");
-        when(request.getPathInfo()).thenReturn("/favicon.ico");
-        return request;
-    }
-
-    private interface CatchAllSessionExpiredHandler
-            extends RequestHandler, SessionExpiredHandler {
-    }
-
-    private static VaadinRequest createWebComponentRequest(
-            WebComponentConfigurationRegistry registry) {
-        VaadinContext context = mock(VaadinContext.class);
-        when(context.getAttribute(eq(WebComponentConfigurationRegistry.class),
-                any())).thenReturn(registry);
-        VaadinService requestService = mock(VaadinService.class);
-        when(requestService.getContext()).thenReturn(context);
-        VaadinRequest request = mock(VaadinRequest.class);
-        when(request.getService()).thenReturn(requestService);
-        return request;
+        verify(customHandler).handleRequest(notNull(), any(), eq(response));
     }
 
     private String testLocation(String base, String contextPath,

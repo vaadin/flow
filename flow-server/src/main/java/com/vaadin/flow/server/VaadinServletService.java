@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +36,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -80,10 +78,17 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
+    protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+            throws ServiceException {
+        List<SessionlessRequestHandler> handlers = super.createSessionlessRequestHandlers();
+        handlers.add(0, new FaviconHandler());
+        return handlers;
+    }
+
+    @Override
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
-        handlers.add(0, new FaviconHandler());
 
         Mode mode = getDeploymentConfiguration().getMode();
         if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
@@ -91,15 +96,7 @@ public class VaadinServletService extends VaadinService {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
                     .getDevModeHandler(this);
             if (handlerManager.isPresent()) {
-                DevModeHandler devModeHandler = handlerManager.get();
-                // WebComponentProvider handler should run before DevModeHandler
-                // to avoid responding with html contents when dev bundle is
-                // not ready (e.g. dev-mode-not-ready.html)
-                handlers.stream().filter(WebComponentProvider.class::isInstance)
-                        .findFirst().map(handlers::indexOf)
-                        .ifPresentOrElse(idx -> {
-                            handlers.add(idx, devModeHandler);
-                        }, () -> handlers.add(devModeHandler));
+                handlers.add(handlerManager.get());
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
                     && !getDeploymentConfiguration().isBrowserless()) {
                 getLogger()
@@ -166,54 +163,8 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected boolean requestCanCreateSession(VaadinRequest request) {
-        if (isOtherRequest(request)) {
-            /*
-             * I.e URIs that are not RPC calls or static file requests, unless a
-             * handler serves them without a session, see handleSessionExpired.
-             */
-            return findHandlerWithoutSession(request).isEmpty();
-        }
-
-        return false;
-    }
-
-    @Override
-    protected void handleSessionExpired(VaadinRequest request,
-            VaadinResponse response) throws ServiceException {
-        // A handler that serves the request without a session answers it
-        // before any other session expired handler gets the chance to answer
-        // it with something else
-        Optional<SessionExpiredHandler> handler = findHandlerWithoutSession(
-                request);
-        if (handler.isPresent()) {
-            try {
-                if (handler.get().handleSessionExpired(request, response)) {
-                    return;
-                }
-            } catch (IOException e) {
-                throw new ServiceException("Handling of session expired failed",
-                        e);
-            }
-        }
-        super.handleSessionExpired(request, response);
-    }
-
-    /**
-     * Gets the first registered handler that serves the request without a
-     * session.
-     */
-    private Optional<SessionExpiredHandler> findHandlerWithoutSession(
-            VaadinRequest request) {
-        Iterable<RequestHandler> handlers = getRequestHandlers();
-        if (handlers == null) {
-            // The service is not initialized yet
-            return Optional.empty();
-        }
-        return StreamSupport.stream(handlers.spliterator(), false)
-                .filter(SessionExpiredHandler.class::isInstance)
-                .map(SessionExpiredHandler.class::cast)
-                .filter(handler -> handler.canHandleWithoutSession(request))
-                .findFirst();
+        // I.e URIs that are not RPC calls or static file requests
+        return isOtherRequest(request);
     }
 
     private boolean isOtherRequest(VaadinRequest request) {

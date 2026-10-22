@@ -76,6 +76,7 @@ public class MockServletServiceSessionSetup {
         private List<IndexHtmlRequestListener> indexHtmlRequestListeners = new ArrayList<>();
         private VaadinContext context;
         private List<RequestHandler> handlers;
+        private List<SessionlessRequestHandler> sessionlessHandlers;
         private Instantiator overriddenInstantiator;
 
         public TestVaadinServletService(TestVaadinServlet testVaadinServlet,
@@ -110,6 +111,18 @@ public class MockServletServiceSessionSetup {
 
         public List<RequestHandler> getRequestHandlers() {
             return handlers;
+        }
+
+        @Override
+        protected List<SessionlessRequestHandler> createSessionlessRequestHandlers()
+                throws ServiceException {
+            sessionlessHandlers = super.createSessionlessRequestHandlers();
+            return sessionlessHandlers;
+        }
+
+        @Override
+        public List<SessionlessRequestHandler> getSessionlessRequestHandlers() {
+            return sessionlessHandlers;
         }
 
         @Override
