@@ -66,9 +66,11 @@ jobs:
       #   lock next to it (kept for its hand-written local package links) is
       #   rewritten in place by Flow. Without this, its pinned versions fall
       #   behind the templates and Dependabot security updates target them.
-      #   The development pom is used: prepare-frontend already updates the
-      #   template versions, while a production build would also rewrite
-      #   the overrides and drop entries in the hand-maintained file.
+      #   Its pom.xml is built, not pom-production.xml: prepare-frontend
+      #   already updates the template versions, and a production build can
+      #   also drop entries from the hand-maintained file. A module whose
+      #   only pom binds build-frontend (vite-production) still gets a
+      #   production build.
       # For locks the production pom is preferred when a module has one; a
       # directory without a pom is skipped so it cannot fail the whole build. flow-maven-plugin is not a dependency of the
       # test modules, so -am does not build it on its own.
@@ -116,7 +118,7 @@ jobs:
             # Test fixtures outside a Maven module are not generated files
             [ -f "$dir/pom.xml" ] || continue
             packages+=("$package")
-            modules+=",$dir"
+            modules+=",$dir/pom.xml"
           done
           if [ ${#locks[@]} -eq 0 ] && [ ${#packages[@]} -eq 0 ]; then
             echo "No generated package-lock.json or package.json files found"
