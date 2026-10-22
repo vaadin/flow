@@ -18,8 +18,6 @@
   },
   "devDependencies": {
     "@babel/preset-react": "7.29.7",
-    "@babel/types": "7.29.8",
-    "@preact/signals-react": "3.12.0",
     "@preact/signals-react-transform": "0.8.2",
     "@rollup/plugin-replace": "6.0.3",
     "@rollup/pluginutils": "5.4.0",
@@ -34,7 +32,10 @@
     "transform-ast": "2.4.4",
     "typescript": "5.9.3",
     "vite": "7.3.6",
-    "vite-plugin-checker": "0.14.5"
+    "vite-plugin-checker": "0.14.5",
+    "workbox-build": "7.3.0",
+    "@babel/types": "7.29.8",
+    "@preact/signals-react": "3.12.0"
   },
   "vaadin": {
     "dependencies": {
@@ -49,8 +50,6 @@
     },
     "devDependencies": {
       "@babel/preset-react": "7.29.7",
-      "@babel/types": "7.29.8",
-      "@preact/signals-react": "3.12.0",
       "@preact/signals-react-transform": "0.8.2",
       "@rollup/plugin-replace": "6.0.3",
       "@rollup/pluginutils": "5.4.0",
@@ -65,19 +64,12 @@
       "transform-ast": "2.4.4",
       "typescript": "5.9.3",
       "vite": "7.3.6",
-      "vite-plugin-checker": "0.14.5"
+      "vite-plugin-checker": "0.14.5",
+      "workbox-build": "7.3.0",
+      "@babel/types": "7.29.8",
+      "@preact/signals-react": "3.12.0"
     },
-    "hash": "27947ba4c57f34bde1b5362293d73476bb6b3d2d7e873e6ffbe76c3ae74b7d1c",
-    "overrides": {
-      "@vaadin/common-frontend": "$@vaadin/common-frontend",
-      "@vaadin/text-field": "$@vaadin/text-field",
-      "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
-      "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
-      "lit": "$lit",
-      "react": "$react",
-      "react-dom": "$react-dom",
-      "react-router": "$react-router"
-    }
+    "hash": "31e5d84cfbd4147e21063b04fdfd896161b2b5ff6e4aed53782e67c7f7130288"
   },
   "pnpm": {
     "overrides": {
@@ -87,6 +79,8 @@
       "@vaadin/vaadin-themable-mixin": "$@vaadin/vaadin-themable-mixin",
       "lit": "$lit",
       "react-dom": "$react-dom",
+      "@types/react-dom": "$@types/react-dom",
+      "@types/react": "$@types/react",
       "react": "$react",
       "react-router": "$react-router"
     }
