@@ -8,10 +8,12 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
@@ -73,8 +75,9 @@ public class AuthenticationUtil {
                 roleWithPrefix = role;
             }
             return authentication.getAuthorities().stream()
-                    .anyMatch(grantedAuthority -> grantedAuthority
-                            .getAuthority().equals(roleWithPrefix));
+                    .map(GrantedAuthority::getAuthority)
+                    .filter(Objects::nonNull)
+                    .anyMatch(authority -> authority.equals(roleWithPrefix));
         };
     }
 
