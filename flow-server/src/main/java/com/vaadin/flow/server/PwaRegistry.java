@@ -202,7 +202,12 @@ public class PwaRegistry implements Serializable {
                 .map(lookup -> lookup.lookup(ResourceProvider.class));
         List<PwaIcon> iconTemplates = getIconTemplates(
                 pwaConfiguration.getIconPath());
-        iconGenerator = findIconGenerator(optionalLookup, iconTemplates);
+        // Only available during development, a production build ships
+        // pre-generated icons
+        iconGenerator = optionalLookup
+                .map(lookup -> lookup.lookup(PwaIconGenerator.class))
+                .filter(generator -> canReadBaseImage(generator, iconTemplates))
+                .orElse(null);
         int missingIcons = 0;
         for (PwaIcon icon : iconTemplates) {
             icon.setRegistry(this);
@@ -227,15 +232,8 @@ public class PwaRegistry implements Serializable {
         return icons;
     }
 
-    private PwaIconGenerator findIconGenerator(Optional<Lookup> lookup,
+    private boolean canReadBaseImage(PwaIconGenerator generator,
             List<PwaIcon> iconTemplates) {
-        // Only available during development, a production build ships
-        // pre-generated icons
-        PwaIconGenerator generator = lookup
-                .map(l -> l.lookup(PwaIconGenerator.class)).orElse(null);
-        if (generator == null) {
-            return null;
-        }
         try {
             // Generate the smallest icon once, so that icons are not
             // advertised when the base image cannot be read
@@ -244,13 +242,13 @@ public class PwaRegistry implements Serializable {
                     .orElseThrow();
             generator.generateIcon(baseImageUrl, smallest.getWidth(),
                     smallest.getHeight());
-            return generator;
+            return true;
         } catch (IOException | RuntimeException ex) {
             // Scaling throws unchecked exceptions for images it cannot handle,
             // such as extreme aspect ratios
             getLogger().error("Image is not found or can't be loaded: {}",
                     baseImageUrl, ex);
-            return null;
+            return false;
         }
     }
 
