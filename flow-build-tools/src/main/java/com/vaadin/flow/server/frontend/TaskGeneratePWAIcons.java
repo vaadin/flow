@@ -197,8 +197,8 @@ public class TaskGeneratePWAIcons implements FallibleCommand {
         int targetWidth = icon.getWidth();
         int targetHeight = icon.getHeight();
         return () -> {
-            BufferedImage scaled = PwaIcon.drawIconImage(baseImage, targetWidth,
-                    targetHeight);
+            BufferedImage scaled = PwaIconGeneratorImpl.drawIconImage(baseImage,
+                    targetWidth, targetHeight);
             try (OutputStream os = Files.newOutputStream(iconPath)) {
                 ImageIO.write(scaled, "png", os);
             } catch (IOException e) {

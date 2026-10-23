@@ -19,6 +19,7 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,8 @@ import org.mockito.invocation.InvocationOnMock;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.PwaIconGenerator;
 import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -93,6 +96,11 @@ class PwaRegistryTest {
             implements AppShellConfigurator {
     }
 
+    /** Describes the icon it is asked for instead of drawing it. */
+    private static final PwaIconGenerator ICON_GENERATOR = (baseImage, width,
+            height) -> (baseImage + " " + width + "x" + height)
+                    .getBytes(StandardCharsets.UTF_8);
+
     private static List<PwaIcon> splashIconsForAppleDevices;
 
     @AfterEach
@@ -129,8 +137,20 @@ class PwaRegistryTest {
                 .findFirst().get();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         pwaIcon.write(stream);
-        // the default image has 47 on the position 36
-        assertEquals(26, stream.toByteArray()[36]);
+        String generated = stream.toString(StandardCharsets.UTF_8);
+        assertTrue(
+                generated.endsWith("/META-INF/resources/icons/icon.png 32x32"),
+                generated);
+    }
+
+    @Test
+    void noIconGenerator_iconsNotPreGenerated_iconsAreLeftOut()
+            throws IOException {
+        PwaRegistry registry = withPwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class), null, Set.of(),
+                "./", true, null, (pwaRegistry, request) -> pwaRegistry);
+
+        assertTrue(registry.getIcons().isEmpty());
     }
 
     private static PwaRegistry preparePwaRegistry(PWA pwa) throws IOException {
@@ -141,7 +161,7 @@ class PwaRegistryTest {
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources) throws IOException {
         return withPwaRegistry(pwa, appShell, resources, "./", false,
-                (registry, request) -> registry);
+                ICON_GENERATOR, (registry, request) -> registry);
     }
 
     /**
@@ -163,7 +183,7 @@ class PwaRegistryTest {
             Set<String> resources, String contextRootRelativePath,
             boolean productionMode) throws IOException {
         return withPwaRegistry(pwa, appShell, resources,
-                contextRootRelativePath, productionMode,
+                contextRootRelativePath, productionMode, ICON_GENERATOR,
                 PwaRegistry::getRuntimeServiceWorkerJs);
     }
 
@@ -186,11 +206,14 @@ class PwaRegistryTest {
      * @param productionMode
      *            the deployment production mode, the single source
      *            {@code PwaRegistry} and {@code AppShellRegistry} both read
+     * @param iconGenerator
+     *            the generator for the icons that are not pre-generated, or
+     *            {@code null} if there is none, as in a production application
      */
     private static <T> T withPwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources, String contextRootRelativePath,
-            boolean productionMode,
+            boolean productionMode, PwaIconGenerator iconGenerator,
             BiFunction<PwaRegistry, VaadinRequest, T> action)
             throws IOException {
         try (MockedStatic<VaadinService> vaadinService = mockStatic(
@@ -245,6 +268,11 @@ class PwaRegistryTest {
                     invocation.getArguments()[0].toString(),
                     invocation.getArguments()[1])).when(servletContext)
                     .setAttribute(anyString(), any());
+
+            Lookup lookup = mock(Lookup.class);
+            when(lookup.lookup(PwaIconGenerator.class))
+                    .thenReturn(iconGenerator);
+            attributeMap.put(Lookup.class.getName(), lookup);
 
             final VaadinServletContext context = new VaadinServletContext(
                     servletContext);
@@ -509,7 +537,7 @@ class PwaRegistryTest {
         String sw = withPwaRegistry(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "./",
-                false,
+                false, ICON_GENERATOR,
                 // NOSONAR deliberate: this test pins the contract of the
                 // deprecated no-arg getter, which would otherwise be untested
                 (registry, request) -> registry.getRuntimeServiceWorkerJs());
