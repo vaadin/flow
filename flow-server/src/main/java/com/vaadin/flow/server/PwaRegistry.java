@@ -703,7 +703,7 @@ public class PwaRegistry implements Serializable {
 
     private List<PwaIcon> getIcons(PwaIcon.Domain domain) {
         return icons.stream().filter(icon -> icon.getDomain().equals(domain))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     public PwaConfiguration getPwaConfiguration() {
