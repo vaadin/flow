@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.SignalCommand;
@@ -207,13 +208,40 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
     }
 
     @Test
-    void submit_immediateDispatcherAndHandlerThrows_exceptionPropagated() {
-        useEffectDispatcher(Runnable::run);
-        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+    void submit_dispatcherThrowsOtherException_propagatedAndConfirmedLater() {
         IllegalStateException failure = new IllegalStateException();
-        SignalCommand command = TestUtil.writeRootValueCommand();
+        useEffectDispatcher(task -> {
+            throw failure;
+        });
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+        AtomicReference<CommandResult> firstResult = new AtomicReference<>();
+        SignalCommand command = TestUtil.writeRootValueCommand("first");
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(command, firstResult::set));
+
+        assertSame(failure, thrown);
+        assertNull(TestUtil.readConfirmedRootValue(tree));
+
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"));
+        dispatcher.runPendingTasks();
+
+        assertTrue(firstResult.get().accepted());
+    }
+
+    @ParameterizedTest
+    @ValueSource(classes = { IllegalStateException.class,
+            RejectedExecutionException.class })
+    void submit_immediateDispatcherAndHandlerThrows_exceptionPropagated(
+            Class<? extends RuntimeException> failureType) throws Exception {
+        useEffectDispatcher(Runnable::run);
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+        RuntimeException failure = failureType.getDeclaredConstructor()
+                .newInstance();
+        SignalCommand command = TestUtil.writeRootValueCommand();
+
+        RuntimeException thrown = assertThrows(failureType,
                 () -> tree.commitSingleCommand(command, result -> {
                     throw failure;
                 }));

@@ -58,6 +58,10 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
             SignalEnvironment.getDefaultEffectDispatcher()
                     .execute(wrapWithLock(() -> confirmUpTo(sequence)));
         } catch (RejectedExecutionException e) {
+            if (submittedCount - pendingConfirmations.size() >= sequence) {
+                // Thrown while confirming by a dispatcher that runs inline
+                throw e;
+            }
             LoggerFactory.getLogger(LocalAsynchronousSignalTree.class).debug(
                     "Confirmation task rejected, confirming immediately", e);
             confirmUpTo(sequence);
