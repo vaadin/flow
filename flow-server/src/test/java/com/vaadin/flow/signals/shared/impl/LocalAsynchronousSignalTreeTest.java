@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import tools.jackson.databind.node.StringNode;
 
@@ -220,38 +221,57 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
         assertSame(failure, thrown);
     }
 
-    static List<Throwable> handlerFailures() {
-        return List.of(new IllegalStateException(), new AssertionError());
+    static List<Arguments> handlerFailures() {
+        // first failure, second failure, expected thrown, expected suppressed
+        IllegalStateException sameRuntime = new IllegalStateException();
+        AssertionError sameError = new AssertionError();
+        IllegalStateException runtime1 = new IllegalStateException();
+        IllegalStateException runtime2 = new IllegalStateException();
+        IllegalStateException runtime3 = new IllegalStateException();
+        IllegalStateException runtime4 = new IllegalStateException();
+        AssertionError error1 = new AssertionError();
+        AssertionError error2 = new AssertionError();
+        AssertionError error3 = new AssertionError();
+        AssertionError error4 = new AssertionError();
+        return List.of(
+                Arguments.of(sameRuntime, sameRuntime, sameRuntime, List.of()),
+                Arguments.of(sameError, sameError, sameError, List.of()),
+                Arguments.of(runtime1, runtime2, runtime1, List.of(runtime2)),
+                Arguments.of(runtime3, error1, error1, List.of(runtime3)),
+                Arguments.of(error2, runtime4, error2, List.of(runtime4)),
+                Arguments.of(error3, error4, error3, List.of(error4)));
     }
 
     @ParameterizedTest
     @MethodSource("handlerFailures")
     void confirm_resultHandlersThrow_laterBatchesStillConfirmed(
-            Throwable failure) {
+            Throwable firstFailure, Throwable secondFailure,
+            Throwable expectedThrown, List<Throwable> expectedSuppressed) {
         TestExecutor dispatcher = useTestEffectDispatcher();
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
         AtomicReference<CommandResult> thirdResult = new AtomicReference<>();
-        CommandsAndHandlers.CommandResultHandler throwingHandler = result -> {
-            if (failure instanceof Error error) {
-                throw error;
-            }
-            throw (RuntimeException) failure;
-        };
 
-        // Same instance thrown twice must not be suppressed into itself
         tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
-                throwingHandler);
+                result -> sneakyThrow(firstFailure));
         tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"),
-                throwingHandler);
+                result -> sneakyThrow(secondFailure));
         tree.commitSingleCommand(TestUtil.writeRootValueCommand("third"),
                 thirdResult::set);
 
-        Throwable thrown = assertThrows(failure.getClass(),
+        Throwable thrown = assertThrows(Throwable.class,
                 dispatcher::runPendingTasksInReverseOrder);
 
-        assertSame(failure, thrown);
+        assertSame(expectedThrown, thrown);
+        assertEquals(expectedSuppressed, List.of(thrown.getSuppressed()));
         assertTrue(thirdResult.get().accepted());
         assertEquals(new StringNode("third"),
                 TestUtil.readConfirmedRootValue(tree));
+    }
+
+    private static void sneakyThrow(Throwable failure) {
+        if (failure instanceof Error error) {
+            throw error;
+        }
+        throw (RuntimeException) failure;
     }
 }
