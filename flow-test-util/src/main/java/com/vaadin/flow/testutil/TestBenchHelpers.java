@@ -317,7 +317,7 @@ public class TestBenchHelpers extends ParallelTest {
                 // we always have this error
                 .filter(logEntry -> !logEntry.getMessage()
                         .contains("favicon.ico"))
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**

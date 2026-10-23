@@ -122,8 +122,8 @@ public class HasUrlParameterFormat implements Serializable {
      * @return navigation url string.
      */
     public static <T> String getUrl(String url, List<T> parameters) {
-        return PathUtil.getPath(url,
-                parameters.stream().map(T::toString).toList());
+        return PathUtil.getPath(url, parameters.stream().map(T::toString)
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -214,7 +214,8 @@ public class HasUrlParameterFormat implements Serializable {
      * @return the class types of the parameters.
      */
     public static List<Class<?>> getParameterTypes(Collection<String> types) {
-        return types.stream().map(RouteParameterRegex::getType).toList();
+        return types.stream().map(RouteParameterRegex::getType)
+                .collect(Collectors.toList());
     }
 
     /**

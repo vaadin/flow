@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
@@ -705,13 +706,13 @@ public class ReflectTools implements Serializable {
         return Stream.of(interfaceType.getTypeParameters())
                 .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
                         typeParam))
-                .<Class<?>> map(type -> {
+                .map(type -> {
                     if (type instanceof Class
                             || type instanceof ParameterizedType) {
                         return GenericTypeReflector.erase(type);
                     }
                     return null;
-                }).toList();
+                }).collect(Collectors.toList());
     }
 
     /**
@@ -767,7 +768,7 @@ public class ReflectTools implements Serializable {
         List<Method> filteredMethods = Stream.of(methods)
                 .filter(method -> !Modifier.isStatic(method.getModifiers())
                         && !method.isDefault())
-                .toList();
+                .collect(Collectors.toList());
         assert filteredMethods.size() == 1;
         return filteredMethods.get(0);
     }

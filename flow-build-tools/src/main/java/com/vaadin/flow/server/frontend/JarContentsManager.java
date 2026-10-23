@@ -149,7 +149,7 @@ public class JarContentsManager {
                     .filter(path -> path.startsWith(baseDirectoryName))
                     .filter(path -> path
                             .endsWith(JAR_PATH_SEPARATOR + fileName))
-                    .toList();
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
