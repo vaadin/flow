@@ -53,9 +53,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * External URLs ({@code https://cdn.example/foo.js}) work the same way. On an
  * {@link com.vaadin.flow.component.page.AppShellConfigurator}, values loaded at
  * runtime are added to the initial page as {@code script} elements;
- * {@link LoadMode#INLINE} is not supported there. On any other class that is
- * not a component, such as a {@code VaadinServiceInitListener}, values loaded
- * at runtime are not loaded at all.
+ * {@link LoadMode#INLINE} is not supported there. Values on an interface are
+ * loaded at runtime for the components that implement it. On any other class
+ * that is not a component, such as a {@code VaadinServiceInitListener}, values
+ * loaded at runtime are not loaded at all.
  * <p>
  * For adding multiple JavaScript files for a single component, use this
  * annotation multiple times. It is guaranteed that dependencies will be loaded

@@ -53,9 +53,10 @@ import com.vaadin.flow.component.Component;
  * <b>Deprecated runtime URLs:</b> Runtime URLs (with a scheme such as
  * {@code https://}, {@code context://} or {@code base://}, protocol-relative
  * URLs ({@code //}) and values with a leading {@code /}) are deprecated. On a
- * component or the app shell, they are not bundled but loaded at runtime as
- * {@code <script type="module">}. On any other class, they are not loaded, and
- * a value with a leading {@code /} makes the frontend build fail. Use
+ * component, an interface or the app shell, they are not bundled but loaded at
+ * runtime as {@code <script type="module">}. On any other class, they are not
+ * loaded at runtime; a value with a leading {@code /} is still bundled from the
+ * frontend folder, and the frontend build fails if the file is not there. Use
  * {@link JavaScript} with {@link JavaScript.Type#MODULE} for such files
  * instead. See {@link #value()}.
  * <p>
@@ -89,12 +90,14 @@ public @interface JsModule {
      * Using a runtime URL (one starting with {@code context://},
      * {@code base://}, {@code /}, {@code http://}, {@code https://} or
      * {@code //}, or any other URL containing {@code ://}) is deprecated: on a
-     * component or the app shell, such a value is not bundled but loaded at
-     * runtime as a {@code <script type="module">}, and a warning is logged
-     * during the production build. On any other class, such as a
+     * component, an interface (such as a mixin implemented by components) or
+     * the app shell, such a value is not bundled but loaded at runtime as a
+     * {@code <script type="module">}, and a warning is logged during the
+     * production build. On any other class, such as a
      * {@code VaadinServiceInitListener}, nothing loads the value at runtime: a
-     * URL is not loaded at all, and a value with a leading {@code /} makes the
-     * frontend build fail. Use {@link JavaScript @JavaScript} with
+     * URL is not loaded at all, and a value with a leading {@code /} is still
+     * bundled from the frontend folder, which makes the frontend build fail if
+     * the file is not there. Use {@link JavaScript @JavaScript} with
      * {@link JavaScript.Type#MODULE} on a component or the app shell for
      * runtime modules instead. To bundle a file in the frontend folder, use a
      * relative value such as {@code ./foo.js}.
