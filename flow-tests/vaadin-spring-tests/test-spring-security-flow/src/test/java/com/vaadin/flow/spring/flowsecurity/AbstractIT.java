@@ -64,7 +64,11 @@ public abstract class AbstractIT extends AbstractSpringTest {
                         "admin-only/secret.txt?continue - Failed to load resource: the server responded with a status of 403")
                 || (msg.contains("X-Atmosphere-Transport=close")
                         && msg.contains(
-                                "Failed to load resource: the server responded with a status of 403")));
+                                "Failed to load resource: the server responded with a status of 403"))
+                // A heartbeat after the session has ended, which is how the
+                // client learns about it with the WEBSOCKET transport
+                || (msg.contains("v-r=heartbeat") && msg.contains(
+                        "Failed to load resource: the server responded with a status of 403")));
     }
 
     /**

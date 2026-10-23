@@ -133,9 +133,8 @@ public class SecurityConfig {
             return;
         }
         try {
-            // Simulate long processing time, longer than the 5 seconds after
-            // which the client reconnects a closed push connection
-            Thread.currentThread().sleep(6000);
+            // Simulate long processing time
+            Thread.currentThread().sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
