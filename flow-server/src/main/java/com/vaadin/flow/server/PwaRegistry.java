@@ -32,6 +32,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -199,9 +200,11 @@ public class PwaRegistry implements Serializable {
                         .getAttribute(Lookup.class));
         Optional<ResourceProvider> optionalResourceProvider = optionalLookup
                 .map(lookup -> lookup.lookup(ResourceProvider.class));
-        iconGenerator = findIconGenerator(optionalLookup);
+        List<PwaIcon> iconTemplates = getIconTemplates(
+                pwaConfiguration.getIconPath());
+        iconGenerator = findIconGenerator(optionalLookup, iconTemplates);
         int missingIcons = 0;
-        for (PwaIcon icon : getIconTemplates(pwaConfiguration.getIconPath())) {
+        for (PwaIcon icon : iconTemplates) {
             icon.setRegistry(this);
             // Try to find a pre-generated image
             String iconPath = Constants.VAADIN_WEBAPP_RESOURCES
@@ -224,7 +227,8 @@ public class PwaRegistry implements Serializable {
         return icons;
     }
 
-    private PwaIconGenerator findIconGenerator(Optional<Lookup> lookup) {
+    private PwaIconGenerator findIconGenerator(Optional<Lookup> lookup,
+            List<PwaIcon> iconTemplates) {
         // Only available during development, a production build ships
         // pre-generated icons
         PwaIconGenerator generator = lookup
@@ -233,9 +237,13 @@ public class PwaRegistry implements Serializable {
             return null;
         }
         try {
-            // Generate a tiny icon once, so that icons are not advertised
-            // when the base image cannot be read
-            generator.generateIcon(baseImageUrl, 1, 1);
+            // Generate the smallest icon once, so that icons are not
+            // advertised when the base image cannot be read
+            PwaIcon smallest = iconTemplates.stream()
+                    .min(Comparator.comparingInt(PwaIcon::getWidth))
+                    .orElseThrow();
+            generator.generateIcon(baseImageUrl, smallest.getWidth(),
+                    smallest.getHeight());
             return generator;
         } catch (IOException ex) {
             getLogger().error("Image is not found or can't be loaded: {}",
