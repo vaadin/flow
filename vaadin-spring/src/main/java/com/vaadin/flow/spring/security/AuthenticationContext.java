@@ -18,6 +18,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -196,7 +197,7 @@ public class AuthenticationContext {
 
     private Stream<String> getGrantedAuthoritiesStream() {
         return getGrantedAuthorities().stream()
-                .map(GrantedAuthority::getAuthority);
+                .map(GrantedAuthority::getAuthority).filter(Objects::nonNull);
     }
 
     /**
