@@ -35,8 +35,11 @@ import com.vaadin.flow.component.Component;
  * <p>
  * Source locations:
  * <ul>
- * <li>Application projects: {@code src/main/frontend/}.</li>
- * <li>Add-on JARs: {@code META-INF/frontend/}.</li>
+ * <li>Application projects: {@code src/main/frontend/} (recommended), or the
+ * legacy top-level {@code frontend/} directory.</li>
+ * <li>Add-on JARs: {@code META-INF/frontend/} (recommended). The legacy
+ * location {@code META-INF/resources/frontend/} is still supported but
+ * deprecated and emits a build-time warning.</li>
  * </ul>
  * <p>
  * For adding multiple JavaScript module files for a single component, use this
@@ -49,11 +52,13 @@ import com.vaadin.flow.component.Component;
  * <p>
  * Runtime URLs (with a scheme such as {@code https://}, {@code context://} or
  * {@code base://}, protocol-relative URLs ({@code //}) and values with a
- * leading {@code /}) are deprecated. On a component or the app shell, they are
- * not bundled but loaded at runtime as {@code <script type="module">}. On any
- * other class, they are not loaded, and a value with a leading {@code /} makes
- * the frontend build fail. Use {@link JavaScript} with
- * {@link JavaScript.Type#MODULE} for such files instead. See {@link #value()}.
+ * leading {@code /}) are deprecated. On a component, an interface or the app
+ * shell, they are not bundled but loaded at runtime as
+ * {@code <script type="module">}. On any other class, they are not loaded at
+ * runtime; a value with a leading {@code /} is still bundled from the frontend
+ * folder, and the frontend build fails if the file is not there. Use
+ * {@link JavaScript} with {@link JavaScript.Type#MODULE} for such files
+ * instead. See {@link #value()}.
  * <p>
  * NOTE: Currently all frontend resources are bundled together into one big
  * bundle. JavaScript files loaded by one class will therefore be present on a
@@ -85,12 +90,18 @@ public @interface JsModule {
      * Using a runtime URL (one starting with {@code context://},
      * {@code base://}, {@code /}, {@code http://}, {@code https://} or
      * {@code //}, or any other URL containing {@code ://}) is deprecated: on a
-     * component or the app shell, such a value is not bundled but loaded at
-     * runtime as a {@code <script type="module">}, and a warning is logged
-     * during the production build. On any other class, such as a
+     * component, an interface (such as a mixin implemented by components) or
+     * the app shell, such a value is not bundled but loaded at runtime as a
+     * {@code <script type="module">}, and a warning is logged during the
+     * production build. As with {@link JavaScript}, a value with a single
+     * leading {@code /} that contains a path traversal ({@code ..}) is rejected
+     * with a warning and not loaded at all; protocol-relative {@code //} URLs
+     * and values with a scheme, including {@code context://} and
+     * {@code base://}, are passed on unchanged. On any other class, such as a
      * {@code VaadinServiceInitListener}, nothing loads the value at runtime: a
-     * URL is not loaded at all, and a value with a leading {@code /} makes the
-     * frontend build fail. Use {@link JavaScript @JavaScript} with
+     * URL is not loaded at all, and a value with a leading {@code /} is still
+     * bundled from the frontend folder, which makes the frontend build fail if
+     * the file is not there. Use {@link JavaScript @JavaScript} with
      * {@link JavaScript.Type#MODULE} on a component or the app shell for
      * runtime modules instead. To bundle a file in the frontend folder, use a
      * relative value such as {@code ./foo.js}.

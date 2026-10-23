@@ -1570,9 +1570,13 @@ public class UIInternals implements Serializable {
                 .filter(js -> FrontendDependencyUrlResolver
                         .isRuntimeDependencyUrl(js.value()))
                 .filter(js -> !productionMode || !js.developmentOnly())
-                // A runtime URL is already resolved, so it is passed as is
-                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
-                        JavaScript.Type.MODULE));
+                // Resolved like a runtime @JavaScript value, so that the same
+                // value is accepted or rejected for both annotations
+                .map(js -> FrontendDependencyUrlResolver
+                        .resolveRuntimeJavaScript(js.value()))
+                .filter(Objects::nonNull)
+                .forEach(resolved -> page.addJavaScript(resolved,
+                        LoadMode.EAGER, JavaScript.Type.MODULE));
     }
 
     /**
