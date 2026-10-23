@@ -133,6 +133,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.BrowserLiveReloadImpl",
                 "com\\.vaadin\\.flow\\.internal\\.DevModeHandlerManager",
                 "com\\.vaadin\\.flow\\.internal\\.DevModeHandler",
+                "com\\.vaadin\\.flow\\.internal\\.PwaIconGenerator",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.JacksonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.JacksonSerializer",
