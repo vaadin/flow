@@ -1515,11 +1515,11 @@ public class UIInternals implements Serializable {
         // absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream().filter(
                 js -> !FrontendDependencyUrlResolver.isRuntimeJavaScript(js))
-                .map(JavaScript::value).collect(Collectors.toList()));
+                .map(JavaScript::value).toList());
         jsDeps.addAll(dependencies.getJsModules().stream().map(JsModule::value)
                 .filter(src -> !FrontendDependencyUrlResolver
                         .isRuntimeDependencyUrl(src))
-                .collect(Collectors.toList()));
+                .toList());
 
         if (!jsDeps.isEmpty()) {
             maybeWarnAboutDependencies(componentClass, jsDeps);
