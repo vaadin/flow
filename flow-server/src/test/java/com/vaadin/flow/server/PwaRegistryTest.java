@@ -19,6 +19,8 @@ import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -41,11 +43,13 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.PwaIconGenerator;
 import com.vaadin.flow.internal.ResourceContentHash;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -144,13 +148,51 @@ class PwaRegistryTest {
     }
 
     @Test
-    void noIconGenerator_iconsNotPreGenerated_iconsAreLeftOut()
-            throws IOException {
+    void noIconGenerator_onlyPreGeneratedIconsAreServed() throws IOException {
+        URL preGenerated = PwaRegistryTest.class
+                .getResource("/META-INF/resources/icons/icon.png");
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
+        when(resourceProvider.getApplicationResource(
+                Constants.VAADIN_WEBAPP_RESOURCES + Constants.VAADIN_PWA_ICONS
+                        + "icons/icon-512x512.png"))
+                .thenReturn(preGenerated);
+
         PwaRegistry registry = withPwaRegistry(
                 PwaRegistryTest.class.getAnnotation(PWA.class), null, Set.of(),
-                "./", true, null, (pwaRegistry, request) -> pwaRegistry);
+                "./", true, mockLookup(null, resourceProvider),
+                (pwaRegistry, request) -> pwaRegistry);
+
+        List<PwaIcon> icons = registry.getIcons();
+        assertEquals(1, icons.size());
+        assertEquals(512, icons.get(0).getWidth());
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        icons.get(0).write(stream);
+        try (InputStream expected = preGenerated.openStream()) {
+            assertArrayEquals(expected.readAllBytes(), stream.toByteArray());
+        }
+    }
+
+    @Test
+    void baseImageCannotBeRead_iconsAreLeftOut() throws IOException {
+        PwaIconGenerator failingGenerator = (baseImage, width, height) -> {
+            throw new IOException("Cannot read " + baseImage);
+        };
+
+        PwaRegistry registry = withPwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class), null, Set.of(),
+                "./", false, mockLookup(failingGenerator, null),
+                (pwaRegistry, request) -> pwaRegistry);
 
         assertTrue(registry.getIcons().isEmpty());
+    }
+
+    private static Lookup mockLookup(PwaIconGenerator iconGenerator,
+            ResourceProvider resourceProvider) {
+        Lookup lookup = mock(Lookup.class);
+        when(lookup.lookup(PwaIconGenerator.class)).thenReturn(iconGenerator);
+        when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+        return lookup;
     }
 
     private static PwaRegistry preparePwaRegistry(PWA pwa) throws IOException {
@@ -161,7 +203,8 @@ class PwaRegistryTest {
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources) throws IOException {
         return withPwaRegistry(pwa, appShell, resources, "./", false,
-                ICON_GENERATOR, (registry, request) -> registry);
+                mockLookup(ICON_GENERATOR, null),
+                (registry, request) -> registry);
     }
 
     /**
@@ -183,7 +226,8 @@ class PwaRegistryTest {
             Set<String> resources, String contextRootRelativePath,
             boolean productionMode) throws IOException {
         return withPwaRegistry(pwa, appShell, resources,
-                contextRootRelativePath, productionMode, ICON_GENERATOR,
+                contextRootRelativePath, productionMode,
+                mockLookup(ICON_GENERATOR, null),
                 PwaRegistry::getRuntimeServiceWorkerJs);
     }
 
@@ -206,14 +250,14 @@ class PwaRegistryTest {
      * @param productionMode
      *            the deployment production mode, the single source
      *            {@code PwaRegistry} and {@code AppShellRegistry} both read
-     * @param iconGenerator
-     *            the generator for the icons that are not pre-generated, or
-     *            {@code null} if there is none, as in a production application
+     * @param lookup
+     *            the lookup the registry finds the icon generator and the
+     *            pre-generated icons through
      */
     private static <T> T withPwaRegistry(PWA pwa,
             Class<? extends AppShellConfigurator> appShell,
             Set<String> resources, String contextRootRelativePath,
-            boolean productionMode, PwaIconGenerator iconGenerator,
+            boolean productionMode, Lookup lookup,
             BiFunction<PwaRegistry, VaadinRequest, T> action)
             throws IOException {
         try (MockedStatic<VaadinService> vaadinService = mockStatic(
@@ -269,9 +313,6 @@ class PwaRegistryTest {
                     invocation.getArguments()[1])).when(servletContext)
                     .setAttribute(anyString(), any());
 
-            Lookup lookup = mock(Lookup.class);
-            when(lookup.lookup(PwaIconGenerator.class))
-                    .thenReturn(iconGenerator);
             attributeMap.put(Lookup.class.getName(), lookup);
 
             final VaadinServletContext context = new VaadinServletContext(
@@ -537,7 +578,7 @@ class PwaRegistryTest {
         String sw = withPwaRegistry(
                 PwaWithAppShellAndStyleSheet.class.getAnnotation(PWA.class),
                 PwaWithAppShellAndStyleSheet.class, STYLESHEET_RESOURCES, "./",
-                false, ICON_GENERATOR,
+                false, mockLookup(ICON_GENERATOR, null),
                 // NOSONAR deliberate: this test pins the contract of the
                 // deprecated no-arg getter, which would otherwise be untested
                 (registry, request) -> registry.getRuntimeServiceWorkerJs());

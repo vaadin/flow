@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.PwaIconGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PwaIconGeneratorImplTest {
 
@@ -57,5 +58,15 @@ class PwaIconGeneratorImplTest {
         assertEquals(120, image.getWidth());
         assertEquals(70, image.getHeight());
         assertEquals(baseImage.getRGB(0, 0), image.getRGB(0, 0));
+    }
+
+    @Test
+    void generateIcon_notAnImage_throws() {
+        URL notAnImage = getClass().getResource(
+                "/" + PwaIconGeneratorImplTest.class.getName().replace('.', '/')
+                        + ".class");
+
+        assertThrows(IOException.class, () -> new PwaIconGeneratorImpl()
+                .generateIcon(notAnImage, 16, 16));
     }
 }
