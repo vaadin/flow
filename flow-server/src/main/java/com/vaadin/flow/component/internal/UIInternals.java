@@ -1002,15 +1002,22 @@ public class UIInternals implements Serializable {
      * anything as sent, so it lets something that drives the client side
      * without a browser read the queue, act on the calls it simulates and
      * cancel them with {@link PendingJavaScriptInvocation#cancelExecution()},
-     * while every other invocation stays queued. Canceled invocations are not
-     * included.
+     * while every other invocation stays queued. Canceling reports a failure to
+     * an error handler registered on the result of the call.
+     * <p>
+     * The invocations owned by invisible nodes, which a dump retains instead of
+     * sending, are included; check
+     * {@link PendingJavaScriptInvocation#getOwner()} to tell them apart.
+     * Canceled invocations are not included. The stream is a snapshot, so the
+     * queue can be changed while it is consumed.
      *
      * @return the pending JavaScript invocations, never <code>null</code>
      */
     public Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
         session.checkHasLock();
         return pendingJsInvocations.stream()
-                .filter(invocation -> !invocation.isCanceled());
+                .filter(invocation -> !invocation.isCanceled()).toList()
+                .stream();
     }
 
     /**

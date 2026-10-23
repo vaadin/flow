@@ -450,6 +450,31 @@ class UIInternalsTest {
     }
 
     @Test
+    void getPendingJavaScriptInvocations_oneCanceledWhileReading_othersStillDumped() {
+        StateNode node = new StateNode(ElementData.class);
+        internals.getStateTree().getRootNode()
+                .getFeature(ElementChildrenList.class).add(0, node);
+
+        PendingJavaScriptInvocation canceled = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation("1"));
+        PendingJavaScriptInvocation kept = new PendingJavaScriptInvocation(node,
+                new UIInternals.JavaScriptInvocation("2"));
+        PendingJavaScriptInvocation queuedOnCancel = new PendingJavaScriptInvocation(
+                node, new UIInternals.JavaScriptInvocation("3"));
+        canceled.then(value -> {
+        }, error -> internals.addJavaScriptInvocation(queuedOnCancel));
+        internals.addJavaScriptInvocation(canceled);
+        internals.addJavaScriptInvocation(kept);
+
+        internals.getPendingJavaScriptInvocations()
+                .filter(invocation -> invocation == canceled)
+                .forEach(PendingJavaScriptInvocation::cancelExecution);
+
+        assertEquals(List.of(kept, queuedOnCancel),
+                internals.dumpPendingJavaScriptInvocations());
+    }
+
+    @Test
     void executeJs_elementMovedBeforeDump_invocationStillSent() {
         UI realUI = new UI();
         UIInternals realInternals = realUI.getInternals();
