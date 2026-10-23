@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.SignalCommand;
@@ -29,6 +32,12 @@ import com.vaadin.flow.signals.SignalCommand;
  * {@link #confirmed} and might never end up there if a concurrent change causes
  * a conflict. This type of tree is intended for signals that are synchronized
  * across a cluster.
+ * <p>
+ * At most one batch of commands is submitted at a time. Commands applied while
+ * waiting for confirmation are collected and submitted together once the
+ * previous batch has been confirmed. This ensures that commands from this tree
+ * are confirmed in the order they were applied regardless of how the submission
+ * is delivered.
  * 
  * @since 25.1
  */
@@ -38,6 +47,14 @@ public abstract class AsynchronousSignalTree extends SignalTree {
     private Snapshot confirmed = new Snapshot(id(), true);
 
     private Snapshot submitted = new Snapshot(id(), true);
+
+    /*
+     * Ids of the commands that have been submitted but not yet confirmed, and
+     * commands applied after that which are waiting to be submitted.
+     */
+    private Set<Id> inFlightCommandIds = new HashSet<>();
+
+    private final List<SignalCommand> queuedCommands = new ArrayList<>();
 
     /**
      * Creates a new asynchronous signal tree.
@@ -49,7 +66,8 @@ public abstract class AsynchronousSignalTree extends SignalTree {
     /**
      * Submits a sequence of commands to the event log. It is expected that the
      * same sequence of commands will eventually be passed back to
-     * {@link #confirm(List)}.
+     * {@link #confirm(List)}. No further commands are submitted until that has
+     * happened.
      *
      * @param commands
      *            the list of commands to submit, not <code>null</code>
@@ -68,47 +86,86 @@ public abstract class AsynchronousSignalTree extends SignalTree {
      */
     public void confirm(List<SignalCommand> commands) {
         runWithLock(() -> {
-            MutableTreeRevision builder = new MutableTreeRevision(confirmed);
+            boolean submitQueued = !inFlightCommandIds.isEmpty();
+            commands.forEach(
+                    command -> inFlightCommandIds.remove(command.commandId()));
+            submitQueued &= inFlightCommandIds.isEmpty();
 
-            Map<Id, CommandResult> results = builder
-                    .applyAndGetResults(commands);
-
-            confirmed = new Snapshot(builder);
-
-            /*
-             * Check if the confirmed commands were at the head of
-             * unconfirmedCommands. If so, the same commands were already
-             * applied during latency compensation with the same results, so
-             * submitted doesn't change and we can skip re-applying and
-             * notifying observers.
-             */
-            boolean confirmedFromHead = wereAtHead(
-                    unconfirmedCommands.getCommands(), commands);
-
-            // Remove any pending commands that are now confirmed from the queue
-            unconfirmedCommands.removeHandledCommands(results.keySet());
-
-            Snapshot oldSubmitted = submitted;
-
-            if (confirmedFromHead) {
-                // submitted doesn't change so no need to rebuild or notify
-            } else if (!unconfirmedCommands.isEmpty()) {
-                // Re-apply pending commands that remain in the queue
-                builder.apply(unconfirmedCommands.getCommands());
-
-                submitted = new Snapshot(builder);
-            } else {
-                submitted = confirmed;
+            try {
+                applyConfirmed(commands);
+            } finally {
+                if (submitQueued) {
+                    submitQueuedCommands();
+                }
             }
-
-            if (!confirmedFromHead) {
-                notifyObservers(oldSubmitted, submitted);
-            }
-
-            unconfirmedCommands.notifyResultHandlers(results, commands);
-
-            notifyProcessedCommandSubscribers(commands, results);
         });
+    }
+
+    private void applyConfirmed(List<SignalCommand> commands) {
+        MutableTreeRevision builder = new MutableTreeRevision(confirmed);
+
+        Map<Id, CommandResult> results = builder.applyAndGetResults(commands);
+
+        confirmed = new Snapshot(builder);
+
+        /*
+         * Check if the confirmed commands were at the head of
+         * unconfirmedCommands. If so, the same commands were already applied
+         * during latency compensation with the same results, so submitted
+         * doesn't change and we can skip re-applying and notifying observers.
+         */
+        boolean confirmedFromHead = wereAtHead(
+                unconfirmedCommands.getCommands(), commands);
+
+        // Remove any pending commands that are now confirmed from the queue
+        unconfirmedCommands.removeHandledCommands(results.keySet());
+
+        Snapshot oldSubmitted = submitted;
+
+        if (confirmedFromHead) {
+            // submitted doesn't change so no need to rebuild or notify
+        } else if (!unconfirmedCommands.isEmpty()) {
+            // Re-apply pending commands that remain in the queue
+            builder.apply(unconfirmedCommands.getCommands());
+
+            submitted = new Snapshot(builder);
+        } else {
+            submitted = confirmed;
+        }
+
+        if (!confirmedFromHead) {
+            notifyObservers(oldSubmitted, submitted);
+        }
+
+        unconfirmedCommands.notifyResultHandlers(results, commands);
+
+        notifyProcessedCommandSubscribers(commands, results);
+    }
+
+    private void submitQueuedCommands() {
+        assert hasLock();
+
+        if (queuedCommands.isEmpty()) {
+            return;
+        }
+
+        List<SignalCommand> batch = List.copyOf(queuedCommands);
+        queuedCommands.clear();
+
+        Set<Id> batchIds = new HashSet<>();
+        batch.forEach(command -> batchIds.add(command.commandId()));
+        inFlightCommandIds = batchIds;
+
+        try {
+            submit(batch);
+        } catch (RuntimeException e) {
+            // Put the batch back to submit it together with the next commands
+            if (inFlightCommandIds == batchIds && !batchIds.isEmpty()) {
+                inFlightCommandIds = new HashSet<>();
+                queuedCommands.addAll(0, batch);
+            }
+            throw e;
+        }
     }
 
     /**
@@ -181,7 +238,10 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
                 notifyObservers(oldSnapshot, newSnapshot);
 
-                submit(changes.getCommands());
+                queuedCommands.addAll(changes.getCommands());
+                if (inFlightCommandIds.isEmpty()) {
+                    submitQueuedCommands();
+                }
             }
 
             @Override

@@ -42,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AsynchronousSignalTreeTest extends SignalsUnitTest {
 
@@ -167,6 +168,72 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
                 TestUtil.readSubmittedRootValue(tree));
         assertEquals(new StringNode("Submitted"),
                 TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
+    void applyChange_whileWaitingForConfirmation_submittedAsNextBatch() {
+        AsyncTestTree tree = new AsyncTestTree();
+        SignalCommand first = TestUtil.writeRootValueCommand("first");
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+        SignalCommand third = TestUtil.writeRootValueCommand("third");
+
+        tree.commitSingleCommand(first);
+        tree.commitSingleCommand(second);
+        tree.commitSingleCommand(third);
+
+        assertEquals(List.of(List.of(first)), tree.submitted);
+
+        tree.confirmSubmitted();
+
+        assertEquals(List.of(List.of(second, third)), tree.submitted);
+        assertEquals(new StringNode("first"),
+                TestUtil.readConfirmedRootValue(tree));
+
+        tree.confirmSubmitted();
+
+        assertEquals(List.of(), tree.submitted);
+        assertEquals(new StringNode("third"),
+                TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
+    void confirm_resultHandlerThrows_nextBatchSubmitted() {
+        AsyncTestTree tree = new AsyncTestTree();
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
+                result -> {
+                    throw new IllegalStateException();
+                });
+        tree.commitSingleCommand(second);
+
+        assertThrows(IllegalStateException.class, tree::confirmSubmitted);
+
+        assertEquals(List.of(List.of(second)), tree.submitted);
+    }
+
+    @Test
+    void submit_throws_batchSubmittedWithNextChange() {
+        AsyncTestTree tree = new AsyncTestTree() {
+            boolean reject = true;
+
+            @Override
+            protected void submit(List<SignalCommand> commands) {
+                if (reject) {
+                    reject = false;
+                    throw new IllegalStateException();
+                }
+                super.submit(commands);
+            }
+        };
+        SignalCommand first = TestUtil.writeRootValueCommand("first");
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+
+        assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(first));
+        tree.commitSingleCommand(second);
+
+        assertEquals(List.of(List.of(first, second)), tree.submitted);
     }
 
     @Test
