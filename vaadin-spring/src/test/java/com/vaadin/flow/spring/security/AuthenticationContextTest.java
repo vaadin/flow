@@ -407,7 +407,7 @@ public class AuthenticationContextTest {
     }
 
     @Test
-    void grantedRolesAndAuthorities_nullAuthority_ignored() {
+    public void grantedRolesAndAuthorities_nullAuthority_ignored() {
         GrantedAuthority nullAuthority = () -> null;
         SecurityContextHolder.getContext().setAuthentication(
                 UsernamePasswordAuthenticationToken.authenticated("user", null,
@@ -415,14 +415,17 @@ public class AuthenticationContextTest {
                                 new SimpleGrantedAuthority("ROLE_USER"),
                                 new SimpleGrantedAuthority("AUTH_READ"))));
         try {
-            assertEquals(Set.of("USER"), authContext.getGrantedRoles());
-            assertTrue(authContext.hasRole("USER"));
-            assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
-            assertTrue(authContext.hasAllRoles("USER"));
-            assertTrue(authContext.hasAuthority("AUTH_READ"));
-            assertTrue(authContext.hasAnyAuthority("AUTH_READ", "AUTH_WRITE"));
-            assertFalse(authContext.hasAnyAuthority(Set.of("AUTH_WRITE")));
-            assertTrue(authContext.hasAllAuthorities("ROLE_USER", "AUTH_READ"));
+            Assert.assertEquals(Set.of("USER"), authContext.getGrantedRoles());
+            Assert.assertTrue(authContext.hasRole("USER"));
+            Assert.assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
+            Assert.assertTrue(authContext.hasAllRoles("USER"));
+            Assert.assertTrue(authContext.hasAuthority("AUTH_READ"));
+            Assert.assertTrue(
+                    authContext.hasAnyAuthority("AUTH_READ", "AUTH_WRITE"));
+            Assert.assertFalse(
+                    authContext.hasAnyAuthority(Set.of("AUTH_WRITE")));
+            Assert.assertTrue(
+                    authContext.hasAllAuthorities("ROLE_USER", "AUTH_READ"));
         } finally {
             SecurityContextHolder.clearContext();
         }
