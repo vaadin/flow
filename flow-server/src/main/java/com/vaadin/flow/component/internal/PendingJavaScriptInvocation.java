@@ -21,8 +21,10 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * A pending JavaScript result that can be sent to the client.
@@ -221,8 +223,44 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         }
 
         this.successHandler = combineHandlers(this.successHandler,
-                successHandler);
+                traceRegistrationInDevelopment(successHandler));
         this.errorHandler = combineHandlers(this.errorHandler, errorHandler);
+    }
+
+    /**
+     * Wraps the handler so that a {@link ClassCastException} thrown when it
+     * receives the return value tells where the handler was registered.
+     * <p>
+     * Code compiled against Vaadin 14-24 passes a
+     * {@code SerializableConsumer<elemental.json.JsonValue>}, which links to
+     * this method because of erasure. The cast that then fails is in a frame
+     * hidden from the stack trace, so without the registration trace there is
+     * nothing pointing at the code that registered the handler. Capturing a
+     * stack trace for every handler is not free, so it is only done in
+     * development mode.
+     */
+    private static SerializableConsumer<JsonNode> traceRegistrationInDevelopment(
+            SerializableConsumer<JsonNode> handler) {
+        VaadinService service = VaadinService.getCurrent();
+        DeploymentConfiguration configuration = service == null ? null
+                : service.getDeploymentConfiguration();
+        if (configuration == null || configuration.isProductionMode()) {
+            return handler;
+        }
+
+        Exception registration = new Exception(
+                "The success handler of a JavaScript invocation was registered "
+                        + "here. A ClassCastException thrown by it usually means "
+                        + "that the code registering it was compiled against an "
+                        + "incompatible Vaadin version.");
+        return value -> {
+            try {
+                handler.accept(value);
+            } catch (ClassCastException e) {
+                e.addSuppressed(registration);
+                throw e;
+            }
+        };
     }
 
     private static <T> SerializableConsumer<T> combineHandlers(
