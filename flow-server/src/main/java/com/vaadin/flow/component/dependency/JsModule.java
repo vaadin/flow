@@ -26,39 +26,42 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.component.Component;
 
 /**
- * Annotation for defining JavaScript Module dependencies on a {@link Component}
- * class. For adding multiple JavaScript Module files for a single component,
- * you can use this annotation multiple times.
+ * Defines a JavaScript module dependency on a {@link Component} class.
  * <p>
- * The JavaScript module files should be located:
+ * This is a <em>build-time</em> dependency: the referenced file is a bundle
+ * source, fed into Vite at build time, and is not served as a static resource
+ * at runtime. Use {@link JavaScript} for files that should be loaded at runtime
+ * (including external URLs and CDN-hosted scripts).
+ * <p>
+ * Source locations:
  * <ul>
- * <li>inside {@code frontend} directory in your root project folder in case of
- * WAR project
- * <li>inside {@code META-INF/resources/frontend} directory (inside a project
- * resources folder) in case of JAR project (if you are using Maven this is
- * {@code src/main/resources/META-INF/resources/frontend} directory).
+ * <li>Application projects: {@code src/main/frontend/}.</li>
+ * <li>Add-on JARs: {@code META-INF/frontend/}.</li>
  * </ul>
  * <p>
- * It is guaranteed that dependencies will be loaded only once. The files loaded
- * will be in the same order as the annotations were on the class. However,
- * loading order is only guaranteed on a class level; Annotations from different
- * classes may appear in different order, grouped by the annotated class. Also,
- * files identified by {@code @JsModule} will be loaded before
- * {@link com.vaadin.flow.component.dependency.JavaScript} and
- * {@link com.vaadin.flow.component.dependency.CssImport}.
+ * For adding multiple JavaScript module files for a single component, use this
+ * annotation multiple times.
+ * <p>
+ * It is guaranteed that dependencies will be loaded only once. Loading order is
+ * guaranteed at the class level (annotations on different classes may appear in
+ * different orders relative to each other). {@code @JsModule} files load before
+ * {@link JavaScript} and {@link CssImport}.
+ * <p>
+ * URLs with a scheme ({@code https://}, {@code context://}, {@code base://} and
+ * so on) and protocol-relative URLs ({@code //}) are not bundled; they are
+ * loaded at runtime as {@code <script type="module">} instead. Prefer
+ * {@link JavaScript} with {@link JavaScript.Type#MODULE} for such files.
  * <p>
  * NOTE: Currently all frontend resources are bundled together into one big
- * bundle. This means, that JavaScript files loaded by one class will be present
- * on a view constructed by another class. For example, if there are two classes
- * {@code RootRoute} annotated with {@code @Route("")}, and another class
- * {@code RouteA} annotated with {@code @Route("route-a")} and
- * {@code @JsModule("./src/jsmodule.js")}, the {@code jsmodule.js} will be run
- * on the root route as well.
+ * bundle. JavaScript files loaded by one class will therefore be present on a
+ * view constructed by another class.
  *
  * @author Vaadin Ltd
  * @since 2.0
  *
  * @see CssImport
+ * @see JavaScript
+ * @see StyleSheet
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -70,6 +73,16 @@ public @interface JsModule {
     /**
      * JavaScript module to load before using the annotated {@link Component} in
      * the browser.
+     * <p>
+     * The recommended value is a bundler import specifier — typically a
+     * relative path (e.g. {@code "./my-element.js"}), an npm package specifier
+     * (e.g. {@code "@scope/pkg/foo.js"}), or an alias. The bundler resolves
+     * these against the configured frontend directory.
+     * <p>
+     * URLs with a scheme and protocol-relative URLs are loaded at runtime
+     * instead of being bundled; prefer {@link JavaScript} with
+     * {@link JavaScript.Type#MODULE} for those. A value starting with {@code /}
+     * is still a bundler import specifier.
      * <p>
      * NOTE: In the case of using JsModule with LitTemplate, the value needs to
      * point to a real file as it will be copied to the templates folder under
