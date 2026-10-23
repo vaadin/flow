@@ -36,6 +36,8 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 
@@ -172,10 +174,16 @@ class PwaRegistryTest {
         }
     }
 
-    @Test
-    void baseImageCannotBeRead_iconsAreLeftOut() throws IOException {
+    @ParameterizedTest
+    @ValueSource(classes = { IOException.class,
+            IllegalArgumentException.class })
+    void baseImageCannotBeRead_iconsAreLeftOut(
+            Class<? extends Exception> failure) throws IOException {
         PwaIconGenerator failingGenerator = (baseImage, width, height) -> {
-            throw new IOException("Cannot read " + baseImage);
+            if (failure == IOException.class) {
+                throw new IOException("Cannot read " + baseImage);
+            }
+            throw new IllegalArgumentException("Cannot scale " + baseImage);
         };
 
         PwaRegistry registry = withPwaRegistry(
