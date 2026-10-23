@@ -17,6 +17,7 @@ package com.vaadin.flow.signals.shared.impl;
 
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
 
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalEnvironment;
@@ -54,7 +55,7 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
         try {
             SignalEnvironment.getDefaultEffectDispatcher()
                     .execute(wrapWithLock(() -> confirmUpTo(sequence)));
-        } catch (RuntimeException e) {
+        } catch (RejectedExecutionException e) {
             // Confirm right away if the dispatcher rejects the task
             confirmUpTo(sequence);
         }
@@ -64,6 +65,8 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
         /*
          * Keep going if a listener throws since a task that runs later might
          * already be done, which would leave the remaining batches unconfirmed.
+         * The first failure is rethrown, preferring an Error over a
+         * RuntimeException, with the others attached as suppressed.
          */
         Throwable failure = null;
         while (submittedCount - pendingConfirmations.size() < sequence) {
@@ -73,7 +76,12 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
                 if (failure == null) {
                     failure = e;
                 } else if (failure != e) {
-                    failure.addSuppressed(e);
+                    if (e instanceof Error && !(failure instanceof Error)) {
+                        e.addSuppressed(failure);
+                        failure = e;
+                    } else {
+                        failure.addSuppressed(e);
+                    }
                 }
             }
         }

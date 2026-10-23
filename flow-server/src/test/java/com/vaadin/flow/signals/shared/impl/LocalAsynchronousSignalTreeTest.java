@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.signals.shared.impl;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.signals.SignalCommand;
@@ -33,6 +36,7 @@ import com.vaadin.flow.signals.shared.impl.SignalTree.Type;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -176,39 +180,78 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
     }
 
     @Test
-    void submit_dispatcherRejectsTask_confirmedImmediately() {
+    void submit_dispatcherRejectsTask_pendingBatchesConfirmedImmediately() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+        AtomicReference<CommandResult> firstResult = new AtomicReference<>();
+        AtomicReference<CommandResult> secondResult = new AtomicReference<>();
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
+                firstResult::set);
         useEffectDispatcher(task -> {
             throw new RejectedExecutionException();
         });
-        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
-        AtomicReference<CommandResult> result = new AtomicReference<>();
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"),
+                secondResult::set);
 
-        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
-                result::set);
+        assertTrue(firstResult.get().accepted());
+        assertTrue(secondResult.get().accepted());
+        assertEquals(new StringNode("second"),
+                TestUtil.readConfirmedRootValue(tree));
 
-        assertTrue(result.get().accepted());
-        assertEquals(new StringNode("first"),
+        dispatcher.runPendingTasks();
+
+        assertEquals(new StringNode("second"),
                 TestUtil.readConfirmedRootValue(tree));
     }
 
     @Test
-    void confirm_resultHandlerThrows_laterBatchesStillConfirmed() {
+    void submit_immediateDispatcherAndHandlerThrows_exceptionPropagated() {
+        useEffectDispatcher(Runnable::run);
+        LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
+        IllegalStateException failure = new IllegalStateException();
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(TestUtil.writeRootValueCommand(),
+                        result -> {
+                            throw failure;
+                        }));
+
+        assertSame(failure, thrown);
+    }
+
+    static List<Throwable> handlerFailures() {
+        return List.of(new IllegalStateException(), new AssertionError());
+    }
+
+    @ParameterizedTest
+    @MethodSource("handlerFailures")
+    void confirm_resultHandlersThrow_laterBatchesStillConfirmed(
+            Throwable failure) {
         TestExecutor dispatcher = useTestEffectDispatcher();
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
-        AtomicReference<CommandResult> secondResult = new AtomicReference<>();
+        AtomicReference<CommandResult> thirdResult = new AtomicReference<>();
+        CommandsAndHandlers.CommandResultHandler throwingHandler = result -> {
+            if (failure instanceof Error error) {
+                throw error;
+            }
+            throw (RuntimeException) failure;
+        };
 
+        // Same instance thrown twice must not be suppressed into itself
         tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
-                result -> {
-                    throw new IllegalStateException();
-                });
+                throwingHandler);
         tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"),
-                secondResult::set);
+                throwingHandler);
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("third"),
+                thirdResult::set);
 
-        assertThrows(IllegalStateException.class,
+        Throwable thrown = assertThrows(failure.getClass(),
                 dispatcher::runPendingTasksInReverseOrder);
 
-        assertTrue(secondResult.get().accepted());
-        assertEquals(new StringNode("second"),
+        assertSame(failure, thrown);
+        assertTrue(thirdResult.get().accepted());
+        assertEquals(new StringNode("third"),
                 TestUtil.readConfirmedRootValue(tree));
     }
 }
