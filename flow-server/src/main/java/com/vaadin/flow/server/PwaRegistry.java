@@ -245,7 +245,9 @@ public class PwaRegistry implements Serializable {
             generator.generateIcon(baseImageUrl, smallest.getWidth(),
                     smallest.getHeight());
             return generator;
-        } catch (IOException ex) {
+        } catch (IOException | RuntimeException ex) {
+            // Scaling throws unchecked exceptions for images it cannot handle,
+            // such as extreme aspect ratios
             getLogger().error("Image is not found or can't be loaded: {}",
                     baseImageUrl, ex);
             return null;

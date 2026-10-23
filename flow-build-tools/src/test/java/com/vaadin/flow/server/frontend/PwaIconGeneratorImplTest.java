@@ -17,14 +17,17 @@ package com.vaadin.flow.server.frontend;
 
 import javax.imageio.ImageIO;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.ServiceLoader;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.internal.PwaIconGenerator;
 
@@ -45,19 +48,31 @@ class PwaIconGeneratorImplTest {
     }
 
     @Test
-    void generateIcon_pngOfRequestedSizeFilledWithBaseImageCorner()
+    void generateIcon_baseImageDrawnCenteredOnCornerColor(@TempDir Path dir)
             throws IOException {
-        URL baseImageUrl = getClass()
-                .getResource("/META-INF/resources/icons/icon.png");
-        BufferedImage baseImage = ImageIO.read(baseImageUrl);
+        // A blue image whose top-left pixel is white, which is the fill color
+        BufferedImage baseImage = new BufferedImage(10, 10,
+                BufferedImage.TYPE_INT_ARGB);
+        int blue = Color.BLUE.getRGB();
+        int white = Color.WHITE.getRGB();
+        for (int x = 0; x < 10; x++) {
+            for (int y = 0; y < 10; y++) {
+                baseImage.setRGB(x, y, blue);
+            }
+        }
+        baseImage.setRGB(0, 0, white);
+        Path baseImageFile = dir.resolve("logo.png");
+        ImageIO.write(baseImage, "png", baseImageFile.toFile());
 
-        byte[] icon = new PwaIconGeneratorImpl().generateIcon(baseImageUrl, 120,
-                70);
+        byte[] icon = new PwaIconGeneratorImpl()
+                .generateIcon(baseImageFile.toUri().toURL(), 30, 20);
 
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(icon));
-        assertEquals(120, image.getWidth());
-        assertEquals(70, image.getHeight());
-        assertEquals(baseImage.getRGB(0, 0), image.getRGB(0, 0));
+        assertEquals(30, image.getWidth());
+        assertEquals(20, image.getHeight());
+        assertEquals(white, image.getRGB(0, 0));
+        assertEquals(white, image.getRGB(29, 19));
+        assertEquals(blue, image.getRGB(15, 10));
     }
 
     @Test
