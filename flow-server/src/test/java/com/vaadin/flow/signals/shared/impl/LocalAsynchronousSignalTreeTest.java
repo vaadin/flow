@@ -211,12 +211,12 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
         useEffectDispatcher(Runnable::run);
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
         IllegalStateException failure = new IllegalStateException();
+        SignalCommand command = TestUtil.writeRootValueCommand();
 
         IllegalStateException thrown = assertThrows(IllegalStateException.class,
-                () -> tree.commitSingleCommand(TestUtil.writeRootValueCommand(),
-                        result -> {
-                            throw failure;
-                        }));
+                () -> tree.commitSingleCommand(command, result -> {
+                    throw failure;
+                }));
 
         assertSame(failure, thrown);
     }

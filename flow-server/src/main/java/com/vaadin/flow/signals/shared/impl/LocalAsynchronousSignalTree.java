@@ -19,6 +19,8 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.concurrent.RejectedExecutionException;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.signals.SignalCommand;
 import com.vaadin.flow.signals.SignalEnvironment;
 
@@ -56,7 +58,8 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
             SignalEnvironment.getDefaultEffectDispatcher()
                     .execute(wrapWithLock(() -> confirmUpTo(sequence)));
         } catch (RejectedExecutionException e) {
-            // Confirm right away if the dispatcher rejects the task
+            LoggerFactory.getLogger(LocalAsynchronousSignalTree.class).debug(
+                    "Confirmation task rejected, confirming immediately", e);
             confirmUpTo(sequence);
         }
     }
@@ -72,7 +75,7 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
         while (submittedCount - pendingConfirmations.size() < sequence) {
             try {
                 confirm(pendingConfirmations.remove());
-            } catch (RuntimeException | Error e) {
+            } catch (RuntimeException | Error e) { // NOSONAR rethrown below
                 if (failure == null) {
                     failure = e;
                 } else if (failure != e) {
