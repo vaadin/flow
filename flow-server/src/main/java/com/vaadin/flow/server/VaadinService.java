@@ -1145,6 +1145,21 @@ public abstract class VaadinService implements Serializable {
             if (session.getState() == VaadinSessionState.CLOSED) {
                 return;
             }
+            if (session.httpSessionInvalidated) {
+                // The browser is typically following the response of the
+                // request that invalidated the HTTP session, such as a logout
+                // redirect. A session expiration pushed by closing the UIs
+                // below would send it to the session expired URL instead.
+                // Whether the container has already closed the WebSockets
+                // depends on the container, so close them before anything is
+                // pushed.
+                for (UI ui : session.getUIs()) {
+                    if (ui.getInternals()
+                            .getPushConnection() instanceof AtmospherePushConnection pushConnection) {
+                        pushConnection.disconnectIfAuthenticated();
+                    }
+                }
+            }
             if (session.getState() == VaadinSessionState.OPEN) {
                 closeSession(session);
             }

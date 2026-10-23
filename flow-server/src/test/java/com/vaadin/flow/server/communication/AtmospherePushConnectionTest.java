@@ -30,7 +30,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
+import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,6 +48,7 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -54,6 +58,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -91,6 +96,7 @@ class AtmospherePushConnectionTest {
         broadcaster = mock(Broadcaster.class);
         resource = mock(AtmosphereResource.class);
         when(resource.getBroadcaster()).thenReturn(broadcaster);
+        when(resource.getRequest()).thenReturn(mock(AtmosphereRequest.class));
         doAnswer(i -> {
             // Introduce a small delay to hold the lock during disconnect
             Thread.sleep(30);
@@ -111,6 +117,7 @@ class AtmospherePushConnectionTest {
 
         UI ui = mock(UI.class);
         AtmosphereResource resource = mock(AtmosphereResource.class);
+        when(resource.getRequest()).thenReturn(mock(AtmosphereRequest.class));
 
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
@@ -294,6 +301,39 @@ class AtmospherePushConnectionTest {
         assertEquals(recorded,
                 connection.getUI().getInternals().getLastRequestResponse(),
                 "A server initiated push is not a response the client can ask for again");
+    }
+
+    @Test
+    void disconnectIfAuthenticated_authenticatedWebSocket_closedAsLostConnection()
+            throws Exception {
+        AtmosphereRequest request = mock(AtmosphereRequest.class);
+        when(request.getUserPrincipal()).thenReturn(() -> "emma");
+        AtmosphereResourceImpl authenticatedResource = mock(
+                AtmosphereResourceImpl.class);
+        when(authenticatedResource.getRequest()).thenReturn(request);
+        when(authenticatedResource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+        AtmospherePushConnection authenticatedConnection = new AtmospherePushConnection(
+                connection.getUI());
+        authenticatedConnection.connect(authenticatedResource);
+
+        authenticatedConnection.disconnectIfAuthenticated();
+
+        assertFalse(authenticatedConnection.isConnected());
+        // Closed as cancelled, PushHandler records the connection as lost and
+        // does not answer a reconnect with a session expiration
+        verify(authenticatedResource).dirtyClose();
+        verify(authenticatedResource, never()).close();
+    }
+
+    @Test
+    void disconnectIfAuthenticated_unauthenticatedWebSocket_staysConnected()
+            throws Exception {
+        when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+
+        connection.disconnectIfAuthenticated();
+
+        assertTrue(connection.isConnected());
+        verify(resource, never()).close();
     }
 
     @Test

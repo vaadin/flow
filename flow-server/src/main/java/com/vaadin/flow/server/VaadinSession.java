@@ -83,6 +83,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     volatile boolean sessionClosedExplicitly = false;
 
+    /**
+     * Set when the HTTP session is invalidated while no request of this session
+     * is being handled, for example by the logout URL of a security framework.
+     */
+    transient volatile boolean httpSessionInvalidated = false;
+
     final List<SessionDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
     /**
@@ -218,6 +224,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         } else {
             // We are not in a request related to this session so we can destroy
             // it as soon as we acquire the lock.
+            httpSessionInvalidated = !sessionClosedExplicitly;
             service.fireSessionDestroy(this);
         }
         // Vaadin session attribute is removed from HTTP session in two cases:
