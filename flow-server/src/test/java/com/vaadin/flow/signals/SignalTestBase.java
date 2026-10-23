@@ -65,11 +65,12 @@ public class SignalTestBase {
             return pending.size();
         }
 
-        public void runPendingTasksInReverseOrder() {
+        public int runPendingTasksInReverseOrder() {
             List<Runnable> pending = List.copyOf(tasks).reversed();
             tasks.clear();
 
             pending.forEach(Runnable::run);
+            return pending.size();
         }
     }
 

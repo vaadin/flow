@@ -27,24 +27,22 @@ import com.vaadin.flow.signals.SignalEnvironment;
  * {@link SignalEnvironment}. This makes the behavior consistent with clustered
  * implementations where confirmation happens asynchronously. Submitted commands
  * are confirmed in submission order even if the dispatcher runs tasks
- * concurrently or out of order, or drops a task.
+ * concurrently or out of order, or drops or rejects a task.
  * 
  * @since 25.1
  */
 public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
 
     /*
-     * Commands waiting to be confirmed, in submission order, and counters
-     * numbering the submitted and confirmed batches. Guarded by the tree lock.
-     * Each dispatched task confirms all batches up to and including its own
-     * since the dispatcher is not required to preserve ordering and might also
-     * reject or drop a task.
+     * Commands waiting to be confirmed, in submission order, and a counter
+     * numbering the submitted batches. Guarded by the tree lock. Each
+     * dispatched task confirms all batches up to and including its own since
+     * the dispatcher is not required to preserve ordering and might also drop a
+     * task.
      */
     private final ArrayDeque<List<SignalCommand>> pendingConfirmations = new ArrayDeque<>();
 
     private long submittedCount;
-
-    private long confirmedCount;
 
     @Override
     protected void submit(List<SignalCommand> commands) {
@@ -53,8 +51,13 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
         pendingConfirmations.add(commands);
         long sequence = ++submittedCount;
 
-        SignalEnvironment.getDefaultEffectDispatcher()
-                .execute(wrapWithLock(() -> confirmUpTo(sequence)));
+        try {
+            SignalEnvironment.getDefaultEffectDispatcher()
+                    .execute(wrapWithLock(() -> confirmUpTo(sequence)));
+        } catch (RuntimeException e) {
+            // Confirm right away if the dispatcher rejects the task
+            confirmUpTo(sequence);
+        }
     }
 
     private void confirmUpTo(long sequence) {
@@ -62,21 +65,22 @@ public class LocalAsynchronousSignalTree extends AsynchronousSignalTree {
          * Keep going if a listener throws since a task that runs later might
          * already be done, which would leave the remaining batches unconfirmed.
          */
-        RuntimeException failure = null;
-        while (confirmedCount < sequence) {
-            confirmedCount++;
+        Throwable failure = null;
+        while (submittedCount - pendingConfirmations.size() < sequence) {
             try {
                 confirm(pendingConfirmations.remove());
-            } catch (RuntimeException e) {
+            } catch (RuntimeException | Error e) {
                 if (failure == null) {
                     failure = e;
-                } else {
+                } else if (failure != e) {
                     failure.addSuppressed(e);
                 }
             }
         }
-        if (failure != null) {
-            throw failure;
+        if (failure instanceof Error error) {
+            throw error;
+        } else if (failure != null) {
+            throw (RuntimeException) failure;
         }
     }
 }

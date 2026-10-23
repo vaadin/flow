@@ -123,7 +123,15 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
     void submit_concurrentDispatcher_lastWriteWins() throws Exception {
         ExecutorService executor = Executors
                 .newThreadPerTaskExecutor(Thread.ofVirtual().factory());
-        useEffectDispatcher(executor);
+        // Fail fast instead of timing out if a task throws
+        CompletableFuture<Void> taskFailure = new CompletableFuture<>();
+        useEffectDispatcher(task -> executor.execute(() -> {
+            try {
+                task.run();
+            } catch (Throwable t) {
+                taskFailure.completeExceptionally(t);
+            }
+        }));
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
 
         try {
@@ -136,8 +144,10 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
                         TestUtil.writeRootValueCommand("new" + i),
                         second::complete);
 
-                assertTrue(first.get(10, TimeUnit.SECONDS).accepted());
-                assertTrue(second.get(10, TimeUnit.SECONDS).accepted());
+                CompletableFuture.anyOf(CompletableFuture.allOf(first, second),
+                        taskFailure).get(10, TimeUnit.SECONDS);
+                assertTrue(first.join().accepted());
+                assertTrue(second.join().accepted());
                 assertEquals(new StringNode("new" + i),
                         TestUtil.readConfirmedRootValue(tree));
             }
@@ -166,24 +176,18 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
     }
 
     @Test
-    void submit_dispatcherRejectsTask_confirmedByNextTask() {
+    void submit_dispatcherRejectsTask_confirmedImmediately() {
         useEffectDispatcher(task -> {
             throw new RejectedExecutionException();
         });
         LocalAsynchronousSignalTree tree = new LocalAsynchronousSignalTree();
-        AtomicReference<CommandResult> firstResult = new AtomicReference<>();
+        AtomicReference<CommandResult> result = new AtomicReference<>();
 
-        SignalCommand first = TestUtil.writeRootValueCommand("first");
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
+                result::set);
 
-        assertThrows(RejectedExecutionException.class,
-                () -> tree.commitSingleCommand(first, firstResult::set));
-        TestExecutor dispatcher = useTestEffectDispatcher();
-        tree.commitSingleCommand(TestUtil.writeRootValueCommand("second"));
-
-        dispatcher.runPendingTasks();
-
-        assertTrue(firstResult.get().accepted());
-        assertEquals(new StringNode("second"),
+        assertTrue(result.get().accepted());
+        assertEquals(new StringNode("first"),
                 TestUtil.readConfirmedRootValue(tree));
     }
 
