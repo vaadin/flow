@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
-import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +62,8 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      * <li>Values containing path traversals ({@code ..}) are rejected with a
      * warning and {@code null} is returned.</li>
      * <li>{@code http://}, {@code https://}, {@code //}, {@code context://} and
-     * {@code base://} prefixes are returned unchanged.</li>
+     * {@code base://} prefixes, and URLs with any other scheme (a value
+     * containing {@code ://}), are returned unchanged.</li>
      * <li>A leading {@code ./} is stripped.</li>
      * <li>If the value (after the previous step) starts with {@code /}, it is
      * returned unchanged.</li>
@@ -121,16 +121,9 @@ public final class FrontendDependencyUrlResolver implements Serializable {
             return false;
         }
         String trimmed = value.trim();
-        if (trimmed.startsWith("/")) {
-            return true;
-        }
-        String lower = trimmed.toLowerCase(Locale.ROOT);
-        return lower.startsWith("http://") || lower.startsWith("https://")
-                || lower.startsWith("//")
-                || lower.startsWith(
-                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || lower.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)
-                || UrlUtil.isExternal(trimmed);
+        // A leading '/' also covers protocol-relative '//' URLs, and every
+        // scheme, including context:// and base://, contains '://'
+        return trimmed.startsWith("/") || UrlUtil.isExternal(trimmed);
     }
 
     /**

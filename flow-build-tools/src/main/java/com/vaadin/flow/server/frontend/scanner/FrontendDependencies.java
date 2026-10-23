@@ -280,7 +280,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             log().warn(
                     "Found runtime @JsModule and @JavaScript values on classes that are neither components nor the app shell.{}"
                             + "\nRuntime values are only added to the page for components and the AppShellConfigurator. "
-                            + "On these classes, runtime values are not loaded at all, and a @JsModule value with a leading / makes the frontend build fail. "
+                            + "On these classes, runtime values are not loaded at all, and a @JsModule value with a leading / is bundled from the frontend directory instead, which makes the frontend build fail if the file is not there. "
                             + "Move a runtime value to the component that needs it or to the AppShellConfigurator, using @JavaScript(value = ..., type = JavaScript.Type.MODULE) for a module. "
                             + "To bundle a file in the frontend directory, use @JsModule with a relative value such as ./foo.js. "
                             + "Usages in add-ons need to be updated by the add-on maintainer.",

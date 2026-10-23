@@ -93,6 +93,16 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JsModule("https://example.net/pkg/../dist/module.js")
+    private static class ExternalJsModuleWithParentPath extends Component {
+    }
+
+    @Tag("div")
+    @JsModule("/pkg/../outside.js")
+    private static class ParentPathJsModule extends Component {
+    }
+
+    @Tag("div")
     @JavaScript(value = "context://module.js", type = JavaScript.Type.MODULE)
     private static class ContextModule extends Component {
     }
@@ -180,13 +190,25 @@ class RuntimeJavaScriptDependencyTest {
         assertEquals(List.of(), runtimeDependencies(RelativeScript.class));
     }
 
-    @Test
-    void externalScriptWithParentPath_urlPassedThroughUntouched() {
+    static Stream<Arguments> externalValuesWithParentPath() {
+        return Stream.of(
+                Arguments.of(ExternalScriptWithParentPath.class,
+                        Dependency.Type.JAVASCRIPT,
+                        "https://example.net/pkg/../dist/script.js"),
+                Arguments.of(ExternalJsModuleWithParentPath.class,
+                        Dependency.Type.JS_MODULE,
+                        "https://example.net/pkg/../dist/module.js"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("externalValuesWithParentPath")
+    void externalValueWithParentPath_urlPassedThroughUntouched(
+            Class<? extends Component> componentType,
+            Dependency.Type expectedType, String expectedUrl) {
         // External URLs are not normalized, so a '..' segment inside one must
         // not cause the dependency to be dropped
-        assertSingleDependency(ExternalScriptWithParentPath.class,
-                Dependency.Type.JAVASCRIPT,
-                "https://example.net/pkg/../dist/script.js", LoadMode.EAGER);
+        assertSingleDependency(componentType, expectedType, expectedUrl,
+                LoadMode.EAGER);
     }
 
     @Test
@@ -209,9 +231,11 @@ class RuntimeJavaScriptDependencyTest {
                         + exception.getMessage());
     }
 
-    @Test
-    void parentPathModule_rejectedAndSkipped() {
-        assertEquals(List.of(), runtimeDependencies(ParentPathModule.class));
+    @ParameterizedTest
+    @ValueSource(classes = { ParentPathModule.class, ParentPathJsModule.class })
+    void parentPathValue_rejectedAndSkipped(
+            Class<? extends Component> componentType) {
+        assertEquals(List.of(), runtimeDependencies(componentType));
     }
 
     @Test
