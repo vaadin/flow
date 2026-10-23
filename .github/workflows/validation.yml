@@ -848,9 +848,10 @@ jobs:
           path: gradle-tests-report.tgz
           if-no-files-found: ignore
       - name: Publish Gradle Test Results
-        # The functional tests print little to the log by default, so this
-        # check run and the job summary are where a failing test and its
-        # nested build output are found. The PR comment is left to the
+        # The functional tests keep the nested build output off the console,
+        # so this check run and the job summary list the failing tests with
+        # their failure messages. The nested build output of each test is in
+        # the gradle-tests-report artifact. The PR comment is left to the
         # test-results job.
         if: ${{ always() && steps.decide.outputs.run == 'true' }}
         uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
