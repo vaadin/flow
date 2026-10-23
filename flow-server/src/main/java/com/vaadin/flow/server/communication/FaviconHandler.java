@@ -15,33 +15,31 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.io.IOException;
-
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.RequestHandler;
+import com.vaadin.flow.server.SessionlessRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Handles the favicon request explicitly and return 404 for it.
  * <p>
  * It allows to not produce the same content for the favicon as for any other
- * resource if servlet mapping is "/*".
+ * resource if servlet mapping is "/*". The favicon request does not need a
+ * session, so it is answered without looking one up or creating one.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class FaviconHandler implements RequestHandler {
+public class FaviconHandler implements SessionlessRequestHandler {
 
     @Override
-    public boolean handleRequest(VaadinSession session, VaadinRequest request,
-            VaadinResponse response) throws IOException {
-        VaadinServletRequest httpRequest = (VaadinServletRequest) request;
-        boolean isFavicon = httpRequest.getContextPath().isEmpty()
+    public boolean handleRequest(VaadinRequest request,
+            VaadinResponse response) {
+        boolean isFavicon = request instanceof VaadinServletRequest httpRequest
+                && httpRequest.getContextPath().isEmpty()
                 && httpRequest.getServletPath().isEmpty()
                 && "/favicon.ico".equals(httpRequest.getPathInfo());
         if (isFavicon) {
