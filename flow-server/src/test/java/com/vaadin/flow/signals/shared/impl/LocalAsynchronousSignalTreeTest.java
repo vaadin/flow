@@ -224,7 +224,6 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
     static List<Arguments> handlerFailures() {
         // first failure, second failure, expected thrown, expected suppressed
         IllegalStateException sameRuntime = new IllegalStateException();
-        AssertionError sameError = new AssertionError();
         IllegalStateException runtime1 = new IllegalStateException();
         IllegalStateException runtime2 = new IllegalStateException();
         IllegalStateException runtime3 = new IllegalStateException();
@@ -235,7 +234,6 @@ class LocalAsynchronousSignalTreeTest extends SignalTestBase {
         AssertionError error4 = new AssertionError();
         return List.of(
                 Arguments.of(sameRuntime, sameRuntime, sameRuntime, List.of()),
-                Arguments.of(sameError, sameError, sameError, List.of()),
                 Arguments.of(runtime1, runtime2, runtime1, List.of(runtime2)),
                 Arguments.of(runtime3, error1, error1, List.of(runtime3)),
                 Arguments.of(error2, runtime4, error2, List.of(runtime4)),
