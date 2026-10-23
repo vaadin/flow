@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,12 +29,14 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -408,6 +411,28 @@ class AuthenticationContextTest {
         assertFalse(authContext.hasAllAuthorities("AUTH_READ", "AUTH_WRITE"));
         assertFalse(authContext
                 .hasAllAuthorities(List.of("AUTH_READ", "AUTH_WRITE")));
+    }
+
+    @Test
+    void grantedRolesAndAuthorities_nullAuthority_ignored() {
+        GrantedAuthority nullAuthority = () -> null;
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated("user", null,
+                        List.of(nullAuthority,
+                                new SimpleGrantedAuthority("ROLE_USER"),
+                                new SimpleGrantedAuthority("AUTH_READ"))));
+        try {
+            assertEquals(Set.of("USER"), authContext.getGrantedRoles());
+            assertTrue(authContext.hasRole("USER"));
+            assertTrue(authContext.hasAnyRole("USER", "ADMIN"));
+            assertTrue(authContext.hasAllRoles("USER"));
+            assertTrue(authContext.hasAuthority("AUTH_READ"));
+            assertTrue(authContext.hasAnyAuthority("AUTH_READ", "AUTH_WRITE"));
+            assertFalse(authContext.hasAnyAuthority(Set.of("AUTH_WRITE")));
+            assertTrue(authContext.hasAllAuthorities("ROLE_USER", "AUTH_READ"));
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 
     @Test
