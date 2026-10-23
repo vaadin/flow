@@ -153,7 +153,7 @@ class HotswapSignalsTest {
             assertEquals(42, newView.count.peek());
 
             List<String> tagValues = newView.tags.peek().stream()
-                    .map(entry -> entry.peek()).toList();
+                    .map(ValueSignal::peek).toList();
             assertEquals(List.of("java", "flow"), tagValues);
         });
     }
