@@ -61,7 +61,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * is not supported there. Values on an interface are loaded at runtime for the
  * components that implement it. On any other class that is not a component,
  * such as a {@code VaadinServiceInitListener}, such values are not loaded at
- * all.
+ * all. Files loaded at runtime are served by the servlet container from the
+ * same locations as {@link StyleSheet} files.
  * <p>
  * Other paths used in the {@link JavaScript#value()} method are considered as
  * relative to {@code frontend} directory and they are bundled and added to the
@@ -89,9 +90,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * </pre>
  *
  * because the function is private there (unless it's explicitly exposed). The
- * JavaScript where the function is defined should be either external or it
- * should be added using {@link Page#addJavaScript(String)}: in this case all
- * declared functions become available in the global scope.
+ * JavaScript where the function is defined should be loaded at runtime with the
+ * default {@link Type#SCRIPT} (for example {@code context://foo.js} or an
+ * external URL) or added using {@link Page#addJavaScript(String)}: in this case
+ * all declared functions become available in the global scope.
  *
  *
  * @author Vaadin Ltd
@@ -150,9 +152,9 @@ public @interface JavaScript {
      * unchanged.</li>
      * <li>Any other value (bare relative, {@code "./foo.js"},
      * {@code "../foo.js"}) is currently treated as a bundle source for
-     * backwards compatibility — see the deprecation notice on the class
-     * Javadoc. Migrate to {@code @JavaScript("context://foo.js")} for runtime
-     * loading or to {@link JsModule} for bundling.</li>
+     * backwards compatibility — see the class Javadoc on bundled values.
+     * Migrate to {@code @JavaScript("context://foo.js")} for runtime loading or
+     * to {@link JsModule} for bundling.</li>
      * </ul>
      * <p>
      * When {@link #type()} is {@link Type#MODULE}, the value is loaded at
