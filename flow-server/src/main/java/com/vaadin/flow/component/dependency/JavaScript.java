@@ -37,9 +37,12 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * <p>
  * Source locations (same as {@link StyleSheet}):
  * <ul>
- * <li>Application projects: {@code src/main/resources/META-INF/resources/}. In
- * Spring Boot projects {@code src/main/resources/public/} or
- * {@code src/main/resources/static/} are also served.</li>
+ * <li>WAR-packaged applications: {@code src/main/webapp/}. The servlet
+ * container serves {@code META-INF/resources/} only from JARs in
+ * {@code WEB-INF/lib}, not from the application's own classes.</li>
+ * <li>Spring Boot applications: {@code src/main/resources/META-INF/resources/},
+ * {@code src/main/resources/public/} or
+ * {@code src/main/resources/static/}.</li>
  * <li>Add-on JARs: {@code META-INF/resources/}.</li>
  * </ul>
  * <p>
@@ -50,7 +53,9 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * External URLs ({@code https://cdn.example/foo.js}) work the same way. On an
  * {@link com.vaadin.flow.component.page.AppShellConfigurator}, values loaded at
  * runtime are added to the initial page as {@code script} elements;
- * {@link LoadMode#INLINE} is not supported there.
+ * {@link LoadMode#INLINE} is not supported there. On any other class that is
+ * not a component, such as a {@code VaadinServiceInitListener}, values loaded
+ * at runtime are not loaded at all.
  * <p>
  * For adding multiple JavaScript files for a single component, use this
  * annotation multiple times. It is guaranteed that dependencies will be loaded

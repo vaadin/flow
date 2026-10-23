@@ -238,6 +238,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void warnAboutDeprecatedJavaScriptUses() {
         Set<String> usages = new LinkedHashSet<>();
         Set<String> runtimeModuleUsages = new LinkedHashSet<>();
+        Set<String> unloadedUsages = new LinkedHashSet<>();
         for (Entry<String, ClassInfo> entry : visitedClasses.entrySet()) {
             ClassInfo classInfo = entry.getValue();
             if (classInfo == null) {
@@ -250,6 +251,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             classInfo.deprecatedRuntimeModules.stream()
                     .map(value -> entry.getKey() + ": \"" + value + "\"")
                     .forEach(runtimeModuleUsages::add);
+            classInfo.unloadedRuntimeDependencies.stream()
+                    .map(annotation -> entry.getKey() + ": " + annotation)
+                    .forEach(unloadedUsages::add);
         }
         // Logged once per scan rather than per usage, as annotations coming
         // from add-ons cannot be changed by the application developer
@@ -268,9 +272,19 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     + "These are loaded at runtime and not bundled, which is deprecated for @JsModule.{}"
                     + "\n@JsModule is for build-time bundle sources only. "
                     + "Replace these with @JavaScript(value = ..., type = JavaScript.Type.MODULE) using the same value. "
-                    + "To keep bundling a file in the frontend directory that is referenced with a leading /, use a relative value such as ./foo.js instead. "
+                    + "To bundle a file in the frontend directory that is referenced with a leading /, use a relative value such as ./foo.js instead. "
                     + "Usages in add-ons need to be updated by the add-on maintainer.",
                     formatUsages(runtimeModuleUsages));
+        }
+        if (!unloadedUsages.isEmpty()) {
+            log().warn(
+                    "Found runtime @JsModule and @JavaScript values on classes that are neither components nor the app shell.{}"
+                            + "\nRuntime values are only added to the page for components and the AppShellConfigurator. "
+                            + "On these classes, runtime values are not loaded at all, and a @JsModule value with a leading / makes the frontend build fail. "
+                            + "Move a runtime value to the component that needs it or to the AppShellConfigurator, using @JavaScript(value = ..., type = JavaScript.Type.MODULE) for a module. "
+                            + "To bundle a file in the frontend directory, use @JsModule with a relative value such as ./foo.js. "
+                            + "Usages in add-ons need to be updated by the add-on maintainer.",
+                    formatUsages(unloadedUsages));
         }
     }
 
@@ -975,10 +989,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
         ClassInfo info = new ClassInfo(className);
         try {
-            if (AbstractTheme.class
-                    .isAssignableFrom(getFinder().loadClass(className))) {
+            Class<?> clazz = getFinder().loadClass(className);
+            if (AbstractTheme.class.isAssignableFrom(clazz)) {
                 info.loadCss = false;
             }
+            info.loadsRuntimeDependencies = loadsRuntimeDependencies(clazz);
         } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
             // NO-OP
         }

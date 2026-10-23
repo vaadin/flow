@@ -27,17 +27,22 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * Loads a style sheet into the browser at runtime as a
- * {@code <link rel="stylesheet">} element. The referenced file is served as a
- * static resource by the servlet container; it is not bundled. Use
- * {@link CssImport} when the CSS file should be processed as a bundle source by
- * Vite at build time.
+ * Loads a style sheet into the browser at runtime, by default as a
+ * {@code <link rel="stylesheet">} element. With {@link LoadMode#INLINE} the
+ * contents of the file are inlined in a {@code <style>} element instead, and a
+ * style sheet with a {@link #layer()} that is not inlined is loaded with an
+ * {@code @import} rule. The referenced file is served as a static resource by
+ * the servlet container; it is not bundled. Use {@link CssImport} when the CSS
+ * file should be processed as a bundle source by Vite at build time.
  * <p>
  * Source locations:
  * <ul>
- * <li>Application projects: {@code src/main/resources/META-INF/resources/}. In
- * Spring Boot projects {@code src/main/resources/public/} or
- * {@code src/main/resources/static/} are also served.</li>
+ * <li>WAR-packaged applications: {@code src/main/webapp/}. The servlet
+ * container serves {@code META-INF/resources/} only from JARs in
+ * {@code WEB-INF/lib}, not from the application's own classes.</li>
+ * <li>Spring Boot applications: {@code src/main/resources/META-INF/resources/},
+ * {@code src/main/resources/public/} or
+ * {@code src/main/resources/static/}.</li>
  * <li>Add-on JARs: {@code META-INF/resources/}. Files placed there are served
  * automatically by the servlet container when the JAR is on the classpath.</li>
  * </ul>
@@ -49,9 +54,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * <p>
  * When this annotation is placed on the
  * {@link com.vaadin.flow.component.page.AppShellConfigurator}, the referenced
- * style sheets are injected globally into the generated {@code index.html}
- * during bootstrap. In this case the style sheet is always inlined in the body
- * of the html page, thus {@link LoadMode} values are ignored.
+ * style sheets are added globally to the {@code <head>} of the generated
+ * {@code index.html} during bootstrap, so {@link LoadMode} values are ignored.
  * <p>
  * This annotation is a recommended way to select a Vaadin theme and to import
  * stylesheets. To be put on a class implementing
@@ -67,7 +71,9 @@ import com.vaadin.flow.shared.ui.LoadMode;
  *
  *     OR
  *
- *     &#64;StyleSheet("styles.css") // from src/main/resources/META-INF/resources/styles.css
+ *     // styles.css from src/main/webapp/ (WAR) or
+ *     // src/main/resources/META-INF/resources/ (Spring Boot)
+ *     &#64;StyleSheet("styles.css")
  *     public class Application implements AppShellConfigurator {
  *         ...
  *     }
