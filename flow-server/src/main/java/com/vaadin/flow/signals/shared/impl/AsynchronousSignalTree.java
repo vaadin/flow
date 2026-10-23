@@ -68,6 +68,11 @@ public abstract class AsynchronousSignalTree extends SignalTree {
      * same sequence of commands will eventually be passed back to
      * {@link #confirm(List)}. No further commands are submitted until that has
      * happened.
+     * <p>
+     * This method is called while holding the tree lock, either from the thread
+     * that applied a change or from {@link #confirm(List)} to submit changes
+     * that were applied while waiting for the previous confirmation. It should
+     * therefore not block while waiting for the commands to be confirmed.
      *
      * @param commands
      *            the list of commands to submit, not <code>null</code>
@@ -91,12 +96,27 @@ public abstract class AsynchronousSignalTree extends SignalTree {
                     command -> inFlightCommandIds.remove(command.commandId()));
             submitQueued &= inFlightCommandIds.isEmpty();
 
+            RuntimeException failure = null;
             try {
                 applyConfirmed(commands);
-            } finally {
-                if (submitQueued) {
+            } catch (RuntimeException e) {
+                failure = e;
+            }
+
+            if (submitQueued) {
+                try {
                     submitQueuedCommands();
+                } catch (RuntimeException e) {
+                    if (failure == null) {
+                        failure = e;
+                    } else {
+                        failure.addSuppressed(e);
+                    }
                 }
+            }
+
+            if (failure != null) {
+                throw failure;
             }
         });
     }
