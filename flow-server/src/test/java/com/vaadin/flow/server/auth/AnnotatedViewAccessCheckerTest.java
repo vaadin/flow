@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.auth;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,6 +54,7 @@ import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedAdminView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserView;
+import com.vaadin.flow.server.auth.NavigationContext.Phase;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -560,11 +559,11 @@ class AnnotatedViewAccessCheckerTest {
     void layoutDenial_viewBroaderThanLayout_logsWarn() {
         // AnonymousAllowed view (level 3) + PermitAll layout (level 2)
         // = misconfiguration → WARN with "configuration error" message
-        String logOutput = captureLogOutput(() -> {
+        String logOutput = LogOutputCapture.capture(() -> {
             NavigationContext context = setupLayoutDenialContext(
                     AnonymousAllowedView.class, null,
-                    AccessControlTestClasses.PermitAllLayout.class, true,
-                    false);
+                    AccessControlTestClasses.PermitAllLayout.class,
+                    Phase.NAVIGATION, false);
             viewAccessChecker.check(context);
         });
         assertTrue(logOutput.contains("WARN"),
@@ -574,14 +573,34 @@ class AnnotatedViewAccessCheckerTest {
     }
 
     @Test
+    void layoutDenial_publicRouteCheck_viewBroaderThanLayout_noWarnOrInfo() {
+        // Same misconfiguration as above, but the public route check only
+        // finds out if the route is public → DEBUG, no WARN
+        String logOutput = LogOutputCapture.capture(() -> {
+            NavigationContext context = setupLayoutDenialContext(
+                    AnonymousAllowedView.class, null,
+                    AccessControlTestClasses.PermitAllLayout.class,
+                    Phase.PUBLIC_ROUTE_CHECK, false);
+            assertEquals(AccessCheckDecision.DENY,
+                    viewAccessChecker.check(context).decision());
+        });
+        assertFalse(logOutput.contains("WARN"),
+                "Public route check should not produce WARN, got: "
+                        + logOutput);
+        assertFalse(logOutput.contains("INFO"),
+                "Public route check should not produce INFO, got: "
+                        + logOutput);
+    }
+
+    @Test
     void layoutDenial_sameAccessLevel_navigating_devMode_logsInfo() {
         // PermitAll view + PermitAll layout, navigating=true, devMode=true
         // anonymous user → layout denies, view not broader → INFO
-        String logOutput = captureLogOutput(() -> {
+        String logOutput = LogOutputCapture.capture(() -> {
             NavigationContext context = setupLayoutDenialContext(
                     PermitAllView.class, null,
-                    AccessControlTestClasses.PermitAllLayout.class, true,
-                    false);
+                    AccessControlTestClasses.PermitAllLayout.class,
+                    Phase.NAVIGATION, false);
             viewAccessChecker.check(context);
         });
         assertTrue(logOutput.contains("INFO"),
@@ -596,13 +615,14 @@ class AnnotatedViewAccessCheckerTest {
 
     @Test
     void layoutDenial_securityProbe_notNavigating_noWarnOrInfo() {
-        // PermitAll view + PermitAll layout, navigating=false (security probe)
-        // → DEBUG (not visible at default INFO level)
-        String logOutput = captureLogOutput(() -> {
+        // PermitAll view + PermitAll layout, checked outside of navigation
+        // (e.g. menu access control) → DEBUG (not visible at default INFO
+        // level)
+        String logOutput = LogOutputCapture.capture(() -> {
             NavigationContext context = setupLayoutDenialContext(
                     PermitAllView.class, null,
-                    AccessControlTestClasses.PermitAllLayout.class, false,
-                    false);
+                    AccessControlTestClasses.PermitAllLayout.class,
+                    Phase.EVALUATION, false);
             viewAccessChecker.check(context);
         });
         assertFalse(logOutput.contains("WARN") && logOutput.contains("layout"),
@@ -616,10 +636,11 @@ class AnnotatedViewAccessCheckerTest {
     void layoutDenial_navigating_productionMode_noWarnOrInfo() {
         // PermitAll view + PermitAll layout, navigating=true, prodMode=true
         // → DEBUG (not visible at default INFO level)
-        String logOutput = captureLogOutput(() -> {
+        String logOutput = LogOutputCapture.capture(() -> {
             NavigationContext context = setupLayoutDenialContext(
                     PermitAllView.class, null,
-                    AccessControlTestClasses.PermitAllLayout.class, true, true);
+                    AccessControlTestClasses.PermitAllLayout.class,
+                    Phase.NAVIGATION, true);
             viewAccessChecker.check(context);
         });
         assertFalse(logOutput.contains("WARN") && logOutput.contains("layout"),
@@ -633,11 +654,11 @@ class AnnotatedViewAccessCheckerTest {
     void layoutDenial_parentLayout_viewBroaderThanLayout_logsWarn() {
         // PermitAll view (level 2) with no-annotation parent layout (level 0)
         // = misconfiguration → WARN
-        String logOutput = captureLogOutput(() -> {
+        String logOutput = LogOutputCapture.capture(() -> {
             NavigationContext context = setupParentLayoutDenialContext(
                     AccessControlTestClasses.PermitAllWithEmptyParentView.class,
-                    null, AccessControlTestClasses.NoPermitParent.class, true,
-                    false);
+                    null, AccessControlTestClasses.NoPermitParent.class,
+                    Phase.NAVIGATION, false);
             viewAccessChecker.check(context);
         });
         assertTrue(
@@ -651,29 +672,12 @@ class AnnotatedViewAccessCheckerTest {
     }
 
     /**
-     * Captures stderr output produced during the given action. slf4j-simple
-     * writes log output to System.err.
-     */
-    private String captureLogOutput(Runnable action) {
-        PrintStream originalErr = System.err;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream captureStream = new PrintStream(baos);
-        System.setErr(captureStream);
-        try {
-            action.run();
-        } finally {
-            System.setErr(originalErr);
-        }
-        return baos.toString();
-    }
-
-    /**
      * Sets up a NavigationContext that triggers the autolayout-based layout
      * denial path for testing log levels.
      */
     private NavigationContext setupLayoutDenialContext(
             Class<? extends Component> viewClass, User user,
-            Class<? extends Component> layoutClass, boolean navigating,
+            Class<? extends Component> layoutClass, Phase phase,
             boolean productionMode) {
         CurrentInstance.clearAll();
 
@@ -704,9 +708,13 @@ class AnnotatedViewAccessCheckerTest {
                 .thenAnswer(invocation -> layoutClass);
 
         Location location = new Location(route);
+        if (phase == Phase.PUBLIC_ROUTE_CHECK) {
+            return NavigationContext.forPublicRouteCheck(router, viewClass,
+                    location, RouteParameters.empty());
+        }
         return new NavigationContext(router, viewClass, location,
                 RouteParameters.empty(), principal, roles::contains, false,
-                navigating);
+                phase);
     }
 
     /**
@@ -716,7 +724,7 @@ class AnnotatedViewAccessCheckerTest {
     @SuppressWarnings("unchecked")
     private NavigationContext setupParentLayoutDenialContext(
             Class<? extends Component> viewClass, User user,
-            Class<? extends Component> parentLayoutClass, boolean navigating,
+            Class<? extends Component> parentLayoutClass, Phase phase,
             boolean productionMode) {
         CurrentInstance.clearAll();
 
@@ -747,9 +755,13 @@ class AnnotatedViewAccessCheckerTest {
 
         String route = getRoute(viewClass);
         Location location = new Location(route);
+        if (phase == Phase.PUBLIC_ROUTE_CHECK) {
+            return NavigationContext.forPublicRouteCheck(router, viewClass,
+                    location, RouteParameters.empty());
+        }
         return new NavigationContext(router, viewClass, location,
                 RouteParameters.empty(), principal, roles::contains, false,
-                navigating);
+                phase);
     }
 
     private static Principal getPrincipal(User user) {

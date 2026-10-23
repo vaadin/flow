@@ -28,6 +28,7 @@ import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -36,6 +37,7 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.vaadin.flow.component.Component;
@@ -69,7 +71,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -81,7 +85,7 @@ class RequestUtilTest {
     @Autowired
     RequestUtil requestUtil;
 
-    @Autowired
+    @MockitoSpyBean
     NavigationAccessControl accessControl;
 
     @MockitoBean
@@ -268,6 +272,25 @@ class RequestUtilTest {
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/admin");
         assertFalse(requestUtil.isAnonymousRoute(request));
+    }
+
+    @Test
+    void testAnonymousRouteRequest_checkersGetPublicRouteCheckContext() {
+        when(vaadinConfigurationProperties.getUrlMapping()).thenReturn("/*");
+        addRoute(setupMockServlet(), AdminView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/admin");
+        assertFalse(requestUtil.isAnonymousRoute(request));
+
+        ArgumentCaptor<NavigationContext> captor = ArgumentCaptor
+                .forClass(NavigationContext.class);
+        verify(accessControl).checkAccess(captor.capture(), anyBoolean());
+        NavigationContext context = captor.getValue();
+        assertEquals(NavigationContext.Phase.PUBLIC_ROUTE_CHECK,
+                context.getPhase());
+        assertNull(context.getPrincipal());
+        assertFalse(context.hasRole("admin"));
     }
 
     @Test

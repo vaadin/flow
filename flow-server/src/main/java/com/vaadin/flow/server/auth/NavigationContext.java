@@ -54,6 +54,28 @@ import com.vaadin.flow.router.Router;
  * @since 24.3
  */
 public final class NavigationContext {
+
+    /**
+     * The reason why an access check is run.
+     */
+    public enum Phase {
+        /**
+         * The current user navigates to the target view.
+         */
+        NAVIGATION,
+        /**
+         * The access of the current user to the target view is checked outside
+         * of a navigation, for example to populate the menu.
+         */
+        EVALUATION,
+        /**
+         * The target view is checked for anonymous access, to find out if the
+         * route is public. No user is involved: the principal is {@code null}
+         * and no role is granted.
+         */
+        PUBLIC_ROUTE_CHECK
+    }
+
     private final Router router;
     private final Class<?> navigationTarget;
     private final Location location;
@@ -62,7 +84,7 @@ public final class NavigationContext {
     private final Predicate<String> roleChecker;
 
     private final boolean errorHandling;
-    private final boolean navigating;
+    private final Phase phase;
 
     /**
      * Creates a new navigation context instance.
@@ -87,11 +109,59 @@ public final class NavigationContext {
      *            {@literal true} if the navigation is ongoing, {@literal false}
      *            if not (e.g. during access checks outside of navigation)
      * @since 25.0
+     * @deprecated use
+     *             {@link #NavigationContext(Router, Class, Location, RouteParameters, Principal, Predicate, boolean, Phase)}
+     *             and give the {@link Phase} of the check
      */
+    @Deprecated(since = "25.4", forRemoval = true)
     public NavigationContext(Router router, Class<?> navigationTarget,
             Location location, RouteParameters parameters, Principal principal,
             Predicate<String> roleChecker, boolean errorHandling,
             boolean navigating) {
+        this(router, navigationTarget, location, parameters, principal,
+                roleChecker, errorHandling,
+                navigating ? Phase.NAVIGATION : Phase.EVALUATION);
+    }
+
+    /**
+     * Creates a new navigation context instance for the given phase.
+     * <p>
+     * A {@link Phase#PUBLIC_ROUTE_CHECK} context has no user, so it can only be
+     * created with
+     * {@link #forPublicRouteCheck(Router, Class, Location, RouteParameters)}.
+     *
+     * @param router
+     *            the router that triggered the change, not {@literal null}
+     * @param navigationTarget
+     *            navigation target class, not {@literal null}
+     * @param location
+     *            the requested location, not {@literal null}
+     * @param parameters
+     *            route parameters, not {@literal null}
+     * @param principal
+     *            the principal of the user
+     * @param roleChecker
+     *            a function that can answer if a user has a given role
+     * @param errorHandling
+     *            {@literal true} if the current navigation is related to an
+     *            error handling phase, {@literal false} for a regular
+     *            navigation to a target view
+     * @param phase
+     *            the reason why the access check is run, not {@literal null}
+     * @throws IllegalArgumentException
+     *             if the phase is {@link Phase#PUBLIC_ROUTE_CHECK}
+     */
+    public NavigationContext(Router router, Class<?> navigationTarget,
+            Location location, RouteParameters parameters, Principal principal,
+            Predicate<String> roleChecker, boolean errorHandling, Phase phase) {
+        this(requireUserPhase(phase), router, navigationTarget, location,
+                parameters, principal, roleChecker, errorHandling);
+    }
+
+    private NavigationContext(Phase phase, Router router,
+            Class<?> navigationTarget, Location location,
+            RouteParameters parameters, Principal principal,
+            Predicate<String> roleChecker, boolean errorHandling) {
         this.router = Objects.requireNonNull(router, "router must no be null");
         this.navigationTarget = Objects.requireNonNull(navigationTarget,
                 "navigationTarget must no be null");
@@ -103,7 +173,16 @@ public final class NavigationContext {
                 "roleChecker must no be null");
         this.principal = principal;
         this.errorHandling = errorHandling;
-        this.navigating = navigating;
+        this.phase = phase;
+    }
+
+    private static Phase requireUserPhase(Phase phase) {
+        Objects.requireNonNull(phase, "phase must not be null");
+        if (phase == Phase.PUBLIC_ROUTE_CHECK) {
+            throw new IllegalArgumentException(
+                    "A PUBLIC_ROUTE_CHECK context has no user, use forPublicRouteCheck(...) to create it");
+        }
+        return phase;
     }
 
     /**
@@ -149,6 +228,31 @@ public final class NavigationContext {
         this(event.getSource(), event.getNavigationTarget(),
                 event.getLocation(), event.getRouteParameters(), principal,
                 roleChecker, event.isErrorEvent());
+    }
+
+    /**
+     * Creates a navigation context to find out if the target view is public,
+     * that is, if an anonymous user has access to it.
+     * <p>
+     * The context has no principal and no role is granted. The phase is
+     * {@link Phase#PUBLIC_ROUTE_CHECK}.
+     *
+     * @param router
+     *            the router, not {@literal null}
+     * @param navigationTarget
+     *            navigation target class, not {@literal null}
+     * @param location
+     *            the requested location, not {@literal null}
+     * @param parameters
+     *            route parameters, not {@literal null}
+     * @return a navigation context for the public route check
+     */
+    public static NavigationContext forPublicRouteCheck(Router router,
+            Class<?> navigationTarget, Location location,
+            RouteParameters parameters) {
+        return new NavigationContext(Phase.PUBLIC_ROUTE_CHECK, router,
+                navigationTarget, location, parameters, null, role -> false,
+                false);
     }
 
     /**
@@ -220,15 +324,35 @@ public final class NavigationContext {
     }
 
     /**
-     * Gets if navigation is ongoing or not. If not, navigation context is not
-     * expected to produce access denial warnings in the logs eagerly.
-     * 
+     * Gets the reason why the access check is run.
+     *
+     * @return the phase of the access check, not {@code null}
+     */
+    public Phase getPhase() {
+        return phase;
+    }
+
+    /**
+     * Gets if navigation is ongoing or not, that is, if the phase is
+     * {@link Phase#NAVIGATION}. If not, navigation context is not expected to
+     * produce access denial warnings in the logs eagerly.
+     *
      * @return {@literal true} if the navigation is ongoing, {@literal false} if
      *         not
      * @since 25.0
      */
     public boolean isNavigating() {
-        return navigating;
+        return phase == Phase.NAVIGATION;
+    }
+
+    /**
+     * Gets the prefix for log messages written during this check, so a public
+     * route check can be told apart from a check of the current user.
+     *
+     * @return the prefix, or an empty string for a check of the current user
+     */
+    String getLogPrefix() {
+        return phase == Phase.PUBLIC_ROUTE_CHECK ? "Public route check: " : "";
     }
 
     /**
