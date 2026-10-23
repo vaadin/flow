@@ -436,11 +436,9 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
      * @return the current {@link SandboxType}s.
      */
     public Optional<SandboxType[]> getSandbox() {
-        return get(sandboxDescriptor)
-                .map(value -> Stream.of(value.split(" "))
-                        .map(SandboxType::fromAttributeValue)
-                        .filter(Optional::isPresent).map(Optional::get)
-                        .toList())
+        return get(sandboxDescriptor).map(value -> Stream.of(value.split(" "))
+                .map(SandboxType::fromAttributeValue)
+                .filter(Optional::isPresent).map(Optional::get).toList())
                 .map(collection -> collection
                         .toArray(new SandboxType[collection.size()]));
     }
