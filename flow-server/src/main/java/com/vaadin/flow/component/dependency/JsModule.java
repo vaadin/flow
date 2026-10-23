@@ -47,10 +47,13 @@ import com.vaadin.flow.component.Component;
  * different orders relative to each other). {@code @JsModule} files load before
  * {@link JavaScript} and {@link CssImport}.
  * <p>
- * URLs with a scheme ({@code https://}, {@code context://}, {@code base://} and
- * so on) and protocol-relative URLs ({@code //}) are not bundled; they are
- * loaded at runtime as {@code <script type="module">} instead. Prefer
- * {@link JavaScript} with {@link JavaScript.Type#MODULE} for such files.
+ * Runtime URLs (with a scheme such as {@code https://}, {@code context://} or
+ * {@code base://}, protocol-relative URLs ({@code //}) and values with a
+ * leading {@code /}) are deprecated. On a component or the app shell, they are
+ * not bundled but loaded at runtime as {@code <script type="module">}. On any
+ * other class, they are not loaded, and a value with a leading {@code /} makes
+ * the frontend build fail. Use {@link JavaScript} with
+ * {@link JavaScript.Type#MODULE} for such files instead. See {@link #value()}.
  * <p>
  * NOTE: Currently all frontend resources are bundled together into one big
  * bundle. JavaScript files loaded by one class will therefore be present on a
@@ -79,10 +82,18 @@ public @interface JsModule {
      * (e.g. {@code "@scope/pkg/foo.js"}), or an alias. The bundler resolves
      * these against the configured frontend directory.
      * <p>
-     * URLs with a scheme and protocol-relative URLs are loaded at runtime
-     * instead of being bundled; prefer {@link JavaScript} with
-     * {@link JavaScript.Type#MODULE} for those. A value starting with {@code /}
-     * is still a bundler import specifier.
+     * Using a runtime URL (one starting with {@code context://},
+     * {@code base://}, {@code /}, {@code http://}, {@code https://} or
+     * {@code //}, or any other URL containing {@code ://}) is deprecated: on a
+     * component or the app shell, such a value is not bundled but loaded at
+     * runtime as a {@code <script type="module">}, and a warning is logged
+     * during the production build. On any other class, such as a
+     * {@code VaadinServiceInitListener}, nothing loads the value at runtime: a
+     * URL is not loaded at all, and a value with a leading {@code /} makes the
+     * frontend build fail. Use {@link JavaScript @JavaScript} with
+     * {@link JavaScript.Type#MODULE} on a component or the app shell for
+     * runtime modules instead. To bundle a file in the frontend folder, use a
+     * relative value such as {@code ./foo.js}.
      * <p>
      * NOTE: In the case of using JsModule with LitTemplate, the value needs to
      * point to a real file as it will be copied to the templates folder under

@@ -41,7 +41,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.FrontendDependencyUrlResolver;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -403,13 +402,18 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                     return;
                                 }
 
-                                if (hasTypeAttribute
-                                        && (FrontendDependencyUrlResolver
-                                                .isRuntimeDependencyUrl(value)
-                                                || UrlUtil.isExternal(value))) {
-                                    // @JavaScript values with a runtime prefix
-                                    // are loaded at runtime as <script> and
-                                    // must not enter the bundle
+                                if (FrontendDependencyUrlResolver
+                                        .isRuntimeDependencyUrl(value)
+                                        && (hasTypeAttribute
+                                                || loadsRuntimeDependencies(
+                                                        clazz))) {
+                                    // Values with a runtime prefix or any
+                                    // other scheme are loaded at runtime as
+                                    // <script> or <script type="module"> and
+                                    // must not enter the bundle. Nothing
+                                    // loads @JsModule values of other classes
+                                    // than components and the app shell at
+                                    // runtime, so those are left to the bundle
                                     return;
                                 }
 

@@ -58,7 +58,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * element is a classic script or a module is decided by {@link #type()}. On an
  * {@link com.vaadin.flow.component.page.AppShellConfigurator}, such values are
  * added to the initial page as {@code script} elements; {@link LoadMode#INLINE}
- * is not supported there.
+ * is not supported there. On any other class that is not a component, such as a
+ * {@code VaadinServiceInitListener}, such values are not loaded at all.
  * <p>
  * Other paths used in the {@link JavaScript#value()} method are considered as
  * relative to {@code frontend} directory and they are bundled and added to the

@@ -21,11 +21,14 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.component.Component;
@@ -80,6 +83,11 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
+    @JsModule("ftp://example.net/module.js")
+    private static class OtherSchemeJsModule extends Component {
+    }
+
+    @Tag("div")
     @JavaScript("https://example.net/pkg/../dist/script.js")
     private static class ExternalScriptWithParentPath extends Component {
     }
@@ -115,8 +123,23 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Tag("div")
-    @JsModule("/abs-module.js")
+    @JsModule("context://module.js")
+    private static class ContextJsModule extends Component {
+    }
+
+    @Tag("div")
+    @JsModule("/abs/module.js")
     private static class AbsoluteJsModule extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript("context://script.js")
+    private static class ContextScript extends Component {
+    }
+
+    @Tag("div")
+    @JavaScript("base://script.js")
+    private static class BaseScript extends Component {
     }
 
     @Tag("div")
@@ -158,46 +181,12 @@ class RuntimeJavaScriptDependencyTest {
     }
 
     @Test
-    void absoluteJsModule_notAddedAtRuntime() {
-        // Runtime prefixes only apply to @JavaScript, a '/' @JsModule value is
-        // bundled and must not also be loaded as a page dependency
-        assertEquals(List.of(), runtimeDependencies(AbsoluteJsModule.class));
-    }
-
-    @Test
-    void externalScript_addedAsRuntimeJavaScript() {
-        assertSingleDependency(ExternalScript.class, Dependency.Type.JAVASCRIPT,
-                "https://example.net/script.js", LoadMode.EAGER);
-    }
-
-    @Test
-    void absoluteScript_addedAsRuntimeJavaScript() {
-        assertSingleDependency(AbsoluteScript.class, Dependency.Type.JAVASCRIPT,
-                "/script.js", LoadMode.EAGER);
-    }
-
-    @Test
-    void otherSchemeScript_addedAsRuntimeJavaScript() {
-        // The bundler skips any value with a scheme, so it has to be loaded at
-        // runtime even though it has none of the documented runtime prefixes
-        assertSingleDependency(OtherSchemeScript.class,
-                Dependency.Type.JAVASCRIPT, "ftp://example.net/script.js",
-                LoadMode.EAGER);
-    }
-
-    @Test
     void externalScriptWithParentPath_urlPassedThroughUntouched() {
         // External URLs are not normalized, so a '..' segment inside one must
         // not cause the dependency to be dropped
         assertSingleDependency(ExternalScriptWithParentPath.class,
                 Dependency.Type.JAVASCRIPT,
                 "https://example.net/pkg/../dist/script.js", LoadMode.EAGER);
-    }
-
-    @Test
-    void contextModule_urlPassedThroughUntouched() {
-        assertSingleDependency(ContextModule.class, Dependency.Type.JS_MODULE,
-                "context://module.js", LoadMode.EAGER);
     }
 
     @Test
@@ -235,24 +224,16 @@ class RuntimeJavaScriptDependencyTest {
                 .addComponentDependencies(InlineParentPathModule.class));
     }
 
-    @Test
-    void productionMode_relativeModule_noMissingBundleImportError()
-            throws Exception {
-        String log = productionModeLog(ProductionRelativeModule.class);
-
-        assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
-                "A type=MODULE value is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
-                        + log);
-    }
-
     @ParameterizedTest
-    @ValueSource(classes = { AbsoluteScript.class, OtherSchemeScript.class })
-    void productionMode_runtimeScript_noMissingBundleImportError(
+    @ValueSource(classes = { ProductionRelativeModule.class,
+            AbsoluteScript.class, OtherSchemeScript.class,
+            ContextJsModule.class, OtherSchemeJsModule.class })
+    void productionMode_notBundledValue_noMissingBundleImportError(
             Class<? extends Component> componentType) throws Exception {
         String log = productionModeLog(componentType);
 
         assertFalse(log.contains(MISSING_FROM_BUNDLE_ERROR),
-                "A value with a runtime prefix is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
+                "A type=MODULE or runtime-URL value is deliberately kept out of the bundle, so it must not be reported as missing. Log was: "
                         + log);
     }
 
@@ -266,19 +247,6 @@ class RuntimeJavaScriptDependencyTest {
         assertTrue(log.contains(MISSING_FROM_BUNDLE_ERROR),
                 "A bundled type=SCRIPT value missing from the bundle should still be reported. Log was: "
                         + log);
-    }
-
-    @Test
-    void developmentOnlyAbsoluteScript_addedInDevelopmentMode() {
-        assertSingleDependency(DevelopmentOnlyAbsoluteScript.class,
-                Dependency.Type.JAVASCRIPT, "/dev-helper.js", LoadMode.EAGER);
-    }
-
-    @Test
-    void developmentOnlyExternalJsModule_addedInDevelopmentMode() {
-        assertSingleDependency(DevelopmentOnlyExternalJsModule.class,
-                Dependency.Type.JS_MODULE, "https://example.net/dev-helper.js",
-                LoadMode.EAGER);
     }
 
     @ParameterizedTest
@@ -295,18 +263,48 @@ class RuntimeJavaScriptDependencyTest {
         assertEquals(List.of("/script.js"),
                 productionModeDependencies(AbsoluteScript.class).stream()
                         .map(Dependency::getUrl).toList());
-        assertEquals(List.of("ftp://example.net/script.js"),
-                productionModeDependencies(OtherSchemeScript.class).stream()
-                        .map(Dependency::getUrl).toList());
         assertEquals(List.of("https://example.net/module.js"),
                 productionModeDependencies(ExternalJsModule.class).stream()
                         .map(Dependency::getUrl).toList());
     }
 
-    @Test
-    void externalJsModule_stillAddedAsRuntimeJsModule() {
-        assertSingleDependency(ExternalJsModule.class,
-                Dependency.Type.JS_MODULE, "https://example.net/module.js",
+    static Stream<Arguments> runtimePrefixedValues() {
+        return Stream.of(
+                Arguments.of(ExternalScript.class, Dependency.Type.JAVASCRIPT,
+                        "https://example.net/script.js"),
+                Arguments.of(OtherSchemeScript.class,
+                        Dependency.Type.JAVASCRIPT,
+                        "ftp://example.net/script.js"),
+                Arguments.of(AbsoluteScript.class, Dependency.Type.JAVASCRIPT,
+                        "/script.js"),
+                Arguments.of(ContextScript.class, Dependency.Type.JAVASCRIPT,
+                        "context://script.js"),
+                Arguments.of(BaseScript.class, Dependency.Type.JAVASCRIPT,
+                        "base://script.js"),
+                Arguments.of(ContextModule.class, Dependency.Type.JS_MODULE,
+                        "context://module.js"),
+                Arguments.of(ExternalJsModule.class, Dependency.Type.JS_MODULE,
+                        "https://example.net/module.js"),
+                Arguments.of(ContextJsModule.class, Dependency.Type.JS_MODULE,
+                        "context://module.js"),
+                Arguments.of(AbsoluteJsModule.class, Dependency.Type.JS_MODULE,
+                        "/abs/module.js"),
+                Arguments.of(OtherSchemeJsModule.class,
+                        Dependency.Type.JS_MODULE,
+                        "ftp://example.net/module.js"),
+                Arguments.of(DevelopmentOnlyAbsoluteScript.class,
+                        Dependency.Type.JAVASCRIPT, "/dev-helper.js"),
+                Arguments.of(DevelopmentOnlyExternalJsModule.class,
+                        Dependency.Type.JS_MODULE,
+                        "https://example.net/dev-helper.js"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("runtimePrefixedValues")
+    void runtimePrefixedValue_addedAtRuntimeUntouched(
+            Class<? extends Component> componentType,
+            Dependency.Type expectedType, String expectedUrl) {
+        assertSingleDependency(componentType, expectedType, expectedUrl,
                 LoadMode.EAGER);
     }
 

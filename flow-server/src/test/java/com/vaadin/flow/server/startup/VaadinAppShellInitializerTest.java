@@ -46,6 +46,7 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
@@ -262,6 +263,9 @@ public class VaadinAppShellInitializerTest {
     @JavaScript(value = "./js/module.js", type = JavaScript.Type.MODULE)
     @JavaScript(value = "js/lazy-module.js", type = JavaScript.Type.MODULE, loadMode = LoadMode.LAZY)
     @JavaScript(value = "context://js/dev.js", developmentOnly = true)
+    @JsModule("./bundled-module.js")
+    @JsModule("context://js/runtime-module.js")
+    @JsModule(value = "https://cdn.example.com/dev-module.js", developmentOnly = true)
     public static class MyAppShellWithJavaScripts
             implements AppShellConfigurator {
     }
@@ -567,7 +571,7 @@ public class VaadinAppShellInitializerTest {
         // The bundled value is loaded through the bundle, and
         // "./js/module.js" denotes the same module as "js/module.js"
         List<Element> scripts = document.head().select("script");
-        assertEquals(6, scripts.size());
+        assertEquals(8, scripts.size());
         assertScript(scripts.get(0), "./js/eager.js", null, false);
         assertScript(scripts.get(1), "/js/lazy.js", null, true);
         assertScript(scripts.get(2), "./js/module.js", "module", false);
@@ -576,6 +580,10 @@ public class VaadinAppShellInitializerTest {
         // A module script is deferred anyway
         assertScript(scripts.get(4), "./js/lazy-module.js", "module", false);
         assertScript(scripts.get(5), "./js/dev.js", null, false);
+        // Runtime URL @JsModule values are not bundled either
+        assertScript(scripts.get(6), "./js/runtime-module.js", "module", false);
+        assertScript(scripts.get(7), "https://cdn.example.com/dev-module.js",
+                "module", false);
     }
 
     @Test
@@ -591,8 +599,8 @@ public class VaadinAppShellInitializerTest {
         List<String> srcs = document.head().select("script").stream()
                 .map(script -> script.attr("src")).toList();
         assertEquals(List.of("./js/eager.js", "/js/lazy.js", "./js/module.js",
-                "https://cdn.example.com/remote.js", "./js/lazy-module.js"),
-                srcs);
+                "https://cdn.example.com/remote.js", "./js/lazy-module.js",
+                "./js/runtime-module.js"), srcs);
     }
 
     @Test
