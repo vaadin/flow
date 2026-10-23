@@ -50,13 +50,13 @@ import com.vaadin.flow.component.Component;
  * different orders relative to each other). {@code @JsModule} files load before
  * {@link JavaScript} and {@link CssImport}.
  * <p>
- * <b>Deprecated runtime URLs:</b> Runtime URLs (with a scheme such as
- * {@code https://}, {@code context://} or {@code base://}, protocol-relative
- * URLs ({@code //}) and values with a leading {@code /}) are deprecated. On a
- * component, an interface or the app shell, they are not bundled but loaded at
- * runtime as {@code <script type="module">}. On any other class, they are not
- * loaded at runtime; a value with a leading {@code /} is still bundled from the
- * frontend folder, and the frontend build fails if the file is not there. Use
+ * Runtime URLs (with a scheme such as {@code https://}, {@code context://} or
+ * {@code base://}, protocol-relative URLs ({@code //}) and values with a
+ * leading {@code /}) are deprecated. On a component, an interface or the app
+ * shell, they are not bundled but loaded at runtime as
+ * {@code <script type="module">}. On any other class, they are not loaded at
+ * runtime; a value with a leading {@code /} is still bundled from the frontend
+ * folder, and the frontend build fails if the file is not there. Use
  * {@link JavaScript} with {@link JavaScript.Type#MODULE} for such files
  * instead. See {@link #value()}.
  * <p>

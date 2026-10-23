@@ -28,52 +28,58 @@ import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * Loads a JavaScript file into the browser at runtime. By default the file is
- * loaded as a classic {@code <script>} element; set {@link #type()} to
- * {@link Type#MODULE} to load it as a {@code <script type="module">} element
- * instead. The referenced file is served as a static resource by the servlet
- * container; it is not bundled. Use {@link JsModule} when the file should be
- * processed as a bundle source by Vite at build time.
+ * Defines JavaScript dependencies on a {@link Component} class. For adding
+ * multiple JavaScript files for a single component, you can use this annotation
+ * multiple times.
  * <p>
- * Source locations (same as {@link StyleSheet}):
- * <ul>
- * <li>WAR-packaged applications: {@code src/main/webapp/}. The servlet
- * container serves {@code META-INF/resources/} only from JARs in
- * {@code WEB-INF/lib}, not from the application's own classes.</li>
- * <li>Spring Boot applications: {@code src/main/resources/META-INF/resources/},
- * {@code src/main/resources/public/} or
- * {@code src/main/resources/static/}.</li>
- * <li>Add-on JARs: {@code META-INF/resources/}.</li>
- * </ul>
+ * It is guaranteed that dependencies will be loaded only once. The files loaded
+ * will be in the same order as the annotations were on the class. However,
+ * loading order is only guaranteed on a class level; Annotations from different
+ * classes may appear in different order, grouped by the annotated class. Also,
+ * files identified by {@code @JavaScript} will be loaded after
+ * {@link com.vaadin.flow.component.dependency.JsModule} and before
+ * {@link com.vaadin.flow.component.dependency.CssImport}.
  * <p>
- * URL resolution follows the same rules as {@link StyleSheet#value()} —
- * {@code context://}, {@code base://}, absolute URLs, and bare relative paths
- * are all supported. Use {@code context://foo.js} to load
- * {@code META-INF/resources/foo.js} regardless of the Vaadin servlet mapping.
- * External URLs ({@code https://cdn.example/foo.js}) work the same way. On an
- * {@link com.vaadin.flow.component.page.AppShellConfigurator}, values loaded at
- * runtime are added to the initial page as {@code script} elements;
- * {@link LoadMode#INLINE} is not supported there. Values on an interface are
- * loaded at runtime for the components that implement it. On any other class
- * that is not a component, such as a {@code VaadinServiceInitListener}, values
- * loaded at runtime are not loaded at all.
+ * NOTE: Bundled frontend resources are combined into one big bundle. This
+ * means, that a bundled JavaScript file loaded by one class will be present on
+ * a view constructed by another class. For example, if there are two classes
+ * {@code RootRoute} annotated with {@code @Route("")}, and another class
+ * {@code RouteA} annotated with {@code @Route("route-a")} and
+ * {@code @JavaScript("./src/javascript.js")}, the {@code javascript.js} will be
+ * run on the root route as well. This does not apply to resources loaded at
+ * runtime, such as a {@code @JavaScript} with {@link #type()} set to
+ * {@link Type#MODULE}, which are loaded per page and never bundled.
  * <p>
- * For adding multiple JavaScript files for a single component, use this
- * annotation multiple times. It is guaranteed that dependencies will be loaded
- * only once.
+ * Values with a runtime prefix ({@code http://}, {@code https://}, {@code //},
+ * {@code context://}, {@code base://} or a leading {@code /}) are never bundled
+ * and are loaded at runtime instead, in the same way as
+ * {@link Page#addJavaScript(String)}. The same applies to a URL with any other
+ * scheme (a value containing {@code ://}). Whether the resulting {@code script}
+ * element is a classic script or a module is decided by {@link #type()}. On an
+ * {@link com.vaadin.flow.component.page.AppShellConfigurator}, such values are
+ * added to the initial page as {@code script} elements; {@link LoadMode#INLINE}
+ * is not supported there. Values on an interface are loaded at runtime for the
+ * components that implement it. On any other class that is not a component,
+ * such as a {@code VaadinServiceInitListener}, such values are not loaded at
+ * all.
  * <p>
- * <b>Deprecated bundled interpretation:</b> Historically, a bare relative URL
- * (e.g. {@code @JavaScript("./foo.js")}) was collected by the scanner and
- * bundled like {@link JsModule}. This behavior is deprecated when
- * {@link #type()} is the default {@link Type#SCRIPT}. To opt into runtime
- * semantics, either prefix the value with {@code context://}, {@code base://},
- * or {@code /}, or set {@link #type()} to {@link Type#MODULE}. Bare-relative
- * SCRIPT-typed values still bundle but emit a build-time warning. A future
- * major release will flip the default so bare relatives resolve against the
- * context root.
+ * Other paths used in the {@link JavaScript#value()} method are considered as
+ * relative to {@code frontend} directory and they are bundled and added to the
+ * page as a JavaScript module (a {@code script} element with
+ * {@code type="module"}). In this case a {@link JavaScript} annotation behaves
+ * exactly as a {@link JsModule} annotation. This bundled interpretation is
+ * deprecated: use {@link JsModule} with the same value to keep bundling the
+ * file, or serve the file as a static resource and reference it with a runtime
+ * prefix (or {@link Type#MODULE}) to load it at runtime.
  * <p>
- * NOTE: When loaded with {@link Type#MODULE} (or via {@link JsModule}), it is
- * not possible to execute a function defined in the file via
+ * Setting {@link #type()} to {@link Type#MODULE} opts out of that bundling: the
+ * file is then always loaded at runtime as a {@code script} element with
+ * {@code type="module"}, even when the value is a bare relative path, which is
+ * resolved against the servlet context root. Use it for hand-authored or
+ * CDN-hosted ES modules that should not go through Vite; for build-time bundled
+ * ES modules use {@link JsModule} instead.
+ * <p>
+ * It's not possible to execute a function defined in JavaScript module via
  *
  * <pre>
  *
@@ -82,11 +88,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * </code>
  * </pre>
  *
- * because the function is private to the module (unless it's explicitly
- * exposed). The JavaScript where the function is defined should be loaded with
- * {@link Type#SCRIPT} (the default) or added using
- * {@link Page#addJavaScript(String)}: in this case all declared functions
- * become available in the global scope.
+ * because the function is private there (unless it's explicitly exposed). The
+ * JavaScript where the function is defined should be either external or it
+ * should be added using {@link Page#addJavaScript(String)}: in this case all
+ * declared functions become available in the global scope.
  *
  *
  * @author Vaadin Ltd
@@ -94,7 +99,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @see Page#addJavaScript(String)
  * @see Page#addJavaScript(String, LoadMode, Type)
  * @see JsModule
- * @see StyleSheet
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
@@ -133,7 +137,7 @@ public @interface JavaScript {
      * JavaScript file URL to load before using the annotated {@link Component}
      * in the browser.
      * <p>
-     * URL resolution rules (same as {@link StyleSheet#value()}), in order:
+     * URL resolution rules, in order:
      * <ul>
      * <li>{@code http://...}, {@code https://...}, {@code //...} — used
      * unchanged.</li>
