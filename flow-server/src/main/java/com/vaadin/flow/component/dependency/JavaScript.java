@@ -147,7 +147,9 @@ public @interface JavaScript {
      * (independent of the Vaadin servlet mapping).</li>
      * <li>{@code base://foo.js} — resolved against the page's {@code <base>}
      * URI, i.e. the Vaadin servlet mapping path.</li>
-     * <li>{@code /foo.js} — used unchanged as an absolute server path.</li>
+     * <li>{@code /foo.js} — used unchanged as an absolute server path. A value
+     * with a leading {@code /} that contains a path traversal ({@code ..}) is
+     * rejected with a warning and not loaded.</li>
      * <li>A URL with any other scheme (a value containing {@code ://}) — used
      * unchanged.</li>
      * <li>Any other value (bare relative, {@code "./foo.js"},
@@ -160,7 +162,9 @@ public @interface JavaScript {
      * When {@link #type()} is {@link Type#MODULE}, the value is loaded at
      * runtime regardless of whether it has a URL prefix; bare relative paths
      * are normalized to {@code context://<value>} and served as static
-     * resources by the servlet container.
+     * resources by the servlet container. A value without a scheme that
+     * contains a path traversal ({@code ..}), such as {@code ../foo.js}, is
+     * rejected with a warning and not loaded.
      *
      * @return a JavaScript file URL
      */

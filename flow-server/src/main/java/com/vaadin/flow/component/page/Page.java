@@ -148,17 +148,17 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory. The {@code context://}, {@code base://} and absolute
-     * URL rules of {@link StyleSheet#value()} apply here as well; other
-     * relative URLs are resolved against the page's base URI.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link StyleSheet#value()} apply here as well.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -178,17 +178,17 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory. The {@code context://}, {@code base://} and absolute
-     * URL rules of {@link StyleSheet#value()} apply here as well; other
-     * relative URLs are resolved against the page's base URI.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link StyleSheet#value()} apply here as well.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -281,17 +281,17 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory. The {@code context://}, {@code base://} and absolute
-     * URL rules of {@link JavaScript#value()} apply here as well; other
-     * relative URLs are resolved against the page's base URI.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -310,17 +310,17 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory. The {@code context://}, {@code base://} and absolute
-     * URL rules of {@link JavaScript#value()} apply here as well; other
-     * relative URLs are resolved against the page's base URI.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
