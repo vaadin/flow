@@ -930,7 +930,7 @@ public class ShortcutRegistration implements Registration, Serializable {
             Collection<Key> modifiers) {
 
         final List<Key> realMods = modifiers.stream().filter(Key::isModifier)
-                .collect(Collectors.toList());
+                .toList();
         // build a filter based on all the modifier keys. if modifier is not
         // in the parameter collection, require it to be passive to match the
         // shortcut

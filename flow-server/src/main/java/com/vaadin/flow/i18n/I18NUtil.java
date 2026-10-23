@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +89,7 @@ public final class I18NUtil {
                 .filter(file -> file.getName()
                         .startsWith(DefaultI18NProvider.BUNDLE_FILENAME)
                         && file.getName().endsWith(PROPERTIES_SUFFIX))
-                .collect(Collectors.toList());
+                .toList();
         return collectLocalesFromFiles(listedFiles);
     }
 
@@ -129,7 +128,7 @@ public final class I18NUtil {
 
     private static List<Locale> collectLocalesFromFiles(List<File> files) {
         return collectLocalesFromFileNames(
-                files.stream().map(File::getName).collect(Collectors.toList()));
+                files.stream().map(File::getName).toList());
     }
 
     protected static List<File> getTranslationFiles(URL resource) {

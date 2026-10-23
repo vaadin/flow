@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
@@ -91,7 +90,7 @@ public class NpmTemplateParser implements TemplateParser {
                 .map(jsModule -> new Dependency(Dependency.Type.JS_MODULE,
                         jsModule.value(), LoadMode.EAGER)) // load mode doesn't
                                                            // matter here
-                .collect(Collectors.toList());
+                .toList();
 
         for (DependencyFilter filter : service.getDependencyFilters()) {
             dependencies = filter.filter(new ArrayList<>(dependencies),

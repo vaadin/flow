@@ -40,7 +40,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.jsoup.Jsoup;
@@ -957,8 +956,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // include all chunks but the one used for exported
             // components.
             return JacksonUtils.getKeys(chunks).stream()
-                    .filter(s -> !EXPORT_CHUNK.equals(s))
-                    .collect(Collectors.toList());
+                    .filter(s -> !EXPORT_CHUNK.equals(s)).toList();
         }
 
         protected void setupCss(Element head, BootstrapContext context) {

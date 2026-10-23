@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Route;
@@ -128,7 +127,7 @@ public class ConfiguredRoutes implements Serializable {
             Class<? extends Component> routeTarget) {
         return getRoutesMap().entrySet().stream()
                 .filter(entry -> entry.getValue().containsTarget(routeTarget))
-                .map(Map.Entry::getKey).collect(Collectors.toList());
+                .map(Map.Entry::getKey).toList();
     }
 
     /**

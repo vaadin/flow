@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -202,7 +201,7 @@ public abstract class ClassFinder {
                         basePackage -> className.startsWith(basePackage + ".")))
                 .filter(className -> excludes.stream()
                         .noneMatch(p -> p.matcher(className).matches()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -149,6 +148,6 @@ class DevModeClassFinderTest {
     private Collection<Class<?>> getApplicableClasses() {
         HandlesTypes handlesTypes = DevModeStartupListener.class
                 .getAnnotation(HandlesTypes.class);
-        return Stream.of(handlesTypes.value()).collect(Collectors.toList());
+        return Stream.of(handlesTypes.value()).toList();
     }
 }

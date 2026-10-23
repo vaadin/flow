@@ -2996,8 +2996,9 @@ public class Binder<BEAN> implements Serializable {
         // First run fields level validation, if no validation errors then
         // create a record.
         List<BindingValidationStatus<?>> bindingResults = currentBindings
-                .stream().map(b -> b.validate(false))
-                .collect(Collectors.toList());
+                .stream()
+                .<BindingValidationStatus<?>> map(b -> b.validate(false))
+                .toList();
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
@@ -3084,13 +3085,14 @@ public class Binder<BEAN> implements Serializable {
         // make a copy of the incoming bindings to avoid their modifications
         // during validation
         Collection<Binding<BEAN, ?>> currentBindings = bindings.stream()
-                .filter(Binding::isApplied).collect(Collectors.toList());
+                .filter(Binding::isApplied).toList();
 
         // First run fields level validation, if no validation errors then
         // update bean.
         List<BindingValidationStatus<?>> bindingResults = currentBindings
-                .stream().map(b -> b.validate(false))
-                .collect(Collectors.toList());
+                .stream()
+                .<BindingValidationStatus<?>> map(b -> b.validate(false))
+                .toList();
 
         if (bindingResults.stream()
                 .noneMatch(BindingValidationStatus::isError)) {
@@ -3423,9 +3425,8 @@ public class Binder<BEAN> implements Serializable {
      */
     private List<BindingValidationStatus<?>> validateBindings() {
         return getBindings().stream().filter(Binding::isApplied)
-                .map(BindingImpl::doValidation)
-                .collect(Collectors.collectingAndThen(Collectors.toList(),
-                        Collections::unmodifiableList));
+                .<BindingValidationStatus<?>> map(BindingImpl::doValidation)
+                .toList();
     }
 
     /**
@@ -3444,8 +3445,7 @@ public class Binder<BEAN> implements Serializable {
         Objects.requireNonNull(bean, "bean cannot be null");
         return validators.stream()
                 .map(validator -> validator.apply(bean, new ValueContext(this)))
-                .collect(Collectors.collectingAndThen(Collectors.toList(),
-                        Collections::unmodifiableList));
+                .toList();
     }
 
     /**

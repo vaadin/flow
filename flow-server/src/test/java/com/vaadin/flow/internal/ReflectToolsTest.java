@@ -25,7 +25,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -374,7 +373,7 @@ class ReflectToolsTest {
     @Test
     void getSetters_classIsGeneric_syntheticMethodsAreFilteredOut() {
         List<Method> setters = ReflectTools.getSetterMethods(Category.class)
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(1, setters.size());
         Method setter = setters.get(0);
         assertEquals("setId", setter.getName());

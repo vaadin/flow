@@ -1415,7 +1415,7 @@ class ElementTest extends AbstractNodeTest {
         style.set("borderColor", "blue");
         style.set("border-foo", "bar");
 
-        List<String> styles = style.getNames().collect(Collectors.toList());
+        List<String> styles = style.getNames().toList();
         assertEquals(2, styles.size());
         assertTrue(styles.contains("border-color"));
         assertTrue(styles.contains("border-foo"));
@@ -1428,7 +1428,7 @@ class ElementTest extends AbstractNodeTest {
         Style style = element.getStyle();
         style.set("borderColor", "blue");
         style.set("borderColor", null);
-        List<String> styles = style.getNames().collect(Collectors.toList());
+        List<String> styles = style.getNames().toList();
         assertFalse(styles.contains("borderColor"));
     }
 
@@ -3073,7 +3073,7 @@ class ElementTest extends AbstractNodeTest {
         element.getProperty("foo");
         element.hasProperty("foo");
         element.removeProperty("foo");
-        element.getPropertyNames().collect(Collectors.toList());
+        element.getPropertyNames().toList();
 
         assertFalse(element.getNode()
                 .getFeatureIfInitialized(ElementPropertyMap.class).isPresent(),
@@ -3087,7 +3087,7 @@ class ElementTest extends AbstractNodeTest {
         element.getAttribute("foo");
         element.hasAttribute("foo");
         element.removeAttribute("foo");
-        element.getAttributeNames().collect(Collectors.toList());
+        element.getAttributeNames().toList();
 
         assertFalse(element.getNode()
                 .getFeatureIfInitialized(ElementAttributeMap.class).isPresent(),

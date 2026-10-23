@@ -415,7 +415,7 @@ class JarContentsManagerTest {
         List<String> filteredPaths = TestUtils
                 .listFilesRecursively(filteredFilesDirectory);
         List<String> filteredPathsPrefixedByBasePath = filteredPaths.stream()
-                .map(path -> basePath + path).collect(Collectors.toList());
+                .map(path -> basePath + path).toList();
 
         assertTrue(filteredPaths.size() < allPaths.size(),
                 "Filtered paths' count should be less than all paths' count");
@@ -518,7 +518,7 @@ class JarContentsManagerTest {
         try (JarFile jarFile = new JarFile(jar, false)) {
             return jarFile.stream().filter(file -> !file.isDirectory())
                     .filter(file -> file.getName().startsWith(jarDirectory))
-                    .map(ZipEntry::getName).collect(Collectors.toList());
+                    .map(ZipEntry::getName).toList();
         } catch (IOException e) {
             throw new RuntimeException(
                     String.format("Failed to list files in jarFile '%s'", jar),

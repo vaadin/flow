@@ -440,7 +440,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
                 .map(value -> Stream.of(value.split(" "))
                         .map(SandboxType::fromAttributeValue)
                         .filter(Optional::isPresent).map(Optional::get)
-                        .collect(Collectors.toList()))
+                        .toList())
                 .map(collection -> collection
                         .toArray(new SandboxType[collection.size()]));
     }

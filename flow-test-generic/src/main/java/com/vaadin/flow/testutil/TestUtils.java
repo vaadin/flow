@@ -21,7 +21,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -110,7 +109,7 @@ public final class TestUtils {
                     .map(path -> path.startsWith(File.separator)
                             ? path.substring(1)
                             : path)
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (IOException e) {
             throw new AssertionError(String.format(
                     "Unexpected: could not list files in directory '%s'",

@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -156,7 +155,7 @@ class TaskInstallFrontendBuildPluginsTest {
         final List<String> pluginFiles = Arrays
                 .stream(pluginFolder.listFiles((dir, name) -> FilenameUtils
                         .getExtension(name).equals("js")))
-                .map(file -> file.getName()).collect(Collectors.toList());
+                .map(file -> file.getName()).toList();
         for (String fileName : pluginFiles) {
             assertTrue(fileNames.contains(fileName), String.format(
                     "Plugin '%s' doesn't define script file '%s' in package.json files",

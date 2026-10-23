@@ -214,8 +214,7 @@ public class RouteScopedContext extends AbstractContext {
             Set<String> uiStoreIds = getUIStoreIds(UI.getCurrentOrThrow());
             return getKeySet().stream()
                     .filter(key -> uiStoreIds.contains(key.getUIId()))
-                    .map(key -> getContextualStorage(key, false))
-                    .collect(Collectors.toList());
+                    .map(key -> getContextualStorage(key, false)).toList();
         }
 
         /**

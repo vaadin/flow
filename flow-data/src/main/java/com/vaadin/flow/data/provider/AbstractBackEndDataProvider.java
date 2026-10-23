@@ -46,10 +46,9 @@ public abstract class AbstractBackEndDataProvider<T, F> extends
 
         List<QuerySortOrder> combinedSortOrders = Stream
                 .concat(query.getSortOrders().stream(),
-                        sortOrders.stream()
-                                .filter(order -> !sortedPropertyNames
-                                        .contains(order.getSorted())))
-                .collect(Collectors.toList());
+                        sortOrders.stream().filter(order -> !sortedPropertyNames
+                                .contains(order.getSorted())))
+                .toList();
 
         return new Query<>(query.getOffset(), query.getLimit(),
                 combinedSortOrders, query.getInMemorySorting(),

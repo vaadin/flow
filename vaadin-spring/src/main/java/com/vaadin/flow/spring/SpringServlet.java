@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
@@ -71,7 +70,7 @@ public class SpringServlet extends VaadinServlet {
                     throw new IllegalStateException("unable to access field",
                             e);
                 }
-            }).collect(Collectors.toList());
+            }).toList();
 
     /** The application context the servlet and its service are wired to. */
     private final ApplicationContext context;

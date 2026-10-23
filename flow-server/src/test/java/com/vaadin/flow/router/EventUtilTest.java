@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -289,7 +288,7 @@ class EventUtilTest {
         List<BeforeEnterObserver> listenerComponents = EventUtil
                 .getImplementingComponents(elements.stream(),
                         BeforeEnterObserver.class)
-                .collect(Collectors.toList());
+                .toList();
 
         assertEquals(1, listenerComponents.size(),
                 "Wrong amount of listener instances found");
@@ -315,7 +314,7 @@ class EventUtilTest {
         List<BeforeEnterObserver> listenerComponents = EventUtil
                 .getImplementingComponents(elements.stream(),
                         BeforeEnterObserver.class)
-                .collect(Collectors.toList());
+                .toList();
 
         assertEquals(1, listenerComponents.size(),
                 "Wrong amount of listener instances found");
@@ -405,7 +404,7 @@ class EventUtilTest {
         List<BeforeEnterObserver> components = EventUtil
                 .getImplementingComponents(Stream.of(wrapper.getElement()),
                         BeforeEnterObserver.class)
-                .distinct().collect(Collectors.toList());
+                .distinct().toList();
         assertEquals(1, components.size());
         assertEquals(EnterObserver.class, components.get(0).getClass());
 

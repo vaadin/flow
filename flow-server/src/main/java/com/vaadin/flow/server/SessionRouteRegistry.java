@@ -124,12 +124,12 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
                             .stream()
                             .filter(routeData -> !configuration
                                     .hasTemplate(routeData.getTemplate()))
-                            .collect(Collectors.toList());
+                            .toList();
                     List<RouteBaseData<?>> removedVisible = event
                             .getRemovedRoutes().stream()
                             .filter(routeData -> !configuration
                                     .hasTemplate(routeData.getTemplate()))
-                            .collect(Collectors.toList());
+                            .toList();
                     // Only fire an event if we have visible changes.
                     if (!(addedVisible.isEmpty() && removedVisible.isEmpty())) {
                         fireEvent(new RoutesChangedEvent(event.getSource(),

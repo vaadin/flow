@@ -93,8 +93,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
             initialServices.forEach((serviceClass,
                     impls) -> serviceMap.put(serviceClass, impls.stream()
                             .map(impl -> factory.apply(serviceClass, impl))
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toList())));
+                            .filter(Objects::nonNull).toList()));
         }
 
         @Override
@@ -318,7 +317,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
             impls = Collections.emptyList();
         }
         impls = impls.stream().filter(clazz -> !clazz.equals(serviceImpl))
-                .collect(Collectors.toList());
+                .toList();
         if (impls.isEmpty()) {
             services.put(serviceType, Collections.singletonList(serviceImpl));
         } else if (impls.size() > 1) {

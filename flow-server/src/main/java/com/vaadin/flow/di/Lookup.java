@@ -178,7 +178,7 @@ public interface Lookup {
                 return Stream
                         .concat(lookup1.lookupAll(serviceClass).stream(),
                                 lookup2.lookupAll(serviceClass).stream())
-                        .collect(Collectors.toList());
+                        .toList();
             }
 
             @Override

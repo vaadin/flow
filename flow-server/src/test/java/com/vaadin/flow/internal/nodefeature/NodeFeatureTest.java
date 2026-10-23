@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
@@ -139,8 +138,7 @@ class NodeFeatureTest {
     void priorityOrder() {
         List<Class<? extends NodeFeature>> priorityOrder = buildExpectedIdMap()
                 .keySet().stream()
-                .sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR)
-                .collect(Collectors.toList());
+                .sorted(NodeFeatureRegistry.PRIORITY_COMPARATOR).toList();
 
         List<Class<? extends NodeFeature>> expectedOrder = Arrays.asList(
                 /* Primary features */

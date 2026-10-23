@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -455,8 +454,7 @@ public class StateTree implements NodeOwner {
         List<StateTree.BeforeClientResponseEntry> flushed = pendingExecutionNodes
                 .stream().map(StateNode::dumpBeforeClientResponseEntries)
                 .flatMap(List::stream)
-                .sorted(BeforeClientResponseEntry.COMPARING_INDEX)
-                .collect(Collectors.toList());
+                .sorted(BeforeClientResponseEntry.COMPARING_INDEX).toList();
 
         // Reset bookeeping for the next round
         pendingExecutionNodes = new HashSet<>();

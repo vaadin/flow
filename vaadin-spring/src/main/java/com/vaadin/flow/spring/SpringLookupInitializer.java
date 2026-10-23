@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.BeansException;
@@ -145,7 +144,7 @@ public class SpringLookupInitializer extends LookupInitializer {
             return Stream
                     .concat(context.getBeansOfType(serviceClass).values()
                             .stream(), super.lookupAll(serviceClass).stream())
-                    .collect(Collectors.toList());
+                    .toList();
         }
 
     }

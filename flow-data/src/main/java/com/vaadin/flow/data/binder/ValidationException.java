@@ -18,7 +18,6 @@ package com.vaadin.flow.data.binder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Indicates validation errors in a {@link Binder} when a field value is
@@ -62,8 +61,7 @@ public class ValidationException extends Exception {
     public List<ValidationResult> getValidationErrors() {
         List<ValidationResult> errors = new ArrayList<>(
                 getFieldValidationErrors().stream()
-                        .map(s -> s.getResult().get())
-                        .collect(Collectors.toList()));
+                        .map(s -> s.getResult().get()).toList());
         errors.addAll(getBeanValidationErrors());
         return errors;
     }
