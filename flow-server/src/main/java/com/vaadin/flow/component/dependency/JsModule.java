@@ -93,10 +93,10 @@ public @interface JsModule {
      * component, an interface (such as a mixin implemented by components) or
      * the app shell, such a value is not bundled but loaded at runtime as a
      * {@code <script type="module">}, and a warning is logged during the
-     * production build. As with {@link JavaScript}, a value with a leading
-     * {@code /} (including a protocol-relative {@code //} URL) that contains a
-     * path traversal ({@code ..}) is rejected with a warning and not loaded at
-     * all; values with a scheme, including {@code context://} and
+     * production build. As with {@link JavaScript}, a value with a single
+     * leading {@code /} that contains a path traversal ({@code ..}) is rejected
+     * with a warning and not loaded at all; protocol-relative {@code //} URLs
+     * and values with a scheme, including {@code context://} and
      * {@code base://}, are passed on unchanged. On any other class, such as a
      * {@code VaadinServiceInitListener}, nothing loads the value at runtime: a
      * URL is not loaded at all, and a value with a leading {@code /} is still

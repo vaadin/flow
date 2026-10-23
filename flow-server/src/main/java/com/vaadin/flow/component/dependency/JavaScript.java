@@ -162,9 +162,10 @@ public @interface JavaScript {
      * When {@link #type()} is {@link Type#MODULE}, the value is loaded at
      * runtime regardless of whether it has a URL prefix; bare relative paths
      * are normalized to {@code context://<value>} and served as static
-     * resources by the servlet container. A value without a scheme that
-     * contains a path traversal ({@code ..}), such as {@code ../foo.js}, is
-     * rejected with a warning and not loaded.
+     * resources by the servlet container. A value that is not an external URL
+     * (no scheme and no leading {@code //}) and contains a path traversal
+     * ({@code ..}), such as {@code ../foo.js}, is rejected with a warning and
+     * not loaded.
      *
      * @return a JavaScript file URL
      */

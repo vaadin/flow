@@ -339,10 +339,12 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. You can prefix the URL with {@code context://} to make it
-     * relative to the context path or use an absolute URL to refer to files
-     * outside the frontend directory.
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory. The
+     * {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * The {@code type} parameter selects the kind of {@code <script>} tag the
      * browser receives: {@link JavaScript.Type#SCRIPT} renders a classic
