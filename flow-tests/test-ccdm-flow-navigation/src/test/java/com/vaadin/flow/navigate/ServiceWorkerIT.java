@@ -242,6 +242,12 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             WebElement offlineStub = findElement(By.tagName("iframe"));
             driver.switchTo().frame(offlineStub);
             Assert.assertNotNull(findElement(By.className("offline")));
+            // The default icon is opaque, so it gets the app icon shape
+            waitUntil(driver -> {
+                WebElement icon = findElement(By.className("app-icon"));
+                return icon.isDisplayed() && !hasCssClass(icon, "checking")
+                        && hasCssClass(icon, "opaque");
+            });
         } finally {
             getDevTools().setOfflineEnabled(false);
         }
