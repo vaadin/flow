@@ -283,7 +283,7 @@ public class UIInternals implements Serializable {
     private final Signal<RouterState> readonlyRouterStateSignal = routerStateSignal
             .asReadonly();
 
-    private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
+    private final HashMap<Class<?>, List<?>> listeners = new HashMap<>();
 
     private Location lastHandledNavigation = null;
 
