@@ -68,6 +68,11 @@ export class SystemErrorHandler {
 
   #resyncInProgress = false;
 
+  // Set when the browser starts leaving the page, until the page is used again.
+  #leavingPage = false;
+
+  #deferredSessionExpiration: (() => void) | null = null;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -75,15 +80,44 @@ export class SystemErrorHandler {
    */
   constructor(registry: Registry) {
     this.#registry = registry;
+    window.addEventListener('beforeunload', (event) => {
+      // vite-devmode dispatches a synthetic beforeunload when its HMR socket is
+      // closed with 1008, which does not mean the page is being left.
+      if (event.isTrusted) {
+        this.#leavingPage = true;
+      }
+    });
+    // A navigation that does not replace the page, such as a download, leaves
+    // the page in use. The session expiration is handled once it is used.
+    const handlePageInUse = (): void => {
+      this.#leavingPage = false;
+      const deferred = this.#deferredSessionExpiration;
+      this.#deferredSessionExpiration = null;
+      deferred?.();
+    };
+    window.addEventListener('pointerdown', handlePageInUse, true);
+    window.addEventListener('keydown', handlePageInUse, true);
   }
 
   /**
-   * Shows the session expiration notification.
+   * Shows the session expiration notification, or defers it while the browser
+   * is leaving the page.
+   *
+   * The request that ended the session, such as a logout URL, typically
+   * responds with the page the browser is navigating to. Going to the session
+   * expired URL meanwhile would cancel that navigation.
    *
    * @param details - message details or null if there are no details
    */
   handleSessionExpiredError(details: string | null): void {
-    this.handleUnrecoverableErrorFor(details, this.#registry.getApplicationConfiguration().getSessionExpiredError());
+    const handle = (): void =>
+      this.handleUnrecoverableErrorFor(details, this.#registry.getApplicationConfiguration().getSessionExpiredError());
+    if (this.#leavingPage) {
+      Console.debug('Session expiration deferred while leaving the page');
+      this.#deferredSessionExpiration = handle;
+      return;
+    }
+    handle();
   }
 
   /**

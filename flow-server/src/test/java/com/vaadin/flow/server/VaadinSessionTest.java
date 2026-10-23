@@ -41,10 +41,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.atmosphere.cpr.AtmosphereRequest;
-import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
-import org.atmosphere.cpr.AtmosphereResourceImpl;
-import org.atmosphere.cpr.Broadcaster;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -378,32 +374,6 @@ class VaadinSessionTest {
         assertEquals(1, vaadinSession.getCloseCount(),
                 "'valueUnbound' method may not call 'close' "
                         + "method for closing session");
-    }
-
-    @Test
-    void valueUnbound_httpSessionInvalidated_closingUIsPushesNothingToAuthenticatedWebSocket() {
-        AtmosphereRequest request = mock(AtmosphereRequest.class);
-        when(request.getUserPrincipal()).thenReturn(() -> "emma");
-        AtmosphereResourceImpl resource = mock(AtmosphereResourceImpl.class);
-        when(resource.getRequest()).thenReturn(request);
-        when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
-        Broadcaster broadcaster = mock(Broadcaster.class);
-        when(resource.getBroadcaster()).thenReturn(broadcaster);
-
-        session.lock();
-        AtmospherePushConnection pushConnection = new AtmospherePushConnection(
-                ui);
-        pushConnection.connect(resource);
-        ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
-        ui.getInternals().setPushConnection(pushConnection);
-        session.unlock();
-
-        session.valueUnbound(mock(HttpSessionBindingEvent.class));
-        mockService.runPendingAccessTasks(session);
-
-        // A push would tell the client that its session has expired, which
-        // makes it leave the page the invalidating request leads to
-        verifyNoInteractions(broadcaster);
     }
 
     private static class SerializationPushConnection

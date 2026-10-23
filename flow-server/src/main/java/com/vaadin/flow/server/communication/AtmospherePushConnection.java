@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
-import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.atmosphere.cpr.BroadcastFilterAdapter;
 import org.atmosphere.util.Version;
 import org.slf4j.Logger;
@@ -58,7 +57,6 @@ public class AtmospherePushConnection
     private transient Future<Object> outgoingMessage;
     private transient Object lock = new Object();
     private AtomicBoolean disconnecting = new AtomicBoolean(false);
-    private transient boolean openedByAuthenticatedUser;
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -358,10 +356,6 @@ public class AtmospherePushConnection
         }
 
         this.resource = resource;
-        // The HTTP session and request may already be invalid when the
-        // connection has to be closed, so this is recorded now
-        openedByAuthenticatedUser = resource.getRequest()
-                .getUserPrincipal() != null;
         State oldState = state;
         state = State.CONNECTED;
 
@@ -394,32 +388,6 @@ public class AtmospherePushConnection
 
     @Override
     public void disconnect() {
-        disconnect(false);
-    }
-
-    /**
-     * Disconnects a WebSocket connection that was opened by an authenticated
-     * user, as a reaction to the HTTP session it was opened in being
-     * invalidated. Does nothing for other connections.
-     * <p>
-     * This is what servlet containers such as Tomcat and Undertow do when an
-     * authenticated HTTP session ends, but depending on the container that
-     * happens before or after the UIs of the session are closed, or not at all.
-     * Unlike {@link #disconnect()}, the connection is closed as a lost
-     * connection, the same way as when the container closes it. A client that
-     * reconnects with it is then not told that the session has expired, so it
-     * can follow the response of the request that invalidated the session, such
-     * as a logout redirect.
-     */
-    public void disconnectIfAuthenticated() {
-        AtmosphereResource current = resource;
-        if (openedByAuthenticatedUser && current != null
-                && current.transport() == TRANSPORT.WEBSOCKET) {
-            disconnect(true);
-        }
-    }
-
-    private void disconnect(boolean asConnectionLost) {
         // If a disconnection is already happening on another thread it is safe
         // to skip the operation. This also prevents potential deadlocks if the
         // container acquires locks during operations on HTTP session, as
@@ -484,12 +452,7 @@ public class AtmospherePushConnection
                 resourceToClose = resource;
                 connectionLost();
             }
-            if (asConnectionLost
-                    && resourceToClose instanceof AtmosphereResourceImpl impl) {
-                // Notifies the listeners as cancelled, so PushHandler records
-                // the connection as lost instead of closed by the server
-                impl.dirtyClose();
-            } else if (resourceToClose != null) {
+            if (resourceToClose != null) {
                 try {
                     resourceToClose.close();
                 } catch (IOException e) {

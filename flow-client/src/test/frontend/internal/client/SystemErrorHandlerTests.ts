@@ -139,6 +139,61 @@ describe('SystemErrorHandler', () => {
     });
   });
 
+  describe('handleSessionExpiredError', () => {
+    let errorStub: sinon.SinonStub;
+
+    // With a caption the expiration is shown as a notification, which the
+    // cases can find, instead of a redirect that would leave the test page.
+    function makeSessionExpiredHandler(): SystemErrorHandler {
+      return new SystemErrorHandler(
+        testRegistry({
+          ApplicationConfiguration: {
+            isWebComponentMode: () => false,
+            getSessionExpiredError: () => ({ caption: 'Session ended', url: 'about:blank' })
+          }
+        })
+      );
+    }
+
+    function findNotification(): Element | null {
+      return document.querySelector('.v-system-error');
+    }
+
+    beforeEach(() => {
+      errorStub = sinon.stub(Console, 'error');
+    });
+
+    afterEach(() => {
+      errorStub.restore();
+      document.querySelectorAll('.v-system-error').forEach((el) => el.remove());
+    });
+
+    it('shows the expiration right away when a synthetic beforeunload was dispatched', () => {
+      const handler = makeSessionExpiredHandler();
+      // As vite-devmode does when its HMR socket is closed with 1008.
+      window.dispatchEvent(new Event('beforeunload'));
+
+      handler.handleSessionExpiredError(null);
+
+      expect(findNotification()?.textContent).to.equal('Session ended');
+    });
+
+    it('defers the expiration while the browser leaves the page, until the page is used again', async () => {
+      const handler = makeSessionExpiredHandler();
+      const leaving = new Promise((resolve) => window.addEventListener('beforeunload', resolve, { once: true }));
+      // Fires a trusted beforeunload; the empty response keeps the page.
+      window.location.href = '/no-content';
+      await leaving;
+
+      handler.handleSessionExpiredError(null);
+      // A count, as a failure that reports the element hangs the test runner
+      expect(document.querySelectorAll('.v-system-error').length).to.equal(0);
+
+      window.dispatchEvent(new PointerEvent('pointerdown'));
+      expect(findNotification()?.textContent).to.equal('Session ended');
+    });
+  });
+
   describe('class', () => {
     it('resynchronizes instead of redirecting when in web-component mode', () => {
       // With every part null, Java redirects outside web-component mode and
