@@ -25,6 +25,8 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 
 /**
  * A JavaScript function value with captured parameters that can be passed to
@@ -81,6 +83,8 @@ public final class JsFunction implements Serializable {
      * @return a new {@code JsFunction} instance
      * @throws IllegalArgumentException
      *             if any capture has a type that cannot be sent to the client
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public static JsFunction of(String body, @Nullable Object... captures) {
         Objects.requireNonNull(body, "body");

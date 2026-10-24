@@ -397,23 +397,21 @@ public class ComponentTracker {
     }
 
     /**
-     * Finds the location in application code that the current thread is
-     * running, i.e. the innermost stack frame outside of the framework, the JDK
-     * and the dependency injection containers that the locations of components
-     * skip as well.
+     * Checks whether the given class belongs to the framework, the JDK or a
+     * dependency injection container, i.e. whether locations skip its stack
+     * frames to point at the application code that called it.
      * <p>
-     * Unlike the locations of components, this works also in production mode.
+     * Only the packages that commonly sit between application code and a
+     * component are skipped, so framework code that application code does not
+     * call directly, such as the router, is not recognized as framework code.
      *
-     * @return the location of the calling application code, or
-     *         <code>null</code> if every frame of the stack is skipped
+     * @param className
+     *            the fully qualified name of the class, not <code>null</code>
+     * @return <code>true</code> if stack frames of the class are skipped,
+     *         <code>false</code> otherwise
      */
-    public static Location findCaller() {
-        return StackWalker.getInstance().walk(frames -> frames
-                .filter(frame -> isRelevant(frame.getClassName())).findFirst()
-                .map(frame -> new Location(frame.getClassName(),
-                        frame.getFileName(), frame.getMethodName(),
-                        frame.getLineNumber()))
-                .orElse(null));
+    public static boolean isSkippedClass(String className) {
+        return !isRelevant(className);
     }
 
     /**

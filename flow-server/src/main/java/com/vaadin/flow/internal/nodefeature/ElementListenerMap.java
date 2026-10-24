@@ -193,8 +193,10 @@ public class ElementListenerMap extends NodeMap {
                             "The event data expression must not be null");
                 }
             }
-            CspViolationReporter.reportStringJavaScript(
-                    "DomListenerRegistration.addEventData(List)");
+            if (!eventData.isEmpty()) {
+                CspViolationReporter.reportStringJavaScript(
+                        "DomListenerRegistration.addEventData(List)");
+            }
 
             appendEventData(eventData);
 

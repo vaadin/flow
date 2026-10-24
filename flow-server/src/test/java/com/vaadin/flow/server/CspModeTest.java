@@ -24,13 +24,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -38,6 +43,7 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -46,6 +52,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class CspModeTest {
+
+    @Tag("div")
+    private static class Clickable extends Component
+            implements ClickNotifier<Clickable> {
+    }
 
     private MockServletServiceSessionSetup setup;
     private MockUI ui;
@@ -98,11 +109,29 @@ class CspModeTest {
         CspViolationException exception = assertThrows(
                 CspViolationException.class, () -> call.accept(ui));
 
-        assertTrue(
-                exception.getMessage()
-                        .startsWith(api + " called at "
-                                + CspModeTest.class.getName() + ".lambda$"),
-                exception.getMessage());
+        String message = exception.getMessage();
+        assertTrue(message.startsWith(
+                api + " called at " + CspModeTest.class.getName() + ".lambda$"),
+                message);
+        assertFalse(message.contains(" via "), message);
+    }
+
+    @Test
+    void strict_stringJavaScriptFromFramework_namesFrameworkCallee() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        Clickable clickable = new Clickable();
+
+        CspViolationException exception = assertThrows(
+                CspViolationException.class,
+                () -> clickable.addDoubleClickListener(event -> {
+                }));
+
+        String message = exception.getMessage();
+        assertTrue(message.contains(
+                " called at " + CspModeTest.class.getName() + ".lambda$"),
+                message);
+        assertTrue(message.contains(" via " + ClickNotifier.class.getName()
+                + ".addDoubleClickListener("), message);
     }
 
     @Test
@@ -112,14 +141,19 @@ class CspModeTest {
         assertDoesNotThrow(() -> {
             ui.getElement().callJsFunction("focus");
             ui.getPage().reload();
-            ui.getElement().addEventListener("click", e -> {
-            }).setFilter(null);
+            DomListenerRegistration registration = ui.getElement()
+                    .addEventListener("click", e -> {
+                    });
+            registration.setFilter(null);
+            registration.addEventData(List.of());
         });
     }
 
-    @Test
-    void warn_stringJavaScript_runsAndLogsOncePerCallSite() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.WARN);
+    @ParameterizedTest
+    @CsvSource({ "WARN, 2", "OFF, 0" })
+    void warnOrOff_stringJavaScript_runsAndLogsOncePerCallSiteOnlyInWarn(
+            CspMode mode, int expectedWarnings) {
+        setup.getDeploymentConfiguration().setCspMode(mode);
         Logger logger = mock(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
                 LoggerFactory.class)) {
@@ -135,14 +169,15 @@ class CspModeTest {
 
         assertEquals(3, ui.dumpPendingJsInvocations().size());
         ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
-        verify(logger, times(2)).warn(messages.capture());
+        verify(logger, times(expectedWarnings)).warn(messages.capture());
         String callSite = "Element.executeJs(String, Object...) called at "
                 + CspModeTest.class.getName()
-                + ".warn_stringJavaScript_runsAndLogsOncePerCallSite(CspModeTest.java:";
+                + ".warnOrOff_stringJavaScript_runsAndLogsOncePerCallSiteOnlyInWarn(CspModeTest.java:";
         assertTrue(
                 messages.getAllValues().stream()
                         .allMatch(message -> message.startsWith(callSite)),
                 messages.getAllValues().toString());
-        assertEquals(2, messages.getAllValues().stream().distinct().count());
+        assertEquals(expectedWarnings,
+                messages.getAllValues().stream().distinct().count());
     }
 }

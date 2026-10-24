@@ -44,6 +44,8 @@ import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -427,6 +429,8 @@ public class Page implements Serializable {
      * @param expression
      *            the JavaScript expression which return a Promise
      * @since 2.1
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public void addDynamicImport(String expression) {
         CspViolationReporter
@@ -538,6 +542,8 @@ public class Page implements Serializable {
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @since 25.0
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {

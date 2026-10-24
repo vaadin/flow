@@ -15,13 +15,19 @@
  */
 package com.vaadin.flow.internal;
 
+import java.lang.StackWalker.StackFrame;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.internal.ComponentTracker;
-import com.vaadin.flow.component.internal.ComponentTracker.Location;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.CspViolationException;
@@ -36,15 +42,17 @@ import com.vaadin.flow.server.VaadinService;
  * in {@link CspMode#OFF}, a warning logged once per API and call site in
  * {@link CspMode#WARN}, and a {@link CspViolationException} in
  * {@link CspMode#STRICT}. Every string-based call is reported, including the
- * ones that Vaadin itself makes.
+ * ones that Vaadin itself makes. The call site is the innermost stack frame
+ * that {@link ComponentTracker#isSkippedClass(String)} does not skip, followed
+ * by the framework code it went through when it did not call the API itself.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public final class CspViolationReporter {
 
-    // Bounded by the number of call sites in the code, so never cleaned
-    private static final Set<String> warnedCalls = ConcurrentHashMap
-            .newKeySet();
+    // Bounded by the number of call sites in the code for each service
+    private static final Map<VaadinService, Set<String>> warnedCalls = Collections
+            .synchronizedMap(new WeakHashMap<>());
 
     private CspViolationReporter() {
         // Only static helpers
@@ -52,7 +60,7 @@ public final class CspViolationReporter {
 
     /**
      * Reports a call to an API that sends JavaScript to the browser as a
-     * string, naming the API and the application code that called it.
+     * string, naming the API and the code that called it.
      *
      * @param api
      *            the signature of the API that was called, e.g.
@@ -61,34 +69,63 @@ public final class CspViolationReporter {
      *             in the {@link CspMode#STRICT} mode
      */
     public static void reportStringJavaScript(String api) {
-        CspMode mode = getCurrentMode();
-        if (mode != CspMode.WARN && mode != CspMode.STRICT) {
-            return;
-        }
-
-        Location caller = ComponentTracker.findCaller();
-        String callSite = caller == null ? "an unknown location"
-                : caller.className() + "." + caller.methodName() + "("
-                        + caller.filename() + ":" + caller.lineNumber() + ")";
-        String message = String.format(
-                "%s called at %s sends JavaScript as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks. Declare the JavaScript with @JsDefinition and run it with executeJs(Class) instead.",
-                api, callSite);
-
-        if (mode == CspMode.STRICT) {
-            throw new CspViolationException(message);
-        }
-        if (warnedCalls.add(api + "@" + callSite)) {
-            LoggerFactory.getLogger(CspViolationReporter.class).warn(message);
-        }
-    }
-
-    private static CspMode getCurrentMode() {
         // No service outside of a request or UI.access, e.g. in a static
         // initializer, and no configuration for a service created with the
         // no-argument constructor: there is no mode to apply then
         VaadinService service = VaadinService.getCurrent();
         DeploymentConfiguration configuration = service == null ? null
                 : service.getDeploymentConfiguration();
-        return configuration == null ? CspMode.OFF : configuration.getCspMode();
+        CspMode mode = configuration == null ? CspMode.OFF
+                : configuration.getCspMode();
+        if (mode != CspMode.WARN && mode != CspMode.STRICT) {
+            return;
+        }
+
+        String message = String.format(
+                "%s called at %s sends JavaScript as a string, which the browser has to compile and a Content Security Policy without 'unsafe-eval' blocks.",
+                api, findCallSite());
+
+        if (mode == CspMode.STRICT) {
+            throw new CspViolationException(message);
+        }
+        if (warnedCalls
+                .computeIfAbsent(service, key -> ConcurrentHashMap.newKeySet())
+                .add(message)) {
+            LoggerFactory.getLogger(CspViolationReporter.class).warn(message);
+        }
+    }
+
+    private static String findCallSite() {
+        // This method, reportStringJavaScript and the API, then the frames
+        // up to and including the first one that is not skipped
+        List<StackFrame> frames = StackWalker.getInstance().walk(stream -> {
+            List<StackFrame> collected = new ArrayList<>();
+            Iterator<StackFrame> iterator = stream.iterator();
+            while (iterator.hasNext()) {
+                StackFrame frame = iterator.next();
+                collected.add(frame);
+                if (collected.size() > 2 && !ComponentTracker
+                        .isSkippedClass(frame.getClassName())) {
+                    break;
+                }
+            }
+            return collected;
+        });
+
+        StackFrame caller = frames.get(frames.size() - 1);
+        if (ComponentTracker.isSkippedClass(caller.getClassName())) {
+            return "an unknown location";
+        }
+        StackFrame callee = frames.get(frames.size() - 2);
+        String apiClass = frames.get(2).getClassName();
+        if (callee.getClassName().equals(apiClass)) {
+            return format(caller);
+        }
+        return format(caller) + " via " + format(callee);
+    }
+
+    private static String format(StackFrame frame) {
+        return frame.getClassName() + "." + frame.getMethodName() + "("
+                + frame.getFileName() + ":" + frame.getLineNumber() + ")";
     }
 }
