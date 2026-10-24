@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,16 +44,21 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.router.BeforeEnterListener;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.DynamicPageTitle;
+import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitleGenerator;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteReference;
 import com.vaadin.flow.router.internal.ParameterInfo;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -94,6 +101,12 @@ public class MenuRegistry {
             cachedResource = null;
         }
     }
+
+    // Targets whose menu parent has been warned about, to warn only once. Class
+    // names rather than classes, so that a reloaded application does not
+    // keep its class loader reachable from here
+    private static final Set<String> warnedMenuParents = ConcurrentHashMap
+            .newKeySet();
 
     private static final ObjectMapper mapper = JsonMapper.builder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
@@ -149,6 +162,307 @@ public class MenuRegistry {
                 (locale != null ? Collator.getInstance(locale)
                         : Collator.getInstance())))
                 .toList();
+    }
+
+    /**
+     * Collect the menu items as a hierarchy of root entries, each carrying its
+     * nested {@link AvailableViewInfo#children() children}.
+     * <p>
+     * Uses {@code en-US} locale for ordering to match
+     * {@link #collectMenuItemsList()}.
+     *
+     * @return ordered root view infos, each with its nested children populated
+     */
+    public static List<AvailableViewInfo> collectMenuItemsTree() {
+        // en-US is used by default here to match with Hilla's
+        // createMenuItems.ts sorting algorithm.
+        return collectMenuItemsTree(Locale.forLanguageTag("en-US"));
+    }
+
+    /**
+     * Collect the menu items as a hierarchy of root entries, each carrying its
+     * nested {@link AvailableViewInfo#children() children}.
+     * <p>
+     * The same set of views as {@link #collectMenuItemsList(Locale)} is
+     * returned, but instead of a flat list the views are nested under their
+     * menu parent, which is
+     * <ol>
+     * <li>{@link com.vaadin.flow.router.Menu#parent() @Menu(parent)} when
+     * defined, for menu hierarchies that differ from the route hierarchy. A
+     * declared parent that is not a registered route, or is the view itself for
+     * a route registered after startup, is ignored with a warning (a route
+     * naming itself is rejected at startup),
+     * <li>otherwise the logical route parent resolved by
+     * {@link RouteConfiguration#getRouteParent(Class, RouteParameters)}, i.e.
+     * {@link com.vaadin.flow.router.RouteParent @RouteParent} with URL-prefix
+     * walking as fallback. The index route of the application ({@code ""}) or
+     * of a {@link com.vaadin.flow.router.RoutePrefix @RoutePrefix} layout
+     * ({@code @Route("")}) is not used as a URL-derived parent, as in a menu it
+     * is typically a sibling of the views below it rather than their parent;
+     * nesting under it requires an explicit {@code @RouteParent} or
+     * {@code @Menu(parent)}. The route parent is resolved without route
+     * parameters on every call; if that fails, e.g. because a
+     * {@link com.vaadin.flow.router.RouteParentResolver} requires a parameter,
+     * the view has no route parent in the menu. As a resolver is invoked each
+     * time the menu is built, it should be cheap.
+     * </ol>
+     * <p>
+     * A view is attached to its nearest <em>included</em> menu ancestor, so a
+     * parent that is not itself part of the menu is skipped in favour of its
+     * own parent; if none of the ancestors is part of the menu, the view
+     * becomes a root entry. The children of each entry are ordered with the
+     * same comparator as the flat list. Should {@code @Menu(parent)}
+     * declarations form a cycle, it is broken by keeping the entry that would
+     * close it as a root, so that no entry is dropped from the menu.
+     * <p>
+     * Only server views take part in the nesting, i.e. views that carry a
+     * {@link com.vaadin.flow.router.Menu @Menu} annotated class. Client views
+     * have no server-side route hierarchy, so they are returned as root entries
+     * with an empty list of children &mdash; note that the nesting they carry
+     * in {@code file-routes.json} is <em>not</em> reproduced here; as in the
+     * flat list, every client view is a separate entry.
+     *
+     * @param locale
+     *            locale to use for ordering. null for default locale.
+     * @return ordered root view infos, each with its nested children populated
+     *         and an empty list of children for a leaf
+     */
+    public static List<AvailableViewInfo> collectMenuItemsTree(Locale locale) {
+        MenuParentResolver menuParents = new MenuParentResolver(
+                RouteConfiguration.forApplicationScope());
+
+        // Reuse the flat collection: it already normalizes each route to its
+        // menu link and sorts globally by (menu order, route). Because that
+        // order is global, grouping the list in-order yields correctly ordered
+        // siblings, so no further sorting is needed here.
+        List<AvailableViewInfo> menuItems = collectMenuItemsList(locale);
+
+        // Index each server view by its @Menu class so route-hierarchy
+        // ancestors can be resolved directly to the including menu entry.
+        // Built up front because a parent can sort after its children.
+        Map<Class<?>, AvailableViewInfo> includedByClass = menuItems.stream()
+                .filter(MenuRegistry::isServerMenuView)
+                .collect(Collectors.toMap(view -> view.menu().menuClass(),
+                        Function.identity(), (first, second) -> second));
+
+        // Resolve each view's menu parent and group children under it.
+        // Iterating the already-sorted list keeps each child list in sibling
+        // order. Client views have no route hierarchy and stay roots.
+        Map<Class<?>, List<AvailableViewInfo>> childrenByParent = new HashMap<>();
+        Map<Class<?>, Class<?>> parentByClass = new HashMap<>();
+        List<AvailableViewInfo> roots = new ArrayList<>();
+        for (AvailableViewInfo view : menuItems) {
+            Optional<Class<?>> parent = isServerMenuView(view)
+                    ? resolveParentClass(view.menu().menuClass(),
+                            includedByClass, menuParents)
+                    : Optional.empty();
+            // Entries that would close a cycle become roots instead, so that
+            // contradictory @Menu(parent) declarations cannot drop a whole
+            // group of entries from the menu.
+            if (parent.isPresent() && !closesCycle(view.menu().menuClass(),
+                    parent.get(), parentByClass)) {
+                parentByClass.put(view.menu().menuClass(), parent.get());
+                childrenByParent
+                        .computeIfAbsent(parent.get(), key -> new ArrayList<>())
+                        .add(view);
+            } else {
+                roots.add(view);
+            }
+        }
+
+        return roots.stream()
+                .map(root -> attachChildren(root, childrenByParent)).toList();
+    }
+
+    /**
+     * Checks whether nesting {@code menuClass} under {@code parent} would make
+     * the entries form a cycle, i.e. whether {@code parent} is already nested
+     * under {@code menuClass}.
+     */
+    private static boolean closesCycle(Class<?> menuClass, Class<?> parent,
+            Map<Class<?>, Class<?>> parentByClass) {
+        Set<Class<?>> visited = new HashSet<>();
+        Class<?> ancestor = parent;
+        while (ancestor != null && visited.add(ancestor)) {
+            if (ancestor.equals(menuClass)) {
+                return true;
+            }
+            ancestor = parentByClass.get(ancestor);
+        }
+        return false;
+    }
+
+    private static boolean isServerMenuView(AvailableViewInfo view) {
+        return view.menu() != null && view.menu().menuClass() != null;
+    }
+
+    /**
+     * Resolves the nearest ancestor of {@code menuClass} that is part of the
+     * menu, walking up from menu parent to menu parent.
+     */
+    private static Optional<Class<?>> resolveParentClass(
+            Class<? extends Component> menuClass,
+            Map<Class<?>, AvailableViewInfo> includedByClass,
+            MenuParentResolver menuParents) {
+        // Ancestors that are not part of the menu are skipped rather than
+        // ending the walk, so that an excluded view in the middle of the chain
+        // does not detach the whole subtree. The visited set stops a cycle
+        // formed by @Menu(parent) declarations.
+        Set<Class<?>> visited = new HashSet<>();
+        visited.add(menuClass);
+        Class<? extends Component> current = menuClass;
+        while (true) {
+            Optional<Class<? extends Component>> parent = menuParents
+                    .resolve(current);
+            if (parent.isEmpty() || !visited.add(parent.get())) {
+                return Optional.empty();
+            }
+            if (includedByClass.containsKey(parent.get())) {
+                return Optional.of(parent.get());
+            }
+            current = parent.get();
+        }
+    }
+
+    /**
+     * Resolves the menu parent of single navigation targets for one menu build:
+     * an explicitly declared {@code @Menu(parent)} if any, the logical route
+     * parent otherwise.
+     * <p>
+     * Each target is resolved at most once per build, as the walks of different
+     * entries pass through the same ancestors.
+     */
+    private static final class MenuParentResolver {
+
+        private final RouteConfiguration routeConfiguration;
+        private final Class<? extends Component> rootRoute;
+        private final Map<Class<? extends Component>, Optional<Class<? extends Component>>> parents = new HashMap<>();
+
+        private MenuParentResolver(RouteConfiguration routeConfiguration) {
+            this.routeConfiguration = routeConfiguration;
+            this.rootRoute = routeConfiguration.getRoute("").orElse(null);
+        }
+
+        private Optional<Class<? extends Component>> resolve(
+                Class<? extends Component> navigationTarget) {
+            return parents.computeIfAbsent(navigationTarget,
+                    target -> resolveDeclaredParent(target)
+                            .or(() -> resolveRouteParent(target)));
+        }
+
+        private Optional<Class<? extends Component>> resolveDeclaredParent(
+                Class<? extends Component> navigationTarget) {
+            Optional<Class<? extends Component>> declaredParent = AnnotationReader
+                    .getAnnotationFor(navigationTarget, Menu.class)
+                    .map(Menu::parent)
+                    // Component itself is the "not defined" marker
+                    .filter(parent -> !Component.class.equals(parent));
+            if (declaredParent.isPresent()
+                    && (declaredParent.get().equals(navigationTarget)
+                            || !routeConfiguration
+                                    .isRouteRegistered(declaredParent.get()))) {
+                // Most likely a typo: rather than making the view a root,
+                // ignore the declaration and fall back to the route hierarchy
+                warnOnce(navigationTarget, "menu-parent",
+                        "Ignoring @Menu(parent = {}) of {} as it is not a "
+                                + "registered route other than the view "
+                                + "itself. The route hierarchy is used to "
+                                + "place the view in the menu instead.",
+                        declaredParent.get().getName(),
+                        navigationTarget.getName());
+                return Optional.empty();
+            }
+            return declaredParent;
+        }
+
+        private Optional<Class<? extends Component>> resolveRouteParent(
+                Class<? extends Component> navigationTarget) {
+            try {
+                return routeConfiguration
+                        .getRouteParent(navigationTarget,
+                                RouteParameters.empty())
+                        .map(RouteReference::navigationTarget)
+                        .filter(parent -> RouteUtil.hasExplicitRouteParent(
+                                navigationTarget) || !isIndexRoute(parent));
+            } catch (RuntimeException e) {
+                // The menu has no route parameters to offer, so a resolver
+                // that requires one fails here. Treat that as "no parent"
+                // rather than failing the whole menu. Any other failure, such
+                // as a resolver that cannot be instantiated, is deliberately
+                // treated the same: the menu is still usable without the
+                // nesting of one view, and the warning shows the cause. It is
+                // logged only once per target as the menu is built over and
+                // over again.
+                warnOnce(navigationTarget, "route-parent",
+                        "Failed to resolve the route parent of {} without "
+                                + "route parameters, showing it as a root "
+                                + "menu entry. Use @Menu(parent) to place it "
+                                + "in the menu explicitly, or return an empty "
+                                + "Optional from the resolver when a "
+                                + "parameter it needs is missing.",
+                        navigationTarget.getName(), e);
+                return Optional.empty();
+            }
+        }
+
+        /**
+         * Checks whether the given URL-derived parent is the index route of the
+         * application or of a {@code @RoutePrefix} layout, such as a home view.
+         * In a menu it is typically a sibling of the views below it rather than
+         * their parent, so only an explicit {@code @RouteParent} nests under
+         * it.
+         */
+        private boolean isIndexRoute(Class<? extends Component> parent) {
+            return parent.equals(rootRoute)
+                    || "".equals(resolveOwnRoutePath(parent));
+        }
+
+        /**
+         * Resolves the path the target declares with its own {@link Route}
+         * annotation, relative to its layout prefixes and honoring the naming
+         * convention; {@code null} when the target is not annotated itself.
+         */
+        private static String resolveOwnRoutePath(
+                Class<? extends Component> target) {
+            VaadinService service = VaadinService.getCurrent();
+            return service != null
+                    ? RouteUtil.resolve(service.getContext(), target)
+                    : new DefaultRoutePathProvider().getRoutePath(target);
+        }
+
+        private static void warnOnce(Class<?> navigationTarget, String kind,
+                String message, Object... arguments) {
+            if (warnedMenuParents
+                    .add(kind + ":" + navigationTarget.getName())) {
+                LoggerFactory.getLogger(MenuRegistry.class).warn(message,
+                        arguments);
+            }
+        }
+    }
+
+    private static AvailableViewInfo attachChildren(AvailableViewInfo view,
+            Map<Class<?>, List<AvailableViewInfo>> childrenByParent) {
+        List<AvailableViewInfo> children = isServerMenuView(view)
+                ? childrenByParent.getOrDefault(view.menu().menuClass(),
+                        List.of())
+                : List.of();
+        // Rebuild with the resolved children so that any original child list
+        // is replaced uniformly by the resolved hierarchy. In particular a
+        // client view, whose children in file-routes.json were already
+        // flattened into separate entries by collectMenuItemsList, does not
+        // keep them here as that would list those views twice.
+        return copyWithChildren(view,
+                children.stream()
+                        .map(child -> attachChildren(child, childrenByParent))
+                        .toList());
+    }
+
+    private static AvailableViewInfo copyWithChildren(AvailableViewInfo source,
+            List<AvailableViewInfo> children) {
+        return new AvailableViewInfo(source.title(), source.rolesAllowed(),
+                source.loginRequired(), source.route(), source.lazy(),
+                source.register(), source.menu(), children,
+                source.routeParameters(), source.flowLayout(), source.detail());
     }
 
     /**
