@@ -19,6 +19,7 @@ import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -32,12 +33,10 @@ import com.vaadin.flow.dom.JsFunction;
  * The Java type parameter is purely a marker: the value never crosses the
  * network — the action calls the TS helper with the live {@link Element}
  * reference and the canvas conversion happens entirely on the client.
- * <p>
- * For internal use only. May be renamed or removed in a future release.
- * 
- * @since 25.2
+ *
+ * @since 25.4
  */
-public class ImageBlobInput extends Action.Input<Object> {
+public final class ImageBlobInput extends ActionInput<Object> {
 
     private final Element source;
 

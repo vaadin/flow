@@ -20,6 +20,9 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.component.trigger.ClickTrigger;
+import com.vaadin.flow.component.trigger.PromiseAction;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -42,16 +45,14 @@ import com.vaadin.flow.function.SerializableRunnable;
  * dismisses the sheet by sharing; {@code onError} fires for both true failures
  * (no gesture, permissions policy block) and for the {@code AbortError} the
  * browser reports when the user dismisses the sheet without picking a target.
- * <p>
- * For internal use only. May be renamed or removed in a future release.
- * 
- * @since 25.2
+ *
+ * @since 25.4
  */
-public class ShareAction extends PromiseAction<Void> {
+public final class ShareAction extends PromiseAction<Void> {
 
-    private final Action.@Nullable Input<String> titleInput;
-    private final Action.@Nullable Input<String> textInput;
-    private final Action.@Nullable Input<String> urlInput;
+    private final @Nullable ActionInput<String> titleInput;
+    private final @Nullable ActionInput<String> textInput;
+    private final @Nullable ActionInput<String> urlInput;
 
     /**
      * Creates a fire-and-forget share action.
@@ -67,9 +68,9 @@ public class ShareAction extends PromiseAction<Void> {
      * @throws IllegalArgumentException
      *             if all three inputs are {@code null}
      */
-    public ShareAction(Action.@Nullable Input<String> titleInput,
-            Action.@Nullable Input<String> textInput,
-            Action.@Nullable Input<String> urlInput) {
+    public ShareAction(@Nullable ActionInput<String> titleInput,
+            @Nullable ActionInput<String> textInput,
+            @Nullable ActionInput<String> urlInput) {
         super();
         validate(titleInput, textInput, urlInput);
         this.titleInput = titleInput;
@@ -99,9 +100,9 @@ public class ShareAction extends PromiseAction<Void> {
      * @throws IllegalArgumentException
      *             if all three inputs are {@code null}
      */
-    public ShareAction(Action.@Nullable Input<String> titleInput,
-            Action.@Nullable Input<String> textInput,
-            Action.@Nullable Input<String> urlInput,
+    public ShareAction(@Nullable ActionInput<String> titleInput,
+            @Nullable ActionInput<String> textInput,
+            @Nullable ActionInput<String> urlInput,
             SerializableRunnable onShared,
             SerializableConsumer<Error> onError) {
         super(Void.class, runnableAsConsumer(onShared), onError);
@@ -111,9 +112,9 @@ public class ShareAction extends PromiseAction<Void> {
         this.urlInput = urlInput;
     }
 
-    private static void validate(Action.@Nullable Input<String> title,
-            Action.@Nullable Input<String> text,
-            Action.@Nullable Input<String> url) {
+    private static void validate(@Nullable ActionInput<String> title,
+            @Nullable ActionInput<String> text,
+            @Nullable ActionInput<String> url) {
         if (title == null && text == null && url == null) {
             throw new IllegalArgumentException(
                     "At least one of titleInput, textInput, urlInput must be non-null");
@@ -148,7 +149,7 @@ public class ShareAction extends PromiseAction<Void> {
 
     private static void appendSlot(StringBuilder expression,
             List<JsFunction> args, String key,
-            Action.@Nullable Input<String> input, Trigger trigger) {
+            @Nullable ActionInput<String> input, Trigger trigger) {
         if (input == null) {
             return;
         }

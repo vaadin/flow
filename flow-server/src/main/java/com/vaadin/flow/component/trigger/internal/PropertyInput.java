@@ -18,6 +18,7 @@ package com.vaadin.flow.component.trigger.internal;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -33,14 +34,12 @@ import com.vaadin.flow.dom.JsFunction;
  * {@code new PropertyInput<>(checkbox, "checked", Boolean.class)}
  * </ul>
  *
- * <p>
- * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value produced
- * @since 25.2
+ * @since 25.4
  */
-public class PropertyInput<T> extends Action.Input<T> {
+public final class PropertyInput<T> extends ActionInput<T> {
 
     private final Element target;
     private final String propertyName;

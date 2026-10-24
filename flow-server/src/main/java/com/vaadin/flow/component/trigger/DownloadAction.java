@@ -1,0 +1,178 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.component.trigger;
+
+import java.util.Objects;
+
+import org.jspecify.annotations.Nullable;
+
+import com.vaadin.flow.component.trigger.internal.ActionInput;
+import com.vaadin.flow.component.trigger.internal.LiteralInput;
+import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.server.streams.DownloadHandler;
+
+/**
+ * Starts a file download in the browser when the bound trigger fires. The URL
+ * is loaded into a synthesised {@code <a href download>} that is clicked
+ * synchronously inside the trigger's handler — so the call happens inside the
+ * user gesture and is not subject to popup blockers.
+ * <p>
+ * Two ways to specify what to download:
+ * <ul>
+ * <li><b>A URL the application already knows</b> — a server endpoint, an
+ * external CDN, a {@code blob:} URL minted on the client, anything addressable.
+ * Use {@link #DownloadAction(String)} or
+ * {@link #DownloadAction(String, String)} to also suggest a filename.</li>
+ * <li><b>A {@link DownloadHandler} for server-generated content</b> — see
+ * {@link DownloadHandler#forFile}, {@link DownloadHandler#forClassResource},
+ * {@link DownloadHandler#fromInputStream}, or any lambda. Use
+ * {@link #DownloadAction(DownloadHandler)}. The action lazily registers a
+ * stream resource per trigger, scoped to its host element; the resource is
+ * unregistered when the host detaches and re-registered on re-attach, keeping
+ * the URL stable for the lifetime of the action. Removing the trigger
+ * unregisters the resource for good, so its URL stops serving the file.
+ * Filename comes from the {@link DownloadHandler} itself (its URL postfix
+ * and/or {@code Content-Disposition} header).</li>
+ * </ul>
+ * Resolving the URL or filename from client state at fire time, with the
+ * constructors that take an {@link ActionInput}, is for internal use only.
+ * <p>
+ * The {@code download} attribute that suggests a filename is honoured only for
+ * same-origin URLs. For cross-origin downloads the server must send the
+ * filename in a {@code Content-Disposition} header itself.
+ * <p>
+ * No outcome callback: the browser does not notify when (or whether) the file
+ * is actually saved.
+ *
+ * <pre>{@code
+ * // Static URL
+ * new ClickTrigger(button).triggers(
+ *         new DownloadAction("/api/reports/2026-Q1.pdf", "report.pdf"));
+ *
+ * // Server-generated content
+ * new ClickTrigger(button)
+ *         .triggers(new DownloadAction(DownloadHandler.forFile(reportFile)));
+ * }</pre>
+ *
+ * @since 25.4
+ */
+public final class DownloadAction extends Action {
+
+    private final ActionInput<String> urlInput;
+    private final @Nullable ActionInput<String> filenameInput;
+
+    /**
+     * Downloads from a known URL with no filename hint.
+     *
+     * @param url
+     *            the URL to download from, not {@code null}
+     */
+    public DownloadAction(String url) {
+        this.urlInput = literal(url, "url");
+        this.filenameInput = null;
+    }
+
+    /**
+     * Downloads from a known URL and suggests {@code filename} as the saved
+     * name. The hint is ignored by the browser for cross-origin URLs; provide a
+     * {@code Content-Disposition} response header in that case.
+     *
+     * @param url
+     *            the URL to download from, not {@code null}
+     * @param filename
+     *            the suggested filename, not {@code null}
+     */
+    public DownloadAction(String url, String filename) {
+        this.urlInput = literal(url, "url");
+        this.filenameInput = literal(filename, "filename");
+    }
+
+    /**
+     * Downloads from a {@link DownloadHandler}. The handler is registered as a
+     * stream resource scoped to the trigger host element the first time this
+     * action is wired to each trigger; re-attaching the host re-registers the
+     * resource with the same URL.
+     *
+     * @param handler
+     *            produces the response when the URL is fetched, not
+     *            {@code null}
+     */
+    public DownloadAction(DownloadHandler handler) {
+        this.urlInput = new DownloadHandlerInput(
+                Objects.requireNonNull(handler, "handler must not be null"));
+        this.filenameInput = null;
+    }
+
+    /**
+     * Downloads from a URL resolved on the client at fire time. Use this when
+     * the URL is only known in the browser — for example, the current contents
+     * of an input field, or a {@code blob:} URL the client just minted.
+     * <p>
+     * For internal use only. May be changed or removed in any release.
+     *
+     * @param url
+     *            input supplying the URL when the trigger fires, not
+     *            {@code null}
+     */
+    public DownloadAction(ActionInput<String> url) {
+        this.urlInput = Objects.requireNonNull(url, "url must not be null");
+        this.filenameInput = null;
+    }
+
+    /**
+     * Like {@link #DownloadAction(ActionInput)} but also resolves the suggested
+     * filename on the client.
+     * <p>
+     * For internal use only. May be changed or removed in any release.
+     *
+     * @param url
+     *            input supplying the URL when the trigger fires, not
+     *            {@code null}
+     * @param filename
+     *            input supplying the suggested filename when the trigger fires,
+     *            not {@code null}
+     */
+    public DownloadAction(ActionInput<String> url,
+            ActionInput<String> filename) {
+        this.urlInput = Objects.requireNonNull(url, "url must not be null");
+        this.filenameInput = Objects.requireNonNull(filename,
+                "filename must not be null");
+    }
+
+    @Override
+    protected JsFunction toJs(Trigger trigger) {
+        // Two body shapes — with or without a filename argument — keep the
+        // emitted JS minimal. Both URL and filename are JsFunctions invoked
+        // with event so any handler-scoped inputs read live state. The event
+        // itself is passed last so the client can click the anchor next to
+        // the trigger element, keeping a surrounding overlay open, while
+        // url-only overrides of the client helper keep working.
+        if (filenameInput == null) {
+            return JsFunction.of(
+                    "window.Vaadin.Flow.download.start($0(event), undefined, event)",
+                    urlInput.toJs(trigger)).withArguments("event");
+        }
+        return JsFunction.of(
+                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
+                urlInput.toJs(trigger), filenameInput.toJs(trigger))
+                .withArguments("event");
+    }
+
+    private static LiteralInput<String> literal(String value, String name) {
+        return new LiteralInput<>(
+                Objects.requireNonNull(value, name + " must not be null"));
+    }
+}

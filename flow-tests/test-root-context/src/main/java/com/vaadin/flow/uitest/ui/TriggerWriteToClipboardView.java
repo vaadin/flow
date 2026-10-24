@@ -36,8 +36,8 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.trigger.internal.Action;
-import com.vaadin.flow.component.trigger.internal.ClickTrigger;
+import com.vaadin.flow.component.trigger.ClickTrigger;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
@@ -212,7 +212,7 @@ public class TriggerWriteToClipboardView extends AbstractDivView {
 
         // --- Wire up triggers ------------------------------------------
 
-        Action.Input<String> value = new PropertyInput<>(field, "value",
+        ActionInput<String> value = new PropertyInput<>(field, "value",
                 String.class);
         new ClickTrigger(copyButton).triggers(new WriteToClipboardAction(value,
                 null, copied -> status.setText("ok:" + copied), err -> status

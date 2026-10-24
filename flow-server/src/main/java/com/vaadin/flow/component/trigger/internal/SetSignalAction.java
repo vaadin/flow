@@ -17,6 +17,7 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.trigger.CallbackAction;
 import com.vaadin.flow.signals.local.ValueSignal;
 
 /**
@@ -35,14 +36,12 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * <p>
  * The signal's own equality checker debounces redundant updates, so emitting
  * identical values back-to-back does not retrigger downstream effects.
- * <p>
- * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the type the signal holds and the JSON value is decoded to
- * @since 25.2
+ * @since 25.4
  */
-public class SetSignalAction<T> extends CallbackAction<T> {
+public final class SetSignalAction<T> extends CallbackAction<T> {
 
     /**
      * Creates an action that, when the trigger fires, evaluates {@code source}
@@ -61,7 +60,7 @@ public class SetSignalAction<T> extends CallbackAction<T> {
      *            fires, not {@code null}
      */
     public SetSignalAction(ValueSignal<? super T> signal, Class<T> valueType,
-            Action.Input<? extends T> source) {
+            ActionInput<? extends T> source) {
         super(valueType,
                 Objects.requireNonNull(signal, "signal must not be null")::set,
                 source);

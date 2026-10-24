@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
-import com.vaadin.flow.component.trigger.internal.Action;
+import com.vaadin.flow.component.trigger.internal.ActionInput;
 import com.vaadin.flow.component.trigger.internal.ImageBlobInput;
 import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.PropertyInput;
@@ -43,9 +43,9 @@ import com.vaadin.flow.component.trigger.internal.PropertyInput;
  */
 public final class ClipboardContent implements Serializable {
 
-    private Action.@Nullable Input<String> textInput;
-    private Action.@Nullable Input<String> htmlInput;
-    private Action.@Nullable Input<?> imageInput;
+    private @Nullable ActionInput<String> textInput;
+    private @Nullable ActionInput<String> htmlInput;
+    private @Nullable ActionInput<?> imageInput;
 
     private ClipboardContent() {
     }
@@ -126,15 +126,18 @@ public final class ClipboardContent implements Serializable {
         return this;
     }
 
-    Action.@Nullable Input<String> getTextInput() {
+    @Nullable
+    ActionInput<String> getTextInput() {
         return textInput;
     }
 
-    Action.@Nullable Input<String> getHtmlInput() {
+    @Nullable
+    ActionInput<String> getHtmlInput() {
         return htmlInput;
     }
 
-    Action.@Nullable Input<?> getImageInput() {
+    @Nullable
+    ActionInput<?> getImageInput() {
         return imageInput;
     }
 }

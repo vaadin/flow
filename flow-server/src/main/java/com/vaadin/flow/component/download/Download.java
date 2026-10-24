@@ -19,9 +19,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.trigger.internal.ClickTrigger;
-import com.vaadin.flow.component.trigger.internal.DownloadAction;
-import com.vaadin.flow.component.trigger.internal.Trigger;
+import com.vaadin.flow.component.trigger.ClickTrigger;
+import com.vaadin.flow.component.trigger.DownloadAction;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.streams.TransferProgressAwareHandler;
 import com.vaadin.flow.shared.Registration;

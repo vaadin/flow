@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.trigger.Action;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsDefinition;
@@ -54,14 +56,12 @@ import com.vaadin.flow.signals.Signal;
  * // Clicking the button after the set copies "Goodbye".
  * }</pre>
  *
- * <p>
- * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value produced
- * @since 25.2
+ * @since 25.4
  */
-public class SignalInput<T> extends Action.Input<T> {
+public final class SignalInput<T> extends ActionInput<T> {
 
     // Generates unique property-name suffixes; a long won't realistically
     // overflow. Class reload during devmode hotdeploy resets it, but the

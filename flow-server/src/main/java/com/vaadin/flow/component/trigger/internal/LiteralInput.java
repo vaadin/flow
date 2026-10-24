@@ -17,14 +17,15 @@ package com.vaadin.flow.component.trigger.internal;
 
 import java.util.Objects;
 
+import com.vaadin.flow.component.trigger.SetPropertyAction;
+import com.vaadin.flow.component.trigger.Trigger;
 import com.vaadin.flow.dom.JsFunction;
 
 /**
  * Input backed by a server-side literal that is captured into the rendered
  * {@link JsFunction} and Jackson-encoded into a JS value on the client. Lets
- * actions take {@code Action.Input<? extends T>} uniformly while still
- * accepting plain constants from callers — e.g. copying a fixed string to the
- * clipboard:
+ * actions take {@code ActionInput<? extends T>} uniformly while still accepting
+ * plain constants from callers — e.g. copying a fixed string to the clipboard:
  *
  * <pre>{@code
  * new ClickTrigger(button).triggers(new WriteToClipboardAction(
@@ -40,14 +41,12 @@ import com.vaadin.flow.dom.JsFunction;
  * Actions that need to emit a literal {@code null} should do so through their
  * own mechanism — see {@link SetPropertyAction}'s null-clearing convenience
  * constructor.
- * <p>
- * For internal use only. May be renamed or removed in a future release.
  *
  * @param <T>
  *            the runtime type of the value
- * @since 25.2
+ * @since 25.4
  */
-public final class LiteralInput<T> extends Action.Input<T> {
+public final class LiteralInput<T> extends ActionInput<T> {
 
     private final T value;
 

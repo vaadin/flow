@@ -14,8 +14,9 @@
  * the License.
  */
 /**
- * Trigger API and its internal wiring. Not part of the public API; classes here
- * may be renamed or removed in any release.
+ * Inputs that pass data into actions, the actions that only make sense with
+ * them, and helpers for implementing triggers and actions. Not part of the
+ * public API; classes here may be renamed or removed in any release.
  */
 @NullMarked
 package com.vaadin.flow.component.trigger.internal;
