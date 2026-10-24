@@ -64,6 +64,14 @@ public class SignalTestBase {
             pending.forEach(Runnable::run);
             return pending.size();
         }
+
+        public int runPendingTasksInReverseOrder() {
+            List<Runnable> pending = List.copyOf(tasks).reversed();
+            tasks.clear();
+
+            pending.forEach(Runnable::run);
+            return pending.size();
+        }
     }
 
     private static Runnable environmentRegistration;
@@ -125,9 +133,13 @@ public class SignalTestBase {
     protected TestExecutor useTestEffectDispatcher() {
         TestExecutor dispatcher = new TestExecutor();
 
-        currentEffectDispatcher.set(dispatcher);
+        useEffectDispatcher(dispatcher);
 
         return dispatcher;
+    }
+
+    protected void useEffectDispatcher(Executor dispatcher) {
+        currentEffectDispatcher.set(dispatcher);
     }
 
     protected void assertNoUncaughtException() {
