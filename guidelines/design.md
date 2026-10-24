@@ -318,9 +318,11 @@ is — and one constraint — never get in the way of the code that called it.
   provider, keep `super.toString()` so the identity hash still tells two
   instances apart, and append the summary to it.
 - **Shape: type name and the state that identifies the instance.** Follow
-  `SimpleName[…]`, the shape records generate — `StringLengthValidator[1, 10]`,
-  `ComponentValueChangeEvent[source=…, value = …, oldValue = …]`. Show what
-  identifies the instance or explains its behaviour, not every field. The
+  `SimpleName[…]`: the type name, then the state in square brackets, as
+  `name=value` pairs the way records print them when the values need a name
+  (`Name[width=100, height=50]`), and bare when they do not
+  (`StringLengthValidator[1, 10]`). Show what identifies the instance or
+  explains its behaviour, not every field. The
   signals and `RegexpValidator` have the shape but write the class name as a
   literal, so a subclass such as `EmailValidator` prints `RegexpValidator[…]`;
   do not copy that part.
