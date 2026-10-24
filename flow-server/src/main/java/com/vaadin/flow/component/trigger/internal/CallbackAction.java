@@ -141,8 +141,9 @@ public class CallbackAction<T> extends Action {
         // $0 = the return channel; $1 = the source input's JsFunction.
         // Invoking the source with `event` produces its value, which is
         // forwarded straight into the channel call.
-        return JsFunction.of("$0($1(event));", channel, source.toJs(trigger))
-                .withArguments("event");
+        return JsFunction
+                .of("$0($1(event, context));", channel, source.toJs(trigger))
+                .withArguments("event", "context");
     }
 
     private ReturnChannelRegistration channelFor(StateNode hostNode) {
