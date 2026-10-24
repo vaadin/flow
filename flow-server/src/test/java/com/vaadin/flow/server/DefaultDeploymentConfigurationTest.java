@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Properties;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -32,6 +33,7 @@ import org.mockito.MockedStatic;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -329,6 +331,31 @@ class DefaultDeploymentConfigurationTest {
 
         assertEquals(SessionLockCheckStrategy.THROW,
                 config.getSessionLockCheckStrategy());
+    }
+
+    @Test
+    void pushMode_unrecognizedValue_fallsBackToDisabled() {
+        Properties init = new Properties();
+        init.put(InitParameters.SERVLET_PARAMETER_PUSH_MODE, "sometimes");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        assertEquals(PushMode.DISABLED, config.getPushMode());
+    }
+
+    @Test
+    void pushMode_parsedIndependentlyOfDefaultLocale() {
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.of("tr", "TR"));
+            Properties init = new Properties();
+            init.put(InitParameters.SERVLET_PARAMETER_PUSH_MODE, "automatic");
+            DefaultDeploymentConfiguration config = createDeploymentConfig(
+                    init);
+
+            assertEquals(PushMode.AUTOMATIC, config.getPushMode());
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test

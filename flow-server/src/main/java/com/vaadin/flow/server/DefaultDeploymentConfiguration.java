@@ -445,8 +445,8 @@ public class DefaultDeploymentConfiguration
         try {
             pushMode = getApplicationOrSystemProperty(
                     InitParameters.SERVLET_PARAMETER_PUSH_MODE,
-                    PushMode.DISABLED, stringMode -> Enum
-                            .valueOf(PushMode.class, stringMode.toUpperCase()));
+                    PushMode.DISABLED, value -> parseEnum(PushMode.class,
+                            InitParameters.SERVLET_PARAMETER_PUSH_MODE, value));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -458,9 +458,9 @@ public class DefaultDeploymentConfiguration
             sessionLockCheckStrategy = getApplicationOrSystemProperty(
                     InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
                     SessionLockCheckStrategy.ASSERT,
-                    stringStrategy -> Enum.valueOf(
-                            SessionLockCheckStrategy.class,
-                            stringStrategy.toUpperCase()));
+                    value -> parseEnum(SessionLockCheckStrategy.class,
+                            InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
+                            value));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_SESSION_LOCK_CHECK_STRATEGY_NOT_RECOGNIZED);
             sessionLockCheckStrategy = SessionLockCheckStrategy.ASSERT;
@@ -469,17 +469,36 @@ public class DefaultDeploymentConfiguration
 
     private void checkCspMode() {
         cspMode = getApplicationOrSystemProperty(InitParameters.CSP,
-                CspMode.OFF, DefaultDeploymentConfiguration::parseCspMode);
+                CspMode.OFF,
+                value -> parseEnum(CspMode.class, InitParameters.CSP, value));
     }
 
-    private static CspMode parseCspMode(String value) {
-        return Arrays.stream(CspMode.values())
-                .filter(mode -> mode.name().equalsIgnoreCase(value)).findFirst()
+    /**
+     * Parses a property value into a constant of the given enum, ignoring case.
+     *
+     * @param enumType
+     *            the enum type to parse the value into
+     * @param propertyName
+     *            the name of the property, used in the error message
+     * @param value
+     *            the property value to parse
+     * @param <E>
+     *            the enum type
+     * @return the enum constant whose name matches the value
+     * @throws IllegalArgumentException
+     *             if no constant of the enum matches the value
+     */
+    private static <E extends Enum<E>> E parseEnum(Class<E> enumType,
+            String propertyName, String value) {
+        E[] constants = enumType.getEnumConstants();
+        return Arrays.stream(constants)
+                .filter(constant -> constant.name().equalsIgnoreCase(value))
+                .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format(
                         "Property named '%s' contains unrecognized value '%s'. The permitted values are %s (case-insensitive).",
-                        InitParameters.CSP, value,
-                        Arrays.stream(CspMode.values())
-                                .map(mode -> "'" + mode.name()
+                        propertyName, value,
+                        Arrays.stream(constants)
+                                .map(constant -> "'" + constant.name()
                                         .toLowerCase(Locale.ENGLISH) + "'")
                                 .collect(Collectors.joining(", ")))));
     }
