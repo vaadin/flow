@@ -28,6 +28,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.NullUnmarked;
 import org.jspecify.annotations.Nullable;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -86,6 +88,7 @@ import com.vaadin.flow.signals.local.ValueSignal;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@NullMarked
 public class Element extends Node<Element> {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
@@ -229,7 +232,7 @@ public class Element extends Node<Element> {
      *            empty string
      * @return an element representing the text node, never <code>null</code>
      */
-    public static Element createText(String text) {
+    public static Element createText(@Nullable String text) {
         if (text == null) {
             text = "";
         }
@@ -266,8 +269,7 @@ public class Element extends Node<Element> {
      * immediately with the current signal value when the binding is created,
      * and is kept synchronized with any subsequent signal value changes while
      * the element is in attached state. When the element is in detached state,
-     * signal value changes have no effect. <code>null</code> signal unbinds
-     * existing binding.
+     * signal value changes have no effect.
      * <p>
      * Same rules applies for the attribute name and value from the bound Signal
      * as in {@link #setAttribute(String, String)}.
@@ -298,6 +300,10 @@ public class Element extends Node<Element> {
      * @see #setAttribute(String, String)
      * @since 25.0
      */
+    // The signal value may be null. Signal<? extends @Nullable String> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
+    @NullUnmarked
     public SignalBinding<String> bindAttribute(String attribute,
             Signal<String> signal) {
         String validAttribute = validateAttribute(attribute);
@@ -485,7 +491,7 @@ public class Element extends Node<Element> {
      * @return the value of the attribute or null if the attribute has not been
      *         set
      */
-    public String getAttribute(String attribute) {
+    public @Nullable String getAttribute(String attribute) {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
@@ -689,7 +695,7 @@ public class Element extends Node<Element> {
      * @return the parent element or null if this element does not have a parent
      *         or the parent is not an element
      */
-    public Element getParent() {
+    public @Nullable Element getParent() {
         Node<?> parent = getParentNode();
         if (parent instanceof Element) {
             return (Element) parent;
@@ -749,7 +755,7 @@ public class Element extends Node<Element> {
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             if the property has an active read-only signal binding
      */
-    public Element setProperty(String name, String value) {
+    public Element setProperty(String name, @Nullable String value) {
         return setRawProperty(name, value);
     }
 
@@ -990,7 +996,7 @@ public class Element extends Node<Element> {
     @SuppressWarnings("unchecked")
     public <T extends @Nullable Object> SignalBinding<T> bindProperty(
             String name, Signal<T> signal,
-            SerializableConsumer<T> writeCallback) {
+            @Nullable SerializableConsumer<T> writeCallback) {
         verifySetPropertyName(name);
 
         return (SignalBinding<T>) getStateProvider().bindPropertySignal(this,
@@ -1055,7 +1061,7 @@ public class Element extends Node<Element> {
                 .onUnregister(propertyListenerRegistration::remove);
     }
 
-    private Element setRawProperty(String name, Serializable value) {
+    private Element setRawProperty(String name, @Nullable Serializable value) {
         verifySetPropertyName(name);
 
         if ("innerHTML".equals(name)) {
@@ -1092,7 +1098,8 @@ public class Element extends Node<Element> {
      *            value is <code>null</code>
      * @return the property value
      */
-    public String getProperty(String name, String defaultValue) {
+    public @Nullable String getProperty(String name,
+            @Nullable String defaultValue) {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
             return defaultValue;
@@ -1119,7 +1126,7 @@ public class Element extends Node<Element> {
      *            the property name, not <code>null</code>
      * @return the property value, or <code>null</code> if no value is set
      */
-    public String getProperty(String name) {
+    public @Nullable String getProperty(String name) {
         return getProperty(name, null);
     }
 
@@ -1231,7 +1238,7 @@ public class Element extends Node<Element> {
      *            the property name, not null
      * @return the raw property value, or <code>null</code>
      */
-    public Serializable getPropertyRaw(String name) {
+    public @Nullable Serializable getPropertyRaw(String name) {
         return getStateProvider().getProperty(getNode(), name);
     }
 
@@ -1263,7 +1270,7 @@ public class Element extends Node<Element> {
      *         <code>null</code> if not set
      * @since 25.0
      */
-    public <T> T getPropertyBean(String name, Class<T> type) {
+    public <T> @Nullable T getPropertyBean(String name, Class<T> type) {
         Serializable raw = getPropertyRaw(name);
         if (raw == null || raw instanceof NullNode) {
             return null;
@@ -1303,7 +1310,8 @@ public class Element extends Node<Element> {
      *         <code>null</code> if not set
      * @since 25.0
      */
-    public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
+    public <T> @Nullable T getPropertyBean(String name,
+            TypeReference<T> typeReference) {
         Serializable raw = getPropertyRaw(name);
         if (raw == null || raw instanceof NullNode) {
             return null;
@@ -1383,7 +1391,7 @@ public class Element extends Node<Element> {
      * @throws BindingActiveException
      *             if a binding has been set on the text content of this element
      */
-    public Element setText(String textContent) {
+    public Element setText(@Nullable String textContent) {
         getNode().getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
                     if (feature.hasBinding(SignalBindingFeature.TEXT)) {
@@ -1396,7 +1404,7 @@ public class Element extends Node<Element> {
         return this;
     }
 
-    private void setTextContent(String textContent) {
+    private void setTextContent(@Nullable String textContent) {
         if (textContent == null) {
             // Browsers work this way
             textContent = "";
@@ -1448,6 +1456,10 @@ public class Element extends Node<Element> {
      * @see #setText(String)
      * @since 25.0
      */
+    // The signal value may be null. Signal<? extends @Nullable String> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
+    @NullUnmarked
     public SignalBinding<String> bindText(Signal<String> signal) {
         Objects.requireNonNull(signal, "Signal cannot be null");
         SignalBindingFeature feature = getNode()
@@ -1736,7 +1748,7 @@ public class Element extends Node<Element> {
      * @since 25.3
      */
     public Registration whenAttached(
-            SerializableFunction<UI, Registration> attachHandler) {
+            SerializableFunction<UI, @Nullable Registration> attachHandler) {
         return new AttachScope(this, attachHandler);
     }
 
@@ -1863,7 +1875,7 @@ public class Element extends Node<Element> {
      * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
-            Object... arguments) {
+            @Nullable Object... arguments) {
         assert functionName != null;
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
@@ -1888,7 +1900,7 @@ public class Element extends Node<Element> {
      */
     @Deprecated
     public PendingJavaScriptResult callJsFunction(String functionName,
-            Serializable[] arguments) {
+            @Nullable Serializable[] arguments) {
         return callJsFunction(functionName, (Object[]) arguments);
     }
 
@@ -1947,7 +1959,7 @@ public class Element extends Node<Element> {
      * @since 25.0
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Object... parameters) {
+            @Nullable Object... parameters) {
         return scheduleExecuteJs(expression, parameters);
     }
 
@@ -2017,7 +2029,7 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleExecuteJs(String expression,
-            Object[] parameters) {
+            @Nullable Object[] parameters) {
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
@@ -2040,11 +2052,12 @@ public class Element extends Node<Element> {
                 call.parametersFor(this));
     }
 
-    private Object[] withElementAsLastParameter(Object[] parameters) {
+    private @Nullable Object[] withElementAsLastParameter(
+            @Nullable Object[] parameters) {
         if (parameters.length == 0) {
             return new Object[] { this };
         }
-        Object[] withElement = Arrays.copyOf(parameters, parameters.length + 1);
+        var withElement = Arrays.copyOf(parameters, parameters.length + 1);
         withElement[parameters.length] = this;
         return withElement;
     }
@@ -2065,7 +2078,7 @@ public class Element extends Node<Element> {
      */
     @Deprecated
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable[] parameters) {
+            @Nullable Serializable[] parameters) {
         return executeJs(expression, (Object[]) parameters);
     }
 
@@ -2104,14 +2117,15 @@ public class Element extends Node<Element> {
      * @since 25.2
      */
     public Registration addJsInitializer(String expression,
-            Object... parameters) {
+            @Nullable Object @Nullable... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
         return new ElementJsInitializerRegistration(getNode(), expression,
-                parameters == null ? new Object[0] : parameters);
+                parameters == null ? new @Nullable Object[0] : parameters);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            @Nullable JsCall jsCall, String expression, Object[] parameters) {
+            @Nullable JsCall jsCall, String expression,
+            @Nullable Object[] parameters) {
         StateNode node = getNode();
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(jsCall,
@@ -2221,6 +2235,10 @@ public class Element extends Node<Element> {
      * @see #setVisible(boolean)
      * @since 25.1
      */
+    // The signal value may be null. Signal<? extends @Nullable Boolean> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
+    @NullUnmarked
     public SignalBinding<Boolean> bindVisible(Signal<Boolean> visibleSignal) {
         Objects.requireNonNull(visibleSignal, "Signal cannot be null");
         return getStateProvider().bindVisibleSignal(this, visibleSignal);
@@ -2280,6 +2298,10 @@ public class Element extends Node<Element> {
      * @see #setEnabled(boolean)
      * @since 25.1
      */
+    // The signal value may be null. Signal<? extends @Nullable Boolean> would
+    // say so, but it would break overrides of this method and change the
+    // returned binding type, so the method is left unmarked instead
+    @NullUnmarked
     public SignalBinding<Boolean> bindEnabled(Signal<Boolean> enabledSignal) {
         Objects.requireNonNull(enabledSignal, "Signal cannot be null");
         SignalBindingFeature feature = getNode()
@@ -2295,7 +2317,7 @@ public class Element extends Node<Element> {
         return binding;
     }
 
-    private void setEnabledInternal(final Boolean enabled) {
+    private void setEnabledInternal(final @Nullable Boolean enabled) {
         boolean booleanEnabled = enabled != null ? enabled : false;
         getNode().setEnabled(booleanEnabled);
 
@@ -2423,7 +2445,7 @@ public class Element extends Node<Element> {
      * @since 24.0
      */
     @Deprecated(since = "25.0", forRemoval = true)
-    public Element scrollIntoView(ScrollOptions scrollOptions) {
+    public Element scrollIntoView(@Nullable ScrollOptions scrollOptions) {
         ScrollIntoViewJs scroll = executeJs(ScrollIntoViewJs.class);
         if (scrollOptions == null) {
             scroll.scrollIntoView();
@@ -2476,7 +2498,7 @@ public class Element extends Node<Element> {
                 return target[name](...$1);
                 """)
         PendingJavaScriptResult callFunction(String functionName,
-                Object... arguments);
+                @Nullable Object... arguments);
     }
 
     /**
