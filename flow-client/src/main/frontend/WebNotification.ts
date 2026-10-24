@@ -41,12 +41,11 @@ type VaadinWebNotificationChannel = (
 
 /**
  * Where a notification comes from: the key the server-side handle closes it by,
- * and the application showing it, either its id or, from a trigger, the
- * trigger's host element.
+ * and the id of the application showing it, null when not known.
  */
 interface VaadinWebNotificationSource {
-  key?: string | null;
-  owner?: string | Element | null;
+  key: string;
+  appId: string | null;
 }
 
 interface ShownNotification {
@@ -55,10 +54,6 @@ interface ShownNotification {
   tag?: string;
   // The application that showed the notification, null when not known
   appId: string | null;
-  // The element of the trigger that showed the notification, if any
-  host: Element | null;
-  // Whether a server-side handle showed the notification, rather than a trigger
-  fromServer: boolean;
   channel: VaadinWebNotificationChannel;
   // Whether the close or error has been reported, after which nothing more is
   // reported
@@ -66,7 +61,7 @@ interface ShownNotification {
 }
 
 // How many notifications the page keeps track of for closing them, counted
-// separately per application for the server-side handles and for triggers. A
+// separately per application. A
 // notification the browser never reports as closed, for example because the
 // operating system moved it to its notification center, would otherwise stay
 // here for the life of the page. Matches the limit of the server, which closes
@@ -138,23 +133,6 @@ function installPermissionListeners(): void {
   window.addEventListener('focus', () => publishPermission());
 }
 
-/**
- * Finds the id of the Flow application that renders the given element, so that
- * notifications are scoped to it when several applications share the page.
- */
-function appIdOf(element: Element): string | null {
-  const clients: Record<string, any> = ($wnd.Vaadin?.Flow?.clients as Record<string, any>) ?? {};
-  return Object.keys(clients).find((appId) => (clients[appId]?.getNodeId?.(element) ?? -1) >= 0) ?? null;
-}
-
-function belongsTo(entry: ShownNotification, appId: string | null | undefined): boolean {
-  // A trigger's host is resolved when shown, since a detached host no longer
-  // belongs to any application, and again when closing, since a host may be
-  // registered with its application only after the trigger fired.
-  const entryAppId = entry.appId ?? (entry.host ? appIdOf(entry.host) : null);
-  return entryAppId === (appId ?? null);
-}
-
 function finish(entry: ShownNotification): boolean {
   if (entry.done) {
     return false;
@@ -190,12 +168,9 @@ $wnd.Vaadin.Flow.webNotification = {
   show(
     title: string,
     options: VaadinWebNotificationOptions,
-    channel: VaadinWebNotificationChannel | null,
-    source: VaadinWebNotificationSource
+    report: VaadinWebNotificationChannel,
+    { key, appId }: VaadinWebNotificationSource
   ): void {
-    // A trigger-bound action passes no key, since it closes notifications by
-    // tag only, and no channel when the server is not interested in events.
-    const report: VaadinWebNotificationChannel = channel ?? (() => {});
     if (!isSupported()) {
       report(
         'error',
@@ -220,19 +195,15 @@ $wnd.Vaadin.Flow.webNotification = {
       return;
     }
     const entry: ShownNotification = {
-      key: source.key ?? crypto.randomUUID(),
+      key,
       notification,
       tag: options.tag,
-      appId: source.owner instanceof Element ? appIdOf(source.owner) : (source.owner ?? null),
-      host: source.owner instanceof Element ? source.owner : null,
-      fromServer: source.key != null,
+      appId: appId ?? null,
       channel: report,
       done: false
     };
     shown.set(entry.key, entry);
-    const group = [...shown.values()].filter(
-      (other) => other.appId === entry.appId && other.fromServer === entry.fromServer
-    );
+    const group = [...shown.values()].filter((other) => other.appId === entry.appId);
     if (group.length > MAX_SHOWN) {
       // Only stops tracking the oldest one for closing; its own events are
       // still reported.
@@ -283,7 +254,7 @@ $wnd.Vaadin.Flow.webNotification = {
 
   closeByTag(tag: string, appId: string | null | undefined): void {
     shown.forEach((entry) => {
-      if (entry.tag === tag && belongsTo(entry, appId)) {
+      if (entry.tag === tag && entry.appId === (appId ?? null)) {
         entry.notification.close();
       }
     });

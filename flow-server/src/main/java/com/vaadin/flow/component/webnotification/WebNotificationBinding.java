@@ -18,19 +18,16 @@ package com.vaadin.flow.component.webnotification;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.trigger.internal.LiteralInput;
 import com.vaadin.flow.component.trigger.internal.RequestWebNotificationPermissionAction;
-import com.vaadin.flow.component.trigger.internal.ShowWebNotificationAction;
 import com.vaadin.flow.component.trigger.internal.Trigger;
-import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableRunnable;
 
 /**
- * Fluent surface returned from {@link WebNotification#onClick}, used to declare
- * what a click does with notifications. The action runs in the browser at click
- * time, while the user gesture that browsers require for the permission prompt
- * is still valid.
+ * Fluent surface returned from {@link WebNotification#onClick}, used to ask for
+ * permission to show notifications when a component is clicked. The request
+ * runs in the browser at click time, while the user gesture that browsers
+ * require for the permission prompt is still valid. Showing a notification
+ * needs no gesture, so it is done from the server with
+ * {@link WebNotification#show(String)}.
  *
  * <pre>{@code
  * Button enable = new Button("Enable notifications");
@@ -56,56 +53,5 @@ public final class WebNotificationBinding implements Serializable {
      */
     public void requestPermission() {
         trigger.triggers(new RequestWebNotificationPermissionAction());
-    }
-
-    /**
-     * Shows a notification when the underlying trigger fires, without a round
-     * trip to the server. The user must have granted permission; otherwise the
-     * browser shows nothing.
-     *
-     * @param title
-     *            the title of the notification, not {@code null}
-     * @param options
-     *            what the notification shows besides its title, and how it
-     *            behaves, not {@code null}
-     */
-    public void show(String title, WebNotificationOptions options) {
-        Objects.requireNonNull(title, "title must not be null");
-        trigger.triggers(new ShowWebNotificationAction(
-                new LiteralInput<>(title), options));
-    }
-
-    /**
-     * Shows a notification when the underlying trigger fires, and reports
-     * clicks on it and failures to show it back to the server. Same as
-     * {@link #show(String, WebNotificationOptions)} otherwise. The callbacks
-     * are shared by every notification shown through this binding.
-     * <p>
-     * The callbacks only run while the bound component is attached and visible,
-     * also while it is disabled, for example by
-     * {@code setDisableOnClick(true)}. A notification can outlive the view that
-     * showed it; to react to a click after the user left the view, show the
-     * notification from the server with
-     * {@link WebNotification#show(String, UI)} instead.
-     *
-     * @param title
-     *            the title of the notification, not {@code null}
-     * @param options
-     *            what the notification shows besides its title, and how it
-     *            behaves, not {@code null}
-     * @param onClick
-     *            invoked on the UI thread when the user clicks a notification
-     *            shown through this binding, not {@code null}
-     * @param onError
-     *            invoked on the UI thread when the browser did not show a
-     *            notification, for example because permission has not been
-     *            granted, not {@code null}
-     */
-    public void show(String title, WebNotificationOptions options,
-            SerializableRunnable onClick,
-            SerializableConsumer<WebNotificationError> onError) {
-        Objects.requireNonNull(title, "title must not be null");
-        trigger.triggers(new ShowWebNotificationAction(
-                new LiteralInput<>(title), options, onClick, onError));
     }
 }

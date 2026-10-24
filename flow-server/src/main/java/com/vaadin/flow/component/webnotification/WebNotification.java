@@ -306,7 +306,7 @@ public final class WebNotification implements Serializable {
          * @return the pending result, which completes once the notification is
          *         shown or has failed
          */
-        @JsExpression("window.Vaadin.Flow.webNotification.show($0, $1, (type, reason, message) => $3($2, type, reason, message), { key: $2, owner: $4 })")
+        @JsExpression("window.Vaadin.Flow.webNotification.show($0, $1, (type, reason, message) => $3($2, type, reason, message), { key: $2, appId: $4 })")
         PendingJavaScriptResult show(String title,
                 WebNotificationOptions options, String key,
                 ReturnChannelRegistration channel, String appId);

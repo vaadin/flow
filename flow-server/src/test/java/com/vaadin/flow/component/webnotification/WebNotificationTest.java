@@ -35,7 +35,6 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinSession;
@@ -43,7 +42,6 @@ import com.vaadin.flow.signals.Signal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
@@ -107,55 +105,6 @@ class WebNotificationTest {
 
         assertEquals("window.Vaadin.Flow.webNotification.requestPermission()",
                 clickHandler(ui).getBody());
-    }
-
-    @Test
-    void onClick_show_showsInsideTheClickHandlerAndReportsBack() {
-        UI ui = new MockUI();
-        TestButton button = new TestButton();
-        ui.getElement().appendChild(button.getElement());
-        List<String> events = new ArrayList<>();
-
-        WebNotification.onClick(button).show("Test",
-                WebNotificationOptions.builder().tag("test").build(),
-                () -> events.add("click"),
-                error -> events.add("error " + error.reason()));
-
-        JsFunction handler = clickHandler(ui);
-        assertTrue(handler.getBody().contains("webNotification.show("),
-                handler.getBody());
-        assertTrue(handler.getCaptures().contains(button.getElement()),
-                "the host scopes the notification to its application");
-        assertTrue(handler.getBody().contains("type === 'close'"),
-                "close events are dropped in the browser: "
-                        + handler.getBody());
-        ReturnChannelRegistration channel = handler.getCaptures().stream()
-                .filter(ReturnChannelRegistration.class::isInstance)
-                .map(ReturnChannelRegistration.class::cast).findFirst()
-                .orElseThrow();
-        channel.invoke(args("click"));
-        channel.invoke(args("error", "NOT_ALLOWED", "no permission"));
-        assertEquals(List.of("click", "error NOT_ALLOWED"), events);
-    }
-
-    @Test
-    void onClick_showWithoutCallbacks_reportsNothingBack() {
-        UI ui = new MockUI();
-        TestButton button = new TestButton();
-        ui.getElement().appendChild(button.getElement());
-
-        WebNotification.onClick(button).show("Test",
-                WebNotificationOptions.builder().build());
-
-        JsFunction handler = clickHandler(ui);
-        assertTrue(handler.getBody().contains("webNotification.show("),
-                handler.getBody());
-        assertTrue(handler.getCaptures().stream()
-                .noneMatch(ReturnChannelRegistration.class::isInstance));
-        assertTrue(handler.getCaptures().contains(button.getElement()),
-                "the host scopes the notification to its application");
-        assertFalse(button.getElement().getNode()
-                .getFeature(ReturnChannelMap.class).hasChannels());
     }
 
     @Test

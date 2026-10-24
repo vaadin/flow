@@ -43,6 +43,20 @@ function nextKey(): string {
   return `key-${keyCounter}`;
 }
 
+const ignore = () => {};
+
+// Shows a notification the way the server-side handle does, returning its key
+function show(
+  title: string,
+  options: object,
+  channel: (...args: unknown[]) => void = ignore,
+  appId: string | null = 'app'
+): string {
+  const key = nextKey();
+  $wnd.Vaadin.Flow.webNotification.show(title, options, channel, { key, appId });
+  return key;
+}
+
 describe('webNotification', () => {
   let originalNotification: unknown;
 
@@ -59,7 +73,7 @@ describe('webNotification', () => {
 
   it('reports a click and then the close it causes', () => {
     const { calls, channel } = recordingChannel();
-    $wnd.Vaadin.Flow.webNotification.show('Report ready', { body: 'March' }, channel, { key: nextKey(), owner: 'app' });
+    show('Report ready', { body: 'March' }, channel);
 
     const notification = FakeNotification.instances[0];
     expect(notification.title).to.equal('Report ready');
@@ -73,15 +87,8 @@ describe('webNotification', () => {
   it('reports a notification replaced by one with the same tag as closed once the new one is shown', () => {
     const first = recordingChannel();
     const second = recordingChannel();
-    $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, first.channel, {
-      key: nextKey(),
-      owner: 'app'
-    });
-    const secondKey = nextKey();
-    $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, second.channel, {
-      key: secondKey,
-      owner: 'app'
-    });
+    show('1 new message', { tag: 'inbox' }, first.channel);
+    const secondKey = show('2 new messages', { tag: 'inbox' }, second.channel);
     expect(first.calls).to.deep.equal([]);
 
     FakeNotification.instances[1].dispatchEvent(new Event('show'));
@@ -100,14 +107,8 @@ describe('webNotification', () => {
   it('closes only the notifications with the given tag', () => {
     const inbox = recordingChannel();
     const other = recordingChannel();
-    $wnd.Vaadin.Flow.webNotification.show('New message', { tag: 'inbox' }, inbox.channel, {
-      key: nextKey(),
-      owner: 'app'
-    });
-    $wnd.Vaadin.Flow.webNotification.show('Build done', { tag: 'builds' }, other.channel, {
-      key: nextKey(),
-      owner: 'app'
-    });
+    show('New message', { tag: 'inbox' }, inbox.channel);
+    show('Build done', { tag: 'builds' }, other.channel);
 
     $wnd.Vaadin.Flow.webNotification.closeByTag('inbox', 'app');
 
@@ -115,47 +116,20 @@ describe('webNotification', () => {
     expect(other.calls).to.deep.equal([]);
   });
 
-  it('closes by tag only the notifications of the given application, also those shown by a trigger', () => {
-    const originalClients = $wnd.Vaadin.Flow.clients;
-    const hostA = document.createElement('button');
-    const hostB = document.createElement('button');
-    const lateHostA = document.createElement('button');
-    let lateHostRegistered = false;
-    let hostAAttached = true;
-    $wnd.Vaadin.Flow.clients = {
-      appA: {
-        getNodeId: (element: Element) =>
-          (element === hostA && hostAAttached) || (element === lateHostA && lateHostRegistered) ? 1 : -1
-      },
-      appB: { getNodeId: (element: Element) => (element === hostB ? 1 : -1) }
-    };
-    try {
-      // A trigger passes no key and no channel, and its host as the owner
-      $wnd.Vaadin.Flow.webNotification.show('A from trigger', { tag: 'chat' }, null, { owner: hostA });
-      $wnd.Vaadin.Flow.webNotification.show('B from trigger', { tag: 'chat' }, null, { owner: hostB });
-      $wnd.Vaadin.Flow.webNotification.show('A from server', { tag: 'chat' }, null, { key: nextKey(), owner: 'appA' });
-      $wnd.Vaadin.Flow.webNotification.show('B from server', { tag: 'chat' }, null, { key: nextKey(), owner: 'appB' });
-      // A host that fires before its application has registered it
-      $wnd.Vaadin.Flow.webNotification.show('A from late host', { tag: 'chat' }, null, { owner: lateHostA });
-      $wnd.Vaadin.Flow.webNotification.show('Unknown owner', { tag: 'chat' }, null, {
-        owner: document.createElement('div')
-      });
-      lateHostRegistered = true;
-      // The view that showed a notification may be gone when it is closed
-      hostAAttached = false;
-      const closed: string[] = [];
-      FakeNotification.instances.forEach((n) => n.addEventListener('close', () => closed.push(n.title)));
+  it('closes by tag only the notifications of the given application', () => {
+    show('A', { tag: 'chat' }, ignore, 'appA');
+    show('B', { tag: 'chat' }, ignore, 'appB');
+    show('Unknown application', { tag: 'chat' }, ignore, null);
+    const closed: string[] = [];
+    FakeNotification.instances.forEach((n) => n.addEventListener('close', () => closed.push(n.title)));
 
-      $wnd.Vaadin.Flow.webNotification.closeByTag('chat', 'appA');
+    $wnd.Vaadin.Flow.webNotification.closeByTag('chat', 'appA');
 
-      expect(closed).to.deep.equal(['A from trigger', 'A from server', 'A from late host']);
+    expect(closed).to.deep.equal(['A']);
 
-      // An application with no known id only closes notifications with none
-      $wnd.Vaadin.Flow.webNotification.closeByTag('chat', null);
-      expect(closed).to.deep.equal(['A from trigger', 'A from server', 'A from late host', 'Unknown owner']);
-    } finally {
-      $wnd.Vaadin.Flow.clients = originalClients;
-    }
+    // An application with no known id only closes notifications with none
+    $wnd.Vaadin.Flow.webNotification.closeByTag('chat', null);
+    expect(closed).to.deep.equal(['A', 'Unknown application']);
   });
 
   [
@@ -186,19 +160,11 @@ describe('webNotification', () => {
   ].forEach(([when, failNext, expectedError]) => {
     it(`keeps the notification with the same tag when the new one cannot be shown because ${when}`, async () => {
       const first = recordingChannel();
-      const firstKey = nextKey();
-      $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, first.channel, {
-        key: firstKey,
-        owner: 'app'
-      });
+      const firstKey = show('1 new message', { tag: 'inbox' }, first.channel);
       (failNext as () => void)();
       const second = recordingChannel();
-      const secondKey = nextKey();
 
-      $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, second.channel, {
-        key: secondKey,
-        owner: 'app'
-      });
+      const secondKey = show('2 new messages', { tag: 'inbox' }, second.channel);
       await Promise.resolve();
       $wnd.Vaadin.Flow.webNotification.close(secondKey);
 
@@ -209,68 +175,41 @@ describe('webNotification', () => {
     });
   });
 
-  [
-    ['handles', () => nextKey()],
-    ['triggers', () => null]
-  ].forEach(([kind, keyOf]) => {
-    it(`keeps track of a limited number of notifications of ${kind} for closing, per application and kind`, () => {
-      const show = (title: string, options: object, channel: unknown, owner: string) =>
-        $wnd.Vaadin.Flow.webNotification.show(title, options, channel, {
-          key: (keyOf as () => string | null)(),
-          owner
-        });
-      // Fresh application ids keep notifications left by other tests out
-      const app = `app-${nextKey()}`;
-      const otherApp = `app-${nextKey()}`;
-      const otherKind = recordingChannel();
-      const otherKindKey = nextKey();
-      const otherApplication = recordingChannel();
-      const oldest = recordingChannel();
-      if (kind === 'triggers') {
-        $wnd.Vaadin.Flow.webNotification.show('Handle', {}, otherKind.channel, { key: otherKindKey, owner: app });
-      } else {
-        $wnd.Vaadin.Flow.webNotification.show('Trigger', { tag: 'kind' }, otherKind.channel, { owner: app });
-      }
-      show('Other application', { tag: 'other' }, otherApplication.channel, otherApp);
-      show('Oldest', { tag: 'old' }, oldest.channel, app);
-      const oldestNotification = FakeNotification.instances[FakeNotification.instances.length - 1];
-      for (let i = 0; i < 50; i += 1) {
-        show('Next', {}, null, app);
-      }
+  it('keeps track of a limited number of notifications per application for closing', () => {
+    // Fresh application ids keep notifications left by other tests out
+    const app = `app-${nextKey()}`;
+    const otherApp = `app-${nextKey()}`;
+    const otherApplication = recordingChannel();
+    const oldest = recordingChannel();
+    show('Other application', { tag: 'other' }, otherApplication.channel, otherApp);
+    show('Oldest', { tag: 'old' }, oldest.channel, app);
+    const oldestNotification = FakeNotification.instances[FakeNotification.instances.length - 1];
+    for (let i = 0; i < 50; i += 1) {
+      show('Next', {}, ignore, app);
+    }
 
-      // The oldest is no longer kept for closing, but reports its own events
-      $wnd.Vaadin.Flow.webNotification.closeByTag('old', app);
-      expect(oldest.calls).to.deep.equal([]);
+    // The oldest is no longer kept for closing, but reports its own events
+    $wnd.Vaadin.Flow.webNotification.closeByTag('old', app);
+    expect(oldest.calls).to.deep.equal([]);
 
-      // A late show event of the dropped one replaces nothing
-      const newer = recordingChannel();
-      show('Newer', { tag: 'old' }, newer.channel, app);
-      oldestNotification.dispatchEvent(new Event('show'));
-      expect(newer.calls).to.deep.equal([]);
+    // A late show event of the dropped one replaces nothing
+    const newer = recordingChannel();
+    show('Newer', { tag: 'old' }, newer.channel, app);
+    oldestNotification.dispatchEvent(new Event('show'));
+    expect(newer.calls).to.deep.equal([]);
 
-      oldestNotification.dispatchEvent(new Event('click'));
-      expect(oldest.calls).to.deep.equal([['click'], ['close']]);
+    oldestNotification.dispatchEvent(new Event('click'));
+    expect(oldest.calls).to.deep.equal([['click'], ['close']]);
 
-      // Neither another kind nor another application was pushed out
-      if (kind === 'triggers') {
-        $wnd.Vaadin.Flow.webNotification.close(otherKindKey);
-      } else {
-        $wnd.Vaadin.Flow.webNotification.closeByTag('kind', app);
-      }
-      expect(otherKind.calls).to.deep.equal([['close']]);
-      $wnd.Vaadin.Flow.webNotification.closeByTag('other', otherApp);
-      expect(otherApplication.calls).to.deep.equal([['close']]);
-    });
+    // Another application was not pushed out
+    $wnd.Vaadin.Flow.webNotification.closeByTag('other', otherApp);
+    expect(otherApplication.calls).to.deep.equal([['close']]);
   });
 
   it('does not replace anything when a notification that is already closed fires a late show event', () => {
     const first = recordingChannel();
-    $wnd.Vaadin.Flow.webNotification.show('1 new message', { tag: 'inbox' }, first.channel, {
-      key: nextKey(),
-      owner: 'app'
-    });
-    const secondKey = nextKey();
-    $wnd.Vaadin.Flow.webNotification.show('2 new messages', { tag: 'inbox' }, null, { key: secondKey, owner: 'app' });
+    show('1 new message', { tag: 'inbox' }, first.channel);
+    const secondKey = show('2 new messages', { tag: 'inbox' });
     $wnd.Vaadin.Flow.webNotification.close(secondKey);
 
     FakeNotification.instances[1].dispatchEvent(new Event('show'));
@@ -282,7 +221,7 @@ describe('webNotification', () => {
     FakeNotification.permission = 'default';
     const { calls, channel } = recordingChannel();
 
-    $wnd.Vaadin.Flow.webNotification.show('Hi', {}, channel, { key: nextKey(), owner: 'app' });
+    show('Hi', {}, channel);
 
     expect(FakeNotification.instances).to.be.empty;
     expect(calls).to.have.length(1);

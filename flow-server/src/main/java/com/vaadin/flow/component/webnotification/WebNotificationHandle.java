@@ -24,11 +24,11 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.trigger.internal.WebNotificationErrorReader;
 import com.vaadin.flow.component.webnotification.WebNotification.WebNotificationJs;
 import com.vaadin.flow.component.webnotification.WebNotificationError.Reason;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -176,10 +176,29 @@ public final class WebNotificationHandle implements Serializable {
         case "click" ->
             List.copyOf(clickListeners).forEach(SerializableRunnable::run);
         case "close" -> stopTracking();
-        case "error" -> fail(WebNotificationErrorReader.read(args));
+        case "error" -> fail(readError(args));
         default -> LOGGER
                 .debug("Unknown web notification event from client: {}", type);
         }
+    }
+
+    /**
+     * Reads the error the browser reports as
+     * {@code ('error', reason, message)}. A reason this server does not know,
+     * for example from a newer client, is read as {@link Reason#UNKNOWN}.
+     */
+    private static WebNotificationError readError(ArrayNode args) {
+        JsonNode reason = args.get(1);
+        JsonNode message = args.get(2);
+        Reason parsed;
+        try {
+            parsed = reason == null ? Reason.UNKNOWN
+                    : Reason.valueOf(reason.asString());
+        } catch (IllegalArgumentException e) {
+            parsed = Reason.UNKNOWN;
+        }
+        return new WebNotificationError(parsed,
+                message == null || message.isNull() ? "" : message.asString());
     }
 
     private void fail(WebNotificationError error) {
