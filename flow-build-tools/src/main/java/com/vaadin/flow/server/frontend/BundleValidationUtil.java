@@ -600,12 +600,10 @@ public final class BundleValidationUtil {
                 .stream()
                 // skip checking flow-frontend as it was used in previous
                 // versions as an alias for ./target/flow-frontend
-                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !"@vaadin/flow-frontend".equals(pkg)).toList();
 
         List<String> missingFromBundle = dependenciesList.stream()
-                .filter(pkg -> !bundleModules.has(pkg))
-                .collect(Collectors.toList());
+                .filter(pkg -> !bundleModules.has(pkg)).toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
@@ -620,7 +618,7 @@ public final class BundleValidationUtil {
                 .filter(pkg -> !versionAccepted(
                         dependencies.get(pkg).asString(),
                         bundleModules.get(pkg).asString()))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String pkg : missingFromBundle) {
@@ -696,7 +694,7 @@ public final class BundleValidationUtil {
                 .filter(pkg -> !(dependencies.has(pkg)
                         && versionAccepted(dependencies.get(pkg).asString(),
                                 npmPackages.get(pkg))))
-                .collect(Collectors.toList());
+                .toList();
         if (!collect.isEmpty()) {
             collect.forEach(dependency -> getLogger().info("Dependency "
                     + dependency + " is missing from the bundle"));
@@ -778,14 +776,14 @@ public final class BundleValidationUtil {
                         ? importString.substring(0,
                                 importString.lastIndexOf("?"))
                         : importString)
-                .collect(Collectors.toList());
+                .toList();
         LinkedHashSet<String> uniqueImports = new LinkedHashSet<>(imports);
         ArrayNode statsBundle = statsJson.has("bundleImports")
                 ? (ArrayNode) statsJson.get("bundleImports")
                 : JacksonUtils.createArrayNode();
         final List<String> missingFromBundle = uniqueImports.stream().filter(
                 importString -> !arrayContainsString(statsBundle, importString))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!missingFromBundle.isEmpty()) {
             for (String dependency : missingFromBundle) {
@@ -801,7 +799,7 @@ public final class BundleValidationUtil {
                 .map(importString -> importString
                         .substring(importString.indexOf(resourcePath)
                                 + resourcePath.length()))
-                .collect(Collectors.toList());
+                .toList();
 
         final List<String> projectImports = uniqueImports.stream()
                 .filter(importString -> importString
@@ -809,7 +807,7 @@ public final class BundleValidationUtil {
                         && !importString.contains(resourcePath))
                 .map(importString -> importString.substring(
                         FrontendUtils.FRONTEND_FOLDER_ALIAS.length()))
-                .collect(Collectors.toList());
+                .toList();
 
         final JsonNode frontendHashes = statsJson
                 .get(FRONTEND_HASHES_STATS_KEY);

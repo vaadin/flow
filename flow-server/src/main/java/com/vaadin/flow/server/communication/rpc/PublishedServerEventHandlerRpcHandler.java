@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -166,8 +165,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> hasMethodAnnotation(method))
-                .collect(Collectors.toList());
+                .filter(method -> hasMethodAnnotation(method)).toList();
         if (methods.size() > 1) {
             getLogger().error(String.format(
                     "Method conflict in event handler. Class '%s' contains "

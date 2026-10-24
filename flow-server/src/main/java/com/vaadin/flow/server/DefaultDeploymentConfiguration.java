@@ -345,8 +345,7 @@ public class DefaultDeploymentConfiguration
     private void checkFeatureFlags() {
         List<Feature> enabledFeatures = FeatureFlags
                 .get(getParentConfiguration().getContext()).getFeatures()
-                .stream().filter(f -> f.isEnabled())
-                .collect(Collectors.toList());
+                .stream().filter(f -> f.isEnabled()).toList();
         if (!enabledFeatures.isEmpty()) {
             info.add("\nThe following feature previews are enabled:");
             enabledFeatures.forEach(feature -> {

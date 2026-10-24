@@ -28,7 +28,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -385,7 +384,7 @@ public class ComponentTracker {
                         }
                     }
                     return true;
-                }).collect(Collectors.toList());
+                }).toList();
         if (preferredClass != null) {
             Optional<Location> preferredCandidate = candidates.stream()
                     .filter(location -> location.className()

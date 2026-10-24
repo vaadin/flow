@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import tools.jackson.databind.node.ArrayNode;
@@ -127,8 +126,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     public boolean isSupportedClass(Class<?> type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
-                .getPropertyNames().map(this::getModelType)
-                .collect(Collectors.toList());
+                .getPropertyNames().map(this::getModelType).toList();
 
         boolean result = false;
         for (ModelType modelType : modelTypes) {
@@ -169,8 +167,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     public ModelType getModelType(Type type) {
         List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
-                .getPropertyNames().map(this::getModelType)
-                .collect(Collectors.toList());
+                .getPropertyNames().map(this::getModelType).toList();
 
         for (ModelType mtype : modelTypes) {
             if (type.equals(mtype.getJavaType())) {
@@ -292,7 +289,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
                 .getFeature(ElementPropertyMap.class);
         List<String> props = map.getPropertyNames()
                 .filter(name -> !(map.getProperty(name) instanceof StateNode))
-                .collect(Collectors.toList());
+                .toList();
         props.forEach(map::removeProperty);
         return props;
     }

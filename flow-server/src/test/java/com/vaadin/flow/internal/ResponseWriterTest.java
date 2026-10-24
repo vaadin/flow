@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -694,9 +693,8 @@ public class ResponseWriterTest {
             when(request.getHeaders(header.getFirst())).thenReturn(Collections
                     .enumeration(Collections.singleton(header.getSecond())));
         }
-        when(request.getHeaderNames())
-                .thenReturn(Collections.enumeration(Arrays.stream(headers)
-                        .map(Pair::getFirst).collect(Collectors.toList())));
+        when(request.getHeaderNames()).thenReturn(Collections.enumeration(
+                Arrays.stream(headers).map(Pair::getFirst).toList()));
     }
 
     private static byte[] gzip(byte[] input) {

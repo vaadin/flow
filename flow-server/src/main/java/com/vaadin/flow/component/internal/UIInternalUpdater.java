@@ -17,7 +17,6 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
@@ -85,7 +84,7 @@ public interface UIInternalUpdater extends Serializable {
      */
     default void moveToNewUI(UI oldUI, UI newUI) {
         final List<Element> uiChildren = oldUI.getElement().getChildren()
-                .collect(Collectors.toList());
+                .toList();
         uiChildren.forEach(element -> {
             element.removeFromTree(false);
             newUI.getElement().appendChild(element);

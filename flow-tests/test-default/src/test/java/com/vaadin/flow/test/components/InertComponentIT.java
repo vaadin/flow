@@ -17,7 +17,6 @@ package com.vaadin.flow.test.components;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Assertions;
@@ -56,8 +55,7 @@ public class InertComponentIT extends AbstractDefaultIT {
                 "Expected no new boxes as the button is now inert.");
 
         List<NativeButtonElement> removeButtons = getAll(
-                NativeButtonElement.class, InertComponentView.REMOVE)
-                .collect(Collectors.toList());
+                NativeButtonElement.class, InertComponentView.REMOVE).toList();
         removeButtons.get(removeButtons.size() - 1).click();
 
         validateBoxCount(initialBoxCount,

@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.vaadin.flow.component.EventData;
@@ -44,7 +43,7 @@ public class DomRepeatView
         setEmployees(IntStream.range(0, NUMBER_OF_EMPLOYEES)
                 .mapToObj(i -> new DomRepeatView.Employee("name" + i,
                         "title" + i, "email" + i))
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     public static class Employee {

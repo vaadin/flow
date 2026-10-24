@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
@@ -87,7 +86,7 @@ class JwtSecurityContextRepositoryTest {
             .newArrayList("user", "employee");
     static private final Collection<? extends GrantedAuthority> TEST_AUTHORITIES = TEST_ROLES
             .stream().map(role -> "ROLE_" + role)
-            .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
+            .map(SimpleGrantedAuthority::new).toList();
 
     static private final SecretKey TEST_KEY = new SecretKeySpec(
             Base64.getDecoder()
