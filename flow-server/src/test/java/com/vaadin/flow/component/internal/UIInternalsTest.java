@@ -403,13 +403,13 @@ class UIInternalsTest {
 
         internals.dumpPendingJavaScriptInvocations();
 
-        assertEquals(3, internals.getPendingJavaScriptInvocations().count(),
+        assertEquals(3, internals.getPendingJavaScriptInvocations().size(),
                 "Invocations of invisible components should be retained");
 
         detachedNode.setParent(null);
 
         assertEquals(List.of(otherInvocation),
-                internals.getPendingJavaScriptInvocations().toList(),
+                internals.getPendingJavaScriptInvocations(),
                 "Only the invocations of the detached owner should be discarded");
         assertEquals(List.of(otherNode),
                 List.copyOf(invocationOwners(internals)),
@@ -446,7 +446,7 @@ class UIInternalsTest {
 
         invocation.cancelExecution();
 
-        assertEquals(0, internals.getPendingJavaScriptInvocations().count());
+        assertEquals(0, internals.getPendingJavaScriptInvocations().size());
     }
 
     @Test
@@ -466,7 +466,7 @@ class UIInternalsTest {
         internals.addJavaScriptInvocation(canceled);
         internals.addJavaScriptInvocation(kept);
 
-        internals.getPendingJavaScriptInvocations()
+        internals.getPendingJavaScriptInvocations().stream()
                 .filter(invocation -> invocation == canceled)
                 .forEach(PendingJavaScriptInvocation::cancelExecution);
 
@@ -736,11 +736,12 @@ class UIInternalsTest {
         internals.setTitle("new title");
         assertEquals("new title", internals.getTitle());
 
-        assertEquals(1, internals.getPendingJavaScriptInvocations().count(),
+        assertEquals(1, internals.getPendingJavaScriptInvocations().size(),
                 "one pending JavaScript invocation should exist");
 
         var pendingJavaScriptInvocation = internals
-                .getPendingJavaScriptInvocations().findFirst().orElse(null);
+                .getPendingJavaScriptInvocations().stream().findFirst()
+                .orElse(null);
         assertNotNull(pendingJavaScriptInvocation,
                 "pendingJavaScriptInvocation should not be null");
         assertEquals("new title", pendingJavaScriptInvocation.getInvocation()

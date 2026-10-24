@@ -922,7 +922,7 @@ public class UIInternals implements Serializable {
             return Collections.emptyList();
         }
 
-        Map<Boolean, List<PendingJavaScriptInvocation>> partition = getPendingJavaScriptInvocations()
+        Map<Boolean, List<PendingJavaScriptInvocation>> partition = streamPendingJavaScriptInvocations()
                 .collect(Collectors.partitioningBy(
                         invocation -> invocation.getOwner().isVisible()));
 
@@ -1008,16 +1008,19 @@ public class UIInternals implements Serializable {
      * The invocations owned by invisible nodes, which a dump retains instead of
      * sending, are included; check
      * {@link PendingJavaScriptInvocation#getOwner()} to tell them apart.
-     * Canceled invocations are not included. The stream is a snapshot, so the
-     * queue can be changed while it is consumed.
+     * Canceled invocations are not included. The list is an unmodifiable
+     * snapshot, so the queue can be changed while it is iterated.
      *
      * @return the pending JavaScript invocations, never <code>null</code>
      */
-    public Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+    public List<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+        return streamPendingJavaScriptInvocations().toList();
+    }
+
+    private Stream<PendingJavaScriptInvocation> streamPendingJavaScriptInvocations() {
         session.checkHasLock();
         return pendingJsInvocations.stream()
-                .filter(invocation -> !invocation.isCanceled()).toList()
-                .stream();
+                .filter(invocation -> !invocation.isCanceled());
     }
 
     /**
@@ -1030,7 +1033,7 @@ public class UIInternals implements Serializable {
      * @since 24.4
      */
     public boolean containsPendingJavascript(String containsFilter) {
-        return getPendingJavaScriptInvocations().anyMatch(js -> js
+        return streamPendingJavaScriptInvocations().anyMatch(js -> js
                 .getInvocation().getExpression().contains(containsFilter));
     }
 
@@ -1055,7 +1058,7 @@ public class UIInternals implements Serializable {
      */
     public boolean containsPendingJsCall(Class<?> definitionType,
             String methodName) {
-        return getPendingJavaScriptInvocations()
+        return streamPendingJavaScriptInvocations()
                 .map(js -> js.getInvocation().getJsCall())
                 .anyMatch(call -> call != null
                         && call.definitionType() == definitionType
@@ -1828,7 +1831,7 @@ public class UIInternals implements Serializable {
      *         <code>false</code> otherwise
      */
     public boolean isDirty() {
-        return getStateTree().isDirty() || getPendingJavaScriptInvocations()
+        return getStateTree().isDirty() || streamPendingJavaScriptInvocations()
                 .anyMatch(invocation -> invocation.getOwner().isVisible());
     }
 
