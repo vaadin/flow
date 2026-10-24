@@ -240,6 +240,57 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     @Test
+    public void testPrecachedBundleOffline() {
+        // The dev bundle and the production bundle are precached, while the
+        // frontend served by the Vite dev server is not. Skip on the
+        // configuration rather than on an empty precache, so that a precache
+        // that stops matching fails the test instead of skipping it.
+        Assume.assumeFalse("Nothing is precached with hotdeploy",
+                Boolean.getBoolean("vaadin.frontend.hotdeploy"));
+
+        open();
+        waitForServiceWorkerReady();
+
+        List<String> bundleUrls = getPrecachedBundleUrls();
+        Assert.assertFalse("Expected precached bundle files",
+                bundleUrls.isEmpty());
+
+        // Do not fetch the files online first: files the page loaded before
+        // the service worker took control are not in its runtime cache, so
+        // only the precache can serve them offline
+        getDevTools().setOfflineEnabled(true);
+        try {
+            checkResources(bundleUrls.toArray(new String[] {}));
+        } finally {
+            getDevTools().setOfflineEnabled(false);
+        }
+    }
+
+    /**
+     * Gets the URLs of the precached bundle files, as stored by the service
+     * worker.
+     */
+    @SuppressWarnings("unchecked")
+    private List<String> getPrecachedBundleUrls() {
+        String script = """
+                const resolve = arguments[0];
+                caches.keys()
+                    .then(names => names.filter(name => name.includes('precache')))
+                    .then(names => Promise.all(names.map(name => caches.open(name)
+                        .then(cache => cache.keys()))))
+                    .then(requests => resolve(requests.flat()
+                        .map(request => request.url.replace(/[?&]__WB_REVISION__=.*$/, ''))
+                        .filter(url => url.includes('/VAADIN/build/'))))
+                    .catch(error => resolve(String(error)));
+                """;
+        Object result = ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(script);
+        Assert.assertTrue("Reading the precache failed: " + result,
+                result instanceof List);
+        return (List<String>) result;
+    }
+
+    @Test
     public void testPwaOfflinePath() {
         open();
         waitForServiceWorkerReady();
