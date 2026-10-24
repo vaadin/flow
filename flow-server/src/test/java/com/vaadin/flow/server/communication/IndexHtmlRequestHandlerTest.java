@@ -45,6 +45,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -64,6 +66,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
@@ -94,6 +97,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -235,6 +240,90 @@ public class IndexHtmlRequestHandlerTest {
                 createVaadinRequest("/"), response);
         Mockito.verify(response, Mockito.never())
                 .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
+    }
+
+    @Test
+    public void serveIndexHtml_strictCsp_sendsPolicyWithNonceOnEveryScript()
+            throws IOException {
+        deploymentConfiguration.setCspMode(CspMode.STRICT);
+        service.addIndexHtmlRequestListener(evt -> {
+            evt.getDocument().body().appendElement("script").attr("src",
+                    "listener.js");
+            evt.getContentSecurityPolicy().addSources("connect-src",
+                    "https://api.example.com");
+        });
+
+        String header = serveIndexHtmlAndCaptureCspHeader();
+        Matcher matcher = Pattern
+                .compile(
+                        "script-src 'nonce-([A-Za-z0-9+/=]+)' 'strict-dynamic'")
+                .matcher(header);
+        assertTrue(matcher.find(), header);
+        String nonce = matcher.group(1);
+        assertTrue(
+                header.contains("connect-src 'self' https://api.example.com"),
+                header);
+        assertFalse(header.contains("unsafe-eval"), header);
+
+        Elements scripts = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8))
+                .getElementsByTag("script");
+        assertTrue(scripts.stream()
+                .anyMatch(script -> script.attr("src").equals("listener.js")));
+        for (Element script : scripts) {
+            assertEquals(nonce, script.attr("nonce"), script.outerHtml());
+        }
+
+        responseOutput.reset();
+        assertFalse(serveIndexHtmlAndCaptureCspHeader().contains(nonce),
+                "Every response should get a new nonce");
+    }
+
+    @Test
+    public void serveIndexHtml_strictCspAndHeaderAlreadyPresent_doesNotOverride()
+            throws IOException {
+        deploymentConfiguration.setCspMode(CspMode.STRICT);
+        when(response.containsHeader("Content-Security-Policy"))
+                .thenReturn(true);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "OFF, true", "WARN, true", "STRICT, false" })
+    public void serveIndexHtml_noStrictCspInProduction_noPolicyOrNonce(
+            CspMode cspMode, boolean productionMode) throws Exception {
+        deploymentConfiguration.setCspMode(cspMode);
+        if (!productionMode) {
+            File projectRootFolder = Files
+                    .createTempDirectory(temporaryFolder, "temp").toFile();
+            TestUtil.createIndexHtmlStub(projectRootFolder);
+            TestUtil.createStatsJsonStub(projectRootFolder);
+            deploymentConfiguration.setProductionMode(false);
+            deploymentConfiguration.setProjectFolder(projectRootFolder);
+        }
+        service.addIndexHtmlRequestListener(evt -> {
+            assertNull(evt.getCspNonce());
+            assertNull(evt.getContentSecurityPolicy());
+        });
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
+        assertFalse(responseOutput.toString(StandardCharsets.UTF_8)
+                .contains("nonce="));
+    }
+
+    private String serveIndexHtmlAndCaptureCspHeader() throws IOException {
+        clearInvocations(response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        ArgumentCaptor<String> header = ArgumentCaptor.forClass(String.class);
+        verify(response).setHeader(eq("Content-Security-Policy"),
+                header.capture());
+        return header.getValue();
     }
 
     @Test

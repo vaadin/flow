@@ -18,8 +18,11 @@ package com.vaadin.flow.server.communication;
 import java.util.Optional;
 
 import org.jsoup.nodes.Document;
+import org.jspecify.annotations.Nullable;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.ContentSecurityPolicy;
+import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 
@@ -35,6 +38,8 @@ public class IndexHtmlResponse {
     private final VaadinRequest vaadinRequest;
     private final VaadinResponse vaadinResponse;
     private final Document document;
+    private @Nullable String cspNonce;
+    private @Nullable ContentSecurityPolicy contentSecurityPolicy;
 
     /**
      * Create a response object for client side bootstrapping with UI.
@@ -112,5 +117,46 @@ public class IndexHtmlResponse {
         } else {
             return Optional.ofNullable(UI.getCurrent());
         }
+    }
+
+    /**
+     * Gets the nonce of this response, which Vaadin puts on every
+     * {@code <script>} element of the document and allows in the
+     * {@code script-src} directive of the Content Security Policy.
+     * <p>
+     * A new nonce is created for every response when the application runs in
+     * production mode with the {@link CspMode#STRICT} mode. Scripts added by an
+     * {@link IndexHtmlRequestListener} get the nonce automatically, but the
+     * value can also be used for other content that needs it.
+     *
+     * @return the nonce, or {@code null} if no nonce-based policy is used
+     */
+    public @Nullable String getCspNonce() {
+        return cspNonce;
+    }
+
+    /**
+     * Gets the Content Security Policy that is sent with this response.
+     * <p>
+     * The policy is created when the application runs in production mode with
+     * the {@link CspMode#STRICT} mode. An {@link IndexHtmlRequestListener} can
+     * add or override directives for resources of the application, such as
+     * {@code connect-src}, {@code img-src}, {@code frame-src} or
+     * {@code report-to}. The header is written after all listeners have run. It
+     * is not written if the response already has a
+     * {@code Content-Security-Policy} header, for example from a servlet
+     * filter.
+     *
+     * @return the mutable policy, or {@code null} if Vaadin does not send a
+     *         policy for this response
+     */
+    public @Nullable ContentSecurityPolicy getContentSecurityPolicy() {
+        return contentSecurityPolicy;
+    }
+
+    void setContentSecurityPolicy(String cspNonce,
+            ContentSecurityPolicy contentSecurityPolicy) {
+        this.cspNonce = cspNonce;
+        this.contentSecurityPolicy = contentSecurityPolicy;
     }
 }

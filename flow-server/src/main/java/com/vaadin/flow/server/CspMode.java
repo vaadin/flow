@@ -24,10 +24,9 @@ package com.vaadin.flow.server;
  * parameter and read with
  * {@link com.vaadin.flow.function.DeploymentConfiguration#getCspMode()}.
  * <p>
- * <strong>Note:</strong> so far only the setting exists. Vaadin does not yet
- * log or enforce anything in the {@link #WARN} and {@link #STRICT} modes, and
- * in particular sends no Content Security Policy header. All modes currently
- * behave like {@link #OFF}.
+ * <strong>Note:</strong> the {@link #WARN} mode does not log anything yet, and
+ * the {@link #STRICT} mode so far only sends the Content Security Policy
+ * header; APIs that need {@code eval} do not throw yet.
  *
  * @since 25.4
  */
@@ -44,7 +43,17 @@ public enum CspMode {
     WARN,
     /**
      * Vaadin sends a nonce-based Content Security Policy, and APIs that need
-     * {@code eval} throw. Not implemented yet.
+     * {@code eval} throw.
+     * <p>
+     * In production mode, every index HTML response gets a new nonce that is
+     * put on every {@code <script>} element of the page, and a
+     * {@code Content-Security-Policy} header that allows only the scripts with
+     * that nonce and the scripts they load. Applications adjust the policy
+     * through
+     * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()}.
+     * No header is sent in development mode, because the development server and
+     * the development tools need {@code eval}. Throwing from APIs that need
+     * {@code eval} is not implemented yet.
      */
     STRICT
 }

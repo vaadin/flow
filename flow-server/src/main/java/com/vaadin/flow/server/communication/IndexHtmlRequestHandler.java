@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -60,6 +62,8 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ContentSecurityPolicy;
+import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
@@ -91,6 +95,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
+    private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
+    private static final SecureRandom NONCE_RANDOM = new SecureRandom();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -137,6 +143,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         } else {
             indexHtmlResponse = new IndexHtmlResponse(request, response,
                     indexDocument);
+        }
+
+        // The dev server and dev tools need eval, so the policy is only sent
+        // in production mode
+        if (config.getCspMode() == CspMode.STRICT
+                && config.isProductionMode()) {
+            String nonce = createCspNonce();
+            indexHtmlResponse.setContentSecurityPolicy(nonce,
+                    createDefaultContentSecurityPolicy(nonce));
         }
 
         addInitialFlow(initialJson, indexDocument, request);
@@ -232,6 +247,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addCommercialBanner(service.getDeploymentConfiguration(),
                 indexDocument);
 
+        applyContentSecurityPolicy(indexHtmlResponse);
+
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
@@ -240,6 +257,57 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private static String createCspNonce() {
+        byte[] bytes = new byte[16];
+        NONCE_RANDOM.nextBytes(bytes);
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+
+    private static ContentSecurityPolicy createDefaultContentSecurityPolicy(
+            String nonce) {
+        // 'strict-dynamic' trusts the scripts that nonced scripts load, such
+        // as the chunks of the bundle. connect-src also covers push. Workers
+        // need their own directive since script-src only allows nonced
+        // scripts.
+        return new ContentSecurityPolicy().setDirective("default-src", "'self'")
+                .setDirective("script-src", "'nonce-" + nonce + "'",
+                        "'strict-dynamic'")
+                .setDirective("style-src", "'self'", "'unsafe-inline'")
+                .setDirective("img-src", "'self'", "data:")
+                .setDirective("font-src", "'self'", "data:")
+                .setDirective("connect-src", "'self'")
+                .setDirective("worker-src", "'self'")
+                .setDirective("object-src", "'none'")
+                .setDirective("base-uri", "'self'");
+    }
+
+    private void applyContentSecurityPolicy(
+            IndexHtmlResponse indexHtmlResponse) {
+        String nonce = indexHtmlResponse.getCspNonce();
+        ContentSecurityPolicy policy = indexHtmlResponse
+                .getContentSecurityPolicy();
+        if (nonce == null || policy == null) {
+            return;
+        }
+        // Done after the listeners have run so that every script in the page
+        // gets the nonce, whichever code added it
+        indexHtmlResponse.getDocument().select(
+                "script, link[rel=modulepreload], link[rel=preload][as=script]")
+                .attr("nonce", nonce);
+
+        VaadinResponse response = indexHtmlResponse.getVaadinResponse();
+        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
+            getLogger().warn(
+                    "The Content Security Policy of the '{}={}' setting is not "
+                            + "sent because the response already has a {} header.",
+                    InitParameters.CSP, "strict",
+                    CONTENT_SECURITY_POLICY_HEADER);
+        } else {
+            response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
+                    policy.toHeaderValue());
+        }
     }
 
     private void initializeFeatureFlags(Document indexDocument,
