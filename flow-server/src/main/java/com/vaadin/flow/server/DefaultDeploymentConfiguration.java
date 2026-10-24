@@ -123,8 +123,8 @@ public class DefaultDeploymentConfiguration
     private CspMode cspMode;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
-    private List<String> warnings = new ArrayList<>();
-    private List<String> info = new ArrayList<>();
+    private final List<String> warnings = new ArrayList<>();
+    private final List<String> info = new ArrayList<>();
 
     /**
      * Create a new deployment configuration instance.
