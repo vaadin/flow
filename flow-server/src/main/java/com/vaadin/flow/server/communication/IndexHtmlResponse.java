@@ -128,8 +128,7 @@ public class IndexHtmlResponse {
      * the {@link CspMode#STRICT} mode. Scripts added by an
      * {@link IndexHtmlRequestListener} get the nonce automatically, but the
      * value can also be used for other content that needs it. The nonce is not
-     * put on the scripts in development mode, or when the response already has
-     * a {@code Content-Security-Policy} header.
+     * put on the scripts in development mode.
      *
      * @return the nonce, or {@code null} if the mode is not
      *         {@link CspMode#STRICT}
@@ -147,9 +146,11 @@ public class IndexHtmlResponse {
      * {@code connect-src}, {@code img-src}, {@code frame-src} or
      * {@code report-to}. The header is written after all listeners have run. It
      * is not written in development mode, because the development server and
-     * the development tools need {@code eval}, nor if the response already has
-     * a {@code Content-Security-Policy} header, for example from a servlet
-     * filter.
+     * the development tools need {@code eval}. In production mode, the request
+     * fails with an {@link IllegalStateException} if the response already has a
+     * {@code Content-Security-Policy} header, for example from a servlet
+     * filter, since the page would otherwise be sent without the policy of the
+     * strict mode.
      *
      * @return the mutable policy, or {@code null} if the mode is not
      *         {@link CspMode#STRICT}

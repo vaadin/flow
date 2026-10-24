@@ -244,8 +244,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addCommercialBanner(service.getDeploymentConfiguration(),
                 indexDocument);
 
-        applyContentSecurityPolicy(indexHtmlResponse,
-                config.isProductionMode());
+        // The dev server and dev tools need eval, so the policy is only sent
+        // in production mode
+        if (config.getCspMode() == CspMode.STRICT
+                && config.isProductionMode()) {
+            applyContentSecurityPolicy(indexHtmlResponse);
+        }
 
         try {
             response.getOutputStream()
@@ -281,27 +285,24 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .setDirective("base-uri", "'self'");
     }
 
-    private void applyContentSecurityPolicy(IndexHtmlResponse indexHtmlResponse,
-            boolean productionMode) {
+    private static void applyContentSecurityPolicy(
+            IndexHtmlResponse indexHtmlResponse) {
+        VaadinResponse response = indexHtmlResponse.getVaadinResponse();
+        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
+            // Sending the page without Vaadin's policy would silently drop
+            // the protection the strict mode promises
+            throw new IllegalStateException(String.format(
+                    "The response already has a %s header, but the '%s=strict' "
+                            + "setting requires Vaadin to send its own policy. "
+                            + "Remove the code that sets the header, and adjust "
+                            + "the policy through "
+                            + "IndexHtmlResponse.getContentSecurityPolicy() "
+                            + "in an IndexHtmlRequestListener instead.",
+                    CONTENT_SECURITY_POLICY_HEADER, InitParameters.CSP));
+        }
         String nonce = indexHtmlResponse.getCspNonce();
         ContentSecurityPolicy policy = indexHtmlResponse
                 .getContentSecurityPolicy();
-        // The dev server and dev tools need eval, so the policy is only sent
-        // in production mode
-        if (nonce == null || policy == null || !productionMode) {
-            return;
-        }
-        VaadinResponse response = indexHtmlResponse.getVaadinResponse();
-        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
-            // The scripts are left alone too, since they may already carry
-            // the nonce of the policy that was set elsewhere
-            getLogger().warn(
-                    "The Content Security Policy of the '{}={}' setting is not "
-                            + "sent because the response already has a {} header.",
-                    InitParameters.CSP, "strict",
-                    CONTENT_SECURITY_POLICY_HEADER);
-            return;
-        }
         // Done after the listeners have run so that every script in the page
         // gets the nonce, whichever code added it
         indexHtmlResponse.getDocument().select(

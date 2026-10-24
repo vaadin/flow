@@ -292,17 +292,19 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void serveIndexHtml_strictCspAndHeaderAlreadyPresent_doesNotOverride()
-            throws IOException {
+    public void serveIndexHtml_strictCspAndHeaderAlreadyPresent_throws() {
         deploymentConfiguration.setCspMode(CspMode.STRICT);
         when(response.containsHeader("Content-Security-Policy"))
                 .thenReturn(true);
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                        createVaadinRequest("/"), response));
+        assertTrue(exception.getMessage().contains("csp=strict"),
+                exception.getMessage());
         verify(response, never()).setHeader(eq("Content-Security-Policy"),
                 any());
-        assertFalse(responseOutput.toString(StandardCharsets.UTF_8)
-                .contains("nonce="));
+        assertEquals(0, responseOutput.size());
     }
 
     @ParameterizedTest
