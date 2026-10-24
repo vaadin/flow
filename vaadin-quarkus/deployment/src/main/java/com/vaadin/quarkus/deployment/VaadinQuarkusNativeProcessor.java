@@ -508,6 +508,14 @@ public class VaadinQuarkusNativeProcessor {
                     .constructors().methods().fields().build());
         }
 
+        Set<String> clientCallableInterfaces = detectClientCallableInterfaces(
+                index);
+        if (!clientCallableInterfaces.isEmpty()) {
+            reflectiveClass.produce(ReflectiveClassBuildItem
+                    .builder(clientCallableInterfaces.toArray(String[]::new))
+                    .methods().build());
+        }
+
         Set<ClassInfo> classesWithHierarchy = new HashSet<>();
         classesWithHierarchy.addAll(getJsonClasses(index));
         classesWithHierarchy.addAll(detectClientCallablesTypes(index));
@@ -520,6 +528,24 @@ public class VaadinQuarkusNativeProcessor {
     }
 
     Set<ClassInfo> detectClientCallablesTypes(IndexView index) {
+        return getClientCallableMethods(index).stream()
+                .flatMap(m -> TypeInspector.collectTypes(m, index).stream())
+                .collect(Collectors.toSet());
+    }
+
+    /**
+     * Detects the interfaces that declare {@code @ClientCallable} default
+     * methods of components. Flow finds these methods by reflection on the
+     * interface, which is not registered along with the component classes.
+     */
+    Set<String> detectClientCallableInterfaces(IndexView index) {
+        return getClientCallableMethods(index).stream()
+                .map(MethodInfo::declaringClass).filter(ClassInfo::isInterface)
+                .map(classInfo -> classInfo.name().toString())
+                .collect(Collectors.toSet());
+    }
+
+    private List<MethodInfo> getClientCallableMethods(IndexView index) {
 
         // Get all known subclasses of Component, including Component itself
         Set<DotName> componentClasses = new HashSet<>();
@@ -527,15 +553,22 @@ public class VaadinQuarkusNativeProcessor {
         index.getAllKnownSubclasses(Component.class).stream()
                 .map(ClassInfo::name).forEach(componentClasses::add);
 
-        // Return a predicate that checks if the declaring class is in the set
-        Predicate<MethodInfo> componentPredicate = method -> componentClasses
-                .contains(method.declaringClass().name());
+        // Flow publishes the annotated methods of components, and the
+        // annotated default methods of the interfaces they implement
+        Predicate<MethodInfo> componentPredicate = method -> {
+            ClassInfo declaringClass = method.declaringClass();
+            if (declaringClass.isInterface()) {
+                return method.isDefault() && index
+                        .getAllKnownImplementations(declaringClass.name())
+                        .stream().map(ClassInfo::name)
+                        .anyMatch(componentClasses::contains);
+            }
+            return componentClasses.contains(declaringClass.name());
+        };
 
         return index.getAnnotations(DotName.createSimple(ClientCallable.class))
                 .stream().map(ann -> ann.target().asMethod())
-                .filter(componentPredicate)
-                .flatMap(m -> TypeInspector.collectTypes(m, index).stream())
-                .collect(Collectors.toSet());
+                .filter(componentPredicate).toList();
     }
 
     /**

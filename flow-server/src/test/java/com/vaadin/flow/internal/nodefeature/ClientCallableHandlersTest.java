@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,54 @@ class ClientCallableHandlersTest {
         public void publishedMethod1() {
 
         }
+    }
+
+    interface SuperInterfaceWithClientCallable {
+        @ClientCallable(DisabledUpdateMode.ALWAYS)
+        default void publishedDefaultMethod() {
+        }
+    }
+
+    interface InterfaceWithClientCallable
+            extends SuperInterfaceWithClientCallable {
+        @ClientCallable
+        default void overriddenDefaultMethod() {
+        }
+
+        @ClientCallable
+        void abstractMethod();
+    }
+
+    @Tag("div")
+    static class NonTemplateComponentWithInterfaceEventHandler extends Component
+            implements InterfaceWithClientCallable {
+
+        @Override
+        @ClientCallable(DisabledUpdateMode.ALWAYS)
+        public void overriddenDefaultMethod() {
+            // Only the handler registration is tested, the method is never
+            // invoked
+        }
+
+        @Override
+        public void abstractMethod() {
+            // Only the handler registration is tested, the method is never
+            // invoked
+        }
+    }
+
+    interface SpecificInterfaceWithClientCallable
+            extends SuperInterfaceWithClientCallable {
+        @Override
+        @ClientCallable
+        default void publishedDefaultMethod() {
+        }
+    }
+
+    @Tag("div")
+    static class SubComponentWithInterfaceEventHandler
+            extends NonTemplateComponentWithInterfaceEventHandler
+            implements SpecificInterfaceWithClientCallable {
     }
 
     @Tag("div")
@@ -93,6 +142,43 @@ class ClientCallableHandlersTest {
         ClientCallableHandlers feature = component.getElement().getNode()
                 .getFeature(ClientCallableHandlers.class);
         assertListFeature(feature, "publishedMethod1");
+    }
+
+    @Test
+    void nonTemplateComponentWithInterfaceDefaultEventHandler() {
+        UI ui = new UI();
+        NonTemplateComponentWithInterfaceEventHandler component = new NonTemplateComponentWithInterfaceEventHandler();
+        ui.add(component);
+
+        // Default methods are published also from superinterfaces, while
+        // abstract interface methods are not. The mode of the most specific
+        // declaration wins, ALWAYS is used since ONLY_WHEN_ENABLED is the
+        // default.
+        ClientCallableHandlers feature = component.getElement().getNode()
+                .getFeature(ClientCallableHandlers.class);
+        assertEquals(2, feature.size());
+        assertEquals(
+                Set.of("publishedDefaultMethod", "overriddenDefaultMethod"),
+                Set.of(feature.get(0), feature.get(1)));
+        assertEquals(DisabledUpdateMode.ALWAYS,
+                feature.getDisabledUpdateMode("publishedDefaultMethod"));
+        assertEquals(DisabledUpdateMode.ALWAYS,
+                feature.getDisabledUpdateMode("overriddenDefaultMethod"));
+    }
+
+    @Test
+    void interfaceOverrideWinsOverInterfaceReachedThroughSuperclass() {
+        UI ui = new UI();
+        SubComponentWithInterfaceEventHandler component = new SubComponentWithInterfaceEventHandler();
+        ui.add(component);
+
+        // The superclass reaches the ALWAYS declaration first, but the more
+        // specific override in the class' own interface is the one Java
+        // dispatches to, so its default mode must win
+        ClientCallableHandlers feature = component.getElement().getNode()
+                .getFeature(ClientCallableHandlers.class);
+        assertEquals(DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                feature.getDisabledUpdateMode("publishedDefaultMethod"));
     }
 
     @Test

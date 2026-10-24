@@ -155,7 +155,7 @@ public class PublishedServerEventHandlerRpcHandler
         } else {
             getLogger().error(String.format(
                     "Faulty method invocation. Neither class '%s' "
-                            + "nor its super classes declare event handler method '%s'",
+                            + "nor its super classes or interfaces declare event handler method '%s'",
                     instance.getClass().getName(), methodName));
             throw new IllegalStateException(
                     "Faulty method invocation. See server log for more details.");
@@ -166,6 +166,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> clazz, String methodName) {
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> !clazz.isInterface() || method.isDefault())
                 .filter(method -> hasMethodAnnotation(method))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
@@ -178,7 +179,16 @@ public class PublishedServerEventHandlerRpcHandler
         } else if (methods.size() == 1) {
             return Optional.of(methods.get(0));
         } else if (!Component.class.equals(clazz)) {
-            return findMethod(instance, clazz.getSuperclass(), methodName);
+            // Interfaces are searched too, for default methods. The most
+            // specific declaration wins, like when registering the handlers.
+            return Stream
+                    .concat(Stream.ofNullable(clazz.getSuperclass()),
+                            Stream.of(clazz.getInterfaces()))
+                    .map(type -> findMethod(instance, type, methodName))
+                    .flatMap(Optional::stream)
+                    .reduce((found, candidate) -> ReflectTools
+                            .isDeclaredInSubtype(candidate, found) ? candidate
+                                    : found);
         } else {
             return Optional.empty();
         }

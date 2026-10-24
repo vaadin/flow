@@ -103,6 +103,52 @@ class PublishedServerEventHandlerRpcHandlerTest {
 
     }
 
+    public interface SuperInterfaceWithClientCallable {
+        @ClientCallable
+        default void defaultMethod() {
+            ((ComponentWithDefaultClientCallable) this).isInvoked = true;
+        }
+    }
+
+    public interface InterfaceWithClientCallable
+            extends SuperInterfaceWithClientCallable {
+        @ClientCallable
+        default void inertMethod() {
+            ((ComponentWithDefaultClientCallable) this).isInvoked = true;
+        }
+
+        @ClientCallable
+        void abstractMethod();
+    }
+
+    public interface InertInterfaceWithClientCallable
+            extends InterfaceWithClientCallable {
+        @Override
+        @ClientCallable
+        @AllowInert
+        default void inertMethod() {
+            ((ComponentWithDefaultClientCallable) this).isInvoked = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class ComponentWithDefaultClientCallable extends Component
+            implements InterfaceWithClientCallable {
+
+        private boolean isInvoked;
+
+        @Override
+        public void abstractMethod() {
+            isInvoked = true;
+        }
+    }
+
+    @Tag(Tag.DIV)
+    public static class SubComponentWithDefaultClientCallable
+            extends ComponentWithDefaultClientCallable
+            implements InertInterfaceWithClientCallable {
+    }
+
     enum Title {
         MR, MRS;
     }
@@ -230,6 +276,43 @@ class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", JacksonUtils.createArrayNode(),
                 -1);
+
+        assertTrue(component.isInvoked);
+    }
+
+    @Test
+    void interfaceDefaultMethodIsInvoked() {
+        // Declared on a superinterface of the implemented interface
+        ComponentWithDefaultClientCallable component = new ComponentWithDefaultClientCallable();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "defaultMethod",
+                JacksonUtils.createArrayNode(), -1);
+
+        assertTrue(component.isInvoked);
+    }
+
+    @Test
+    void abstractInterfaceMethod_notInvoked() {
+        // Only the interface declaration is annotated, so the implementation
+        // is not published
+        ComponentWithDefaultClientCallable component = new ComponentWithDefaultClientCallable();
+        ArrayNode args = JacksonUtils.createArrayNode();
+        assertThrows(IllegalStateException.class,
+                () -> PublishedServerEventHandlerRpcHandler.invokeMethod(
+                        component, ComponentWithDefaultClientCallable.class,
+                        "abstractMethod", args, -1));
+
+        assertFalse(component.isInvoked);
+    }
+
+    @Test
+    void interfaceOverrideReachedAfterSuperclass_mostSpecificDeclarationUsed() {
+        // The superclass reaches the declaration without @AllowInert first,
+        // but the override in the class' own interface is more specific
+        ComponentWithDefaultClientCallable component = new SubComponentWithDefaultClientCallable();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "inertMethod",
+                JacksonUtils.createArrayNode(), -1, true);
 
         assertTrue(component.isInvoked);
     }
