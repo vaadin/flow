@@ -5,6 +5,7 @@ import {
   type ConnectionStateStore
 } from '@vaadin/common-frontend';
 import { collectBrowserDetails } from './BrowserHelpers';
+import { notifyActivityChanged } from './internal/client/ActivityNotifier';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -166,6 +167,7 @@ export class Flow {
   loadingFinished() {
     // Make Testbench know that server request has finished
     this.isActive = false;
+    notifyActivityChanged();
     $wnd.Vaadin.connectionState.loadingFinished();
 
     if ($wnd.Vaadin.listener) {

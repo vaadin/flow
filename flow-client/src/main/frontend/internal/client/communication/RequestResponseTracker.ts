@@ -19,6 +19,7 @@
 // its lifecycle events through the GWT EventBus; their only listeners are in the
 // engine, which the port calls directly instead.
 
+import { notifyActivityChanged } from '../ActivityNotifier';
 import type { Registry } from '../Registry';
 import { ResynchronizationState } from './MessageSender';
 
@@ -79,5 +80,7 @@ export class RequestResponseTracker {
 
     // Java's XhrConnection listens to the response-handling-ended event for this.
     this.#registry.getXhrConnection().clearWebkitMaybeIgnoringRequests();
+
+    notifyActivityChanged();
   }
 }

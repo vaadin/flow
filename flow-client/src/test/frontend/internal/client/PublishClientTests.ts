@@ -5,6 +5,7 @@
 import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import { publishClient } from '../../../../main/frontend/internal/client/publishClient';
+import { ACTIVITY_CHANGED_EVENT } from '../../../../main/frontend/internal/client/ActivityNotifier';
 import type {
   ApplicationConfiguration,
   ApplicationConnection
@@ -56,6 +57,19 @@ describe('publishClient', () => {
     publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
     expect($wnd.Vaadin.Flow.clients.ROOT).to.exist;
     expect($wnd.Vaadin.Flow.clients['ROOT-1234567']).to.be.undefined;
+  });
+
+  it('notifies that the client activity may have changed once published', async () => {
+    const publishedWhenNotified: boolean[] = [];
+    const listener = () => publishedWhenNotified.push($wnd.Vaadin.Flow.clients.ROOT !== undefined);
+    window.addEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    try {
+      publishClient(asConnection(fakeConnectionStubs()), fakeConfig());
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(publishedWhenNotified).to.deep.equal([true]);
+    } finally {
+      window.removeEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    }
   });
 
   it('exposes the core API and delegates to the connection', () => {

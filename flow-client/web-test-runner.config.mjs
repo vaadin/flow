@@ -1,6 +1,7 @@
 import { esbuildPlugin } from '@web/dev-server-esbuild';
 import { defaultReporter } from '@web/test-runner';
 import { junitReporter } from '@web/test-runner-junit-reporter';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 export default {
@@ -50,6 +51,22 @@ export default {
       name: 'vaadin-flow-client-resolver',
       resolveImport({ source }) {
         return source === 'vaadin-flow-client' ? '/src/main/frontend/FlowClient.js' : undefined;
+      }
+    },
+    {
+      // window.Vaadin.Flow.ready() lives in flow-server, which inlines it into
+      // the bootstrap page, so serve it from there for ReadyTests.
+      name: 'flow-server-ready-script',
+      serve(context) {
+        if (context.path === '/flow-server/ready.js') {
+          return {
+            body: readFileSync(
+              new URL('../flow-server/src/main/resources/com/vaadin/flow/server/ready.js', import.meta.url),
+              'utf8'
+            ),
+            type: 'js'
+          };
+        }
       }
     },
     esbuildPlugin({

@@ -10,9 +10,23 @@ import '../../main/frontend/FlowClient';
 // Mock XMLHttpRequest so as we don't need flow-server running for tests.
 import { type MockXhrServer, newServer } from 'mock-xmlhttprequest';
 import sinon from 'sinon';
+import { ACTIVITY_CHANGED_EVENT } from '../../main/frontend/internal/client/ActivityNotifier';
 
 const $wnd = window as any;
 const flowRoot = window.document.body as any;
+
+/**
+ * Stubs window.Vaadin.Flow.ready with a sentinel value so the preservation
+ * test can verify that constructing a Flow instance does not overwrite the
+ * definition from the inline bootstrap script. The real implementation lives
+ * in flow-server's ready.js and is tested in ReadyTests.
+ */
+const READY_SENTINEL = () => {};
+function stubReady() {
+  $wnd.Vaadin = $wnd.Vaadin || {};
+  $wnd.Vaadin.Flow = $wnd.Vaadin.Flow || {};
+  $wnd.Vaadin.Flow.ready = READY_SENTINEL;
+}
 
 const stubVaadinPushSrc = '/src/test/frontend/stubVaadinPush.js';
 let server: MockXhrServer;
@@ -276,6 +290,21 @@ describe('Flow', () => {
     expect($wnd.Vaadin.Flow.clients.TypeScript.isActive()).to.be.false;
     sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingStarted);
     sinon.assert.calledOnce($wnd.Vaadin.connectionState.loadingFinished);
+  });
+
+  it('loadingFinished notifies that the client activity may have changed', async () => {
+    const flow = new Flow();
+    flow.loadingStarted();
+    const activeWhenNotified: boolean[] = [];
+    const listener = () => activeWhenNotified.push($wnd.Vaadin.Flow.clients.TypeScript.isActive());
+    window.addEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    try {
+      flow.loadingFinished();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(activeWhenNotified).to.deep.equal([false]);
+    } finally {
+      window.removeEventListener(ACTIVITY_CHANGED_EVENT, listener);
+    }
   });
 
   it('should remove context-path in request', () => {
@@ -674,6 +703,12 @@ describe('Flow', () => {
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online')); // caught by DefaultConnectionStateHandler
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.RECONNECTING);
+  });
+
+  it('should preserve ready defined by inline script after construction', () => {
+    stubReady();
+    new Flow({ imports: () => {} });
+    expect($wnd.Vaadin.Flow.ready).to.equal(READY_SENTINEL);
   });
 
   it('should pre-attach container element on every navigation', async () => {
