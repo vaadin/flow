@@ -289,6 +289,9 @@ class WebNotificationTest {
                 firstShow.getExpression()
                         .contains("$3($2, type, reason, message)"),
                 firstShow.getExpression());
+        // The client bridge reads the key and the application by these names
+        assertTrue(firstShow.getExpression().contains("{ key: $2, appId: $4 }"),
+                firstShow.getExpression());
     }
 
     @Test
