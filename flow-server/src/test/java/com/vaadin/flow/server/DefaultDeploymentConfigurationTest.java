@@ -334,6 +334,17 @@ class DefaultDeploymentConfigurationTest {
     }
 
     @Test
+    void checkLockStrategy_unrecognizedValue_fallsBackToAssert() {
+        Properties init = new Properties();
+        init.put(InitParameters.SERVLET_PARAMETER_SESSION_LOCK_CHECK_STRATEGY,
+                "sometimes");
+        DefaultDeploymentConfiguration config = createDeploymentConfig(init);
+
+        assertEquals(SessionLockCheckStrategy.ASSERT,
+                config.getSessionLockCheckStrategy());
+    }
+
+    @Test
     void pushMode_unrecognizedValue_fallsBackToDisabled() {
         Properties init = new Properties();
         init.put(InitParameters.SERVLET_PARAMETER_PUSH_MODE, "sometimes");
