@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -300,9 +301,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                             + "in an IndexHtmlRequestListener instead.",
                     CONTENT_SECURITY_POLICY_HEADER, InitParameters.CSP));
         }
-        String nonce = indexHtmlResponse.getCspNonce();
-        ContentSecurityPolicy policy = indexHtmlResponse
-                .getContentSecurityPolicy();
+        // Both are created for the strict mode, which the caller checks
+        String nonce = Objects.requireNonNull(indexHtmlResponse.getCspNonce());
+        ContentSecurityPolicy policy = Objects
+                .requireNonNull(indexHtmlResponse.getContentSecurityPolicy());
         // Done after the listeners have run so that every script in the page
         // gets the nonce, whichever code added it
         indexHtmlResponse.getDocument().select(

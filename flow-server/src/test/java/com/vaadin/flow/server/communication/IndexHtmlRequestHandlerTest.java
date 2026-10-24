@@ -312,6 +312,9 @@ public class IndexHtmlRequestHandlerTest {
     public void serveIndexHtml_noStrictCspInProduction_noHeaderOrNonce(
             CspMode cspMode, boolean productionMode) throws Exception {
         deploymentConfiguration.setCspMode(cspMode);
+        // A header set elsewhere is fine when Vaadin sends no policy
+        when(response.containsHeader("Content-Security-Policy"))
+                .thenReturn(true);
         if (!productionMode) {
             File projectRootFolder = Files
                     .createTempDirectory(temporaryFolder, "temp").toFile();

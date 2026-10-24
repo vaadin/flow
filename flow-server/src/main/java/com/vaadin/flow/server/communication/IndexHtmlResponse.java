@@ -148,9 +148,11 @@ public class IndexHtmlResponse {
      * is not written in development mode, because the development server and
      * the development tools need {@code eval}. In production mode, the request
      * fails with an {@link IllegalStateException} if the response already has a
-     * {@code Content-Security-Policy} header, for example from a servlet
-     * filter, since the page would otherwise be sent without the policy of the
-     * strict mode.
+     * {@code Content-Security-Policy} header when the page is written, for
+     * example from a servlet filter that runs before Vaadin. A filter that
+     * writes its header only when the response is committed, such as Spring
+     * Security's {@code HeaderWriterFilter} by default, cannot be detected; its
+     * policy should be configured here instead.
      *
      * @return the mutable policy, or {@code null} if the mode is not
      *         {@link CspMode#STRICT}
