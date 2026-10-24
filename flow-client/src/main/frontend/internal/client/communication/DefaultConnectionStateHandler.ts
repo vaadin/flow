@@ -52,6 +52,9 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   #scheduledReconnect: ReturnType<typeof setTimeout> | null = null;
 
+  // Whether a receive-only websocket was closed and has not been reopened yet.
+  #websocketReopenPending = false;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -300,6 +303,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: push ---
 
   pushOk(pushConnection: PushConnection): void {
+    this.#websocketReopenPending = false;
     if (this.#machine.isReconnecting()) {
       this.#machine.resolveTemporaryError(ConnectionMessageType.PUSH);
       if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
@@ -329,6 +333,17 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // Lost connection for a connection which will tell us when the connection
       // is available again
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+    } else if (pushConnection.getTransportType() === 'websocket') {
+      // A websocket that only receives, with messages to the server sent over
+      // XHR. The server also closes it on purpose, e.g. when logging out
+      // invalidates the session and the page is about to navigate away, so
+      // the connection is lost only if reopening the websocket fails as well.
+      // Atmosphere reports each close once, before it tries to reopen the
+      // websocket, and a successful reopen reaches pushOk.
+      if (this.#websocketReopenPending) {
+        this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+      }
+      this.#websocketReopenPending = true;
     } else {
       // Lost connection for a connection we do not necessarily know when it is
       // available again (long polling behind proxy). Do nothing and show the
@@ -377,8 +392,15 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       this.#machine.giveUp();
     });
     window.addEventListener('online', () => {
-      // Back online: verify the server connection via a heartbeat.
       this.#resumeHeartbeats();
+      // A request sent during the outage may never get a response, and no
+      // other message is sent before it does. Abort it and end the request,
+      // which re-sends the pending messages over the restored network.
+      const requestResponseTracker = this.#registry.getRequestResponseTracker();
+      if (this.#registry.getXhrConnection().abortActiveRequest() && requestResponseTracker.hasActiveRequest()) {
+        requestResponseTracker.endRequest();
+      }
+      // Back online: verify the server connection via a heartbeat.
       this.#machine.handleRecoverableError(ConnectionMessageType.HEARTBEAT, null);
     });
   }
