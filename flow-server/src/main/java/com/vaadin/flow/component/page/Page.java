@@ -38,6 +38,7 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
@@ -428,6 +429,8 @@ public class Page implements Serializable {
      * @since 2.1
      */
     public void addDynamicImport(String expression) {
+        CspViolationReporter
+                .reportStringJavaScript("Page.addDynamicImport(String)");
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
@@ -538,6 +541,8 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        CspViolationReporter
+                .reportStringJavaScript("Page.executeJs(String, Object...)");
         return ui.getInternals().addJavaScriptInvocation(
                 new JavaScriptInvocation(expression, parameters));
     }

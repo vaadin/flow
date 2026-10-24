@@ -23,6 +23,7 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonCodec;
 
 /**
@@ -84,6 +85,8 @@ public final class JsFunction implements Serializable {
     public static JsFunction of(String body, @Nullable Object... captures) {
         Objects.requireNonNull(body, "body");
         Objects.requireNonNull(captures, "captures");
+        CspViolationReporter
+                .reportStringJavaScript("JsFunction.of(String, Object...)");
         @Nullable
         Object[] copy = captures.clone();
         // Dry-run encode each capture so unsupported types fail fast. Mirrors

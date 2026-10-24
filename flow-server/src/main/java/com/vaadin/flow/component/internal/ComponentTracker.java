@@ -362,14 +362,18 @@ public class ComponentTracker {
     }
 
     private static Location[] findRelevantLocations(Location[] locations) {
-        return Stream.of(locations).filter(location -> {
-            for (String prefixToSkip : prefixesToSkip) {
-                if (location.className().startsWith(prefixToSkip)) {
-                    return false;
-                }
+        return Stream.of(locations)
+                .filter(location -> isRelevant(location.className()))
+                .toArray(Location[]::new);
+    }
+
+    private static boolean isRelevant(String className) {
+        for (String prefixToSkip : prefixesToSkip) {
+            if (className.startsWith(prefixToSkip)) {
+                return false;
             }
-            return true;
-        }).toArray(Location[]::new);
+        }
+        return true;
     }
 
     private static Location findRelevantLocation(
@@ -378,14 +382,8 @@ public class ComponentTracker {
         List<Location> candidates = Arrays.stream(locations)
                 .filter(location -> excludeClass == null
                         || !location.className().equals(excludeClass.getName()))
-                .filter(location -> {
-                    for (String prefixToSkip : prefixesToSkip) {
-                        if (location.className().startsWith(prefixToSkip)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                }).collect(Collectors.toList());
+                .filter(location -> isRelevant(location.className()))
+                .collect(Collectors.toList());
         if (preferredClass != null) {
             Optional<Location> preferredCandidate = candidates.stream()
                     .filter(location -> location.className()
@@ -396,6 +394,26 @@ public class ComponentTracker {
             }
         }
         return candidates.isEmpty() ? null : candidates.get(0);
+    }
+
+    /**
+     * Finds the location in application code that the current thread is
+     * running, i.e. the innermost stack frame outside of the framework, the JDK
+     * and the dependency injection containers that the locations of components
+     * skip as well.
+     * <p>
+     * Unlike the locations of components, this works also in production mode.
+     *
+     * @return the location of the calling application code, or
+     *         <code>null</code> if every frame of the stack is skipped
+     */
+    public static Location findCaller() {
+        return StackWalker.getInstance().walk(frames -> frames
+                .filter(frame -> isRelevant(frame.getClassName())).findFirst()
+                .map(frame -> new Location(frame.getClassName(),
+                        frame.getFileName(), frame.getMethodName(),
+                        frame.getLineNumber()))
+                .orElse(null));
     }
 
     /**

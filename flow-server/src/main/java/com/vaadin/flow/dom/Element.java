@@ -55,6 +55,7 @@ import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -1948,6 +1949,8 @@ public class Element extends Node<Element> {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        CspViolationReporter
+                .reportStringJavaScript("Element.executeJs(String, Object...)");
         return scheduleExecuteJs(expression, parameters);
     }
 
@@ -2106,6 +2109,8 @@ public class Element extends Node<Element> {
     public Registration addJsInitializer(String expression,
             Object... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
+        CspViolationReporter.reportStringJavaScript(
+                "Element.addJsInitializer(String, Object...)");
         return new ElementJsInitializerRegistration(getNode(), expression,
                 parameters == null ? new Object[0] : parameters);
     }
