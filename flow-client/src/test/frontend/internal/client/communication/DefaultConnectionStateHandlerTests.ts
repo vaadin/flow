@@ -6,6 +6,10 @@ import { testRegistry } from '../testRegistry';
 import { DefaultConnectionStateHandler } from '../../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
 import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 import { XhrConnectionError } from '../../../../../main/frontend/internal/client/communication/XhrConnectionError';
+import type {
+  VaadinRequestFailure,
+  VaadinRequestOutcome
+} from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
 import {
   CONNECTED,
   CONNECTION_LOST,
@@ -16,6 +20,7 @@ import {
 function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) {
   const log = {
     reconnectionAttempts: [] as number[],
+    requests: [] as Array<VaadinRequestFailure | VaadinRequestOutcome>,
     heartbeatSends: 0,
     sessionExpired: 0,
     unrecoverable: [] as string[],
@@ -57,7 +62,11 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
     ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
     MessageSender: {
       sendInvocationsToServer: () => {},
-      resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt)
+      resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt),
+      failAttempt: (_payload: Record<string, unknown>, failure: VaadinRequestFailure) => log.requests.push(failure),
+      failPushAttempt: (failure: VaadinRequestFailure) => log.requests.push(failure),
+      settleRequest: (_payload: Record<string, unknown>, outcome: VaadinRequestOutcome) => log.requests.push(outcome),
+      discardSentRequests: () => {}
     },
     SystemErrorHandler: {
       handleSessionExpiredError: () => log.sessionExpired++,
@@ -144,6 +153,9 @@ describe('DefaultConnectionStateHandler', () => {
     handler.xhrInvalidStatusCode(xhrError({}, 401));
     expect(registry.log.sessionExpired).to.equal(1);
     expect(registry.log.reconnectionAttempts).to.deep.equal([]);
+    // The request fails with the status and ends as rejected, before the
+    // application stops and discards what is left.
+    expect(registry.log.requests).to.deep.equal([{ reason: 'http', status: 401 }, 'rejected']);
   });
 
   it('reports an unrecoverable error for invalid xhr content (no refresh token)', () => {
@@ -152,6 +164,7 @@ describe('DefaultConnectionStateHandler', () => {
     const handler = new DefaultConnectionStateHandler(registry.registry);
     handler.xhrInvalidContent(xhrError({}, 200, 'not json'));
     expect(registry.log.unrecoverable).to.have.length(1);
+    expect(registry.log.requests).to.deep.equal([{ reason: 'invalid-response', status: 200 }, 'discarded']);
     expect(registry.log.states).to.deep.equal(['TERMINATED']);
   });
 
@@ -178,6 +191,28 @@ describe('DefaultConnectionStateHandler', () => {
     handler.pushReconnectPending({ isBidirectional: () => true } as never);
     expect(getState()).to.equal(RECONNECTING);
     expect(registry.log.heartbeatSends).to.equal(1);
+  });
+
+  it('reports why each failed attempt of a request failed', () => {
+    const registry = makeRegistry(10);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+
+    handler.xhrException(xhrError({ rpc: 1 }));
+    // A request that got no response at all completes with status 0.
+    handler.xhrInvalidStatusCode(xhrError({ rpc: 1 }, 0));
+    handler.xhrInvalidStatusCode(xhrError({ rpc: 1 }, 500));
+    handler.pushNotConnected({ rpc: 1 });
+    handler.pushReconnectPending({ isBidirectional: () => true } as never);
+    handler.pushInvalidContent({ isBidirectional: () => true } as never, 'not json');
+
+    expect(registry.log.requests).to.deep.equal([
+      { reason: 'network' },
+      { reason: 'network' },
+      { reason: 'http', status: 500 },
+      { reason: 'network' },
+      { reason: 'network' },
+      { reason: 'invalid-response' }
+    ]);
   });
 
   it('stops heartbeats while the browser is offline and resumes them', () => {
