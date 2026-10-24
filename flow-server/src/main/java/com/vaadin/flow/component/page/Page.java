@@ -38,6 +38,7 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsDefinitionProxy;
@@ -147,15 +148,17 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link StyleSheet#value()} apply here as well.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -175,15 +178,17 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link StyleSheet#value()} apply here as well.
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
@@ -194,13 +199,62 @@ public class Page implements Serializable {
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
      * @return a registration object that can be used to remove the style sheet
+     * @see #addStyleSheet(String, LoadMode, String)
      */
     public Registration addStyleSheet(String url, LoadMode loadMode) {
+        return addStyleSheet(url, loadMode, null);
+    }
+
+    /**
+     * Adds the given style sheet to the page into a CSS cascade layer and
+     * ensures that it is loaded successfully.
+     * <p>
+     * Styles in a layer have lower priority than styles outside of any layer,
+     * regardless of selector specificity.
+     * <p>
+     * Relative URLs and the {@code context://} prefix are handled as in
+     * {@link #addStyleSheet(String, LoadMode)}.
+     * <p>
+     * A style sheet is loaded only once per URL. Adding a URL that is already
+     * on the page keeps it in the layer it was first added to, and logs a
+     * warning if the layers differ.
+     * <p>
+     * For component related style sheet dependencies, you should use the
+     * {@link StyleSheet#layer() layer} attribute of the
+     * {@link StyleSheet @StyleSheet} annotation.
+     *
+     * @param url
+     *            the URL to load the style sheet from, not <code>null</code>
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param layer
+     *            the name of the cascade layer, such as {@code theme} or
+     *            {@code theme.base}, or {@code null} to not use a layer
+     * @return a registration object that can be used to remove the style sheet
+     * @throws IllegalArgumentException
+     *             if {@code layer} is not a valid cascade layer name
+     * @since 25.4
+     */
+    public Registration addStyleSheet(String url, LoadMode loadMode,
+            String layer) {
+        if (layer != null) {
+            CssBundler.validateLayerName(layer);
+        }
         DependencyList dependencyList = ui.getInternals().getDependencyList();
 
         // Check if dependency already exists with this URL
         Dependency existing = dependencyList.getDependencyByUrl(url,
                 Type.STYLESHEET);
+        if (existing != null && !Objects.equals(existing.getLayer(), layer)
+                && LOGGER.isWarnEnabled()) {
+            // The browser has already loaded the URL and keeps it as it is
+            LOGGER.warn(
+                    "Style sheet {} is already added {}, so it is not added"
+                            + " again {}",
+                    url, describeLayer(existing.getLayer()),
+                    describeLayer(layer));
+        }
         String dependencyId;
 
         if (existing != null && existing.getId() != null) {
@@ -212,26 +266,32 @@ public class Page implements Serializable {
         }
 
         Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
-                dependencyId);
+                dependencyId, layer);
         dependencyList.add(dependency);
 
         // Return Registration for removal
         return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }
 
+    private static String describeLayer(String layer) {
+        return layer == null ? "without a layer" : ("to layer '" + layer + "'");
+    }
+
     /**
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -250,15 +310,17 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. So if the {@code url} value is {@code "some.js"} and
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. So if the {@code url} value is
+     * {@code "some.js"}, the servlet is mapped to the context root and
      * {@code src/main/webapp} is used as a location for static web resources
-     * (which is the default location) then the file system path for the
+     * (which is the default location), then the file system path for the
      * resource should be {@code src/main/webapp/some.js}.
      * <p>
      * You can prefix the URL with {@code context://} to make it relative to the
      * context path or use an absolute URL to refer to files outside the
-     * frontend directory.
+     * frontend directory. The {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * For component related JavaScript dependencies, you should use the
      * {@link JavaScript @JavaScript} annotation.
@@ -277,10 +339,12 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the static web resources
-     * directory. You can prefix the URL with {@code context://} to make it
-     * relative to the context path or use an absolute URL to refer to files
-     * outside the frontend directory.
+     * Relative URLs are resolved against the page's base URI, which is the
+     * Vaadin servlet mapping path. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory. The
+     * {@code context://} and {@code base://} rules of
+     * {@link JavaScript#value()} apply here as well.
      * <p>
      * The {@code type} parameter selects the kind of {@code <script>} tag the
      * browser receives: {@link JavaScript.Type#SCRIPT} renders a classic

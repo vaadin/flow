@@ -676,7 +676,8 @@ public class Router implements Serializable {
             // view that the browser renders
             return UI.ClientViewPlaceholder.class.isAssignableFrom(target)
                     ? new NavigationEndedEvent.NotShown()
-                    : new NavigationEndedEvent.Completed(target);
+                    : new NavigationEndedEvent.Completed(target,
+                            stateAfter.routeParameters());
         }
         return new NavigationEndedEvent.NotShown();
     }

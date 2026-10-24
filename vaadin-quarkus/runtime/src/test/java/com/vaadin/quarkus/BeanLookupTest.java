@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.quarkus.annotation.VaadinServiceEnabled;
 
@@ -37,6 +36,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Every optional Vaadin service the extension picks up from the container goes
@@ -50,24 +53,21 @@ class BeanLookupTest {
 
     @BeforeEach
     void setUp() {
-        beanManager = Mockito.mock(BeanManager.class);
+        beanManager = mock(BeanManager.class);
     }
 
     private void mockBean(Object reference, Class<?> type) {
-        Bean bean = Mockito.mock(Bean.class);
-        Mockito.when(beanManager.getBeans(Mockito.eq(type), Mockito.any()))
-                .thenReturn(Set.of(bean));
-        Mockito.when(beanManager.resolve(Mockito.any())).thenReturn(bean);
-        CreationalContext context = Mockito.mock(CreationalContext.class);
-        Mockito.when(beanManager.createCreationalContext(bean))
-                .thenReturn(context);
-        Mockito.when(beanManager.getReference(bean, type, context))
+        Bean bean = mock(Bean.class);
+        when(beanManager.getBeans(eq(type), any())).thenReturn(Set.of(bean));
+        when(beanManager.resolve(any())).thenReturn(bean);
+        CreationalContext context = mock(CreationalContext.class);
+        when(beanManager.createCreationalContext(bean)).thenReturn(context);
+        when(beanManager.getReference(bean, type, context))
                 .thenReturn(reference);
     }
 
     private void noBeans(Class<?> type) {
-        Mockito.when(beanManager.getBeans(Mockito.eq(type), Mockito.any()))
-                .thenReturn(Set.of());
+        when(beanManager.getBeans(eq(type), any())).thenReturn(Set.of());
     }
 
     @Test
@@ -91,9 +91,7 @@ class BeanLookupTest {
 
     @Test
     void lookup_beanManagerAnswersNull_isTreatedAsNoBean() {
-        Mockito.when(
-                beanManager.getBeans(Mockito.eq(String.class), Mockito.any()))
-                .thenReturn(null);
+        when(beanManager.getBeans(eq(String.class), any())).thenReturn(null);
 
         assertNull(new BeanLookup<>(beanManager, String.class).lookup());
     }
@@ -108,28 +106,26 @@ class BeanLookupTest {
 
     @Test
     void lookup_ambiguous_throwsByDefault() {
-        Bean bean = Mockito.mock(Bean.class);
-        Mockito.when(
-                beanManager.getBeans(Mockito.eq(String.class), Mockito.any()))
+        Bean bean = mock(Bean.class);
+        when(beanManager.getBeans(eq(String.class), any()))
                 .thenReturn(Set.of(bean));
-        Mockito.when(beanManager.resolve(Mockito.any()))
+        when(beanManager.resolve(any()))
                 .thenThrow(new AmbiguousResolutionException("two of them"));
 
         // Nothing sensible can be chosen, so silence would hide a broken
         // application configuration.
-        assertThrows(AmbiguousResolutionException.class,
-                () -> new BeanLookup<>(beanManager, String.class).lookup());
+        BeanLookup<String> lookup = new BeanLookup<>(beanManager, String.class);
+        assertThrows(AmbiguousResolutionException.class, lookup::lookup);
     }
 
     @Test
     void lookupOrElseGet_ambiguousWithAHandler_fallsBackInstead() {
-        Bean bean = Mockito.mock(Bean.class);
-        Mockito.when(
-                beanManager.getBeans(Mockito.eq(String.class), Mockito.any()))
+        Bean bean = mock(Bean.class);
+        when(beanManager.getBeans(eq(String.class), any()))
                 .thenReturn(Set.of(bean));
         AmbiguousResolutionException cause = new AmbiguousResolutionException(
                 "two of them");
-        Mockito.when(beanManager.resolve(Mockito.any())).thenThrow(cause);
+        when(beanManager.resolve(any())).thenThrow(cause);
         AtomicReference<AmbiguousResolutionException> reported = new AtomicReference<>();
 
         assertEquals("fallback",
@@ -142,9 +138,8 @@ class BeanLookupTest {
 
     @Test
     void lookupAll_noBeans_isEmptyAndTellsTheHandler() {
-        Mockito.when(beanManager.getBeans(Mockito.eq(String.class),
-                Mockito.eq(VaadinServiceEnabled.Literal.INSTANCE)))
-                .thenReturn(Set.of());
+        when(beanManager.getBeans(String.class,
+                VaadinServiceEnabled.Literal.INSTANCE)).thenReturn(Set.of());
         AtomicBoolean unsatisfied = new AtomicBoolean();
 
         assertEquals(List.of(),
@@ -157,14 +152,13 @@ class BeanLookupTest {
 
     @Test
     void lookupAll_beansPresent_returnsEveryReference() {
-        Bean bean = Mockito.mock(Bean.class);
-        Mockito.when(beanManager.getBeans(Mockito.eq(String.class),
-                Mockito.eq(VaadinServiceEnabled.Literal.INSTANCE)))
+        Bean bean = mock(Bean.class);
+        when(beanManager.getBeans(String.class,
+                VaadinServiceEnabled.Literal.INSTANCE))
                 .thenReturn(Set.of(bean));
-        CreationalContext context = Mockito.mock(CreationalContext.class);
-        Mockito.when(beanManager.createCreationalContext(bean))
-                .thenReturn(context);
-        Mockito.when(beanManager.getReference(bean, String.class, context))
+        CreationalContext context = mock(CreationalContext.class);
+        when(beanManager.createCreationalContext(bean)).thenReturn(context);
+        when(beanManager.getReference(bean, String.class, context))
                 .thenReturn("resolved");
         AtomicBoolean unsatisfied = new AtomicBoolean();
 

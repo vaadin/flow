@@ -30,7 +30,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -41,6 +40,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class TaskGeneratePWAIconsTest {
 
@@ -67,15 +68,15 @@ class TaskGeneratePWAIconsTest {
         iconsOutDirectory = wabappResourceOutDirectory
                 .resolve(Constants.VAADIN_PWA_ICONS);
 
-        FrontendDependenciesScanner scanner = Mockito
-                .mock(FrontendDependenciesScanner.class);
-        Mockito.when(scanner.getPwaConfiguration()).then(i -> pwaConfiguration);
+        FrontendDependenciesScanner scanner = mock(
+                FrontendDependenciesScanner.class);
+        when(scanner.getPwaConfiguration()).then(i -> pwaConfiguration);
 
         URLClassLoader classFinderClassLoader = new URLClassLoader(
                 new URL[] { resourcesDirectory.toUri().toURL() }, null);
         ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
                 classFinderClassLoader);
-        Options options = new Options(Mockito.mock(Lookup.class), classFinder,
+        Options options = new Options(mock(Lookup.class), classFinder,
                 projectDirectory)
                 .withBuildResultFolders(wabappResourceOutDirectory.toFile(),
                         resourceOutDirectory.toFile());

@@ -43,6 +43,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class TaskUpdateViteTest {
 
@@ -55,11 +60,11 @@ class TaskUpdateViteTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        finder = Mockito.spy(new ClassFinder.DefaultClassFinder(
+        finder = spy(new ClassFinder.DefaultClassFinder(
                 this.getClass().getClassLoader()));
         options = new MockOptions(finder, temporaryFolder)
                 .withBuildDirectory("build").withFrontendDependenciesScanner(
-                        Mockito.mock(FrontendDependenciesScanner.class));
+                        mock(FrontendDependenciesScanner.class));
     }
 
     @Test
@@ -191,10 +196,10 @@ class TaskUpdateViteTest {
     void generatedTemplate_reactAndHillaUsed_correctFileRouterImport()
             throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null);
-        try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+        try (MockedStatic<FrontendBuildUtils> util = mockStatic(
                 FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+            util.when(() -> FrontendBuildUtils.isHillaUsed(any(), any()))
+                    .thenReturn(true);
             task.execute();
         }
 
@@ -283,11 +288,11 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_pwaOfflineEnabled_serviceWorkerPluginIncluded()
             throws IOException {
-        PwaConfiguration pwaConfig = Mockito.mock(PwaConfiguration.class);
-        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(true);
+        PwaConfiguration pwaConfig = mock(PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(true);
         final FrontendDependenciesScanner frontendDeps = options
                 .getFrontendDependenciesScanner();
-        Mockito.when(frontendDeps.getPwaConfiguration()).thenReturn(pwaConfig);
+        when(frontendDeps.getPwaConfiguration()).thenReturn(pwaConfig);
 
         TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();
@@ -308,11 +313,11 @@ class TaskUpdateViteTest {
     @Test
     void generatedTemplate_pwaOfflineDisabled_serviceWorkerPluginNotIncluded()
             throws IOException {
-        PwaConfiguration pwaConfig = Mockito.mock(PwaConfiguration.class);
-        Mockito.when(pwaConfig.isOfflineEnabled()).thenReturn(false);
+        PwaConfiguration pwaConfig = mock(PwaConfiguration.class);
+        when(pwaConfig.isOfflineEnabled()).thenReturn(false);
         final FrontendDependenciesScanner frontendDeps = options
                 .getFrontendDependenciesScanner();
-        Mockito.when(frontendDeps.getPwaConfiguration()).thenReturn(pwaConfig);
+        when(frontendDeps.getPwaConfiguration()).thenReturn(pwaConfig);
 
         TaskUpdateVite task = new TaskUpdateVite(options, null);
         task.execute();

@@ -18,7 +18,6 @@ package com.vaadin.flow.component.download;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.internal.ClickTrigger;
 import com.vaadin.flow.component.trigger.internal.DownloadAction;
@@ -53,6 +52,9 @@ import com.vaadin.flow.shared.Registration;
  * {@link TransferProgressAwareHandler#whenComplete(com.vaadin.flow.function.SerializableConsumer)
  * whenComplete}) to react to success or failure on the server. The browser does
  * not report whether the user actually saved the file.
+ * <p>
+ * To show content in a new browser tab instead of saving it, use
+ * {@link com.vaadin.flow.component.newtab.OpenInNewTab OpenInNewTab}.
  * 
  * @since 25.4
  */
@@ -87,13 +89,11 @@ public final class Download implements Serializable {
      * @param handler
      *            produces the file when the browser requests it, not
      *            {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a registration for removing the download from the component;
      *         after removal the handler is no longer served
      */
-    public static <T extends Component & ClickNotifier<?>> Registration onClick(
-            T component, DownloadHandler handler) {
+    public static Registration onClick(Component component,
+            DownloadHandler handler) {
         return bind(component, new DownloadAction(
                 Objects.requireNonNull(handler, "handler must not be null")));
     }
@@ -109,12 +109,9 @@ public final class Download implements Serializable {
      *            {@code null}
      * @param url
      *            the URL to download from, not {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a registration for removing the download from the component
      */
-    public static <T extends Component & ClickNotifier<?>> Registration onClick(
-            T component, String url) {
+    public static Registration onClick(Component component, String url) {
         return bind(component, new DownloadAction(url));
     }
 
@@ -131,12 +128,10 @@ public final class Download implements Serializable {
      *            the URL to download from, not {@code null}
      * @param fileName
      *            the suggested file name, not {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a registration for removing the download from the component
      */
-    public static <T extends Component & ClickNotifier<?>> Registration onClick(
-            T component, String url, String fileName) {
+    public static Registration onClick(Component component, String url,
+            String fileName) {
         return bind(component, new DownloadAction(url, fileName));
     }
 

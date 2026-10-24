@@ -263,6 +263,10 @@ internal class GradlePluginAdapter private constructor(
         )
     }
 
+    @Deprecated(
+        "use frontendOutputDirectory instead",
+        replaceWith = ReplaceWith("frontendOutputDirectory()")
+    )
     override fun webpackOutputDirectory(): File = frontendOutputDirectory()
 
     override fun frontendOutputDirectory(): File =

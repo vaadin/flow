@@ -26,9 +26,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.Component;
@@ -46,6 +44,9 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -61,7 +62,7 @@ class UpdateImportsWithByteCodeScannerTest extends AbstractUpdateImportsTest {
     @Override
     protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true, null, true);
+                .createScanner(false, finder, true, null, true, false);
     }
 
     @Test
@@ -504,11 +505,11 @@ class UpdateImportsWithByteCodeScannerTest extends AbstractUpdateImportsTest {
 
         List<Matcher<String>> matchers = new ArrayList<>();
         for (String ifLine : ifList) {
-            matchers.add(CoreMatchers.containsString(
+            matchers.add(containsString(
                     ifLine + "\n" + importChunkList.get(ifList.indexOf(ifLine))
                             + "\n" + "  }"));
         }
-        MatcherAssert.assertThat(generatedWebComponentsImports,
-                CoreMatchers.allOf(matchers.toArray(Matcher[]::new)));
+        assertThat(generatedWebComponentsImports,
+                allOf(matchers.toArray(Matcher[]::new)));
     }
 }
