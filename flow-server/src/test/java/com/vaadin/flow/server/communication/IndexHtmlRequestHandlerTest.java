@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -265,10 +266,12 @@ public class IndexHtmlRequestHandlerTest {
                 .matcher(header);
         assertTrue(matcher.find(), header);
         String nonce = matcher.group(1);
-        assertTrue(
-                header.contains("connect-src 'self' https://api.example.com"),
+        assertEquals("default-src 'self'; script-src 'nonce-" + nonce
+                + "' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; "
+                + "img-src 'self' data:; font-src 'self' data:; "
+                + "connect-src 'self' https://api.example.com; "
+                + "worker-src 'self'; object-src 'none'; base-uri 'self'",
                 header);
-        assertFalse(header.contains("unsafe-eval"), header);
 
         Document document = Jsoup
                 .parse(responseOutput.toString(StandardCharsets.UTF_8));
@@ -315,15 +318,18 @@ public class IndexHtmlRequestHandlerTest {
             deploymentConfiguration.setProductionMode(false);
             deploymentConfiguration.setProjectFolder(projectRootFolder);
         }
-        service.addIndexHtmlRequestListener(evt -> {
-            // In development mode, listeners still get the policy so that
-            // they work the same way in both modes
-            boolean strict = cspMode == CspMode.STRICT;
-            assertEquals(strict, evt.getCspNonce() != null);
-            assertEquals(strict, evt.getContentSecurityPolicy() != null);
-        });
+        List<IndexHtmlResponse> responses = new ArrayList<>();
+        service.addIndexHtmlRequestListener(responses::add);
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
+
+        // In development mode, listeners still get the policy so that they
+        // work the same way in both modes
+        assertEquals(1, responses.size());
+        boolean strict = cspMode == CspMode.STRICT;
+        assertEquals(strict, responses.get(0).getCspNonce() != null);
+        assertEquals(strict,
+                responses.get(0).getContentSecurityPolicy() != null);
         verify(response, never()).setHeader(eq("Content-Security-Policy"),
                 any());
         assertFalse(responseOutput.toString(StandardCharsets.UTF_8)

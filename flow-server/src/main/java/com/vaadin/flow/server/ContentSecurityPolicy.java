@@ -66,9 +66,11 @@ public class ContentSecurityPolicy implements Serializable {
      */
     public ContentSecurityPolicy setDirective(String directive,
             String... sources) {
+        String name = normalizeDirective(directive);
+        validateSources(sources);
         List<String> list = new ArrayList<>();
         appendSources(list, sources);
-        directives.put(normalizeDirective(directive), list);
+        directives.put(name, list);
         return this;
     }
 
@@ -87,8 +89,11 @@ public class ContentSecurityPolicy implements Serializable {
      */
     public ContentSecurityPolicy addSources(String directive,
             String... sources) {
-        appendSources(directives.computeIfAbsent(normalizeDirective(directive),
-                key -> new ArrayList<>()), sources);
+        String name = normalizeDirective(directive);
+        validateSources(sources);
+        appendSources(
+                directives.computeIfAbsent(name, key -> new ArrayList<>()),
+                sources);
         return this;
     }
 
@@ -149,7 +154,9 @@ public class ContentSecurityPolicy implements Serializable {
         return name;
     }
 
-    private static void appendSources(List<String> target, String[] sources) {
+    // Validates all sources before any is added, so that a rejected call
+    // leaves the policy unchanged
+    private static void validateSources(String[] sources) {
         Objects.requireNonNull(sources, "Sources must not be null");
         for (String source : sources) {
             Objects.requireNonNull(source, "Source must not be null");
@@ -158,6 +165,11 @@ public class ContentSecurityPolicy implements Serializable {
                         "Invalid Content Security Policy source '" + source
                                 + "'");
             }
+        }
+    }
+
+    private static void appendSources(List<String> target, String[] sources) {
+        for (String source : sources) {
             if (!target.contains(source)) {
                 target.add(source);
             }

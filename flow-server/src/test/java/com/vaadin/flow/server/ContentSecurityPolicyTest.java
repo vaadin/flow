@@ -54,10 +54,12 @@ class ContentSecurityPolicyTest {
 
     @ParameterizedTest
     @ValueSource(strings = { "", "'self' data:", "'self';", "a,b" })
-    void addSources_invalidSource_throws(String source) {
+    void addSources_invalidSource_throwsAndLeavesPolicyUnchanged(
+            String source) {
+        ContentSecurityPolicy policy = new ContentSecurityPolicy();
         assertThrows(IllegalArgumentException.class,
-                () -> new ContentSecurityPolicy().addSources("img-src",
-                        source));
+                () -> policy.addSources("img-src", "'self'", source));
+        assertEquals("", policy.toHeaderValue());
     }
 
     @Test
