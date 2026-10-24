@@ -210,9 +210,13 @@ public abstract class AbstractNavigationStateRenderer
             return HttpStatusCode.OK.getCode();
         }
 
-        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
-        // view.
-        if (preserveOnRefreshTarget && !chain.isEmpty()) {
+        // Set navigationTrigger to REFRESH if this is a reload of a preserved
+        // view. Other navigations that reuse the preserved chain, e.g. a link
+        // or history navigation that only changes the query parameters, keep
+        // their trigger so that history is handled the same way as without
+        // preserve on refresh.
+        if (preserveOnRefreshTarget && !chain.isEmpty()
+                && event.getTrigger() == NavigationTrigger.PAGE_LOAD) {
             event = new NavigationEvent(event.getSource(), event.getLocation(),
                     event.getUI(), NavigationTrigger.REFRESH);
         }

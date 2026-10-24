@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -32,6 +33,8 @@ public class PreserveOnRefreshNavigationIT extends ChromeBrowserTest {
         Assert.assertTrue(driver.getCurrentUrl().contains("?param=two"));
         $(TestBenchElement.class).id("link-three").click();
         Assert.assertTrue(driver.getCurrentUrl().contains("?param=three"));
+
+        assertBackNavigatesThroughEachUrl();
     }
 
     @Test
@@ -43,6 +46,28 @@ public class PreserveOnRefreshNavigationIT extends ChromeBrowserTest {
         Assert.assertTrue(driver.getCurrentUrl().contains("?param=two"));
         $(TestBenchElement.class).id("button-three").click();
         Assert.assertTrue(driver.getCurrentUrl().contains("?param=three"));
+
+        assertBackNavigatesThroughEachUrl();
+    }
+
+    private void assertBackNavigatesThroughEachUrl() {
+        driver.navigate().back();
+        waitForUrlEndingWith("?param=two");
+        driver.navigate().back();
+        waitForUrlEndingWith("?param=one");
+        driver.navigate().back();
+        waitForUrlEndingWith(PreserveOnRefreshNavigationView.VIEW_PATH);
+        driver.navigate().forward();
+        waitForUrlEndingWith("?param=one");
+    }
+
+    private void waitForUrlEndingWith(String expectedSuffix) {
+        try {
+            waitUntil(d -> d.getCurrentUrl().endsWith(expectedSuffix));
+        } catch (TimeoutException e) {
+            Assert.fail("Expected URL ending with '" + expectedSuffix
+                    + "' but was '" + driver.getCurrentUrl() + "'");
+        }
     }
 
 }
