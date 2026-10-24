@@ -56,6 +56,12 @@ is how CI gets it into the local repository: the IT jobs build no test module at
 all, so anything they resolve has to have been installed by the workspace build,
 which runs with `-DskipTests`.
 
+This aggregator and every fixture carry an empty `.mvn/` directory, which makes
+each a project root of its own, as an application is. Maven 4 otherwise takes
+the nearest `.mvn/` above them - Flow's own - as the root, loads all of Flow
+into the session, and has `-pl … -am` build Flow's modules too: on every compile
+and restart the daemon runs, and in CI's shared-module build.
+
 ## Running
 
 From the repository root, after one `mvn install -DskipTests`:

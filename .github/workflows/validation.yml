@@ -27,6 +27,8 @@ env:
   _BASE_REF: ${{ github.event.pull_request.base.ref }}
   _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   _PR_NUMBER: ${{ github.event.number }}
+  # Experimental: build and test with Maven 4 instead of the runner's Maven 3.
+  MAVEN_4_VERSION: 4.0.0-rc-7
   # Picked up by every mvn this workflow starts, including the ones the plugin
   # integration tests fork, which is why it is set here rather than on the
   # steps that download the most.
@@ -72,6 +74,11 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set up Maven 4
+        run: |
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -123,6 +130,11 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set up Maven 4
+        run: |
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -232,6 +244,11 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set up Maven 4
+        run: |
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -299,7 +316,7 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Pbun $ARGS"
+          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -P?bun $ARGS"
           set -x -e
           LOG=mvn-it-tests-${{matrix.current}}.out
           : > "$LOG"
@@ -399,6 +416,11 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set up Maven 4
+        run: |
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
         if: ${{ steps.decide.outputs.run == 'true' }}
         run: |
@@ -576,6 +598,11 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set up Maven 4
+        run: |
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
         if: ${{ steps.decide.outputs.run == 'true' }}
         run: |
@@ -737,6 +764,11 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set up Maven 4
+        run: |
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
         # The Gradle build takes its version from the root pom, so the poms have
         # to match the saved workspace for the plugin to resolve
@@ -880,6 +912,11 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set up Maven 4
+        run: |
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - name: Set flow version to 999.99-SNAPSHOT
         # The saved workspace was built as 999.99-SNAPSHOT; the poms must
         # match it for the restored target directories and .m2 artifacts
@@ -1057,6 +1094,11 @@ jobs:
         with:
           java-version-file: .tool-versions
           distribution: 'temurin'
+      - name: Set up Maven 4
+        run: |
+          curl -sSfL --proto '=https' --tlsv1.2 --retry 3 "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_4_VERSION}/apache-maven-${MAVEN_4_VERSION}-bin.tar.gz" | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/apache-maven-${MAVEN_4_VERSION}/bin/mvn" -v
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
