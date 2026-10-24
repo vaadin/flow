@@ -145,10 +145,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     indexDocument);
         }
 
-        // The dev server and dev tools need eval, so the policy is only sent
-        // in production mode
-        if (config.getCspMode() == CspMode.STRICT
-                && config.isProductionMode()) {
+        if (config.getCspMode() == CspMode.STRICT) {
             String nonce = createCspNonce();
             indexHtmlResponse.setContentSecurityPolicy(nonce,
                     createDefaultContentSecurityPolicy(nonce));
@@ -247,7 +244,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addCommercialBanner(service.getDeploymentConfiguration(),
                 indexDocument);
 
-        applyContentSecurityPolicy(indexHtmlResponse);
+        applyContentSecurityPolicy(indexHtmlResponse,
+                config.isProductionMode());
 
         try {
             response.getOutputStream()
@@ -283,12 +281,25 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .setDirective("base-uri", "'self'");
     }
 
-    private void applyContentSecurityPolicy(
-            IndexHtmlResponse indexHtmlResponse) {
+    private void applyContentSecurityPolicy(IndexHtmlResponse indexHtmlResponse,
+            boolean productionMode) {
         String nonce = indexHtmlResponse.getCspNonce();
         ContentSecurityPolicy policy = indexHtmlResponse
                 .getContentSecurityPolicy();
-        if (nonce == null || policy == null) {
+        // The dev server and dev tools need eval, so the policy is only sent
+        // in production mode
+        if (nonce == null || policy == null || !productionMode) {
+            return;
+        }
+        VaadinResponse response = indexHtmlResponse.getVaadinResponse();
+        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
+            // The scripts are left alone too, since they may already carry
+            // the nonce of the policy that was set elsewhere
+            getLogger().warn(
+                    "The Content Security Policy of the '{}={}' setting is not "
+                            + "sent because the response already has a {} header.",
+                    InitParameters.CSP, "strict",
+                    CONTENT_SECURITY_POLICY_HEADER);
             return;
         }
         // Done after the listeners have run so that every script in the page
@@ -296,18 +307,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         indexHtmlResponse.getDocument().select(
                 "script, link[rel=modulepreload], link[rel=preload][as=script]")
                 .attr("nonce", nonce);
-
-        VaadinResponse response = indexHtmlResponse.getVaadinResponse();
-        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
-            getLogger().warn(
-                    "The Content Security Policy of the '{}={}' setting is not "
-                            + "sent because the response already has a {} header.",
-                    InitParameters.CSP, "strict",
-                    CONTENT_SECURITY_POLICY_HEADER);
-        } else {
-            response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
-                    policy.toHeaderValue());
-        }
+        response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
+                policy.toHeaderValue());
     }
 
     private void initializeFeatureFlags(Document indexDocument,

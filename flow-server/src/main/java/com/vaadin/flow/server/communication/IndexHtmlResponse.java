@@ -124,12 +124,15 @@ public class IndexHtmlResponse {
      * {@code <script>} element of the document and allows in the
      * {@code script-src} directive of the Content Security Policy.
      * <p>
-     * A new nonce is created for every response when the application runs in
-     * production mode with the {@link CspMode#STRICT} mode. Scripts added by an
+     * A new nonce is created for every response when the application runs with
+     * the {@link CspMode#STRICT} mode. Scripts added by an
      * {@link IndexHtmlRequestListener} get the nonce automatically, but the
-     * value can also be used for other content that needs it.
+     * value can also be used for other content that needs it. The nonce is not
+     * put on the scripts in development mode, or when the response already has
+     * a {@code Content-Security-Policy} header.
      *
-     * @return the nonce, or {@code null} if no nonce-based policy is used
+     * @return the nonce, or {@code null} if the mode is not
+     *         {@link CspMode#STRICT}
      */
     public @Nullable String getCspNonce() {
         return cspNonce;
@@ -138,17 +141,18 @@ public class IndexHtmlResponse {
     /**
      * Gets the Content Security Policy that is sent with this response.
      * <p>
-     * The policy is created when the application runs in production mode with
-     * the {@link CspMode#STRICT} mode. An {@link IndexHtmlRequestListener} can
-     * add or override directives for resources of the application, such as
+     * The policy is created when the application runs with the
+     * {@link CspMode#STRICT} mode. An {@link IndexHtmlRequestListener} can add
+     * or override directives for resources of the application, such as
      * {@code connect-src}, {@code img-src}, {@code frame-src} or
      * {@code report-to}. The header is written after all listeners have run. It
-     * is not written if the response already has a
-     * {@code Content-Security-Policy} header, for example from a servlet
+     * is not written in development mode, because the development server and
+     * the development tools need {@code eval}, nor if the response already has
+     * a {@code Content-Security-Policy} header, for example from a servlet
      * filter.
      *
-     * @return the mutable policy, or {@code null} if Vaadin does not send a
-     *         policy for this response
+     * @return the mutable policy, or {@code null} if the mode is not
+     *         {@link CspMode#STRICT}
      */
     public @Nullable ContentSecurityPolicy getContentSecurityPolicy() {
         return contentSecurityPolicy;

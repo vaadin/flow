@@ -26,7 +26,7 @@ package com.vaadin.flow.server;
  * <p>
  * <strong>Note:</strong> the {@link #WARN} mode does not log anything yet, and
  * the {@link #STRICT} mode so far only sends the Content Security Policy
- * header; APIs that need {@code eval} do not throw yet.
+ * header, which the client engine does not fully work under yet.
  *
  * @since 25.4
  */
@@ -52,8 +52,15 @@ public enum CspMode {
      * through
      * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()}.
      * No header is sent in development mode, because the development server and
-     * the development tools need {@code eval}. Throwing from APIs that need
-     * {@code eval} is not implemented yet.
+     * the development tools need {@code eval}.
+     * <p>
+     * <strong>Note:</strong> the policy does not allow {@code eval}, but the
+     * client engine still uses it, not only for
+     * {@link com.vaadin.flow.dom.Element#executeJs(String, Object...)} but also
+     * for the event data and filter expressions of DOM event listeners, such as
+     * those of a click listener. Until that is changed, the browser blocks
+     * these in production mode, so the mode is not yet usable for applications.
+     * Throwing from APIs that need {@code eval} is not implemented yet either.
      */
     STRICT
 }

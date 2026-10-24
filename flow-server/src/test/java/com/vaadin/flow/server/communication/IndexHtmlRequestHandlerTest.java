@@ -249,6 +249,13 @@ public class IndexHtmlRequestHandlerTest {
         service.addIndexHtmlRequestListener(evt -> {
             evt.getDocument().body().appendElement("script").attr("src",
                     "listener.js");
+            Element head = evt.getDocument().head();
+            head.appendElement("link").attr("rel", "modulepreload").attr("href",
+                    "chunk.js");
+            head.appendElement("link").attr("rel", "preload")
+                    .attr("as", "script").attr("href", "preload.js");
+            head.appendElement("link").attr("rel", "preload")
+                    .attr("as", "style").attr("href", "preload.css");
             evt.getContentSecurityPolicy().addSources("connect-src",
                     "https://api.example.com");
         });
@@ -265,14 +272,18 @@ public class IndexHtmlRequestHandlerTest {
                 header);
         assertFalse(header.contains("unsafe-eval"), header);
 
-        Elements scripts = Jsoup
-                .parse(responseOutput.toString(StandardCharsets.UTF_8))
-                .getElementsByTag("script");
+        Document document = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8));
+        Elements scripts = document.getElementsByTag("script");
         assertTrue(scripts.stream()
                 .anyMatch(script -> script.attr("src").equals("listener.js")));
+        scripts.addAll(
+                document.select("link[href=chunk.js], link[href=preload.js]"));
         for (Element script : scripts) {
             assertEquals(nonce, script.attr("nonce"), script.outerHtml());
         }
+        assertFalse(document.selectFirst("link[href=preload.css]")
+                .hasAttr("nonce"));
 
         responseOutput.reset();
         assertFalse(serveIndexHtmlAndCaptureCspHeader().contains(nonce),
@@ -289,11 +300,13 @@ public class IndexHtmlRequestHandlerTest {
                 createVaadinRequest("/"), response);
         verify(response, never()).setHeader(eq("Content-Security-Policy"),
                 any());
+        assertFalse(responseOutput.toString(StandardCharsets.UTF_8)
+                .contains("nonce="));
     }
 
     @ParameterizedTest
     @CsvSource({ "OFF, true", "WARN, true", "STRICT, false" })
-    public void serveIndexHtml_noStrictCspInProduction_noPolicyOrNonce(
+    public void serveIndexHtml_noStrictCspInProduction_noHeaderOrNonce(
             CspMode cspMode, boolean productionMode) throws Exception {
         deploymentConfiguration.setCspMode(cspMode);
         if (!productionMode) {
@@ -305,8 +318,11 @@ public class IndexHtmlRequestHandlerTest {
             deploymentConfiguration.setProjectFolder(projectRootFolder);
         }
         service.addIndexHtmlRequestListener(evt -> {
-            assertNull(evt.getCspNonce());
-            assertNull(evt.getContentSecurityPolicy());
+            // In development mode, listeners still get the policy so that
+            // they work the same way in both modes
+            boolean strict = cspMode == CspMode.STRICT;
+            assertEquals(strict, evt.getCspNonce() != null);
+            assertEquals(strict, evt.getContentSecurityPolicy() != null);
         });
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
