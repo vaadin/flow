@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.component.UI;
@@ -39,17 +40,25 @@ import com.vaadin.flow.signals.shared.impl.CommandResult.Reject;
 import com.vaadin.flow.signals.shared.impl.SignalTree.Type;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AsynchronousSignalTreeTest extends SignalsUnitTest {
 
     public static class AsyncTestTree extends AsynchronousSignalTree {
         public List<List<SignalCommand>> submitted = new ArrayList<>();
 
+        public boolean rejectNextSubmit;
+
         @Override
         protected void submit(List<SignalCommand> commands) {
+            if (rejectNextSubmit) {
+                rejectNextSubmit = false;
+                throw new IllegalStateException();
+            }
             submitted.add(commands);
         }
 
@@ -58,25 +67,6 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
             submitted = new ArrayList<>();
 
             oldSubmitted.forEach(this::confirm);
-        }
-
-        /**
-         * Confirms all pending commands in reverse order on a background thread
-         * (where UI.getCurrent() returns null), simulating the virtual thread
-         * scheduling race.
-         */
-        public void confirmSubmittedInReverseOnBackgroundThread()
-                throws InterruptedException {
-            var oldSubmitted = submitted;
-            submitted = new ArrayList<>();
-
-            Thread bgThread = new Thread(() -> {
-                for (int i = oldSubmitted.size() - 1; i >= 0; i--) {
-                    confirm(oldSubmitted.get(i));
-                }
-            });
-            bgThread.start();
-            bgThread.join();
         }
     }
 
@@ -170,6 +160,90 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
     }
 
     @Test
+    void applyChange_whileWaitingForConfirmation_submittedAsNextBatch() {
+        AsyncTestTree tree = new AsyncTestTree();
+        SignalCommand first = TestUtil.writeRootValueCommand("first");
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+        SignalCommand third = TestUtil.writeRootValueCommand("third");
+
+        tree.commitSingleCommand(first);
+        tree.commitSingleCommand(second);
+        tree.commitSingleCommand(third);
+
+        assertEquals(List.of(List.of(first)), tree.submitted);
+
+        tree.confirmSubmitted();
+
+        assertEquals(List.of(List.of(second, third)), tree.submitted);
+        assertEquals(new StringNode("first"),
+                TestUtil.readConfirmedRootValue(tree));
+
+        tree.confirmSubmitted();
+
+        assertEquals(List.of(), tree.submitted);
+        assertEquals(new StringNode("third"),
+                TestUtil.readConfirmedRootValue(tree));
+    }
+
+    @Test
+    void confirm_resultHandlerThrows_nextBatchSubmitted() {
+        AsyncTestTree tree = new AsyncTestTree();
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+
+        tree.commitSingleCommand(TestUtil.writeRootValueCommand("first"),
+                result -> {
+                    throw new IllegalStateException();
+                });
+        tree.commitSingleCommand(second);
+
+        assertThrows(IllegalStateException.class, tree::confirmSubmitted);
+
+        assertEquals(List.of(List.of(second)), tree.submitted);
+    }
+
+    @Test
+    void submit_throws_batchSubmittedWithNextChange() {
+        AsyncTestTree tree = new AsyncTestTree();
+        SignalCommand first = TestUtil.writeRootValueCommand("first");
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+        SignalCommand third = TestUtil.writeRootValueCommand("third");
+        SignalCommand fourth = TestUtil.writeRootValueCommand("fourth");
+
+        // Submitted when applying a change
+        tree.rejectNextSubmit = true;
+        assertThrows(IllegalStateException.class,
+                () -> tree.commitSingleCommand(first));
+        tree.commitSingleCommand(second);
+
+        assertEquals(List.of(List.of(first, second)), tree.submitted);
+
+        // Submitted when the previous batch is confirmed
+        tree.commitSingleCommand(third);
+        tree.rejectNextSubmit = true;
+        assertThrows(IllegalStateException.class, tree::confirmSubmitted);
+        tree.commitSingleCommand(fourth);
+
+        assertEquals(List.of(List.of(third, fourth)), tree.submitted);
+    }
+
+    @Test
+    void confirm_externalCommandWhileWaiting_queuedCommandsNotSubmitted() {
+        AsyncTestTree tree = new AsyncTestTree();
+        SignalCommand first = TestUtil.writeRootValueCommand("first");
+        SignalCommand second = TestUtil.writeRootValueCommand("second");
+
+        tree.commitSingleCommand(first);
+        tree.commitSingleCommand(second);
+        tree.confirm(List.of(TestUtil.writeRootValueCommand("external")));
+
+        assertEquals(List.of(List.of(first)), tree.submitted);
+
+        tree.confirmSubmitted();
+
+        assertEquals(List.of(List.of(second)), tree.submitted);
+    }
+
+    @Test
     void subscribeToProcessed_noChanges_doesNotReceive() {
         AsyncTestTree tree = new AsyncTestTree();
         AtomicReference<Map.Entry<SignalCommand, CommandResult>> resultContainer = new AtomicReference<>();
@@ -233,7 +307,7 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
     }
 
     @Test
-    void outOfOrderConfirm_effectRecoversAfterRunPendingAccessTasks()
+    void backgroundConfirm_effectRecoversAfterRunPendingAccessTasks()
             throws InterruptedException {
         AsyncTestTree tree = new AsyncTestTree();
 
@@ -248,11 +322,19 @@ public class AsynchronousSignalTreeTest extends SignalsUnitTest {
 
         signal.set(150.5);
         assertEquals("150.5", element.getAttribute("max"));
+        tree.confirmSubmitted();
+        tree.confirmSubmitted();
 
-        // Confirm in reverse order on a background thread where
-        // UI.getCurrent() is null, causing the effect's re-validation
-        // to be dispatched via ui.access().
-        tree.confirmSubmittedInReverseOnBackgroundThread();
+        // Confirm an external change on a background thread where
+        // UI.getCurrent() is null, causing the effect's re-validation to be
+        // dispatched via ui.access().
+        Thread bgThread = new Thread(() -> tree
+                .confirm(List.of(new SignalCommand.SetCommand(Id.random(),
+                        Id.ZERO, new DoubleNode(120.0)))));
+        bgThread.start();
+        bgThread.join();
+        assertFalse(
+                VaadinSession.getCurrent().getPendingAccessQueue().isEmpty());
 
         // Drain the pending access queue so the deferred effect runs.
         VaadinService.getCurrent()
