@@ -14,7 +14,8 @@
  * the License.
  */
 
-// Atmosphere-wiring helpers migrated from AtmospherePushConnection.java.
+// The push connection on top of atmosphere.js 5, whose ES module build is
+// served as vaadinPush.js and loaded on demand.
 //
 // FragmentedMessage below is the TS port of the websocket
 // message-fragmentation helper from AtmospherePushConnection.java (pure logic).
@@ -26,7 +27,7 @@ import type { Registry } from '../Registry';
 import { assert } from '../../assert';
 import { stringify } from '../WidgetUtil';
 import { parseJson } from './MessageHandler';
-import type { ResourceLoadEvent, ResourceLoadListener } from '../ResourceRegistry';
+import { loadAtmosphere } from './AtmosphereLoader';
 import { addGetParameter } from '../../flow/shared/util/SharedUtil';
 import type { Command } from '../Command';
 import type { PushConnection } from './PushConnection';
@@ -104,68 +105,58 @@ export class FragmentedMessage {
   }
 }
 
-interface Atmosphere {
-  subscribe: (config: unknown) => unknown;
-  unsubscribeUrl: (url: string) => void;
+/** The atmosphere.js module, vaadinPush.js (the subset used here). */
+interface AtmosphereModule {
+  Atmosphere: new (config: { logLevel?: unknown }) => AtmosphereClient;
 }
 
-// The Atmosphere connection callbacks, supplied from the Java side already
-// wrapped in $entry (so uncaught exceptions reach GWT's handler). The
-// getLastSeenServerSyncId value supplier is deliberately not $entry-wrapped, to
-// mirror the original JSNI.
-interface AtmosphereCallbacks {
-  onOpen: (response: unknown) => void;
-  onReopen: (response: unknown) => void;
-  onMessage: (response: unknown) => void;
-  onError: (response: unknown) => void;
-  onTransportFailure: (reason: unknown, request: unknown) => void;
-  onClose: (response: unknown) => void;
-  onReconnect: (request: unknown, response: unknown) => void;
-  onClientTimeout: (request: unknown) => void;
-  getLastSeenServerSyncId: () => unknown;
+interface AtmosphereClient {
+  subscribe: (request: AtmosphereRequest, handlers: AtmosphereHandlers) => Promise<AtmosphereSubscription>;
 }
 
-function atmosphere(): Atmosphere | undefined {
-  return (window as unknown as { vaadinPush?: { atmosphere?: Atmosphere } }).vaadinPush?.atmosphere;
+interface AtmosphereSubscription {
+  push: (message: string) => void;
+  close: () => Promise<void>;
 }
 
-/** Whether the Atmosphere push library is loaded. */
-function isAtmosphereLoaded(): boolean {
-  return !!atmosphere();
-}
+/** The request atmosphere.js connects with. */
+type AtmosphereRequest = Record<string, unknown>;
 
-/** Pushes a message over the given Atmosphere socket. */
-function doPush(socket: unknown, message: string): void {
-  (socket as { push: (message: string) => void }).push(message);
-}
-
-/** Unsubscribes the Atmosphere connection for the given url. */
-function doDisconnect(url: string): void {
-  // Java dereferences $wnd.vaadinPush.atmosphere unconditionally here: the
-  // connection only reaches a disconnect after the library has loaded.
-  atmosphere()!.unsubscribeUrl(url);
+interface AtmosphereHandlers {
+  open: (response: AtmosphereResponse) => void;
+  reopen: (response: AtmosphereResponse) => void;
+  message: (response: AtmosphereResponse) => void;
+  error: (error: Error) => void;
+  transportFailure: (reason: string, request: AtmosphereRequest) => void;
+  close: (response: AtmosphereResponse) => void;
+  reconnect: (request: AtmosphereRequest, response: AtmosphereResponse) => void;
+  failureToReconnect: (request: AtmosphereRequest, response: AtmosphereResponse) => void;
+  clientTimeout: (request: AtmosphereRequest) => void;
 }
 
 /**
- * Wires the connection url and callbacks onto the Atmosphere config and
- * subscribes, returning the resulting socket. The header value supplier is
- * read on every request, so it is wrapped in a function rather than assigned
- * once.
+ * Creates the request atmosphere.js subscribes with from the connection url
+ * and the Atmosphere config. atmosphere.js calls a header function for every
+ * request it makes, so the last seen sync id is read anew rather than fixed
+ * when the connection was made.
  */
-function doConnect(uri: string, config: Record<string, unknown>, callbacks: AtmosphereCallbacks): unknown {
-  config.url = uri;
-  config.onOpen = callbacks.onOpen;
-  config.onReopen = callbacks.onReopen;
-  config.onMessage = callbacks.onMessage;
-  config.onError = callbacks.onError;
-  config.onTransportFailure = callbacks.onTransportFailure;
-  config.onClose = callbacks.onClose;
-  config.onReconnect = callbacks.onReconnect;
-  config.onClientTimeout = callbacks.onClientTimeout;
-  config.headers = {
-    'X-Vaadin-LastSeenServerSyncId': (): unknown => callbacks.getLastSeenServerSyncId()
+function createRequest(
+  uri: string,
+  config: Record<string, unknown>,
+  getLastSeenServerSyncId: () => unknown
+): AtmosphereRequest {
+  return {
+    ...config,
+    url: uri,
+    // atmosphere.js only reconnects a lost connection when asked to
+    reconnect: true,
+    // Retry every reconnectInterval, instead of the exponential backoff
+    // atmosphere.js applies by default
+    retryStrategy: { strategy: 'custom', customCalculate: () => Number(config.reconnectInterval) },
+    headers: {
+      'X-Vaadin-LastSeenServerSyncId': () => String(getLastSeenServerSyncId())
+    }
   };
-  return atmosphere()!.subscribe(config);
 }
 
 // Connection states; mirrors AtmospherePushConnection.State.
@@ -180,12 +171,11 @@ type State = (typeof State)[keyof typeof State];
 /** The atmosphere configuration/response key holding the transport name. */
 export const TRANSPORT_KEY = 'transport';
 
-/** An Atmosphere response object (the subset used here). atmosphere.js exposes
- * these as plain properties, not the getX() overlay methods GWT's JSNI wrapped
- * them in. */
+/** An Atmosphere response object (the subset used here). */
 interface AtmosphereResponse {
   [TRANSPORT_KEY]: string;
-  responseBody: string;
+  responseBody: unknown;
+  request?: AtmosphereRequest;
 }
 
 /**
@@ -202,9 +192,7 @@ export class AtmospherePushConnection implements PushConnection {
 
   readonly #config: Record<string, unknown>;
 
-  #socket: unknown = null;
-
-  #pushUri: string | null = null;
+  #socket: AtmosphereSubscription | null = null;
 
   #transport: string | null = null;
 
@@ -240,14 +228,14 @@ export class AtmospherePushConnection implements PushConnection {
 
     this.#url = this.#computePushUrl();
 
-    this.#runWhenAtmosphereLoaded(() => setTimeout(() => this.#connect(), 0));
+    this.#loadAtmosphere();
   }
 
   #getConnectionStateHandler(): ConnectionStateHandler {
     return this.#registry.getConnectionStateHandler();
   }
 
-  #connect(): void {
+  #connect(atmosphere: AtmosphereModule): void {
     let pushUrl = this.#registry.getURIResolver().resolveVaadinUri(this.#url) ?? this.#url;
     pushUrl = addGetParameter(pushUrl, REQUEST_TYPE_PARAMETER, REQUEST_TYPE_PUSH);
     pushUrl = addGetParameter(pushUrl, UI_ID_PARAMETER, this.#registry.getApplicationConfiguration().getUIId());
@@ -258,18 +246,38 @@ export class AtmospherePushConnection implements PushConnection {
     }
 
     Console.debug('Establishing push connection');
-    this.#pushUri = pushUrl;
-    this.#socket = doConnect(pushUrl, this.#config, {
-      onOpen: (response) => this.onOpen(response as AtmosphereResponse),
-      onReopen: (response) => this.onReopen(response as AtmosphereResponse),
-      onMessage: (response) => this.onMessage(response as AtmosphereResponse),
-      onError: (response) => this.onError(response as AtmosphereResponse),
-      onTransportFailure: () => this.onTransportFailure(),
-      onClose: (response) => this.onClose(response as AtmosphereResponse),
-      onReconnect: (request, response) => this.onReconnect(request, response as AtmosphereResponse),
-      onClientTimeout: (response) => this.onClientTimeout(response as AtmosphereResponse),
-      getLastSeenServerSyncId: () => this.#registry.getMessageHandler().getLastSeenServerSyncId()
-    });
+    const request = createRequest(pushUrl, this.#config, () =>
+      this.#registry.getMessageHandler().getLastSeenServerSyncId()
+    );
+    const client = new atmosphere.Atmosphere({ logLevel: this.#config.logLevel });
+    client
+      .subscribe(request, {
+        open: (response) => this.onOpen(response),
+        reopen: (response) => this.onReopen(response),
+        message: (response) => this.onMessage(response),
+        // atmosphere.js reports every failed attempt here and goes on to reconnect
+        // or fall back, so only a connection that is given up on is an error.
+        error: (error) => Console.debug(`Push connection error: ${error.message}`),
+        transportFailure: () => this.onTransportFailure(),
+        close: (response) => this.onClose(response),
+        reconnect: (req, response) => this.onReconnect(req, response),
+        failureToReconnect: (_req, response) => this.onError(response),
+        clientTimeout: (req) =>
+          this.onClientTimeout({ transport: String(req.transport), responseBody: '', request: req })
+      })
+      .then(
+        (subscription) => {
+          this.#socket = subscription;
+        },
+        (error: unknown) => {
+          Console.debug(`Push connection could not be established: ${String(error)}`);
+          // Neither the transport nor the fallback could connect
+          this.onError({
+            transport: String(this.#config.fallbackTransport ?? this.#config.transport),
+            responseBody: ''
+          });
+        }
+      );
   }
 
   #computePushUrl(): string {
@@ -329,10 +337,10 @@ export class AtmospherePushConnection implements PushConnection {
       if (this.#transport === 'websocket') {
         const fragmented = new FragmentedMessage(messageJson);
         while (fragmented.hasNextFragment()) {
-          doPush(this.#socket, fragmented.getNextFragment());
+          this.#socket!.push(fragmented.getNextFragment());
         }
       } else {
-        doPush(this.#socket, messageJson);
+        this.#socket!.push(messageJson);
       }
       return;
     }
@@ -395,7 +403,11 @@ export class AtmospherePushConnection implements PushConnection {
       case State.CONNECTED:
         // Normal disconnect
         Console.debug('Closing push connection');
-        doDisconnect(this.#pushUri!);
+        // Also sends Atmosphere's close message, so the server releases a
+        // long-polling request instead of pushing into it
+        this.#socket!.close().catch(() => {
+          // The connection is gone either way
+        });
         this.#state = State.DISCONNECTED;
         command();
         break;
@@ -410,7 +422,7 @@ export class AtmospherePushConnection implements PushConnection {
    * @param response - the Atmosphere response object, which contains the message
    */
   protected onMessage(response: AtmosphereResponse): void {
-    const message = response.responseBody;
+    const message = String(response.responseBody);
     const json = parseJson(message);
     if (json === null) {
       // Invalid JSON string
@@ -486,48 +498,30 @@ export class AtmospherePushConnection implements PushConnection {
   protected createConfig(): Record<string, unknown> {
     return {
       transport: 'websocket',
-      maxStreamingLength: 1000000,
       fallbackTransport: 'long-polling',
       contentType: 'application/json; charset=UTF-8',
       reconnectInterval: 5000,
       withCredentials: true,
-      maxWebsocketErrorRetries: 12,
       timeout: -1,
       maxReconnectOnClose: 10000000,
       trackMessageLength: true,
       enableProtocol: true,
-      handleOnlineOffline: false,
-      executeCallbackBeforeReconnect: true,
-      messageDelimiter: String.fromCharCode(MESSAGE_DELIMITER.charCodeAt(0))
+      messageDelimiter: MESSAGE_DELIMITER
     };
   }
 
-  #runWhenAtmosphereLoaded(command: Command): void {
-    if (isAtmosphereLoaded()) {
-      command();
-      return;
-    }
+  #loadAtmosphere(): void {
     const pushJs = this.#registry.getApplicationConfiguration().isProductionMode()
       ? VAADIN_PUSH_JS
       : VAADIN_PUSH_DEBUG_JS;
     const pushScriptUrl = this.#registry.getApplicationConfiguration().getServiceUrl() + pushJs;
-    Console.debug(`Loading ${pushJs}`);
-    const listener: ResourceLoadListener = {
-      onLoad: (event: ResourceLoadEvent) => {
-        if (isAtmosphereLoaded()) {
-          Console.debug(`${pushJs} loaded`);
-          command();
-        } else {
-          // ResourceLoader assumes bootstrap's vaadinPush.js load succeeded even
-          // if it failed (#11673).
-          listener.onError(event);
-        }
-      },
-      onError: (event: ResourceLoadEvent) => {
-        this.#getConnectionStateHandler().pushScriptLoadError(event.getResourceData());
+    loadAtmosphere(pushScriptUrl).then(
+      (atmosphere) => this.#connect(atmosphere as AtmosphereModule),
+      (error: unknown) => {
+        Console.debug(`Loading ${pushScriptUrl} failed: ${String(error)}`);
+        this.#getConnectionStateHandler().pushScriptLoadError(pushScriptUrl);
       }
-    };
-    this.#registry.getResourceLoader().loadScript(pushScriptUrl, listener);
+    );
   }
 
   getTransportType(): string | null {

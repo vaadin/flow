@@ -84,7 +84,6 @@ import org.atmosphere.cpr.DefaultBroadcasterFactory;
 import org.atmosphere.cpr.DefaultMetaBroadcaster;
 import org.atmosphere.interceptor.AtmosphereResourceLifecycleInterceptor;
 import org.atmosphere.interceptor.SuspendTrackerInterceptor;
-import org.atmosphere.util.AbstractBroadcasterProxy;
 import org.atmosphere.util.ExcludeSessionBroadcaster;
 import org.atmosphere.util.SimpleBroadcaster;
 import org.atmosphere.util.VoidAnnotationProcessor;
@@ -718,8 +717,8 @@ public class VaadinQuarkusNativeProcessor {
                 VoidAnnotationProcessor.class,
                 DefaultAtmosphereResourceSessionFactory.class,
                 JSR356AsyncSupport.class, DefaultMetaBroadcaster.class,
-                AtmosphereHandlerService.class, AbstractBroadcasterProxy.class,
-                AsyncSupportListener.class, AtmosphereFrameworkListener.class,
+                AtmosphereHandlerService.class, AsyncSupportListener.class,
+                AtmosphereFrameworkListener.class,
                 ExcludeSessionBroadcaster.class,
                 AtmosphereResourceEventListener.class,
                 AtmosphereInterceptor.class, BroadcastFilter.class,
