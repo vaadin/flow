@@ -16,8 +16,10 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +38,7 @@ import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.server.Command;
+import com.vaadin.tests.util.TestUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -297,6 +300,11 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         assertNotSame(nodeMap, copy);
 
         assertEquals(values.keySet(), copy.keySet());
+        // The deserialized map uses the same shared key set instance
+        assertSame(nodeMap.keySet(), copy.keySet());
+        // A key set deserialized on its own is also the shared instance
+        assertSame(nodeMap.keySet(), SerializationUtils.deserialize(
+                SerializationUtils.serialize((Serializable) nodeMap.keySet())));
         // Also verify that original value wasn't changed by the serialization
         assertEquals(values.keySet(), nodeMap.keySet());
 
@@ -405,6 +413,123 @@ class NodeMapTest extends AbstractNodeFeatureTest<ElementStylePropertyMap> {
         nodeMap.put("foo", "baz");
 
         assertTrue(nodeMap.usesSingleMap());
+    }
+
+    @Test
+    void put_sameKeysInDifferentOrder_keySetIsShared() {
+        nodeMap.put("foo", "a");
+        nodeMap.put("bar", "b");
+        nodeMap.put("baz", "c");
+
+        ElementStylePropertyMap otherMap = createFeature();
+        otherMap.put("bar", "f");
+        otherMap.put("foo", "d");
+        otherMap.put("qux", "e");
+        otherMap.put("baz", "g");
+        otherMap.remove("qux");
+
+        // Grows from two keys onto the key set registered in another order
+        ElementStylePropertyMap growingMap = createFeature();
+        growingMap.put("bar", "h");
+        growingMap.put("baz", "i");
+        growingMap.put("foo", "j");
+
+        assertSame(nodeMap.keySet(), otherMap.keySet());
+        assertSame(nodeMap.keySet(), growingMap.keySet());
+        assertEquals(Set.of("foo", "bar", "baz"), otherMap.keySet());
+        assertEquals("a", nodeMap.get("foo"));
+        assertEquals("b", nodeMap.get("bar"));
+        assertEquals("c", nodeMap.get("baz"));
+        assertEquals("d", otherMap.get("foo"));
+        assertEquals("f", otherMap.get("bar"));
+        assertEquals("g", otherMap.get("baz"));
+        assertNull(otherMap.get("qux"));
+        assertEquals("j", growingMap.get("foo"));
+        assertEquals("h", growingMap.get("bar"));
+        assertEquals("i", growingMap.get("baz"));
+    }
+
+    @Test
+    void keySetNoLongerUsed_garbageCollected_deserializedValuesFollowNewOrder()
+            throws InterruptedException {
+        nodeMap.put("gcKeyA", "a");
+        nodeMap.put("gcKeyB", "b");
+        byte[] serialized = SerializationUtils.serialize(nodeMap);
+        WeakReference<Set<String>> keySetRef = new WeakReference<>(
+                nodeMap.keySet());
+
+        nodeMap.clear();
+        assertTrue(TestUtil.isGarbageCollected(keySetRef));
+
+        // Registers the same keys in the opposite order
+        ElementStylePropertyMap otherMap = createFeature();
+        otherMap.put("gcKeyB", "c");
+        otherMap.put("gcKeyA", "d");
+
+        NodeMap copy = SerializationUtils.deserialize(serialized);
+        assertSame(otherMap.keySet(), copy.keySet());
+        assertEquals("a", copy.get("gcKeyA"));
+        assertEquals("b", copy.get("gcKeyB"));
+    }
+
+    @Test
+    void keySetGarbageCollected_registryEntryRemovedOnLaterRegistration()
+            throws InterruptedException {
+        // Only the map and the registry reference the generated key
+        WeakReference<String> keyRef = putGeneratedKeyAndClear();
+
+        boolean removed = false;
+        for (int i = 0; i < 10 && !removed; i++) {
+            System.gc();
+            // Any registration polls for key sets that have been collected
+            ElementStylePropertyMap otherMap = createFeature();
+            otherMap.put("evictTriggerA", "a");
+            otherMap.put("evictTriggerB", "b");
+            removed = TestUtil.isGarbageCollected(keyRef);
+        }
+        assertTrue(removed, "Registry entry was not removed");
+    }
+
+    private WeakReference<String> putGeneratedKeyAndClear() {
+        String key = new StringBuilder("generated").append("Key").toString();
+        ElementStylePropertyMap map = createFeature();
+        map.put(key, "a");
+        map.put("evictOther", "b");
+        map.clear();
+        return new WeakReference<>(key);
+    }
+
+    @Test
+    void putAndRemove_allSizes_valuesKept() {
+        List<String> keys = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            nodeMap.put("key" + i, i);
+            keys.add("key" + i);
+            assertValues(keys);
+        }
+        // Remove from the middle so that values have to be moved
+        while (!keys.isEmpty()) {
+            String key = keys.remove(keys.size() / 2);
+            nodeMap.remove(key);
+            assertFalse(nodeMap.contains(key));
+            assertNull(nodeMap.get(key));
+            assertValues(keys);
+        }
+    }
+
+    private void assertValues(List<String> keys) {
+        NodeMap copy = SerializationUtils
+                .deserialize(SerializationUtils.serialize(nodeMap));
+        for (NodeMap map : List.of(nodeMap, copy)) {
+            assertEquals(new HashSet<>(keys), map.keySet());
+            for (String key : keys) {
+                assertTrue(map.contains(key));
+                assertEquals(Integer.valueOf(key.substring(3)), map.get(key));
+            }
+        }
+        if (keys.size() > 1) {
+            assertSame(nodeMap.keySet(), copy.keySet());
+        }
     }
 
     @Test
