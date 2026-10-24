@@ -41,6 +41,7 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -170,6 +171,8 @@ public class ElementListenerMap extends NodeMap {
                 throw new IllegalArgumentException(
                         "The event data expression must not be null");
             }
+            CspViolationReporter.reportStringJavaScript(
+                    "DomListenerRegistration.addEventData(String)");
 
             appendEventData(List.of(eventData));
 
@@ -189,6 +192,10 @@ public class ElementListenerMap extends NodeMap {
                     throw new IllegalArgumentException(
                             "The event data expression must not be null");
                 }
+            }
+            if (!eventData.isEmpty()) {
+                CspViolationReporter.reportStringJavaScript(
+                        "DomListenerRegistration.addEventData(List)");
             }
 
             appendEventData(eventData);
@@ -224,6 +231,10 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration setFilter(String filter) {
+            if (filter != null) {
+                CspViolationReporter.reportStringJavaScript(
+                        "DomListenerRegistration.setFilter(String)");
+            }
             this.filter = filter;
 
             listenerMap.updateEventSettings(type);
