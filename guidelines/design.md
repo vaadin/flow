@@ -318,10 +318,12 @@ is — and one constraint — never get in the way of the code that called it.
   provider, keep `super.toString()` so the identity hash still tells two
   instances apart, and append the summary to it.
 - **Shape: type name and the state that identifies the instance.** Follow
-  `SimpleName[…]`, the shape the signals, validators and records already use —
-  `ValueSignal[42]`, `RegexpValidator[^\d+$]`,
-  `RangeValidator [1, 10)`. Show what identifies the instance or explains its
-  behaviour, not every field.
+  `SimpleName[…]`, the shape records generate — `StringLengthValidator[1, 10]`,
+  `ComponentValueChangeEvent[source=…, value = …, oldValue = …]`. Show what
+  identifies the instance or explains its behaviour, not every field. The
+  signals and `RegexpValidator` have the shape but write the class name as a
+  literal, so a subclass such as `EmailValidator` prints `RegexpValidator[…]`;
+  do not copy that part.
 - **Label numbers that can mislead.** If a value can be read two ways, say
   which one it is: `ListDataProvider` prints `250 backend items, filtered`,
   because a bare `250 items` suggests the data is fine when a filter hides all
@@ -331,7 +333,8 @@ is — and one constraint — never get in the way of the code that called it.
   chain is visible in one line.
 - **No secrets, and no application content on per-request log paths.** Never
   include a password, token or other credential — `ProxyConfig.Proxy` says
-  that authentication is used instead of printing it. A description written
+  that authentication is used instead of printing the username and password
+  (its id-first format is not an example of the shape). A description written
   into a server log on every request should name structure (class, id, tag),
   not the user's data.
 - **Records already have one.** Do not override the generated `toString()` of

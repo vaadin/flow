@@ -324,9 +324,11 @@ When changing the setup of an existing test, keep every case it already
 covered. Replacing a mock or a fixture must not drop assertions that still
 apply.
 
-Do not assert the exact output of `toString()` or of a log or exception
-message. Check that it contains the parts that matter, such as the class name
-and the offending value, so the wording can change.
+When a test checks an exception or log message, or a `toString()` that is
+only part of what the case is about, assert that it contains the parts that
+matter, such as the class name and the offending value, not the exact wording.
+A test whose subject is the `toString()` itself, like the `toString` cases of
+the signal tests, asserts the exact output.
 
 Do not depend on JVM defaults such as locale, time zone or charset. Set them
 explicitly, or pick a value that differs from the default, so the case cannot
