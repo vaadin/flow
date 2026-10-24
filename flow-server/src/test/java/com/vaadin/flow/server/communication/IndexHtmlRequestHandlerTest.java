@@ -296,10 +296,10 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setCspMode(CspMode.STRICT);
         when(response.containsHeader("Content-Security-Policy"))
                 .thenReturn(true);
+        VaadinServletRequest request = createVaadinRequest("/");
         IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
-                () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                        createVaadinRequest("/"), response));
+                IllegalStateException.class, () -> indexHtmlRequestHandler
+                        .synchronizedHandleRequest(session, request, response));
         assertTrue(exception.getMessage().contains("csp=strict"),
                 exception.getMessage());
         verify(response, never()).setHeader(eq("Content-Security-Policy"),

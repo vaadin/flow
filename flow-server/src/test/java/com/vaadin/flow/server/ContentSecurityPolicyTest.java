@@ -64,7 +64,8 @@ class ContentSecurityPolicyTest {
 
     @Test
     void setDirective_invalidName_throws() {
+        ContentSecurityPolicy policy = new ContentSecurityPolicy();
         assertThrows(IllegalArgumentException.class,
-                () -> new ContentSecurityPolicy().setDirective("img-src; a"));
+                () -> policy.setDirective("img-src; a"));
     }
 }

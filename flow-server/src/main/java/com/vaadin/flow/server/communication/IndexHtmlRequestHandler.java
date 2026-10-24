@@ -97,6 +97,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
     private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
+    private static final String CSP_SELF = "'self'";
     private static final SecureRandom NONCE_RANDOM = new SecureRandom();
 
     @Override
@@ -274,16 +275,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // as the chunks of the bundle. connect-src also covers push. Workers
         // need their own directive since script-src only allows nonced
         // scripts.
-        return new ContentSecurityPolicy().setDirective("default-src", "'self'")
+        return new ContentSecurityPolicy().setDirective("default-src", CSP_SELF)
                 .setDirective("script-src", "'nonce-" + nonce + "'",
                         "'strict-dynamic'")
-                .setDirective("style-src", "'self'", "'unsafe-inline'")
-                .setDirective("img-src", "'self'", "data:")
-                .setDirective("font-src", "'self'", "data:")
-                .setDirective("connect-src", "'self'")
-                .setDirective("worker-src", "'self'")
+                .setDirective("style-src", CSP_SELF, "'unsafe-inline'")
+                .setDirective("img-src", CSP_SELF, "data:")
+                .setDirective("font-src", CSP_SELF, "data:")
+                .setDirective("connect-src", CSP_SELF)
+                .setDirective("worker-src", CSP_SELF)
                 .setDirective("object-src", "'none'")
-                .setDirective("base-uri", "'self'");
+                .setDirective("base-uri", CSP_SELF);
     }
 
     private static void applyContentSecurityPolicy(
