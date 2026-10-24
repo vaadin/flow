@@ -88,6 +88,7 @@ public class PwaRegistry implements Serializable {
     private final PwaConfiguration pwaConfiguration;
 
     private URL baseImageUrl;
+    private boolean drawDefaultBaseImage;
     private BufferedImage baseImage;
 
     /**
@@ -122,14 +123,19 @@ public class PwaRegistry implements Serializable {
     // baseImageUrl is computed during registry initialization and used on to
     // load the image.
     BufferedImage getBaseImage() {
-        if (baseImage == null && baseImageUrl != null) {
+        if (baseImage == null
+                && (baseImageUrl != null || drawDefaultBaseImage)) {
             try {
-                baseImage = getBaseImage(baseImageUrl);
+                baseImage = baseImageUrl != null ? getBaseImage(baseImageUrl)
+                        : PwaIcon.drawDefaultBaseImage(
+                                pwaConfiguration.getAppName(),
+                                pwaConfiguration.getThemeColor());
             } catch (IOException ex) {
                 getLogger().error("Image is not found or can't be loaded: {}",
                         baseImageUrl);
             } finally {
                 baseImageUrl = null;
+                drawDefaultBaseImage = false;
             }
         }
         return baseImage;
@@ -142,12 +148,11 @@ public class PwaRegistry implements Serializable {
         }
         long start = System.currentTimeMillis();
 
-        // Load base logo from servlet context if available
-        // fall back to local image if unavailable
-        URL logo = getResourceUrl(servletContext,
+        // Load base logo from servlet context if available, draw a default
+        // one from the application name if unavailable
+        baseImageUrl = getResourceUrl(servletContext,
                 pwaConfiguration.relIconPath());
-        baseImageUrl = logo != null ? logo
-                : BootstrapHandler.class.getResource("default-logo.png");
+        drawDefaultBaseImage = baseImageUrl == null;
 
         URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
                 ? getResourceUrl(servletContext,
@@ -594,9 +599,7 @@ public class PwaRegistry implements Serializable {
     }
 
     private BufferedImage getBaseImage(URL logo) throws IOException {
-        URLConnection logoResource = logo != null ? logo.openConnection()
-                : BootstrapHandler.class.getResource("default-logo.png")
-                        .openConnection();
+        URLConnection logoResource = logo.openConnection();
         try (InputStream inputStream = logoResource.getInputStream()) {
             return ImageIO.read(inputStream);
         }
