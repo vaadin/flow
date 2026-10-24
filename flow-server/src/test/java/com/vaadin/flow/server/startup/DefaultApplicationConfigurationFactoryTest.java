@@ -175,6 +175,13 @@ class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
+    void create_tokenFileWithNpmAllowExoticVersions_flagIsPropagatedToDeploymentConfiguration()
+            throws IOException {
+        assertTokenAttributeIsPropagatedToDeploymentConfiguration(
+                InitParameters.NPM_ALLOW_EXOTIC_VERSIONS, true);
+    }
+
+    @Test
     void create_tokenFileWithCommercialBannerFlag_commercialBannerFlagIsPropagatedToDeploymentConfiguration()
             throws IOException {
         assertTokenAttributeIsPropagatedToDeploymentConfiguration(

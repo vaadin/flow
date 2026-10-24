@@ -46,6 +46,7 @@ import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -65,6 +66,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Isolated
@@ -728,12 +730,12 @@ class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    void npmIsInUse_versionsJsonHasUrlVersion_urlVersionPinnedAndUpdated()
+    void npmIsInUse_versionsJsonHasUrlVersion_exoticVersionsAllowed_urlVersionPinnedAndUpdated()
             throws IOException {
         final String overlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d";
         createVaadinVersionsJson(PINNED_DIALOG_VERSION,
                 PINNED_ELEMENT_MIXIN_VERSION, overlayUrl);
-        createTask(createApplicationDependencies()).execute();
+        createTask(createApplicationDependencies(), false, true).execute();
         verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 overlayUrl);
         verifyVersionPinningWithNpmOverrides(true, true, true);
@@ -741,14 +743,59 @@ class TaskUpdatePackagesNpmTest {
         final String newOverlayUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@3a1f0c9";
         createVaadinVersionsJson(PINNED_DIALOG_VERSION,
                 PINNED_ELEMENT_MIXIN_VERSION, newOverlayUrl);
-        createTask(createApplicationDependencies()).execute();
+        createTask(createApplicationDependencies(), false, true).execute();
         verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 newOverlayUrl);
 
         createBasicVaadinVersionsJson();
-        createTask(createApplicationDependencies()).execute();
+        createTask(createApplicationDependencies(), false, true).execute();
         verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
                 PINNED_OVERLAY_VERSION);
+    }
+
+    @Test
+    void npmIsInUse_versionsJsonHasUrlVersion_exoticVersionsNotAllowed_urlVersionIgnored()
+            throws IOException {
+        createVaadinVersionsJson(PINNED_DIALOG_VERSION,
+                PINNED_ELEMENT_MIXIN_VERSION,
+                "https://pkg.pr.new/vaadin/web-components/@vaadin/overlay@275762d");
+        createTask(createApplicationDependencies()).execute();
+
+        verifyVersions(PINNED_DIALOG_VERSION, PINNED_ELEMENT_MIXIN_VERSION,
+                null);
+        verifyVersionPinningWithNpmOverrides(true, true, false);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { false, true })
+    void npmIsInUse_npmPackageHasUrlVersion_exoticVersionsNotAllowed_fails(
+            boolean dev) throws IOException {
+        createBasicVaadinVersionsJson();
+        final String dialogUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/dialog@275762d";
+        final TaskUpdatePackages task = dev
+                ? createTask(createApplicationDependencies(),
+                        Map.of("dev-tool", dialogUrl), false, false)
+                : createTask(Map.of(VAADIN_DIALOG, dialogUrl));
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, task::execute);
+        assertTrue(exception.getMessage().contains(dialogUrl));
+        assertTrue(exception.getMessage()
+                .contains(InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+    }
+
+    @Test
+    void npmIsInUse_npmPackageHasUrlVersion_exoticVersionsAllowed_urlVersionAdded()
+            throws IOException {
+        createBasicVaadinVersionsJson();
+        final Map<String, String> dependencies = createApplicationDependencies();
+        final String dialogUrl = "https://pkg.pr.new/vaadin/web-components/@vaadin/dialog@275762d";
+        dependencies.put(VAADIN_DIALOG, dialogUrl);
+        createTask(dependencies, false, true).execute();
+
+        verifyVersions(dialogUrl, PINNED_ELEMENT_MIXIN_VERSION,
+                PINNED_OVERLAY_VERSION);
+        verifyVersionPinningWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -1646,7 +1693,14 @@ class TaskUpdatePackagesNpmTest {
 
     private TaskUpdatePackages createTask(
             Map<String, String> applicationDependencies, boolean enablePnpm) {
-        return createTask(applicationDependencies, enablePnpm, null);
+        return createTask(applicationDependencies, enablePnpm, false);
+    }
+
+    private TaskUpdatePackages createTask(
+            Map<String, String> applicationDependencies, boolean enablePnpm,
+            boolean allowExoticVersions) {
+        return createTask(applicationDependencies, Map.of(), enablePnpm,
+                allowExoticVersions, null);
     }
 
     /**
@@ -1655,13 +1709,32 @@ class TaskUpdatePackagesNpmTest {
     private TaskUpdatePackages createTask(
             Map<String, String> applicationDependencies, boolean enablePnpm,
             Logger taskLogger) {
+        return createTask(applicationDependencies, Map.of(), enablePnpm,
+                false, taskLogger);
+    }
+
+    private TaskUpdatePackages createTask(
+            Map<String, String> applicationDependencies,
+            Map<String, String> applicationDevDependencies, boolean enablePnpm,
+            boolean allowExoticVersions) {
+        return createTask(applicationDependencies, applicationDevDependencies,
+                enablePnpm, allowExoticVersions, null);
+    }
+
+    private TaskUpdatePackages createTask(
+            Map<String, String> applicationDependencies,
+            Map<String, String> applicationDevDependencies, boolean enablePnpm,
+            boolean allowExoticVersions, Logger taskLogger) {
         final FrontendDependencies frontendDependenciesScanner = Mockito
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
+        Mockito.when(frontendDependenciesScanner.getDevPackages())
+                .thenReturn(applicationDevDependencies);
         Options options = new MockOptions(finder, npmFolder)
                 .withBuildDirectory(TARGET).withEnablePnpm(enablePnpm)
                 .withBundleBuild(true).withReact(false)
+                .withNpmAllowExoticVersions(allowExoticVersions)
                 .withFrontendDependenciesScanner(frontendDependenciesScanner);
         return createTask(options, taskLogger);
     }
