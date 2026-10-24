@@ -95,6 +95,7 @@ const UIDL_PUSH_ID = 'Vaadin-Push-ID';
 const UIDL_KEY_EXECUTE = 'execute';
 const META_SESSION_EXPIRED = 'sessionExpired';
 const META_ASYNC = 'async';
+const META_VIEW_TRANSITION = 'viewTransition';
 
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
 
@@ -345,6 +346,7 @@ export class MessageHandler {
     if ('timings' in valueMap) {
       this.#serverTimingInfo = valueMap.timings as number[];
     }
+    let finishDelegated = false;
     try {
       const processUidlStart = performance.now();
       if ('changes' in valueMap) {
@@ -362,6 +364,33 @@ export class MessageHandler {
 
       Console.debug(`handleUIDLMessage: ${Math.round(performance.now() - processUidlStart)} ms`);
 
+      const meta = valueMap.meta as ValueMap | undefined;
+      if (meta?.[META_VIEW_TRANSITION] && typeof document.startViewTransition === 'function') {
+        // The browser runs the update callback asynchronously, after taking a
+        // snapshot of the current DOM. Applying the changes and ending the
+        // request both wait for it, so the response lock stays held and the
+        // client stays active until the DOM has actually been updated.
+        document.startViewTransition(() => this.#applyChanges(valueMap, lock, start));
+      } else {
+        this.#applyChanges(valueMap, lock, start);
+      }
+      finishDelegated = true;
+    } finally {
+      if (!finishDelegated) {
+        this.#finishProcessing(valueMap, lock, start);
+      }
+    }
+  }
+
+  /**
+   * Propagates the changes of a message to the DOM and handles its metadata.
+   *
+   * @param valueMap - the message payload
+   * @param lock - the lock object for this response
+   * @param start - the time processing of the message started
+   */
+  #applyChanges(valueMap: ValueMap, lock: object, start: number): void {
+    try {
       Reactive.flush();
 
       const meta = valueMap.meta as ValueMap | undefined;
@@ -393,39 +422,51 @@ export class MessageHandler {
       }
       this.#nextResponseSessionExpiredHandler = null;
     } finally {
-      // Mark the initial UIDL handled and end the request in finally so the UI
-      // settles (ApplicationConnection.isActive returns false) even if applying
-      // the message threw. In GWT the equivalent work ran inside $entry, so an
-      // uncaught error never left the client perpetually "active"; here we
-      // guarantee the same by not gating these on successful processing.
-      this.lastProcessingTime = Math.round(performance.now() - start);
-      this.totalProcessingTime += this.lastProcessingTime;
-      if (!this.#initialMessageHandled) {
-        this.#initialMessageHandled = true;
+      this.#finishProcessing(valueMap, lock, start);
+    }
+  }
 
-        const fetchStart = getFetchStartTime();
-        if (fetchStart !== 0) {
-          const time = Math.round(Date.now() - fetchStart);
-          Console.debug(`First response processed ${time} ms after fetchStart`);
-        }
+  /**
+   * Completes the processing of a message: records timings, ends the request
+   * and releases the response lock.
+   *
+   * @param valueMap - the message payload
+   * @param lock - the lock object for this response
+   * @param start - the time processing of the message started
+   */
+  #finishProcessing(valueMap: ValueMap, lock: object, start: number): void {
+    // Mark the initial UIDL handled and end the request unconditionally so the UI
+    // settles (ApplicationConnection.isActive returns false) even if applying
+    // the message threw. In GWT the equivalent work ran inside $entry, so an
+    // uncaught error never left the client perpetually "active"; here we
+    // guarantee the same by not gating these on successful processing.
+    this.lastProcessingTime = Math.round(performance.now() - start);
+    this.totalProcessingTime += this.lastProcessingTime;
+    if (!this.#initialMessageHandled) {
+      this.#initialMessageHandled = true;
 
-        this.#bootstrapTime = calculateBootstrapTime();
-        if (isEnabled() && this.#bootstrapTime !== -1) {
-          logBootstrapTimings();
-        }
+      const fetchStart = getFetchStartTime();
+      if (fetchStart !== 0) {
+        const time = Math.round(Date.now() - fetchStart);
+        Console.debug(`First response processed ${time} ms after fetchStart`);
       }
 
-      Console.debug(` Processing time was ${this.lastProcessingTime}ms`);
-
-      this.#endRequestIfResponse(valueMap);
-      this.resumeResponseHandling(lock);
-
-      if (isEnabled()) {
-        getScheduler().scheduleDeferred(() => {
-          logTimings();
-          resetProfiler();
-        });
+      this.#bootstrapTime = calculateBootstrapTime();
+      if (isEnabled() && this.#bootstrapTime !== -1) {
+        logBootstrapTimings();
       }
+    }
+
+    Console.debug(` Processing time was ${this.lastProcessingTime}ms`);
+
+    this.#endRequestIfResponse(valueMap);
+    this.resumeResponseHandling(lock);
+
+    if (isEnabled()) {
+      getScheduler().scheduleDeferred(() => {
+        logTimings();
+        resetProfiler();
+      });
     }
   }
 
