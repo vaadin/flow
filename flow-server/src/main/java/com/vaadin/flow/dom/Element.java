@@ -2115,7 +2115,6 @@ public class Element extends Node<Element> {
     public Registration addJsInitializer(String expression,
             Object... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
-        CspViolationReporter.reportStringJavaScript();
         return new ElementJsInitializerRegistration(getNode(), expression,
                 parameters == null ? new Object[0] : parameters);
     }

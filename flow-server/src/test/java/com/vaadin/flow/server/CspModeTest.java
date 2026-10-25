@@ -80,7 +80,8 @@ class CspModeTest {
         return Stream.of(
                 call(Element.class, "executeJs",
                         ui -> ui.getElement().executeJs("return 1")),
-                call(Element.class, "addJsInitializer",
+                // Reported once, by the JsFunction the initializer runs
+                call(JsFunction.class, "of",
                         ui -> ui.getElement().addJsInitializer("return 1")),
                 call(Page.class, "executeJs",
                         ui -> ui.getPage().executeJs("return 1")),
@@ -131,6 +132,8 @@ class CspModeTest {
                     });
             registration.setFilter(null);
             registration.addEventData(List.of());
+            registration.synchronizeProperty("value");
+            registration.mapEventTargetElement();
         });
     }
 
