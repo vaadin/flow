@@ -44,13 +44,13 @@ public enum CspMode {
     OFF,
     /**
      * The application runs unchanged, but every call that would not work under
-     * a strict Content Security Policy is logged as a warning, once per API and
-     * calling location in the application.
+     * a strict Content Security Policy is logged as a warning, once per call
+     * site, with a stack trace that leads from the API to its caller.
      */
     WARN,
     /**
-     * APIs that need {@code eval} throw a {@link CspViolationException} naming
-     * the API and the calling location in the application.
+     * APIs that need {@code eval} throw a {@link CspViolationException}, whose
+     * stack trace leads from the API to its caller.
      */
     STRICT
 }

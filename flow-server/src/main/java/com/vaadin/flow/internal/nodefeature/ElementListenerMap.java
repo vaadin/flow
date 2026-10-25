@@ -171,8 +171,7 @@ public class ElementListenerMap extends NodeMap {
                 throw new IllegalArgumentException(
                         "The event data expression must not be null");
             }
-            CspViolationReporter.reportStringJavaScript(
-                    "DomListenerRegistration.addEventData(String)");
+            CspViolationReporter.reportStringJavaScript();
 
             appendEventData(List.of(eventData));
 
@@ -194,8 +193,7 @@ public class ElementListenerMap extends NodeMap {
                 }
             }
             if (!eventData.isEmpty()) {
-                CspViolationReporter.reportStringJavaScript(
-                        "DomListenerRegistration.addEventData(List)");
+                CspViolationReporter.reportStringJavaScript();
             }
 
             appendEventData(eventData);
@@ -232,8 +230,7 @@ public class ElementListenerMap extends NodeMap {
         @Override
         public DomListenerRegistration setFilter(String filter) {
             if (filter != null) {
-                CspViolationReporter.reportStringJavaScript(
-                        "DomListenerRegistration.setFilter(String)");
+                CspViolationReporter.reportStringJavaScript();
             }
             this.filter = filter;
 

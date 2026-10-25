@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -31,11 +32,10 @@ import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.component.ClickNotifier;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -43,20 +43,15 @@ import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class CspModeTest {
-
-    @Tag("div")
-    private static class Clickable extends Component
-            implements ClickNotifier<Clickable> {
-    }
 
     private MockServletServiceSessionSetup setup;
     private MockUI ui;
@@ -75,63 +70,41 @@ class CspModeTest {
 
     static Stream<Arguments> stringJavaScriptCalls() {
         return Stream.of(
-                call("Element.executeJs(String, Object...)",
+                call(Element.class, "executeJs",
                         ui -> ui.getElement().executeJs("return 1")),
-                call("Element.addJsInitializer(String, Object...)",
+                call(Element.class, "addJsInitializer",
                         ui -> ui.getElement().addJsInitializer("return 1")),
-                call("Page.executeJs(String, Object...)",
+                call(Page.class, "executeJs",
                         ui -> ui.getPage().executeJs("return 1")),
-                call("Page.addDynamicImport(String)",
+                call(Page.class, "addDynamicImport",
                         ui -> ui.getPage().addDynamicImport("return 1")),
-                call("JsFunction.of(String, Object...)",
-                        ui -> JsFunction.of("return 1")),
-                call("DomListenerRegistration.addEventData(String)",
+                call(JsFunction.class, "of", ui -> JsFunction.of("return 1")),
+                call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData("event.x")),
-                call("DomListenerRegistration.addEventData(List)",
+                call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData(List.of("event.x"))),
-                call("DomListenerRegistration.setFilter(String)",
+                call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x")));
     }
 
-    private static Arguments call(String api, Consumer<UI> call) {
-        return Arguments.of(api, call);
+    private static Arguments call(Class<?> api, String method,
+            Consumer<UI> call) {
+        return Arguments.of(api, method, call);
     }
 
-    @ParameterizedTest(name = "{0}")
+    @ParameterizedTest(name = "{0}.{1}")
     @MethodSource("stringJavaScriptCalls")
-    void strict_stringJavaScript_throwsNamingApiAndCaller(String api,
-            Consumer<UI> call) {
+    void strict_stringJavaScript_throwsWithTraceFromApiToCaller(Class<?> api,
+            String method, Consumer<UI> call) {
         setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
 
         CspViolationException exception = assertThrows(
                 CspViolationException.class, () -> call.accept(ui));
 
-        String message = exception.getMessage();
-        assertTrue(message.startsWith(
-                api + " called at " + CspModeTest.class.getName() + ".lambda$"),
-                message);
-        assertFalse(message.contains(" via "), message);
-    }
-
-    @Test
-    void strict_stringJavaScriptFromFramework_namesFrameworkCallee() {
-        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
-        Clickable clickable = new Clickable();
-
-        CspViolationException exception = assertThrows(
-                CspViolationException.class,
-                () -> clickable.addDoubleClickListener(event -> {
-                }));
-
-        String message = exception.getMessage();
-        assertTrue(message.contains(
-                " called at " + CspModeTest.class.getName() + ".lambda$"),
-                message);
-        assertTrue(message.contains(" via " + ClickNotifier.class.getName()
-                + ".addDoubleClickListener("), message);
+        assertTraceLeadsFromApiToTest(exception, api, method);
     }
 
     @Test
@@ -168,16 +141,33 @@ class CspModeTest {
         }
 
         assertEquals(3, ui.dumpPendingJsInvocations().size());
-        ArgumentCaptor<String> messages = ArgumentCaptor.forClass(String.class);
-        verify(logger, times(expectedWarnings)).warn(messages.capture());
-        String callSite = "Element.executeJs(String, Object...) called at "
-                + CspModeTest.class.getName()
-                + ".warnOrOff_stringJavaScript_runsAndLogsOncePerCallSiteOnlyInWarn(CspModeTest.java:";
+        ArgumentCaptor<Throwable> warnings = ArgumentCaptor
+                .forClass(Throwable.class);
+        verify(logger, times(expectedWarnings)).warn(anyString(),
+                warnings.capture());
+        for (Throwable warning : warnings.getAllValues()) {
+            assertTraceLeadsFromApiToTest(warning, Element.class, "executeJs");
+        }
+    }
+
+    private static void assertTraceLeadsFromApiToTest(Throwable violation,
+            Class<?> api, String method) {
+        StackTraceElement[] stack = violation.getStackTrace();
+        assertTrue(api.isAssignableFrom(loadClass(stack[0].getClassName())),
+                stack[0].toString());
+        assertEquals(method, stack[0].getMethodName());
         assertTrue(
-                messages.getAllValues().stream()
-                        .allMatch(message -> message.startsWith(callSite)),
-                messages.getAllValues().toString());
-        assertEquals(expectedWarnings,
-                messages.getAllValues().stream().distinct().count());
+                Stream.of(stack)
+                        .anyMatch(frame -> frame.getClassName()
+                                .startsWith(CspModeTest.class.getName())),
+                Arrays.toString(stack));
+    }
+
+    private static Class<?> loadClass(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
     }
 }

@@ -23,7 +23,7 @@ package com.vaadin.flow.server;
  * policy without <code>unsafe-eval</code> blocks, so the call fails on the
  * server instead, where the stack trace points at the code that made it.
  * <p>
- * The message names the API and the location in the application that called it.
+ * The stack trace starts at the API and leads to the code that called it.
  */
 public class CspViolationException extends IllegalStateException {
 

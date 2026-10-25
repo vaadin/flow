@@ -1954,8 +1954,7 @@ public class Element extends Node<Element> {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        CspViolationReporter
-                .reportStringJavaScript("Element.executeJs(String, Object...)");
+        CspViolationReporter.reportStringJavaScript();
         return scheduleExecuteJs(expression, parameters);
     }
 
@@ -2116,8 +2115,7 @@ public class Element extends Node<Element> {
     public Registration addJsInitializer(String expression,
             Object... parameters) {
         Objects.requireNonNull(expression, "Expression cannot be null");
-        CspViolationReporter.reportStringJavaScript(
-                "Element.addJsInitializer(String, Object...)");
+        CspViolationReporter.reportStringJavaScript();
         return new ElementJsInitializerRegistration(getNode(), expression,
                 parameters == null ? new Object[0] : parameters);
     }

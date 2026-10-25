@@ -433,8 +433,7 @@ public class Page implements Serializable {
      *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public void addDynamicImport(String expression) {
-        CspViolationReporter
-                .reportStringJavaScript("Page.addDynamicImport(String)");
+        CspViolationReporter.reportStringJavaScript();
         addDependency(new Dependency(Type.DYNAMIC_IMPORT, expression));
     }
 
@@ -547,8 +546,7 @@ public class Page implements Serializable {
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
-        CspViolationReporter
-                .reportStringJavaScript("Page.executeJs(String, Object...)");
+        CspViolationReporter.reportStringJavaScript();
         return ui.getInternals().addJavaScriptInvocation(
                 new JavaScriptInvocation(expression, parameters));
     }

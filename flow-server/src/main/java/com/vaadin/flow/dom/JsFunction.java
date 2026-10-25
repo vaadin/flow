@@ -89,8 +89,7 @@ public final class JsFunction implements Serializable {
     public static JsFunction of(String body, @Nullable Object... captures) {
         Objects.requireNonNull(body, "body");
         Objects.requireNonNull(captures, "captures");
-        CspViolationReporter
-                .reportStringJavaScript("JsFunction.of(String, Object...)");
+        CspViolationReporter.reportStringJavaScript();
         @Nullable
         Object[] copy = captures.clone();
         // Dry-run encode each capture so unsupported types fail fast. Mirrors
