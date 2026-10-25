@@ -13,17 +13,17 @@ browser-API wrapper lives in sibling chapters:
 - [Documenting](documenting.md) — what the Javadoc of a wrapper has to explain.
 - [Testing](testing.md) — mocking the browser API in an integration test.
 
+The rules for new public API are in the Public API, Naming and Nullability
+sections of [`CONVENTIONS.md`](../CONVENTIONS.md). This chapter explains them
+and covers the design decisions they leave open.
+
 ## Before you start
 
-- **Find the precedent.** Flow already has patterns for per-UI facades,
-  reactive signals, sealed result hierarchies, Jackson wire records, and
-  browser-API wrappers. Look at `Page`, `History`, `ExtendedClientDetails`,
-  `VaadinSession.localeSignal`, `window.Vaadin.Flow.*` helpers, etc. — match
-  the existing shape rather than inventing a new one.
+- **Find the precedent.** The shapes to match are in `Page`, `History`,
+  `ExtendedClientDetails`, `VaadinSession.localeSignal` and the
+  `window.Vaadin.Flow.*` helpers.
 - **Understand the blast radius.** See [Repository](repository.md) — changes to
   `StateNode`, `Element` or the codec layer ripple across the codebase.
-- **Frontend ↔ server is a contract.** Any protocol or DOM-event change needs
-  both sides updated in the same PR.
 
 ## API shape
 
@@ -35,50 +35,43 @@ holds `private final UI ui`, and all `executeJs` calls go through
 `ui.getElement()` or `ui.getPage()`. Follow the `Page` / `History`
 pattern. Enforce single-instance creation in the constructor if needed.
 
-If a feature hands out a stateful handle (e.g. `Geolocation.watchPosition()`
-returning a `GeolocationWatcher`), make the handle's constructor
-**package-private** so application code cannot bypass the entry point.
+A stateful handle the facade hands out (e.g. `Geolocation.watchPosition()`
+returning a `GeolocationWatcher`) is only valid when created through that
+entry point, which is why its constructor stays package-private.
 
 ### Keep internal mutators off user-facing classes
 
-When the framework needs to write a value that the application is meant
-to read, don't hang the setter on the class users already use for reads
-— even if it's annotated "for framework use only". Put the read surface
-on the user-facing class or facade and the write surface on
-`UIInternals` (or equivalent internal-only class). The opposite shape
-is a DX hazard: for example, `setGeolocationAvailability` lives on
+A setter on the class users already read from shows up in their IDE
+completion, and a "for framework use only" note does not stop anyone from
+calling it. That is why the write surface goes on `UIInternals` (or an
+equivalent internal-only class): `setGeolocationAvailability` lives on
 `UIInternals`, not on the user-facing `ExtendedClientDetails`.
 
 ### Options records
 
-For tunable knobs (accuracy, timeout, cache age), prefer an immutable
-Java record over a long parameter list:
+How to build the options record for tunable knobs (accuracy, timeout, cache
+age):
 
-- Compact constructor with validation (reject negative durations, etc.).
-  NullAway reads `@Nullable` off the record components, so there is no
-  need to spell out the full canonical constructor.
-- Builder for ergonomics. Offer both `Duration` and `int`-ms overloads
-  on time-related setters where the wire format is ms; applications get
-  a fluent `Duration` API and the record stores the int.
-- Record stays serialisable — implement `Serializable` on the Builder
+- NullAway reads `@Nullable` off the record components, so the compact
+  constructor that validates (rejecting negative durations, etc.) is enough;
+  there is no need to spell out the full canonical constructor.
+- Offer both `Duration` and `int`-ms overloads on time-related builder
+  setters where the wire format is ms; applications get a fluent `Duration`
+  API and the record stores the int.
+- The record stays serialisable — implement `Serializable` on the Builder
   too if it's meant to be held in session state.
 
 ### Signals for reactive state
 
-Expose observable state as a `Signal<T>` rather than a listener API. Name
-accessors with a `Signal` suffix — `localeSignal()`, `availabilitySignal()`,
-`valueSignal()`, `activeSignal()` — so callers see the shape at the call
-site. Other precedents: `windowSizeSignal`, `validationStatusSignal`.
+The `Signal` suffix lets callers see the shape at the call site. Precedents:
+`localeSignal()`, `availabilitySignal()`, `valueSignal()`, `activeSignal()`,
+`windowSizeSignal`, `validationStatusSignal`.
 
-- Back the signal with a private `ValueSignal<T>`; expose it as read-only
-  via `valueSignal.asReadonly()`.
-- Cache the read-only wrapper in a field so every call returns the same
-  instance. `asReadonly()` allocates a fresh lambda per call — identity is
-  unstable and allocations add up.
-- Seed the signal with a meaningful default, not `null`. If the initial
-  state is "no data yet", use a sentinel enum value (e.g. `UNKNOWN`) or a
-  dedicated record (e.g. `Pending`) that callers can handle in a normal
-  pattern match without a `case null` arm.
+- Back the signal with a private `ValueSignal<T>` and expose it read-only via
+  `valueSignal.asReadonly()`. Since `asReadonly()` allocates a fresh lambda
+  per call, an uncached wrapper would also add up in allocations.
+- A sentinel default such as `UNKNOWN` or `Pending` lets callers handle the
+  "no data yet" state in a normal pattern match, without a `case null` arm.
 - Inside a reactive context, callers use `.get()` (subscribes); outside,
   they use `.peek()` (snapshot). Document this in the accessor's Javadoc.
 
@@ -125,64 +118,54 @@ class `AbstractXyz`. Don't introduce one half speculatively.
 
 ### Result types: sealed interfaces + pattern matching
 
-For values that are "one of N things" (position-or-error,
-pending-or-position-or-error), use a sealed hierarchy:
+A sealed hierarchy with record subtypes models values that are "one of N
+things" (position-or-error, pending-or-position-or-error):
 
 ```java
 public sealed interface Foo permits FooA, FooB, FooC {}
 ```
 
-- Record subtypes are preferred over classes.
 - If the same values appear in two contexts with different permitted sets,
   split into two sealed interfaces and let the narrower one `extends` and
   `permits` a subset (see `GeolocationResult` vs `GeolocationOutcome`).
   This lets a one-shot callback omit the "pending" arm that would be dead
   there.
-- Exhaustive `switch` expressions over the sealed set are guaranteed
-  complete at compile time; design for that, don't add `default:` arms.
+- The compiler checks an exhaustive `switch` over the sealed set for
+  completeness, so adding a subtype later shows every place that has to
+  handle it. A `default:` arm turns that check off.
 
 ### Nullability discipline
 
-- Apply `@NullMarked` at the package level (JSpecify). Only `@Nullable`
-  what genuinely may be null.
-- **Collections: return empty, never `null`.** A method returning a
-  `List`, `Set`, `Map`, `Stream` or array returns an empty one when
-  there are no values (`List.of()`, `Stream.empty()`). Callers can
-  iterate without a null check, and "no values" has a single spelling.
-- **Optional properties: return `@Nullable T`, not `Optional<T>`.** A
-  getter for a value that may simply be unset — `getLabel()`,
-  `getPlaceholder()`, `getTitle()` — returns a `@Nullable String` (or
-  other type), matching the setter that accepts `null` to clear it.
-  NullAway already makes callers handle the `null` case, so `Optional`
-  adds an allocation and a second style without adding safety. Existing
-  `Optional`-returning methods such as `Component.getUI()` stay as they
-  are for compatibility; don't add new ones.
-- **Don't encode "not set" as a fake value.** Return `null`, not `""`,
-  `-1` or `0`, when nothing is set — a stand-in value can not be told
-  apart from a value the application actually set.
-- **Signals and result types use a named state, not `null`.** When a
-  signal or "one of N things" value has a real "no data yet" state,
-  model it as an enum constant (`UNKNOWN`) or a record in the sealed
-  hierarchy (`Pending`) — see *Signals for reactive state* above — so
-  callers handle it in an exhaustive `switch`.
-- Jackson wire records (the record used to decode `executeJs` return
-  values or DOM event payloads) may have `@Nullable` fields because the
-  wire format permits omissions. Keep the wire record private and
-  translate it to the public shape at the boundary.
-- `@Nullable` belongs on the declared type — `ValueSignal<@Nullable X>` —
-  and NullAway infers it for the constructor, so `new ValueSignal<>(null)`
-  and `Signal.cached(...)` need no repeated type argument or type witness.
+The reasoning behind the rules in the Nullability section of
+[`CONVENTIONS.md`](../CONVENTIONS.md#nullability):
+
+- **Empty collections.** Callers can iterate without a null check, and "no
+  values" has a single spelling.
+- **`@Nullable T` instead of `Optional<T>`.** The getter matches the setter
+  that accepts `null` to clear the value. NullAway already makes callers
+  handle the `null` case, so `Optional` adds an allocation and a second style
+  without adding safety. Existing `Optional`-returning methods such as
+  `Component.getUI()` stay as they are for compatibility.
+- **No stand-in values.** A `""`, `-1` or `0` meaning "not set" can not be
+  told apart from a value the application actually set.
+- **Named states for signals and result types.** Unlike a getter, a signal or
+  a "one of N things" value has a real "no data yet" state, and a named value
+  lets callers handle it in an exhaustive `switch` — see *Signals for reactive
+  state* above.
+- **Wire records.** The record used to decode `executeJs` return values or
+  DOM event payloads may have `@Nullable` fields because the wire format
+  permits omissions; translating it at the boundary keeps those nulls out of
+  the public API.
 
 ### Lifecycle and cleanup
 
 Resources that outlive a single request — watches, DOM listeners, timers,
-client-side subscriptions — must be tied to a component's lifecycle:
+client-side subscriptions — are tied to an owner component with a
+`DetachListener`, plus an explicit `stop()` for mid-view cancellation. Beyond
+that:
 
-- Accept a `Component owner` at construction.
-- Register a `DetachListener` that performs the cleanup.
-- Also expose an explicit `stop()` (or similar) for mid-view cancellation.
-- Make `stop()` idempotent — guard with an `active` flag or signal so
-  detach-after-stop and double-stop are safe no-ops.
+- Guard `stop()` with an `active` flag or signal, so detach-after-stop and
+  double-stop are safe no-ops.
 - If the API supports resuming, reset observable state on resume so
   subscribers re-render with the correct initial value.
 - DOM listeners that must keep flowing while the UI is inert (e.g. a
@@ -273,9 +256,6 @@ Decide it from the rules below rather than case by case.
   costs discoverability for the users who do want the element — pay it only
   when one of the two reasons above applies.
 
-- **Renaming an existing component is a breaking change.** Do not rename
-  just to close the gap with this guidance. When a rename is worth it, add
-  the new class, deprecate the old one with a `@deprecated` pointer
-  explaining what to use instead, and remove it in the next major — the way
-  `Label` was replaced by `NativeLabel` in 24.1 and removed in 25.
-
+- **Do not rename just to close the gap with this guidance.** A rename is a
+  breaking change and goes through a deprecation cycle, the way `Label` was
+  replaced by `NativeLabel` in 24.1 and removed in 25.
