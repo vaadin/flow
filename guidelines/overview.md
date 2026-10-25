@@ -24,4 +24,4 @@ to their code and are listed at the top of [Architecture](architecture.md).
 | [Wire Protocol](wire-protocol.md)           | The UIDL response, the constant pool, how `executeJs` is encoded and executed. |
 | [Frontend Hotswap](frontend-hotswap.md)     | Keeping generated frontend files in sync with Java classes in development mode. |
 | [Documenting](documenting.md)               | Javadoc expectations, documenting wrapped browser APIs.                        |
-| [Testing](testing.md)                       | Unit tests, integration tests, debugging failures.                             |
+| [Testing](testing.md)                       | Where tests live, testing a browser-API wrapper.                             |

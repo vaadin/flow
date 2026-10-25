@@ -196,10 +196,11 @@ Keep reading and patching a generated file inside the task that generates it. A
 caller that reacts to a change asks the task to bring the file up to date; it
 does not parse the format itself.
 
-Write a generated file through `writeIfChanged`, never with
-`Files.writeString` or a writer of your own. It leaves a file with unchanged
-content alone, so no frontend recompile starts, and it writes atomically, so
-Vite never reads a truncated file. See `guidelines/frontend-hotswap.md`.
+Write a whole generated file under the frontend generated folder through
+`writeIfChanged`, never with `Files.writeString` or a writer of your own. It
+leaves a file with unchanged content alone, so no frontend recompile starts,
+and it writes atomically, so Vite never reads a truncated file. See
+`guidelines/frontend-hotswap.md`.
 
 ## Build & Dependencies
 
