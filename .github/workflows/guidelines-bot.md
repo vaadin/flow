@@ -95,7 +95,7 @@ What belongs in `CONVENTIONS.md` and what in a guidelines chapter is defined in 
 
 | File | What belongs there |
 |---|---|
-| `CONVENTIONS.md` | The rule itself: one imperative paragraph a reviewer can check a diff against. |
+| `CONVENTIONS.md` | The rule itself, in the shape the Conventions and Guidelines section describes. |
 | `guidelines/architecture.md`, `design.md`, `browser-integration.md`, `documenting.md`, `testing.md`, `repository.md` | The reasoning behind a rule when it needs more than a paragraph — why the shape is what it is, what breaks otherwise. |
 
 Never touch anything else. Not `CLAUDE.md`, not `guidelines/overview.md` — a new chapter is a human decision — not the shipped `vaadin-devloop` skill under `flow-plugins/`, which is a product artifact for users of Vaadin applications and not guidance for work in this repository. Not code, not tests, not build files. If a finding belongs somewhere you may not edit, say so in the pull request body and leave the file alone.

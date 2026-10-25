@@ -17,8 +17,8 @@ A chapter in `guidelines/` holds what does not fit in such a paragraph: the
 reasoning behind a rule and the failure it prevents, how a part of Flow works,
 worked examples, and the judgment calls of a design. It links to the rule it
 explains instead of restating it. Its advice is the default approach and can
-be departed from when the situation calls for it; anything every change has to
-follow is a rule and belongs here. Read the chapters for the topic at hand, as
+be departed from when the situation calls for it; anything every change in its
+scope has to follow is a rule and belongs here. Read the chapters for the topic at hand, as
 mapped in `guidelines/overview.md`.
 
 When this file and a chapter disagree, this file applies and the chapter is
