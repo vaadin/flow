@@ -16,7 +16,7 @@
 
 /*
  * Client-side helpers for the web push API of the flow-webpush module, called
- * through the declared expressions of WebPush.WebPushJs.
+ * by the WebPush class.
  */
 
 const noActiveSubscription = '{ "message": "No active subscription" }';
