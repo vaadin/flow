@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.StackTraceUtil;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.InitParameters;
@@ -61,11 +62,6 @@ public class ComponentTracker {
     private static final AtomicLong attachOrdinal = new AtomicLong(0);
 
     private static Boolean disabled = null;
-    private static String[] prefixesToSkip = new String[] {
-            "com.vaadin.flow.component.", "com.vaadin.flow.di.",
-            "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
-            "com.vaadin.flow.spring.", "com.vaadin.cdi.", "java.", "jdk.",
-            "org.springframework.beans.", "org.jboss.weld.", };
 
     private ComponentTracker() {
 
@@ -362,17 +358,9 @@ public class ComponentTracker {
 
     private static Location[] findRelevantLocations(Location[] locations) {
         return Stream.of(locations)
-                .filter(location -> isRelevant(location.className()))
+                .filter(location -> StackTraceUtil
+                        .isApplicationClass(location.className()))
                 .toArray(Location[]::new);
-    }
-
-    private static boolean isRelevant(String className) {
-        for (String prefixToSkip : prefixesToSkip) {
-            if (className.startsWith(prefixToSkip)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static Location findRelevantLocation(
@@ -381,7 +369,9 @@ public class ComponentTracker {
         List<Location> candidates = Arrays.stream(locations)
                 .filter(location -> excludeClass == null
                         || !location.className().equals(excludeClass.getName()))
-                .filter(location -> isRelevant(location.className())).toList();
+                .filter(location -> StackTraceUtil
+                        .isApplicationClass(location.className()))
+                .toList();
         if (preferredClass != null) {
             Optional<Location> preferredCandidate = candidates.stream()
                     .filter(location -> location.className()
@@ -392,24 +382,6 @@ public class ComponentTracker {
             }
         }
         return candidates.isEmpty() ? null : candidates.get(0);
-    }
-
-    /**
-     * Checks whether the given class belongs to the framework, the JDK or a
-     * dependency injection container, i.e. whether locations skip its stack
-     * frames to point at the application code that called it.
-     * <p>
-     * Only the packages that commonly sit between application code and a
-     * component are skipped, so framework code that application code does not
-     * call directly, such as the router, is not recognized as framework code.
-     *
-     * @param className
-     *            the fully qualified name of the class, not <code>null</code>
-     * @return <code>true</code> if stack frames of the class are skipped,
-     *         <code>false</code> otherwise
-     */
-    public static boolean isSkippedClass(String className) {
-        return !isRelevant(className);
     }
 
     /**
