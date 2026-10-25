@@ -240,8 +240,12 @@ harder to follow than `setVisible(true)`.
   negation of another name in the same API. The rule is about `not`, `no`,
   `dis-`, `un-` and `hidden`-style names whose opposite is the state callers
   actually ask about.
-- **Existing negative names stay.** Renaming public API is a breaking change;
-  do not rename only to follow this rule.
+- **Existing negative names stay, and new API matches them.** Renaming
+  public API is a breaking change; do not rename only to follow this rule.
+  When new API joins a family that already uses a negative name, consistency
+  with the family wins: a field implements `HasValidation` with
+  `setInvalid(boolean)` / `isInvalid()`, and a related property on the same
+  component uses the same polarity rather than adding `isValid()` beside it.
 
 ### Naming components that wrap HTML elements
 
