@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.webpush;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.security.spec.InvalidKeySpecException;
 
@@ -29,13 +27,12 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
 
 /**
  * Base class for handling Web Push notifications.
@@ -140,8 +137,7 @@ public class WebPush {
             receiver.state(Boolean.parseBoolean(json.toString()));
         };
 
-        executeJavascript(ui,
-                "return window.Vaadin.Flow.webPush.registrationStatus()")
+        ui.getPage().executeJs(WebPushJs.class).registrationStatus()
                 .then(resultHandler, errorHandler);
     }
 
@@ -157,8 +153,7 @@ public class WebPush {
         final SerializableConsumer<JsonNode> resultHandler = json -> receiver
                 .state(Boolean.parseBoolean(json.toString()));
 
-        executeJavascript(ui,
-                "return window.Vaadin.Flow.webPush.notificationDenied()")
+        ui.getPage().executeJs(WebPushJs.class).notificationDenied()
                 .then(resultHandler, errorHandler);
     }
 
@@ -174,8 +169,7 @@ public class WebPush {
         final SerializableConsumer<JsonNode> resultHandler = json -> receiver
                 .state(Boolean.parseBoolean(json.toString()));
 
-        executeJavascript(ui,
-                "return window.Vaadin.Flow.webPush.notificationGranted()")
+        ui.getPage().executeJs(WebPushJs.class).notificationGranted()
                 .then(resultHandler, errorHandler);
     }
 
@@ -193,8 +187,8 @@ public class WebPush {
             ObjectNode responseJson = JacksonUtils.readTree(json.toString());
             receiver.subscription(generateSubscription(responseJson));
         };
-        executeJavascript(ui, "return window.Vaadin.Flow.webPush.subscribe($0)",
-                publicKey).then(resultHandler, errorHandler);
+        ui.getPage().executeJs(WebPushJs.class).subscribe(publicKey)
+                .then(resultHandler, errorHandler);
     }
 
     /**
@@ -206,7 +200,7 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void unsubscribe(UI ui, WebPushSubscriptionResponse receiver) {
-        executeJavascript(ui, "return window.Vaadin.Flow.webPush.unsubscribe()")
+        ui.getPage().executeJs(WebPushJs.class).unsubscribe()
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
     }
 
@@ -220,36 +214,8 @@ public class WebPush {
      */
     public void fetchExistingSubscription(UI ui,
             WebPushSubscriptionResponse receiver) {
-        executeJavascript(ui,
-                "return window.Vaadin.Flow.webPush.getSubscription()")
+        ui.getPage().executeJs(WebPushJs.class).getSubscription()
                 .then(handlePossiblyEmptySubscription(receiver), errorHandler);
-    }
-
-    private PendingJavaScriptResult executeJavascript(UI ui, String script,
-            Serializable... parameters) {
-        initWebPushClient(ui);
-        return ui.getPage().executeJs(script, parameters);
-    }
-
-    private void initWebPushClient(UI ui) {
-        if (ComponentUtil.getData(ui, "webPushInitialized") != null) {
-            return;
-        } else {
-            ComponentUtil.setData(ui, "webPushInitialized", true);
-        }
-        Page page = ui.getPage();
-        try (InputStream stream = WebPush.class.getClassLoader()
-                .getResourceAsStream("META-INF/frontend/FlowWebPush.js")) {
-            page.executeJs(
-                    StringUtil.removeComments(StringUtil.toUTF8String(stream)))
-                    .then(unused -> getLogger()
-                            .debug("Webpush client code initialized"),
-                            err -> getLogger().error(
-                                    "Webpush client code initialization failed: {}",
-                                    err));
-        } catch (IOException ioe) {
-            throw new WebPushException("Could not load webpush client code");
-        }
     }
 
     private SerializableConsumer<JsonNode> handlePossiblyEmptySubscription(
@@ -282,5 +248,68 @@ public class WebPush {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(WebPush.class);
+    }
+
+    /**
+     * What web push asks of the browser, as a JavaScript definition for
+     * {@link com.vaadin.flow.component.page.Page#executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface WebPushJs extends Serializable {
+
+        /**
+         * Checks whether the service worker has a push subscription.
+         *
+         * @return the pending result, which answers with whether a subscription
+         *         exists
+         */
+        @JsExpression("return window.Vaadin.Flow.webPush.registrationStatus()")
+        PendingJavaScriptResult registrationStatus();
+
+        /**
+         * Checks whether notifications are denied.
+         *
+         * @return the pending result, which answers with whether notifications
+         *         are denied
+         */
+        @JsExpression("return window.Vaadin.Flow.webPush.notificationDenied()")
+        PendingJavaScriptResult notificationDenied();
+
+        /**
+         * Checks whether notifications are granted.
+         *
+         * @return the pending result, which answers with whether notifications
+         *         are granted
+         */
+        @JsExpression("return window.Vaadin.Flow.webPush.notificationGranted()")
+        PendingJavaScriptResult notificationGranted();
+
+        /**
+         * Asks for the notification permission and subscribes to web push.
+         *
+         * @param publicKey
+         *            the public key of the application server
+         * @return the pending result, which answers with the subscription
+         */
+        @JsExpression("return window.Vaadin.Flow.webPush.subscribe($0)")
+        PendingJavaScriptResult subscribe(String publicKey);
+
+        /**
+         * Removes the push subscription of the service worker.
+         *
+         * @return the pending result, which answers with the removed
+         *         subscription, or with a message when there was none
+         */
+        @JsExpression("return window.Vaadin.Flow.webPush.unsubscribe()")
+        PendingJavaScriptResult unsubscribe();
+
+        /**
+         * Reads the push subscription of the service worker.
+         *
+         * @return the pending result, which answers with the subscription, or
+         *         with a message when there is none
+         */
+        @JsExpression("return window.Vaadin.Flow.webPush.getSubscription()")
+        PendingJavaScriptResult getSubscription();
     }
 }

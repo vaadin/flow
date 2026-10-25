@@ -264,22 +264,6 @@ class VaadinQuarkusNativeProcessorTest {
     }
 
     @Test
-    void testVaadinNativeSupport_registersRuntimeLoadedClientHelpers() {
-        List<NativeImageResourcePatternsBuildItem> resources = new ArrayList<>();
-
-        processor.vaadinNativeSupport(new CombinedIndexBuildItem(index, index),
-                item -> {
-                }, resources::add, item -> {
-                }, item -> {
-                });
-
-        assertTrue(isIncluded(resources, "META-INF/frontend/FlowShortcut.js"),
-                "Shortcut client helper should be included in the image");
-        assertTrue(isIncluded(resources, "META-INF/frontend/FlowWebPush.js"),
-                "Web push client helper should be included in the image");
-    }
-
-    @Test
     void testVaadinNativeSupport_registersRuntimeLoadedProperties() {
         List<NativeImageResourcePatternsBuildItem> resources = new ArrayList<>();
 

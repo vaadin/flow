@@ -91,10 +91,6 @@ public class WebPushIT extends ChromeBrowserTest {
         open();
 
         JavascriptExecutor jse = (JavascriptExecutor) driver;
-        Assert.assertFalse("WebPush should not be automatically loaded.",
-                (boolean) jse.executeScript(
-                        "if(window.Vaadin.Flow.webPush){return true;} return false;"));
-
         Assert.assertTrue("No service worker initiated",
                 (boolean) jse.executeScript(
                         "if(navigator.serviceWorker)return true;return false;"));
@@ -107,10 +103,6 @@ public class WebPushIT extends ChromeBrowserTest {
 
         waitUntil(driver -> eventLog.$(DivElement.class).all().size() == 1);
         Assert.assertEquals("", 1, eventLog.$(DivElement.class).all().size());
-
-        Assert.assertTrue("WebPush should be loaded with first call to API.",
-                Boolean.valueOf((String) jse.executeScript(
-                        "if(window.Vaadin.Flow.webPush){return 'true';} return 'false';")));
 
         Assert.assertEquals("No subscription should exist",
                 "1: Subscription false",
