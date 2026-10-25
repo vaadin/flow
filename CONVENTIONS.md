@@ -1,8 +1,33 @@
 # Conventions
 
 The canonical list of checkable conventions for this repository. Read it in
-full when authoring or reviewing code. Design-level reasoning behind several of
-these rules lives in `guidelines/` — see `guidelines/overview.md`.
+full when authoring or reviewing code.
+
+## Conventions and Guidelines
+
+This file decides; the chapters in `guidelines/` explain. Each holds what the
+other does not, so a rule is written down once.
+
+This file holds the rules. Each paragraph is one imperative rule that applies
+to every change and that a reviewer can check a diff against, with its reason
+in a sentence at most. A rule lives here and nowhere else.
+
+A chapter in `guidelines/` holds what does not fit in such a paragraph: the
+reasoning behind a rule and the failure it prevents, how a part of Flow works,
+worked examples, and the judgment calls of a design. It links to the rule it
+explains instead of restating it. Its advice is the default approach and can
+be departed from when the situation calls for it; anything every change has to
+follow is a rule and belongs here. Read the chapters for the topic at hand, as
+mapped in `guidelines/overview.md`.
+
+When this file and a chapter disagree, this file applies and the chapter is
+corrected.
+
+To add guidance, write the rule here, in the section it belongs to, and end it
+with "See `guidelines/<chapter>.md`." when the reasoning needs more room than a
+sentence. Write that reasoning in the chapter. Build and test commands are in
+`CLAUDE.md`; commit messages and pull request descriptions are covered by the
+skill linked from the Commit & PR Hygiene section below.
 
 ## Public API
 
