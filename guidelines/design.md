@@ -219,6 +219,30 @@ in the Javadoc and enforced for everything on the interpreted side. What must
 never happen is a member that quietly does nothing because it fell between the
 two.
 
+### Naming boolean properties
+
+Name a boolean property after its positive state: `isEnabled()` /
+`setEnabled(boolean)`, `isVisible()`, `isRequired()` — not `isDisabled()`,
+`isHidden()` or `setNotRequired(boolean)`. A negative name turns every
+negated check into a double negative: `!isDisabled()` makes the reader undo
+two negations to learn that the thing is enabled, and `setHidden(false)` is
+harder to follow than `setVisible(true)`.
+
+- **The getter and the setter share one polarity.** `setEnabled(false)` is
+  read back with `isEnabled()`, never with a separate `isDisabled()`.
+- **Flip the polarity at the boundary, not in the API.** HTML boolean
+  attributes name the non-default state (`disabled`, `hidden`) because they
+  work by presence and absence; Java has no such constraint. The wrapper maps
+  `setEnabled(false)` to the `disabled` attribute so that application code
+  never sees the negative form.
+- **Words that are positive concepts are fine.** `isEmpty()`, `isInert()`,
+  `isDisposed()` and `isReadOnly()` name a state of their own, not the
+  negation of another name in the same API. The rule is about `not`, `no`,
+  `dis-`, `un-` and `hidden`-style names whose opposite is the state callers
+  actually ask about.
+- **Existing negative names stay.** Renaming public API is a breaking change;
+  do not rename only to follow this rule.
+
 ### Naming components that wrap HTML elements
 
 A component class name in `flow-html-components` is public API: changing it
