@@ -244,8 +244,8 @@ harder to follow than `setVisible(true)`.
   public API is a breaking change; do not rename only to follow this rule.
   When new API joins a family that already uses a negative name, consistency
   with the family wins: a field implements `HasValidation` with
-  `setInvalid(boolean)` / `isInvalid()`, and a related property on the same
-  component uses the same polarity rather than adding `isValid()` beside it.
+  `setInvalid(boolean)` / `isInvalid()`, so a range field that adds a flag for
+  one of its parts names it `isStartInvalid()`, not `isStartValid()`.
 
 ### Naming components that wrap HTML elements
 

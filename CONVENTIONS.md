@@ -92,8 +92,9 @@ machinery that consumes it.
 Name a boolean property after its positive state — `isEnabled()`, not
 `isDisabled()` — so that a negated check never reads as a double negative.
 The getter and setter share that polarity, and a wrapper flips it at the
-element boundary when the HTML attribute is negative. See
-`guidelines/design.md`.
+element boundary when the HTML attribute is negative. New API that joins an
+existing family with a negative name, such as `isInvalid()` from
+`HasValidation`, keeps that polarity. See `guidelines/design.md`.
 
 Name a component that wraps an HTML element after the element itself, and add
 the `Native` prefix only when the plain name is taken or when it invites a
