@@ -144,10 +144,20 @@ public class IndexHtmlResponse {
      * {@link CspMode#STRICT} mode. An {@link IndexHtmlRequestListener} can add
      * or override directives for resources of the application, such as
      * {@code connect-src}, {@code img-src}, {@code frame-src} or
-     * {@code report-to}. The header is written after all listeners have run. It
-     * is not written in development mode, because the development server and
-     * the development tools need {@code eval}. In production mode, the request
-     * fails with an {@link IllegalStateException} if the response already has a
+     * {@code report-to}.
+     * <p>
+     * Do not change {@code script-src}: it holds the nonce and
+     * {@code 'strict-dynamic'}, so replacing it with
+     * {@link ContentSecurityPolicy#setDirective(String, String...)} blocks
+     * every script of the page, and host sources added to it are ignored by the
+     * browser. To load a script from another origin, add a {@code <script>}
+     * element to the document, which gets the nonce, or load it from a script
+     * that is already trusted.
+     * <p>
+     * The header is written after all listeners have run. It is not written in
+     * development mode, because the development server and the development
+     * tools need {@code eval}. In production mode, the request fails with an
+     * {@link IllegalStateException} if the response already has a
      * {@code Content-Security-Policy} header when the page is written, for
      * example from a servlet filter that runs before Vaadin. A filter that
      * writes its header only when the response is committed, such as Spring

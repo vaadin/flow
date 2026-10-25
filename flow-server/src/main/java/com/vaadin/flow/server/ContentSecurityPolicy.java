@@ -41,7 +41,9 @@ import java.util.stream.Collectors;
  * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()},
  * so that an
  * {@link com.vaadin.flow.server.communication.IndexHtmlRequestListener} can
- * adjust it before the header is sent.
+ * adjust it before the header is sent. In that policy, {@code script-src} holds
+ * the nonce of the response and should be left unchanged, see
+ * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()}.
  */
 public class ContentSecurityPolicy implements Serializable {
 
