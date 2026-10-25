@@ -42,6 +42,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -94,6 +95,14 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).addEventData(List.of("event.x"))),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData(
+                                List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
+                                        + "value", "event.x"))),
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventDataElement("event.target.parentElement")),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x")),
@@ -132,6 +141,9 @@ class CspModeTest {
                     });
             registration.setFilter(null);
             registration.addEventData(List.of());
+            registration.addEventData(
+                    List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value",
+                            JsonConstants.MAP_STATE_NODE_EVENT_DATA));
             registration.synchronizeProperty("value");
             registration.mapEventTargetElement();
         });
