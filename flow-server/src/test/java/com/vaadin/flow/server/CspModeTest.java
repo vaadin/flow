@@ -32,6 +32,9 @@ import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -52,6 +55,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class CspModeTest {
+
+    @Tag("div")
+    private static class Clickable extends Component
+            implements ClickNotifier<Clickable> {
+    }
 
     private MockServletServiceSessionSetup setup;
     private MockUI ui;
@@ -87,7 +95,11 @@ class CspModeTest {
                         }).addEventData(List.of("event.x"))),
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
-                        }).setFilter("event.x")));
+                        }).setFilter("event.x")),
+                // Vaadin code sending event data and a filter on its own
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> new Clickable().addDoubleClickListener(e -> {
+                        })));
     }
 
     private static Arguments call(Class<?> api, String method,
@@ -122,6 +134,18 @@ class CspModeTest {
         });
     }
 
+    @Test
+    void strict_stringJavaScriptWithoutCurrentService_doesNotThrow() {
+        setup.getDeploymentConfiguration().setCspMode(CspMode.STRICT);
+        // As for a component built in a background thread before attaching
+        CurrentInstance.clearAll();
+
+        assertDoesNotThrow(() -> {
+            new Element("div").executeJs("return 1");
+            JsFunction.of("return 1");
+        });
+    }
+
     @ParameterizedTest
     @CsvSource({ "WARN, 2", "OFF, 0" })
     void warnOrOff_stringJavaScript_runsAndLogsOncePerCallSiteOnlyInWarn(
@@ -134,9 +158,9 @@ class CspModeTest {
                     () -> LoggerFactory.getLogger(CspViolationReporter.class))
                     .thenReturn(logger);
 
-            for (int i = 0; i < 2; i++) {
-                ui.getElement().executeJs("return 1");
-            }
+            // Two callers of one line that calls the API are one call site
+            executeJsOnUi();
+            executeJsOnUi();
             ui.getElement().executeJs("return 2");
         }
 
@@ -150,6 +174,10 @@ class CspModeTest {
         }
     }
 
+    private void executeJsOnUi() {
+        ui.getElement().executeJs("return 1");
+    }
+
     private static void assertTraceLeadsFromApiToTest(Throwable violation,
             Class<?> api, String method) {
         StackTraceElement[] stack = violation.getStackTrace();
@@ -158,8 +186,8 @@ class CspModeTest {
         assertEquals(method, stack[0].getMethodName());
         assertTrue(
                 Stream.of(stack)
-                        .anyMatch(frame -> frame.getClassName()
-                                .startsWith(CspModeTest.class.getName())),
+                        .noneMatch(frame -> frame.getClassName()
+                                .equals(CspViolationReporter.class.getName())),
                 Arrays.toString(stack));
     }
 
