@@ -145,7 +145,7 @@ public class WebPushIT extends ChromeBrowserTest {
 
         DivElement eventLog = $(DivElement.class).id(EVENT_LOG_ID);
 
-        // Load the web push client code before stubbing the service worker
+        // Check once against the real service worker before stubbing it
         $(NativeButtonElement.class).id(CHECK_ID).click();
         waitUntil(driver -> eventLog.$(DivElement.class).all().size() == 1);
 
