@@ -91,7 +91,7 @@ You are not a reviewer. Never comment on the pull requests you read, never grade
 - **The repository is checked out** at `main`. Read files with `cat` and `sed`, search with `grep`.
 - **`gh` in bash is not authenticated.** Every API read goes through the GitHub tools.
 
-The only files you may edit:
+What belongs in `CONVENTIONS.md` and what in a guidelines chapter is defined in the Conventions and Guidelines section at the top of `CONVENTIONS.md`; follow it. The files you may edit are a narrower set:
 
 | File | What belongs there |
 |---|---|
