@@ -46,20 +46,17 @@ import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
 
 /**
  * Handles translation file requests. Translation file requests are internal
- * requests sent by the client-side to retrieve the translation file for the
+ * requests sent by the client-side to retrieve the translations for the
  * specified language tag. The response contains the translations in JSON
- * format. Also, the language tag of the retrieved translation file is included
- * as a header with the name {@code X-Vaadin-Retrieved-Locale}. The language tag
- * parameter {@code langtag} supports both dash and underscore as separators.
+ * format. The requested language tag is included as a header with the name
+ * {@code X-Vaadin-Retrieved-Locale}. The language tag parameter {@code langtag}
+ * supports both dash and underscore as separators.
  * <p>
- * The translation file to return is determined by matching the requested locale
- * to the available bundles with the following prioritization order:
- * <ul>
- * <li>Exact match</li>
- * <li>Language and country match</li>
- * <li>Language match</li>
- * <li>Default bundle (root bundle)</li>
- * </ul>
+ * The translations are those of the {@link I18NProvider}: all of them for the
+ * locale when the request names no keys, otherwise the keys of the requested
+ * {@code chunks}, as listed in {@code vaadin-i18n/i18n.json}, together with the
+ * requested {@code keys}. Which bundle answers for the locale is up to the
+ * provider.
  * <p>
  * This is a {@link SessionlessRequestHandler}, so the {@link I18NProvider} is
  * called without a {@link com.vaadin.flow.server.VaadinSession}: it gets the

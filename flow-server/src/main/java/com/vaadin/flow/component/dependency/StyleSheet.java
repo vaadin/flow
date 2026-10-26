@@ -117,6 +117,8 @@ public @interface StyleSheet {
      * URI, i.e. the Vaadin servlet mapping path. Use this as an explicit opt-in
      * for servlet-mapping-relative loading.</li>
      * <li>{@code /foo.css} — used unchanged as an absolute server path.</li>
+     * <li>A URL with any other scheme (a value containing {@code ://}) — used
+     * unchanged.</li>
      * <li>{@code ./foo.css} — leading {@code ./} is stripped, then treated as
      * context-root relative.</li>
      * <li>{@code foo.css}, {@code styles/foo.css} — context-root relative, i.e.

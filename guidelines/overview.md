@@ -10,6 +10,8 @@ something work.
 
 For the canonical list of checkable conventions see [`CONVENTIONS.md`](../CONVENTIONS.md).
 For repository-level commands (build, test, format) see [`CLAUDE.md`](../CLAUDE.md).
+Architecture notes on individual features live in `ARCHITECTURE.md` files next
+to their code and are listed at the top of [Architecture](architecture.md).
 
 ## Chapters
 
