@@ -166,7 +166,8 @@ public class ContentSecurityPolicy implements Serializable {
             String source = sources[i];
             String problem;
             if (source == null) {
-                problem = "is null";
+                throw new NullPointerException(describeInvalidSource(directive,
+                        sources, i, "is null"));
             } else if (source.isEmpty()) {
                 problem = "is empty";
             } else if (INVALID_SOURCE.matcher(source).find()) {
@@ -174,10 +175,16 @@ public class ContentSecurityPolicy implements Serializable {
             } else {
                 continue;
             }
-            throw new IllegalArgumentException(String.format(
-                    "Source at index %d of Content Security Policy directive '%s' %s: %s",
-                    i, directive, problem, Arrays.toString(sources)));
+            throw new IllegalArgumentException(
+                    describeInvalidSource(directive, sources, i, problem));
         }
+    }
+
+    private static String describeInvalidSource(String directive,
+            String[] sources, int index, String problem) {
+        return String.format(
+                "Source at index %d of Content Security Policy directive '%s' %s: %s",
+                index, directive, problem, Arrays.toString(sources));
     }
 
     private static void appendSources(List<String> target, String[] sources) {

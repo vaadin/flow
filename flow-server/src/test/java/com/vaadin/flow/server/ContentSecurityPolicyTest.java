@@ -19,8 +19,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -55,16 +54,21 @@ class ContentSecurityPolicyTest {
     }
 
     @ParameterizedTest
-    @NullSource
-    @ValueSource(strings = { "", "'self' data:", "'self';", "a,b" })
-    void addSources_invalidSource_throwsAndLeavesPolicyUnchanged(
-            String source) {
+    @CsvSource(delimiter = '|', quoteCharacter = '"', nullValues = "NULL", value = {
+            "NULL | is null", "\"\" | is empty",
+            "'self' data: | contains whitespace",
+            "'self'; | contains whitespace", "a,b | contains whitespace" })
+    void addSources_invalidSource_throwsAndLeavesPolicyUnchanged(String source,
+            String problem) {
         ContentSecurityPolicy policy = new ContentSecurityPolicy();
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        Class<? extends RuntimeException> expected = source == null
+                ? NullPointerException.class
+                : IllegalArgumentException.class;
+        RuntimeException exception = assertThrows(expected,
                 () -> policy.addSources("img-src", "'self'", source));
         assertTrue(exception.getMessage().startsWith(
-                "Source at index 1 of Content Security Policy directive 'img-src'"),
+                "Source at index 1 of Content Security Policy directive 'img-src' "
+                        + problem),
                 exception.getMessage());
         assertEquals("", policy.toHeaderValue());
     }
