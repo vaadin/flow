@@ -19,10 +19,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ContentSecurityPolicyTest {
 
@@ -53,12 +55,17 @@ class ContentSecurityPolicyTest {
     }
 
     @ParameterizedTest
+    @NullSource
     @ValueSource(strings = { "", "'self' data:", "'self';", "a,b" })
     void addSources_invalidSource_throwsAndLeavesPolicyUnchanged(
             String source) {
         ContentSecurityPolicy policy = new ContentSecurityPolicy();
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> policy.addSources("img-src", "'self'", source));
+        assertTrue(exception.getMessage().startsWith(
+                "Source at index 1 of Content Security Policy directive 'img-src'"),
+                exception.getMessage());
         assertEquals("", policy.toHeaderValue());
     }
 

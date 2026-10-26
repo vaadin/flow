@@ -17,6 +17,7 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -69,7 +70,7 @@ public class ContentSecurityPolicy implements Serializable {
     public ContentSecurityPolicy setDirective(String directive,
             String... sources) {
         String name = normalizeDirective(directive);
-        validateSources(sources);
+        validateSources(name, sources);
         List<String> list = new ArrayList<>();
         appendSources(list, sources);
         directives.put(name, list);
@@ -92,7 +93,7 @@ public class ContentSecurityPolicy implements Serializable {
     public ContentSecurityPolicy addSources(String directive,
             String... sources) {
         String name = normalizeDirective(directive);
-        validateSources(sources);
+        validateSources(name, sources);
         appendSources(
                 directives.computeIfAbsent(name, key -> new ArrayList<>()),
                 sources);
@@ -158,15 +159,24 @@ public class ContentSecurityPolicy implements Serializable {
 
     // Validates all sources before any is added, so that a rejected call
     // leaves the policy unchanged
-    private static void validateSources(String[] sources) {
-        Objects.requireNonNull(sources, "Sources must not be null");
-        for (String source : sources) {
-            Objects.requireNonNull(source, "Source must not be null");
-            if (source.isEmpty() || INVALID_SOURCE.matcher(source).find()) {
-                throw new IllegalArgumentException(
-                        "Invalid Content Security Policy source '" + source
-                                + "'");
+    private static void validateSources(String directive, String[] sources) {
+        Objects.requireNonNull(sources, () -> "Sources of directive '"
+                + directive + "' must not be null");
+        for (int i = 0; i < sources.length; i++) {
+            String source = sources[i];
+            String problem;
+            if (source == null) {
+                problem = "is null";
+            } else if (source.isEmpty()) {
+                problem = "is empty";
+            } else if (INVALID_SOURCE.matcher(source).find()) {
+                problem = "contains whitespace, ';' or ','";
+            } else {
+                continue;
             }
+            throw new IllegalArgumentException(String.format(
+                    "Source at index %d of Content Security Policy directive '%s' %s: %s",
+                    i, directive, problem, Arrays.toString(sources)));
         }
     }
 
