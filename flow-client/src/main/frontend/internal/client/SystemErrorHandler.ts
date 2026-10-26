@@ -89,6 +89,8 @@ export class SystemErrorHandler {
     });
     // A navigation that does not replace the page, such as a download, leaves
     // the page in use. The session expiration is handled once it is used.
+    // Whether the navigation is still pending cannot be known, so input while
+    // a slow response loads still handles the expiration and may cancel it.
     const handlePageInUse = (): void => {
       this.#leavingPage = false;
       const deferred = this.#deferredSessionExpiration;
@@ -105,14 +107,16 @@ export class SystemErrorHandler {
    *
    * The request that ended the session, such as a logout URL, typically
    * responds with the page the browser is navigating to. Going to the session
-   * expired URL meanwhile would cancel that navigation.
+   * expired URL meanwhile would cancel that navigation. In web-component mode
+   * the session is resynchronized instead, which does not navigate, so it is
+   * not deferred.
    *
    * @param details - message details or null if there are no details
    */
   handleSessionExpiredError(details: string | null): void {
     const handle = (): void =>
       this.handleUnrecoverableErrorFor(details, this.#registry.getApplicationConfiguration().getSessionExpiredError());
-    if (this.#leavingPage) {
+    if (this.#leavingPage && !this.#isWebComponentMode()) {
       Console.debug('Session expiration deferred while leaving the page');
       this.#deferredSessionExpiration = handle;
       return;

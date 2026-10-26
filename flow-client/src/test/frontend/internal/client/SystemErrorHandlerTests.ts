@@ -144,11 +144,11 @@ describe('SystemErrorHandler', () => {
 
     // With a caption the expiration is shown as a notification, which the
     // cases can find, instead of a redirect that would leave the test page.
-    function makeSessionExpiredHandler(): SystemErrorHandler {
+    function makeSessionExpiredHandler(webComponentMode = false): SystemErrorHandler {
       return new SystemErrorHandler(
         testRegistry({
           ApplicationConfiguration: {
-            isWebComponentMode: () => false,
+            isWebComponentMode: () => webComponentMode,
             getSessionExpiredError: () => ({ caption: 'Session ended', url: 'about:blank' })
           }
         })
@@ -191,6 +191,19 @@ describe('SystemErrorHandler', () => {
 
       window.dispatchEvent(new PointerEvent('pointerdown'));
       expect(findNotification()?.textContent).to.equal('Session ended');
+    });
+
+    it('does not defer the expiration in web-component mode while the browser leaves the page', async () => {
+      const handler = makeSessionExpiredHandler(true);
+      const leaving = new Promise((resolve) => window.addEventListener('beforeunload', resolve, { once: true }));
+      window.location.href = '/no-content';
+      await leaving;
+
+      handler.handleSessionExpiredError(null);
+
+      expect(document.querySelectorAll('.v-system-error').length).to.equal(1);
+      // Clears the leaving state for the cases that follow.
+      window.dispatchEvent(new PointerEvent('pointerdown'));
     });
   });
 
