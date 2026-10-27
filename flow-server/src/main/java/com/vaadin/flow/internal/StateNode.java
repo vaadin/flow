@@ -1201,7 +1201,7 @@ public class StateNode implements Serializable {
 
         beforeClientResponseEntries = null;
 
-        return !entries.isEmpty() ? entries : Collections.emptyList();
+        return entries.isEmpty() ? Collections.emptyList() : entries;
     }
 
     /**
