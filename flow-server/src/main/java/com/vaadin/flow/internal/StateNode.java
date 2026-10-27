@@ -1301,11 +1301,15 @@ public class StateNode implements Serializable {
             beforeClientResponseEntries = new ArrayList<>();
         }
 
-        // Effectively final local variable for the lambda
-        List<BeforeClientResponseEntry> localEntries = beforeClientResponseEntries;
-        localEntries.add(entry);
+        beforeClientResponseEntries.add(entry);
 
-        return () -> localEntries.remove(entry);
+        // Removes from the current list, since the entry may be put back on
+        // the node in a new list after the original one has been flushed
+        return () -> {
+            if (beforeClientResponseEntries != null) {
+                beforeClientResponseEntries.remove(entry);
+            }
+        };
     }
 
     /**

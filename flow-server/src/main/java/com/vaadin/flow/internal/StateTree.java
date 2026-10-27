@@ -413,7 +413,7 @@ public class StateTree implements NodeOwner {
                 }
                 try {
                     ExecutionContext context = new ExecutionContext(getUI(),
-                            entry.getStateNode().isClientSideInitialized());
+                            node.isClientSideInitialized());
                     entry.getExecution().accept(context);
                 } catch (Exception e) {
                     if (getErrorHandlerClass()
@@ -421,7 +421,7 @@ public class StateTree implements NodeOwner {
                         throw e;
                     }
                     getUI().getSessionOrThrow().getErrorHandler()
-                            .error(new ErrorEvent(e, entry.getStateNode()));
+                            .error(new ErrorEvent(e, node));
                 }
             });
         }

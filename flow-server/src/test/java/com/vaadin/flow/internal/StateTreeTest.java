@@ -533,6 +533,27 @@ class StateTreeTest {
     }
 
     @Test
+    void beforeClientResponse_ownerDetachedByEarlierExecution_postponedExecutionCanBeRemoved() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        tree.beforeClientResponse(child,
+                context -> StateNodeTest.setParent(child, null));
+        TestExecution execution = new TestExecution();
+        StateTree.ExecutionRegistration registration = tree
+                .beforeClientResponse(child, execution);
+
+        tree.runExecutionsBeforeClientResponse();
+        registration.remove();
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(0, execution.executed,
+                "a removed execution should not be run when the node is attached again");
+    }
+
+    @Test
     void beforeClientResponse_initiallyNotAttached_executedWithUI_executionRun() {
         StateTree someTree = new UI().getInternals().getStateTree();
 
