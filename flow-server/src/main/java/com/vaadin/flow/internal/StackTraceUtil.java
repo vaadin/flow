@@ -25,8 +25,9 @@ public final class StackTraceUtil {
     private static final String[] NON_APPLICATION_PREFIXES = {
             "com.vaadin.flow.component.", "com.vaadin.flow.di.",
             "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
-            "com.vaadin.flow.spring.", "com.vaadin.cdi.", "java.", "jdk.",
-            "org.springframework.beans.", "org.jboss.weld.", };
+            "com.vaadin.flow.spring.", "com.vaadin.cdi.", "com.vaadin.quarkus.",
+            "java.", "jdk.", "org.springframework.beans.", "org.jboss.weld.",
+            "io.quarkus.arc.", };
 
     private StackTraceUtil() {
         // Only static helpers
