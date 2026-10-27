@@ -114,7 +114,7 @@
     <!-- Dependencies -->
     <spring.boot.version>4.1.1</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
-    <hibernate.validator.version>9.1.4.Final</hibernate.validator.version>
+    <hibernate.validator.version>9.1.5.Final</hibernate.validator.version>
     <slf4j.version>2.0.20</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
     <jackson.version>3.1.7</jackson.version>
@@ -127,7 +127,7 @@
 
     <!-- Plugins -->
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-    <maven.surefire.plugin.version>3.6.0</maven.surefire.plugin.version>
+    <maven.surefire.plugin.version>3.6.1</maven.surefire.plugin.version>
     <jacoco.plugin.version>0.8.15</jacoco.plugin.version>
     <maven.failsafe.plugin.version>3.5.6</maven.failsafe.plugin.version>
     <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
@@ -266,12 +266,12 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>1.18.15</version>
+        <version>1.18.16</version>
       </dependency>
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.11</version>
+        <version>9.11.1</version>
       </dependency>
       <dependency>
         <groupId>com.vaadin</groupId>
@@ -753,12 +753,12 @@
             <path>
               <groupId>com.google.errorprone</groupId>
               <artifactId>error_prone_core</artifactId>
-              <version>2.50.0</version>
+              <version>2.51.0</version>
             </path>
             <path>
               <groupId>com.uber.nullaway</groupId>
               <artifactId>nullaway</artifactId>
-              <version>0.14.2</version>
+              <version>0.14.3</version>
             </path>
           </annotationProcessorPaths>
           <fork>true</fork>
