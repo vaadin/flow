@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.node.ObjectNode;
@@ -63,6 +66,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
@@ -94,6 +98,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -234,6 +239,116 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         verify(response, never()).setHeader(eq("X-Frame-Options"), any());
+    }
+
+    @Test
+    public void serveIndexHtml_strictCsp_sendsPolicyWithNonceOnEveryScript()
+            throws IOException {
+        deploymentConfiguration.setCspMode(CspMode.STRICT);
+        service.addIndexHtmlRequestListener(evt -> {
+            evt.getDocument().body().appendElement("script").attr("src",
+                    "listener.js");
+            Element head = evt.getDocument().head();
+            head.appendElement("link").attr("rel", "modulepreload").attr("href",
+                    "chunk.js");
+            head.appendElement("link").attr("rel", "preload")
+                    .attr("as", "script").attr("href", "preload.js");
+            head.appendElement("link").attr("rel", "preload")
+                    .attr("as", "style").attr("href", "preload.css");
+            evt.getContentSecurityPolicy().addSources("connect-src",
+                    "https://api.example.com");
+        });
+
+        String header = serveIndexHtmlAndCaptureCspHeader();
+        Matcher matcher = Pattern
+                .compile(
+                        "script-src 'nonce-([A-Za-z0-9+/=]+)' 'strict-dynamic'")
+                .matcher(header);
+        assertTrue(matcher.find(), header);
+        String nonce = matcher.group(1);
+        assertEquals("default-src 'self'; script-src 'nonce-" + nonce
+                + "' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; "
+                + "img-src 'self' data:; font-src 'self' data:; "
+                + "connect-src 'self' https://api.example.com; "
+                + "worker-src 'self'; object-src 'none'; base-uri 'self'",
+                header);
+
+        Document document = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8));
+        Elements scripts = document.getElementsByTag("script");
+        assertTrue(scripts.stream()
+                .anyMatch(script -> script.attr("src").equals("listener.js")));
+        scripts.addAll(
+                document.select("link[href=chunk.js], link[href=preload.js]"));
+        for (Element script : scripts) {
+            assertEquals(nonce, script.attr("nonce"), script.outerHtml());
+        }
+        assertFalse(document.selectFirst("link[href=preload.css]")
+                .hasAttr("nonce"));
+
+        responseOutput.reset();
+        assertFalse(serveIndexHtmlAndCaptureCspHeader().contains(nonce),
+                "Every response should get a new nonce");
+    }
+
+    @Test
+    public void serveIndexHtml_strictCspAndHeaderAlreadyPresent_throws() {
+        deploymentConfiguration.setCspMode(CspMode.STRICT);
+        when(response.containsHeader("Content-Security-Policy"))
+                .thenReturn(true);
+        VaadinServletRequest request = createVaadinRequest("/");
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, () -> indexHtmlRequestHandler
+                        .synchronizedHandleRequest(session, request, response));
+        assertTrue(exception.getMessage().contains("csp=strict"),
+                exception.getMessage());
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
+        assertEquals(0, responseOutput.size());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "OFF, true", "WARN, true", "STRICT, false" })
+    public void serveIndexHtml_noStrictCspInProduction_noHeaderOrNonce(
+            CspMode cspMode, boolean productionMode) throws Exception {
+        deploymentConfiguration.setCspMode(cspMode);
+        // A header set elsewhere is fine when Vaadin sends no policy
+        when(response.containsHeader("Content-Security-Policy"))
+                .thenReturn(true);
+        if (!productionMode) {
+            File projectRootFolder = Files
+                    .createTempDirectory(temporaryFolder, "temp").toFile();
+            TestUtil.createIndexHtmlStub(projectRootFolder);
+            TestUtil.createStatsJsonStub(projectRootFolder);
+            deploymentConfiguration.setProductionMode(false);
+            deploymentConfiguration.setProjectFolder(projectRootFolder);
+        }
+        List<IndexHtmlResponse> responses = new ArrayList<>();
+        service.addIndexHtmlRequestListener(responses::add);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        // In development mode, listeners still get the policy so that they
+        // work the same way in both modes
+        assertEquals(1, responses.size());
+        boolean strict = cspMode == CspMode.STRICT;
+        assertEquals(strict, responses.get(0).getCspNonce() != null);
+        assertEquals(strict,
+                responses.get(0).getContentSecurityPolicy() != null);
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
+        assertFalse(responseOutput.toString(StandardCharsets.UTF_8)
+                .contains("nonce="));
+    }
+
+    private String serveIndexHtmlAndCaptureCspHeader() throws IOException {
+        clearInvocations(response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        ArgumentCaptor<String> header = ArgumentCaptor.forClass(String.class);
+        verify(response).setHeader(eq("Content-Security-Policy"),
+                header.capture());
+        return header.getValue();
     }
 
     @Test
