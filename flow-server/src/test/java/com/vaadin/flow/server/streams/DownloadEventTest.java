@@ -66,6 +66,15 @@ class DownloadEventTest {
     }
 
     @Test
+    void setFileName_fileNameWithQuote_quoteEscapedInContentDisposition() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("a.pdf\"; filename*=UTF-8''b.exe");
+        verify(response).setHeader("Content-Disposition",
+                "attachment; filename=\"a.pdf\\\"; filename*=UTF-8''b.exe\"");
+    }
+
+    @Test
     void setFileName_emptyFileName_setsContentDispositionToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
@@ -117,6 +126,15 @@ class DownloadEventTest {
         downloadEvent.inline(fileName);
         verify(response).setHeader("Content-Disposition",
                 "inline; filename=\"" + fileName + "\"");
+    }
+
+    @Test
+    void inline_fileNameWithQuote_quoteEscapedInContentDisposition() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline("a.pdf\"; filename*=UTF-8''b.exe");
+        verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"a.pdf\\\"; filename*=UTF-8''b.exe\"");
     }
 
     @Test

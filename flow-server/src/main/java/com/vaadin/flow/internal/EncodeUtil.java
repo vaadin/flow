@@ -114,6 +114,30 @@ public final class EncodeUtil {
     }
 
     /**
+     * Escapes the given string for use as the content of a
+     * <code>quoted-string</code> as defined in RFC 9110, e.g. a
+     * <code>filename</code> parameter of the <code>Content-Disposition</code>
+     * HTTP header. Backslashes and double quotes are prefixed with a backslash.
+     * The surrounding double quotes are not added.
+     *
+     * @param value
+     *            the string to escape, not <code>null</code>
+     * @return the escaped string
+     * @since 25.4
+     */
+    public static String quotedStringEscape(String value) {
+        StringBuilder sb = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c == '"' || c == '\\') {
+                sb.append('\\');
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    /**
      * Checks if the given string contains only US-ASCII characters.
      *
      * @param text

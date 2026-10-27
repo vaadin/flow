@@ -156,7 +156,9 @@ public class DownloadEvent {
             StringBuilder value = new StringBuilder();
             value.append("attachment; ");
             if (EncodeUtil.isPureUSASCII(fileName)) {
-                value.append("filename=\"").append(fileName).append("\"");
+                value.append("filename=\"")
+                        .append(EncodeUtil.quotedStringEscape(fileName))
+                        .append("\"");
             } else {
                 value
                         // fallback legacy support
@@ -215,7 +217,9 @@ public class DownloadEvent {
             StringBuilder value = new StringBuilder();
             value.append("inline; ");
             if (EncodeUtil.isPureUSASCII(fileName)) {
-                value.append("filename=\"").append(fileName).append("\"");
+                value.append("filename=\"")
+                        .append(EncodeUtil.quotedStringEscape(fileName))
+                        .append("\"");
             } else {
                 value
                         // fallback legacy support

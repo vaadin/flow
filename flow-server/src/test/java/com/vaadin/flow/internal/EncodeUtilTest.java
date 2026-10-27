@@ -87,6 +87,12 @@ class EncodeUtilTest {
     }
 
     @Test
+    void quotedStringEscape_escapesQuotesAndBackslashes() {
+        assertEquals("a\\\"b\\\\c d.txt",
+                EncodeUtil.quotedStringEscape("a\"b\\c d.txt"));
+    }
+
+    @Test
     void isPureUSASCII_withAsciiOnly_returnTrue() {
         String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"";
         assertTrue(EncodeUtil.isPureUSASCII(input));
