@@ -22,6 +22,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', pushParameters = 
     pushOk: 0,
     pushError: 0,
     pushClosed: 0,
+    pushReconnectPending: 0,
     pushInvalidContent: [] as string[],
     pushNotConnected: 0,
     handled: [] as unknown[],
@@ -70,7 +71,7 @@ function setupPush(serviceUrl = '/app/', contextRootUrl = '/', pushParameters = 
       pushError: () => log.pushError++,
       pushClosed: () => log.pushClosed++,
       pushClientTimeout: () => log.pushClientTimeout++,
-      pushReconnectPending: () => {},
+      pushReconnectPending: () => log.pushReconnectPending++,
       pushInvalidContent: (_c: unknown, message: string) => log.pushInvalidContent.push(message),
       pushNotConnected: () => log.pushNotConnected++,
       pushScriptLoadError: (url: string) => log.pushScriptLoadErrors.push(url)
@@ -401,6 +402,27 @@ describe('AtmospherePushConnection', () => {
       expect(log.pushClosed).to.equal(0);
     });
 
+    it('closes the connection once it opens when disconnected while connecting', async () => {
+      const { registry, log } = setupAtmosphere();
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      let disconnected = false;
+      connection.disconnect(() => {
+        disconnected = true;
+      });
+      expect(disconnected).to.be.false;
+
+      sockets[0].open();
+      sockets[0].receive(handshake('abc'));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(disconnected).to.be.true;
+      expect(connection.isActive()).to.be.false;
+      expect(sockets[0].readyState).to.equal(3);
+      expect(sockets).to.have.length(1);
+      expect(log.pushOk).to.equal(0);
+    });
+
     it('delivers messages containing the delimiter after a reconnect', async () => {
       // The server sends the protocol handshake only on the first connection
       const { registry, log } = setupAtmosphere(new Map([['reconnectInterval', '10']]));
@@ -412,6 +434,9 @@ describe('AtmospherePushConnection', () => {
 
       log.lastSeenServerSyncId = 8;
       sockets[0].drop();
+      expect(log.pushReconnectPending).to.equal(1);
+      connection.push({ a: 1 });
+      expect(log.pushNotConnected).to.equal(1);
       await new Promise((resolve) => setTimeout(resolve, 50));
       expect(sockets).to.have.length(2);
       const reconnectUrl = new URL(sockets[1].url);
