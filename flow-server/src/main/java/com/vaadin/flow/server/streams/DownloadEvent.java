@@ -153,22 +153,8 @@ public class DownloadEvent {
         if (fileName.isBlank()) {
             response.setHeader("Content-Disposition", "attachment");
         } else {
-            StringBuilder value = new StringBuilder();
-            value.append("attachment; ");
-            if (EncodeUtil.isPureUSASCII(fileName)) {
-                value.append("filename=\"")
-                        .append(EncodeUtil.quotedStringEscape(fileName))
-                        .append("\"");
-            } else {
-                value
-                        // fallback legacy support
-                        .append("filename=\"")
-                        .append(EncodeUtil.rfc2047Encode(fileName))
-                        // used primarily
-                        .append("\"; filename*=UTF-8''")
-                        .append(EncodeUtil.rfc5987Encode(fileName));
-            }
-            response.setHeader("Content-Disposition", value.toString());
+            response.setHeader("Content-Disposition",
+                    contentDisposition("attachment", fileName));
         }
         this.fileName = fileName;
     }
@@ -214,24 +200,29 @@ public class DownloadEvent {
         if (fileName == null || fileName.isBlank()) {
             response.setHeader("Content-Disposition", "inline");
         } else {
-            StringBuilder value = new StringBuilder();
-            value.append("inline; ");
-            if (EncodeUtil.isPureUSASCII(fileName)) {
-                value.append("filename=\"")
-                        .append(EncodeUtil.quotedStringEscape(fileName))
-                        .append("\"");
-            } else {
-                value
-                        // fallback legacy support
-                        .append("filename=\"")
-                        .append(EncodeUtil.rfc2047Encode(fileName))
-                        // used primarily
-                        .append("\"; filename*=UTF-8''")
-                        .append(EncodeUtil.rfc5987Encode(fileName));
-            }
-            response.setHeader("Content-Disposition", value.toString());
+            response.setHeader("Content-Disposition",
+                    contentDisposition("inline", fileName));
         }
         this.fileName = fileName;
+    }
+
+    private static String contentDisposition(String type, String fileName) {
+        StringBuilder value = new StringBuilder();
+        value.append(type).append("; ");
+        if (EncodeUtil.isPureUSASCII(fileName)) {
+            value.append("filename=\"")
+                    .append(EncodeUtil.quotedStringEscape(fileName))
+                    .append("\"");
+        } else {
+            value
+                    // fallback legacy support
+                    .append("filename=\"")
+                    .append(EncodeUtil.rfc2047Encode(fileName))
+                    // used primarily
+                    .append("\"; filename*=UTF-8''")
+                    .append(EncodeUtil.rfc5987Encode(fileName));
+        }
+        return value.toString();
     }
 
     /**
