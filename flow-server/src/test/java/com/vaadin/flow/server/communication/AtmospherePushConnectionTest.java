@@ -37,8 +37,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -51,8 +49,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Vaadin Ltd
@@ -82,20 +88,19 @@ class AtmospherePushConnectionTest {
         vaadinSession.lock();
         UI ui = new MockUI(vaadinSession);
         vaadinSession.unlock();
-        broadcaster = Mockito.mock(Broadcaster.class);
-        resource = Mockito.mock(AtmosphereResource.class);
-        Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
-        Mockito.doAnswer(i -> {
+        broadcaster = mock(Broadcaster.class);
+        resource = mock(AtmosphereResource.class);
+        when(resource.getBroadcaster()).thenReturn(broadcaster);
+        doAnswer(i -> {
             // Introduce a small delay to hold the lock during disconnect
             Thread.sleep(30);
             return null;
         }).when(resource).close();
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             // Introduce a small delay to hold the lock during message push
             Thread.sleep(30);
             return CompletableFuture.completedFuture(null);
-        }).when(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.any(AtmosphereResource.class));
+        }).when(broadcaster).broadcast(any(), any(AtmosphereResource.class));
 
         connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
@@ -104,8 +109,8 @@ class AtmospherePushConnectionTest {
     @Test
     void testSerialization() throws Exception {
 
-        UI ui = Mockito.mock(UI.class);
-        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
+        UI ui = mock(UI.class);
+        AtmosphereResource resource = mock(AtmosphereResource.class);
 
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
@@ -139,8 +144,7 @@ class AtmospherePushConnectionTest {
         });
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster, times(2)).broadcast(captor.capture(),
-                ArgumentMatchers.eq(resource));
+        verify(broadcaster, times(2)).broadcast(captor.capture(), eq(resource));
         assertEquals(recorded,
                 ((PushMessage) captor.getAllValues().get(1)).message,
                 "The client should get the previous response again, not a new one");
@@ -156,13 +160,12 @@ class AtmospherePushConnectionTest {
             return null;
         });
 
-        verify(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.eq(resource));
+        verify(broadcaster).broadcast(any(), eq(resource));
         String created = connection.getUI().getInternals()
                 .getLastRequestResponse();
         assertNotNull(created,
                 "The response created instead answers the re-sent message, so it is recorded");
-        Mockito.clearInvocations(broadcaster);
+        clearInvocations(broadcaster);
 
         // If that response is lost too, the next resend sends it again rather
         // than creating another one, which would be empty by then.
@@ -172,8 +175,7 @@ class AtmospherePushConnectionTest {
         });
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster).broadcast(captor.capture(),
-                ArgumentMatchers.eq(resource));
+        verify(broadcaster).broadcast(captor.capture(), eq(resource));
         assertEquals(created, ((PushMessage) captor.getValue()).message,
                 "The response created for the re-sent message can itself be sent again");
     }
@@ -210,13 +212,13 @@ class AtmospherePushConnectionTest {
             return null;
         });
         connection.connectionLost();
-        Mockito.clearInvocations(broadcaster);
+        clearInvocations(broadcaster);
 
         vaadinSession.runWithLock(() -> {
             connection.resendLastResponse();
             return null;
         });
-        Mockito.verifyNoInteractions(broadcaster);
+        verifyNoInteractions(broadcaster);
         assertEquals(State.DISCONNECTED, connection.getState(),
                 "A resend that cannot be sent should not look like a pending push");
 
@@ -226,7 +228,7 @@ class AtmospherePushConnectionTest {
             connection.connect(resource);
             return null;
         });
-        Mockito.verifyNoInteractions(broadcaster);
+        verifyNoInteractions(broadcaster);
 
         vaadinSession.runWithLock(() -> {
             connection.resendLastResponse();
@@ -234,8 +236,7 @@ class AtmospherePushConnectionTest {
         });
 
         ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
-        verify(broadcaster).broadcast(captor.capture(),
-                ArgumentMatchers.eq(resource));
+        verify(broadcaster).broadcast(captor.capture(), eq(resource));
         assertEquals(connection.getUI().getInternals().getLastRequestResponse(),
                 ((PushMessage) captor.getValue()).message,
                 "The resend after reconnecting answers the client message");
@@ -249,7 +250,7 @@ class AtmospherePushConnectionTest {
             connection.push(false);
             return null;
         });
-        Mockito.verifyNoInteractions(broadcaster);
+        verifyNoInteractions(broadcaster);
         assertEquals(State.RESPONSE_PENDING, connection.getState());
 
         vaadinSession.runWithLock(() -> {
@@ -257,8 +258,7 @@ class AtmospherePushConnectionTest {
             return null;
         });
 
-        verify(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.eq(resource));
+        verify(broadcaster).broadcast(any(), eq(resource));
     }
 
     @Test
@@ -269,7 +269,7 @@ class AtmospherePushConnectionTest {
             connection.push(true);
             return null;
         });
-        Mockito.verifyNoInteractions(broadcaster);
+        verifyNoInteractions(broadcaster);
         assertEquals(State.PUSH_PENDING, connection.getState());
 
         vaadinSession.runWithLock(() -> {
@@ -277,8 +277,7 @@ class AtmospherePushConnectionTest {
             return null;
         });
 
-        verify(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.eq(resource));
+        verify(broadcaster).broadcast(any(), eq(resource));
     }
 
     @Test
@@ -320,7 +319,7 @@ class AtmospherePushConnectionTest {
         assertTrue(latch.await(2, TimeUnit.SECONDS),
                 "AtmospherePushConnection not disconnected");
         assertEquals(State.PUSH_PENDING, connection.getState());
-        Mockito.verifyNoInteractions(broadcaster);
+        verifyNoInteractions(broadcaster);
     }
 
     @Test
@@ -351,8 +350,7 @@ class AtmospherePushConnectionTest {
         });
 
         assertTrue(latch.await(3, TimeUnit.SECONDS), "Push not completed");
-        Mockito.verify(broadcaster).broadcast(ArgumentMatchers.any(),
-                ArgumentMatchers.eq(resource));
+        verify(broadcaster).broadcast(any(), eq(resource));
     }
 
     @Test
@@ -380,7 +378,7 @@ class AtmospherePushConnectionTest {
         // the HTTP session lock, that is however hold by the other thread that
         // is waiting for AtmosphereConnection lock to be released.
         ReentrantLock sessionLock = new ReentrantLock();
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             // simulate HTTP session lock attempt because of atmosphere resource
             // accesses session attributes
             // It does not wait indefinitely, but triggers an error if the lock
@@ -429,7 +427,7 @@ class AtmospherePushConnectionTest {
         assertTrue(latch.await(3, TimeUnit.SECONDS),
                 "Disconnect calls not completed, missing " + latch.getCount()
                         + " call");
-        Mockito.verify(resource, Mockito.times(1)).close();
+        verify(resource, times(1)).close();
     }
 
     @Test
@@ -439,7 +437,7 @@ class AtmospherePushConnectionTest {
         // but when a Vaadin session is unlocked as a consequence of HTTP
         // session invalidation
         ReentrantLock httpSessionLock = new ReentrantLock();
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             // simulate HTTP session lock attempt because of atmosphere resource
             // accesses session attributes
             // It does not wait indefinitely, but triggers an error if the lock
@@ -489,7 +487,7 @@ class AtmospherePushConnectionTest {
         assertTrue(latch.await(3, TimeUnit.SECONDS),
                 "Disconnect calls not completed, missing " + latch.getCount()
                         + " call");
-        Mockito.verify(resource, Mockito.times(1)).close();
+        verify(resource, times(1)).close();
     }
 
     @Test
@@ -505,7 +503,7 @@ class AtmospherePushConnectionTest {
         // producing a deadlock.
         ReentrantLock httpSessionLock = new ReentrantLock();
         CountDownLatch disconnectReachedClose = new CountDownLatch(1);
-        Mockito.doAnswer(i -> {
+        doAnswer(i -> {
             // Signal that disconnect() has entered synchronized(lock)
             // and is about to contend for the HTTP session lock.
             disconnectReachedClose.countDown();
@@ -532,8 +530,8 @@ class AtmospherePushConnectionTest {
         // called in between. Only the push thread's first call pauses,
         // so a post-fix re-check inside synchronized(lock) does not
         // re-trigger the hook.
-        UI ui = Mockito.spy(new UI());
-        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
+        UI ui = spy(new UI());
+        when(ui.getSession()).thenReturn(vaadinSession);
         AtmospherePushConnection testConnection = new AtmospherePushConnection(
                 ui) {
             @Override

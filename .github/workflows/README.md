@@ -199,7 +199,9 @@ dropped, so `fix/my-thing` on a `25.4-SNAPSHOT` branch publishes
 snapshot builds of the other Vaadin repositories use, so snapshots built from
 equally named branches of two repositories resolve each other. The workflow
 comments the version and a copy-pasteable `flow-bom` import on the pull
-request, editing the same comment on every rebuild.
+request, followed by the matching `vaadin-bom` import (`25.4-SNAPSHOT` for
+the branch above) in the order Maven needs for the snapshot to win, editing
+the same comment on every rebuild.
 
 Dropping the prefix means the version is only as unique as the part of the
 branch name after the last slash: `fix/npe` and `issues/npe` both publish
@@ -223,6 +225,44 @@ Configuration:
 
 The `snapshot build` label has to exist in the repository for it to be
 selectable.
+
+## Memory footprint
+
+`memory-footprint.yml` reports how a pull request changes the memory a UI
+uses. It runs `UIMemoryFootprintTest` (in `flow-html-components`) on the head
+of the pull request and on the commit it branches from, and
+`scripts/memoryFootprint.js` compares the two. Each scenario of the test opens
+a view and measures:
+
+- the bytes a UI retains on the heap, as the size of the object graph that one
+  more identical UI adds to a session. Anything shared by all UIs is not
+  counted.
+- the size of the session serialized with one UI open, which is what is stored
+  when sessions are persisted or replicated.
+
+Both are exact rather than sampled from the heap, so the same build always
+measures the same, and any difference comes from the change. Comparing two
+numbers is only meaningful on the same JDK, which is why the base is measured
+in the same run unless it is cached for that JDK. The comment also lists, per
+scenario, the classes whose retained instances or bytes changed.
+
+The workflow also measures `main` on every push, and caches the measurements
+of each base commit under a key made of the commit and the exact JDK version. A
+pull request can read what runs on its base branch cached, so its base is
+usually restored and only its head is measured.
+
+The comment is posted once a pull request changes a measurement and then
+updated on every push, also when the difference goes away again. Pull requests
+from forks are skipped, because GitHub gives them no token that can comment.
+Runs that Dependabot triggers get a read-only token too; they still measure,
+but only write the comparison to the job summary.
+The test writes one JSON report per scenario to
+`flow-html-components/target/memory-footprint`, also when run locally. A report
+names and describes its scenario and lists its metrics, each with an id, a
+title, a unit and a value. The script matches scenarios and metrics by id and
+reports whatever it finds, so adding or changing one only takes a change to the
+test. Keep an id as long as it measures the same thing, so that the base and
+the head can be compared.
 
 ## Code review
 

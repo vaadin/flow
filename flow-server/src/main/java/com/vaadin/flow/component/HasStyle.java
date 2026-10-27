@@ -70,11 +70,7 @@ public interface HasStyle extends HasElement {
      *            <code>null</code> to remove all class names
      */
     default void setClassName(String className) {
-        if (className == null) {
-            getElement().removeAttribute("class");
-        } else {
-            getElement().setAttribute("class", className);
-        }
+        getElement().setAttribute("class", className);
     }
 
     /**

@@ -1,4 +1,4 @@
-import { createFilter } from '@rollup/pluginutils';
+import { createFilter } from 'vite';
 import transformAst from 'transform-ast';
 import MagicString from 'magic-string';
 

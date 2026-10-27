@@ -37,15 +37,29 @@ import java.util.concurrent.ConcurrentMap;
 public class ContextualStorage implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * The stored contextual instance infos, keyed by bean key.
+     */
     private final Map<Object, ContextualInstanceInfo<?>> contextualInstances;
 
+    /**
+     * The bean manager used to restore passivation capable beans.
+     */
     private final BeanManager beanManager;
 
+    /**
+     * Whether the storage might get accessed concurrently.
+     */
     private final boolean concurrent;
 
+    /**
+     * Whether the storage is for a passivation capable scope.
+     */
     private final boolean passivationCapable;
 
     /**
+     * Creates a new contextual storage.
+     *
      * @param beanManager
      *            is needed for serialisation
      * @param concurrent
@@ -67,6 +81,8 @@ public class ContextualStorage implements Serializable {
     }
 
     /**
+     * Gets the underlying storage map.
+     *
      * @return the underlying storage map.
      */
     public Map<Object, ContextualInstanceInfo<?>> getStorage() {
@@ -74,6 +90,8 @@ public class ContextualStorage implements Serializable {
     }
 
     /**
+     * Checks whether the ContextualStorage might get accessed concurrently.
+     *
      * @return whether the ContextualStorage might get accessed concurrently by
      *         different threads.
      */
@@ -82,11 +100,17 @@ public class ContextualStorage implements Serializable {
     }
 
     /**
+     * Creates a new contextual instance of the given bean and stores it in this
+     * storage. For concurrent storages, an already existing instance is
+     * returned instead of creating a new one.
      *
      * @param bean
+     *            the bean to create an instance of
      * @param creationalContext
+     *            the creational context to use for creating the instance
      * @param <T>
-     * @return
+     *            the type of the contextual instance
+     * @return the contextual instance
      */
     public <T> T createContextualInstance(Contextual<T> bean,
             CreationalContext<T> creationalContext) {
@@ -129,7 +153,11 @@ public class ContextualStorage implements Serializable {
     /**
      * If the context is a passivating scope then we return the passivationId of
      * the Bean. Otherwise we use the Bean directly.
-     * 
+     *
+     * @param <T>
+     *            the type of the contextual instance
+     * @param bean
+     *            the bean to get the key for
      * @return the key to use in the context map
      */
     public <T> Object getBeanKey(Contextual<T> bean) {
@@ -143,7 +171,11 @@ public class ContextualStorage implements Serializable {
 
     /**
      * Restores the Bean from its beanKey.
-     * 
+     *
+     * @param beanKey
+     *            the key of the bean, as returned by
+     *            {@link #getBeanKey(Contextual)}
+     * @return the bean for the given key
      * @see #getBeanKey(jakarta.enterprise.context.spi.Contextual)
      */
     public Contextual<?> getBean(Object beanKey) {

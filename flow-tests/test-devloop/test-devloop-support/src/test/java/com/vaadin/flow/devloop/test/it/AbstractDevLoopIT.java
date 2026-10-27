@@ -32,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Isolated;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Base for every dev-loop IT: one CLI, one patch set per test, and an
@@ -105,6 +106,13 @@ abstract class AbstractDevLoopIT {
         // Idempotent: `start` on a running app answers "already running" with
         // exit 0, so this is also how a test after the first one begins.
         cli.run("start").assertExitCode(0);
+        // The compiler only reaches a daemon this run spawned. One left over
+        // with other options would run the suite against the wrong compiler
+        // and pass, so the daemon is asked which one it has.
+        String status = cli.run("status").output();
+        assertTrue(status.contains("compiler=" + VaadinDevCli.compiler()),
+                () -> "expected compiler=" + VaadinDevCli.compiler()
+                        + " in status: " + status);
         // Whatever a previous test left pending is not this test's change-set.
         cli.run("apply").assertExitCode(0);
     }

@@ -70,10 +70,13 @@ public class FrontendTools {
     /**
      * This is the version that is installed if there is no node installed or
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}.
+     * <p>
+     * The downloaded archive is verified against checksums shipped with Flow,
+     * so run {@code scripts/updateNodeChecksums.sh} after changing this.
      * 
      * @since 4.0
      */
-    public static final String DEFAULT_NODE_VERSION = "v26.11.1";
+    public static final String DEFAULT_NODE_VERSION = "v26.12.1";
     /**
      * This is the version shipped with the default Node version.
      * 

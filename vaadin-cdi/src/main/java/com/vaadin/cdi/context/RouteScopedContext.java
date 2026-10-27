@@ -54,6 +54,10 @@ import static jakarta.enterprise.event.Reception.IF_EXISTS;
  */
 public class RouteScopedContext extends AbstractContext {
 
+    /**
+     * Manages the contextual storages of route scoped beans within a Vaadin
+     * session.
+     */
     @VaadinSessionScoped
     public static class ContextualStorageManager
             extends AbstractContextualStorageManager<RouteStorageKey> {
@@ -69,6 +73,9 @@ public class RouteScopedContext extends AbstractContext {
          */
         private static final String WINDOW_STORE_ID_PREFIX = "win-";
 
+        /**
+         * Creates a new storage manager.
+         */
         public ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
             // getting the session attribute.
@@ -326,10 +333,25 @@ public class RouteScopedContext extends AbstractContext {
     private Supplier<Boolean> isUIContextActive;
     private BeanManager beanManager;
 
+    /**
+     * Creates a new route scoped context.
+     *
+     * @param beanManager
+     *            the bean manager
+     */
     public RouteScopedContext(BeanManager beanManager) {
         super(beanManager);
     }
 
+    /**
+     * Initializes the context by looking up its storage manager.
+     *
+     * @param beanManager
+     *            the bean manager
+     * @param isUIContextActive
+     *            supplier telling whether the UI context is active, used to
+     *            determine whether this context is active
+     */
     public void init(BeanManager beanManager,
             Supplier<Boolean> isUIContextActive) {
         contextManager = BeanProvider.getContextualReference(beanManager,
