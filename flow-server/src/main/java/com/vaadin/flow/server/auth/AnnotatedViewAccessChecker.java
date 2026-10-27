@@ -91,12 +91,8 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                         context.getPrincipal(), context::hasRole);
                 if (!hasAccess) {
                     logDeniedByLayoutAccessRules(context, layout);
-                    return context.deny("Denied access to view '"
-                            + targetView.getSimpleName() + "' due to layout '"
-                            + layout.getSimpleName() + "' access rules. "
-                            + "Consider adding one of the following annotations "
-                            + "to make the layout accessible: @AnonymousAllowed, "
-                            + "@PermitAll, or @RolesAllowed.");
+                    return context.deny(
+                            deniedByLayoutReason(context, "layout", layout));
                 }
             }
         } else {
@@ -114,13 +110,8 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                     if (!hasAccess) {
                         logDeniedByLayoutAccessRules(context, parent,
                                 "Denied access to view '{}' due to parent layout '{}' access rules");
-                        return context.deny("Denied access to view '"
-                                + targetView.getSimpleName()
-                                + "' due to parent layout '"
-                                + parent.getSimpleName() + "' access rules. "
-                                + "Consider adding one of the following annotations "
-                                + "to make the parent layout accessible: @AnonymousAllowed, "
-                                + "@PermitAll, or @RolesAllowed.");
+                        return context.deny(deniedByLayoutReason(context,
+                                "parent layout", parent));
                     }
                 }
             }
@@ -144,27 +135,43 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
         }
         String denyReason;
         if (isImplicitlyDenyAllAnnotated(targetView)) {
-            denyReason = "Consider adding one of the following annotations "
-                    + "to make the view accessible: @AnonymousAllowed, "
-                    + "@PermitAll, @RolesAllowed.";
+            if (context.getPhase() == Phase.PUBLIC_ROUTE_CHECK) {
+                denyReason = "The view has no access annotation, so it is not public.";
+            } else {
+                denyReason = "Consider adding one of the following annotations "
+                        + "to make the view accessible: @AnonymousAllowed, "
+                        + "@PermitAll, @RolesAllowed.";
+            }
             if (targetView.isAnnotationPresent(Layout.class)
                     && context.getRouter().getRegistry()
                             .getTargetUrl(
                                     (Class<? extends Component>) targetView)
                             .isEmpty()) {
                 logDeniedByLayoutAccessRules(context, targetView);
-                denyReason = "Denied access to view '"
-                        + context.getNavigationTarget().getSimpleName()
-                        + "' due to layout '" + targetView.getSimpleName()
-                        + "' access rules. "
-                        + "Consider adding one of the following annotations "
-                        + "to make the layout accessible: @AnonymousAllowed, "
-                        + "@PermitAll, or @RolesAllowed.";
+                denyReason = deniedByLayoutReason(context, "layout",
+                        targetView);
             }
         } else {
             denyReason = "Access is denied by annotations on the view.";
         }
         return context.deny(denyReason);
+    }
+
+    private String deniedByLayoutReason(NavigationContext context,
+            String layoutKind, Class<?> layoutClass) {
+        String reason = "Denied access to view '"
+                + context.getNavigationTarget().getSimpleName() + "' due to "
+                + layoutKind + " '" + layoutClass.getSimpleName()
+                + "' access rules.";
+        if (context.getPhase() == Phase.PUBLIC_ROUTE_CHECK) {
+            // The layout may restrict access on purpose, so there is nothing
+            // to fix
+            return reason;
+        }
+        return reason + " Consider adding one of the following annotations "
+                + "to make the " + layoutKind
+                + " accessible: @AnonymousAllowed, "
+                + "@PermitAll, or @RolesAllowed.";
     }
 
     private void logDeniedByLayoutAccessRules(NavigationContext context,

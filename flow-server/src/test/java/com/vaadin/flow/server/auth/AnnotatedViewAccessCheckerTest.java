@@ -581,8 +581,12 @@ class AnnotatedViewAccessCheckerTest {
                     AnonymousAllowedView.class, null,
                     AccessControlTestClasses.PermitAllLayout.class,
                     Phase.PUBLIC_ROUTE_CHECK, false);
-            assertEquals(AccessCheckDecision.DENY,
-                    viewAccessChecker.check(context).decision());
+            AccessCheckResult result = viewAccessChecker.check(context);
+            assertEquals(AccessCheckDecision.DENY, result.decision());
+            assertEquals(
+                    "Denied access to view 'AnonymousAllowedView' due to layout 'PermitAllLayout' access rules.",
+                    result.reason(),
+                    "Public route check reason should not suggest annotations");
         });
         assertFalse(logOutput.contains("WARN"),
                 "Public route check should not produce WARN, got: "
