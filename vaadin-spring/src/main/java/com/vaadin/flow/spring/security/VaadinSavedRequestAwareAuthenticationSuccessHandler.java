@@ -42,15 +42,16 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
 
 /**
  * A version of {@link SavedRequestAwareAuthenticationSuccessHandler} that
- * writes a different return value for a Fusion TypeScript client.
+ * writes a different return value for a Hilla TypeScript client.
  * <p>
  * This class acts as a {@link SavedRequestAwareAuthenticationSuccessHandler}
  * unless the request from the client contains a "source: typescript" header.
  * <p>
- * If the header is present, it sends a return value that is an "ok" instead of
- * a "redirect" response. This is so that the TypeScript caller is able to read
- * the returned values. Additionally it sends the saved URL separately so the
- * client can decide where to redirect if no URL was saved.
+ * If the header is present, it sends an "ok" response with a
+ * {@code Result: success} header instead of a "redirect" response. This is so
+ * that the TypeScript caller is able to read the returned values. Additionally
+ * it sends the saved URL separately so the client can decide where to redirect
+ * if no URL was saved.
  * 
  * @since 17.0
  */
@@ -64,7 +65,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      */
     private static final String SOURCE_HEADER = "source";
 
-    /** This header contains 'ok' if login was successful. */
+    /** This header contains 'success' if login was successful. */
     private static final String RESULT_HEADER = "Result";
 
     /**
