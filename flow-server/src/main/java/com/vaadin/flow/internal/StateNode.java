@@ -1303,8 +1303,6 @@ public class StateNode implements Serializable {
 
         beforeClientResponseEntries.add(entry);
 
-        // Removes from the current list, since the entry may be put back on
-        // the node in a new list after the original one has been flushed
         return () -> {
             if (beforeClientResponseEntries != null) {
                 beforeClientResponseEntries.remove(entry);
