@@ -565,11 +565,13 @@ class StateTreeTest {
         StateTree.ExecutionRegistration registration = tree
                 .beforeClientResponse(child, execution);
         tree.runExecutionsBeforeClientResponse();
+        assertEquals(1, execution.executed);
 
         registration.remove();
         tree.runExecutionsBeforeClientResponse();
 
-        assertEquals(1, execution.executed);
+        assertEquals(1, execution.executed,
+                "removing an execution that has run should not affect it");
     }
 
     @Test
