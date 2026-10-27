@@ -253,7 +253,7 @@ public class ElementListenerMap extends NodeMap {
         private final String expression;
         private final int captureCount;
 
-        private Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
+        private final Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
         private ExpressionSettings(String expression, int captureCount) {
             this.expression = expression;
