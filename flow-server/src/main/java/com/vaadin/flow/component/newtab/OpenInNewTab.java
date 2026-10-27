@@ -18,7 +18,6 @@ package com.vaadin.flow.component.newtab;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.component.trigger.OpenInNewTabAction;
@@ -92,13 +91,11 @@ public final class OpenInNewTab implements Serializable {
      * @param handler
      *            produces the content when the new tab requests it, not
      *            {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a registration for removing the behavior from the component;
      *         after removal the handler is no longer served
      */
-    public static <T extends Component & ClickNotifier<?>> Registration onClick(
-            T component, DownloadHandler handler) {
+    public static Registration onClick(Component component,
+            DownloadHandler handler) {
         Objects.requireNonNull(handler, "handler must not be null");
         if (handler instanceof AbstractDownloadHandler<?> builtIn) {
             // the built-in handlers serve an attachment by default, which
@@ -118,14 +115,11 @@ public final class OpenInNewTab implements Serializable {
      *            the component whose clicks open the new tab, not {@code null}
      * @param url
      *            the URL to open, not {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a registration for removing the behavior from the component
      * @throws IllegalArgumentException
      *             if {@code url} is a {@code javascript:} URL
      */
-    public static <T extends Component & ClickNotifier<?>> Registration onClick(
-            T component, String url) {
+    public static Registration onClick(Component component, String url) {
         return bind(component, new OpenInNewTabAction(url));
     }
 

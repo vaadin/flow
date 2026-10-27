@@ -69,3 +69,6 @@ jobs:
             - Do not run the tests, the validation workflow of the pull request
               runs them.
           extra-allowed-tools: Bash(mvn:*)
+          # Trial of the cherry-pick changes from vaadin/platform-build-script#214
+          # (resolution notes, stop reasons, chained picks); remove once it is merged.
+          script-ref: 4d80fb3a528ef91d68db19171f473abbc47dddf4

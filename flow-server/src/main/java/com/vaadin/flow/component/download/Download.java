@@ -18,7 +18,6 @@ package com.vaadin.flow.component.download;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.component.trigger.DownloadAction;
@@ -90,13 +89,11 @@ public final class Download implements Serializable {
      * @param handler
      *            produces the file when the browser requests it, not
      *            {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a registration for removing the download from the component;
      *         after removal the handler is no longer served
      */
-    public static <T extends Component & ClickNotifier<?>> Registration onClick(
-            T component, DownloadHandler handler) {
+    public static Registration onClick(Component component,
+            DownloadHandler handler) {
         return bind(component, new DownloadAction(
                 Objects.requireNonNull(handler, "handler must not be null")));
     }
@@ -112,12 +109,9 @@ public final class Download implements Serializable {
      *            {@code null}
      * @param url
      *            the URL to download from, not {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a registration for removing the download from the component
      */
-    public static <T extends Component & ClickNotifier<?>> Registration onClick(
-            T component, String url) {
+    public static Registration onClick(Component component, String url) {
         return bind(component, new DownloadAction(url));
     }
 
@@ -134,12 +128,10 @@ public final class Download implements Serializable {
      *            the URL to download from, not {@code null}
      * @param fileName
      *            the suggested file name, not {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a registration for removing the download from the component
      */
-    public static <T extends Component & ClickNotifier<?>> Registration onClick(
-            T component, String url, String fileName) {
+    public static Registration onClick(Component component, String url,
+            String fileName) {
         return bind(component, new DownloadAction(url, fileName));
     }
 

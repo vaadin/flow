@@ -56,14 +56,6 @@ import com.vaadin.flow.function.SerializableRunnable;
  */
 public final class WriteToClipboardAction extends PromiseAction<String> {
 
-    /**
-     * Stand-in input that yields a JS {@code null} for a missing MIME slot, so
-     * the rendered call always reaches the TS helper with three arguments
-     * regardless of which slots were set on the server.
-     */
-    private static final JsFunction NULL_INPUT_FN = JsFunction
-            .of("return null");
-
     private final @Nullable ActionInput<String> textInput;
     private final @Nullable ActionInput<String> htmlInput;
     private final @Nullable ActionInput<?> imageInput;
@@ -235,12 +227,15 @@ public final class WriteToClipboardAction extends PromiseAction<String> {
         // a no-op input that returns null, so the TS helper sees null and
         // skips that MIME type. Keeping the call shape uniform across all
         // combinations means no per-action JS assembly.
+        // Created per call rather than held in a constant, so that the csp
+        // mode reporting of JsFunction.of runs for a call, not a class load
+        JsFunction nullInput = JsFunction.of("return null");
         JsFunction text = textInput != null ? textInput.toJs(trigger)
-                : NULL_INPUT_FN;
+                : nullInput;
         JsFunction html = htmlInput != null ? htmlInput.toJs(trigger)
-                : NULL_INPUT_FN;
+                : nullInput;
         JsFunction image = imageInput != null ? imageInput.toJs(trigger)
-                : NULL_INPUT_FN;
+                : nullInput;
         return JsFunction.of(
                 "return window.Vaadin.Flow.clipboard.writePayload($0(event), $1(event), $2(event))",
                 text, html, image).withArguments("event");

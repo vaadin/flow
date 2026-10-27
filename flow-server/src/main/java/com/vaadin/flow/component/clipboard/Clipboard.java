@@ -21,7 +21,6 @@ import java.util.UUID;
 
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.trigger.ClickTrigger;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -154,13 +153,10 @@ public final class Clipboard implements Serializable {
      * @param component
      *            the component whose clicks trigger the clipboard action, not
      *            {@code null}
-     * @param <T>
-     *            the component type, must implement {@link ClickNotifier}
      * @return a binding for chaining the clipboard action to perform on click
      * @see ClipboardBinding
      */
-    public static <T extends Component & ClickNotifier<?>> ClipboardBinding onClick(
-            T component) {
+    public static ClipboardBinding onClick(Component component) {
         Objects.requireNonNull(component, "component must not be null");
         return new ClipboardBinding(new ClickTrigger(component));
     }

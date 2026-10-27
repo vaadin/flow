@@ -73,22 +73,6 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  */
 public abstract class PromiseAction<T> extends Action {
 
-    /**
-     * Wrapper JS: subscribes to {@code promise} and forwards the resolved value
-     * or rejection reason to {@code channel} as an {@link Outcome}-shaped
-     * object. Resolved values are forwarded verbatim — the framework decodes
-     * them once on the server before invoking {@code onSuccess}. Errors are
-     * split into {@code name} (typically the {@code DOMException} class such as
-     * {@code "NotAllowedError"} — useful for switching) and a free-form
-     * {@code message}.
-     */
-    private static final JsFunction OBSERVE_PROMISE = JsFunction.of("""
-            promise.then(value => channel({ok: true, value: value}))\
-            .catch(e => channel({ok: false, error: {\
-            name: (e && e.name) ? e.name : '',\
-            message: (e && e.message) ? e.message : String(e)}}));""")
-            .withArguments("promise", "channel");
-
     private final @Nullable Class<T> payloadType;
     private final @Nullable SerializableConsumer<@Nullable T> onSuccess;
     private final @Nullable SerializableConsumer<Error> onError;
@@ -178,9 +162,28 @@ public abstract class PromiseAction<T> extends Action {
         // $0(observer)($1(event)(promise), $2(channel)) — invoke the inner
         // function to get a Promise, then hand it plus the return channel to
         // the shared observer JsFunction which subscribes to .then/.catch.
-        return JsFunction
-                .of("$0($1(event), $2)", OBSERVE_PROMISE, inner, channel)
-                .withArguments("event");
+        return JsFunction.of("$0($1(event), $2)", createPromiseObserver(),
+                inner, channel).withArguments("event");
+    }
+
+    /**
+     * Wrapper JS: subscribes to {@code promise} and forwards the resolved value
+     * or rejection reason to {@code channel} as an {@link Outcome}-shaped
+     * object. Resolved values are forwarded verbatim — the framework decodes
+     * them once on the server before invoking {@code onSuccess}. Errors are
+     * split into {@code name} (typically the {@code DOMException} class such as
+     * {@code "NotAllowedError"} — useful for switching) and a free-form
+     * {@code message}.
+     */
+    private static JsFunction createPromiseObserver() {
+        // Created per use rather than held in a constant, so that the csp mode
+        // reporting of JsFunction.of runs for a call rather than a class load
+        return JsFunction.of("""
+                promise.then(value => channel({ok: true, value: value}))\
+                .catch(e => channel({ok: false, error: {\
+                name: (e && e.name) ? e.name : '',\
+                message: (e && e.message) ? e.message : String(e)}}));""")
+                .withArguments("promise", "channel");
     }
 
     private ReturnChannelRegistration channelFor(StateNode hostNode) {
@@ -227,7 +230,7 @@ public abstract class PromiseAction<T> extends Action {
     }
 
     /**
-     * Wire shape exchanged between {@link #OBSERVE_PROMISE} and
+     * Wire shape exchanged between {@link #createPromiseObserver()} and
      * {@link #dispatch}. {@code value} is meaningful when {@code ok == true};
      * {@code error} is meaningful when {@code ok == false}.
      */
