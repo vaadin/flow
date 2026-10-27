@@ -1106,6 +1106,35 @@ class TaskRunNpmInstallTest {
     }
 
     @Test
+    void minimumFrontendPackageAgeExclude_bun_excludesVaadinPackagesByName()
+            throws IOException {
+        FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
+        MockLogger logger = new MockLogger();
+        Files.writeString(new File(npmFolder, PACKAGE_JSON).toPath(), """
+                {
+                  "dependencies": {
+                    "@vaadin/common-frontend": "0.0.25",
+                    "lit": "3.3.3"
+                  },
+                  "devDependencies": {
+                    "@vaadin/hilla-generator-cli": "25.2.0",
+                    "vite": "8.3.4"
+                  }
+                }
+                """);
+
+        // bun matches the exclusions by exact name only, so each package
+        // Vaadin publishes that the project depends on is listed
+        assertEquals(List.of(
+                "--minimum-release-age-excludes=@vaadin/common-frontend,@vaadin/hilla-generator-cli"),
+                resolveMinimumFrontendPackageAgeExcludeArguments(
+                        new MockOptions(npmFolder).withEnableBun(true), tools,
+                        logger));
+        assertEquals("", logger.getLogs(),
+                "excluding the packages needs no warning");
+    }
+
+    @Test
     void minimumFrontendPackageAgeExclude_bunfigListsThePackages_noWarning()
             throws IOException {
         FrontendTools tools = mockToolsWithoutMinimumReleaseAge();
