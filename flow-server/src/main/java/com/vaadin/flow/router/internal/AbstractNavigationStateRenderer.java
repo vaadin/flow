@@ -528,7 +528,7 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     protected boolean shouldPushHistoryState(NavigationEvent event) {
-        return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger());
+        return event.getTrigger() == NavigationTrigger.UI_NAVIGATE;
     }
 
     private boolean isRouterLinkNotFoundNavigationError(
