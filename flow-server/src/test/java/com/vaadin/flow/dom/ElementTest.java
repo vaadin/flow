@@ -2574,7 +2574,7 @@ class ElementTest extends AbstractNodeTest {
         element.flashClass("highlight");
 
         JavaScriptInvocation invocation = ui.onlyScheduledInvocation();
-        assertEquals(new JsCall(Element.FlashClassJs.class, "flashClass",
+        assertEquals(new JsCall(Element.ElementJs.class, "flashClass",
                 List.of("highlight")), invocation.getJsCall());
         assertEquals(List.of("highlight", element), invocation.getParameters(),
                 "the class name should be followed by the element to flash");
