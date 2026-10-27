@@ -42,6 +42,9 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public class DownloadEvent {
 
+    private static final String ATTACHMENT = "attachment";
+    private static final String INLINE = "inline";
+
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
@@ -151,10 +154,10 @@ public class DownloadEvent {
             return;
         }
         if (fileName.isBlank()) {
-            response.setHeader("Content-Disposition", "attachment");
+            response.setHeader("Content-Disposition", ATTACHMENT);
         } else {
             response.setHeader("Content-Disposition",
-                    buildContentDisposition("attachment", fileName));
+                    buildContentDisposition(ATTACHMENT, fileName));
         }
         this.fileName = fileName;
     }
@@ -172,7 +175,7 @@ public class DownloadEvent {
      */
     public void inline() {
         if (!response.containsHeader("Content-Disposition")) {
-            response.setHeader("Content-Disposition", "inline");
+            response.setHeader("Content-Disposition", INLINE);
         }
     }
 
@@ -198,10 +201,10 @@ public class DownloadEvent {
             return;
         }
         if (fileName == null || fileName.isBlank()) {
-            response.setHeader("Content-Disposition", "inline");
+            response.setHeader("Content-Disposition", INLINE);
         } else {
             response.setHeader("Content-Disposition",
-                    buildContentDisposition("inline", fileName));
+                    buildContentDisposition(INLINE, fileName));
         }
         this.fileName = fileName;
     }

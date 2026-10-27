@@ -16,9 +16,13 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
@@ -44,14 +48,21 @@ class DownloadEventTest {
         session = mock(VaadinSession.class);
     }
 
-    @Test
-    void setFileName_nonEmptyFileName_setsContentDispositionFilenameQuotedToResponse() {
+    static Stream<Arguments> asciiFileNames() {
+        return Stream.of(Arguments.of("test.txt", "test.txt"),
+                Arguments.of("a.pdf\"; filename*=UTF-8''b.exe",
+                        "a.pdf\\\"; filename*=UTF-8''b.exe"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("asciiFileNames")
+    void setFileName_asciiFileName_setsContentDispositionFilenameQuotedToResponse(
+            String fileName, String quotedContent) {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        String fileName = "test.txt";
         downloadEvent.setFileName(fileName);
         verify(response).setHeader("Content-Disposition",
-                "attachment;" + " filename=\"" + fileName + "\"");
+                "attachment; filename=\"" + quotedContent + "\"");
     }
 
     @Test
@@ -63,15 +74,6 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition", "attachment;"
                 + " filename=\"" + EncodeUtil.rfc2047Encode(fileName) + "\";"
                 + " filename*=UTF-8''" + EncodeUtil.rfc5987Encode(fileName));
-    }
-
-    @Test
-    void setFileName_fileNameWithQuote_quoteEscapedInContentDisposition() {
-        DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, null);
-        downloadEvent.setFileName("a.pdf\"; filename*=UTF-8''b.exe");
-        verify(response).setHeader("Content-Disposition",
-                "attachment; filename=\"a.pdf\\\"; filename*=UTF-8''b.exe\"");
     }
 
     @Test
@@ -118,23 +120,15 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition", "inline");
     }
 
-    @Test
-    void inline_withASCIIFileName_setsContentDispositionInlineWithFilenameToResponse() {
+    @ParameterizedTest
+    @MethodSource("asciiFileNames")
+    void inline_asciiFileName_setsContentDispositionInlineWithFilenameToResponse(
+            String fileName, String quotedContent) {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        String fileName = "document.pdf";
         downloadEvent.inline(fileName);
         verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"" + fileName + "\"");
-    }
-
-    @Test
-    void inline_fileNameWithQuote_quoteEscapedInContentDisposition() {
-        DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, null);
-        downloadEvent.inline("a.pdf\"; filename*=UTF-8''b.exe");
-        verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"a.pdf\\\"; filename*=UTF-8''b.exe\"");
+                "inline; filename=\"" + quotedContent + "\"");
     }
 
     @Test
