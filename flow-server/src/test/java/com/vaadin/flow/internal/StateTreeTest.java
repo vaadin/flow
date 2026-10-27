@@ -509,6 +509,30 @@ class StateTreeTest {
     }
 
     @Test
+    void beforeClientResponse_ownerDetachedByEarlierExecution_executionDiscardedAndRunWhenAttachedAgain() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        tree.beforeClientResponse(child,
+                context -> StateNodeTest.setParent(child, null));
+        TestExecution execution = new TestExecution();
+        tree.beforeClientResponse(child, execution);
+
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(0, execution.executed,
+                "an execution should not run for a node detached by an earlier execution");
+        assertEquals(1, execution.discarded);
+
+        StateNodeTest.setParent(child, tree.getRootNode());
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.restored);
+        assertEquals(1, execution.executed,
+                "the postponed execution should be run when the node is attached again");
+    }
+
+    @Test
     void beforeClientResponse_initiallyNotAttached_executedWithUI_executionRun() {
         StateTree someTree = new UI().getInternals().getStateTree();
 
