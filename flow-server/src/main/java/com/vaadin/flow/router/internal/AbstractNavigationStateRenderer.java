@@ -211,14 +211,20 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         // Set navigationTrigger to REFRESH if this is a reload of a preserved
-        // view. Other navigations that reuse the preserved chain, e.g. a link
-        // or history navigation that only changes the query parameters, keep
-        // their trigger so that history is handled the same way as without
-        // preserve on refresh.
+        // view. A forward or reroute replaces the original trigger with
+        // PROGRAMMATIC, so it is treated as a possible reload as well. Other
+        // navigations that reuse the preserved chain, e.g. a link or history
+        // navigation that only changes the query parameters, keep their
+        // trigger so that history is handled the same way as without preserve
+        // on refresh.
         if (preserveOnRefreshTarget && !chain.isEmpty()
-                && event.getTrigger() == NavigationTrigger.PAGE_LOAD) {
+                && (event.getTrigger() == NavigationTrigger.PAGE_LOAD
+                        || event.isForwardTo())) {
             event = new NavigationEvent(event.getSource(), event.getLocation(),
-                    event.getUI(), NavigationTrigger.REFRESH);
+                    event.getUI(), NavigationTrigger.REFRESH,
+                    event.getState().orElse(null), event.isForwardTo(),
+                    event.isForceInstantiation(),
+                    event.isRecreateLayoutChain());
         }
 
         // If the navigation is postponed, using BeforeLeaveEvent#postpone,

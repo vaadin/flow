@@ -36,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.ObjectMapper;
@@ -590,10 +591,10 @@ class NavigationStateRendererTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = NavigationTrigger.class, names = { "ROUTER_LINK",
-            "HISTORY", "UI_NAVIGATE", "PAGE_LOAD" })
+    @CsvSource({ "ROUTER_LINK, false", "HISTORY, false", "UI_NAVIGATE, false",
+            "PAGE_LOAD, false", "PROGRAMMATIC, true" })
     void handle_preserveOnRefresh_queryChange_onlyReloadIsRefreshAndOnlyUINavigatePushes(
-            NavigationTrigger trigger) {
+            NavigationTrigger trigger, boolean forwardTo) {
         MockVaadinServletService service = createMockServiceWithInstantiator();
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
@@ -633,11 +634,13 @@ class NavigationStateRendererTest {
 
         renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
                 new Location("preserved", QueryParameters.of("id", "1")), ui,
-                trigger));
+                trigger, null, forwardTo));
 
         assertSame(view, ui.getInternals().getActiveRouterTargetsChain().get(0),
                 "Preserved view should be reused");
-        boolean reload = trigger == NavigationTrigger.PAGE_LOAD;
+        // A forward or reroute may come from a reload, but its original
+        // trigger has been replaced
+        boolean reload = trigger == NavigationTrigger.PAGE_LOAD || forwardTo;
         assertEquals(reload, view.refreshBeforeEnter,
                 "Only a reload should be a refresh for " + trigger);
         assertEquals(reload, view.refreshAfterNavigation,
