@@ -981,7 +981,7 @@ public class VaadinServletContextInitializer
                 .getBeanNamesForType(VaadinScanPackages.class).length > 0) {
             VaadinScanPackages packages = appContext
                     .getBean(VaadinScanPackages.class);
-            packagesList = packages.getScanPackages();
+            packagesList = packages.scanPackages();
 
         }
         if (!packagesList.isEmpty()) {

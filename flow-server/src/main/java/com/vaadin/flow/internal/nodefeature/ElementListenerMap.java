@@ -41,6 +41,7 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.ConstantPoolKey;
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -170,6 +171,9 @@ public class ElementListenerMap extends NodeMap {
                 throw new IllegalArgumentException(
                         "The event data expression must not be null");
             }
+            if (isCompiledByClient(eventData)) {
+                CspViolationReporter.reportStringJavaScript();
+            }
 
             appendEventData(List.of(eventData));
 
@@ -189,6 +193,10 @@ public class ElementListenerMap extends NodeMap {
                     throw new IllegalArgumentException(
                             "The event data expression must not be null");
                 }
+            }
+            if (eventData.stream()
+                    .anyMatch(DomEventListenerWrapper::isCompiledByClient)) {
+                CspViolationReporter.reportStringJavaScript();
             }
 
             appendEventData(eventData);
@@ -224,6 +232,9 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration setFilter(String filter) {
+            if (filter != null) {
+                CspViolationReporter.reportStringJavaScript();
+            }
             this.filter = filter;
 
             listenerMap.updateEventSettings(type);
@@ -298,6 +309,15 @@ public class ElementListenerMap extends NodeMap {
             unregisterHandlers.add(Objects.requireNonNull(unregisterHandler,
                     "Unregister handler cannot be null"));
             return this;
+        }
+
+        // The client reads a synchronized property, or the state node closest
+        // to the event target, without compiling anything
+        private static boolean isCompiledByClient(String eventData) {
+            return !eventData
+                    .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
+                    && !eventData
+                            .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
         }
 
         private boolean isPropertySynchronized(String propertyName) {
