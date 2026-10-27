@@ -320,6 +320,12 @@ describe('AtmospherePushConnection', () => {
         this.onclose?.({ code: 1006, reason: '' });
       }
 
+      // As a browser does when the connection cannot be made
+      fail(): void {
+        this.onerror?.();
+        this.drop();
+      }
+
       open(): void {
         this.readyState = FakeWebSocket.OPEN;
         this.onopen?.();
@@ -420,30 +426,40 @@ describe('AtmospherePushConnection', () => {
       expect(connection.isActive()).to.be.true;
     });
 
-    it('stays on websocket after repeated outages', async () => {
-      // atmosphere.js 5 falls back only on the first connection and starts its
-      // retry count anew on every reopen, so failed attempts from separate
-      // outages do not add up to a fallback.
-      const { registry } = setupAtmosphere(new Map([['reconnectInterval', '10']]));
+    it('starts the reconnect attempts anew after every reopen', async () => {
+      // Failed attempts from separate outages must not add up to giving the
+      // connection up
+      const { registry, log } = setupAtmosphere(
+        new Map([
+          ['reconnectInterval', '10'],
+          ['maxReconnectOnClose', '3']
+        ])
+      );
       const connection = new AtmospherePushConnection(registry);
       await tick();
       sockets[0].open();
       sockets[0].receive(handshake('abc'));
       await tick();
-
-      for (let outage = 0; outage < 3; outage++) {
+      const loseConnection = async (failedAttempts: number) => {
         sockets[sockets.length - 1].drop();
-        for (let failedAttempt = 0; failedAttempt < 2; failedAttempt++) {
+        for (let attempt = 0; attempt < failedAttempts; attempt++) {
           await new Promise((resolve) => setTimeout(resolve, 50));
           sockets[sockets.length - 1].drop();
         }
+      };
+
+      for (let outage = 0; outage < 3; outage++) {
+        await loseConnection(2);
         await new Promise((resolve) => setTimeout(resolve, 50));
         sockets[sockets.length - 1].open();
       }
-
-      expect(sockets).to.have.length(10);
+      expect(log.pushError).to.equal(0);
       expect(connection.getTransportType()).to.equal('websocket');
       expect(connection.isActive()).to.be.true;
+
+      await loseConnection(3);
+      expect(log.pushError).to.equal(1);
+      expect(connection.isActive()).to.be.false;
     });
 
     describe('over long-polling', () => {
@@ -494,6 +510,24 @@ describe('AtmospherePushConnection', () => {
         const params = new URL(url, document.baseURI).searchParams;
         return params.get('X-Atmosphere-Transport') === 'close' && params.get('X-Atmosphere-tracking-id') === 'lp';
       };
+
+      it('falls back to long-polling when the first websocket connection fails', async () => {
+        const { registry, log } = setupAtmosphere();
+        const connection = new AtmospherePushConnection(registry);
+        await tick();
+
+        sockets[0].fail();
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        expect(sockets).to.have.length(1);
+        expect(new URL(requests[0].url, document.baseURI).searchParams.get('X-Atmosphere-Transport')).to.equal(
+          'long-polling'
+        );
+        expect(log.pushOk).to.equal(1);
+        expect(log.pushError).to.equal(0);
+        expect(connection.getTransportType()).to.equal('long-polling');
+        connection.disconnect(() => {});
+      });
 
       it('tells the server when it closes the connection', async () => {
         const connection = await openLongPolling();
