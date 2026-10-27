@@ -154,7 +154,7 @@ public class DownloadEvent {
             response.setHeader("Content-Disposition", "attachment");
         } else {
             response.setHeader("Content-Disposition",
-                    contentDisposition("attachment", fileName));
+                    buildContentDisposition("attachment", fileName));
         }
         this.fileName = fileName;
     }
@@ -201,12 +201,13 @@ public class DownloadEvent {
             response.setHeader("Content-Disposition", "inline");
         } else {
             response.setHeader("Content-Disposition",
-                    contentDisposition("inline", fileName));
+                    buildContentDisposition("inline", fileName));
         }
         this.fileName = fileName;
     }
 
-    private static String contentDisposition(String type, String fileName) {
+    private static String buildContentDisposition(String type,
+            String fileName) {
         StringBuilder value = new StringBuilder();
         value.append(type).append("; ");
         if (EncodeUtil.isPureUSASCII(fileName)) {
