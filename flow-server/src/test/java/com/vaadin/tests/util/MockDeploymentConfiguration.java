@@ -72,6 +72,15 @@ public class MockDeploymentConfiguration
         this.productionMode = productionMode;
     }
 
+    @Override
+    public CspMode getCspMode() {
+        return cspMode;
+    }
+
+    public void setCspMode(CspMode cspMode) {
+        this.cspMode = cspMode;
+    }
+
     public void setReuseDevServer(boolean reuseDevServer) {
         this.reuseDevServer = reuseDevServer;
     }
@@ -245,14 +254,5 @@ public class MockDeploymentConfiguration
 
     public void setReactEnabled(boolean isReactEnabled) {
         this.isReactEnabled = isReactEnabled;
-    }
-
-    @Override
-    public CspMode getCspMode() {
-        return cspMode;
-    }
-
-    public void setCspMode(CspMode cspMode) {
-        this.cspMode = cspMode;
     }
 }

@@ -29,10 +29,8 @@ package com.vaadin.flow.server;
  * {@link com.vaadin.flow.dom.Element#executeJs(String, Object...)}, because the
  * browser has to compile it, which a strict policy blocks. This applies to the
  * calls that Vaadin itself makes as well, and in development mode as much as in
- * production mode.
- * <p>
- * <strong>Note:</strong> Vaadin does not send a Content Security Policy header
- * yet in any mode.
+ * production mode. The {@link #STRICT} mode also sends the Content Security
+ * Policy header in production mode.
  *
  * @since 25.4
  */
@@ -49,8 +47,24 @@ public enum CspMode {
      */
     WARN,
     /**
-     * APIs that need {@code eval} throw a {@link CspViolationException}, whose
-     * stack trace leads from the API to its caller.
+     * Vaadin sends a nonce-based Content Security Policy, and APIs that need
+     * {@code eval} throw a {@link CspViolationException}, whose stack trace
+     * leads from the API to its caller.
+     * <p>
+     * In production mode, every index HTML response gets a new nonce that is
+     * put on every {@code <script>} element of the page, and a
+     * {@code Content-Security-Policy} header that allows only the scripts with
+     * that nonce and the scripts they load. Applications adjust the policy
+     * through
+     * {@link com.vaadin.flow.server.communication.IndexHtmlResponse#getContentSecurityPolicy()}.
+     * No header is sent in development mode, because the development server and
+     * the development tools need {@code eval}.
+     * <p>
+     * <strong>Note:</strong> Vaadin itself still uses APIs that need
+     * {@code eval}, not only for its own components but also for the event data
+     * and filter expressions of DOM event listeners, such as those of a click
+     * listener. Until that is changed, those calls throw, so the mode is not
+     * yet usable for applications.
      */
     STRICT
 }
