@@ -753,7 +753,9 @@ public class Element extends Node<Element> {
      * @param name
      *            the property name, not <code>null</code>
      * @param value
-     *            the property value
+     *            the property value, or <code>null</code> to set the property
+     *            to <code>null</code>; unlike {@link #removeProperty(String)},
+     *            the property is kept
      * @return this element
      * @throws com.vaadin.flow.signals.BindingActiveException
      *             if the property has an active read-only signal binding
