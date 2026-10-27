@@ -1041,6 +1041,11 @@ public class Page implements Serializable {
          * on whenever the browser window is resized, with the size of the
          * document as its <code>w</code> and <code>h</code> properties, so that
          * a resize can be listened to on that element.
+         * <p>
+         * Unlike the other methods of this definition, this one needs an
+         * element to run on: obtain the definition from
+         * {@link Element#executeJs(Class)} of that element rather than from
+         * {@link Page#executeJs(Class)}, which runs without one.
          */
         @JsExpression("""
                 const el = this;

@@ -2572,7 +2572,6 @@ class ElementTest extends AbstractNodeTest {
         ui.getElement().appendChild(element);
 
         element.flashClass("highlight");
-        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         JavaScriptInvocation invocation = ui.onlyScheduledInvocation();
         assertEquals(new JsCall(Element.FlashClassJs.class, "flashClass",

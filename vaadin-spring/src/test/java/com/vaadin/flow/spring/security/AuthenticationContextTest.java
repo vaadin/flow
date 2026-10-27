@@ -25,6 +25,9 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -72,6 +75,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -498,11 +502,77 @@ class AuthenticationContextTest {
             return null;
         }).when(ui).accessSynchronously(any());
         mockPush(ui, Transport.WEBSOCKET);
+        PageJs pageJs = mockPageJs(ui);
+        when(pageJs.getHref()).thenReturn(answerWith(true, null));
+        try {
+            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
+            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
+            UI.setCurrent(ui);
+            authContext.logout();
+
+            InOrder inOrder = inOrder(ui.getPushConfiguration(), pageJs);
+            inOrder.verify(ui.getPushConfiguration())
+                    .setTransport(Transport.WEBSOCKET_XHR);
+            inOrder.verify(pageJs).getHref();
+            inOrder.verify(ui.getPushConfiguration())
+                    .setTransport(Transport.WEBSOCKET);
+            verify(setup.successHandler()).onLogoutSuccess(setup.request(),
+                    setup.response(), setup.authentication());
+            verify(setup.handler2()).logout(setup.request(), setup.response(),
+                    setup.authentication());
+            verify(setup.handler1()).logout(setup.request(), setup.response(),
+                    setup.authentication());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = { true, false })
+    @WithMockUser()
+    void logout_fromBackgroundThread_handlersEngagedAfterRoundTrip(
+            boolean roundTripSucceeds) throws Exception {
+        SetupForLogoutTest setup = getSetupForLogoutTest();
+
+        UI ui = mock(UI.class);
+        doAnswer(i -> {
+            i.<Command> getArgument(0).execute();
+            return null;
+        }).when(ui).accessSynchronously(any());
+        mockPush(ui);
+        PageJs pageJs = mockPageJs(ui);
+        // The logout runs when the browser answers, which is in a request
+        when(pageJs.getHref()).thenReturn(answerWith(roundTripSucceeds, () -> {
+            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
+            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
+        }));
+        try {
+            UI.setCurrent(ui);
+            authContext.logout();
+
+            verify(pageJs).getHref();
+            verify(setup.successHandler()).onLogoutSuccess(setup.request(),
+                    setup.response(), setup.authentication());
+            verify(setup.handler2()).logout(setup.request(), setup.response(),
+                    setup.authentication());
+            verify(setup.handler1()).logout(setup.request(), setup.response(),
+                    setup.authentication());
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    private static PageJs mockPageJs(UI ui) {
         Page page = mock(Page.class);
         when(ui.getPage()).thenReturn(page);
         PageJs pageJs = mock(PageJs.class);
         when(page.executeJs(PageJs.class)).thenReturn(pageJs);
-        when(pageJs.getHref()).thenReturn(new PendingJavaScriptResult() {
+        return pageJs;
+    }
+
+    private static PendingJavaScriptResult answerWith(boolean success,
+            Runnable beforeAnswer) {
+        return new PendingJavaScriptResult() {
             @Override
             public boolean cancelExecution() {
                 return false;
@@ -516,24 +586,16 @@ class AuthenticationContextTest {
             @Override
             public void then(SerializableConsumer<JsonNode> resultHandler,
                     SerializableConsumer<String> errorHandler) {
-                resultHandler.accept(null);
+                if (beforeAnswer != null) {
+                    beforeAnswer.run();
+                }
+                if (success) {
+                    resultHandler.accept(null);
+                } else {
+                    errorHandler.accept("failed");
+                }
             }
-        });
-        try {
-            CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
-            CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
-            UI.setCurrent(ui);
-            authContext.logout();
-
-            verify(setup.successHandler()).onLogoutSuccess(setup.request(),
-                    setup.response(), setup.authentication());
-            verify(setup.handler2()).logout(setup.request(), setup.response(),
-                    setup.authentication());
-            verify(setup.handler1()).logout(setup.request(), setup.response(),
-                    setup.authentication());
-        } finally {
-            CurrentInstance.clearAll();
-        }
+        };
     }
 
     private SetupForLogoutTest getSetupForLogoutTest() {
