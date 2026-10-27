@@ -112,6 +112,13 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x == $0", 2)),
+                // Compiled by the client even though the plain overload reads
+                // the same token without compiling it
+                call(DomListenerRegistration.class, "addEventData",
+                        ui -> ui.getElement().addEventListener("click", e -> {
+                        }).addEventData("v",
+                                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
+                                        + "value")),
                 // Vaadin code sending event data and a filter on its own
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> new Clickable().addDoubleClickListener(e -> {
@@ -146,6 +153,7 @@ class CspModeTest {
                     .addEventListener("click", e -> {
                     });
             registration.setFilter(null);
+            registration.setFilter(null, 1);
             registration.addEventData(List.of());
             registration.addEventData(
                     List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value",

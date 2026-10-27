@@ -120,7 +120,9 @@ public interface DomListenerRegistration extends Registration {
      * available, and both listeners see the same value.
      * <p>
      * The captures are encoded when this method is called, so a value that
-     * cannot be sent to the client fails immediately.
+     * cannot be sent to the client fails immediately. This also means that an
+     * element or component capture must already be attached, since one that is
+     * not is captured as <code>null</code>.
      *
      * @param name
      *            the name to use for the value in
@@ -189,7 +191,9 @@ public interface DomListenerRegistration extends Registration {
      * Any previous filter for this registration is discarded.
      * <p>
      * The captures are encoded when this method is called, so a value that
-     * cannot be sent to the client fails immediately.
+     * cannot be sent to the client fails immediately. This also means that an
+     * element or component capture must already be attached, since one that is
+     * not is captured as <code>null</code>.
      *
      * @param filter
      *            the JavaScript filter expression, or <code>null</code> to
@@ -213,6 +217,10 @@ public interface DomListenerRegistration extends Registration {
 
     /**
      * Gets the currently set filter expression.
+     * <p>
+     * For a filter set with {@link #setFilter(String, Object...)}, this is the
+     * expression without its captures, so passing it to
+     * {@link #setFilter(String)} does not give an equivalent filter.
      *
      * @see #setFilter(String)
      *
