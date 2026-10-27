@@ -136,13 +136,14 @@ public final class ElementJsInitializerRegistration implements Registration {
         if (initializerId == -1) {
             initializerId = ui.getInternals().nextJsInitializerId();
         }
-        Object[] params = { Element.get(node), initializerId, userFunction };
+        Object[] params = new Object[] { Element.get(node), initializerId,
+                userFunction };
         ui.getInternals().addJavaScriptInvocation(node,
                 new JavaScriptInvocation(INIT_EXPRESSION, params));
     }
 
     private void emitDispose(UI ui) {
-        Object[] params = { Element.get(node), initializerId };
+        Object[] params = new Object[] { Element.get(node), initializerId };
         ui.getInternals().addJavaScriptInvocation(node,
                 new JavaScriptInvocation(DISPOSE_EXPRESSION, params));
     }
