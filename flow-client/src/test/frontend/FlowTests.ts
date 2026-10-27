@@ -677,25 +677,28 @@ describe('Flow', () => {
   });
 
   [
-    { attribute: 'router-link', trigger: 'link' },
-    { attribute: undefined, trigger: 'client' }
-  ].forEach(({ attribute, trigger }) => {
-    it(`should send '${trigger}' trigger for the first navigation started by a link click`, async () => {
+    { click: true, attribute: 'router-link', trigger: 'link' },
+    { click: true, attribute: undefined, trigger: 'client' },
+    { click: false, attribute: undefined, trigger: '' }
+  ].forEach(({ click, attribute, trigger }) => {
+    it(`should send '${trigger}' trigger for the first navigation ${click ? 'started by a link click' : 'on page load'}`, async () => {
       stubServerRemoteFunction('foobar-12345');
       mockInitResponse('foobar-12345');
 
       const route = new Flow().serverSideRoutes[0];
 
-      // Flow is not initialized yet when the link that starts the first server navigation is clicked
-      const link = document.createElement('a');
-      if (attribute) {
-        link.setAttribute(attribute, '');
-      }
-      document.body.appendChild(link);
-      try {
-        link.click();
-      } finally {
-        link.remove();
+      if (click) {
+        // Flow is not initialized yet when the link that starts the first server navigation is clicked
+        const link = document.createElement('a');
+        if (attribute) {
+          link.setAttribute(attribute, '');
+        }
+        document.body.appendChild(link);
+        try {
+          link.click();
+        } finally {
+          link.remove();
+        }
       }
 
       const flowRouteParams = { pathname: 'Foo', search: '' };
