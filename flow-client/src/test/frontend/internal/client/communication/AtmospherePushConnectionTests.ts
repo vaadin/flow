@@ -420,6 +420,32 @@ describe('AtmospherePushConnection', () => {
       expect(connection.isActive()).to.be.true;
     });
 
+    it('stays on websocket after repeated outages', async () => {
+      // atmosphere.js 5 falls back only on the first connection and starts its
+      // retry count anew on every reopen, so failed attempts from separate
+      // outages do not add up to a fallback.
+      const { registry } = setupAtmosphere(new Map([['reconnectInterval', '10']]));
+      const connection = new AtmospherePushConnection(registry);
+      await tick();
+      sockets[0].open();
+      sockets[0].receive(handshake('abc'));
+      await tick();
+
+      for (let outage = 0; outage < 3; outage++) {
+        sockets[sockets.length - 1].drop();
+        for (let failedAttempt = 0; failedAttempt < 2; failedAttempt++) {
+          await new Promise((resolve) => setTimeout(resolve, 50));
+          sockets[sockets.length - 1].drop();
+        }
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        sockets[sockets.length - 1].open();
+      }
+
+      expect(sockets).to.have.length(10);
+      expect(connection.getTransportType()).to.equal('websocket');
+      expect(connection.isActive()).to.be.true;
+    });
+
     describe('over long-polling', () => {
       const nativeFetch = window.fetch;
       const nativeSendBeacon = navigator.sendBeacon;
