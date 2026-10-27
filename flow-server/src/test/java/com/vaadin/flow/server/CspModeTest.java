@@ -36,6 +36,7 @@ import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.clipboard.Clipboard;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -109,7 +110,11 @@ class CspModeTest {
                 // Vaadin code sending event data and a filter on its own
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> new Clickable().addDoubleClickListener(e -> {
-                        })));
+                        })),
+                // A trigger and promise action rendering their JavaScript, so
+                // the report runs for the call and not for a class load
+                call(JsFunction.class, "of", ui -> Clipboard
+                        .onClick(new Clickable()).writeText("x")));
     }
 
     private static Arguments call(Class<?> api, String method,

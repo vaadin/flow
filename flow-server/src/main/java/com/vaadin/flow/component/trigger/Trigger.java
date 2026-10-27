@@ -26,6 +26,8 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -155,6 +157,8 @@ public abstract class Trigger implements Serializable {
      *
      * @param actions
      *            the actions to run, not {@code null} or empty
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public final void triggers(Action... actions) {
         Objects.requireNonNull(actions);
@@ -189,6 +193,10 @@ public abstract class Trigger implements Serializable {
      * @param action
      *            supplies the action to wire once {@code attachTarget} is
      *            attached, not {@code null}
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode;
+     *             thrown when the action is wired, so from the attach of
+     *             {@code attachTarget} if it is not attached yet
      */
     public final void triggers(Component attachTarget,
             SerializableSupplier<Action> action) {
