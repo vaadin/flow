@@ -250,6 +250,13 @@ describe('AtmospherePushConnection', () => {
         clock.tick(5 * 60 * 1000);
         capture.config!.onClose(response('websocket'));
         expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(0);
+
+        // A short-lived reconnect after the stable one must not count as stable
+        capture.config!.onReopen(response('websocket'));
+        fakeSocket.request.curWebsocketErrorRetries = 3;
+        clock.tick(1000);
+        capture.config!.onClose(response('websocket'));
+        expect(fakeSocket.request.curWebsocketErrorRetries).to.equal(3);
       } finally {
         clock.restore();
       }
