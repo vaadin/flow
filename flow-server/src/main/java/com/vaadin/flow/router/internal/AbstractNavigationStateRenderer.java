@@ -495,17 +495,14 @@ public abstract class AbstractNavigationStateRenderer
             // The history is left as it is for an error view
             return;
         }
-        if (NavigationTrigger.REFRESH != eventTrigger && !event.isForwardTo()
+        boolean locationChanged = NavigationTrigger.REFRESH != eventTrigger
+                && !event.isForwardTo()
                 && (currentLocation == null || !event.getLocation()
-                        .getPathWithQueryParameters().equals(currentLocation
-                                .getPathWithQueryParameters()))) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
-        } else if (reactEnabled) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
+                        .getPathWithQueryParameters()
+                        .equals(currentLocation.getPathWithQueryParameters()));
+        if ((locationChanged || reactEnabled)
+                && shouldPushHistoryState(event)) {
+            pushHistoryState(event);
         }
     }
 
