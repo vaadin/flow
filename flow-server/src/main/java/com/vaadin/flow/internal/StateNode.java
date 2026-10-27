@@ -1304,6 +1304,7 @@ public class StateNode implements Serializable {
         beforeClientResponseEntries.add(entry);
 
         return () -> {
+            // null when the entries have been flushed and none added since
             if (beforeClientResponseEntries != null) {
                 beforeClientResponseEntries.remove(entry);
             }

@@ -544,13 +544,32 @@ class StateTreeTest {
                 .beforeClientResponse(child, execution);
 
         tree.runExecutionsBeforeClientResponse();
+        assertEquals(1, execution.discarded);
         registration.remove();
 
         StateNodeTest.setParent(child, tree.getRootNode());
         tree.runExecutionsBeforeClientResponse();
 
+        assertEquals(0, execution.restored,
+                "a removed execution should no longer be on the node");
         assertEquals(0, execution.executed,
                 "a removed execution should not be run when the node is attached again");
+    }
+
+    @Test
+    void beforeClientResponse_removeAfterExecutionRun_noException() {
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNodeTest.setParent(child, tree.getRootNode());
+
+        TestExecution execution = new TestExecution();
+        StateTree.ExecutionRegistration registration = tree
+                .beforeClientResponse(child, execution);
+        tree.runExecutionsBeforeClientResponse();
+
+        registration.remove();
+        tree.runExecutionsBeforeClientResponse();
+
+        assertEquals(1, execution.executed);
     }
 
     @Test
