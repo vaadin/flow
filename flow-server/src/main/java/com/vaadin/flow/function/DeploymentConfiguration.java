@@ -413,7 +413,7 @@ public interface DeploymentConfiguration
      * The mode can be configured with the {@link InitParameters#CSP}
      * configuration parameter. By default, it returns {@link CspMode#OFF}.
      * <p>
-     * Vaadin does not act on the mode yet, see {@link CspMode}.
+     * See {@link CspMode} for what each mode does.
      *
      * @return the Content Security Policy mode, never null
      * @since 25.4
