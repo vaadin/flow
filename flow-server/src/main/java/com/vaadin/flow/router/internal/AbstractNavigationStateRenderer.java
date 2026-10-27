@@ -92,6 +92,9 @@ public abstract class AbstractNavigationStateRenderer
 
     private LocationChangeEvent locationChangeEvent = null;
 
+    // Whether this renderer handles a forward or reroute of a page reload
+    private boolean redirectedFromReload;
+
     /**
      * Creates a new renderer for the given navigation state.
      *
@@ -211,15 +214,12 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         // Set navigationTrigger to REFRESH if this is a reload of a preserved
-        // view. A forward or reroute replaces the original trigger with
-        // PROGRAMMATIC, so it is treated as a possible reload as well. Other
-        // navigations that reuse the preserved chain, e.g. a link or history
-        // navigation that only changes the query parameters, keep their
-        // trigger so that history is handled the same way as without preserve
-        // on refresh.
-        if (preserveOnRefreshTarget && !chain.isEmpty()
-                && (event.getTrigger() == NavigationTrigger.PAGE_LOAD
-                        || event.isForwardTo())) {
+        // view, also when the reload reaches it through a forward or reroute.
+        // Other navigations that reuse the preserved chain, e.g. a link or
+        // history navigation that only changes the query parameters, keep
+        // their trigger so that history is handled the same way as without
+        // preserve on refresh.
+        if (preserveOnRefreshTarget && !chain.isEmpty() && isReload(event)) {
             event = new NavigationEvent(event.getSource(), event.getLocation(),
                     event.getUI(), NavigationTrigger.REFRESH,
                     event.getState().orElse(null), event.isForwardTo(),
@@ -959,6 +959,9 @@ public abstract class AbstractNavigationStateRenderer
         if (handler instanceof NavigationStateRenderer renderer) {
             renderer.setOngoingLocationChangeEvent(locationChangeEvent);
         }
+        if (handler instanceof AbstractNavigationStateRenderer renderer) {
+            renderer.redirectedFromReload = isReload(event);
+        }
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
@@ -974,11 +977,26 @@ public abstract class AbstractNavigationStateRenderer
         if (handler instanceof NavigationStateRenderer renderer) {
             renderer.setOngoingLocationChangeEvent(locationChangeEvent);
         }
+        if (handler instanceof AbstractNavigationStateRenderer renderer) {
+            renderer.redirectedFromReload = isReload(event);
+        }
 
         NavigationEvent newNavigationEvent = getNavigationEvent(event,
                 beforeNavigation);
 
         return handler.handle(newNavigationEvent);
+    }
+
+    /**
+     * Checks whether the event is for a page reload. A forward or reroute
+     * replaces the original trigger with
+     * {@link NavigationTrigger#PROGRAMMATIC}, so for such an event the trigger
+     * of the redirected navigation is used.
+     */
+    private boolean isReload(NavigationEvent event) {
+        return event.getTrigger() == NavigationTrigger.PAGE_LOAD
+                || event.getTrigger() == NavigationTrigger.REFRESH
+                || (event.isForwardTo() && redirectedFromReload);
     }
 
     private NavigationEvent getNavigationEvent(NavigationEvent event,
