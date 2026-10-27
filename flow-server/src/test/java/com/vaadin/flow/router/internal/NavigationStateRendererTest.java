@@ -1081,6 +1081,7 @@ class NavigationStateRendererTest {
         // removal of several components with modality is covered
         ModalComponent strictComponent = new ModalComponent();
         ModalComponent modalComponent = new ModalComponent();
+        ModalComponent uiChild = new ModalComponent();
         MockUI ui = new MockUI(session);
         ui.add(strictComponent);
         ui.setChildComponentModal(strictComponent, ModalityMode.STRICT);
@@ -1089,25 +1090,28 @@ class NavigationStateRendererTest {
         ModalComponent nestedComponent = new ModalComponent();
         strictComponent.getElement().appendChild(nestedComponent.getElement());
         ui.setChildComponentModal(nestedComponent, ModalityMode.VISUAL);
-        ui.add(modalComponent);
+        ui.add(modalComponent, uiChild);
         ui.setChildComponentModal(modalComponent, modalityMode);
+        modalComponent.getElement().setProperty("opened", true);
 
         renderer.handle(new NavigationEvent(router, new Location(""), ui,
                 NavigationTrigger.REFRESH_ROUTE, (BaseJsonNode) null, false,
                 true, true));
 
-        // Components with modality, such as dialogs, are attached to the UI
-        // instead of the route, so they have to be removed on refresh since it
-        // is not possible to preserve the correct modality cardinality and
-        // order. Modeless components are instead left untouched.
-        int expectedDetachCount = modalityMode == ModalityMode.MODELESS ? 0 : 1;
+        // Overlays, such as dialogs and notifications, are attached to the UI
+        // instead of the route, so they have to be removed on refresh in any
+        // modality mode, since they would otherwise show outdated contents.
         assertEquals(1, modalComponent.attachCount);
-        assertEquals(expectedDetachCount, modalComponent.detachCount);
+        assertEquals(1, modalComponent.detachCount);
+        assertFalse(modalComponent.getElement().getProperty("opened", true),
+                "A removed overlay should be closed, so that it can be opened again");
         assertEquals(1, strictComponent.attachCount);
         assertEquals(1, strictComponent.detachCount);
         assertEquals(1, nestedComponent.detachCount);
         assertEquals(strictComponent.getElement(),
                 nestedComponent.getElement().getParent());
+        assertEquals(0, uiChild.detachCount,
+                "A UI child that is not an overlay should stay attached");
     }
 
     private MockVaadinServletService createMockServiceWithInstantiator() {
