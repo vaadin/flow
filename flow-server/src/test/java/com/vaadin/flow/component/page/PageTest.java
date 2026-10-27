@@ -235,6 +235,20 @@ class PageTest {
     }
 
     @Test
+    void addBrowserWindowResizeListener_runsTheDeclaredJavaScriptOnTheUiElement() {
+        MockUI mockUI = new MockUI();
+
+        mockUI.getPage().addBrowserWindowResizeListener(listener);
+
+        JavaScriptInvocation invocation = mockUI.onlyScheduledInvocation();
+        assertEquals(
+                new JsCall(Page.PageJs.class, "forwardWindowResize", List.of()),
+                invocation.getJsCall());
+        assertEquals(List.of(mockUI.getElement()), invocation.getParameters(),
+                "the resize event should be dispatched on the UI element");
+    }
+
+    @Test
     void fetchPageDirection_consumerReceivesTheDirection() {
         MockUI mockUI = new MockUI();
         AtomicReference<Direction> received = new AtomicReference<>();

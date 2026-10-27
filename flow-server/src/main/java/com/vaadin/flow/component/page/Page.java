@@ -644,15 +644,7 @@ public class Page implements Serializable {
     private void ensureResizeListener() {
         if (resizeReceiver == null) {
             // "republish" on the UI element, so can be listened with core APIs
-            ui.getElement().executeJs("""
-                        const el = this;
-                        window.addEventListener('resize', evt => {
-                            const event = new Event("window-resize");
-                            event.w = document.documentElement.clientWidth;
-                            event.h = document.documentElement.clientHeight;
-                            el.dispatchEvent(event);
-                        });
-                    """);
+            ui.getElement().executeJs(PageJs.class).forwardWindowResize();
             resizeReceiver = ui.getElement()
                     .addEventListener("window-resize", e -> {
                         int w = e.getEventData().get("event.w").intValue();
@@ -1043,6 +1035,23 @@ public class Page implements Serializable {
          */
         @JsExpression("return document.dir")
         PendingJavaScriptResult readDirection();
+
+        /**
+         * Dispatches a <code>window-resize</code> event on the element it runs
+         * on whenever the browser window is resized, with the size of the
+         * document as its <code>w</code> and <code>h</code> properties, so that
+         * a resize can be listened to on that element.
+         */
+        @JsExpression("""
+                const el = this;
+                window.addEventListener('resize', evt => {
+                    const event = new Event("window-resize");
+                    event.w = document.documentElement.clientWidth;
+                    event.h = document.documentElement.clientHeight;
+                    el.dispatchEvent(event);
+                });
+                """)
+        void forwardWindowResize();
     }
 
     /**

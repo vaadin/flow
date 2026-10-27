@@ -60,7 +60,6 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationHandler;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
-import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
@@ -492,15 +491,11 @@ public abstract class AbstractNavigationStateRenderer
                 .getDeploymentConfiguration().isReactEnabled();
         Location currentLocation = ui.getInternals().getActiveViewLocation();
         NavigationTrigger eventTrigger = event.getTrigger();
-        if (event instanceof ErrorNavigationEvent errorEvent) {
-            if (isRouterLinkNotFoundNavigationError(errorEvent)) {
-                // #8544
-                event.getState().ifPresent(s -> ui.getPage().executeJs(
-                        "this.scrollPositionHandlerAfterServerNavigation($0);",
-                        s));
-            }
-        } else if (NavigationTrigger.REFRESH != eventTrigger
-                && !event.isForwardTo()
+        if (event instanceof ErrorNavigationEvent) {
+            // The history is left as it is for an error view
+            return;
+        }
+        if (NavigationTrigger.REFRESH != eventTrigger && !event.isForwardTo()
                 && (currentLocation == null || !event.getLocation()
                         .getPathWithQueryParameters().equals(currentLocation
                                 .getPathWithQueryParameters()))) {
@@ -523,14 +518,6 @@ public abstract class AbstractNavigationStateRenderer
     protected boolean shouldPushHistoryState(NavigationEvent event) {
         return NavigationTrigger.UI_NAVIGATE.equals(event.getTrigger())
                 || NavigationTrigger.REFRESH.equals(event.getTrigger());
-    }
-
-    private boolean isRouterLinkNotFoundNavigationError(
-            ErrorNavigationEvent event) {
-        return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
-                && event.getErrorParameter() != null
-                && event.getErrorParameter()
-                        .getCaughtException() instanceof NotFoundException;
     }
 
     /**

@@ -1566,7 +1566,7 @@ public class Element extends Node<Element> {
      */
     public void flashClass(String className) {
         Objects.requireNonNull(className, "className cannot be null");
-        executeJs("window.Vaadin.Flow.flashClass(this, $0)", className);
+        executeJs(FlashClassJs.class).flashClass(className);
     }
 
     /**
@@ -2507,5 +2507,23 @@ public class Element extends Node<Element> {
          */
         @JsExpression("setTimeout(() => this.scrollIntoView($0), 0)")
         void scrollIntoView(ObjectNode options);
+    }
+
+    /**
+     * The JavaScript behind {@link #flashClass(String)}, as a JavaScript
+     * definition for {@link #executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface FlashClassJs extends Serializable {
+
+        /**
+         * Adds the CSS class to the element and removes it again when the
+         * animation it starts has ended.
+         *
+         * @param className
+         *            the CSS class name to flash
+         */
+        @JsExpression("window.Vaadin.Flow.flashClass(this, $0)")
+        void flashClass(String className);
     }
 }

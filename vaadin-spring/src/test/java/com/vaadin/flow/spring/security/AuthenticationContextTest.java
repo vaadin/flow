@@ -51,6 +51,7 @@ import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.component.page.Page.PageJs;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -70,7 +71,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -500,25 +500,25 @@ class AuthenticationContextTest {
         mockPush(ui, Transport.WEBSOCKET);
         Page page = mock(Page.class);
         when(ui.getPage()).thenReturn(page);
-        when(page.executeJs(anyString()))
-                .thenReturn(new PendingJavaScriptResult() {
-                    @Override
-                    public boolean cancelExecution() {
-                        return false;
-                    }
+        PageJs pageJs = mock(PageJs.class);
+        when(page.executeJs(PageJs.class)).thenReturn(pageJs);
+        when(pageJs.getHref()).thenReturn(new PendingJavaScriptResult() {
+            @Override
+            public boolean cancelExecution() {
+                return false;
+            }
 
-                    @Override
-                    public boolean isSentToBrowser() {
-                        return true;
-                    }
+            @Override
+            public boolean isSentToBrowser() {
+                return true;
+            }
 
-                    @Override
-                    public void then(
-                            SerializableConsumer<JsonNode> resultHandler,
-                            SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(null);
-                    }
-                });
+            @Override
+            public void then(SerializableConsumer<JsonNode> resultHandler,
+                    SerializableConsumer<String> errorHandler) {
+                resultHandler.accept(null);
+            }
+        });
         try {
             CurrentInstance.set(VaadinRequest.class, setup.vaadinRequest());
             CurrentInstance.set(VaadinResponse.class, setup.vaadinResponse());
