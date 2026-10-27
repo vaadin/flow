@@ -676,6 +676,43 @@ describe('Flow', () => {
     expect($wnd.Vaadin.connectionState.state).to.equal(ConnectionState.RECONNECTING);
   });
 
+  [
+    { attribute: 'router-link', trigger: 'link' },
+    { attribute: undefined, trigger: 'client' }
+  ].forEach(({ attribute, trigger }) => {
+    it(`should send '${trigger}' trigger for the first navigation started by a link click`, async () => {
+      stubServerRemoteFunction('foobar-12345');
+      mockInitResponse('foobar-12345');
+
+      const route = new Flow().serverSideRoutes[0];
+
+      // Flow is not initialized yet when the link that starts the first server navigation is clicked
+      const link = document.createElement('a');
+      if (attribute) {
+        link.setAttribute(attribute, '');
+      }
+      document.body.appendChild(link);
+      try {
+        link.click();
+      } finally {
+        link.remove();
+      }
+
+      const flowRouteParams = { pathname: 'Foo', search: '' };
+      const container = await route.action(flowRouteParams);
+      // @ts-ignore
+      await container.onBeforeEnter(flowRouteParams, {});
+
+      const navigateTriggers = server
+        .getRequestLog()
+        .filter((req) => req.method === 'POST' && /\?v-r=uidl/.test(req.url))
+        .map((req) => JSON.parse(req.body as string).rpc?.[0])
+        .filter((rpc) => rpc?.event === 'ui-navigate')
+        .map((rpc) => rpc.data.trigger);
+      expect(navigateTriggers).to.deep.equal([trigger]);
+    });
+  });
+
   it('should pre-attach container element on every navigation', async () => {
     stubServerRemoteFunction('foobar-12345');
     mockInitResponse('foobar-12345');
