@@ -25,6 +25,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 
 /**
  * Kept in this module, which runs on Jetty without frontend hotdeploy: Jetty 12
@@ -48,5 +49,18 @@ public class DownloadQuoteFileNameIT extends AbstractStreamResourceIT {
         }
         // Special characters in the file name in URL are encoded.
         Assert.assertEquals("download-%22.json", FilenameUtils.getName(url));
+        // The quote in the file name is escaped in the header.
+        Assert.assertEquals("attachment; filename=\"download-\\\".json\"",
+                fetchContentDisposition(url));
+    }
+
+    private String fetchContentDisposition(String url) {
+        return (String) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("""
+                        const done = arguments[arguments.length - 1];
+                        fetch(arguments[0])
+                          .then(r => done(r.headers.get('Content-Disposition')))
+                          .catch(e => done('FETCH_ERROR:' + e));
+                        """, url);
     }
 }

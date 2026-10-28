@@ -72,9 +72,9 @@ class EncodeUtilTest {
 
     @Test
     void rfc2047Encode_asciiCharacters() {
-        String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"";
+        String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"\\";
         assertEquals(
-                "=?UTF-8?Q?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^=5F`|~_=3F=3D=22?=",
+                "=?UTF-8?Q?abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^=5F`|~_=3F=3D=22=5C?=",
                 EncodeUtil.rfc2047Encode(input));
     }
 
@@ -90,6 +90,12 @@ class EncodeUtilTest {
     void quotedStringEscape_escapesQuotesAndBackslashes() {
         assertEquals("a\\\"b\\\\c d.txt",
                 EncodeUtil.quotedStringEscape("a\"b\\c d.txt"));
+    }
+
+    @Test
+    void quotedStringEscape_removesControlCharactersExceptTab() {
+        assertEquals("a\tb.txt",
+                EncodeUtil.quotedStringEscape("a\r\n\t\u0000b\u007F.txt"));
     }
 
     @Test
