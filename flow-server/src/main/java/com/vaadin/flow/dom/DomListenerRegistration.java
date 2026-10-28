@@ -465,10 +465,11 @@ public interface DomListenerRegistration extends Registration {
      * <p>
      * Each property path is evaluated as a JavaScript expression in the
      * browser, where {@code event} and {@code element} are the only local
-     * variables besides the browser's global objects such as {@code window}. A
-     * top-level property that is none of these, such as {@code type}, fails to
-     * evaluate. The event type does not need an expression, it is available
-     * through {@link DomEvent#getType()}.
+     * variables besides the browser's global objects such as {@code window}. If
+     * a top-level property is none of these, such as {@code type}, its
+     * expression throws an error in the browser and the event is not sent to
+     * the server at all. The event type does not need an expression, it is
+     * available through {@link DomEvent#getType()}.
      *
      * @param type
      *            the class whose properties should be captured from the event
