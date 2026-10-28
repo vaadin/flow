@@ -818,14 +818,50 @@ public class ElementListenersTest
 
         assertEquals(new FlatMouseEventData(2, 68),
                 event.getEventData(FlatMouseEventData.class));
-        Map<String, JsonNode> data = event
-                .getEventData(new TypeReference<Map<String, JsonNode>>() {
+        record EventNode(JsonNode event) {
+        }
+        JsonNode nested = event.getEventData(EventNode.class).event();
+        assertEquals(2, nested.get("button").asInt());
+        assertFalse(nested.has("preventDefault()"));
+        // Maps get only the flat keys, so scalar value types keep working
+        Map<String, String> data = event
+                .getEventData(new TypeReference<Map<String, String>>() {
                 });
-        assertEquals(2, data.get("event").get("button").asInt());
-        assertEquals(2, data.get("event.button").asInt());
-        assertFalse(data.get("event").has("preventDefault()"));
+        assertEquals(Set.of("event.button", "event.clientX",
+                "event.preventDefault()"), data.keySet());
         // The original event data is not modified
         assertEquals(3, eventData.size());
+    }
+
+    @Test
+    void testGetEventDataMergesNestedPaths() {
+        record Rgb(int r, int g, int b) {
+        }
+        record Event(Rgb detail, JsonNode button) {
+        }
+        record Data(Event event, JsonNode target) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        // Sub-paths before the complete object they belong to
+        eventData.put("event.detail.g", 99);
+        eventData.put("event.detail.b", 3);
+        ObjectNode detail = eventData.putObject("event.detail");
+        detail.put("r", 1);
+        detail.put("g", 2);
+        // A null or scalar prefix value
+        eventData.putNull("event.button");
+        eventData.put("event.button.x", 4);
+        eventData.put("target", 5);
+        eventData.put("target.id", "foo");
+        DomEvent event = new DomEvent(new Element("div"), "click", eventData);
+
+        Data data = event.getEventData(Data.class);
+        // The complete object is the base, sub-paths are merged in without
+        // overwriting it
+        assertEquals(new Rgb(1, 2, 3), data.event().detail());
+        assertEquals(4, data.event().button().get("x").asInt());
+        assertEquals(5, data.target().asInt());
     }
 
     @Test

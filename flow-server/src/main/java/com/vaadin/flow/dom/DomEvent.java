@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -179,6 +180,8 @@ public class DomEvent extends EventObject {
      * {@code event.clientX}, are also made available as nested objects, so that
      * a type mirroring the structure of the event, as used with
      * {@link DomListenerRegistration#addEventData(Class)}, can be decoded.
+     * Maps, {@link Object} and {@link JsonNode} types get the event data as is,
+     * with one key per expression.
      * <p>
      * Example usage:
      *
@@ -196,7 +199,8 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventData(Class<T> type) {
-        return JacksonCodec.decodeAs(getEventDataWithNestedPaths(), type);
+        return JacksonCodec.decodeAs(getEventDataForType(
+                JacksonUtils.getMapper().constructType(type)), type);
     }
 
     /**
@@ -209,7 +213,8 @@ public class DomEvent extends EventObject {
      * {@code event.clientX}, are also made available as nested objects, so that
      * a type mirroring the structure of the event, as used with
      * {@link DomListenerRegistration#addEventData(TypeReference)}, can be
-     * decoded.
+     * decoded. Maps, {@link Object} and {@link JsonNode} types get the event
+     * data as is, with one key per expression.
      * <p>
      * Example usage:
      *
@@ -229,7 +234,9 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventData(TypeReference<T> typeReference) {
-        return JacksonCodec.decodeAs(getEventDataWithNestedPaths(),
+        return JacksonCodec.decodeAs(
+                getEventDataForType(
+                        JacksonUtils.getMapper().constructType(typeReference)),
                 typeReference);
     }
 
@@ -415,6 +422,24 @@ public class DomEvent extends EventObject {
     }
 
     /**
+     * Gets the event data to decode as the given type. Maps, {@link Object} and
+     * {@link JsonNode} types get the event data as is, other types get it with
+     * nested objects for property paths.
+     *
+     * @param type
+     *            the type to decode the event data as
+     * @return the event data to decode
+     */
+    private JsonNode getEventDataForType(JavaType type) {
+        Class<?> rawClass = type.getRawClass();
+        if (type.isMapLikeType() || rawClass == Object.class
+                || JsonNode.class.isAssignableFrom(rawClass)) {
+            return eventData;
+        }
+        return getEventDataWithNestedPaths();
+    }
+
+    /**
      * Creates a copy of the event data where the values of property path
      * expressions, e.g. {@code event.clientX}, are additionally available as
      * nested objects, e.g. {@code {"event": {"clientX": ...}}}. The original
@@ -442,7 +467,7 @@ public class DomEvent extends EventObject {
         ObjectNode current = target;
         for (int i = 0; i < path.length - 1; i++) {
             JsonNode child = current.get(path[i]);
-            if (child == null) {
+            if (child == null || child.isNull()) {
                 child = current.putObject(path[i]);
             } else if (!(child instanceof ObjectNode)) {
                 return;
