@@ -812,6 +812,10 @@
         <version>3.12.0</version>
         <configuration>
           <quiet>true</quiet>
+          <!-- Generate on the class path even for jars that declare an
+               Automatic-Module-Name; on the module path, dependencies with
+               overlapping packages (e.g. jakarta.servlet and Tomcat) fail -->
+          <legacyMode>true</legacyMode>
         </configuration>
         <executions>
           <execution>
