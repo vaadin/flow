@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import tools.jackson.databind.JsonNode;
@@ -63,6 +64,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -2261,12 +2263,16 @@ class ElementTest extends AbstractNodeTest {
                 body.getNode().getFeature(VirtualChildrenList.class).size());
     }
 
+    // Null-marked with a stored handler whose result type is non-null, so
+    // NullAway verifies that whenAttached accepts it
+    @NullMarked
     private static Registration logWhenAttached(Element element,
             List<String> log, String prefix) {
-        return element.whenAttached(ui -> {
+        SerializableFunction<UI, Registration> handler = ui -> {
             log.add(prefix + "attach");
             return () -> log.add(prefix + "detach");
-        });
+        };
+        return element.whenAttached(handler);
     }
 
     @Test

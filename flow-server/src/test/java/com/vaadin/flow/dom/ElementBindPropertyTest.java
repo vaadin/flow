@@ -589,11 +589,11 @@ class ElementBindPropertyTest extends SignalsUnitTest {
         component.getElement().bindProperty("foo", signal, signal::set);
 
         // Probe runs immediately at bind time even when not attached
-        assertEquals("bar", component.getElement().getProperty("foo", null));
+        assertEquals("bar", component.getElement().getProperty("foo"));
 
         // Changes while detached are ignored
         signal.set("changed");
-        assertEquals("bar", component.getElement().getProperty("foo", null));
+        assertEquals("bar", component.getElement().getProperty("foo"));
     }
 
     @Test
