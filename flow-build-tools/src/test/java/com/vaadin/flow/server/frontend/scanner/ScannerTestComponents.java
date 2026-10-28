@@ -38,7 +38,7 @@ import com.vaadin.flow.theme.Theme;
 public class ScannerTestComponents {
 
     @NpmPackage(value = "@vaadin/theme-0", version = "1.1.1")
-    @JavaScript("frontend://theme-0.js")
+    @JavaScript("theme-0.js")
     static class Theme0 implements AbstractTheme {
         public static final String DARK = "dark";
         public static final String FOO = "foo";
@@ -70,7 +70,7 @@ public class ScannerTestComponents {
 
     @NpmPackage(value = "@vaadin/component-0", version = "=2.1.0")
     @JsModule("./component-0.js")
-    @JavaScript("frontend://component-0.js")
+    @JavaScript("component-0.js")
     @Tag("component-0")
     @NpmPackage(value = "@vaadin/component-0", version = "^1.1.0")
     @NpmPackage(value = "@vaadin/vaadin-foo", version = "1.23.114-alpha1")
@@ -78,21 +78,21 @@ public class ScannerTestComponents {
     }
 
     @JsModule("./component-1.js")
-    @JavaScript("frontend://component-1.js")
+    @JavaScript("component-1.js")
     @Tag("component-1")
     @NpmPackage(value = "@vaadin/component-1", version = "1.1.1")
     static class Component1 extends Component0 {
     }
 
     @JsModule("./component-2.js")
-    @JavaScript("frontend://component-2.js")
+    @JavaScript("component-2.js")
     @Tag("component-2")
     @NpmPackage(value = "@vaadin/component-2", version = "222.222.222")
     static class Component2 extends Component {
     }
 
     @JsModule("./component-3.js")
-    @JavaScript("frontend://component-3.js")
+    @JavaScript("component-3.js")
     @Tag("component-3")
     @NpmPackage(value = "@vaadin/component-3", version = "~2.1.0")
     static class Component3 extends Component {
@@ -122,7 +122,7 @@ public class ScannerTestComponents {
     public class RouterLayout2 extends RouterLayout1 {
     }
 
-    @JavaScript("frontend://view-0.js")
+    @JavaScript("view-0.js")
     public static abstract class View0 extends Component {
     }
 

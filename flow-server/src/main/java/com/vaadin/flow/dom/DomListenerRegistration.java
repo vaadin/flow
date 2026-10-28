@@ -24,6 +24,8 @@ import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.BeanUtil;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
@@ -61,6 +63,8 @@ public interface DomListenerRegistration extends Registration {
      *            definition for data that should be passed back to the server
      *            together with the event, not <code>null</code>
      * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      * @see #addEventDataElement(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
@@ -76,6 +80,8 @@ public interface DomListenerRegistration extends Registration {
      *            together with the event, not <code>null</code> and not
      *            containing <code>null</code>
      * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      * @see #addEventData(String)
      * @since 25.4
      */
@@ -105,6 +111,8 @@ public interface DomListenerRegistration extends Registration {
      *            the JavaScript filter expression, or <code>null</code> to
      *            clear the filter
      * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     DomListenerRegistration setFilter(String filter);
 
