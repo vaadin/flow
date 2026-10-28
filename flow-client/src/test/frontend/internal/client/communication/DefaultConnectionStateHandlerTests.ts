@@ -20,7 +20,9 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
     sessionExpired: 0,
     unrecoverable: [] as string[],
     states: [] as string[],
-    endRequests: 0
+    endRequests: 0,
+    // The order of request aborts and ends, as ending a request re-sends.
+    requestCalls: [] as string[]
   };
   // Whether a request is active, and whether it is an XHR left without a
   // response that going back online aborts.
@@ -52,6 +54,7 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
       endRequest: () => {
         request.active = false;
         log.endRequests++;
+        log.requestCalls.push('end');
       }
     },
     Heartbeat: {
@@ -70,6 +73,7 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
       abortActiveRequest: () => {
         const aborted = request.abortable;
         request.abortable = false;
+        log.requestCalls.push('abort');
         return aborted;
       }
     },
@@ -261,8 +265,11 @@ describe('DefaultConnectionStateHandler', () => {
     expect(goOnline(true, false)).to.equal(0);
     // An aborted XHR whose request has already ended is not ended again.
     expect(goOnline(false, true)).to.equal(0);
+    registry.log.requestCalls.length = 0;
     expect(goOnline(true, true)).to.equal(1);
     expect(registry.request.active).to.be.false;
+    // Ending the request re-sends it, so the hung one is aborted first.
+    expect(registry.log.requestCalls).to.deep.equal(['abort', 'end']);
     // The heartbeat still verifies the connection.
     expect(registry.log.heartbeatSends).to.equal(1);
     expect(getState()).to.equal(RECONNECTING);
