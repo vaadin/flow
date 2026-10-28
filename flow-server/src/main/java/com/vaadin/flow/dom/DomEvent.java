@@ -338,7 +338,8 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventDetail(Class<T> type) {
-        JsonNode detailNode = getDetailNode();
+        JsonNode detailNode = getDetailNodeForType(
+                JacksonUtils.getMapper().constructType(type));
         if (detailNode == null) {
             return null;
         }
@@ -376,11 +377,29 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventDetail(TypeReference<T> typeReference) {
-        JsonNode detailNode = getDetailNode();
+        JsonNode detailNode = getDetailNodeForType(
+                JacksonUtils.getMapper().constructType(typeReference));
         if (detailNode == null) {
             return null;
         }
         return JacksonCodec.decodeAs(detailNode, typeReference);
+    }
+
+    /**
+     * Gets the event.detail node to decode as the given type. Maps,
+     * {@link Object} and {@link JsonNode} types get the detail as is, other
+     * types get it with nested objects for property paths.
+     *
+     * @param type
+     *            the type to decode the event detail as
+     * @return the detail node to decode, or null if no detail data is present
+     */
+    private JsonNode getDetailNodeForType(JavaType type) {
+        JsonNode detailNode = getDetailNode();
+        if (detailNode == null || isDecodedAsIs(type)) {
+            return detailNode;
+        }
+        return withNestedPaths(detailNode);
     }
 
     /**
@@ -432,34 +451,40 @@ public class DomEvent extends EventObject {
      * @return the event data to decode
      */
     private JsonNode getEventDataForType(JavaType type) {
-        Class<?> rawClass = type.getRawClass();
-        if (type.isMapLikeType() || rawClass == Object.class
-                || JsonNode.class.isAssignableFrom(rawClass)) {
+        if (isDecodedAsIs(type)) {
             return eventData;
         }
-        return getEventDataWithNestedPaths();
+        return withNestedPaths(eventData);
+    }
+
+    private static boolean isDecodedAsIs(JavaType type) {
+        Class<?> rawClass = type.getRawClass();
+        return type.isMapLikeType() || rawClass == Object.class
+                || JsonNode.class.isAssignableFrom(rawClass);
     }
 
     /**
-     * Creates a copy of the event data where the values of property path
-     * expressions, e.g. {@code event.clientX}, are additionally available as
-     * nested objects, e.g. {@code {"event": {"clientX": ...}}}. The original
-     * keys are kept as is, and an existing value is never replaced.
+     * Creates a copy of the given data where the values of property path keys,
+     * e.g. {@code event.clientX}, are additionally available as nested objects,
+     * e.g. {@code {"event": {"clientX": ...}}}. The original keys are kept as
+     * is, and an existing value is never replaced.
      *
-     * @return a copy of the event data with nested objects for property paths
+     * @param data
+     *            the data to add nested objects to
+     * @return a copy of the data with nested objects for property paths, or the
+     *         data itself if it is not an object
      */
-    private JsonNode getEventDataWithNestedPaths() {
-        if (!(eventData instanceof ObjectNode eventDataObject)) {
-            return eventData;
+    private static JsonNode withNestedPaths(JsonNode data) {
+        if (!(data instanceof ObjectNode dataObject)) {
+            return data;
         }
-        ObjectNode result = eventDataObject.deepCopy();
+        ObjectNode result = dataObject.deepCopy();
         // Shorter paths first so that e.g. a complete event.detail object is
         // used as the base for the event.detail.* properties
-        JacksonUtils.getKeys(eventData).stream()
-                .filter(DomEvent::isPropertyPath)
+        JacksonUtils.getKeys(data).stream().filter(DomEvent::isPropertyPath)
                 .sorted(Comparator.comparingInt(String::length))
                 .forEach(key -> setNestedValue(result, key.split("\\."),
-                        eventData.get(key)));
+                        data.get(key)));
         return result;
     }
 

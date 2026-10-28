@@ -1030,6 +1030,27 @@ public class ElementListenersTest
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
+
+        // The client sends one flat key per expression
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.detail.start.x", 1);
+        eventData.put("event.detail.start.y", 2);
+        eventData.put("event.detail.end.x", 3);
+        eventData.put("event.detail.end.y", 4);
+        DomEvent event = new DomEvent(new Element("div"), "drag", eventData);
+
+        DragDetail expected = new DragDetail(new Position(1, 2),
+                new Position(3, 4));
+        assertEquals(expected, event.getEventDetail(DragDetail.class));
+        assertEquals(expected,
+                event.getEventDetail(new TypeReference<DragDetail>() {
+                }));
+        // Maps get only the flat keys
+        Map<String, Integer> detail = event
+                .getEventDetail(new TypeReference<Map<String, Integer>>() {
+                });
+        assertEquals(Set.of("start.x", "start.y", "end.x", "end.y"),
+                detail.keySet());
     }
 
     @Test
