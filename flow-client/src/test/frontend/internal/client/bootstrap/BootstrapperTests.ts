@@ -99,6 +99,12 @@ describe('Bootstrapper', () => {
     return { clients, lookedUp, started };
   }
 
+  // Embedded web components do not load Flow.ts, so the engine bootstrap is
+  // what brings in the connection state and the loading indicator for them.
+  it('loads the connection indicator with the module', () => {
+    expect(customElements.get('vaadin-connection-indicator')).not.to.be.undefined;
+  });
+
   it('registerCallback registers startApplication under the widgetset name', () => {
     const saved = win.Vaadin;
     try {

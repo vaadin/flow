@@ -581,9 +581,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             addInternalEntryPoint(errorParameters);
         }
 
-        // The UI class is always collected so that frontend dependencies
-        // declared on it are included even when no other entry point
-        // references it.
+        // The UI class is always collected so that the frontend dependencies
+        // of the classes it references are included even when no other entry
+        // point references them.
         addInternalEntryPoint(UI.class);
 
         if (generateEmbeddableWebComponents) {
