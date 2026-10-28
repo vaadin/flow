@@ -55,6 +55,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
         suite.addTestSuite(GwtLoadingIndicatorStateHandlerTest.class);
         suite.addTestSuite(GwtErrotHandlerTest.class);
+        suite.addTestSuite(GwtSystemErrorHandlerTest.class);
         suite.addTestSuite(GwtAtmospherePushConnectionTest.class);
         suite.addTestSuite(GwtClientJsonCodecTest.class);
         return suite;
