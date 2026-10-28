@@ -47,7 +47,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
-import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import tools.jackson.databind.JsonNode;
@@ -64,7 +63,6 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
-import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -2263,16 +2261,12 @@ class ElementTest extends AbstractNodeTest {
                 body.getNode().getFeature(VirtualChildrenList.class).size());
     }
 
-    // Null-marked with a stored handler whose result type is non-null, so
-    // NullAway verifies that whenAttached accepts it
-    @NullMarked
     private static Registration logWhenAttached(Element element,
             List<String> log, String prefix) {
-        SerializableFunction<UI, Registration> handler = ui -> {
+        return element.whenAttached(ui -> {
             log.add(prefix + "attach");
             return () -> log.add(prefix + "detach");
-        };
-        return element.whenAttached(handler);
+        });
     }
 
     @Test
@@ -2632,6 +2626,26 @@ class ElementTest extends AbstractNodeTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingFunctionCall(ui, element, "method", "foo", 123);
+    }
+
+    @Test
+    void callFunctionAndExecuteJs_nullArgumentArray_treatedAsNoArguments() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.callJsFunction("method", (Object[]) null);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertPendingFunctionCall(ui, element, "method");
+
+        element.executeJs("foo", (Object[]) null);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        assertEquals(List.of(element),
+                pendingJs.get(0).getInvocation().getParameters(),
+                "only the element should be passed to the expression");
     }
 
     @Test

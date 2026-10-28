@@ -558,7 +558,7 @@ public abstract class Component
      * @since 25.3
      */
     public Registration whenAttached(
-            SerializableFunction<UI, ? extends @Nullable Registration> attachHandler) {
+            SerializableFunction<UI, @Nullable Registration> attachHandler) {
         return getElement().whenAttached(attachHandler);
     }
 

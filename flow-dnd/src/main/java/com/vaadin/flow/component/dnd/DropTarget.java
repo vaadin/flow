@@ -203,7 +203,7 @@ public interface DropTarget<T extends Component> extends HasElement {
      */
     default DropEffect getDropEffect() {
         String dropEffect = getElement()
-                .getProperty(DndUtil.DROP_EFFECT_ELEMENT_PROPERTY);
+                .getProperty(DndUtil.DROP_EFFECT_ELEMENT_PROPERTY, null);
         return dropEffect == null ? null : DropEffect.fromString(dropEffect);
     }
 

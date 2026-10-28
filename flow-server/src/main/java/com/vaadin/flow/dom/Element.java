@@ -1100,26 +1100,14 @@ public class Element extends Node<Element> {
      *            the property name, not <code>null</code>
      * @param defaultValue
      *            the value to return if the property is not set, or if the
-     *            value is <code>null</code>, not <code>null</code>
-     * @return the property value, not <code>null</code>
+     *            value is <code>null</code>
+     * @return the property value
      */
-    public String getProperty(String name, String defaultValue) {
-        String value = getProperty(name);
-        return value == null ? defaultValue : value;
-    }
-
-    /**
-     * Gets the value of the given property as a string. The returned value is
-     * converted to a string if it has been set as some other type.
-     *
-     * @param name
-     *            the property name, not <code>null</code>
-     * @return the property value, or <code>null</code> if no value is set
-     */
-    public @Nullable String getProperty(String name) {
+    public @Nullable String getProperty(String name,
+            @Nullable String defaultValue) {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
-            return null;
+            return defaultValue;
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
             int intValue = (int) doubleValue;
@@ -1134,6 +1122,17 @@ public class Element extends Node<Element> {
         } else {
             return value.toString();
         }
+    }
+
+    /**
+     * Gets the value of the given property as a string.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @return the property value, or <code>null</code> if no value is set
+     */
+    public @Nullable String getProperty(String name) {
+        return getProperty(name, null);
     }
 
     /**
@@ -1754,7 +1753,7 @@ public class Element extends Node<Element> {
      * @since 25.3
      */
     public Registration whenAttached(
-            SerializableFunction<UI, ? extends @Nullable Registration> attachHandler) {
+            SerializableFunction<UI, @Nullable Registration> attachHandler) {
         return new AttachScope(this, attachHandler);
     }
 
@@ -1874,20 +1873,21 @@ public class Element extends Node<Element> {
      *            Jackson for JSON serialization are supported. Special cases:
      *            {@link Element} instances (will be sent as DOM element
      *            references to the browser if attached when invoked, or as
-     *            <code>null</code> if not attached).
+     *            <code>null</code> if not attached). A <code>null</code> array
+     *            is treated as no arguments.
      * @return a pending result that can be used to get a return value from the
      *         execution
      * @see #executeJs(Class)
      * @since 25.0
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
-            @Nullable Object... arguments) {
+            @Nullable Object @Nullable... arguments) {
         assert functionName != null;
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
 
         return executeJs(CallFunctionJs.class).callFunction(functionName,
-                arguments);
+                arguments == null ? new @Nullable Object[0] : arguments);
     }
 
     /**
@@ -1899,14 +1899,15 @@ public class Element extends Node<Element> {
      * @param functionName
      *            the name of the function to call
      * @param arguments
-     *            the arguments to pass to the function
+     *            the arguments to pass to the function, or <code>null</code>
+     *            for no arguments
      * @return a pending result that can be used to get a return value from the
      *         execution
      * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult callJsFunction(String functionName,
-            @Nullable Serializable[] arguments) {
+            @Nullable Serializable @Nullable [] arguments) {
         return callJsFunction(functionName, (Object[]) arguments);
     }
 
@@ -1959,7 +1960,8 @@ public class Element extends Node<Element> {
      * @param expression
      *            the JavaScript expression to invoke
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @see #executeJs(Class)
@@ -1968,9 +1970,10 @@ public class Element extends Node<Element> {
      *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public PendingJavaScriptResult executeJs(String expression,
-            @Nullable Object... parameters) {
+            @Nullable Object @Nullable... parameters) {
         CspViolationReporter.reportStringJavaScript();
-        return scheduleExecuteJs(expression, parameters);
+        return scheduleExecuteJs(expression,
+                parameters == null ? new @Nullable Object[0] : parameters);
     }
 
     /**
@@ -2081,14 +2084,15 @@ public class Element extends Node<Element> {
      * @param expression
      *            the JavaScript expression to invoke
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @since 2.0
      */
     @Deprecated
     public PendingJavaScriptResult executeJs(String expression,
-            @Nullable Serializable[] parameters) {
+            @Nullable Serializable @Nullable [] parameters) {
         return executeJs(expression, (Object[]) parameters);
     }
 
@@ -2121,7 +2125,8 @@ public class Element extends Node<Element> {
      * @param expression
      *            the JavaScript expression to invoke, not <code>null</code>
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a registration that, when removed, invokes the cleanup callback
      *         on the client
      * @since 25.2
