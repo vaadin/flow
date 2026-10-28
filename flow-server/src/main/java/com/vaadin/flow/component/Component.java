@@ -28,6 +28,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.template.Id;
@@ -556,7 +558,7 @@ public abstract class Component
      * @since 25.3
      */
     public Registration whenAttached(
-            SerializableFunction<UI, Registration> attachHandler) {
+            SerializableFunction<UI, ? extends @Nullable Registration> attachHandler) {
         return getElement().whenAttached(attachHandler);
     }
 

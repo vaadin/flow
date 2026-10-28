@@ -1100,14 +1100,26 @@ public class Element extends Node<Element> {
      *            the property name, not <code>null</code>
      * @param defaultValue
      *            the value to return if the property is not set, or if the
-     *            value is <code>null</code>
-     * @return the property value
+     *            value is <code>null</code>, not <code>null</code>
+     * @return the property value, not <code>null</code>
      */
-    public @Nullable String getProperty(String name,
-            @Nullable String defaultValue) {
+    public String getProperty(String name, String defaultValue) {
+        String value = getProperty(name);
+        return value == null ? defaultValue : value;
+    }
+
+    /**
+     * Gets the value of the given property as a string. The returned value is
+     * converted to a string if it has been set as some other type.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @return the property value, or <code>null</code> if no value is set
+     */
+    public @Nullable String getProperty(String name) {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
-            return defaultValue;
+            return null;
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
             int intValue = (int) doubleValue;
@@ -1122,17 +1134,6 @@ public class Element extends Node<Element> {
         } else {
             return value.toString();
         }
-    }
-
-    /**
-     * Gets the value of the given property as a string.
-     *
-     * @param name
-     *            the property name, not <code>null</code>
-     * @return the property value, or <code>null</code> if no value is set
-     */
-    public @Nullable String getProperty(String name) {
-        return getProperty(name, null);
     }
 
     /**
@@ -1753,7 +1754,7 @@ public class Element extends Node<Element> {
      * @since 25.3
      */
     public Registration whenAttached(
-            SerializableFunction<UI, @Nullable Registration> attachHandler) {
+            SerializableFunction<UI, ? extends @Nullable Registration> attachHandler) {
         return new AttachScope(this, attachHandler);
     }
 
