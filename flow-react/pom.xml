@@ -24,6 +24,12 @@
       <artifactId>flow-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Required by the flow-server module descriptor at compile time -->
+    <dependency>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- TESTING DEPENDENCIES -->
 
