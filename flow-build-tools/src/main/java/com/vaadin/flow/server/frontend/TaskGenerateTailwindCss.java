@@ -37,8 +37,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import static com.vaadin.flow.internal.FrontendUtils.TAILWIND_CSS;
 
 /**
- * Generate <code>tailwind.css</code> if it is missing in the generated frontend
- * folder.
+ * Generate <code>tailwind.css</code>, the Tailwind CSS entry point, into the
+ * generated frontend folder. The file is written on every build.
  * <p>
  * If a <code>tailwind-custom.css</code> file exists in the frontend folder, it
  * will be imported into the generated file, allowing users to add custom

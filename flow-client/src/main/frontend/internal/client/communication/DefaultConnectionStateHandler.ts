@@ -52,6 +52,9 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   #scheduledReconnect: ReturnType<typeof setTimeout> | null = null;
 
+  // How many times a receive-only websocket was closed since it was last open.
+  #websocketClosesSinceOpen = 0;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -318,6 +321,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: push ---
 
   pushOk(pushConnection: PushConnection): void {
+    this.#websocketClosesSinceOpen = 0;
     if (this.#machine.isReconnecting()) {
       this.#machine.resolveTemporaryError(ConnectionMessageType.PUSH);
       if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
@@ -349,6 +353,25 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // is available again. A message pushed before has to be sent again.
       this.#registry.getMessageSender().failPushAttempt({ reason: 'network' });
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+    } else if (pushConnection.getTransportType() === 'websocket') {
+      // A websocket that only receives, with messages to the server sent over
+      // XHR. The server also closes it on purpose, e.g. when logging out
+      // invalidates the session and the page is about to navigate away, so
+      // the connection is checked only if reopening the websocket fails as
+      // well. Atmosphere reports each close once, before it tries to reopen
+      // the websocket, and a successful reopen reaches pushOk. The check is a
+      // heartbeat, as messages to the server do not depend on the websocket:
+      // a failing heartbeat reconnects and a successful one resolves it. One
+      // heartbeat is enough, further failed reopens add nothing to it. None is
+      // sent while heartbeats are paused, as they are while offline.
+      this.#websocketClosesSinceOpen++;
+      if (
+        this.#websocketClosesSinceOpen === 2 &&
+        !this.#machine.isReconnecting() &&
+        this.#registry.getHeartbeat().getInterval() > 0
+      ) {
+        this.#registry.getHeartbeat().send();
+      }
     } else {
       // Lost connection for a connection we do not necessarily know when it is
       // available again (long polling behind proxy). Do nothing and show the
