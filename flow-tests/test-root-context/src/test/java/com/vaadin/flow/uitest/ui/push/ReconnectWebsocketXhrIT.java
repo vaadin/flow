@@ -17,8 +17,10 @@ package com.vaadin.flow.uitest.ui.push;
 
 import java.io.IOException;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.TimeoutException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
@@ -37,12 +39,28 @@ public class ReconnectWebsocketXhrIT extends ReconnectTest {
         disconnectProxy();
         // Nothing is sent to the server over XHR, so only the lost websocket
         // can reveal that the connection is gone
-        waitUntil(driver -> "reconnecting".equals(getConnectionState()), 30);
+        waitForConnectionState("reconnecting");
 
         connectProxy();
         int counter = BasicPushIT.getServerCounter(this);
-        waitUntil(driver -> BasicPushIT.getServerCounter(this) > counter, 30);
-        waitUntil(driver -> "connected".equals(getConnectionState()), 30);
+        try {
+            waitUntil(driver -> BasicPushIT.getServerCounter(this) > counter,
+                    30);
+        } catch (TimeoutException e) {
+            Assert.fail("Server push did not resume. Expected counter above "
+                    + counter + ", Actual: "
+                    + BasicPushIT.getServerCounter(this));
+        }
+        waitForConnectionState("connected");
+    }
+
+    private void waitForConnectionState(String expected) {
+        try {
+            waitUntil(driver -> expected.equals(getConnectionState()), 30);
+        } catch (TimeoutException e) {
+            Assert.fail("Connection state does not match. Expected: " + expected
+                    + ", Actual: " + getConnectionState());
+        }
     }
 
     private Object getConnectionState() {

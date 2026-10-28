@@ -342,9 +342,14 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // the websocket, and a successful reopen reaches pushOk. The check is a
       // heartbeat, as messages to the server do not depend on the websocket:
       // a failing heartbeat reconnects and a successful one resolves it. One
-      // heartbeat is enough, further failed reopens add nothing to it.
+      // heartbeat is enough, further failed reopens add nothing to it. None is
+      // sent while heartbeats are paused, as they are while offline.
       this.#websocketClosesSinceOpen++;
-      if (this.#websocketClosesSinceOpen === 2 && !this.#machine.isReconnecting()) {
+      if (
+        this.#websocketClosesSinceOpen === 2 &&
+        !this.#machine.isReconnecting() &&
+        this.#registry.getHeartbeat().getInterval() > 0
+      ) {
         this.#registry.getHeartbeat().send();
       }
     } else {

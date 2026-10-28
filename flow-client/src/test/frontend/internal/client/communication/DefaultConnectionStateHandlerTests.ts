@@ -170,8 +170,14 @@ describe('DefaultConnectionStateHandler', () => {
     const initialState = getState();
 
     // Long polling does not necessarily know when the connection is available
-    // again, so the reconnect is left to the next failing xhr.
-    handler.pushReconnectPending({ isBidirectional: () => false, getTransportType: () => 'long-polling' } as never);
+    // again, so the reconnect is left to the next failing xhr, however often
+    // it closes.
+    const longPolling: Partial<PushConnection> = {
+      isBidirectional: () => false,
+      getTransportType: () => 'long-polling'
+    };
+    handler.pushReconnectPending(longPolling as PushConnection);
+    handler.pushReconnectPending(longPolling as PushConnection);
     expect(getState()).to.equal(initialState);
     expect(registry.log.heartbeatSends).to.equal(0);
 
@@ -213,6 +219,20 @@ describe('DefaultConnectionStateHandler', () => {
     const heartbeatSends = registry.log.heartbeatSends;
     handler.pushReconnectPending(websocket as PushConnection);
     expect(registry.log.heartbeatSends).to.equal(heartbeatSends);
+  });
+
+  it('does not check a lost receive-only websocket while offline', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const websocket: Partial<PushConnection> = { isBidirectional: () => false, getTransportType: () => 'websocket' };
+
+    // Going offline pauses heartbeats, and the websocket drops with it.
+    dispatch('offline');
+    handler.pushReconnectPending(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(0);
+    expect(getState()).to.equal(CONNECTION_LOST);
   });
 
   it('stops heartbeats while the browser is offline and resumes them', () => {
