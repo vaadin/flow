@@ -98,7 +98,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
     private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
     private static final String CSP_SELF = "'self'";
-    private static final SecureRandom NONCE_RANDOM = new SecureRandom();
+
+    // Not static: a SecureRandom in a static field would be created at build
+    // time in native images that initialize classes at build time (Quarkus)
+    private final SecureRandom nonceRandom = new SecureRandom();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -263,9 +266,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return true;
     }
 
-    private static String createCspNonce() {
+    private String createCspNonce() {
         byte[] bytes = new byte[16];
-        NONCE_RANDOM.nextBytes(bytes);
+        nonceRandom.nextBytes(bytes);
         return Base64.getEncoder().encodeToString(bytes);
     }
 
