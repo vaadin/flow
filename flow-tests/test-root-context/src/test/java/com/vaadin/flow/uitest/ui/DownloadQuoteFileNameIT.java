@@ -25,6 +25,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 
 /**
  * Kept in this module, which runs on Jetty without frontend hotdeploy: Jetty 12
@@ -33,6 +34,8 @@ import org.openqa.selenium.By;
  * the dev server handler rejects such paths before the download is handled.
  */
 public class DownloadQuoteFileNameIT extends AbstractStreamResourceIT {
+
+    private static final String FETCH_ERROR = "FETCH_ERROR:";
 
     @Test
     public void downloadWithQuoteInFileName_contentIsServed()
@@ -48,5 +51,24 @@ public class DownloadQuoteFileNameIT extends AbstractStreamResourceIT {
         }
         // Special characters in the file name in URL are encoded.
         Assert.assertEquals("download-%22.json", FilenameUtils.getName(url));
+        // The quote in the file name is escaped in the header.
+        String contentDisposition = fetchContentDisposition(url);
+        checkLogsForErrors();
+        Assert.assertFalse(
+                "Fetching the download failed: " + contentDisposition,
+                contentDisposition != null
+                        && contentDisposition.startsWith(FETCH_ERROR));
+        Assert.assertEquals("attachment; filename=\"download-\\\".json\"",
+                contentDisposition);
+    }
+
+    private String fetchContentDisposition(String url) {
+        return (String) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("""
+                        const done = arguments[arguments.length - 1];
+                        fetch(arguments[0])
+                          .then(r => done(r.headers.get('Content-Disposition')))
+                          .catch(e => done(arguments[1] + e));
+                        """, url, FETCH_ERROR);
     }
 }

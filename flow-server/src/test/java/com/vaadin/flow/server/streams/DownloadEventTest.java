@@ -16,15 +16,21 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -44,14 +50,22 @@ class DownloadEventTest {
         session = mock(VaadinSession.class);
     }
 
-    @Test
-    void setFileName_nonEmptyFileName_setsContentDispositionFilenameQuotedToResponse() {
+    static Stream<Arguments> asciiFileNames() {
+        return Stream.of(Arguments.of("test.txt", "test.txt"),
+                Arguments.of("a.pdf\"; filename*=UTF-8''b.exe",
+                        "a.pdf\\\"; filename*=UTF-8''b.exe"),
+                Arguments.of("a\\b\r\n\t.txt", "a\\\\b.txt"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("asciiFileNames")
+    void setFileName_asciiFileName_setsContentDispositionFilenameQuotedToResponse(
+            String fileName, String quotedContent) {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        String fileName = "test.txt";
         downloadEvent.setFileName(fileName);
         verify(response).setHeader("Content-Disposition",
-                "attachment;" + " filename=\"" + fileName + "\"");
+                "attachment; filename=\"" + quotedContent + "\"");
     }
 
     @Test
@@ -66,6 +80,17 @@ class DownloadEventTest {
     }
 
     @Test
+    void setFileName_nonAsciiFileNameWithControlCharacters_controlCharactersRemoved() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("ä\r\n\u0085.txt");
+        verify(response).setHeader("Content-Disposition", "attachment;"
+                + " filename=\"" + EncodeUtil.rfc2047Encode("ä.txt") + "\";"
+                + " filename*=UTF-8''" + EncodeUtil.rfc5987Encode("ä.txt"));
+        assertEquals("ä.txt", downloadEvent.getFileName());
+    }
+
+    @Test
     void setFileName_emptyFileName_setsContentDispositionToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
@@ -74,11 +99,12 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition", "attachment");
     }
 
-    @Test
-    void setFileName_blankFileName_setsContentDispositionToResponse() {
+    @ParameterizedTest
+    @ValueSource(strings = { "   ", "\u0000\r\n" })
+    void setFileName_blankFileName_setsContentDispositionToResponse(
+            String fileName) {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        String fileName = "   ";
         downloadEvent.setFileName(fileName);
         verify(response).setHeader("Content-Disposition", "attachment");
     }
@@ -109,14 +135,15 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition", "inline");
     }
 
-    @Test
-    void inline_withASCIIFileName_setsContentDispositionInlineWithFilenameToResponse() {
+    @ParameterizedTest
+    @MethodSource("asciiFileNames")
+    void inline_asciiFileName_setsContentDispositionInlineWithFilenameToResponse(
+            String fileName, String quotedContent) {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        String fileName = "document.pdf";
         downloadEvent.inline(fileName);
         verify(response).setHeader("Content-Disposition",
-                "inline; filename=\"" + fileName + "\"");
+                "inline; filename=\"" + quotedContent + "\"");
     }
 
     @Test
@@ -147,11 +174,13 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition", "inline");
     }
 
-    @Test
-    void inline_blankFileName_setsContentDispositionInlineToResponse() {
+    @ParameterizedTest
+    @ValueSource(strings = { "   ", "\u0000\r\n" })
+    void inline_blankFileName_setsContentDispositionInlineToResponse(
+            String fileName) {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        downloadEvent.inline("   ");
+        downloadEvent.inline(fileName);
         verify(response).setHeader("Content-Disposition", "inline");
     }
 
