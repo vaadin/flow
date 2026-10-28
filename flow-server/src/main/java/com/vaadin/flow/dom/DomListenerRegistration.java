@@ -455,13 +455,15 @@ public interface DomListenerRegistration extends Registration {
      * }
      *
      * element.addEventListener("click", e -&gt; {
-     *     MouseEventData data = e.getEventData(MouseEventData.class);
-     *     System.out.println("Button: " + data.event().button());
+     *     int button = e.getEventData().get("event.button").asInt();
+     *     System.out.println("Button: " + button);
      * }).addEventData(MouseEventData.class);
      * </pre>
      *
      * The above will automatically add event data expressions for
      * {@code event.button}, {@code event.clientX} and {@code event.clientY}.
+     * The values are available in {@link DomEvent#getEventData()} with each
+     * expression as the key.
      * <p>
      * Each property path is evaluated as a JavaScript expression in the
      * browser, where {@code event} and {@code element} are the only local
