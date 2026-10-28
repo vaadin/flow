@@ -23,6 +23,9 @@
 // the onModuleLoad override the interface requires; the port is the module of
 // those members, so onModuleLoad is an exported function.
 
+// Every application needs the connection state and the loading indicator, and
+// both regular applications and embedded web components start the engine here.
+import '../../../ConnectionIndicator';
 import { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ErrorMessage } from './ErrorMessage';
 import {

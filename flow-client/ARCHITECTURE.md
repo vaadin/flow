@@ -261,7 +261,7 @@ connection lost once it gives up.
 | Piece | Where | Role |
 | ----- | ----- | ---- |
 | `ConnectionStateStore`, `ConnectionState` | `flow-client/src/main/frontend/ConnectionState.ts` | The shared store at `window.Vaadin.connectionState`. Created on first import, starting as connected (always on localhost) or as connection lost when `navigator.onLine` is false. On a service worker message saying the server was unreachable, it switches to connection lost. |
-| `ConnectionIndicator` (element) | `flow-client/src/main/frontend/ConnectionIndicator.ts` | `<vaadin-connection-indicator>`, created when the module loads: through `@JsModule` on `UI`, and by the `Flow` constructor. Renders the loading bar with the three delays, and the reconnecting and offline messages. Exposed as `window.Vaadin.connectionIndicator`. |
+| `ConnectionIndicator` (element) | `flow-client/src/main/frontend/ConnectionIndicator.ts` | `<vaadin-connection-indicator>`, created when the module loads, which the engine bootstrap (`Bootstrapper.ts`) and `Flow.ts` both import. Renders the loading bar with the three delays, and the reconnecting and offline messages. Exposed as `window.Vaadin.connectionIndicator`. |
 | `internal/client/ConnectionIndicator.ts` | `flow-client/src/main/frontend/` | The engine's access to the store and the element. Every call is a no-op when they are missing. |
 | `LoadingIndicatorStateHandler` | `internal/client/communication/` | Decides when a UIDL request announces loading. |
 | `LoadingIndicatorConfigurator` | same | Binds the `LOADING_INDICATOR_CONFIGURATION` node feature of the UI to the element properties. |
