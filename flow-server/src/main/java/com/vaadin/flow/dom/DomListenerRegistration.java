@@ -446,7 +446,9 @@ public interface DomListenerRegistration extends Registration {
      * path.
      * <p>
      * This is particularly useful with Java records that mirror the JavaScript
-     * event structure. For example:
+     * event structure. The class only describes which expressions to add, the
+     * values are read by expression key, not with
+     * {@link DomEvent#getEventData(Class)}. For example:
      *
      * <pre>
      * record MouseEventData(EventDetails event) {
@@ -463,7 +465,7 @@ public interface DomListenerRegistration extends Registration {
      * The above will automatically add event data expressions for
      * {@code event.button}, {@code event.clientX} and {@code event.clientY}.
      * The values are available in {@link DomEvent#getEventData()} with each
-     * expression as the key.
+     * expression, such as {@code event.button}, as the key.
      * <p>
      * Each property path is evaluated as a JavaScript expression in the
      * browser, where {@code event} and {@code element} are the only local
