@@ -26,6 +26,7 @@
 
 import type { StateNode } from '../StateNode';
 import type { StateTree } from '../StateTree';
+import { describeMissingFunction, findDeclaredSnippet } from './DeclaredJavaScript';
 
 type JsFunction = (...args: unknown[]) => unknown;
 
@@ -146,24 +147,6 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
 }
 
 /**
- * What the generated bundle registers for declared snippets: a function per
- * declared expression, called with the captures to get the value of the
- * snippet, and, outside production, what a developer wrote for each of them.
- */
-function getDeclaredSnippets(): {
-  jsSnippets?: Record<string, JsFunction>;
-  jsDefinitionNames?: Record<string, string>;
-} {
-  return (
-    (
-      window as unknown as {
-        Vaadin?: { Flow?: { jsSnippets?: Record<string, JsFunction>; jsDefinitionNames?: Record<string, string> } };
-      }
-    ).Vaadin?.Flow ?? {}
-  );
-}
-
-/**
  * Evaluates a snippet declared by a JavaScript definition: the bundle has a
  * function for it, which takes the captures and returns the value, so nothing
  * is compiled from a string. Each decode evaluates it again, so every
@@ -175,14 +158,11 @@ function getDeclaredSnippets(): {
  * of everything else the invocation is sent with.
  */
 function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
-  const declared = getDeclaredSnippets();
-  const snippet = declared.jsSnippets?.[functionId];
+  const snippet = findDeclaredSnippet(functionId);
   if (snippet === undefined) {
-    const name = declared.jsDefinitionNames?.[functionId] ?? functionId;
+    const message = describeMissingFunction(functionId);
     return () => {
-      throw new Error(
-        `No JavaScript in the bundle for ${name}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`
-      );
+      throw new Error(message);
     };
   }
   return snippet(...captures);

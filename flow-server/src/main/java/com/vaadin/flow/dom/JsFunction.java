@@ -75,8 +75,15 @@ import com.vaadin.flow.server.CspViolationException;
  *     JsFunction createLogger(String prefix);
  * }
  *
- * JsFunction logger = JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
- * element.executeJs("$0('Hello')", logger);
+ * &#64;JsDefinition
+ * public interface ClickJs extends Serializable {
+ *
+ *     &#64;JsExpression("this.addEventListener('click', () =&gt; $0('clicked'));")
+ *     void onClick(JsFunction handler);
+ * }
+ *
+ * button.getElement().executeJs(ClickJs.class)
+ *         .onClick(JsSnippets.of(LoggerJs.class).createLogger("Button:"));
  * </pre>
  *
  * Such a function has no body on the server, and its runtime arguments are

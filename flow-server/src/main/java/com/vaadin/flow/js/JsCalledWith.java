@@ -41,8 +41,15 @@ import com.vaadin.flow.dom.JsFunction;
  *     JsFunction createLogger(String prefix);
  * }
  *
- * element.executeJs("$0('Hello')",
- *         JsSnippets.of(LoggerJs.class).createLogger("Greeting:"));
+ * &#64;JsDefinition
+ * public interface ClickJs extends Serializable {
+ *
+ *     &#64;JsExpression("this.addEventListener('click', () =&gt; $0('clicked'));")
+ *     void onClick(JsFunction handler);
+ * }
+ *
+ * button.getElement().executeJs(ClickJs.class)
+ *         .onClick(JsSnippets.of(LoggerJs.class).createLogger("Button:"));
  * </pre>
  * <p>
  * The arguments of the Java call are captured on the server and referenced as

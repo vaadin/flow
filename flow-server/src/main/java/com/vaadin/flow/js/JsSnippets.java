@@ -32,8 +32,13 @@ import com.vaadin.flow.dom.Element;
  * <pre>
  * static final LoggerJs LOGGER = JsSnippets.of(LoggerJs.class);
  *
- * element.executeJs("$0('Hello')", LOGGER.createLogger("Greeting:"));
+ * button.getElement().executeJs(ClickJs.class)
+ *         .onClick(LOGGER.createLogger("Button:"));
  * </pre>
+ *
+ * Here <code>ClickJs</code> is a definition whose <code>onClick</code> method
+ * runs JavaScript that takes a {@link com.vaadin.flow.dom.JsFunction
+ * JsFunction} argument, as shown for {@link JsCalledWith}.
  *
  * @see JsSnippet
  * @see JsCalledWith

@@ -359,11 +359,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             List<String> function = new ArrayList<>();
             if (JsSnippet.class.isAssignableFrom(method.getReturnType())) {
                 // A snippet is evaluated by what it is passed to, which may
-                // need
-                // the value right away, so its function is not async. Its
-                // arguments are captured, and the parameters it is called with
-                // are those of a function around the expression, whose `this`
-                // is whatever the invoker calls it with.
+                // need the value right away, so its function is not async.
+                // Its arguments are captured, and the parameters it is called
+                // with are those of a function around the expression, whose
+                // `this` is whatever the invoker calls it with.
                 function.add(String.format(
                         "window.Vaadin.Flow.jsSnippets[%s] = function (%s) {",
                         functionId, parameters));

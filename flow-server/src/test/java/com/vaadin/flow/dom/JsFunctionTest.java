@@ -30,11 +30,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JsFunctionTest {
 
+    public static class Unencodable {
+        public String getValue() {
+            throw new UnsupportedOperationException("Not for the client");
+        }
+    }
+
     @JsDefinition
     interface LoggerJs extends Serializable {
         @JsExpression("console.log($0, value);")
         @JsCalledWith("value")
         JsFunction createLogger(String prefix);
+
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createAnyLogger(Object prefix);
     }
 
     @Test
@@ -54,5 +64,20 @@ class JsFunctionTest {
                 () -> fn.withArguments("other"),
                 "the arguments are part of the JavaScript in the bundle");
         assertEquals(List.of("value"), fn.getArgumentNames());
+    }
+
+    @Test
+    void declaredFunction_captureTheClientCanNotReceive_throwsWhenDeclared() {
+        // At the call that captures it, rather than when the function is sent
+        LoggerJs logger = JsSnippets.of(LoggerJs.class);
+
+        Unencodable capture = new Unencodable();
+
+        RuntimeException declared = assertThrows(RuntimeException.class,
+                () -> logger.createAnyLogger(capture));
+        RuntimeException ofBody = assertThrows(RuntimeException.class,
+                () -> JsFunction.of("console.log($0);", capture));
+        assertEquals(ofBody.getClass(), declared.getClass(),
+                "a declared function should refuse a capture as of does");
     }
 }
