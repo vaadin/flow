@@ -44,6 +44,13 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class DomEvent extends EventObject {
 
+    /*
+     * A simplified JavaScript identifier: a letter, underscore or dollar sign,
+     * followed by any number of letters, digits, underscores or dollar signs.
+     * Event data keys made of such identifiers separated by dots, e.g.
+     * event.detail.r, are property paths that are also made available as nested
+     * objects.
+     */
     private static final Pattern IDENTIFIER_PATTERN = Pattern
             .compile("[\\p{L}_$][\\p{L}\\p{N}_$]*");
 
