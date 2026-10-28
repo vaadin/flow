@@ -28,7 +28,6 @@ import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
@@ -57,6 +56,7 @@ import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.LiveReloadBuildItem;
 import io.quarkus.deployment.builditem.QuarkusBuildCloseablesBuildItem;
 import io.quarkus.deployment.builditem.RemovedResourceBuildItem;
+import io.quarkus.deployment.pkg.NativeConfig;
 import io.quarkus.deployment.pkg.builditem.CurateOutcomeBuildItem;
 import io.quarkus.deployment.pkg.builditem.OutputTargetBuildItem;
 import io.quarkus.maven.dependency.ArtifactKey;
@@ -69,6 +69,7 @@ import io.quarkus.vertx.http.deployment.FilterBuildItem;
 import io.quarkus.websockets.client.deployment.ServerWebSocketContainerBuildItem;
 import io.quarkus.websockets.client.deployment.WebSocketDeploymentInfoBuildItem;
 import io.quarkus.websockets.client.deployment.WebsocketConfig;
+import org.atmosphere.cpr.ApplicationConfig;
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigProvider;
 import org.jboss.jandex.AnnotationInstance;
@@ -100,6 +101,7 @@ import com.vaadin.quarkus.context.VaadinServiceScopedContext;
 import com.vaadin.quarkus.context.VaadinSessionScopedContext;
 import com.vaadin.quarkus.deployment.vaadinplugin.VaadinBuildTimeConfig;
 import com.vaadin.quarkus.deployment.vaadinplugin.VaadinPlugin;
+import com.vaadin.quarkus.graal.QuarkusJSR356AsyncSupport;
 import com.vaadin.quarkus.push.PushDispatchRecorder;
 
 class VaadinQuarkusProcessor {
@@ -108,6 +110,8 @@ class VaadinQuarkusProcessor {
             .getLogger(VaadinQuarkusProcessor.class);
 
     private static final String FEATURE = "vaadin-quarkus";
+
+    private static final String VAADIN_GROUP_ID = "com.vaadin";
 
     private static final Predicate<String> IS_VAADIN_JANDEX = Pattern
             .compile("vaadin(-core)?-jandex").asMatchPredicate();
@@ -127,9 +131,10 @@ class VaadinQuarkusProcessor {
             BuildProducer<IndexDependencyBuildItem> producer) {
         // Development dependencies built outside Flow, which ship no Jandex
         // index of their own. The Flow modules carry one.
-        producer.produce(new IndexDependencyBuildItem("com.vaadin", "copilot"));
         producer.produce(
-                new IndexDependencyBuildItem("com.vaadin", "ui-tests"));
+                new IndexDependencyBuildItem(VAADIN_GROUP_ID, "copilot"));
+        producer.produce(
+                new IndexDependencyBuildItem(VAADIN_GROUP_ID, "ui-tests"));
     }
 
     /*
@@ -144,7 +149,7 @@ class VaadinQuarkusProcessor {
         ApplicationModel applicationModel = curateOutcome.getApplicationModel();
         List<ResolvedDependency> vaadinIndexes = applicationModel
                 .getDependencies().stream()
-                .filter(archive -> "com.vaadin".equals(archive.getGroupId())
+                .filter(archive -> VAADIN_GROUP_ID.equals(archive.getGroupId())
                         && IS_VAADIN_JANDEX.test(archive.getArtifactId()))
                 .toList();
         if (!liveReload.isLiveReload()) {
@@ -152,7 +157,7 @@ class VaadinQuarkusProcessor {
                     indexDependencyConfig());
         }
         if (vaadinIndexes.size() > 1) {
-            ArtifactKey artifactKey = ArtifactKey.of("com.vaadin",
+            ArtifactKey artifactKey = ArtifactKey.of(VAADIN_GROUP_ID,
                     "vaadin-core-jandex", null, "jar");
             // To prevent the vaadin-core-index to be indexed, it should add to
             // the removed resources, but producing a RemovedResourceBuildItem
@@ -169,6 +174,9 @@ class VaadinQuarkusProcessor {
                 applicationModel.getRemovedResources().put(artifactKey,
                         Set.of());
             } catch (Exception ex) {
+                LOG.debug(
+                        "Cannot add {} to the removed resources of the application model, producing build items instead",
+                        artifactKey, ex);
                 removedResourceProducer.produce(
                         new RemovedResourceBuildItem(artifactKey, Set.of()));
                 ignoreSplitPackage.produce(new IgnoreSplitPackageBuildItem(
@@ -247,7 +255,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void build(
+    void build(
             final BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer,
             final BuildProducer<BeanDefiningAnnotationBuildItem> additionalBeanDefiningAnnotationRegistry) {
         additionalBeanProducer.produce(AdditionalBeanBuildItem
@@ -259,7 +267,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void ensureSingleVaadinExecutor(
+    void ensureSingleVaadinExecutor(
             ValidationPhaseBuildItem validationPhaseBuildItem,
             BuildProducer<ValidationPhaseBuildItem.ValidationErrorBuildItem> validationErrors) {
 
@@ -277,9 +285,6 @@ class VaadinQuarkusProcessor {
 
         if (candidates.size() > 1) {
             // Multiple beans found, throw an exception
-            String candidatesInfo = candidates.stream().map(BeanInfo::toString)
-                    .collect(Collectors.joining(", "));
-
             validationErrors.produce(
                     new ValidationPhaseBuildItem.ValidationErrorBuildItem(
                             new IllegalStateException(
@@ -300,7 +305,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void specifyRouterLayoutBeans(CombinedIndexBuildItem item,
+    void specifyRouterLayoutBeans(CombinedIndexBuildItem item,
             BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> layouts = item.getComputingIndex()
                 .getAllKnownImplementations(
@@ -312,7 +317,7 @@ class VaadinQuarkusProcessor {
     }
 
     @BuildStep
-    public void specifyErrorViewsBeans(CombinedIndexBuildItem item,
+    void specifyErrorViewsBeans(CombinedIndexBuildItem item,
             BuildProducer<AdditionalBeanBuildItem> additionalBeanProducer) {
         Collection<ClassInfo> errors = item.getComputingIndex()
                 .getAllKnownImplementations(DotName
@@ -325,7 +330,25 @@ class VaadinQuarkusProcessor {
 
     @BuildStep
     void mapVaadinServletPaths(final BeanArchiveIndexBuildItem beanArchiveIndex,
-            final BuildProducer<ServletBuildItem> servletProducer) {
+            final NativeConfig nativeConfig,
+            final BuildProducer<ServletBuildItem> servletProducer,
+            final BuildProducer<VaadinServletBuildItem> vaadinServletProducer) {
+        // In a native image, STATIC_INIT runs while the image is built, so the
+        // Vaadin servlets are not loaded on startup by the servlet container
+        // but initialized at RUNTIME_INIT, and so is their Atmosphere
+        // instance, which leaves the push endpoints to the extension, see
+        // VaadinQuarkusNativeProcessor
+        final BiConsumer<ServletBuildItem.Builder, Integer> loadOnStartupSetter;
+        if (nativeConfig.enabled()) {
+            loadOnStartupSetter = (builder, order) -> {
+                builder.addInitParam(ApplicationConfig.PROPERTY_COMET_SUPPORT,
+                        QuarkusJSR356AsyncSupport.class.getName());
+                vaadinServletProducer.produce(
+                        new VaadinServletBuildItem(builder.getName(), order));
+            };
+        } else {
+            loadOnStartupSetter = ServletBuildItem.Builder::setLoadOnStartup;
+        }
         final IndexView indexView = beanArchiveIndex.getIndex();
 
         // Collect all VaadinServlet instances and remove QuarkusVaadinServlet
@@ -338,18 +361,20 @@ class VaadinQuarkusProcessor {
                         .equals(QuarkusVaadinServlet.class.getName())
                         && !servlet.name().toString()
                                 .equals(VaadinServlet.class.getName()))
-                .collect(Collectors.toList());
+                .toList();
 
         // Register VaadinServlet instances annotated with @WebServlet
-        vaadinServlets = registerUserServlets(servletProducer, vaadinServlets);
+        vaadinServlets = registerUserServlets(servletProducer,
+                loadOnStartupSetter, !nativeConfig.enabled(), vaadinServlets);
         // If no annotated VaadinServlet instances is registered, register
         // QuarkusVaadinServlet
         if (vaadinServlets.isEmpty()) {
-            servletProducer.produce(ServletBuildItem
+            ServletBuildItem.Builder servletBuildItem = ServletBuildItem
                     .builder(QuarkusVaadinServlet.class.getName(),
                             QuarkusVaadinServlet.class.getName())
-                    .addMapping("/*").setAsyncSupported(true)
-                    .setLoadOnStartup(1).build());
+                    .addMapping("/*").setAsyncSupported(true);
+            loadOnStartupSetter.accept(servletBuildItem, 1);
+            servletProducer.produce(servletBuildItem.build());
         }
     }
 
@@ -463,6 +488,10 @@ class VaadinQuarkusProcessor {
         }
     }
 
+    // The WebSocket build items are only consumed to run after the WebSocket
+    // container is set up. Their values are not read: newer Quarkus versions
+    // turned them into markers without getInfo() and getContainer(), so the
+    // recorder looks the container up in the servlet context instead.
     @BuildStep
     @Record(ExecutionTime.RUNTIME_INIT)
     void setupPush(ServletDeploymentManagerBuildItem deployment,
@@ -472,8 +501,6 @@ class VaadinQuarkusProcessor {
             WebsocketHttpSessionAttachRecorder recorder) {
 
         filterProd.produce(new FilterBuildItem(recorder.createWebSocketHandler(
-                webSocketDeploymentInfoBuildItem.getInfo(),
-                serverWebSocketContainerBuildItem.getContainer(),
                 deployment.getDeploymentManager()), 120));
     }
 
@@ -489,7 +516,8 @@ class VaadinQuarkusProcessor {
 
     private Collection<ClassInfo> registerUserServlets(
             BuildProducer<ServletBuildItem> servletProducer,
-            Collection<ClassInfo> vaadinServlets) {
+            BiConsumer<ServletBuildItem.Builder, Integer> loadOnStartupSetter,
+            boolean warnOnLazyLoad, Collection<ClassInfo> vaadinServlets) {
         Collection<ClassInfo> registeredServlets = new ArrayList<>(
                 vaadinServlets);
         // TODO: check that we don't register 2 of the same mapping
@@ -523,9 +551,11 @@ class VaadinQuarkusProcessor {
 
             addWebInitParameters(webServletInstance, servletBuildItem);
             setAsyncSupportedIfDefined(webServletInstance, servletBuildItem);
-            servletBuildItem
-                    .setLoadOnStartup(loadOnStartup > 0 ? loadOnStartup : 1);
-            if (loadOnStartup < 1) {
+            loadOnStartupSetter.accept(servletBuildItem,
+                    loadOnStartup > 0 ? loadOnStartup : 1);
+            // In a native image the Vaadin servlets are always initialized at
+            // RUNTIME_INIT, so load-on-startup only decides the order
+            if (warnOnLazyLoad && loadOnStartup < 1) {
                 LOG.warn(
                         "Vaadin Servlet needs to be eagerly loaded by setting load-on-startup to be greater than 0. "
                                 + "Current value for '{}' is '{}', so it will be forced to '1'. "

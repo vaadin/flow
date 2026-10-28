@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 
@@ -28,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class JsDefinitionProxyTest {
 
@@ -74,8 +74,8 @@ class JsDefinitionProxyTest {
 
     private final List<JsCall> calls = new ArrayList<>();
 
-    private final PendingJavaScriptResult result = Mockito
-            .mock(PendingJavaScriptResult.class);
+    private final PendingJavaScriptResult result = mock(
+            PendingJavaScriptResult.class);
 
     private <T> T proxy(Class<T> definitionType) {
         return JsDefinitionProxy.create(definitionType, call -> {
@@ -126,6 +126,9 @@ class JsDefinitionProxyTest {
         assertTrue(exception.getMessage().contains("undeclared"),
                 "the message should name the method that declares nothing: "
                         + exception.getMessage());
+        // A definition that fails the check is not remembered as checked
+        assertThrows(IllegalArgumentException.class,
+                () -> proxy(UndeclaredJs.class));
     }
 
     @Test

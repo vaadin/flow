@@ -61,7 +61,7 @@ jobs:
       && contains(github.event.pull_request.labels.*.name, 'snapshot build')
       && (github.event.action != 'labeled' || github.event.label.name == 'snapshot build')
     timeout-minutes: 90
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - name: Check configuration
         # The address is a variable and the credentials are secrets, but an
@@ -77,9 +77,7 @@ jobs:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           ref: ${{ env._HEAD_SHA }}
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: '26.10.0'
+      - uses: ./.github/actions/setup-frontend-tools
       - name: Set up JDK
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
@@ -137,6 +135,10 @@ jobs:
               ;;
           esac
           echo "version=$base.$qualifier-SNAPSHOT" >> $GITHUB_OUTPUT
+          # The platform shares Flow's major and minor version, so the vaadin-bom
+          # to pair the snapshot with is the snapshot of the branch it is built
+          # on: 25.4.my-thing-SNAPSHOT goes with vaadin-bom 25.4-SNAPSHOT.
+          echo "platform-version=$base-SNAPSHOT" >> $GITHUB_OUTPUT
       - name: Set the snapshot version
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -188,6 +190,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.version.outputs.version }}
+          PLATFORM_VERSION: ${{ steps.version.outputs.platform-version }}
           DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
         run: |
           marker='<!-- flow-pr-snapshot -->'
@@ -238,11 +241,19 @@ jobs:
                 <type>pom</type>
                 <scope>import</scope>
               </dependency>
+              <!-- After flow-bom, so that its Flow version wins -->
+              <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>$PLATFORM_VERSION</version>
+                <type>pom</type>
+                <scope>import</scope>
+              </dependency>
             </dependencies>
           </dependencyManagement>
           \`\`\`
 
-          Import \`flow-bom\` before \`vaadin-bom\` for it to win over the platform's Flow version.
+          Replace the application's own \`vaadin-bom\` import with these two rather than adding them next to it: with two \`vaadin-bom\` imports, the first one decides the platform version. \`flow-bom\` has to come before \`vaadin-bom\`: Maven takes the first version it finds for an artifact, so the other order leaves the platform's own Flow version in use. \`$PLATFORM_VERSION\` is the unreleased platform snapshot of the same minor version as this one, so this also moves the application off its released platform version.
           </details>
           EOF
           # One comment per pull request, edited in place, so a series of pushes

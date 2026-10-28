@@ -46,7 +46,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
@@ -71,6 +70,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mockStatic;
 
 @Isolated
 @Tag("com.vaadin.flow.testcategory.SlowTests")
@@ -976,11 +979,10 @@ class FrontendToolsTest {
     @Test
     void getConfiguredSetting_pnpm_readsTheConfigurationWithConfigList()
             throws CommandExecutionException {
-        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class)) {
+        try (MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class)) {
             frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
+                    .when(() -> FrontendUtils.executeCommand(anyList(), any()))
                     .thenReturn("{\"minimumReleaseAge\": 4320}");
 
             assertEquals(Optional.of("4320"),
@@ -990,20 +992,19 @@ class FrontendToolsTest {
 
             // the subcommand has to be 'list', as pnpm does not know the 'ls'
             // alias npm accepts
-            frontendUtils.verify(() -> FrontendUtils.executeCommand(Mockito.eq(
-                    List.of("node", "pnpm.cjs", "config", "list", "--json")),
-                    Mockito.any()));
+            frontendUtils.verify(() -> FrontendUtils.executeCommand(
+                    eq(List.of("node", "pnpm.cjs", "config", "list", "--json")),
+                    any()));
         }
     }
 
     @Test
     void getConfiguredSettingValues_listAndCommaSeparatedValue_areRead()
             throws CommandExecutionException {
-        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class)) {
+        try (MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class)) {
             frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
+                    .when(() -> FrontendUtils.executeCommand(anyList(), any()))
                     .thenReturn(
                             "{\"min-release-age-exclude\": [\"@acme/*\", \"lit\"]}");
 
@@ -1014,8 +1015,7 @@ class FrontendToolsTest {
             // a single value written into an .npmrc may also arrive as a
             // comma separated string
             frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
+                    .when(() -> FrontendUtils.executeCommand(anyList(), any()))
                     .thenReturn(
                             "{\"min-release-age-exclude\": \"@acme/*, lit\"}");
 
@@ -1028,13 +1028,12 @@ class FrontendToolsTest {
     @Test
     void getConfiguredSettingValues_braceExpansionInAList_isKeptTogether()
             throws CommandExecutionException {
-        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class)) {
+        try (MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class)) {
             // the values of a list are complete on their own, and the comma
             // of a brace expansion does not separate two patterns
             frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
+                    .when(() -> FrontendUtils.executeCommand(anyList(), any()))
                     .thenReturn(
                             "{\"min-release-age-exclude\": [\"@acme/{ui,core}\"]}");
 
@@ -1047,11 +1046,10 @@ class FrontendToolsTest {
     @Test
     void getConfiguredSettingValues_keyWithoutValue_isEmpty()
             throws CommandExecutionException {
-        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class)) {
+        try (MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class)) {
             frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
+                    .when(() -> FrontendUtils.executeCommand(anyList(), any()))
                     .thenReturn(
                             "{\"min-release-age-exclude\": null, \"omit\": []}");
 
@@ -1066,12 +1064,11 @@ class FrontendToolsTest {
     @Test
     void getConfiguredSetting_firstKeyMissing_fallsBackToTheNextOne()
             throws CommandExecutionException {
-        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class)) {
+        try (MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class)) {
             // pnpm 10 reports the setting kebab-cased, pnpm 11 camel-cased
             frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
+                    .when(() -> FrontendUtils.executeCommand(anyList(), any()))
                     .thenReturn("{\"minimum-release-age\": 4320}");
 
             assertEquals(Optional.of("4320"),
@@ -1084,14 +1081,13 @@ class FrontendToolsTest {
     @Test
     void getConfiguredSetting_keyWithoutScalarValue_isEmpty()
             throws CommandExecutionException {
-        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class)) {
+        try (MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class)) {
             // npm lists every key it knows, using null for the unconfigured
             // ones and an array for some of the others, while pnpm lists only
             // the configured ones
             frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
+                    .when(() -> FrontendUtils.executeCommand(anyList(), any()))
                     .thenReturn("{\"min-release-age\": null, \"omit\": []}");
 
             assertEquals(Optional.empty(), tools.getConfiguredSetting(
@@ -1106,11 +1102,10 @@ class FrontendToolsTest {
     @Test
     void getConfiguredSetting_configurationCannotBeRead_isEmpty()
             throws CommandExecutionException {
-        try (MockedStatic<FrontendUtils> frontendUtils = Mockito
-                .mockStatic(FrontendUtils.class)) {
+        try (MockedStatic<FrontendUtils> frontendUtils = mockStatic(
+                FrontendUtils.class)) {
             frontendUtils
-                    .when(() -> FrontendUtils.executeCommand(Mockito.anyList(),
-                            Mockito.any()))
+                    .when(() -> FrontendUtils.executeCommand(anyList(), any()))
                     .thenThrow(new CommandExecutionException(1, "",
                             "unknown subcommand"))
                     .thenReturn("minimum-release-age=4320\n");

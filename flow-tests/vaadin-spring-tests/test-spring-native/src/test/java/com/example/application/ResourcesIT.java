@@ -18,25 +18,18 @@ package com.example.application;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.html.testbench.SpanElement;
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ResourcesIT extends ChromeBrowserTest {
 
     @Test
-    public void open_translationRead() {
+    public void open_featureFlagOfApplicationProviderRead() {
         open();
 
-        Assert.assertEquals("Hello from a translation", $(SpanElement.class)
-                .id(ResourcesView.TRANSLATION_ID).getText());
-    }
-
-    @Test
-    public void open_featureFlagRead() {
-        open();
-
-        Assert.assertEquals("true",
-                $(SpanElement.class).id(ResourcesView.FEATURE_ID).getText());
+        Assert.assertEquals(
+                "Feature flag springNativeTestFeature enabled: true",
+                $(DivElement.class).id(ResourcesView.FEATURE_ID).getText());
     }
 
     @Test

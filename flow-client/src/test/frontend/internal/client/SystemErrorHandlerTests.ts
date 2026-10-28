@@ -139,6 +139,74 @@ describe('SystemErrorHandler', () => {
     });
   });
 
+  describe('handleSessionExpiredError', () => {
+    let errorStub: sinon.SinonStub;
+
+    // With a caption the expiration is shown as a notification, which the
+    // cases can find, instead of a redirect that would leave the test page.
+    function makeSessionExpiredHandler(webComponentMode = false): SystemErrorHandler {
+      return new SystemErrorHandler(
+        testRegistry({
+          ApplicationConfiguration: {
+            isWebComponentMode: () => webComponentMode,
+            getSessionExpiredError: () => ({ caption: 'Session ended', url: 'about:blank' })
+          }
+        })
+      );
+    }
+
+    function findNotification(): Element | null {
+      return document.querySelector('.v-system-error');
+    }
+
+    beforeEach(() => {
+      errorStub = sinon.stub(Console, 'error');
+    });
+
+    afterEach(() => {
+      errorStub.restore();
+      document.querySelectorAll('.v-system-error').forEach((el) => el.remove());
+    });
+
+    it('shows the expiration right away when a synthetic beforeunload was dispatched', () => {
+      const handler = makeSessionExpiredHandler();
+      // As vite-devmode does when its HMR socket is closed with 1008.
+      window.dispatchEvent(new Event('beforeunload'));
+
+      handler.handleSessionExpiredError(null);
+
+      expect(findNotification()?.textContent).to.equal('Session ended');
+    });
+
+    it('defers the expiration while the browser leaves the page, until the page is used again', async () => {
+      const handler = makeSessionExpiredHandler();
+      const leaving = new Promise((resolve) => window.addEventListener('beforeunload', resolve, { once: true }));
+      // Fires a trusted beforeunload; the empty response keeps the page.
+      window.location.href = '/no-content';
+      await leaving;
+
+      handler.handleSessionExpiredError(null);
+      // A count, as a failure that reports the element hangs the test runner
+      expect(document.querySelectorAll('.v-system-error').length).to.equal(0);
+
+      window.dispatchEvent(new PointerEvent('pointerdown'));
+      expect(findNotification()?.textContent).to.equal('Session ended');
+    });
+
+    it('does not defer the expiration in web-component mode while the browser leaves the page', async () => {
+      const handler = makeSessionExpiredHandler(true);
+      const leaving = new Promise((resolve) => window.addEventListener('beforeunload', resolve, { once: true }));
+      window.location.href = '/no-content';
+      await leaving;
+
+      handler.handleSessionExpiredError(null);
+
+      expect(document.querySelectorAll('.v-system-error').length).to.equal(1);
+      // Clears the leaving state for the cases that follow.
+      window.dispatchEvent(new PointerEvent('pointerdown'));
+    });
+  });
+
   describe('class', () => {
     it('resynchronizes instead of redirecting when in web-component mode', () => {
       // With every part null, Java redirects outside web-component mode and
@@ -166,6 +234,74 @@ describe('SystemErrorHandler', () => {
       handler.handleUnrecoverableError(null, null, null, null, null);
 
       expect(intervals).to.deep.equal([-1]);
+    });
+
+    it('recreates exported web components after resynchronization, also those that never connected', async () => {
+      const connected = document.createElement('x-resync-test') as HTMLElement & {
+        $server?: { disconnected: () => void };
+      };
+      const disconnected = sinon.spy();
+      connected.$server = { disconnected };
+      // Its connection was rejected before the server could attach $server.
+      const unconnected = document.createElement('x-resync-test');
+      document.body.append(connected, unconnected);
+
+      const handler = new SystemErrorHandler(
+        testRegistry({
+          ApplicationConfiguration: {
+            isWebComponentMode: () => true,
+            getExportedWebComponents: () => ['x-resync-test'],
+            getSessionExpiredError: () => null,
+            getServiceUrl: () => '',
+            getUIId: () => 0,
+            setUIId: () => {},
+            getHeartbeatInterval: () => 0
+          },
+          Heartbeat: { setInterval: () => {} },
+          PushConfiguration: { isPushEnabled: () => false },
+          MessageSender: { setPushEnabled: () => {} },
+          UILifecycle: { setState: () => {} },
+          MessageHandler: { handleMessage: () => {} }
+        })
+      );
+
+      // Answers the resynchronization request as soon as it is sent.
+      const xhr = {
+        readyState: 0,
+        status: 0,
+        responseText: '',
+        withCredentials: false,
+        onreadystatechange: null as (() => void) | null,
+        onerror: null,
+        open: () => {},
+        send: () => {
+          xhr.readyState = 4;
+          xhr.status = 200;
+          xhr.responseText = '{"uiId": 0}';
+          xhr.onreadystatechange?.();
+        }
+      };
+      const original = window.XMLHttpRequest;
+      const stub = function XhrStub() {
+        return xhr;
+      };
+      (stub as unknown as { DONE: number }).DONE = 4;
+      (window as unknown as { XMLHttpRequest: unknown }).XMLHttpRequest = stub;
+      try {
+        handler.handleUnrecoverableError(null, null, null, null, null);
+      } finally {
+        (window as unknown as { XMLHttpRequest: unknown }).XMLHttpRequest = original;
+      }
+      // The web components are recreated in a deferred command.
+      await new Promise((resolve) => setTimeout(resolve));
+
+      const recreated = Array.from(document.getElementsByTagName('x-resync-test'));
+      recreated.forEach((el) => el.remove());
+      expect(recreated).to.have.length(2);
+      expect(recreated).to.not.include(connected);
+      expect(recreated).to.not.include(unconnected);
+      connected.$server.disconnected();
+      expect(disconnected.called).to.be.false;
     });
 
     it('handleErrorObject extracts the error message', () => {

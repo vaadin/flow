@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   reconcile:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -85,7 +85,10 @@ jobs:
       # repository and started releasing with Flow's version number. Pooling
       # those onto the shared axis would drop 16.x into the gap between Flow 9.2
       # and 23.0 and rewrite @since across most of the framework.
-      - uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
+      # Branches older than the import have no vaadin-cdi module, so the step
+      # is skipped there instead of failing on a missing source root.
+      - if: hashFiles('vaadin-cdi/pom.xml') != ''
+        uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}
@@ -99,8 +102,10 @@ jobs:
       # with Flow's version number. Its deployment artifact carries no public
       # API of its own -- it is Quarkus build steps -- so only the runtime
       # artifact is indexed. Its module directory is not named after the
-      # artifact, so the source root is spelled out.
-      - uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
+      # artifact, so the source root is spelled out. Skipped on branches older
+      # than the import, like vaadin-cdi above.
+      - if: hashFiles('vaadin-quarkus/pom.xml') != ''
+        uses: vaadin/github-actions/reconcile-since-tags@452570a6575db482f7a602673b26fbe891422f65
         with:
           group-id: com.vaadin
           version: ${{ inputs.dev }}

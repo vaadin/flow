@@ -68,6 +68,11 @@ export class SystemErrorHandler {
 
   #resyncInProgress = false;
 
+  // Set when the browser starts leaving the page, until the page is used again.
+  #leavingPage = false;
+
+  #deferredSessionExpiration: (() => void) | null = null;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -75,15 +80,48 @@ export class SystemErrorHandler {
    */
   constructor(registry: Registry) {
     this.#registry = registry;
+    window.addEventListener('beforeunload', (event) => {
+      // vite-devmode dispatches a synthetic beforeunload when its HMR socket is
+      // closed with 1008, which does not mean the page is being left.
+      if (event.isTrusted) {
+        this.#leavingPage = true;
+      }
+    });
+    // A navigation that does not replace the page, such as a download, leaves
+    // the page in use. The session expiration is handled once it is used.
+    // Whether the navigation is still pending cannot be known, so input while
+    // a slow response loads still handles the expiration and may cancel it.
+    const handlePageInUse = (): void => {
+      this.#leavingPage = false;
+      const deferred = this.#deferredSessionExpiration;
+      this.#deferredSessionExpiration = null;
+      deferred?.();
+    };
+    window.addEventListener('pointerdown', handlePageInUse, true);
+    window.addEventListener('keydown', handlePageInUse, true);
   }
 
   /**
-   * Shows the session expiration notification.
+   * Shows the session expiration notification, or defers it while the browser
+   * is leaving the page.
+   *
+   * The request that ended the session, such as a logout URL, typically
+   * responds with the page the browser is navigating to. Going to the session
+   * expired URL meanwhile would cancel that navigation. In web-component mode
+   * the session is resynchronized instead, which does not navigate, so it is
+   * not deferred.
    *
    * @param details - message details or null if there are no details
    */
   handleSessionExpiredError(details: string | null): void {
-    this.handleUnrecoverableErrorFor(details, this.#registry.getApplicationConfiguration().getSessionExpiredError());
+    const handle = (): void =>
+      this.handleUnrecoverableErrorFor(details, this.#registry.getApplicationConfiguration().getSessionExpiredError());
+    if (this.#leavingPage && !this.#isWebComponentMode()) {
+      Console.debug('Session expiration deferred while leaving the page');
+      this.#deferredSessionExpiration = handle;
+      return;
+    }
+    handle();
   }
 
   /**
@@ -277,12 +315,16 @@ function recreateNodes(elementName: string): void {
   // Snapshot the live collection before mutating it.
   const elements = Array.from(document.getElementsByTagName(elementName)) as Array<
     Element & {
-      $server: { disconnected: () => void };
+      $server?: { disconnected: () => void };
     }
   >;
   for (const elem of elements) {
-    // Mock the disconnected callback so it does not throw a TypeError.
-    elem.$server.disconnected = () => {};
+    // Mock the disconnected callback so it does not throw a TypeError. An
+    // element whose connection to the server never completed has no $server
+    // yet, so there is nothing to mock.
+    if (elem.$server) {
+      elem.$server.disconnected = () => {};
+    }
     // Java dereferences parentNode unguarded, so a detached element fails here
     // rather than silently keeping the stale node.
     elem.parentNode!.replaceChild(elem.cloneNode(false), elem);

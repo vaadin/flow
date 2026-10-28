@@ -55,6 +55,8 @@ import java.util.stream.Stream;
  * It skips a JVM start per apply, and its {@link Diagnostic} objects already
  * carry file, line, column, code and message — so the agent-facing
  * {@code diagnostics[]} contract needs no parsing of compiler text output.
+ * Compiling through Maven instead is an opt-in, {@code vaadin.dev.compiler};
+ * see {@link Compiler} and {@link MavenCompile}.
  * <p>
  * One instance covers all modules rather than one instance per module: the two
  * fingerprint maps are keyed by absolute source path, which stays unique across
@@ -85,8 +87,133 @@ final class Compile {
         }
     }
 
+    /**
+     * How a compile ended.
+     *
+     * @param success
+     *            whether it compiled
+     * @param errors
+     *            what it reported when it did not
+     * @param writtenClasses
+     *            the classes the running application has to be given, by binary
+     *            name
+     * @param millis
+     *            how long it took
+     * @param classFiles
+     *            the class files behind {@code writtenClasses}, with the stamp
+     *            each had when it was reported - what a redefine of them hands
+     *            the application, for a backend that keeps its own baseline of
+     *            it; empty from javac, which keeps none
+     * @param removedClasses
+     *            classes the running application holds whose class files the
+     *            compile took away, by binary name - only a restart applies
+     *            that; empty from javac, which removes none
+     */
     record Result(boolean success, List<Message> errors,
-            List<String> writtenClasses, long millis) {
+            List<String> writtenClasses, long millis,
+            Map<Path, Stamp> classFiles, List<String> removedClasses) {
+
+        Result(boolean success, List<Message> errors,
+                List<String> writtenClasses, long millis) {
+            this(success, errors, writtenClasses, millis, Map.of(), List.of());
+        }
+    }
+
+    /**
+     * What turns a change-set into class files: javac in-process, or Maven.
+     * <p>
+     * Everything else in an apply - change detection, deletions, the classpath
+     * forcing a pom edit causes, the redefine - is the same whichever compiles,
+     * which is why only this is swapped.
+     */
+    interface Backend {
+
+        /**
+         * Compiles a change-set.
+         *
+         * @param sources
+         *            the sources that changed, across every module in the loop
+         * @param project
+         *            the resolved build
+         * @return the outcome, naming the classes the running application has
+         *         to be given
+         */
+        Result compile(List<Path> sources, Launch.Project project);
+
+        /**
+         * The class file a source was last compiled to, which says whether the
+         * source has to be compiled again.
+         *
+         * @param module
+         *            the module that owns the source
+         * @param source
+         *            the source
+         * @return its class file
+         */
+        default Path artifactFor(Reactor.Module module, Path source) {
+            return module.artifactFor(source);
+        }
+
+        /**
+         * Records the class files the running application was launched with.
+         *
+         * @param classes
+         *            every class file in the loop, with its stamp
+         */
+        default void seed(Map<Path, Stamp> classes) {
+        }
+
+        /**
+         * Records that the classes a compile reported are now live in the
+         * running application.
+         *
+         * @param applied
+         *            the compile whose classes a redefine took
+         */
+        default void markApplied(Result applied) {
+        }
+    }
+
+    /**
+     * Which {@link Backend} compiles, from {@code vaadin.dev.compiler}.
+     * <p>
+     * javac by default: it costs no JVM start per apply. Maven is the opt-in
+     * for a project javac-in-process gets wrong - annotation processors,
+     * compiler-plugin configuration, unedited callers of a changed signature.
+     */
+    enum Compiler {
+        JAVAC, MAVEN;
+
+        static final String PROPERTY = "vaadin.dev.compiler";
+
+        /**
+         * The configured compiler, javac when the property is unset or names
+         * none of them.
+         *
+         * @param log
+         *            where an unrecognised value is reported
+         * @return the compiler
+         */
+        static Compiler configured(Launch.Log log) {
+            String value = System.getProperty(PROPERTY);
+            if (value == null || value.isBlank()) {
+                return JAVAC;
+            }
+            for (Compiler compiler : values()) {
+                if (compiler.label().equals(
+                        value.trim().toLowerCase(java.util.Locale.ROOT))) {
+                    return compiler;
+                }
+            }
+            log.line("WARNING: " + PROPERTY + "=" + value
+                    + " is not one of javac, maven; compiling with javac");
+            return JAVAC;
+        }
+
+        /** How the compiler is named in the property and in output. */
+        String label() {
+            return name().toLowerCase(java.util.Locale.ROOT);
+        }
     }
 
     /**
@@ -97,6 +224,104 @@ final class Compile {
     }
 
     /**
+     * The stamps of the files a launch reads, taken the moment the daemon
+     * spawns its JVM: every Java source, resource and frontend file of the
+     * module set it was launched with.
+     * <p>
+     * This is what "the files the application started with" means, and it has
+     * to be taken then rather than reconstructed later. The baseline it seeds
+     * is built after the application has already read its files - the compile
+     * leg is built lazily, and a registration is handled a moment after the
+     * command that waited for it returned - and an edit made in between is not
+     * one the application has. Telling such an edit apart by comparing its
+     * modification time with the launch time trusts two clocks to agree; a file
+     * dated ahead of the clock, by an archive extracted in a time zone behind
+     * the one it was packed in, is then newer than every launch. A stamp that
+     * is still the one the launch saw needs no clock at all.
+     * <p>
+     * Class files are deliberately not in it. A launch through a build plugin's
+     * run goal compiles before it starts the application, so the class files a
+     * spawn-time walk would see are not the ones the application runs; they are
+     * walked when the baseline is seeded instead.
+     *
+     * @param modules
+     *            the module set the launch was composed from, whose files these
+     *            are
+     * @param sources
+     *            the Java sources, by path
+     * @param resources
+     *            the tracked resources, by path
+     * @param frontend
+     *            the tracked frontend files, by path
+     * @param frontendRoot
+     *            the frontend folder those were walked under, or {@code null}
+     *            when the launch found none
+     * @param takenAtMillis
+     *            when the stamps were taken, in epoch milliseconds
+     */
+    record Snapshot(List<Reactor.Module> modules, Map<Path, Stamp> sources,
+            Map<Path, Stamp> resources, Map<Path, Stamp> frontend,
+            Path frontendRoot, long takenAtMillis) {
+
+        /**
+         * Stamps the files a launch of this project reads.
+         *
+         * @param project
+         *            the resolved build the launch runs
+         * @return the stamps as they are now
+         */
+        static Snapshot of(Launch.Project project) {
+            return of(project.modules(), Frontend.of(project.app()));
+        }
+
+        private static Snapshot of(List<Reactor.Module> modules,
+                Frontend frontend) {
+            long takenAt = System.currentTimeMillis();
+            Map<Path, Stamp> sources = new java.util.HashMap<>();
+            Map<Path, Stamp> resources = new java.util.HashMap<>();
+            for (Reactor.Module module : modules) {
+                List<Reactor.Module> one = List.of(module);
+                keepingWhatWasStamped(() -> forEachSource(one,
+                        (owner, file, stamp) -> sources.put(file, stamp)));
+                keepingWhatWasStamped(() -> forEachResource(one,
+                        (owner, file, stamp) -> resources.put(file, stamp)));
+            }
+            Map<Path, Stamp> frontendFiles = new java.util.HashMap<>();
+            Path frontendRoot = frontend.root().orElse(null);
+            if (frontendRoot != null) {
+                forEachFrontendFile(frontend, frontendRoot, frontendFiles::put);
+            }
+            return new Snapshot(List.copyOf(modules), Map.copyOf(sources),
+                    Map.copyOf(resources), Map.copyOf(frontendFiles),
+                    frontendRoot, takenAt);
+        }
+
+        /**
+         * A tree that changes under the walk - a directory removed
+         * mid-iteration - fails it unchecked, part way through. Caught here
+         * rather than in {@link #walk}: a file left out of the snapshot is only
+         * reported changed, the safe way round, while a partial walk in
+         * {@link #stale()} would report every file it did not reach as deleted,
+         * and delete its artifacts. Caught one tree at a time, so that the
+         * files reported are that tree's and not every later module's.
+         */
+        private static void keepingWhatWasStamped(Runnable walk) {
+            try {
+                walk.run();
+            } catch (java.io.UncheckedIOException partial) {
+                // What was stamped before the failure stays.
+            }
+        }
+    }
+
+    /**
+     * A source's stamp as of the last time it went live, and whether that stamp
+     * was dated ahead of the clock when it was recorded; see {@link #isStale}.
+     */
+    private record Applied(Stamp stamp, boolean futureDated) {
+    }
+
+    /**
      * What a resource said the last time the daemon acted on it.
      * <p>
      * The stamp is the cheap filter that decides whether the file is worth
@@ -104,18 +329,13 @@ final class Compile {
      * timestamp says a file was written and not that its content changed.
      *
      * @param stamp
-     *            the resource's stamp as of then, or {@code null} for one the
-     *            running application has not read
+     *            the resource's stamp as of then
      * @param digest
      *            a fingerprint of the bytes the daemon acted on, or
-     *            {@code null} when they could not be read
+     *            {@code null} when they could not be read - or are no longer on
+     *            disk to be read
      */
     private record Content(Stamp stamp, String digest) {
-        /**
-         * A resource the running application has not read: in the inventory, so
-         * a deletion is still reported, but matching nothing on disk.
-         */
-        static final Content UNSEEN = new Content(null, null);
     }
 
     record Changes(List<Path> modified, List<Path> deleted) {
@@ -227,6 +447,12 @@ final class Compile {
             .of("META-INF/resources/", "static/", "public/", "resources/");
 
     /**
+     * How far ahead of this clock a modification time may be and still be taken
+     * at face value; see {@link #isFutureDated}.
+     */
+    private static final long FUTURE_SKEW_MILLIS = 60_000;
+
+    /**
      * What makes a file a Java source, and what a type's name is its file name
      * minus.
      */
@@ -243,7 +469,7 @@ final class Compile {
     }
 
     /** Fingerprints of Java sources as of the last time they went live. */
-    private final Map<Path, Stamp> applied = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Map<Path, Applied> applied = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * The binary names of the class files the running application was launched
@@ -291,6 +517,9 @@ final class Compile {
     /** The application's frontend folder, and the rules about it. */
     private final Frontend frontend;
 
+    /** What {@link #seedFromDisk(Snapshot)} last seeded this baseline from. */
+    private Snapshot seededFrom;
+
     /**
      * The compile classpath each module was last compiled against.
      * <p>
@@ -304,8 +533,48 @@ final class Compile {
      */
     private final Map<String, String> compiledAgainst = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** What compiles the change-sets this instance finds. */
+    private final Compiler compiler;
+
+    private final Backend backend;
+
     Compile(Launch.Project project) {
         this(project, null);
+    }
+
+    /**
+     * A baseline that compiles with javac in-process.
+     *
+     * @param project
+     *            the resolved build the new baseline describes
+     * @param previous
+     *            the baseline this instance replaces, or {@code null} for a
+     *            project's first one
+     */
+    Compile(Launch.Project project, Compile previous) {
+        this(project, previous, Compiler.JAVAC, compile -> compile::javac);
+    }
+
+    /**
+     * A baseline that compiles with the compiler {@code vaadin.dev.compiler}
+     * selects; see {@link Compiler}.
+     *
+     * @param project
+     *            the resolved build the new baseline describes
+     * @param previous
+     *            the baseline this instance replaces, or {@code null} for a
+     *            project's first one
+     * @param launch
+     *            what runs Maven, for the Maven backend
+     * @return the baseline
+     */
+    static Compile configured(Launch.Project project, Compile previous,
+            Launch launch) {
+        return switch (Compiler.configured(launch.log())) {
+        case JAVAC -> new Compile(project, previous);
+        case MAVEN -> new Compile(project, previous, Compiler.MAVEN,
+                compile -> new MavenCompile(compile, launch));
+        };
     }
 
     /**
@@ -329,8 +598,13 @@ final class Compile {
      * @param previous
      *            the baseline this instance replaces, or {@code null} for a
      *            project's first one
+     * @param compiler
+     *            which compiler the backend is
+     * @param backend
+     *            builds the backend for this instance
      */
-    Compile(Launch.Project project, Compile previous) {
+    private Compile(Launch.Project project, Compile previous, Compiler compiler,
+            java.util.function.Function<Compile, Backend> backend) {
         this.modules = List.copyOf(project.modules());
         this.frontend = Frontend.of(project.app());
         for (Reactor.Module module : modules) {
@@ -339,10 +613,35 @@ final class Compile {
             compiledAgainst.put(module.artifactId(), carried != null ? carried
                     : Launch.membership(project.compileClasspath(module)));
         }
+        this.compiler = compiler;
+        this.backend = backend.apply(this);
     }
 
     List<Reactor.Module> modules() {
         return modules;
+    }
+
+    /** Which compiler this baseline compiles with, for the log and status. */
+    Compiler compiler() {
+        return compiler;
+    }
+
+    /**
+     * Whether this baseline already describes the given launch.
+     * <p>
+     * The same launch can register more than once - a connector that
+     * reconnects, a server that redeploys inside the JVM - and seeding again
+     * from its spawn-time stamps would put every edit applied since back into
+     * the change-set, restarting the application for a bundled frontend file it
+     * has already folded in. Identity, not equality: a later snapshot of the
+     * same disk is a different launch.
+     *
+     * @param launched
+     *            the stamps a launch was spawned with
+     * @return {@code true} when this baseline was seeded from exactly those
+     */
+    boolean isSeededFrom(Snapshot launched) {
+        return seededFrom == launched;
     }
 
     /**
@@ -408,14 +707,15 @@ final class Compile {
      * <p>
      * Deletions are the third question, and the walk cannot answer it: a file
      * that is gone is not visited. The fingerprint map is the inventory that
-     * can - every resource on disk at the last seed is a key in it - and a
-     * deletion has to be noticed, because the copy under {@code target/classes}
-     * is what the application actually reads. Leave that behind and the file
-     * goes on being served, and the config goes on being loaded, until the next
-     * full Maven build.
+     * can - every resource the application was launched with is a key in it -
+     * and a deletion has to be noticed, because the copy under
+     * {@code target/classes} is what the application actually reads. Leave that
+     * behind and the file goes on being served, and the config goes on being
+     * loaded, until the next full Maven build.
      * <p>
-     * The fingerprint map is seeded at daemon start, so a first apply with
-     * nothing edited is still quiet.
+     * The fingerprint map is seeded from what each launch stamped, so a first
+     * apply with nothing edited since is still quiet - and one with a resource
+     * edited after the launch, however soon after, reports it.
      */
     ResourceChanges staleResources() {
         List<Path> live = new ArrayList<>();
@@ -423,7 +723,7 @@ final class Compile {
         List<Path> deletedLive = new ArrayList<>();
         List<Path> deletedStartup = new ArrayList<>();
         java.util.Set<Path> seen = new java.util.HashSet<>();
-        forEachResource((module, source, stamp) -> {
+        forEachResource(modules, (module, source, stamp) -> {
             seen.add(source);
             Content known = notified.get(source);
             // Both questions above are asked of timestamps, and a build that
@@ -463,7 +763,7 @@ final class Compile {
      * the population this exists for - measured in this repository, {@code tsc}
      * rewrites nine byte-identical {@code .d.ts} files on every build - so the
      * "settle an unchanged resource on its stamp alone" that
-     * {@link #seedResources()} promises has to hold after the first
+     * {@link #seedResources(Map)} promises has to hold after the first
      * regenerating build, not only before it.
      * <p>
      * Both questions are settled because both drive the next answer. The stamp
@@ -536,10 +836,11 @@ final class Compile {
      * <p>
      * Only ever called for {@link ResourceKind#LIVE} files. A startup-only
      * resource goes live when the application restarts, and
-     * {@link #seedFromDisk()} is what records that.
+     * {@link #seedFromDisk(Snapshot)}, from the stamps that launch took, is
+     * what records that.
      * <p>
      * A file whose bytes cannot be read is still recorded, with no digest, for
-     * the reason {@link #seedResources()} gives: the key is the inventory a
+     * the reason {@link #seedResources(Map)} gives: the key is the inventory a
      * deletion is reported from. It reports changed until the bytes can be
      * read, which is the safe way round.
      */
@@ -557,63 +858,66 @@ final class Compile {
      * reason {@link #markResourcesNotified} is: the classpath is what a live
      * resource is read from, so removing the copy is the whole of the change. A
      * startup-only deletion stays in the inventory until the application
-     * restarts and {@link #seedResources()} clears it, because until then the
-     * running JVM is still holding what the file used to say.
+     * restarts and {@link #seedFromDisk(Snapshot)} clears it, because until
+     * then the running JVM is still holding what the file used to say.
      */
     void forgetResources(List<Path> resources) {
         resources.forEach(notified::remove);
     }
 
     /**
-     * Seeds the fingerprints, so an untouched project reports no changes.
+     * Seeds the fingerprints of the resources the running application was
+     * launched with.
      * <p>
-     * Reads every tracked resource, which is what a content fingerprint costs.
-     * It is paid once per application start, on a tree the walk has just
-     * brought into the page cache - and it is what lets every apply after it
-     * settle an unchanged resource on its stamp alone.
-     * <p>
-     * A resource whose bytes cannot be read - a lock, a scanner, a build
-     * rewriting it - is recorded anyway, with no digest. The key is what
-     * matters: {@code notified.keySet()} is also the inventory
-     * {@link #staleResources()} reports deletions from, so a resource left out
-     * of it could be deleted and never reported, and its copy under
-     * {@code target/classes} would go on being served until the next full Maven
-     * build.
-     */
-    void seedResources() {
-        seedResources(Long.MAX_VALUE);
-    }
-
-    /**
-     * Seeds the fingerprints of the resources the running application can have
-     * read.
-     * <p>
-     * The same bound {@link #seedFromDisk(long, long)} puts on sources, and for
-     * a sharper reason: a startup-only resource has no other way back into a
+     * The same bound {@link #seedFromDisk(Snapshot)} puts on sources, and for a
+     * sharper reason: a startup-only resource has no other way back into a
      * change-set. The re-resolve that rebuilds the baseline after a pom edit
      * has also copied the file onto the classpath, so its copy is current, and
      * a baseline that took the edit as acted on would report "no changes" for a
      * config the running JVM never loaded - on this apply and every later one.
      * <p>
-     * Such a resource is still recorded, as {@link Content#UNSEEN}, for the
-     * reason an unreadable one is: its key is the inventory a deletion is
-     * reported from, so an edit deleted again before the next apply is still
-     * reported.
+     * Only a resource whose stamp is still the launched one is read for its
+     * digest, since only then are the bytes on disk the ones the application
+     * read. One edited since is recorded with no digest, which reports it
+     * changed until it is acted on. It is still recorded, for the reason an
+     * unreadable one is: its key is the inventory a deletion is reported from,
+     * so an edit deleted again before the next apply is still reported - and so
+     * is a resource deleted before this baseline was taken.
+     * <p>
+     * Reading the bytes is what a content fingerprint costs. It is paid once
+     * per application start, on a tree the launch has just brought into the
+     * page cache - and it is what lets every apply after it settle an unchanged
+     * resource on its stamp alone.
+     * <p>
+     * A resource whose bytes cannot be read - a lock, a scanner, a build
+     * rewriting it - is recorded with no digest too. The key is what matters:
+     * {@code notified.keySet()} is also the inventory {@link #staleResources()}
+     * reports deletions from, so a resource left out of it could be deleted and
+     * never reported, and its copy under {@code target/classes} would go on
+     * being served until the next full Maven build.
      *
-     * @param startedAtMillis
-     *            when the running application was launched
+     * @param launched
+     *            the resources the application was launched with, and their
+     *            stamps then
      */
-    void seedResources(long startedAtMillis) {
+    private void seedResources(Map<Path, Stamp> launched) {
         notified.clear();
-        forEachResource(
-                (module, source,
-                        stamp) -> notified
-                                .put(source,
-                                        stamp.modified() <= startedAtMillis
-                                                ? new Content(stamp,
-                                                        digestOf(source)
-                                                                .orElse(null))
-                                                : Content.UNSEEN));
+        launched.forEach((source, stamp) -> {
+            if (resourceOwner(source).isPresent()) {
+                // Asked on both sides of the read: an edit landing while the
+                // file is digested would otherwise pair the launched stamp
+                // with bytes the application never read, and the next apply
+                // would settle that edit instead of reporting it.
+                String digest = hasStamp(source, stamp) ? digestOf(source)
+                        .filter(read -> hasStamp(source, stamp)).orElse(null)
+                        : null;
+                notified.put(source, new Content(stamp, digest));
+            }
+        });
+    }
+
+    private static boolean hasStamp(Path file, Stamp stamp) {
+        return stampOf(file).filter(stamp::equals).isPresent();
     }
 
     /**
@@ -633,7 +937,7 @@ final class Compile {
         }
         List<Path> modified = new ArrayList<>();
         java.util.Set<Path> seen = new java.util.HashSet<>();
-        forEachFrontendFile(root, (file, stamp) -> {
+        forEachFrontendFile(frontend, root, (file, stamp) -> {
             seen.add(file);
             if (!stamp.equals(frontendNotified.get(file))) {
                 modified.add(file);
@@ -655,28 +959,72 @@ final class Compile {
     }
 
     /**
-     * Seeds the fingerprints, so an untouched project reports no changes.
+     * Seeds the fingerprints with the frontend files the running application
+     * was launched with.
      * <p>
-     * Files newer than the cutoff are deliberately left unstamped. A frontend
-     * file has no artifact to be compared against - no {@code .class}, no
-     * classpath copy - so without this a baseline taken while the app is
-     * already running would swallow an edit made since it started, and the very
-     * first apply after a cold daemon would answer "no changes" to the change
-     * it was asked about. The cutoff is the app's own start time, which is what
-     * read the frontend folder.
+     * A frontend file has no artifact to be compared against - no
+     * {@code .class}, no classpath copy - so the stamp recorded here is the
+     * whole of the answer. One taken from the disk as it is when the baseline
+     * is built would swallow an edit made since the launch, and the very first
+     * apply after a cold daemon would answer "no changes" to the change it was
+     * asked about.
+     * <p>
+     * That holds only for a launch that walked the folder this baseline
+     * watches. The two resolve it separately, and this one caches its answer:
+     * built before a first build wrote {@code flow-build-info.json}, it can
+     * have settled on the convention folder where the launch found a configured
+     * one. Its files are then none of the launch's, and every one of them would
+     * be reported - a bundled one by restarting the app. Such a baseline walks
+     * its own folder instead and keeps what was written before the snapshot was
+     * taken, so that an edit made while the application was starting is still
+     * reported. That is the clock comparison the snapshot exists to avoid, with
+     * its known weakness - see {@link #predates} - accepted for the one case
+     * that has nothing better.
      *
-     * @param cutoffMillis
-     *            the newest modification time still considered live;
-     *            {@code Long.MAX_VALUE} to accept everything on disk
+     * @param launched
+     *            what the application was launched with
      */
-    void seedFrontend(long cutoffMillis) {
+    private void seedFrontend(Snapshot launched) {
         frontendNotified.clear();
-        frontend.root()
-                .ifPresent(root -> forEachFrontendFile(root, (file, stamp) -> {
-                    if (stamp.modified() <= cutoffMillis) {
+        frontend.root().ifPresent(root -> {
+            if (root.equals(launched.frontendRoot())) {
+                frontendNotified.putAll(launched.frontend());
+            } else {
+                forEachFrontendFile(frontend, root, (file, stamp) -> {
+                    if (predates(stamp, launched.takenAtMillis())) {
                         frontendNotified.put(file, stamp);
                     }
-                }));
+                });
+            }
+        });
+    }
+
+    /**
+     * Whether a file was written no later than the cutoff, with a modification
+     * time in the future taken as before it.
+     * <p>
+     * Trusts the clock that stamped the file and this one to agree, which is
+     * what a snapshot's stamps need not. Only for a file the snapshot has no
+     * stamp of.
+     */
+    private static boolean predates(Stamp stamp, long cutoffMillis) {
+        return stamp.modified() <= cutoffMillis
+                || isFutureDated(stamp.modified());
+    }
+
+    /**
+     * Whether a modification time is too far ahead of the clock to have been
+     * set by an edit.
+     * <p>
+     * A save stamps a file with the current time, so a time well ahead of the
+     * clock came with the file - an archive extracted in a time zone behind the
+     * one it was packed in dates every file hours ahead. Only a time more than
+     * {@link #FUTURE_SKEW_MILLIS} ahead counts: a file system on another host -
+     * a network share, a container or VM mount - can stamp a real edit with a
+     * clock a few seconds ahead of this one.
+     */
+    private static boolean isFutureDated(long modifiedMillis) {
+        return modifiedMillis > System.currentTimeMillis() + FUTURE_SKEW_MILLIS;
     }
 
     /** A frontend file and its fingerprint; there is no owning module. */
@@ -693,7 +1041,8 @@ final class Compile {
      * from {@link #walk} rather than generalising it: that one is the compile
      * leg's, it is tested, and it has no reason to grow a pruning concept.
      */
-    private void forEachFrontendFile(Path root, FrontendVisitor action) {
+    private static void forEachFrontendFile(Frontend frontend, Path root,
+            FrontendVisitor action) {
         try {
             Files.walkFileTree(root, new java.nio.file.SimpleFileVisitor<>() {
                 @Override
@@ -788,7 +1137,7 @@ final class Compile {
         }
     }
 
-    private Optional<Stamp> stampOf(Path file) {
+    static Optional<Stamp> stampOf(Path file) {
         try {
             BasicFileAttributes attrs = Files.readAttributes(file,
                     BasicFileAttributes.class);
@@ -814,7 +1163,7 @@ final class Compile {
      * do.
      */
     @SuppressWarnings("java:S1166")
-    private Optional<String> digestOf(Path file) {
+    static Optional<String> digestOf(Path file) {
         try (InputStream in = Files.newInputStream(file)) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] buffer = new byte[8192];
@@ -828,7 +1177,8 @@ final class Compile {
         }
     }
 
-    private void forEachResource(Visitor action) {
+    private static void forEachResource(List<Reactor.Module> modules,
+            Visitor action) {
         for (Reactor.Module module : modules) {
             java.util.function.Predicate<Path> tracked = file -> resourceKindOf(
                     module, file) != ResourceKind.IGNORED;
@@ -836,7 +1186,8 @@ final class Compile {
         }
     }
 
-    private ResourceKind resourceKindOf(Reactor.Module module, Path file) {
+    private static ResourceKind resourceKindOf(Reactor.Module module,
+            Path file) {
         return resourceKindOf(module.resourceDir().relativize(file).toString());
     }
 
@@ -947,14 +1298,15 @@ final class Compile {
      * this differs from a live resource and matches a startup-only one: a class
      * the JVM has loaded stays loaded whatever happens to the file, so the
      * deletion goes on being reported until the application restarts and
-     * {@link #seedFromDisk()} re-reads what is actually there. The inventory
-     * also bounds this - a source created and deleted without a restart in
-     * between was never seeded, so its artifact is left for the next build.
+     * {@link #seedFromDisk(Snapshot)} records what that launch found. The
+     * inventory also bounds this - a source created and deleted without a
+     * restart in between was never seeded, so its artifact is left for the next
+     * build.
      */
     Changes stale() {
         List<Path> modified = new ArrayList<>();
         java.util.Set<Path> seen = new java.util.HashSet<>();
-        forEachSource((module, source, stamp) -> {
+        forEachSource(modules, (module, source, stamp) -> {
             seen.add(source);
             // Two questions again, and for the same reason as resources. The
             // artifact check answers "does this need compiling?"; it cannot
@@ -962,7 +1314,9 @@ final class Compile {
             // save
             // makes the .class newer than the .java, and a pure artifact check
             // then reports "no changes" for an edit the JVM has never loaded.
-            if (isStale(module, source) || !stamp.equals(applied.get(source))) {
+            Applied live = applied.get(source);
+            if (live == null || !stamp.equals(live.stamp())
+                    || isStale(module, source, live.futureDated())) {
                 modified.add(source);
             }
         });
@@ -1117,53 +1471,87 @@ final class Compile {
                 .replace(File.separatorChar, '.');
     }
 
-    /** Records that these sources are now live in the running JVM. */
-    void markSourcesApplied(List<Path> sources) {
+    /**
+     * Records that these sources are now live in the running JVM.
+     *
+     * @param sources
+     *            the sources the apply compiled
+     * @param compiled
+     *            the compile that turned them into the classes now live
+     */
+    void markSourcesApplied(List<Path> sources, Result compiled) {
         for (Path source : sources) {
-            stampOf(source).ifPresent(stamp -> applied.put(source, stamp));
+            stampOf(source).ifPresent(stamp -> markApplied(source, stamp));
         }
+        backend.markApplied(compiled);
+    }
+
+    private void markApplied(Path source, Stamp stamp) {
+        applied.put(source,
+                new Applied(stamp, isFutureDated(stamp.modified())));
     }
 
     /**
-     * Declares everything on disk to be live, which is true immediately after
-     * the app starts or restarts: it loaded its classes and resources from
-     * there.
+     * Declares everything on disk to be live, which is true of an application
+     * launched from the disk as it is now - and the right baseline when none is
+     * running, as the launch that starts one seeds its own. Use
+     * {@link #seedFromDisk(Snapshot)} for one that is running.
      */
     void seedFromDisk() {
-        seedFromDisk(Long.MAX_VALUE, Long.MAX_VALUE);
+        seedFromDisk(Snapshot.of(modules, frontend));
     }
 
     /**
-     * @param startedAtMillis
-     *            when the running application was launched, which bounds which
-     *            sources it can have read
-     * @param frontendCutoffMillis
-     *            how new a frontend file may be and still count as live; see
-     *            {@link #seedFrontend(long)}
+     * Declares what the application was launched with to be live: the disk as
+     * it was when the launch stamped it, where {@link #seedFromDisk()} takes it
+     * as it is now.
+     * <p>
+     * Only that, whenever this baseline happens to be taken - and it can be
+     * taken late: the compile leg is built lazily, and a registration is
+     * handled a moment after the command that waited for it returned. Both are
+     * windows a developer's next keystroke fits into, and a baseline that walks
+     * "whatever is on disk now" claims those edits as the application's own. A
+     * file whose stamp has moved since the launch is therefore recorded with
+     * the launched stamp, which reports it changed, and one deleted since is
+     * still recorded, which reports it deleted.
+     * <p>
+     * Only the files of this baseline's modules are taken: a pom edit can
+     * rebuild the baseline for a module set the launch did not have, and a file
+     * of a module that has left the loop is nothing an apply can act on. A
+     * module that has joined through that edit has no stamps in the snapshot,
+     * and is taken from the disk as it is now rather than read as changed
+     * throughout: the re-resolve that let it in has just compiled it and copied
+     * its resources, and the restart its joining forces stamps it in a snapshot
+     * of its own.
+     *
+     * @param launched
+     *            the stamps taken when the application was launched
      */
-    void seedFromDisk(long startedAtMillis, long frontendCutoffMillis) {
+    void seedFromDisk(Snapshot launched) {
+        seededFrom = launched;
         seedClasses();
         applied.clear();
-        forEachSource((module, source, stamp) -> {
-            // Only what the application could have read. A source written
-            // after it was launched is not one it started with, whenever this
-            // baseline happens to be taken - and it can be taken late: the
-            // compile leg is built lazily, and a registration is handled a
-            // moment after the command that waited for it returned. Both are
-            // windows a developer's next keystroke fits into, and a baseline
-            // that walks "whatever is on disk now" claims those edits as the
-            // application's own.
-            if (stamp.modified() <= startedAtMillis) {
-                applied.put(source, stamp);
+        launched.sources().forEach((source, stamp) -> {
+            if (sourceOwner(source).isPresent()) {
+                markApplied(source, stamp);
             }
         });
-        seedResources(startedAtMillis);
+        List<Reactor.Module> joined = modules.stream()
+                .filter(module -> !launched.modules().contains(module))
+                .toList();
+        forEachSource(joined,
+                (module, source, stamp) -> markApplied(source, stamp));
+        Map<Path, Stamp> resources = new java.util.HashMap<>(
+                launched.resources());
+        forEachResource(joined,
+                (module, source, stamp) -> resources.put(source, stamp));
+        seedResources(resources);
         // Load-bearing for the frontend leg, not just tidiness: a bundled
         // frontend edit escalates to a restart, the restart re-registers, and
         // this runs again. Without it the same file would be offered after the
         // restart that already folded it into the bundle, and would restart the
         // app for ever.
-        seedFrontend(frontendCutoffMillis);
+        seedFrontend(launched);
     }
 
     /**
@@ -1175,22 +1563,27 @@ final class Compile {
      */
     private void seedClasses() {
         launchedWith.clear();
+        Map<Path, Stamp> classes = new java.util.HashMap<>();
         for (Reactor.Module module : modules) {
             walk(module, module.classesDir(),
                     path -> path.toString().endsWith(CLASS_SUFFIX),
-                    (owner, file, stamp) -> launchedWith
-                            .add(binaryNameOf(owner, file)));
+                    (owner, file, stamp) -> {
+                        launchedWith.add(binaryNameOf(owner, file));
+                        classes.put(file, stamp);
+                    });
         }
+        backend.seed(classes);
     }
 
-    private void forEachSource(Visitor action) {
+    private static void forEachSource(List<Reactor.Module> modules,
+            Visitor action) {
         for (Reactor.Module module : modules) {
             walk(module, module.sourceDir(),
                     path -> path.toString().endsWith(JAVA_SUFFIX), action);
         }
     }
 
-    private void walk(Reactor.Module module, Path tree,
+    private static void walk(Reactor.Module module, Path tree,
             java.util.function.Predicate<Path> accept, Visitor action) {
         if (!Files.isDirectory(tree)) {
             return;
@@ -1204,17 +1597,50 @@ final class Compile {
         }
     }
 
-    private boolean isStale(Reactor.Module module, Path source) {
+    private boolean isStale(Reactor.Module module, Path source,
+            boolean futureDated) {
         try {
-            Path artifact = module.artifactFor(source);
+            Path artifact = backend.artifactFor(module, source);
             if (!Files.isRegularFile(artifact)) {
                 return true;
+            }
+            if (futureDated) {
+                // Dated ahead of the clock, the source stays newer than every
+                // artifact compiled from it until the clock catches up, so its
+                // time cannot answer this - not even once it is less than the
+                // skew ahead. An edit changes its stamp, which the baseline in
+                // stale() catches.
+                return false;
             }
             return Files.getLastModifiedTime(source)
                     .compareTo(Files.getLastModifiedTime(artifact)) > 0;
         } catch (IOException e) {
             return true;
         }
+    }
+
+    /**
+     * Compiles a change-set with this baseline's {@link Backend}.
+     *
+     * @param sources
+     *            the sources that changed
+     * @param project
+     *            the resolved build
+     * @return the outcome
+     */
+    Result compile(List<Path> sources, Launch.Project project) {
+        return backend.compile(sources, project);
+    }
+
+    /**
+     * Records that a module now compiles against its current classpath, which
+     * is what clears {@link #classpathForced} for it. Only after a successful
+     * compile: a failed one has to stay forced, or the next apply would report
+     * the broken module as having no changes.
+     */
+    void recordCompiledAgainst(Reactor.Module module, Launch.Project project) {
+        compiledAgainst.put(module.artifactId(),
+                Launch.membership(project.compileClasspath(module)));
     }
 
     /**
@@ -1233,7 +1659,7 @@ final class Compile {
      * downstream module's errors after an upstream failure are consequences,
      * and reporting them would bury the one line that has to be fixed.
      */
-    Result compile(List<Path> sources, Launch.Project project) {
+    private Result javac(List<Path> sources, Launch.Project project) {
         long started = System.nanoTime();
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
@@ -1436,11 +1862,7 @@ final class Compile {
             List<String> classes = ok ? written.stream().sorted().toList()
                     : List.of();
             if (ok) {
-                // Only on success: a failed compile has to stay forced, or the
-                // next apply would report the broken module as having no
-                // changes.
-                compiledAgainst.put(module.artifactId(),
-                        Launch.membership(project.compileClasspath(module)));
+                recordCompiledAgainst(module, project);
             }
             return new Result(ok, errors, classes, millis);
         } catch (IOException e) {
@@ -1451,26 +1873,28 @@ final class Compile {
         }
     }
 
-    /**
-     * The file a diagnostic points at. Bare file name for the application,
-     * whose output shape is documented, and prefixed with the module directory
-     * for anything else — "Task.java:12" in a project with five modules is not
-     * enough to open the file with.
-     */
     private Message toMessage(Diagnostic<? extends JavaFileObject> d) {
-        String file = "-";
-        if (d.getSource() != null) {
-            Path path = Path.of(d.getSource().getName());
-            Path name = path.getFileName();
-            file = name == null ? path.toString() : name.toString();
-            Optional<Reactor.Module> owner = moduleOf(path);
-            if (owner.isPresent() && !owner.get().equals(app())) {
-                file = owner.get().name() + "/" + file;
-            }
-        }
+        String file = d.getSource() == null ? "-"
+                : diagnosticFileOf(Path.of(d.getSource().getName()));
         String text = tidy(d.getMessage(null));
         return new Message(file, d.getLineNumber(), d.getColumnNumber(),
                 String.valueOf(d.getCode()), text, hintFor(d.getCode(), text));
+    }
+
+    /**
+     * How a diagnostic names the file it points at, whichever backend reported
+     * it. Bare file name for the application, whose output shape is documented,
+     * and prefixed with the module directory for anything else — "Task.java:12"
+     * in a project with five modules is not enough to open the file with.
+     */
+    String diagnosticFileOf(Path path) {
+        Path name = path.getFileName();
+        String file = name == null ? path.toString() : name.toString();
+        Optional<Reactor.Module> owner = moduleOf(path);
+        if (owner.isPresent() && !owner.get().equals(app())) {
+            file = owner.get().name() + "/" + file;
+        }
+        return file;
     }
 
     /**

@@ -26,7 +26,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -45,6 +44,7 @@ import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PAR
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 class AnnotationValidatorTest {
 
@@ -54,7 +54,7 @@ class AnnotationValidatorTest {
     @BeforeEach
     void init() {
         annotationValidator = new AnnotationValidator();
-        servletContext = Mockito.mock(ServletContext.class);
+        servletContext = mock(ServletContext.class);
     }
 
     @Tag(Tag.DIV)

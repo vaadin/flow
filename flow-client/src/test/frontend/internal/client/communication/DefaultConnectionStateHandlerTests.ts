@@ -4,7 +4,9 @@ import { type StateChangeHandler, UIState } from '../../../../../main/frontend/i
 import type { EventRemover } from '../../../../../main/frontend/internal/EventRemover';
 import { testRegistry } from '../testRegistry';
 import { DefaultConnectionStateHandler } from '../../../../../main/frontend/internal/client/communication/DefaultConnectionStateHandler';
+import { LoadingIndicatorStateHandler } from '../../../../../main/frontend/internal/client/communication/LoadingIndicatorStateHandler';
 import { XhrConnectionError } from '../../../../../main/frontend/internal/client/communication/XhrConnectionError';
+import type { PushConnection } from '../../../../../main/frontend/internal/client/communication/PushConnection';
 import {
   CONNECTED,
   CONNECTION_LOST,
@@ -23,49 +25,49 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
   const lifecycleHandlers: StateChangeHandler[] = [];
   let state: UIState = UIState.RUNNING;
   let heartbeatInterval = 300;
-  return {
-    log,
-    lifecycleHandlers,
-    registry: testRegistry({
-      UILifecycle: {
-        isRunning: () => state === UIState.RUNNING,
-        getState: () => state,
-        setState: (s: UIState) => {
-          state = s;
-          log.states.push(s);
-        },
-        addHandler: (handler: StateChangeHandler): EventRemover => {
-          lifecycleHandlers.push(handler);
-          return { remove: () => lifecycleHandlers.splice(lifecycleHandlers.indexOf(handler), 1) };
-        }
+  const registry = testRegistry({
+    UILifecycle: {
+      isRunning: () => state === UIState.RUNNING,
+      getState: () => state,
+      setState: (s: UIState) => {
+        state = s;
+        log.states.push(s);
       },
-      ReconnectConfiguration: {
-        getReconnectAttempts: () => reconnectAttempts,
-        getReconnectInterval: () => 5000,
-        getDialogText: () => null,
-        getDialogTextGaveUp: () => null
-      },
-      RequestResponseTracker: {
-        hasActiveRequest: () => false,
-        endRequest: () => {},
-        fireReconnectionAttempt: (attempt: number) => log.reconnectionAttempts.push(attempt)
-      },
-      LoadingIndicatorStateHandler: { stopLoading: () => {} },
-      Heartbeat: {
-        setInterval: (interval: number) => {
-          heartbeatInterval = interval;
-        },
-        getInterval: () => heartbeatInterval,
-        send: () => log.heartbeatSends++
-      },
-      ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
-      MessageSender: { sendInvocationsToServer: () => {} },
-      SystemErrorHandler: {
-        handleSessionExpiredError: () => log.sessionExpired++,
-        handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
+      addHandler: (handler: StateChangeHandler): EventRemover => {
+        lifecycleHandlers.push(handler);
+        return { remove: () => lifecycleHandlers.splice(lifecycleHandlers.indexOf(handler), 1) };
       }
-    })
-  };
+    },
+    ReconnectConfiguration: {
+      getReconnectAttempts: () => reconnectAttempts,
+      getReconnectInterval: () => 5000,
+      getDialogText: () => null,
+      getDialogTextGaveUp: () => null
+    },
+    RequestResponseTracker: {
+      hasActiveRequest: () => false,
+      endRequest: () => {}
+    },
+    Heartbeat: {
+      setInterval: (interval: number) => {
+        heartbeatInterval = interval;
+      },
+      getInterval: () => heartbeatInterval,
+      send: () => log.heartbeatSends++
+    },
+    ApplicationConfiguration: { getHeartbeatInterval: () => configuredHeartbeatInterval },
+    MessageSender: {
+      sendInvocationsToServer: () => {},
+      resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt)
+    },
+    SystemErrorHandler: {
+      handleSessionExpiredError: () => log.sessionExpired++,
+      handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
+    }
+  });
+  // The real loading handler, which shows connected when a reconnect resolves.
+  registry.register('LoadingIndicatorStateHandler', new LoadingIndicatorStateHandler(registry));
+  return { log, lifecycleHandlers, registry };
 }
 
 // The handler listens on window for the browser's connectivity events.
@@ -91,7 +93,7 @@ describe('DefaultConnectionStateHandler', () => {
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry.registry);
     handler.xhrException(xhrError({ rpc: 1 }));
-    // First attempt -> immediate doReconnect -> fireReconnectionAttempt(1).
+    // First attempt -> immediate doReconnect -> resendQueuedMessages(1).
     expect(registry.log.reconnectionAttempts).to.deep.equal([1]);
   });
 
@@ -168,8 +170,14 @@ describe('DefaultConnectionStateHandler', () => {
     const initialState = getState();
 
     // Long polling does not necessarily know when the connection is available
-    // again, so the reconnect is left to the next failing xhr.
-    handler.pushReconnectPending({ isBidirectional: () => false } as never);
+    // again, so the reconnect is left to the next failing xhr, however often
+    // it closes.
+    const longPolling: Partial<PushConnection> = {
+      isBidirectional: () => false,
+      getTransportType: () => 'long-polling'
+    };
+    handler.pushReconnectPending(longPolling as PushConnection);
+    handler.pushReconnectPending(longPolling as PushConnection);
     expect(getState()).to.equal(initialState);
     expect(registry.log.heartbeatSends).to.equal(0);
 
@@ -177,6 +185,54 @@ describe('DefaultConnectionStateHandler', () => {
     handler.pushReconnectPending({ isBidirectional: () => true } as never);
     expect(getState()).to.equal(RECONNECTING);
     expect(registry.log.heartbeatSends).to.equal(1);
+  });
+
+  it('checks the connection with a heartbeat when reopening a receive-only websocket fails', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const initialState = getState();
+    const websocket: Partial<PushConnection> = { isBidirectional: () => false, getTransportType: () => 'websocket' };
+
+    // The server may close the websocket on purpose, and it reopens.
+    handler.pushReconnectPending(websocket as PushConnection);
+    handler.pushOk(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(getState()).to.equal(initialState);
+    expect(registry.log.heartbeatSends).to.equal(0);
+
+    // Reopening it failed, so the connection is checked over HTTP, which
+    // decides whether to reconnect.
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(getState()).to.equal(initialState);
+    expect(registry.log.heartbeatSends).to.equal(1);
+
+    // The heartbeat succeeded, and further failed reopens add nothing to it.
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(1);
+
+    // While reconnecting, the reconnect logic already sends heartbeats.
+    handler.pushOk(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
+    handler.heartbeatException({} as XMLHttpRequest, new Error('down'));
+    expect(getState()).to.equal(RECONNECTING);
+    const heartbeatSends = registry.log.heartbeatSends;
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(heartbeatSends);
+  });
+
+  it('does not check a lost receive-only websocket while offline', () => {
+    // Beyond the Java suite: No Java case covers pushReconnectPending.
+    const registry = makeRegistry(3);
+    const handler = new DefaultConnectionStateHandler(registry.registry);
+    const websocket: Partial<PushConnection> = { isBidirectional: () => false, getTransportType: () => 'websocket' };
+
+    // Going offline pauses heartbeats, and the websocket drops with it.
+    dispatch('offline');
+    handler.pushReconnectPending(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(0);
+    expect(getState()).to.equal(CONNECTION_LOST);
   });
 
   it('stops heartbeats while the browser is offline and resumes them', () => {

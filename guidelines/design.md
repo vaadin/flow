@@ -145,13 +145,30 @@ public sealed interface Foo permits FooA, FooB, FooC {}
 
 - Apply `@NullMarked` at the package level (JSpecify). Only `@Nullable`
   what genuinely may be null.
-- Prefer sentinel values over nullable returns in the public API
-  (`UNKNOWN` enum constant, `Pending` record).
+- **Collections: return empty, never `null`.** A method returning a
+  `List`, `Set`, `Map`, `Stream` or array returns an empty one when
+  there are no values (`List.of()`, `Stream.empty()`). Callers can
+  iterate without a null check, and "no values" has a single spelling.
+- **Optional properties: return `@Nullable T`, not `Optional<T>`.** A
+  getter for a value that may simply be unset — `getLabel()`,
+  `getPlaceholder()`, `getTitle()` — returns a `@Nullable String` (or
+  other type), matching the setter that accepts `null` to clear it.
+  NullAway already makes callers handle the `null` case, so `Optional`
+  adds an allocation and a second style without adding safety. Existing
+  `Optional`-returning methods such as `Component.getUI()` stay as they
+  are for compatibility; don't add new ones.
+- **Don't encode "not set" as a fake value.** Return `null`, not `""`,
+  `-1` or `0`, when nothing is set — a stand-in value can not be told
+  apart from a value the application actually set.
+- **Signals and result types use a named state, not `null`.** When a
+  signal or "one of N things" value has a real "no data yet" state,
+  model it as an enum constant (`UNKNOWN`) or a record in the sealed
+  hierarchy (`Pending`) — see *Signals for reactive state* above — so
+  callers handle it in an exhaustive `switch`.
 - Jackson wire records (the record used to decode `executeJs` return
-  values or DOM event payloads) are the legitimate exception — their
-  fields may be `@Nullable` because the wire format permits omissions.
-  Keep the wire record private and translate to a non-null public shape
-  at the boundary.
+  values or DOM event payloads) may have `@Nullable` fields because the
+  wire format permits omissions. Keep the wire record private and
+  translate it to the public shape at the boundary.
 - `@Nullable` belongs on the declared type — `ValueSignal<@Nullable X>` —
   and NullAway infers it for the constructor, so `new ValueSignal<>(null)`
   and `Signal.cached(...)` need no repeated type argument or type witness.
@@ -201,6 +218,34 @@ right design, but then the line between them is a rule stated in one sentence
 in the Javadoc and enforced for everything on the interpreted side. What must
 never happen is a member that quietly does nothing because it fell between the
 two.
+
+### Naming boolean properties
+
+Name a boolean property after its positive state: `isEnabled()` /
+`setEnabled(boolean)`, `isVisible()`, `isRequired()` — not `isDisabled()`,
+`isHidden()` or `setNotRequired(boolean)`. A negative name turns every
+negated check into a double negative: `!isDisabled()` makes the reader undo
+two negations to learn that the thing is enabled, and `setHidden(false)` is
+harder to follow than `setVisible(true)`.
+
+- **The getter and the setter share one polarity.** `setEnabled(false)` is
+  read back with `isEnabled()`, never with a separate `isDisabled()`.
+- **Flip the polarity at the boundary, not in the API.** HTML boolean
+  attributes name the non-default state (`disabled`, `hidden`) because they
+  work by presence and absence; Java has no such constraint. The wrapper maps
+  `setEnabled(false)` to the `disabled` attribute so that application code
+  never sees the negative form.
+- **Words that are positive concepts are fine.** `isEmpty()`, `isInert()`,
+  `isDisposed()` and `isReadOnly()` name a state of their own, not the
+  negation of another name in the same API. The rule is about `not`, `no`,
+  `dis-`, `un-` and `hidden`-style names whose opposite is the state callers
+  actually ask about.
+- **Existing negative names stay, and new API matches them.** Renaming
+  public API is a breaking change; do not rename only to follow this rule.
+  When new API joins a family that already uses a negative name, consistency
+  with the family wins: a field implements `HasValidation` with
+  `setInvalid(boolean)` / `isInvalid()`, so a range field that adds a flag for
+  one of its parts names it `isStartInvalid()`, not `isStartValid()`.
 
 ### Naming components that wrap HTML elements
 

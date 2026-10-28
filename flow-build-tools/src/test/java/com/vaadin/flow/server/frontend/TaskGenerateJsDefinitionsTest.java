@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
@@ -43,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
 
 class TaskGenerateJsDefinitionsTest {
 
@@ -91,7 +91,7 @@ class TaskGenerateJsDefinitionsTest {
     void setUp() {
         frontendFolder = new File(temporaryFolder, FRONTEND);
         frontendFolder.mkdirs();
-        options = new Options(Mockito.mock(Lookup.class),
+        options = new Options(mock(Lookup.class),
                 new DefaultClassFinder(
                         Set.of(GreeterJs.class, NothingJs.class)),
                 null).withFrontendDirectory(frontendFolder)
@@ -387,8 +387,8 @@ class TaskGenerateJsDefinitionsTest {
         // application runs builds: it knows the definitions, so it has nothing
         // to scan with, and going through the generating side is a mistake
         // that should say so
-        Options withoutAClassFinder = new Options(Mockito.mock(Lookup.class),
-                null, null).withFrontendDirectory(frontendFolder);
+        Options withoutAClassFinder = new Options(mock(Lookup.class), null,
+                null).withFrontendDirectory(frontendFolder);
 
         assertTrue(
                 assertThrows(NullPointerException.class,

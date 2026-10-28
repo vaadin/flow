@@ -16,17 +16,20 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -37,8 +40,11 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.ConstantPoolKey;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.change.MapPutChange;
+import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
@@ -51,8 +57,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class ElementListenersTest
         extends AbstractNodeFeatureTest<ElementListenerMap> {
@@ -136,6 +144,23 @@ public class ElementListenersTest
     }
 
     @Test
+    void addEventDataList_existingExpressions_merged() {
+        ns.add("eventType", noOp).addEventData("data1")
+                .addEventData(List.of("data1", "data2"));
+
+        assertEquals(Set.of("data1", "data2"), getExpressions("eventType"));
+    }
+
+    @Test
+    void addEventDataList_nullExpression_throws() {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+        List<String> eventData = Arrays.asList("data1", null);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> registration.addEventData(eventData));
+    }
+
+    @Test
     void settingsAreOnlyUpdated_should_ListenersSharingTheTypeOfRemovedListenerExist() {
         ns = spy(createFeature());
         DomEventListener del1 = event -> {
@@ -148,7 +173,7 @@ public class ElementListenersTest
         Registration handle2 = ns.add("eventType", del2).addEventData("data2");
         Registration handle3 = ns.add("eventTypeOther", del3)
                 .addEventData("data3");
-        Mockito.reset(ns);
+        reset(ns);
 
         Set<String> expressions = getExpressions("eventType");
         expressions.addAll(getExpressions("eventTypeOther"));
@@ -159,8 +184,7 @@ public class ElementListenersTest
 
         handle1.remove();
 
-        Mockito.verify(ns, times(1)).put(eq("eventType"),
-                any(Serializable.class));
+        verify(ns, times(1)).put(eq("eventType"), any(Serializable.class));
 
         expressions = getExpressions("eventType");
         expressions.addAll(getExpressions("eventTypeOther"));
@@ -171,8 +195,7 @@ public class ElementListenersTest
 
         handle2.remove();
         // updating settings does not take place a second time
-        Mockito.verify(ns, times(1)).put(eq("eventType"),
-                any(Serializable.class));
+        verify(ns, times(1)).put(eq("eventType"), any(Serializable.class));
 
         expressions = getExpressions("eventType");
         expressions.addAll(getExpressions("eventTypeOther"));
@@ -207,6 +230,62 @@ public class ElementListenersTest
         expressions = getExpressions("eventType");
         assertFalse(expressions.contains("data1"));
         assertFalse(expressions.contains("data2"));
+    }
+
+    @Test
+    void collectChanges_settingsChangedAfterEarlierSend_updatedSettingsSent() {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+        assertFalse(collectEventSettings("eventType").has("data1"));
+
+        registration.addEventData("data1");
+        registration.debounce(100);
+
+        ObjectNode settings = collectEventSettings("eventType");
+
+        assertTrue(settings.has("data1"));
+        assertTrue(settings.has(ElementListenerMap.ALWAYS_TRUE_FILTER));
+        assertEquals(100, settings.get(ElementListenerMap.ALWAYS_TRUE_FILTER)
+                .get(0).get(0).intValue());
+    }
+
+    @Test
+    void collectChanges_settingsSentOncePerRoundtripAndOnlyForChangedType() {
+        DomListenerRegistration registration = ns.add("eventType", noOp);
+        ns.add("otherType", noOp);
+        registration.addEventData("data1");
+        registration.addEventData("data2");
+        registration.setFilter("filter");
+        registration.debounce(100);
+
+        List<NodeChange> changes = collectChanges(ns);
+        assertEquals(2, changes.size());
+        assertEquals(Set.of("eventType", "otherType"),
+                changes.stream().map(change -> ((MapPutChange) change).getKey())
+                        .collect(Collectors.toSet()));
+        ObjectNode settings = changes.stream().map(MapPutChange.class::cast)
+                .filter(change -> "eventType".equals(change.getKey()))
+                .map(ElementListenersTest::exportSettings).findFirst()
+                .orElseThrow();
+        assertTrue(settings.has("data1"));
+        assertTrue(settings.has("data2"));
+        assertEquals(100, settings.get("filter").get(0).get(0).intValue());
+
+        assertEquals(List.of(), collectChanges(ns));
+
+        registration.addEventData("data3");
+        assertTrue(collectEventSettings("eventType").has("data3"));
+
+        assertEquals(List.of(), collectChanges(ns));
+    }
+
+    @Test
+    void generateChangesFromEmpty_settingsSentAgain() {
+        ns.add("eventType", noOp).addEventData("data1");
+        ObjectNode initialSettings = collectEventSettings("eventType");
+
+        ns.generateChangesFromEmpty();
+
+        assertEquals(initialSettings, collectEventSettings("eventType"));
     }
 
     @Test
@@ -677,7 +756,9 @@ public class ElementListenersTest
         // Test that addEventData correctly extracts nested record structure
         record EventDetails(int button, int clientX, int clientY) {
         }
-        record MouseEventData(EventDetails event, String type) {
+        record ElementDetails(String tagName) {
+        }
+        record MouseEventData(EventDetails event, ElementDetails element) {
         }
 
         DomListenerRegistration registration = ns.add("click", noOp);
@@ -692,10 +773,114 @@ public class ElementListenersTest
                 "Should capture event.clientX");
         assertTrue(expressions.contains("event.clientY"),
                 "Should capture event.clientY");
-        assertTrue(expressions.contains("type"), "Should capture type");
+        assertTrue(expressions.contains("element.tagName"),
+                "Should capture element.tagName");
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
+    }
+
+    @Test
+    void testAddEventDataWithRecordAndGetEventData() {
+        record EventDetails(String type, int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event) {
+        }
+
+        Element element = new Element("div");
+        AtomicReference<MouseEventData> captured = new AtomicReference<>();
+        AtomicReference<MouseEventData> capturedWithTypeReference = new AtomicReference<>();
+        element.addEventListener("click", e -> {
+            captured.set(e.getEventData(MouseEventData.class));
+            capturedWithTypeReference
+                    .set(e.getEventData(new TypeReference<MouseEventData>() {
+                    }));
+        }).addEventData(MouseEventData.class);
+
+        // The client sends one flat key per expression
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.button", 1);
+        eventData.put("event.clientX", 68);
+        eventData.put("event.clientY", 159);
+        eventData.put("event.type", "click");
+
+        element.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(element, "click", eventData));
+
+        assertEquals(new MouseEventData(new EventDetails("click", 1, 68, 159)),
+                captured.get());
+        assertEquals(captured.get(), capturedWithTypeReference.get());
+    }
+
+    @Test
+    void testGetEventDataKeepsFlatKeys() {
+        record FlatMouseEventData(@JsonProperty("event.button") int button,
+                @JsonProperty("event.clientX") int clientX) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.button", 2);
+        eventData.put("event.clientX", 68);
+        eventData.put("event.preventDefault()", (String) null);
+        // Keys with empty segments are not property paths
+        eventData.put("event.", "a");
+        eventData.put("event..x", "b");
+        eventData.put("event.other.", "c");
+        DomEvent event = new DomEvent(new Element("div"), "click", eventData);
+
+        assertEquals(new FlatMouseEventData(2, 68),
+                event.getEventData(FlatMouseEventData.class));
+        record EventNode(JsonNode event) {
+        }
+        JsonNode nested = event.getEventData(EventNode.class).event();
+        assertEquals(2, nested.get("button").asInt());
+        assertFalse(nested.has("preventDefault()"));
+        assertFalse(nested.has(""));
+        assertFalse(nested.has("x"));
+        assertFalse(nested.has("other"));
+        // Maps and JSON nodes get only the flat keys, so scalar value types
+        // keep working
+        Set<String> flatKeys = Set.of("event.button", "event.clientX",
+                "event.preventDefault()", "event.", "event..x", "event.other.");
+        Map<String, String> data = event
+                .getEventData(new TypeReference<Map<String, String>>() {
+                });
+        assertEquals(flatKeys, data.keySet());
+        assertEquals(flatKeys, Set.copyOf(
+                JacksonUtils.getKeys(event.getEventData(JsonNode.class))));
+        // The original event data is not modified
+        assertEquals(6, eventData.size());
+    }
+
+    @Test
+    void testGetEventDataMergesNestedPaths() {
+        record Rgb(int r, int g, int b) {
+        }
+        record Event(Rgb detail, JsonNode button) {
+        }
+        record Data(Event event, JsonNode target) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        // Sub-paths before the complete object they belong to
+        eventData.put("event.detail.g", 99);
+        eventData.put("event.detail.b", 3);
+        ObjectNode detail = eventData.putObject("event.detail");
+        detail.put("r", 1);
+        detail.put("g", 2);
+        // A null or scalar prefix value
+        eventData.putNull("event.button");
+        eventData.put("event.button.x", 4);
+        eventData.put("target", 5);
+        eventData.put("target.id", "foo");
+        DomEvent event = new DomEvent(new Element("div"), "click", eventData);
+
+        Data data = event.getEventData(Data.class);
+        // The complete object is the base, sub-paths are merged in without
+        // overwriting it
+        assertEquals(new Rgb(1, 2, 3), data.event().detail());
+        assertEquals(4, data.event().button().get("x").asInt());
+        assertEquals(5, data.target().asInt());
     }
 
     @Test
@@ -851,6 +1036,35 @@ public class ElementListenersTest
     }
 
     @Test
+    void testGetEventDetailWithNestedPaths() {
+        record Position(int x, int y) {
+        }
+        record DragDetail(Position start, Position end) {
+        }
+
+        // The client sends one flat key per expression
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.detail.start.x", 1);
+        eventData.put("event.detail.start.y", 2);
+        eventData.put("event.detail.end.x", 3);
+        eventData.put("event.detail.end.y", 4);
+        DomEvent event = new DomEvent(new Element("div"), "drag", eventData);
+
+        DragDetail expected = new DragDetail(new Position(1, 2),
+                new Position(3, 4));
+        assertEquals(expected, event.getEventDetail(DragDetail.class));
+        assertEquals(expected,
+                event.getEventDetail(new TypeReference<DragDetail>() {
+                }));
+        // Maps get only the flat keys
+        Map<String, Integer> detail = event
+                .getEventDetail(new TypeReference<Map<String, Integer>>() {
+                });
+        assertEquals(Set.of("start.x", "start.y", "end.x", "end.y"),
+                detail.keySet());
+    }
+
+    @Test
     void testGetEventDetailWithRecord() {
         // Test getEventDetail with a Java record
         record RgbColor(int r, int g, int b) {
@@ -980,6 +1194,22 @@ public class ElementListenersTest
 
     private Set<String> getExpressions(String name) {
         return getExpressions(ns, name);
+    }
+
+    private ObjectNode collectEventSettings(String eventType) {
+        List<NodeChange> changes = collectChanges(ns);
+        assertEquals(1, changes.size());
+        MapPutChange change = (MapPutChange) changes.get(0);
+        assertEquals(eventType, change.getKey());
+        return exportSettings(change);
+    }
+
+    private static ObjectNode exportSettings(MapPutChange change) {
+        ObjectNode constantPoolUpdate = JacksonUtils.createObjectNode();
+        ((ConstantPoolKey) change.getValue()).export(constantPoolUpdate);
+        List<String> keys = JacksonUtils.getKeys(constantPoolUpdate);
+        assertEquals(1, keys.size());
+        return (ObjectNode) constantPoolUpdate.get(keys.get(0));
     }
 
     private static DomEvent createEvent(String type) {

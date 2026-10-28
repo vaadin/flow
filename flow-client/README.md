@@ -5,6 +5,9 @@ This is the client part of flow. It is composed by two parts
    - The flow client protocol, written in TypeScript.
    - An npm package that can be used as a JS library to use flow UI in any client app.
 
+How the client bootstraps a Flow application and routes between client-side
+and server-side views is described in [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Building the project
 
 `mvn clean package` will do everything, and will leave a `.jar` file
