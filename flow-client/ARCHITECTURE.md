@@ -260,8 +260,8 @@ connection lost once it gives up.
 
 | Piece | Where | Role |
 | ----- | ----- | ---- |
-| `ConnectionStateStore`, `ConnectionState` | `@vaadin/common-frontend` (npm) | The shared store at `window.Vaadin.connectionState`. Created on first import, starting as connected (always on localhost) or as connection lost when `navigator.onLine` is false. On a service worker message saying the server was unreachable, it switches to connection lost. |
-| `ConnectionIndicator` (element) | `@vaadin/common-frontend` | `<vaadin-connection-indicator>`, created by the `Flow` constructor. Renders the loading bar with the three delays, and the reconnecting and offline messages. Exposed as `window.Vaadin.connectionIndicator`. |
+| `ConnectionStateStore`, `ConnectionState` | `flow-client/src/main/frontend/ConnectionState.ts` | The shared store at `window.Vaadin.connectionState`. Created on first import, starting as connected (always on localhost) or as connection lost when `navigator.onLine` is false. On a service worker message saying the server was unreachable, it switches to connection lost. |
+| `ConnectionIndicator` (element) | `flow-client/src/main/frontend/ConnectionIndicator.ts` | `<vaadin-connection-indicator>`, created when the module loads: through `@JsModule` on `UI`, and by the `Flow` constructor. Renders the loading bar with the three delays, and the reconnecting and offline messages. Exposed as `window.Vaadin.connectionIndicator`. |
 | `internal/client/ConnectionIndicator.ts` | `flow-client/src/main/frontend/` | The engine's access to the store and the element. Every call is a no-op when they are missing. |
 | `LoadingIndicatorStateHandler` | `internal/client/communication/` | Decides when a UIDL request announces loading. |
 | `LoadingIndicatorConfigurator` | same | Binds the `LOADING_INDICATOR_CONFIGURATION` node feature of the UI to the element properties. |
@@ -327,9 +327,13 @@ online again.
   for the whole request to show loading (#24230).
 - **Don't set the state to connected to end loading.** It would also end
   everyone else's loading. Use `loadingFinished()` or `loadingFailed()`.
-- **The store and the element are not in this repository.** Changes to the
-  counting or rendering go to `@vaadin/common-frontend`, then the version is
-  updated here and in the default `package.json` of `flow-server`.
+- **Others reach the store and the element through `window.Vaadin`**, not
+  through imports: Hilla and the engine read `window.Vaadin.connectionState`.
+  The modules create them only when they are not there yet, so loading a
+  module twice keeps the first instance.
+- **The element uses standard decorators** (`accessor` fields), so the
+  `flow-client` tsconfig must not enable `experimentalDecorators`, and the
+  test runner lowers them with an explicit esbuild target.
 - **The element's texts come from `ReconnectDialogConfiguration`**, applied in
   `DefaultConnectionStateHandler.configurationUpdated()`. The name is
   historical: there is no reconnect dialog any more, the indicator took its
@@ -339,7 +343,9 @@ online again.
 
 - Unit tests: `flow-client/src/test/frontend/internal/client/communication/`
   (`LoadingIndicatorStateHandlerTests.ts`, `ReconnectStateMachineTests.ts`,
-  `DefaultConnectionStateHandlerTests.ts` and others).
+  `DefaultConnectionStateHandlerTests.ts` and others), and
+  `ConnectionStateTests.ts` and `ConnectionIndicatorTests.ts` for the store
+  and the element.
 - Integration tests: `LoadingIndicatorIT` in `flow-tests/test-default`,
   `ConnectionIndicatorIT` and `LoadingIndicatorNavigationIT` in
   `flow-tests/test-ccdm-flow-navigation`.
