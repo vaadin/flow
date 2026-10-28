@@ -431,6 +431,8 @@ public interface DomListenerRegistration extends Registration {
      *
      * The above will automatically add event data expressions for
      * {@code event.button}, {@code event.clientX} and {@code event.clientY}.
+     * {@link DomEvent#getEventData(Class)} decodes the values of these
+     * expressions back into the nested structure of the class.
      * <p>
      * Each property path is evaluated as a JavaScript expression in the
      * browser, where {@code event} and {@code element} are the only local
@@ -567,7 +569,10 @@ public interface DomListenerRegistration extends Registration {
      *
      * This will add expressions for {@code event.detail.r},
      * {@code event.detail.g}, and {@code event.detail.b}, rather than sending
-     * the entire {@code event.detail} object.
+     * the entire {@code event.detail} object. Nested properties get nested
+     * paths, e.g. {@code event.detail.color.r} for a {@code color} property of
+     * type {@code RgbColor}, and {@link DomEvent#getEventDetail(Class)} decodes
+     * them back into the nested structure of the class.
      *
      * @param type
      *            the class whose properties should be captured from
