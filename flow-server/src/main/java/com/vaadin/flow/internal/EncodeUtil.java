@@ -126,7 +126,6 @@ public final class EncodeUtil {
      * @param value
      *            the string to escape, not <code>null</code>
      * @return the escaped string
-     * @since 25.4
      */
     public static String quotedStringEscape(String value) {
         StringBuilder sb = new StringBuilder(value.length());

@@ -214,9 +214,12 @@ public class DownloadEvent {
         StringBuilder value = new StringBuilder();
         value.append(type).append("; ");
         if (EncodeUtil.isPureUSASCII(fileName)) {
-            value.append("filename=\"")
-                    .append(EncodeUtil.quotedStringEscape(fileName))
-                    .append("\"");
+            String escaped = EncodeUtil.quotedStringEscape(fileName);
+            if (escaped.isBlank()) {
+                // nothing left after removing control characters
+                return type;
+            }
+            value.append("filename=\"").append(escaped).append("\"");
         } else {
             value
                     // fallback legacy support

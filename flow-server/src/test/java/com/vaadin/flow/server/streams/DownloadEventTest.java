@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
@@ -51,7 +52,8 @@ class DownloadEventTest {
     static Stream<Arguments> asciiFileNames() {
         return Stream.of(Arguments.of("test.txt", "test.txt"),
                 Arguments.of("a.pdf\"; filename*=UTF-8''b.exe",
-                        "a.pdf\\\"; filename*=UTF-8''b.exe"));
+                        "a.pdf\\\"; filename*=UTF-8''b.exe"),
+                Arguments.of("a\\b\r\n.txt", "a\\\\b.txt"));
     }
 
     @ParameterizedTest
@@ -85,11 +87,12 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition", "attachment");
     }
 
-    @Test
-    void setFileName_blankFileName_setsContentDispositionToResponse() {
+    @ParameterizedTest
+    @ValueSource(strings = { "   ", "\u0000\r\n" })
+    void setFileName_blankFileName_setsContentDispositionToResponse(
+            String fileName) {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        String fileName = "   ";
         downloadEvent.setFileName(fileName);
         verify(response).setHeader("Content-Disposition", "attachment");
     }
@@ -159,11 +162,13 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition", "inline");
     }
 
-    @Test
-    void inline_blankFileName_setsContentDispositionInlineToResponse() {
+    @ParameterizedTest
+    @ValueSource(strings = { "   ", "\u0000\r\n" })
+    void inline_blankFileName_setsContentDispositionInlineToResponse(
+            String fileName) {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
-        downloadEvent.inline("   ");
+        downloadEvent.inline(fileName);
         verify(response).setHeader("Content-Disposition", "inline");
     }
 
