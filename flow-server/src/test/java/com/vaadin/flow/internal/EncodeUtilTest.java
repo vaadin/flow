@@ -93,8 +93,8 @@ class EncodeUtilTest {
     }
 
     @Test
-    void quotedStringEscape_removesControlCharactersExceptTab() {
-        assertEquals("a\tb.txt",
+    void quotedStringEscape_removesControlCharacters() {
+        assertEquals("ab.txt",
                 EncodeUtil.quotedStringEscape("a\r\n\t\u0000b\u007F.txt"));
     }
 

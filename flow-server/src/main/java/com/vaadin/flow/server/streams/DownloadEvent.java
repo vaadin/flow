@@ -44,6 +44,7 @@ public class DownloadEvent {
 
     private static final String ATTACHMENT = "attachment";
     private static final String INLINE = "inline";
+    private static final String CONTENT_DISPOSITION = "Content-Disposition";
 
     private VaadinRequest request;
     private VaadinResponse response;
@@ -140,7 +141,8 @@ public class DownloadEvent {
      * To be called before the response is committed.
      * <p>
      * If the <code>fileName</code> is <code>null</code>, the
-     * Content-Disposition header won't be set.
+     * Content-Disposition header won't be set. Control characters, such as line
+     * breaks, are removed from the file name.
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
@@ -149,17 +151,9 @@ public class DownloadEvent {
      *            the name to be assigned to the file
      */
     public void setFileName(String fileName) {
-        if (fileName == null
-                || response.containsHeader("Content-Disposition")) {
-            return;
+        if (fileName != null) {
+            setContentDisposition(ATTACHMENT, fileName);
         }
-        if (fileName.isBlank()) {
-            response.setHeader("Content-Disposition", ATTACHMENT);
-        } else {
-            response.setHeader("Content-Disposition",
-                    buildContentDisposition(ATTACHMENT, fileName));
-        }
-        this.fileName = fileName;
     }
 
     /**
@@ -174,8 +168,8 @@ public class DownloadEvent {
      * @since 25.0
      */
     public void inline() {
-        if (!response.containsHeader("Content-Disposition")) {
-            response.setHeader("Content-Disposition", INLINE);
+        if (!response.containsHeader(CONTENT_DISPOSITION)) {
+            response.setHeader(CONTENT_DISPOSITION, INLINE);
         }
     }
 
@@ -187,7 +181,8 @@ public class DownloadEvent {
      * To be called before the response is committed.
      * <p>
      * If the <code>fileName</code> is <code>null</code> or blank, this behaves
-     * the same as calling {@link #inline()}.
+     * the same as calling {@link #inline()}. Control characters, such as line
+     * breaks, are removed from the file name.
      * <p>
      * If the Content-Disposition header has already been set, this method will
      * not override it.
@@ -197,29 +192,31 @@ public class DownloadEvent {
      * @since 25.0
      */
     public void inline(String fileName) {
-        if (response.containsHeader("Content-Disposition")) {
+        setContentDisposition(INLINE, fileName);
+    }
+
+    private void setContentDisposition(String type, String fileName) {
+        if (response.containsHeader(CONTENT_DISPOSITION)) {
             return;
         }
-        if (fileName == null || fileName.isBlank()) {
-            response.setHeader("Content-Disposition", INLINE);
-        } else {
-            response.setHeader("Content-Disposition",
-                    buildContentDisposition(INLINE, fileName));
-        }
-        this.fileName = fileName;
+        String cleanedFileName = fileName == null ? null
+                : EncodeUtil.removeControlCharacters(fileName);
+        response.setHeader(CONTENT_DISPOSITION,
+                buildContentDisposition(type, cleanedFileName));
+        this.fileName = cleanedFileName;
     }
 
     private static String buildContentDisposition(String type,
             String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            return type;
+        }
         StringBuilder value = new StringBuilder();
         value.append(type).append("; ");
         if (EncodeUtil.isPureUSASCII(fileName)) {
-            String escaped = EncodeUtil.quotedStringEscape(fileName);
-            if (escaped.isBlank()) {
-                // nothing left after removing control characters
-                return type;
-            }
-            value.append("filename=\"").append(escaped).append("\"");
+            value.append("filename=\"")
+                    .append(EncodeUtil.quotedStringEscape(fileName))
+                    .append("\"");
         } else {
             value
                     // fallback legacy support

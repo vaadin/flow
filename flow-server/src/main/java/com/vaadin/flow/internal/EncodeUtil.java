@@ -119,25 +119,43 @@ public final class EncodeUtil {
      * <code>quoted-string</code> as defined in RFC 9110, e.g. a
      * <code>filename</code> parameter of the <code>Content-Disposition</code>
      * HTTP header. Backslashes and double quotes are prefixed with a backslash.
-     * Control characters other than horizontal tab are not allowed in a
-     * quoted-string and are removed. The surrounding double quotes are not
-     * added.
+     * Control characters are removed, see
+     * {@link #removeControlCharacters(String)}. The surrounding double quotes
+     * are not added.
      *
      * @param value
      *            the string to escape, not <code>null</code>
      * @return the escaped string
      */
     public static String quotedStringEscape(String value) {
-        StringBuilder sb = new StringBuilder(value.length());
-        for (int i = 0; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (Character.isISOControl(c) && c != '\t') {
-                continue;
-            }
+        String cleaned = removeControlCharacters(value);
+        StringBuilder sb = new StringBuilder(cleaned.length());
+        for (int i = 0; i < cleaned.length(); i++) {
+            char c = cleaned.charAt(i);
             if (c == '"' || c == '\\') {
                 sb.append('\\');
             }
             sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Removes all ISO control characters, as defined by
+     * {@link Character#isISOControl(char)}, from the given string, e.g. CR, LF
+     * and tab.
+     *
+     * @param value
+     *            the string to clean, not <code>null</code>
+     * @return the string without control characters
+     */
+    public static String removeControlCharacters(String value) {
+        StringBuilder sb = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (!Character.isISOControl(c)) {
+                sb.append(c);
+            }
         }
         return sb.toString();
     }

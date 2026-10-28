@@ -30,6 +30,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -53,7 +54,7 @@ class DownloadEventTest {
         return Stream.of(Arguments.of("test.txt", "test.txt"),
                 Arguments.of("a.pdf\"; filename*=UTF-8''b.exe",
                         "a.pdf\\\"; filename*=UTF-8''b.exe"),
-                Arguments.of("a\\b\r\n.txt", "a\\\\b.txt"));
+                Arguments.of("a\\b\r\n\t.txt", "a\\\\b.txt"));
     }
 
     @ParameterizedTest
@@ -76,6 +77,17 @@ class DownloadEventTest {
         verify(response).setHeader("Content-Disposition", "attachment;"
                 + " filename=\"" + EncodeUtil.rfc2047Encode(fileName) + "\";"
                 + " filename*=UTF-8''" + EncodeUtil.rfc5987Encode(fileName));
+    }
+
+    @Test
+    void setFileName_nonAsciiFileNameWithControlCharacters_controlCharactersRemoved() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("ä\r\n\u0085.txt");
+        verify(response).setHeader("Content-Disposition", "attachment;"
+                + " filename=\"" + EncodeUtil.rfc2047Encode("ä.txt") + "\";"
+                + " filename*=UTF-8''" + EncodeUtil.rfc5987Encode("ä.txt"));
+        assertEquals("ä.txt", downloadEvent.getFileName());
     }
 
     @Test
