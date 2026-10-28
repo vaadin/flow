@@ -153,9 +153,10 @@ public final class JsFunction implements JsSnippet {
      *            the call of a method that returns a function, not
      *            <code>null</code>
      * @return a new {@code JsFunction} instance
-     * @throws IllegalArgumentException
-     *             if any argument of the call has a type that cannot be sent to
-     *             the client
+     * @throws RuntimeException
+     *             if any argument of the call cannot be encoded to be sent to
+     *             the client, as {@link #of(String, Object...)} throws for a
+     *             capture
      */
     public static JsFunction ofDeclaredCall(JsCall call) {
         Objects.requireNonNull(call, "call");

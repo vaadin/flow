@@ -27,18 +27,55 @@ import com.vaadin.flow.dom.Element;
  * <p>
  * A snippet is not bound to an element, which is why the implementation comes
  * from here rather than from {@link Element#executeJs(Class)}. It holds no
- * state, so one implementation can be kept in a constant and shared:
+ * state, so one implementation can be kept in a constant and shared.
+ * <p>
+ * A snippet declares a function that a call of another definition then gets as
+ * an argument:
  *
  * <pre>
+ * &#64;JsDefinition
+ * public interface LoggerJs extends Serializable {
+ *
+ *     &#64;JsExpression("console.log($0, value);")
+ *     &#64;JsCalledWith("value")
+ *     JsFunction createLogger(String prefix);
+ * }
+ *
+ * &#64;JsDefinition
+ * public interface ClickJs extends Serializable {
+ *
+ *     &#64;JsExpression("this.addEventListener('click', () =&gt; $0('clicked'));")
+ *     void onClick(JsFunction handler);
+ * }
+ *
  * static final LoggerJs LOGGER = JsSnippets.of(LoggerJs.class);
  *
  * button.getElement().executeJs(ClickJs.class)
  *         .onClick(LOGGER.createLogger("Button:"));
  * </pre>
  *
- * Here <code>ClickJs</code> is a definition whose <code>onClick</code> method
- * runs JavaScript that takes a {@link com.vaadin.flow.dom.JsFunction
- * JsFunction} argument, as shown for {@link JsCalledWith}.
+ * The build collects both declarations into the bundle, roughly as:
+ *
+ * <pre>
+ * // LoggerJs.createLogger: a snippet, evaluated with the captured arguments
+ * jsSnippets["&lt;id&gt;"] = function ($0) {
+ *     return function (value) {
+ *         console.log($0, value);
+ *     };
+ * };
+ * // ClickJs.onClick: a call, run on the element it was obtained from
+ * jsDefinitions["&lt;id&gt;"] = async function ($0) {
+ *     this.addEventListener('click', () =&gt; $0('clicked'));
+ * };
+ * </pre>
+ *
+ * The server sends the browser only the two identifiers and the argument
+ * <code>"Button:"</code>. The client calls the snippet function with
+ * <code>"Button:"</code> to get the logger, and runs <code>onClick</code> on
+ * the button with that logger as <code>$0</code>, so a click logs
+ * <code>Button: clicked</code>. Nothing is compiled from a string, which is
+ * what keeps this working under a content security policy that does not allow
+ * <code>unsafe-eval</code>.
  *
  * @see JsSnippet
  * @see JsCalledWith
