@@ -99,6 +99,12 @@ class EncodeUtilTest {
     }
 
     @Test
+    void removeControlCharacters_removesC0AndC1ControlCharacters() {
+        assertEquals("äb.txt", EncodeUtil
+                .removeControlCharacters("ä\r\n\t\u0000\u007F\u0085b.txt"));
+    }
+
+    @Test
     void isPureUSASCII_withAsciiOnly_returnTrue() {
         String input = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$&'*+-.^_`|~ ?=\"";
         assertTrue(EncodeUtil.isPureUSASCII(input));
