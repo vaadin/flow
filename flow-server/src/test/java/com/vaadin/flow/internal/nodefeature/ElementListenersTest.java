@@ -786,9 +786,13 @@ public class ElementListenersTest
 
         Element element = new Element("div");
         AtomicReference<MouseEventData> captured = new AtomicReference<>();
-        element.addEventListener("click",
-                e -> captured.set(e.getEventData(MouseEventData.class)))
-                .addEventData(MouseEventData.class);
+        AtomicReference<MouseEventData> capturedWithTypeReference = new AtomicReference<>();
+        element.addEventListener("click", e -> {
+            captured.set(e.getEventData(MouseEventData.class));
+            capturedWithTypeReference
+                    .set(e.getEventData(new TypeReference<MouseEventData>() {
+                    }));
+        }).addEventData(MouseEventData.class);
 
         // The client sends one flat key per expression
         ObjectNode eventData = JacksonUtils.createObjectNode();
@@ -802,6 +806,7 @@ public class ElementListenersTest
 
         assertEquals(new MouseEventData(new EventDetails(1, 68, 159), "click"),
                 captured.get());
+        assertEquals(captured.get(), capturedWithTypeReference.get());
     }
 
     @Test
@@ -814,6 +819,10 @@ public class ElementListenersTest
         eventData.put("event.button", 2);
         eventData.put("event.clientX", 68);
         eventData.put("event.preventDefault()", (String) null);
+        // Keys with empty segments are not property paths
+        eventData.put("event.", "a");
+        eventData.put("event..x", "b");
+        eventData.put("event.other.", "c");
         DomEvent event = new DomEvent(new Element("div"), "click", eventData);
 
         assertEquals(new FlatMouseEventData(2, 68),
@@ -823,14 +832,21 @@ public class ElementListenersTest
         JsonNode nested = event.getEventData(EventNode.class).event();
         assertEquals(2, nested.get("button").asInt());
         assertFalse(nested.has("preventDefault()"));
-        // Maps get only the flat keys, so scalar value types keep working
+        assertFalse(nested.has(""));
+        assertFalse(nested.has("x"));
+        assertFalse(nested.has("other"));
+        // Maps and JSON nodes get only the flat keys, so scalar value types
+        // keep working
+        Set<String> flatKeys = Set.of("event.button", "event.clientX",
+                "event.preventDefault()", "event.", "event..x", "event.other.");
         Map<String, String> data = event
                 .getEventData(new TypeReference<Map<String, String>>() {
                 });
-        assertEquals(Set.of("event.button", "event.clientX",
-                "event.preventDefault()"), data.keySet());
+        assertEquals(flatKeys, data.keySet());
+        assertEquals(flatKeys, Set.copyOf(
+                JacksonUtils.getKeys(event.getEventData(JsonNode.class))));
         // The original event data is not modified
-        assertEquals(3, eventData.size());
+        assertEquals(6, eventData.size());
     }
 
     @Test
