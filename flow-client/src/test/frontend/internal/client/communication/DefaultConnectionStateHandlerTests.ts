@@ -245,6 +245,9 @@ describe('DefaultConnectionStateHandler', () => {
     // The heartbeat succeeded, and further failed reopens add nothing to it.
     handler.pushReconnectPending(websocket as PushConnection);
     expect(registry.log.heartbeatSends).to.equal(1);
+    // Messages to the server go over XHR, so no request failed with the
+    // websocket.
+    expect(registry.log.requests).to.deep.equal([]);
 
     // While reconnecting, the reconnect logic already sends heartbeats.
     handler.pushOk(websocket as PushConnection);
