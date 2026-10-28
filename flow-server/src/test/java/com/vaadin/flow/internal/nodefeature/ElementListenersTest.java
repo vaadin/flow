@@ -782,9 +782,9 @@ public class ElementListenersTest
 
     @Test
     void testAddEventDataWithRecordAndGetEventData() {
-        record EventDetails(int button, int clientX, int clientY) {
+        record EventDetails(String type, int button, int clientX, int clientY) {
         }
-        record MouseEventData(EventDetails event, String type) {
+        record MouseEventData(EventDetails event) {
         }
 
         Element element = new Element("div");
@@ -802,12 +802,12 @@ public class ElementListenersTest
         eventData.put("event.button", 1);
         eventData.put("event.clientX", 68);
         eventData.put("event.clientY", 159);
-        eventData.put("type", "click");
+        eventData.put("event.type", "click");
 
         element.getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(element, "click", eventData));
 
-        assertEquals(new MouseEventData(new EventDetails(1, 68, 159), "click"),
+        assertEquals(new MouseEventData(new EventDetails("click", 1, 68, 159)),
                 captured.get());
         assertEquals(captured.get(), capturedWithTypeReference.get());
     }
