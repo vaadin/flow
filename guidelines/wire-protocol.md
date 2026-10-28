@@ -248,6 +248,14 @@ travels as a single-key wrapper object whose key is reserved:
   manifested on the client as a real function with its captures pre-bound.
   This is how `Element.addJsInitializer` ships a user expression as a
   parameter of a fixed framework expression.
+- `{"@v-fn": {"id": …, "captures": […]}}` — a `JsFunction` declared as a
+  `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
+  `window.Vaadin.Flow.jsSnippets` and calls that function with the
+  captures; what it returns is the decoded value, so nothing is compiled
+  from a string. The registry is separate from `jsDefinitions` because a
+  snippet function is not `async`: whatever it is passed to may need its
+  value synchronously. A missing id decodes to a function that throws
+  when it is called, so the failure reaches the invocation that calls it.
 
 `ClientJsonCodec.decodeWithTypeInfo` decodes these **recursively through
 objects and arrays**. The whole `@v-` prefix is consequently reserved on

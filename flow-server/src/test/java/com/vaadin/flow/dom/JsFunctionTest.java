@@ -15,15 +15,44 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JsFunctionTest {
+
+    @JsDefinition
+    interface LoggerJs extends Serializable {
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+    }
 
     @Test
     void withArguments_alreadySet_throws() {
         JsFunction fn = JsFunction.of("return a;").withArguments("a");
         assertThrows(IllegalStateException.class, () -> fn.withArguments("b"));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    void declaredFunction_hasNoBodyAndTakesNoFurtherArguments() {
+        JsFunction fn = JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
+
+        assertThrows(IllegalStateException.class, fn::getBody,
+                "the JavaScript is in the bundle rather than in the function");
+        assertThrows(IllegalStateException.class,
+                () -> fn.withArguments("other"),
+                "the arguments are part of the JavaScript in the bundle");
+        assertEquals(List.of("value"), fn.getArgumentNames());
     }
 }

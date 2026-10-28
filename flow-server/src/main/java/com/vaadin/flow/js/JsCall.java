@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.jspecify.annotations.Nullable;
 
@@ -60,6 +62,33 @@ import com.vaadin.flow.internal.StringUtil;
  */
 public record JsCall(Class<?> definitionType, String methodName,
         List<Object> arguments) implements Serializable {
+
+    /**
+     * What a JavaScript identifier is made of. Unicode escapes, which an
+     * identifier may also contain, are left out: nothing written in Java needs
+     * them.
+     */
+    private static final Pattern IDENTIFIER = Pattern.compile(
+            "[\\p{L}\\p{Nl}_$][\\p{L}\\p{Nl}\\p{Mn}\\p{Mc}\\p{Nd}\\p{Pc}$]*");
+
+    /**
+     * What a captured argument is named in the generated function, which a
+     * parameter of the inner function would hide.
+     */
+    private static final Pattern CAPTURE_NAME = Pattern.compile("\\$\\d+");
+
+    /**
+     * The words that can not name a parameter of a function in a module, which
+     * is what the generated file is, as it runs in strict mode.
+     */
+    private static final Set<String> RESERVED_WORDS = Set.of("arguments",
+            "await", "break", "case", "catch", "class", "const", "continue",
+            "debugger", "default", "delete", "do", "else", "enum", "eval",
+            "export", "extends", "false", "finally", "for", "function", "if",
+            "implements", "import", "in", "instanceof", "interface", "let",
+            "new", "null", "package", "private", "protected", "public",
+            "return", "static", "super", "switch", "this", "throw", "true",
+            "try", "typeof", "var", "void", "while", "with", "yield");
 
     /**
      * The methods of each JavaScript definition, each with the identifier of
@@ -127,6 +156,95 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
+     * Gets the identifier of the function that the given method of a JavaScript
+     * definition declares.
+     * <p>
+     * For a method that runs its JavaScript when it is called, this is
+     * {@link #functionId(String, int, boolean)}. For a method that returns a
+     * {@link JsSnippet}, the generated function is not run by the call but
+     * evaluated later by what the snippet is passed to, and it is generated
+     * differently: it is not <code>async</code>, and it may wrap the expression
+     * in a function taking the {@link JsCalledWith} parameters. What sets it
+     * apart is hashed with the JavaScript, so a snippet and a call that declare
+     * the same JavaScript are different functions, and so are two snippets
+     * called with different parameters.
+     *
+     * @param method
+     *            a method annotated with {@link JsExpression}, not
+     *            <code>null</code>
+     * @return the function identifier, not <code>null</code>
+     * @throws IllegalArgumentException
+     *             if the method is not annotated with {@link JsExpression}, or
+     *             declares parameter names that can not be generated
+     */
+    public static String functionId(Method method) {
+        JsExpression annotation = method.getAnnotation(JsExpression.class);
+        if (annotation == null) {
+            throw new IllegalArgumentException("Method " + method.getName()
+                    + " of " + method.getDeclaringClass().getName()
+                    + " is not annotated with @JsExpression");
+        }
+        String expression = annotation.value();
+        int parameterCount = method.getParameterCount();
+        boolean variadic = method.isVarArgs();
+        if (!JsSnippet.class.isAssignableFrom(method.getReturnType())) {
+            return functionId(expression, parameterCount, variadic);
+        }
+        List<String> calledWith = getCalledWithNames(method);
+        // A call is hashed from what starts with the parameter count, so a
+        // snippet starting with anything else never shares its hash input
+        String kind = (calledWith == null ? ""
+                : "(" + String.join(",", calledWith) + ")") + "=>";
+        return StringUtil.getHash(kind + parameterCount + (variadic ? "*" : "")
+                + ":" + expression, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Gets the names of the parameters that the function a snippet evaluates to
+     * is called with, as declared by {@link JsCalledWith} on the given method.
+     * <p>
+     * The names become parameters of the generated function, so each of them is
+     * checked to be one that a function in a JavaScript module can declare and
+     * that does not hide one of the captured arguments.
+     *
+     * @param method
+     *            a method of a JavaScript definition, not <code>null</code>
+     * @return the parameter names in the order they are passed, or
+     *         <code>null</code> when the method declares none and no function
+     *         is wrapped around the expression
+     * @throws IllegalArgumentException
+     *             if a name is not a JavaScript identifier, is a reserved word,
+     *             names a captured argument or is declared twice
+     */
+    public static @Nullable List<String> getCalledWithNames(Method method) {
+        JsCalledWith annotation = method.getAnnotation(JsCalledWith.class);
+        if (annotation == null) {
+            return null;
+        }
+        List<String> names = List.of(annotation.value());
+        for (String name : names) {
+            if (!IDENTIFIER.matcher(name).matches()
+                    || RESERVED_WORDS.contains(name)
+                    || CAPTURE_NAME.matcher(name).matches()) {
+                throw new IllegalArgumentException("Method " + method.getName()
+                        + " of " + method.getDeclaringClass().getName()
+                        + " declares '" + name
+                        + "' in @JsCalledWith, which can not name a parameter."
+                        + " Use a JavaScript identifier that is not a reserved"
+                        + " word and not $0, $1, ..., which name the captured"
+                        + " arguments");
+            }
+        }
+        if (Set.copyOf(names).size() != names.size()) {
+            throw new IllegalArgumentException("Method " + method.getName()
+                    + " of " + method.getDeclaringClass().getName()
+                    + " declares a name more than once in @JsCalledWith: "
+                    + names);
+        }
+        return names;
+    }
+
+    /**
      * Gets the identifier of the function that runs this call, which is what
      * the client looks the JavaScript up in the bundle by.
      *
@@ -138,6 +256,18 @@ public record JsCall(Class<?> definitionType, String methodName,
             throw notDeclaredException();
         }
         return functionId;
+    }
+
+    /**
+     * Gets the names of the parameters that the function a snippet call
+     * declares is called with.
+     *
+     * @return the parameter names, or <code>null</code> when the called method
+     *         declares none
+     * @see #getCalledWithNames(Method)
+     */
+    public @Nullable List<String> getCalledWithNames() {
+        return getCalledWithNames(resolveMethod().method());
     }
 
     /**
@@ -300,12 +430,10 @@ public record JsCall(Class<?> definitionType, String methodName,
             Class<?> definitionType) {
         List<DeclaredMethod> declared = new ArrayList<>();
         for (Method method : definitionType.getMethods()) {
-            JsExpression annotation = method.getAnnotation(JsExpression.class);
             declared.add(new DeclaredMethod(method,
-                    annotation == null ? null
-                            : functionId(annotation.value(),
-                                    method.getParameterCount(),
-                                    method.isVarArgs())));
+                    method.isAnnotationPresent(JsExpression.class)
+                            ? functionId(method)
+                            : null));
         }
         return List.copyOf(declared);
     }

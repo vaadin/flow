@@ -22,6 +22,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.JsFunction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -70,6 +71,30 @@ class JsDefinitionProxyTest {
         static String name() {
             return "HelpingJs";
         }
+    }
+
+    @JsDefinition
+    interface LoggerJs extends Serializable {
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression("return (value) => console.log($0, value);")
+        JsSnippet createSnippet(String prefix);
+    }
+
+    @JsDefinition
+    interface CalledWithInvalidNameJs extends Serializable {
+        @JsExpression("console.log(value);")
+        @JsCalledWith("not-a-name")
+        JsFunction createLogger();
+    }
+
+    @JsDefinition
+    interface CalledWithWhenRunJs extends Serializable {
+        @JsExpression("console.log(value);")
+        @JsCalledWith("value")
+        void log();
     }
 
     private final List<JsCall> calls = new ArrayList<>();
@@ -150,5 +175,67 @@ class JsDefinitionProxyTest {
                 () -> proxy(ComposingJs.class)).getMessage().contains("twice"));
         assertTrue(assertThrows(IllegalArgumentException.class,
                 () -> proxy(HelpingJs.class)).getMessage().contains("name"));
+    }
+
+    @Test
+    void createSnippets_callOfADeclaredMethod_answersWithTheFunctionItDeclares() {
+        LoggerJs logger = JsDefinitionProxy.createSnippets(LoggerJs.class);
+
+        JsFunction function = logger.createLogger("Greeting:");
+
+        assertEquals(
+                new JsCall(LoggerJs.class, "createLogger",
+                        List.of("Greeting:")),
+                function.getDeclaredCall(),
+                "the function should name what declared it, for the client to look it up by");
+        assertEquals(List.of("Greeting:"), function.getCaptures());
+        assertEquals(
+                new JsCall(LoggerJs.class, "createSnippet", List.of("Unit")),
+                ((JsFunction) logger.createSnippet("Unit")).getDeclaredCall(),
+                "a method returning any snippet should answer with a function");
+        assertNotNull(logger.toString(),
+                "the implementation should answer the methods of Object");
+    }
+
+    @Test
+    void createSnippets_methodRunningJavaScript_throws() {
+        // Nothing to run it on, since a snippet is not bound to an element
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.createSnippets(GreeterJs.class));
+
+        assertTrue(exception.getMessage().contains("showGreeting"),
+                "the message should name the method: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void createSnippets_calledWithANameAFunctionCanNotDeclare_throws() {
+        // When the implementation is handed out, rather than when the snippet
+        // is evaluated and the browser reports a syntax error
+        assertThrows(IllegalArgumentException.class, () -> JsDefinitionProxy
+                .createSnippets(CalledWithInvalidNameJs.class));
+    }
+
+    @Test
+    void create_methodReturningASnippet_throws() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class, () -> proxy(LoggerJs.class));
+
+        assertTrue(exception.getMessage().contains("JsSnippets.of"),
+                "the message should say where a snippet is obtained from: "
+                        + exception.getMessage());
+    }
+
+    @Test
+    void create_calledWithOnAMethodRunningJavaScript_throws() {
+        // A call runs the expression rather than a function around it, so the
+        // names would never be declared
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> proxy(CalledWithWhenRunJs.class));
+
+        assertTrue(exception.getMessage().contains("@JsCalledWith"),
+                exception.getMessage());
     }
 }

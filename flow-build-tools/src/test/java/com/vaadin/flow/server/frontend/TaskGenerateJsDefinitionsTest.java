@@ -28,8 +28,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -52,6 +54,12 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String SHOUT_EXPRESSION = "window.alert([$0, ...$1].join(' '))";
 
+    private static final String LOG_EXPRESSION = "console.log($0, value);";
+
+    private static final String FORMAT_EXPRESSION = "return (point) => point.y + $0;";
+
+    private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
+
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
 
     @JsDefinition
@@ -61,6 +69,16 @@ class TaskGenerateJsDefinitionsTest {
 
         @JsExpression("window.alert('Hello')")
         void showGreeting();
+    }
+
+    @JsDefinition
+    public interface LoggerJs extends Serializable {
+        @JsExpression(LOG_EXPRESSION)
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression(FORMAT_EXPRESSION)
+        JsFunction createFormatter(String unit);
     }
 
     @JsDefinition
@@ -136,6 +154,39 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @Test
+    void snippetMethod_registersASynchronousFunctionOfTheCaptures()
+            throws NoSuchMethodException {
+        String content = TaskGenerateJsDefinitions
+                .renderFileContent(List.of(LoggerJs.class), false);
+        String separator = System.lineSeparator();
+
+        assertTrue(content.contains(SNIPPETS_REGISTRY),
+                "the registry a snippet is assigned into has to be there, or the module throws: "
+                        + content);
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(LoggerJs.class.getMethod(
+                                        "createLogger", String.class))
+                                + "\"] = function ($0) {",
+                        "  return function (value) {", LOG_EXPRESSION, "  };",
+                        "};")),
+                "the expression should be the body of a function of the declared parameters, returned by one of the captures: "
+                        + content);
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\""
+                                + JsCall.functionId(LoggerJs.class.getMethod(
+                                        "createFormatter", String.class))
+                                + "\"] = function ($0) {",
+                        FORMAT_EXPRESSION, "};")),
+                "without declared parameters the expression should return the value itself: "
+                        + content);
+        assertFalse(content.contains("jsDefinitions[\""),
+                "a snippet is not run by a call: " + content);
+    }
+
+    @Test
     void generatedFile_developmentMode_namesWhatDeclaredTheJavaScript()
             throws ExecutionFailedException {
         // Which is what a message about a call says instead of a hash, and is
@@ -185,6 +236,31 @@ class TaskGenerateJsDefinitionsTest {
                 written.contains(
                         JsCall.functionId(GREETING_EXPRESSION, 1, false)),
                 "and what the file held should still be in it: " + written);
+    }
+
+    @Test
+    void updateJsDefinitions_snippetIntoAFileWithoutTheirRegistry_addsIt()
+            throws IOException {
+        // A file that a build wrote before snippets were generated at all
+        File generated = new File(
+                FrontendUtils.getFrontendGeneratedFolder(frontendFolder),
+                FrontendUtils.JS_DEFINITIONS_FILE_NAME);
+        generated.getParentFile().mkdirs();
+        Files.writeString(generated.toPath(), TaskGenerateJsDefinitions
+                .renderFileContent(List.of(GreeterJs.class), true)
+                .replace(SNIPPETS_REGISTRY + System.lineSeparator(), ""));
+
+        TaskGenerateJsDefinitions.updateJsDefinitions(options,
+                List.of(LoggerJs.class));
+
+        String written = Files.readString(generated.toPath());
+        assertTrue(written.contains(SNIPPETS_REGISTRY),
+                "the registry should be added to a file that has none: "
+                        + written);
+        assertTrue(
+                written.indexOf(SNIPPETS_REGISTRY) < written
+                        .indexOf("window.Vaadin.Flow.jsSnippets[\""),
+                "and it should come before the snippets it holds: " + written);
     }
 
     @Test

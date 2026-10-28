@@ -15,14 +15,27 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.js.JsCalledWith;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.JsFunctionView", layout = ViewTestLayout.class)
 public class JsFunctionView extends AbstractDivView {
+
+    @JsDefinition
+    public interface GreeterJs extends Serializable {
+        @JsExpression("this.textContent = $0 + ' ' + name;")
+        @JsCalledWith("name")
+        JsFunction createGreeter(String greeting);
+    }
 
     @Override
     protected void onShow() {
@@ -70,8 +83,18 @@ public class JsFunctionView extends AbstractDivView {
                             setOwnText);
                 });
 
+        Div declaredResult = new Div();
+        declaredResult.setId("declaredResult");
+        NativeButton declaredButton = createButton("Run declared function",
+                "declaredButton", e -> {
+                    JsFunction greeter = JsSnippets.of(GreeterJs.class)
+                            .createGreeter("Hello");
+                    declaredResult.getElement()
+                            .executeJs("$0.call(this, 'World');", greeter);
+                });
+
         add(captureButton, argsButton, elementCaptureButton, thisRespectButton,
-                captureResult, argsResult, elementCaptureResult,
-                thisRespectResult);
+                declaredButton, captureResult, argsResult, elementCaptureResult,
+                thisRespectResult, declaredResult);
     }
 }

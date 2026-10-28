@@ -16,17 +16,25 @@
 package com.vaadin.flow.js;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.dom.JsFunction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -82,6 +90,44 @@ class JsCallTest {
         public void count(int... values) {
             greetings.add(Arrays.toString(values));
         }
+    }
+
+    interface LoggerJs extends Serializable {
+        @JsExpression("console.log($0, value)")
+        void log(String prefix);
+
+        @JsExpression("console.log($0, value)")
+        JsFunction createUnwrapped(String prefix);
+
+        @JsExpression("console.log($0, value)")
+        @JsCalledWith({})
+        JsFunction createWithoutParameters(String prefix);
+
+        @JsExpression("console.log($0, value)")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression("console.log($0, value)")
+        @JsCalledWith("other")
+        JsFunction createOtherLogger(String prefix);
+    }
+
+    interface InvalidNamesJs extends Serializable {
+        @JsExpression("value")
+        @JsCalledWith("not-a-name")
+        JsFunction notAnIdentifier();
+
+        @JsExpression("value")
+        @JsCalledWith("class")
+        JsFunction reservedWord();
+
+        @JsExpression("value")
+        @JsCalledWith("$0")
+        JsFunction captureName(String value);
+
+        @JsExpression("value")
+        @JsCalledWith({ "value", "value" })
+        JsFunction duplicate();
     }
 
     private static JsCall call(String methodName, Object... arguments) {
@@ -212,5 +258,47 @@ class JsCallTest {
         // collects the trailing arguments in only one of them
         assertNotEquals(JsCall.functionId("this.run($0)", 1, true),
                 JsCall.functionId("this.run($0)", 1, false));
+    }
+
+    @Test
+    void functionId_snippetGeneratedDifferentlyFromTheSameJavaScript_isAnotherFunction() {
+        // A call runs an async function, a snippet a synchronous one, which
+        // wraps the expression in a function taking the declared parameters
+        // when there are any: each of them is generated differently, so none
+        // of them may be registered under the identifier of another
+        Set<String> ids = Stream.of(LoggerJs.class.getMethods())
+                .map(JsCall::functionId).collect(Collectors.toSet());
+
+        assertEquals(LoggerJs.class.getMethods().length, ids.size(),
+                "every way of generating the same JavaScript should have an identifier of its own");
+    }
+
+    @Test
+    void getCalledWithNames_answersWhatTheMethodDeclares() throws Exception {
+        assertEquals(List.of("value"), JsCall.getCalledWithNames(
+                LoggerJs.class.getMethod("createLogger", String.class)));
+        assertNull(
+                JsCall.getCalledWithNames(LoggerJs.class
+                        .getMethod("createUnwrapped", String.class)),
+                "a method without the annotation wraps no function around its expression");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = { "notAnIdentifier", "reservedWord", "captureName",
+            "duplicate" })
+    void getCalledWithNames_nameAFunctionCanNotDeclare_throws(
+            String methodName) {
+        // The names go into the generated module, where one of these is a
+        // syntax error that would break every function in it
+        Method method = Stream.of(InvalidNamesJs.class.getMethods())
+                .filter(candidate -> candidate.getName().equals(methodName))
+                .findFirst().orElseThrow();
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsCall.getCalledWithNames(method));
+        assertTrue(exception.getMessage().contains(methodName),
+                "the message should name the method: "
+                        + exception.getMessage());
     }
 }

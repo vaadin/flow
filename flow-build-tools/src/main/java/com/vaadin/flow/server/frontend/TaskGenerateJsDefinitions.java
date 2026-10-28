@@ -35,6 +35,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
@@ -43,7 +44,9 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
 /**
  * Generates {@link FrontendUtils#JS_DEFINITIONS_FILE_NAME}, which registers the
  * JavaScript of every {@link JsDefinition} interface on the class path as an
- * ordinary function of the bundle.
+ * ordinary function of the bundle: in one registry for the methods that run
+ * their JavaScript when called, and in another for the methods that declare a
+ * {@link JsSnippet}, which the client evaluates when it decodes the snippet.
  * <p>
  * This is what lets the client run a server-initiated call without compiling
  * anything from a string: the server sends the identifier of the function to
@@ -62,10 +65,16 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  */
 public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
+    // Snippets are evaluated by what they are passed to, which may need their
+    // value during an event dispatch, so they are kept apart from the async
+    // functions a call runs
+    private static final String SNIPPETS = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
+
     private static final List<String> HEADER = List.of("// @ts-nocheck",
             "window.Vaadin = window.Vaadin || {};",
             "window.Vaadin.Flow = window.Vaadin.Flow || {};",
-            "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};");
+            "window.Vaadin.Flow.jsDefinitions = window.Vaadin.Flow.jsDefinitions || {};",
+            SNIPPETS);
 
     // What a message about a call names it by, which is of no use to a browser
     // running the application and is left out of a production bundle
@@ -238,6 +247,11 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
         String separator = System.lineSeparator();
         String footer = String.join(separator, FOOTER);
         List<String> added = new ArrayList<>();
+        if (!generated.contains(SNIPPETS)) {
+            // Written before snippets were generated, and a snippet is
+            // assigned into a registry that has to be there
+            added.add(SNIPPETS);
+        }
         if (!generated.contains(NAMES)) {
             // Written before names were registered at all, and a name is
             // assigned into an object that has to be there
@@ -325,32 +339,57 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 methods.add(method);
             }
         }
-        methods.sort(
-                Comparator.comparing(TaskGenerateJsDefinitions::functionId));
+        methods.sort(Comparator.comparing(JsCall::functionId));
 
         List<String> functions = new ArrayList<>();
         for (Method method : methods) {
+            String functionId = quote(JsCall.functionId(method));
             // The parameters of the generated function are the arguments of the
-            // call, referenced as $0, $1, ... by the declared expression, and
-            // the element the definition was obtained from is its `this` - the
-            // same contract as an executeJs expression has. The last parameter
-            // of a variadic method collects the arguments that follow the
-            // fixed ones into an array, as it does in Java.
+            // call, referenced as $0, $1, ... by the declared expression. The
+            // last parameter of a variadic method collects the arguments that
+            // follow the fixed ones into an array, as it does in Java.
             String parameters = IntStream.range(0, method.getParameterCount())
                     .mapToObj(index -> isRestParameter(method, index)
                             ? "...$" + index
                             : "$" + index)
                     .reduce((first, second) -> first + ", " + second)
                     .orElse("");
-            List<String> function = new ArrayList<>(List.of(String.format(
-                    "window.Vaadin.Flow.jsDefinitions[%s] = async function (%s) {",
-                    quote(functionId(method)), parameters),
-                    method.getAnnotation(JsExpression.class).value(), "};"));
+            String expression = method.getAnnotation(JsExpression.class)
+                    .value();
+            List<String> function = new ArrayList<>();
+            if (JsSnippet.class.isAssignableFrom(method.getReturnType())) {
+                // A snippet is evaluated by what it is passed to, which may
+                // need
+                // the value right away, so its function is not async. Its
+                // arguments are captured, and the parameters it is called with
+                // are those of a function around the expression, whose `this`
+                // is whatever the invoker calls it with.
+                function.add(String.format(
+                        "window.Vaadin.Flow.jsSnippets[%s] = function (%s) {",
+                        functionId, parameters));
+                List<String> calledWith = JsCall.getCalledWithNames(method);
+                if (calledWith == null) {
+                    function.add(expression);
+                } else {
+                    function.add(String.format("  return function (%s) {",
+                            String.join(", ", calledWith)));
+                    function.add(expression);
+                    function.add("  };");
+                }
+                function.add("};");
+            } else {
+                // The element the definition was obtained from is the `this`
+                // of a call - the same contract as an executeJs expression has
+                function.add(String.format(
+                        "window.Vaadin.Flow.jsDefinitions[%s] = async function (%s) {",
+                        functionId, parameters));
+                function.add(expression);
+                function.add("};");
+            }
             if (withNames) {
                 function.add(String.format(
                         "window.Vaadin.Flow.jsDefinitionNames[%s] = %s;",
-                        quote(functionId(method)),
-                        quote(nameOf(definition, method))));
+                        functionId, quote(nameOf(definition, method))));
             }
             functions.add(String.join(System.lineSeparator(), function));
         }
@@ -368,12 +407,6 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
 
     private static boolean isRestParameter(Method method, int index) {
         return method.isVarArgs() && index == method.getParameterCount() - 1;
-    }
-
-    private static String functionId(Method method) {
-        return JsCall.functionId(
-                method.getAnnotation(JsExpression.class).value(),
-                method.getParameterCount(), method.isVarArgs());
     }
 
     private static String quote(String value) {

@@ -145,16 +145,70 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
   return jsonArray.map((value) => decodeWithTypeInfo(tree, value));
 }
 
-function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, originalJson: string): unknown {
-  const body = fnObject.body;
-  if (typeof body !== 'string') {
-    throw new Error(`@v-fn 'body' must be a string in ${originalJson}`);
+/**
+ * What the generated bundle registers for declared snippets: a function per
+ * declared expression, called with the captures to get the value of the
+ * snippet, and, outside production, what a developer wrote for each of them.
+ */
+function getDeclaredSnippets(): {
+  jsSnippets?: Record<string, JsFunction>;
+  jsDefinitionNames?: Record<string, string>;
+} {
+  return (
+    (
+      window as unknown as {
+        Vaadin?: { Flow?: { jsSnippets?: Record<string, JsFunction>; jsDefinitionNames?: Record<string, string> } };
+      }
+    ).Vaadin?.Flow ?? {}
+  );
+}
+
+/**
+ * Evaluates a snippet declared by a JavaScript definition: the bundle has a
+ * function for it, which takes the captures and returns the value, so nothing
+ * is compiled from a string. Each decode evaluates it again, so every
+ * invocation that is passed the snippet gets a value of its own.
+ *
+ * A function missing from the bundle is reported when the value is called
+ * rather than when it is decoded, so the error reaches the invocation that
+ * calls it and through that its error channel, instead of failing the decoding
+ * of everything else the invocation is sent with.
+ */
+function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
+  const declared = getDeclaredSnippets();
+  const snippet = declared.jsSnippets?.[functionId];
+  if (snippet === undefined) {
+    const name = declared.jsDefinitionNames?.[functionId] ?? functionId;
+    return () => {
+      throw new Error(
+        `No JavaScript in the bundle for ${name}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`
+      );
+    };
   }
+  return snippet(...captures);
+}
+
+function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, originalJson: string): unknown {
   const capturesValue = fnObject.captures;
   if (!Array.isArray(capturesValue)) {
     throw new Error(`@v-fn 'captures' must be an array in ${originalJson}`);
   }
   const captures = capturesValue.map((capture) => decodeWithTypeInfo(tree, capture));
+
+  // A function declared by a JavaScript definition is named by the identifier
+  // of its function in the bundle instead of carrying a body
+  const id = fnObject.id;
+  if (id !== undefined) {
+    if (typeof id !== 'string') {
+      throw new Error(`@v-fn 'id' must be a string in ${originalJson}`);
+    }
+    return evaluateDeclaredSnippet(id, captures);
+  }
+
+  const body = fnObject.body;
+  if (typeof body !== 'string') {
+    throw new Error(`@v-fn 'body' must be a string in ${originalJson}`);
+  }
 
   // Optional 'args' field: names of runtime parameters the manifested function
   // should accept at call time, after the bound captures.
@@ -187,7 +241,8 @@ function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, or
  * Decodes a value encoded on the server using
  * `JacksonCodec.encodeWithTypeInfo`: element references (`@v-node` → the DOM
  * node), return channels (`@v-return` → a callback that messages the server),
- * manifested functions (`@v-fn`), and nested objects/arrays (decoded
+ * manifested functions (`@v-fn`, compiled from a body or evaluated from the
+ * bundle), and nested objects/arrays (decoded
  * recursively); other values pass through unchanged. Mirrors
  * ClientJsonCodec.decodeWithTypeInfo.
  *
