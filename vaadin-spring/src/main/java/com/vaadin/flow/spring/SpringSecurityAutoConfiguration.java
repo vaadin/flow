@@ -31,6 +31,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -82,6 +83,14 @@ public class SpringSecurityAutoConfiguration {
 
     @Autowired
     private ObjectProvider<SecurityContextHolderStrategy> securityContextHolderStrategy;
+
+    /**
+     * Resolved lazily, like the privilege evaluator, because the filter chains
+     * depend on the navigation access control this configuration creates.
+     */
+    @Autowired(required = false)
+    @Lazy
+    private List<SecurityFilterChain> securityFilterChains;
 
     /**
      * Creates the auto configuration. Spring instantiates it.
@@ -202,7 +211,8 @@ public class SpringSecurityAutoConfiguration {
             @Lazy WebInvocationPrivilegeEvaluator evaluator) {
         return new SpringAccessPathChecker(evaluator,
                 vaadinProperties.getUrlMapping(),
-                securityContextHolderStrategy.getObject());
+                securityContextHolderStrategy.getObject(),
+                securityFilterChains);
     }
 
     /**

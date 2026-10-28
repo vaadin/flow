@@ -16,12 +16,14 @@
 package com.vaadin.flow.spring.security;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.function.Function;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -54,6 +56,9 @@ class SpringAccessPathCheckerTest {
 
     @Autowired
     private WebInvocationPrivilegeEvaluator evaluator;
+
+    @Autowired
+    private List<SecurityFilterChain> filterChains;
 
     @Test
     @WithAnonymousUser
@@ -180,6 +185,20 @@ class SpringAccessPathCheckerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
+    void checkAccess_nullPrincipalWithFilterChains_configuredAnonymousAuthoritiesApplied() {
+        var checker = new SpringAccessPathChecker(evaluator, null,
+                SecurityContextHolder.getContextHolderStrategy(), filterChains);
+
+        assertTrue(checker.hasAccess("guest", null, role -> false),
+                "Access to guest only path should be allowed when principal is null and the filter chain gives GUEST to anonymous users");
+        assertFalse(checker.hasAccess("admin", null, role -> false),
+                "Access to admin only path should not be allowed when principal is null, even if an admin user is on the thread");
+        assertTrue(checker.hasAccess("api", null, role -> false),
+                "Access to api path should be allowed when principal is null and the matching api filter chain gives API to anonymous users");
+    }
+
+    @Test
     void checkAccess_nullPrincipal_customAnonymousAuthenticationPreserved() {
         SecurityContextHolder.getContext()
                 .setAuthentication(new AnonymousAuthenticationToken("key",
@@ -214,10 +233,24 @@ class SpringAccessPathCheckerTest {
         }
 
         @Bean
+        @Order(1)
+        public SecurityFilterChain apiFilterChain(HttpSecurity http) {
+            var matcherBuilder = PathPatternRequestMatcher.withDefaults();
+            http.securityMatcher(matcherBuilder.matcher("/api/**"))
+                    .anonymous(anonymous -> anonymous.authorities("ROLE_API"))
+                    .authorizeHttpRequests(cfg -> cfg
+                            .requestMatchers(matcherBuilder.matcher("/api/**"))
+                            .hasRole("API"));
+            return http.build();
+        }
+
+        @Bean
+        @Order(2)
         public SecurityFilterChain testingFilterChain(HttpSecurity http) {
             // @formatter:off
             var matcherBuilder = PathPatternRequestMatcher.withDefaults();
-            http.authorizeHttpRequests(cfg -> cfg
+            http.anonymous(anonymous -> anonymous.authorities("ROLE_GUEST"))
+                .authorizeHttpRequests(cfg -> cfg
                     .requestMatchers(matcherBuilder.matcher("/")).anonymous()
                     .requestMatchers(matcherBuilder.matcher("/admin/**")).hasRole("ADMIN")
                     .requestMatchers(matcherBuilder.matcher("/guest/**")).hasRole("GUEST")
