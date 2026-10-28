@@ -776,6 +776,57 @@ public class ElementListenersTest
     }
 
     @Test
+    void testAddEventDataWithRecordAndGetEventData() {
+        record EventDetails(int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event, String type) {
+        }
+
+        Element element = new Element("div");
+        AtomicReference<MouseEventData> captured = new AtomicReference<>();
+        element.addEventListener("click",
+                e -> captured.set(e.getEventData(MouseEventData.class)))
+                .addEventData(MouseEventData.class).preventDefault();
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.button", 2);
+        eventData.put("event.clientX", 150);
+        eventData.put("event.clientY", 200);
+        eventData.put("type", "click");
+        eventData.putNull("event.preventDefault()");
+
+        element.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(element, "click", eventData));
+
+        MouseEventData result = captured.get();
+        assertEquals(new MouseEventData(new EventDetails(2, 150, 200), "click"),
+                result);
+        // The raw event data is not modified
+        assertFalse(eventData.has("event"));
+    }
+
+    @Test
+    void testGetEventDataWithTypeReferenceExpandsPropertyPaths() {
+        record Point(int x, int y) {
+        }
+        record Drag<T>(T start, T end) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("start.x", 1);
+        eventData.put("start.y", 2);
+        eventData.put("end.x", 3);
+        eventData.put("end.y", 4);
+
+        DomEvent event = new DomEvent(new Element("div"), "drag", eventData);
+
+        Drag<Point> drag = event.getEventData(new TypeReference<Drag<Point>>() {
+        });
+
+        assertEquals(new Drag<>(new Point(1, 2), new Point(3, 4)), drag);
+    }
+
+    @Test
     void testAddEventDataWithSimpleBean() {
         // Test with a simple bean (non-record)
         class SimpleEventData {
@@ -925,6 +976,32 @@ public class ElementListenersTest
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
+    }
+
+    @Test
+    void testAddEventDetailWithNestedClassAndGetEventDetail() {
+        record Position(int x, int y) {
+        }
+        record DragDetail(Position start, Position end) {
+        }
+
+        Element element = new Element("div");
+        AtomicReference<DragDetail> captured = new AtomicReference<>();
+        element.addEventListener("drag",
+                e -> captured.set(e.getEventDetail(DragDetail.class)))
+                .addEventDetail(DragDetail.class);
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.detail.start.x", 1);
+        eventData.put("event.detail.start.y", 2);
+        eventData.put("event.detail.end.x", 3);
+        eventData.put("event.detail.end.y", 4);
+
+        element.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(element, "drag", eventData));
+
+        assertEquals(new DragDetail(new Position(1, 2), new Position(3, 4)),
+                captured.get());
     }
 
     @Test
