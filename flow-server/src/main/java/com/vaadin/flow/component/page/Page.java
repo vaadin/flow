@@ -537,7 +537,8 @@ public class Page implements Serializable {
      * @param expression
      *            the JavaScript expression to invoke
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @since 25.0
@@ -547,8 +548,9 @@ public class Page implements Serializable {
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
         CspViolationReporter.reportStringJavaScript();
-        return ui.getInternals().addJavaScriptInvocation(
-                new JavaScriptInvocation(expression, parameters));
+        return ui.getInternals()
+                .addJavaScriptInvocation(new JavaScriptInvocation(expression,
+                        parameters == null ? new Object[0] : parameters));
     }
 
     /**
@@ -559,7 +561,8 @@ public class Page implements Serializable {
      * @param expression
      *            the JavaScript expression to execute
      * @param parameters
-     *            parameters to pass to the expression
+     *            parameters to pass to the expression, or <code>null</code> for
+     *            no parameters
      * @return a pending result that can be used to get a value returned from
      *         the expression
      * @since 2.0

@@ -84,6 +84,17 @@ class PageTest {
     }
 
     @Test
+    void executeJs_nullParameterArray_treatedAsNoParameters() {
+        MockUI mockUI = new MockUI();
+
+        mockUI.getPage().executeJs("foo", (Object[]) null);
+
+        JavaScriptInvocation invocation = mockUI.onlyScheduledInvocation();
+        assertEquals("foo", invocation.getExpression());
+        assertEquals(List.of(), invocation.getParameters());
+    }
+
+    @Test
     void executeJsWithDefinition_methodDeclaringAResult_answersWithTheExecution() {
         MockUI mockUI = new MockUI();
 
