@@ -93,6 +93,18 @@ class AbstractSinglePropertyFieldTest {
         monitor.assertEvent(false, "bar", "");
     }
 
+    public static class GenericStringField<T> extends StringField {
+    }
+
+    @Test
+    void genericSubclassOfConcreteField_propertyTypeFromSuperclass() {
+        GenericStringField<Object> field = new GenericStringField<>();
+
+        field.setValue("foo");
+
+        assertEquals("foo", field.getElement().getProperty("property"));
+    }
+
     @Test
     void stringField_setValueNull_exceptionAndNoEvent() {
         StringField field = new StringField();

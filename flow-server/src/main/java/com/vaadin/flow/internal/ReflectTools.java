@@ -678,9 +678,8 @@ public class ReflectTools implements Serializable {
      * the given type, e.g. {@code String} for the second type parameter of
      * {@code HasValue} when viewed from {@code TextField}.
      * <p>
-     * Only type variables bound directly as type arguments are substituted,
-     * type variables nested inside the resolved type (e.g. the {@code X} in
-     * {@code List<X>}) are returned as is.
+     * Type variables nested inside a parameterized type argument (e.g. the
+     * {@code X} in {@code List<X>}) are returned as is.
      *
      * @param type
      *            the type to inspect, not {@code null}
@@ -710,11 +709,7 @@ public class ReflectTools implements Serializable {
             return findTypeParameter(rawType,
                     bindTypeArguments(parameterizedType, Map.of()), variable);
         }
-        if (rawType.getTypeParameters().length > 0) {
-            // Generic type used as a raw type
-            return null;
-        }
-        return findTypeParameter(rawType, Map.of(), variable);
+        return findTypeParameter(rawType, bindingsOfClass(rawType), variable);
     }
 
     /**
@@ -741,12 +736,17 @@ public class ReflectTools implements Serializable {
         return null;
     }
 
+    /*
+     * The bindings are null when clazz is used as a raw type. The super types
+     * of a raw type are erased, but a non-generic class among them still has
+     * its declared generic super types (JLS 4.8).
+     */
     private static Type findTypeParameter(Class<?> clazz,
             Map<TypeVariable<?>, Type> bindings,
             TypeVariable<? extends Class<?>> variable) {
         Class<?> declaringClass = variable.getGenericDeclaration();
         if (clazz.equals(declaringClass)) {
-            return bindings.get(variable);
+            return bindings == null ? null : bindings.get(variable);
         }
         Type[] superTypes = Stream
                 .concat(Stream.ofNullable(clazz.getGenericSuperclass()),
@@ -757,18 +757,21 @@ public class ReflectTools implements Serializable {
             if (!declaringClass.isAssignableFrom(rawSuperType)) {
                 continue;
             }
-            if (superType instanceof ParameterizedType parameterizedType) {
+            if (bindings != null
+                    && superType instanceof ParameterizedType parameterizedType) {
                 return findTypeParameter(rawSuperType,
                         bindTypeArguments(parameterizedType, bindings),
                         variable);
             }
-            if (rawSuperType.getTypeParameters().length > 0) {
-                // Generic super type used as a raw type
-                return null;
-            }
-            return findTypeParameter(rawSuperType, Map.of(), variable);
+            return findTypeParameter(rawSuperType,
+                    bindingsOfClass(rawSuperType), variable);
         }
         return null;
+    }
+
+    private static Map<TypeVariable<?>, Type> bindingsOfClass(Class<?> clazz) {
+        // A generic class used without type arguments is a raw type
+        return clazz.getTypeParameters().length > 0 ? null : Map.of();
     }
 
     private static Map<TypeVariable<?>, Type> bindTypeArguments(
@@ -777,11 +780,23 @@ public class ReflectTools implements Serializable {
         Type[] typeArguments = type.getActualTypeArguments();
         Map<TypeVariable<?>, Type> result = new HashMap<>();
         for (int i = 0; i < typeParameters.length; i++) {
-            Type argument = typeArguments[i];
             result.put(typeParameters[i],
-                    bindings.getOrDefault(argument, argument));
+                    substitute(typeArguments[i], bindings));
         }
         return result;
+    }
+
+    private static Type substitute(Type type,
+            Map<TypeVariable<?>, Type> bindings) {
+        if (type instanceof TypeVariable<?> && bindings.containsKey(type)) {
+            return bindings.get(type);
+        }
+        if (type instanceof GenericArrayType arrayType
+                && substitute(arrayType.getGenericComponentType(),
+                        bindings) instanceof Class<?> componentType) {
+            return componentType.arrayType();
+        }
+        return type;
     }
 
     /**

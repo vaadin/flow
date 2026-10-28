@@ -363,6 +363,34 @@ class ReflectToolsTest {
         assertNull(ReflectTools.getTypeParameter(String.class, variable));
     }
 
+    public static class GenericSubclassOfNonGeneric<T> extends HasInterface {
+    }
+
+    public static class GenericSubSubclass<T>
+            extends GenericSubclassOfNonGeneric<T> {
+    }
+
+    public static class ArrayHasInterface<T> implements TestInterface<T[]> {
+    }
+
+    public static class StringArrayHasInterface
+            extends ArrayHasInterface<String> {
+    }
+
+    @Test
+    void getTypeParameter_rawGenericSubclassOfNonGenericClass_resolvedThroughNonGenericClass() {
+        assertEquals(String.class,
+                ReflectTools.getTypeParameter(GenericSubSubclass.class,
+                        TestInterface.class.getTypeParameters()[0]));
+    }
+
+    @Test
+    void getTypeParameter_genericArrayArgument_componentTypeSubstituted() {
+        assertEquals(String[].class,
+                ReflectTools.getTypeParameter(StringArrayHasInterface.class,
+                        TestInterface.class.getTypeParameters()[0]));
+    }
+
     public static class GenericHolder<N extends Number, H extends HasInterface> {
         N number;
         H hasInterface;
