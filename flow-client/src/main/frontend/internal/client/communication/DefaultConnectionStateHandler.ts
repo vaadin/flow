@@ -52,8 +52,8 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   #scheduledReconnect: ReturnType<typeof setTimeout> | null = null;
 
-  // Whether a receive-only websocket was closed and has not been reopened yet.
-  #websocketReopenPending = false;
+  // How many times a receive-only websocket was closed since it was last open.
+  #websocketClosesSinceOpen = 0;
 
   /**
    * Creates a new instance connected to the given registry.
@@ -304,7 +304,7 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
   // --- ConnectionStateHandler: push ---
 
   pushOk(pushConnection: PushConnection): void {
-    this.#websocketReopenPending = false;
+    this.#websocketClosesSinceOpen = 0;
     if (this.#machine.isReconnecting()) {
       this.#machine.resolveTemporaryError(ConnectionMessageType.PUSH);
       if (this.#registry.getRequestResponseTracker().hasActiveRequest()) {
@@ -342,11 +342,12 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // well. Atmosphere reports each close once, before it tries to reopen
       // the websocket, and a successful reopen reaches pushOk. The check is a
       // heartbeat, as messages to the server do not depend on the websocket:
-      // a failing heartbeat reconnects and a successful one resolves it.
-      if (this.#websocketReopenPending && !this.#machine.isReconnecting()) {
+      // a failing heartbeat reconnects and a successful one resolves it. One
+      // heartbeat is enough, further failed reopens add nothing to it.
+      this.#websocketClosesSinceOpen++;
+      if (this.#websocketClosesSinceOpen === 2 && !this.#machine.isReconnecting()) {
         this.#registry.getHeartbeat().send();
       }
-      this.#websocketReopenPending = true;
     } else {
       // Lost connection for a connection we do not necessarily know when it is
       // available again (long polling behind proxy). Do nothing and show the

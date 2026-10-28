@@ -200,7 +200,13 @@ describe('DefaultConnectionStateHandler', () => {
     expect(getState()).to.equal(initialState);
     expect(registry.log.heartbeatSends).to.equal(1);
 
+    // The heartbeat succeeded, and further failed reopens add nothing to it.
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(1);
+
     // While reconnecting, the reconnect logic already sends heartbeats.
+    handler.pushOk(websocket as PushConnection);
+    handler.pushReconnectPending(websocket as PushConnection);
     handler.heartbeatException({} as XMLHttpRequest, new Error('down'));
     expect(getState()).to.equal(RECONNECTING);
     const heartbeatSends = registry.log.heartbeatSends;
