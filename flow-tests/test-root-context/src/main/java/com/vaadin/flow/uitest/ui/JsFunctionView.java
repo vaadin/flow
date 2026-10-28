@@ -37,6 +37,12 @@ public class JsFunctionView extends AbstractDivView {
         JsFunction createGreeter(String greeting);
     }
 
+    @JsDefinition
+    public interface CallerJs extends Serializable {
+        @JsExpression("$0.call(this, 'World');")
+        void callWithWorld(JsFunction function);
+    }
+
     @Override
     protected void onShow() {
         Div captureResult = new Div();
@@ -89,8 +95,10 @@ public class JsFunctionView extends AbstractDivView {
                 "declaredButton", e -> {
                     JsFunction greeter = JsSnippets.of(GreeterJs.class)
                             .createGreeter("Hello");
-                    declaredResult.getElement()
-                            .executeJs("$0.call(this, 'World');", greeter);
+                    // Declared on both sides, so nothing is compiled from a
+                    // string and the path works without unsafe-eval
+                    declaredResult.getElement().executeJs(CallerJs.class)
+                            .callWithWorld(greeter);
                 });
 
         add(captureButton, argsButton, elementCaptureButton, thisRespectButton,
