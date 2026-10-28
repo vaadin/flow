@@ -102,8 +102,55 @@ public final class EncodeUtil {
         int b = c & 0xFF; // Convert to unsigned
         // RFC 2045, Section 6.7, and RFC 2047, Section 4.2
         // printable characters are 33-126, excluding "=?_
-        return (b >= 33 && b <= 126) && b != 34 && b != 61 && b != 63
+        // and also excluding \ so the result can be put in a quoted-string
+        return (b >= 33 && b <= 126) && b != 34 && b != 61 && b != 63 && b != 92
                 && b != 95;
+    }
+
+    /**
+     * Escapes the given string for use as the content of a
+     * <code>quoted-string</code> as defined in RFC 9110, e.g. a
+     * <code>filename</code> parameter of the <code>Content-Disposition</code>
+     * HTTP header. Backslashes and double quotes are prefixed with a backslash.
+     * Control characters are removed, see
+     * {@link #removeControlCharacters(String)}. The surrounding double quotes
+     * are not added.
+     *
+     * @param value
+     *            the string to escape, not <code>null</code>
+     * @return the escaped string
+     */
+    public static String quotedStringEscape(String value) {
+        String cleaned = removeControlCharacters(value);
+        StringBuilder sb = new StringBuilder(cleaned.length());
+        for (int i = 0; i < cleaned.length(); i++) {
+            char c = cleaned.charAt(i);
+            if (c == '"' || c == '\\') {
+                sb.append('\\');
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Removes all ISO control characters, as defined by
+     * {@link Character#isISOControl(char)}, from the given string, e.g. CR, LF
+     * and tab.
+     *
+     * @param value
+     *            the string to clean, not <code>null</code>
+     * @return the string without control characters
+     */
+    public static String removeControlCharacters(String value) {
+        StringBuilder sb = new StringBuilder(value.length());
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (!Character.isISOControl(c)) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     /**

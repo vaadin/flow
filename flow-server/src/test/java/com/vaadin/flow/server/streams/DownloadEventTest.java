@@ -9,6 +9,7 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,14 +37,22 @@ public class DownloadEventTest {
         service = Mockito.mock(VaadinService.class);
     }
 
+    private static Map<String, String> asciiFileNames() {
+        return Map.of("test.txt", "test.txt", "a.pdf\"; filename*=UTF-8''b.exe",
+                "a.pdf\\\"; filename*=UTF-8''b.exe", "a\\b\r\n\t.txt",
+                "a\\\\b.txt");
+    }
+
     @Test
-    public void setFileName_nonEmptyFileName_setsContentDispositionFilenameQuotedToResponse() {
-        DownloadEvent downloadEvent = new DownloadEvent(request, response,
-                session, null);
-        String fileName = "test.txt";
-        downloadEvent.setFileName(fileName);
-        Mockito.verify(response).setHeader("Content-Disposition",
-                "attachment;" + " filename=\"" + fileName + "\"");
+    public void setFileName_asciiFileName_setsContentDispositionFilenameQuotedToResponse() {
+        asciiFileNames().forEach((fileName, quotedContent) -> {
+            VaadinResponse response = Mockito.mock(VaadinResponse.class);
+            DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                    session, null);
+            downloadEvent.setFileName(fileName);
+            Mockito.verify(response).setHeader("Content-Disposition",
+                    "attachment; filename=\"" + quotedContent + "\"");
+        });
     }
 
     @Test
@@ -58,11 +67,30 @@ public class DownloadEventTest {
     }
 
     @Test
+    public void setFileName_nonAsciiFileNameWithControlCharacters_controlCharactersRemoved() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("ä\r\n\u0085.txt");
+        Mockito.verify(response).setHeader("Content-Disposition", "attachment;"
+                + " filename=\"" + EncodeUtil.rfc2047Encode("ä.txt") + "\";"
+                + " filename*=UTF-8''" + EncodeUtil.rfc5987Encode("ä.txt"));
+        assertEquals("ä.txt", downloadEvent.getFileName());
+    }
+
+    @Test
     public void setFileName_emptyFileName_setsContentDispositionToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         String fileName = "";
         downloadEvent.setFileName(fileName);
+        Mockito.verify(response).setHeader("Content-Disposition", "attachment");
+    }
+
+    @Test
+    public void setFileName_onlyControlCharacters_setsContentDispositionToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("\u0000\r\n");
         Mockito.verify(response).setHeader("Content-Disposition", "attachment");
     }
 
