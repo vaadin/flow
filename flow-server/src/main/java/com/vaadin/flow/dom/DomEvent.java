@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EventObject;
 import java.util.Objects;
@@ -43,8 +44,8 @@ import com.vaadin.flow.shared.JsonConstants;
  */
 public class DomEvent extends EventObject {
 
-    private static final Pattern PROPERTY_PATH_PATTERN = Pattern.compile(
-            "[\\p{L}_$][\\p{L}\\p{N}_$]*(\\.[\\p{L}_$][\\p{L}\\p{N}_$]*)+");
+    private static final Pattern IDENTIFIER_PATTERN = Pattern
+            .compile("[\\p{L}_$][\\p{L}\\p{N}_$]*");
 
     private final JsonNode eventData;
 
@@ -455,11 +456,17 @@ public class DomEvent extends EventObject {
         // Shorter paths first so that e.g. a complete event.detail object is
         // used as the base for the event.detail.* properties
         JacksonUtils.getKeys(eventData).stream()
-                .filter(key -> PROPERTY_PATH_PATTERN.matcher(key).matches())
+                .filter(DomEvent::isPropertyPath)
                 .sorted(Comparator.comparingInt(String::length))
                 .forEach(key -> setNestedValue(result, key.split("\\."),
                         eventData.get(key)));
         return result;
+    }
+
+    private static boolean isPropertyPath(String key) {
+        String[] parts = key.split("\\.", -1);
+        return parts.length > 1 && Arrays.stream(parts)
+                .allMatch(part -> IDENTIFIER_PATTERN.matcher(part).matches());
     }
 
     private static void setNestedValue(ObjectNode target, String[] path,
