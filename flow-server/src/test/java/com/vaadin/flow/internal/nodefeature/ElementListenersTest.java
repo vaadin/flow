@@ -1005,6 +1005,45 @@ public class ElementListenersTest
     }
 
     @Test
+    void testGetEventDetailMergesWholeDetailWithIndividualProperties() {
+        record Position(int x, int y) {
+        }
+        record DragDetail(Position start, Position end) {
+        }
+
+        // Individual properties come before the whole object on purpose
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.detail.start.x", 9);
+        eventData.put("event.detail.start.y", 2);
+        eventData.put("event.detail.end.x", 3);
+        eventData.put("event.detail.end.y", 4);
+        ObjectNode detail = JacksonUtils.createObjectNode();
+        detail.putObject("start").put("x", 1);
+        eventData.set("event.detail", detail);
+
+        DomEvent event = new DomEvent(new Element("div"), "drag", eventData);
+
+        // Values already present in the whole object win
+        assertEquals(new DragDetail(new Position(1, 2), new Position(3, 4)),
+                event.getEventDetail(DragDetail.class));
+    }
+
+    @Test
+    void testGetEventDetailDoesNotExpandIntoNonObjectValue() {
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.set("event.detail",
+                JacksonUtils.createArrayNode().add("a").add("b"));
+        eventData.put("event.detail.length", 2);
+
+        DomEvent event = new DomEvent(new Element("div"), "list-change",
+                eventData);
+
+        assertEquals(List.of("a", "b"),
+                event.getEventDetail(new TypeReference<List<String>>() {
+                }));
+    }
+
+    @Test
     void testGetEventDetailWithRecord() {
         // Test getEventDetail with a Java record
         record RgbColor(int r, int g, int b) {

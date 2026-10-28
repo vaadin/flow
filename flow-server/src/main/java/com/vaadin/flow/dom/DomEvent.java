@@ -189,7 +189,9 @@ public class DomEvent extends EventObject {
      * Event data keys that are dotted property paths, such as
      * {@code event.clientX}, are also expanded into nested objects, so that
      * data registered with {@link DomListenerRegistration#addEventData(Class)}
-     * can be read back using the same type.
+     * can be read back using the same type. The original dotted keys are kept
+     * as well, so a {@code Map} target sees both the dotted keys and the
+     * expanded top-level entries.
      *
      * @param <T>
      *            the type to deserialize to
@@ -219,7 +221,9 @@ public class DomEvent extends EventObject {
      * </pre>
      * <p>
      * Event data keys that are dotted property paths, such as
-     * {@code event.clientX}, are also expanded into nested objects.
+     * {@code event.clientX}, are also expanded into nested objects. The
+     * original dotted keys are kept as well, so a {@code Map} target sees both
+     * the dotted keys and the expanded top-level entries, e.g. {@code event}.
      *
      * @param <T>
      *            the type to deserialize to
