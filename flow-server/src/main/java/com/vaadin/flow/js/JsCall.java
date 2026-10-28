@@ -193,8 +193,9 @@ public record JsCall(Class<?> definitionType, String methodName,
         List<String> calledWith = getCalledWithNames(method);
         // A call is hashed from what starts with the parameter count, so a
         // snippet starting with anything else never shares its hash input
-        String kind = (calledWith == null ? ""
-                : "(" + String.join(",", calledWith) + ")") + "=>";
+        String parameters = calledWith == null ? ""
+                : ("(" + String.join(",", calledWith) + ")");
+        String kind = parameters + "=>";
         return StringUtil.getHash(kind + parameterCount + (variadic ? "*" : "")
                 + ":" + expression, StandardCharsets.UTF_8);
     }

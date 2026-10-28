@@ -54,7 +54,7 @@ class JsFunctionTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     void declaredFunction_hasNoBodyAndTakesNoFurtherArguments() {
         JsFunction fn = JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
 

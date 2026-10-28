@@ -71,6 +71,13 @@ public final class JsDefinitionProxy {
                 return Boolean.TRUE;
             });
 
+    private static final String CALL_RETURN_TYPES = "A method returns void or"
+            + " PendingJavaScriptResult, or a JsSnippet when the interface is"
+            + " passed to JsSnippets.of";
+
+    private static final String SNIPPET_RETURN_TYPES = "A method of an interface"
+            + " passed to JsSnippets.of returns JsFunction or JsSnippet";
+
     private JsDefinitionProxy() {
         // Only static members
     }
@@ -193,12 +200,7 @@ public final class JsDefinitionProxy {
             throw new IllegalArgumentException(definitionType.getName()
                     + " has " + String.join(", ", unanswerable)
                     + " returning something that can not be answered with. "
-                    + (snippets
-                            ? "A method of an interface passed to JsSnippets.of"
-                                    + " returns JsFunction or JsSnippet"
-                            : "A method returns void or PendingJavaScriptResult,"
-                                    + " or a JsSnippet when the interface is"
-                                    + " passed to JsSnippets.of"));
+                    + (snippets ? SNIPPET_RETURN_TYPES : CALL_RETURN_TYPES));
         }
         if (!inJava.isEmpty()) {
             throw new IllegalArgumentException(definitionType.getName()

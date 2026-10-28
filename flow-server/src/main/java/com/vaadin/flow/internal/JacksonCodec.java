@@ -106,7 +106,7 @@ public class JacksonCodec {
         return obj;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     private static JsonNode encodeJsFunction(JsFunction value) {
         ObjectMapper mapper = JacksonUtils.getMapper();
         ObjectNode obj = mapper.createObjectNode();

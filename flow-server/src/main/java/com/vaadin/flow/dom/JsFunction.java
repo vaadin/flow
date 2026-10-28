@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.dom;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -93,7 +92,7 @@ import com.vaadin.flow.server.CspViolationException;
  * @author Vaadin Ltd
  * @since 25.2
  */
-public final class JsFunction implements JsSnippet, Serializable {
+public final class JsFunction implements JsSnippet {
 
     private final @Nullable String body;
     private final @Nullable JsCall declaredCall;
@@ -234,7 +233,7 @@ public final class JsFunction implements JsSnippet, Serializable {
      *             function created with {@link #of(String, Object...)} is the
      *             one passed to it.
      */
-    @Deprecated
+    @Deprecated(since = "25.4", forRemoval = true)
     public String getBody() {
         if (body == null) {
             throw new IllegalStateException(
@@ -268,7 +267,7 @@ public final class JsFunction implements JsSnippet, Serializable {
      *             passed to {@link #withArguments(String...)} or declared with
      *             {@link JsCalledWith}.
      */
-    @Deprecated
+    @Deprecated(since = "25.4", forRemoval = true)
     public List<String> getArgumentNames() {
         return argumentNames;
     }
