@@ -15,11 +15,13 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Comparator;
 import java.util.EventObject;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -39,6 +41,9 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class DomEvent extends EventObject {
+
+    private static final Pattern PROPERTY_PATH_PATTERN = Pattern.compile(
+            "[\\p{L}_$][\\p{L}\\p{N}_$]*(\\.[\\p{L}_$][\\p{L}\\p{N}_$]*)+");
 
     private final JsonNode eventData;
 
@@ -170,6 +175,11 @@ public class DomEvent extends EventObject {
      * Gets the event data deserialized as the given type. This method supports
      * arbitrary bean types through Jackson deserialization.
      * <p>
+     * Event data expressions that are property paths, such as
+     * {@code event.clientX}, are also made available as nested objects, so that
+     * a type mirroring the structure of the event, as used with
+     * {@link DomListenerRegistration#addEventData(Class)}, can be decoded.
+     * <p>
      * Example usage:
      *
      * <pre>
@@ -186,7 +196,7 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventData(Class<T> type) {
-        return JacksonCodec.decodeAs(eventData, type);
+        return JacksonCodec.decodeAs(getEventDataWithNestedPaths(), type);
     }
 
     /**
@@ -194,6 +204,12 @@ public class DomEvent extends EventObject {
      * {@link TypeReference}. This method supports generic types such as
      * {@code List<MyBean>} and {@code Map<String, MyBean>} through Jackson's
      * TypeReference mechanism.
+     * <p>
+     * Event data expressions that are property paths, such as
+     * {@code event.clientX}, are also made available as nested objects, so that
+     * a type mirroring the structure of the event, as used with
+     * {@link DomListenerRegistration#addEventData(TypeReference)}, can be
+     * decoded.
      * <p>
      * Example usage:
      *
@@ -213,7 +229,8 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventData(TypeReference<T> typeReference) {
-        return JacksonCodec.decodeAs(eventData, typeReference);
+        return JacksonCodec.decodeAs(getEventDataWithNestedPaths(),
+                typeReference);
     }
 
     /**
@@ -395,5 +412,46 @@ public class DomEvent extends EventObject {
         });
 
         return detailObject;
+    }
+
+    /**
+     * Creates a copy of the event data where the values of property path
+     * expressions, e.g. {@code event.clientX}, are additionally available as
+     * nested objects, e.g. {@code {"event": {"clientX": ...}}}. The original
+     * keys are kept as is, and an existing value is never replaced.
+     *
+     * @return a copy of the event data with nested objects for property paths
+     */
+    private JsonNode getEventDataWithNestedPaths() {
+        if (!(eventData instanceof ObjectNode eventDataObject)) {
+            return eventData;
+        }
+        ObjectNode result = eventDataObject.deepCopy();
+        // Shorter paths first so that e.g. a complete event.detail object is
+        // used as the base for the event.detail.* properties
+        JacksonUtils.getKeys(eventData).stream()
+                .filter(key -> PROPERTY_PATH_PATTERN.matcher(key).matches())
+                .sorted(Comparator.comparingInt(String::length))
+                .forEach(key -> setNestedValue(result, key.split("\\."),
+                        eventData.get(key)));
+        return result;
+    }
+
+    private static void setNestedValue(ObjectNode target, String[] path,
+            JsonNode value) {
+        ObjectNode current = target;
+        for (int i = 0; i < path.length - 1; i++) {
+            JsonNode child = current.get(path[i]);
+            if (child == null) {
+                child = current.putObject(path[i]);
+            } else if (!(child instanceof ObjectNode)) {
+                return;
+            }
+            current = (ObjectNode) child;
+        }
+        String name = path[path.length - 1];
+        if (!current.has(name)) {
+            current.set(name, value.deepCopy());
+        }
     }
 }

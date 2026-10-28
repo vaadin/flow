@@ -20,11 +20,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -773,6 +775,57 @@ public class ElementListenersTest
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
+    }
+
+    @Test
+    void testAddEventDataWithRecordAndGetEventData() {
+        record EventDetails(int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event, String type) {
+        }
+
+        Element element = new Element("div");
+        AtomicReference<MouseEventData> captured = new AtomicReference<>();
+        element.addEventListener("click",
+                e -> captured.set(e.getEventData(MouseEventData.class)))
+                .addEventData(MouseEventData.class);
+
+        // The client sends one flat key per expression
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.button", 1);
+        eventData.put("event.clientX", 68);
+        eventData.put("event.clientY", 159);
+        eventData.put("type", "click");
+
+        element.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(element, "click", eventData));
+
+        assertEquals(new MouseEventData(new EventDetails(1, 68, 159), "click"),
+                captured.get());
+    }
+
+    @Test
+    void testGetEventDataKeepsFlatKeys() {
+        record FlatMouseEventData(@JsonProperty("event.button") int button,
+                @JsonProperty("event.clientX") int clientX) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.button", 2);
+        eventData.put("event.clientX", 68);
+        eventData.put("event.preventDefault()", (String) null);
+        DomEvent event = new DomEvent(new Element("div"), "click", eventData);
+
+        assertEquals(new FlatMouseEventData(2, 68),
+                event.getEventData(FlatMouseEventData.class));
+        Map<String, JsonNode> data = event
+                .getEventData(new TypeReference<Map<String, JsonNode>>() {
+                });
+        assertEquals(2, data.get("event").get("button").asInt());
+        assertEquals(2, data.get("event.button").asInt());
+        assertFalse(data.get("event").has("preventDefault()"));
+        // The original event data is not modified
+        assertEquals(3, eventData.size());
     }
 
     @Test
