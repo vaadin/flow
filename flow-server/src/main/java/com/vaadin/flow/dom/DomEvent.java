@@ -312,7 +312,15 @@ public class DomEvent extends EventObject {
      * records through Jackson deserialization.
      * <p>
      * The {@code event.detail} property must have been included in the event
-     * data using {@link DomListenerRegistration#addEventDetail()}.
+     * data using {@link DomListenerRegistration#addEventDetail()}, or its
+     * properties using {@link DomListenerRegistration#addEventDetail(Class)}.
+     * <p>
+     * Detail properties that are property paths, such as {@code color.r}, are
+     * also made available as nested objects, so that a type with nested
+     * properties, as used with
+     * {@link DomListenerRegistration#addEventDetail(Class)}, can be decoded.
+     * Maps, {@link Object} and {@link JsonNode} types get the detail as is,
+     * with one key per property.
      * <p>
      * Example usage:
      *
@@ -353,7 +361,15 @@ public class DomEvent extends EventObject {
      * {@code Map<String, MyBean>} through Jackson's TypeReference mechanism.
      * <p>
      * The {@code event.detail} property must have been included in the event
-     * data using {@link DomListenerRegistration#addEventDetail()}.
+     * data using {@link DomListenerRegistration#addEventDetail()}, or its
+     * properties using {@link DomListenerRegistration#addEventDetail(Class)}.
+     * <p>
+     * Detail properties that are property paths, such as {@code color.r}, are
+     * also made available as nested objects, so that a type with nested
+     * properties, as used with
+     * {@link DomListenerRegistration#addEventDetail(Class)}, can be decoded.
+     * Maps, {@link Object} and {@link JsonNode} types get the detail as is,
+     * with one key per property.
      * <p>
      * Example usage:
      *

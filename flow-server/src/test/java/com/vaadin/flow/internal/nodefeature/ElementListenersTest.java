@@ -1030,6 +1030,14 @@ public class ElementListenersTest
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
+    }
+
+    @Test
+    void testGetEventDetailWithNestedPaths() {
+        record Position(int x, int y) {
+        }
+        record DragDetail(Position start, Position end) {
+        }
 
         // The client sends one flat key per expression
         ObjectNode eventData = JacksonUtils.createObjectNode();
