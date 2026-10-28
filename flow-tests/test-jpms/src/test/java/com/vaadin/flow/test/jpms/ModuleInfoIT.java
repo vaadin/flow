@@ -65,8 +65,19 @@ public class ModuleInfoIT extends ChromeBrowserTest {
                 $("span").id("app-module").getText());
         Assert.assertEquals("com.vaadin.flow.server explicit",
                 $("span").id("flow-module").getText());
+        Assert.assertEquals("com.vaadin.flow.component.html explicit",
+                $("span").id("components-module").getText());
 
         $("button").id("button").click();
         Assert.assertEquals("Clicked", $("div").id("clicked").getText());
+    }
+
+    @Test
+    public void pushFromBackgroundThread() {
+        open();
+
+        $("button").id("push-button").click();
+        waitUntil(driver -> "Pushed"
+                .equals($("div").id("pushed").getText()));
     }
 }
