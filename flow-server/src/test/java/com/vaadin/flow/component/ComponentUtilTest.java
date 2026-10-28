@@ -119,6 +119,7 @@ class ComponentUtilTest {
     }
 
     @Test
+    @SuppressWarnings("removal")
     void registerComponentClass_and_getComponentsByTag_shouldReturnCorrectComponent() {
         Class<? extends Component> testComponentClass = TestDiv.class;
         String testTag = "test-div";
@@ -135,6 +136,18 @@ class ComponentUtilTest {
     }
 
     @Test
+    @SuppressWarnings("removal")
+    void unregisterAllComponentClasses_removesAllTagMappings() {
+        ComponentUtil.registerComponentClass("first-tag", TestDiv.class);
+        ComponentUtil.registerComponentClass("second-tag", TestComponent.class);
+
+        ComponentUtil.unregisterAllComponentClasses();
+
+        assertTrue(ComponentUtil.getAllTagMappings().isEmpty());
+    }
+
+    @Test
+    @SuppressWarnings("removal")
     void getComponentsByTag_withUnregisteredTag_shouldReturnEmptySet() {
         String unregisteredTag = "unregistered-tag";
 

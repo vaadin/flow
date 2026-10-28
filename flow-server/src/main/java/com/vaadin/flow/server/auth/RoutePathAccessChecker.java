@@ -64,9 +64,15 @@ public class RoutePathAccessChecker implements NavigationAccessChecker {
         String path = context.getLocation().getPath();
         boolean hasPathAccess = accessPathChecker.hasAccess(path,
                 context.getPrincipal(), context::hasRole);
-        LOGGER.debug("Access to view '{}' with path '{}' is {}",
-                context.getNavigationTarget().getName(), path,
-                ((hasPathAccess) ? "allowed" : "denied"));
+        if (context.getPhase() == NavigationContext.Phase.PUBLIC_ROUTE_CHECK) {
+            LOGGER.debug("Public route check: view '{}' with path '{}' is {}",
+                    context.getNavigationTarget().getName(), path,
+                    ((hasPathAccess) ? "public" : "not public"));
+        } else {
+            LOGGER.debug("Access to view '{}' with path '{}' is {}",
+                    context.getNavigationTarget().getName(), path,
+                    ((hasPathAccess) ? "allowed" : "denied"));
+        }
         if (hasPathAccess) {
             return context.allow();
         }

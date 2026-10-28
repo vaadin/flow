@@ -29,14 +29,16 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.SerializableBiFunction;
+import com.vaadin.flow.server.ServiceInitEvent;
+import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.frontend.NodeTestComponents;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExtraImport;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlatImport;
@@ -61,6 +63,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class FullDependenciesScannerTest {
 
@@ -97,16 +102,54 @@ class FullDependenciesScannerTest {
     }
 
     @JavaScript("bundled.js")
+    @JavaScript("context://runtime.js")
+    @JavaScript("/absolute.js")
+    @JavaScript("base://servlet-relative.js")
+    @JavaScript("https://cdn.example.com/external.js")
+    @JavaScript("//cdn.example.com/protocol-relative.js")
+    @JavaScript("ftp://example.net/other-scheme.js")
     @JavaScript(value = "module-runtime.js", type = JavaScript.Type.MODULE)
+    @JsModule("./bundled-module.js")
+    @JsModule("https://cdn.example.com/external-module.js")
+    @JsModule("context://runtime-module.js")
+    @JsModule("/absolute-module.js")
+    @JsModule("ftp://example.net/other-scheme-module.js")
+    @JsModule(value = "https://cdn.example.com/dev-module.js", developmentOnly = true)
     public static class RuntimeJavaScriptComponent extends Component {
+
+    }
+
+    @JsModule("/mixin-module.js")
+    public interface RuntimeJsModuleMixin {
+
+    }
+
+    @JsModule("context://shell-module.js")
+    public static class RuntimeJsModuleAppShell
+            implements AppShellConfigurator {
+
+    }
+
+    @JavaScript("context://listener.js")
+    @JsModule("/absolute-module.js")
+    public static class RuntimeJsModuleServiceListener
+            implements VaadinServiceInitListener {
+
+        @Override
+        public void serviceInit(ServiceInitEvent event) {
+        }
 
     }
 
     @BeforeEach
     void setUp() throws ClassNotFoundException {
-        finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.loadClass(AbstractTheme.class.getName()))
+        finder = mock(ClassFinder.class);
+        when(finder.loadClass(AbstractTheme.class.getName()))
                 .thenReturn((Class) AbstractTheme.class);
+        when(finder.loadClass(Component.class.getName()))
+                .thenReturn((Class) Component.class);
+        when(finder.loadClass(AppShellConfigurator.class.getName()))
+                .thenReturn((Class) AppShellConfigurator.class);
     }
 
     @Test
@@ -116,7 +159,7 @@ class FullDependenciesScannerTest {
                 Collections.emptySet(), Collections.emptySet(),
                 (type, annotationType) -> Collections.emptyList());
 
-        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+        verify(finder).loadClass(AbstractTheme.class.getName());
 
         assertNull(scanner.getTheme());
         assertEquals(0, scanner.getClasses().size());
@@ -130,7 +173,7 @@ class FullDependenciesScannerTest {
                         NoThemeComponent1.class)),
                 (type, annotationType) -> Collections.emptyList());
 
-        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+        verify(finder).loadClass(AbstractTheme.class.getName());
 
         assertNull(scanner.getTheme());
         assertNull(scanner.getThemeDefinition());
@@ -142,14 +185,14 @@ class FullDependenciesScannerTest {
     @Test
     void getTheme_explicitTheme_themeIsDiscovered()
             throws ClassNotFoundException {
-        Mockito.when(finder.loadClass(LumoTest.class.getName()))
+        when(finder.loadClass(LumoTest.class.getName()))
                 .thenReturn((Class) LumoTest.class);
 
         FrontendDependenciesScanner scanner = setUpThemeScanner(
                 getAnnotatedClasses(Theme.class), Collections.emptySet(),
                 (type, annotationType) -> findAnnotations(type, Theme.class));
 
-        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+        verify(finder).loadClass(AbstractTheme.class.getName());
 
         assertNotNull(scanner.getTheme());
         assertEquals("theme/lumo/", scanner.getTheme().getThemeUrl());
@@ -160,12 +203,12 @@ class FullDependenciesScannerTest {
 
     @Test
     void themeWithCssDefined_cssLoaded() throws ClassNotFoundException {
-        Mockito.when(finder.loadClass(LumoTest.class.getName()))
+        when(finder.loadClass(LumoTest.class.getName()))
                 .thenReturn((Class) LumoTest.class);
-        Mockito.when(finder.loadClass(CssImport.class.getName()))
+        when(finder.loadClass(CssImport.class.getName()))
                 .thenReturn((Class) CssImport.class);
 
-        Mockito.when(finder.getAnnotatedClasses(CssImport.class))
+        when(finder.getAnnotatedClasses(CssImport.class))
                 .thenReturn(getAnnotatedClasses(CssImport.class));
 
         FrontendDependenciesScanner scanner = setUpThemeScanner(
@@ -177,7 +220,7 @@ class FullDependenciesScannerTest {
                     return findAnnotations(type, Theme.class);
                 });
 
-        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+        verify(finder).loadClass(AbstractTheme.class.getName());
 
         assertNotNull(scanner.getTheme());
         assertTrue(DepsTests.merge(scanner.getCss()).stream()
@@ -188,9 +231,9 @@ class FullDependenciesScannerTest {
     @Test
     void themeWithCssOnClassPath_notDefinedAsTheme_cssNotLoaded()
             throws ClassNotFoundException {
-        Mockito.when(finder.loadClass(LumoTest.class.getName()))
+        when(finder.loadClass(LumoTest.class.getName()))
                 .thenReturn((Class) LumoTest.class);
-        Mockito.when(finder.loadClass(CssImport.class.getName()))
+        when(finder.loadClass(CssImport.class.getName()))
                 .thenReturn((Class) CssImport.class);
 
         Set<Class<?>> result = new LinkedHashSet<>();
@@ -201,15 +244,14 @@ class FullDependenciesScannerTest {
             }
         }
 
-        Mockito.when(finder.getAnnotatedClasses(CssImport.class))
-                .thenReturn(result);
+        when(finder.getAnnotatedClasses(CssImport.class)).thenReturn(result);
 
         FrontendDependenciesScanner scanner = new FullDependenciesScanner(
                 finder,
                 (type, annotation) -> findAnnotations(type, CssImport.class),
                 null, true);
 
-        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+        verify(finder).loadClass(AbstractTheme.class.getName());
 
         assertNull(scanner.getTheme());
         assertFalse(DepsTests.merge(scanner.getCss()).stream()
@@ -305,21 +347,50 @@ class FullDependenciesScannerTest {
     }
 
     @Test
-    void getScripts_javaScriptWithTypeModule_excludedFromBundleImports()
+    void getScripts_javaScriptWithRuntimePrefixOrTypeModule_excludedFromBundleImports()
             throws ClassNotFoundException {
         Class fakeAnnotation = Object.class;
-        Mockito.when(finder.loadClass(JavaScript.class.getName()))
+        when(finder.loadClass(JavaScript.class.getName()))
                 .thenReturn(fakeAnnotation);
-        Mockito.when(finder.getAnnotatedClasses(fakeAnnotation)).thenReturn(
-                Collections.singleton(RuntimeJavaScriptComponent.class));
+        when(finder.getAnnotatedClasses(fakeAnnotation)).thenReturn(
+                new LinkedHashSet<>(List.of(RuntimeJavaScriptComponent.class,
+                        RuntimeJsModuleServiceListener.class)));
 
         FullDependenciesScanner scanner = new FullDependenciesScanner(finder,
                 (type, annotation) -> findAnnotations(type, JavaScript.class),
                 null, true);
 
-        // module-runtime.js is loaded at runtime as a <script type="module">,
-        // so it must not end up in the generated bundle imports
+        // Runtime-prefixed values and module-runtime.js are loaded at runtime
+        // as <script> tags, so they must not end up in the bundle imports,
+        // whichever class declares them
         DepsTests.assertImports(scanner.getScripts(), "bundled.js");
+    }
+
+    @Test
+    void getModules_jsModuleWithRuntimeUrl_excludedFromBundleImports()
+            throws ClassNotFoundException {
+        Class fakeAnnotation = Object.class;
+        when(finder.loadClass(JsModule.class.getName()))
+                .thenReturn(fakeAnnotation);
+        when(finder.getAnnotatedClasses(fakeAnnotation)).thenReturn(
+                new LinkedHashSet<>(List.of(RuntimeJavaScriptComponent.class,
+                        RuntimeJsModuleMixin.class,
+                        RuntimeJsModuleAppShell.class,
+                        RuntimeJsModuleServiceListener.class)));
+
+        FullDependenciesScanner scanner = new FullDependenciesScanner(finder,
+                (type, annotation) -> findAnnotations(type, JsModule.class),
+                null, true);
+
+        // @JsModule values with a runtime URL are loaded at runtime, so they
+        // must not end up in the bundle imports. That includes the app shell
+        // and interfaces, which components inherit annotations from. Nothing
+        // loads them at runtime for any other class, so that one is bundled.
+        DepsTests.assertImports(scanner.getModules(), "./bundled-module.js",
+                "/absolute-module.js");
+        assertFalse(scanner.getModulesDevelopment().values().stream()
+                .anyMatch(modules -> modules
+                        .contains("https://cdn.example.com/dev-module.js")));
     }
 
     @Test
@@ -385,26 +456,23 @@ class FullDependenciesScannerTest {
         // annotationType
         Class clazz = Object.class;
 
-        Mockito.when(finder.loadClass(JsModule.class.getName()))
-                .thenReturn(clazz);
+        when(finder.loadClass(JsModule.class.getName())).thenReturn(clazz);
 
-        Mockito.when(finder.getAnnotatedClasses(clazz))
+        when(finder.getAnnotatedClasses(clazz))
                 .thenReturn(getAnnotatedClasses(JsModule.class));
 
         Class themeClass = Throwable.class;
 
-        Mockito.when(finder.loadClass(Theme.class.getName()))
-                .thenReturn(themeClass);
+        when(finder.loadClass(Theme.class.getName())).thenReturn(themeClass);
 
         Set<Class<?>> themeClasses = getAnnotatedClasses(Theme.class);
         themeClasses.add(FakeLumoTheme.class);
-        Mockito.when(finder.getAnnotatedClasses(themeClass))
-                .thenReturn(themeClasses);
+        when(finder.getAnnotatedClasses(themeClass)).thenReturn(themeClasses);
         assertTrue(themeClasses.size() >= 2);
 
-        Mockito.when(finder.loadClass(LumoTest.class.getName()))
+        when(finder.loadClass(LumoTest.class.getName()))
                 .thenReturn((Class) LumoTest.class);
-        Mockito.when(finder.loadClass(FakeLumoTheme.class.getName()))
+        when(finder.loadClass(FakeLumoTheme.class.getName()))
                 .thenReturn((Class) FakeLumoTheme.class);
 
         FrontendDependenciesScanner scanner = new FullDependenciesScanner(
@@ -500,10 +568,9 @@ class FullDependenciesScannerTest {
         // annotationType
         Class clazz = Object.class;
 
-        Mockito.when(finder.loadClass(annotationType.getName()))
-                .thenReturn(clazz);
+        when(finder.loadClass(annotationType.getName())).thenReturn(clazz);
 
-        Mockito.when(finder.getAnnotatedClasses(clazz))
+        when(finder.getAnnotatedClasses(clazz))
                 .thenReturn(getAnnotatedClasses(annotationType));
 
         return new FullDependenciesScanner(finder,
@@ -518,14 +585,14 @@ class FullDependenciesScannerTest {
         Class fakeThemeClass = Object.class;
         Class fakeNoThemeClass = Throwable.class;
 
-        Mockito.when(finder.loadClass(Theme.class.getName()))
+        when(finder.loadClass(Theme.class.getName()))
                 .thenReturn(fakeThemeClass);
-        Mockito.when(finder.loadClass(NoTheme.class.getName()))
+        when(finder.loadClass(NoTheme.class.getName()))
                 .thenReturn(fakeNoThemeClass);
 
-        Mockito.when(finder.getAnnotatedClasses(fakeThemeClass))
+        when(finder.getAnnotatedClasses(fakeThemeClass))
                 .thenReturn(themedClasses);
-        Mockito.when(finder.getAnnotatedClasses(fakeNoThemeClass))
+        when(finder.getAnnotatedClasses(fakeNoThemeClass))
                 .thenReturn(noThemeClasses);
 
         return new FullDependenciesScanner(finder, annotationFinder, null,

@@ -37,11 +37,13 @@ env:
   # asked to. Central answers a client it has blocked with 403, and the retry
   # handler treats a status outside its retryable list as the final answer:
   # that list defaults to 429,503, so a 403 failed the build on the first
-  # artifact a job asked for. connectionMaxTtl keeps the 25 seconds the wagon
-  # property was meant to set, against a resolver default of 300.
+  # artifact a job asked for. The other 5xx statuses Central returns while it
+  # is overloaded or behind a failing proxy (500, 502, 504) are just as
+  # transient. connectionMaxTtl keeps the 25 seconds the wagon property was
+  # meant to set, against a resolver default of 300.
   MAVEN_ARGS: >-
     -Daether.connector.http.retryHandler.count=3
-    -Daether.connector.http.retryHandler.serviceUnavailable=429,503,403
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
     -Daether.connector.http.connectionMaxTtl=25
 jobs:
   build:
@@ -81,7 +83,7 @@ jobs:
       - name: Generate matrices
         id: set-matrix
         run: |
-          echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=15 current module args)" >> $GITHUB_OUTPUT
+          echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=17 current module args)" >> $GITHUB_OUTPUT
           echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=4 current module args)" >> $GITHUB_OUTPUT
           echo "matrix-quarkus=$(./scripts/computeMatrix.js quarkus-tests)" >> $GITHUB_OUTPUT
       - name: Set TB License
@@ -272,15 +274,23 @@ jobs:
             $cmd -T 1C || $cmd
           fi
           if [ ${{matrix.current}} -eq 7 ]; then
-            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-spring/devloop-shared,test-devloop-jetty/devloop-shared,test-devloop-cargo/devloop-shared -am"
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-spring/devloop-shared,test-devloop-jetty/devloop-shared -am"
             $cmd || $cmd
           fi
           if [ ${{matrix.current}} -eq 9 ]; then
-            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-tomee/devloop-shared,test-devloop-liberty/devloop-shared,test-devloop-payara-micro/devloop-shared -am"
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-tomee/devloop-shared,test-devloop-liberty/devloop-shared -am"
             $cmd || $cmd
           fi
           if [ ${{matrix.current}} -eq 10 ]; then
-            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-payara/devloop-shared,test-devloop-jbosseap/devloop-shared -am"
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-payara/devloop-shared,test-devloop-payara-micro/devloop-shared -am"
+            $cmd || $cmd
+          fi
+          if [ ${{matrix.current}} -eq 11 ]; then
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-cargo/devloop-shared -am"
+            $cmd || $cmd
+          fi
+          if [ ${{matrix.current}} -eq 12 ]; then
+            cmd="mvn install -B -ntp -DskipTests -f flow-tests/test-devloop/pom.xml -pl test-devloop-jbosseap/devloop-shared -am"
             $cmd || $cmd
           fi
       - name: Run ITs
@@ -652,6 +662,9 @@ jobs:
     # production mode builds the functional tests run, so the job writes the
     # TestBench license and, like the other test jobs, is skipped for pull
     # requests from forks.
+    permissions:
+      contents: read
+      checks: write
     needs: build
     if: ${{ !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 120
@@ -834,6 +847,19 @@ jobs:
           name: gradle-tests-report
           path: gradle-tests-report.tgz
           if-no-files-found: ignore
+      - name: Publish Gradle Test Results
+        # The functional tests keep the nested build output off the console,
+        # so this check run and the job summary list the failing tests with
+        # their failure messages. The nested build output of each test is in
+        # the gradle-tests-report artifact. The PR comment is left to the
+        # test-results job.
+        if: ${{ always() && steps.decide.outputs.run == 'true' }}
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
+        with:
+          check_name: Gradle Test Results
+          files: 'flow-plugins/flow-gradle-plugin/build/test-results/**/TEST-*.xml'
+          comment_mode: 'off'
+          check_run_annotations: all tests, skipped tests
   sonar-analysis:
     name: Sonar Analysis
     # Runs after the unit tests so the analysis can reuse their JaCoCo
@@ -940,7 +966,7 @@ jobs:
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2.24.0
         with:
-          junit_files: '**/target/*-reports/TEST*.xml'
+          files: '**/target/*-reports/TEST*.xml'
           check_run_annotations: all tests, skipped tests
       - name: Compute Stats
         run: |
@@ -1088,7 +1114,7 @@ jobs:
             fi
           done | paste -sd, -)
           echo "Comparing $MODULES"
-          mvn clean install -B -ntp -e -V -pl="$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+          mvn clean install -B -ntp -e -V -pl "$MODULES" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
           #!/bin/bash

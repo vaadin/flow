@@ -55,11 +55,13 @@ import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.js.JsCall;
@@ -68,6 +70,8 @@ import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
@@ -332,18 +336,26 @@ public class Element extends Node<Element> {
      * Note that attribute changes made on the server are sent to the client but
      * attribute changes made on the client side are not reflected back to the
      * server.
+     * <p>
+     * Passing a <code>null</code> value removes the attribute. A bare
+     * <code>null</code> literal is ambiguous between the
+     * <code>setAttribute</code> overloads and needs a cast, e.g.
+     * <code>setAttribute(name, (String) null)</code>; prefer
+     * {@link #removeAttribute(String)} in that case.
      *
      * @param attribute
      *            the name of the attribute
      * @param value
-     *            the value of the attribute, not null
+     *            the value of the attribute, or <code>null</code> to remove the
+     *            attribute
      * @return this element
+     * @see #removeAttribute(String)
      */
-    public Element setAttribute(String attribute, String value) {
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
-        }
+    public Element setAttribute(String attribute, @Nullable String value) {
         String lowerCaseAttribute = validateAttribute(attribute);
+        if (value == null) {
+            return removeAttribute(lowerCaseAttribute);
+        }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -400,14 +412,16 @@ public class Element extends Node<Element> {
      * @param attribute
      *            the name of the attribute
      * @param resource
-     *            the resource value, not null
+     *            the resource value, or <code>null</code> to remove the
+     *            attribute
      * @return this element
+     * @see #removeAttribute(String)
      */
     public Element setAttribute(String attribute,
-            AbstractStreamResource resource) {
+            @Nullable AbstractStreamResource resource) {
         String lowerCaseAttribute = validateAttribute(attribute);
         if (resource == null) {
-            throw new IllegalArgumentException("Value cannot be null");
+            return removeAttribute(lowerCaseAttribute);
         }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
@@ -575,6 +589,12 @@ public class Element extends Node<Element> {
                 getStateProvider().removeAttribute(getNode(),
                         lowerCaseAttribute);
             }
+        } else if (getNode().hasFeature(ElementAttributeMap.class) && getNode()
+                .getFeatureIfInitialized(ElementAttributeMap.class)
+                .filter(map -> map.hasSignal(lowerCaseAttribute)).isPresent()) {
+            // A bound attribute whose signal value is null is not present,
+            // but removing it must still fail while the binding is active
+            getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
         }
         return this;
     }
@@ -1916,7 +1936,8 @@ public class Element extends Node<Element> {
      * deferred until the element is attached and visible.
      * <p>
      * The expression is sent to the browser and compiled there, which a content
-     * security policy without <code>unsafe-eval</code> does not allow.
+     * security policy without <code>unsafe-eval</code> does not allow, so the
+     * {@link CspMode} of the application reports or refuses the call.
      * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
      * collected into the bundle instead, and sends no expression.
      *
@@ -1928,9 +1949,12 @@ public class Element extends Node<Element> {
      *         the expression
      * @see #executeJs(Class)
      * @since 25.0
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        CspViolationReporter.reportStringJavaScript();
         return scheduleExecuteJs(expression, parameters);
     }
 
@@ -2085,6 +2109,8 @@ public class Element extends Node<Element> {
      * @return a registration that, when removed, invokes the cleanup callback
      *         on the client
      * @since 25.2
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public Registration addJsInitializer(String expression,
             Object... parameters) {

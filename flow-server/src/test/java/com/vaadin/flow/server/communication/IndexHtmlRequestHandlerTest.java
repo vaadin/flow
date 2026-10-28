@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,9 +46,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.Feature;
@@ -64,6 +66,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
@@ -94,6 +97,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -123,18 +133,18 @@ public class IndexHtmlRequestHandlerTest {
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
         session = mocks.getSession();
-        response = Mockito.mock(VaadinResponse.class);
+        response = mock(VaadinResponse.class);
         responseOutput = new ByteArrayOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(responseOutput);
+        when(response.getOutputStream()).thenReturn(responseOutput);
         deploymentConfiguration = mocks.getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(true);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
         context = service.getContext();
         springTokenString = UUID.randomUUID().toString();
 
-        ApplicationConfiguration applicationConfiguration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(context.getAttribute(ApplicationConfiguration.class))
+        ApplicationConfiguration applicationConfiguration = mock(
+                ApplicationConfiguration.class);
+        when(context.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(applicationConfiguration);
 
         MenuRegistry.clearFileRoutesCache();
@@ -155,27 +165,24 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException()
             throws IOException {
-        VaadinServletService vaadinService = Mockito
-                .mock(VaadinServletService.class);
-        Mockito.when(vaadinService.getDeploymentConfiguration())
+        VaadinServletService vaadinService = mock(VaadinServletService.class);
+        when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
 
-        Mockito.when(vaadinService.getContext()).thenReturn(context);
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
+        when(vaadinService.getContext()).thenReturn(context);
+        final Lookup lookup = mock(Lookup.class);
+        ResourceProvider resourceProvider = mock(ResourceProvider.class);
+        when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
-        URL resource = Mockito.mock(URL.class);
-        Mockito.when(resourceProvider
+        URL resource = mock(URL.class);
+        when(resourceProvider
                 .getApplicationResource(VAADIN_WEBAPP_RESOURCES + INDEX_HTML))
                 .thenReturn(resource);
         when(resource.openStream()).thenReturn(null);
 
-        VaadinServletRequest vaadinRequest = Mockito
-                .mock(VaadinServletRequest.class);
-        Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
+        VaadinServletRequest vaadinRequest = mock(VaadinServletRequest.class);
+        when(vaadinRequest.getService()).thenReturn(vaadinService);
 
         String expectedError = "java.io.IOException: Unable to find index.html. "
                 + "It should be available on the classpath when running in production mode";
@@ -202,7 +209,7 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        Mockito.verify(response).setHeader("X-Frame-Options", "SAMEORIGIN");
+        verify(response).setHeader("X-Frame-Options", "SAMEORIGIN");
     }
 
     @Test
@@ -212,7 +219,7 @@ public class IndexHtmlRequestHandlerTest {
                 SERVLET_PARAMETER_FRAME_OPTIONS, "DENY");
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        Mockito.verify(response).setHeader("X-Frame-Options", "DENY");
+        verify(response).setHeader("X-Frame-Options", "DENY");
     }
 
     @Test
@@ -222,19 +229,126 @@ public class IndexHtmlRequestHandlerTest {
                 SERVLET_PARAMETER_FRAME_OPTIONS, "");
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        Mockito.verify(response, Mockito.never())
-                .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
+        verify(response, never()).setHeader(eq("X-Frame-Options"), any());
     }
 
     @Test
     public void serveIndexHtml_frameOptionsAlreadyPresent_doesNotOverride()
             throws IOException {
-        Mockito.when(response.containsHeader("X-Frame-Options"))
-                .thenReturn(true);
+        when(response.containsHeader("X-Frame-Options")).thenReturn(true);
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
-        Mockito.verify(response, Mockito.never())
-                .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
+        verify(response, never()).setHeader(eq("X-Frame-Options"), any());
+    }
+
+    @Test
+    public void serveIndexHtml_strictCsp_sendsPolicyWithNonceOnEveryScript()
+            throws IOException {
+        deploymentConfiguration.setCspMode(CspMode.STRICT);
+        service.addIndexHtmlRequestListener(evt -> {
+            evt.getDocument().body().appendElement("script").attr("src",
+                    "listener.js");
+            Element head = evt.getDocument().head();
+            head.appendElement("link").attr("rel", "modulepreload").attr("href",
+                    "chunk.js");
+            head.appendElement("link").attr("rel", "preload")
+                    .attr("as", "script").attr("href", "preload.js");
+            head.appendElement("link").attr("rel", "preload")
+                    .attr("as", "style").attr("href", "preload.css");
+            evt.getContentSecurityPolicy().addSources("connect-src",
+                    "https://api.example.com");
+        });
+
+        String header = serveIndexHtmlAndCaptureCspHeader();
+        Matcher matcher = Pattern
+                .compile(
+                        "script-src 'nonce-([A-Za-z0-9+/=]+)' 'strict-dynamic'")
+                .matcher(header);
+        assertTrue(matcher.find(), header);
+        String nonce = matcher.group(1);
+        assertEquals("default-src 'self'; script-src 'nonce-" + nonce
+                + "' 'strict-dynamic'; style-src 'self' 'unsafe-inline'; "
+                + "img-src 'self' data:; font-src 'self' data:; "
+                + "connect-src 'self' https://api.example.com; "
+                + "worker-src 'self'; object-src 'none'; base-uri 'self'",
+                header);
+
+        Document document = Jsoup
+                .parse(responseOutput.toString(StandardCharsets.UTF_8));
+        Elements scripts = document.getElementsByTag("script");
+        assertTrue(scripts.stream()
+                .anyMatch(script -> script.attr("src").equals("listener.js")));
+        scripts.addAll(
+                document.select("link[href=chunk.js], link[href=preload.js]"));
+        for (Element script : scripts) {
+            assertEquals(nonce, script.attr("nonce"), script.outerHtml());
+        }
+        assertFalse(document.selectFirst("link[href=preload.css]")
+                .hasAttr("nonce"));
+
+        responseOutput.reset();
+        assertFalse(serveIndexHtmlAndCaptureCspHeader().contains(nonce),
+                "Every response should get a new nonce");
+    }
+
+    @Test
+    public void serveIndexHtml_strictCspAndHeaderAlreadyPresent_throws() {
+        deploymentConfiguration.setCspMode(CspMode.STRICT);
+        when(response.containsHeader("Content-Security-Policy"))
+                .thenReturn(true);
+        VaadinServletRequest request = createVaadinRequest("/");
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, () -> indexHtmlRequestHandler
+                        .synchronizedHandleRequest(session, request, response));
+        assertTrue(exception.getMessage().contains("csp=strict"),
+                exception.getMessage());
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
+        assertEquals(0, responseOutput.size());
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "OFF, true", "WARN, true", "STRICT, false" })
+    public void serveIndexHtml_noStrictCspInProduction_noHeaderOrNonce(
+            CspMode cspMode, boolean productionMode) throws Exception {
+        deploymentConfiguration.setCspMode(cspMode);
+        // A header set elsewhere is fine when Vaadin sends no policy
+        when(response.containsHeader("Content-Security-Policy"))
+                .thenReturn(true);
+        if (!productionMode) {
+            File projectRootFolder = Files
+                    .createTempDirectory(temporaryFolder, "temp").toFile();
+            TestUtil.createIndexHtmlStub(projectRootFolder);
+            TestUtil.createStatsJsonStub(projectRootFolder);
+            deploymentConfiguration.setProductionMode(false);
+            deploymentConfiguration.setProjectFolder(projectRootFolder);
+        }
+        List<IndexHtmlResponse> responses = new ArrayList<>();
+        service.addIndexHtmlRequestListener(responses::add);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        // In development mode, listeners still get the policy so that they
+        // work the same way in both modes
+        assertEquals(1, responses.size());
+        boolean strict = cspMode == CspMode.STRICT;
+        assertEquals(strict, responses.get(0).getCspNonce() != null);
+        assertEquals(strict,
+                responses.get(0).getContentSecurityPolicy() != null);
+        verify(response, never()).setHeader(eq("Content-Security-Policy"),
+                any());
+        assertFalse(responseOutput.toString(StandardCharsets.UTF_8)
+                .contains("nonce="));
+    }
+
+    private String serveIndexHtmlAndCaptureCspHeader() throws IOException {
+        clearInvocations(response);
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        ArgumentCaptor<String> header = ArgumentCaptor.forClass(String.class);
+        verify(response).setHeader(eq("Content-Security-Policy"),
+                header.capture());
+        return header.getValue();
     }
 
     @Test
@@ -274,12 +388,11 @@ public class IndexHtmlRequestHandlerTest {
         Feature enabledFeature = new Feature("Example feature",
                 "exampleFeature", "", false, null);
         enabledFeature.setEnabled(true);
-        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
-        Mockito.when(featureFlags.getFeatures())
-                .thenReturn(List.of(enabledFeature));
-        try (MockedStatic<FeatureFlags> featureFlagsMock = Mockito
-                .mockStatic(FeatureFlags.class)) {
-            featureFlagsMock.when(() -> FeatureFlags.get(Mockito.any()))
+        FeatureFlags featureFlags = mock(FeatureFlags.class);
+        when(featureFlags.getFeatures()).thenReturn(List.of(enabledFeature));
+        try (MockedStatic<FeatureFlags> featureFlagsMock = mockStatic(
+                FeatureFlags.class)) {
+            featureFlagsMock.when(() -> FeatureFlags.get(any()))
                     .thenReturn(featureFlags);
             indexHtmlRequestHandler.synchronizedHandleRequest(session,
                     createVaadinRequest("/"), response);
@@ -502,6 +615,29 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void initialUidl_containsScriptEndTag_lessThanIsEscaped()
+            throws IOException {
+        deploymentConfiguration.setEagerServerLoad(true);
+        service.setBootstrapInitialPredicate(request -> true);
+
+        String payload = "</script><b>text</b>";
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/" + payload), response);
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+
+        assertFalse(indexHtml.contains(payload),
+                "Initial UIDL must not be able to close the script element");
+
+        Document document = Jsoup.parse(indexHtml);
+        Elements scripts = document.head().getElementsByTag("script");
+        Element initialUidlScript = findScript(scripts,
+                INITIAL_UIDL_SEARCH_STRING);
+        String scriptContent = initialUidlScript.data();
+        assertTrue(scriptContent.contains("\\x3C/script>\\x3Cb>text\\x3C/b>"));
+        assertFalse(scriptContent.contains("<"));
+    }
+
+    @Test
     public void should_not_initialize_UI_and_add_initialUidl_when_invalid_route()
             throws IOException {
         deploymentConfiguration.setEagerServerLoad(true);
@@ -553,7 +689,7 @@ public class IndexHtmlRequestHandlerTest {
         requestParams.put("param1", new String[] { "a", "b" });
         requestParams.put("param2", new String[] { "2" });
         VaadinServletRequest request = createVaadinRequest("/view");
-        Mockito.when(request.getHttpServletRequest().getParameterMap())
+        when(request.getHttpServletRequest().getParameterMap())
                 .thenReturn(requestParams);
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
@@ -634,7 +770,7 @@ public class IndexHtmlRequestHandlerTest {
     public void should_include_spring_token_in_dom_when_referer_is_service_worker()
             throws IOException {
         VaadinRequest request = createVaadinRequestWithSpringCsrfToken();
-        Mockito.when(request.getHeader("referer"))
+        when(request.getHeader("referer"))
                 .thenReturn("http://somewhere.test/sw.js");
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
                 response);
@@ -800,7 +936,7 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setProjectFolder(projectRootFolder);
         VaadinServletRequest request = createVaadinRequest("/");
-        Mockito.when(request.getHttpServletRequest().getRemoteAddr())
+        when(request.getHttpServletRequest().getRemoteAddr())
                 .thenReturn("127.0.0.1");
         indexHtmlRequestHandler.synchronizedHandleRequest(session, request,
                 response);
@@ -1084,7 +1220,7 @@ public class IndexHtmlRequestHandlerTest {
     private VaadinServletRequest createRequestWithDestination(String pathInfo,
             String fetchDest, String fetchMode) {
         VaadinServletRequest req = createVaadinRequest(pathInfo);
-        Mockito.when(req.getHeader(Mockito.anyString())).thenAnswer(arg -> {
+        when(req.getHeader(anyString())).thenAnswer(arg -> {
             if ("Sec-Fetch-Dest".equals(arg.getArgument(0))) {
                 return fetchDest;
             } else if ("Sec-Fetch-Mode".equals(arg.getArgument(0))) {
@@ -1098,27 +1234,27 @@ public class IndexHtmlRequestHandlerTest {
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);
-        return new VaadinServletRequest(request, Mockito.spy(service));
+        return new VaadinServletRequest(request, spy(service));
     }
 
     private HttpServletRequest createRequest(String pathInfo) {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.doAnswer(invocation -> "").when(request).getServletPath();
-        Mockito.doAnswer(invocation -> pathInfo).when(request).getPathInfo();
-        Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request)
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        doAnswer(invocation -> "").when(request).getServletPath();
+        doAnswer(invocation -> pathInfo).when(request).getPathInfo();
+        doAnswer(invocation -> new StringBuffer(pathInfo)).when(request)
                 .getRequestURL();
         return request;
     }
 
     @Test
     public void internal_request_no_bootstrap_page() {
-        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
-        Mockito.when(request.getPathInfo()).thenReturn(null);
-        Mockito.when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
+        VaadinServletRequest request = mock(VaadinServletRequest.class);
+        when(request.getPathInfo()).thenReturn(null);
+        when(request.getParameter("v-r")).thenReturn("hello-foo-bar");
         assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
 
-        Mockito.when(request.getParameter("v-r")).thenReturn("init");
+        when(request.getParameter("v-r")).thenReturn("init");
         assertTrue(BootstrapHandler.isFrameworkInternalRequest(request));
         assertFalse(indexHtmlRequestHandler.canHandleRequest(request));
     }
@@ -1128,9 +1264,8 @@ public class IndexHtmlRequestHandlerTest {
             throws IOException {
         final IndexHtmlRequestHandler bootstrapHandler = new IndexHtmlRequestHandler();
 
-        final VaadinServletRequest request = Mockito
-                .mock(VaadinServletRequest.class);
-        Mockito.doAnswer(invocation -> "..**").when(request).getPathInfo();
+        final VaadinServletRequest request = mock(VaadinServletRequest.class);
+        doAnswer(invocation -> "..**").when(request).getPathInfo();
 
         final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
                 .createResponse();
@@ -1150,9 +1285,9 @@ public class IndexHtmlRequestHandlerTest {
     public void serviceWorkerRequest_canNotHandleRequest() {
         IndexHtmlRequestHandler bootstrapHandler = new IndexHtmlRequestHandler();
 
-        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        VaadinServletRequest request = mock(VaadinServletRequest.class);
 
-        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
+        when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
                 .thenReturn("script");
 
         assertFalse(bootstrapHandler.canHandleRequest(request));
@@ -1177,12 +1312,12 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     private VaadinRequest createVaadinRequestWithSpringCsrfToken() {
-        VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
+        VaadinRequest request = spy(createVaadinRequest("/"));
         Map<String, String> csrfJsonMap = new HashMap<>();
         csrfJsonMap.put("token", springTokenString);
         csrfJsonMap.put("headerName", springTokenHeaderName);
         csrfJsonMap.put("parameterName", springTokenParamName);
-        Mockito.when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
+        when(request.getAttribute(SPRING_CSRF_ATTRIBUTE_IN_SESSION))
                 .thenReturn(csrfJsonMap);
         return request;
     }
@@ -1228,21 +1363,21 @@ public class IndexHtmlRequestHandlerTest {
 
     private boolean isAllowedDevToolsHost(String hostsAllowedProperty,
             String remoteAddr, List<String> forwardedForHeader) {
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request.getRemoteAddr()).thenReturn(remoteAddr);
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.doAnswer(q -> hostsAllowedProperty).when(configuration)
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getRemoteAddr()).thenReturn(remoteAddr);
+        ApplicationConfiguration configuration = mock(
+                ApplicationConfiguration.class);
+        doAnswer(q -> hostsAllowedProperty).when(configuration)
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED,
                         null);
         if (forwardedForHeader == null) {
-            Mockito.when(request.getHeader("X-Forwarded-For")).thenReturn(null);
-            Mockito.when(request.getHeaders("X-Forwarded-For"))
+            when(request.getHeader("X-Forwarded-For")).thenReturn(null);
+            when(request.getHeaders("X-Forwarded-For"))
                     .thenReturn(Collections.emptyEnumeration());
         } else {
-            Mockito.when(request.getHeader("X-Forwarded-For"))
+            when(request.getHeader("X-Forwarded-For"))
                     .thenReturn(forwardedForHeader.get(0));
-            Mockito.when(request.getHeaders("X-Forwarded-For"))
+            when(request.getHeaders("X-Forwarded-For"))
                     .thenReturn(Collections.enumeration(forwardedForHeader));
         }
         return IndexHtmlRequestHandler.isAllowedDevToolsHost(configuration,
@@ -1424,19 +1559,19 @@ public class IndexHtmlRequestHandlerTest {
                 spoofedForwarderFor) -> {
             String customClientIpHeaderName = "Some-Proxy-Client-IP";
 
-            VaadinRequest request = Mockito.mock(VaadinRequest.class);
-            Mockito.when(request.getRemoteAddr()).thenReturn("127.0.0.1");
-            ApplicationConfiguration configuration = Mockito
-                    .mock(ApplicationConfiguration.class);
-            Mockito.when(configuration.getStringProperty(
+            VaadinRequest request = mock(VaadinRequest.class);
+            when(request.getRemoteAddr()).thenReturn("127.0.0.1");
+            ApplicationConfiguration configuration = mock(
+                    ApplicationConfiguration.class);
+            when(configuration.getStringProperty(
                     SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED, null))
                     .thenAnswer(q -> "1.2.3.4,5.6.7.8");
-            Mockito.when(configuration.getStringProperty(
+            when(configuration.getStringProperty(
                     eq(SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER), any()))
                     .thenAnswer(q -> customClientIpHeaderName);
-            Mockito.when(request.getHeader(customClientIpHeaderName))
+            when(request.getHeader(customClientIpHeaderName))
                     .thenReturn(remoteIp);
-            Mockito.when(request.getHeader("X-Forwarded-For"))
+            when(request.getHeader("X-Forwarded-For"))
                     .thenReturn(spoofedForwarderFor);
             return IndexHtmlRequestHandler.isAllowedDevToolsHost(configuration,
                     request);

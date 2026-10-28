@@ -225,6 +225,7 @@ public class ResponseWriter implements Serializable {
      * @param resource
      *            the resource, used in log messages
      * @return the ranges to send, or {@code null} if the header is ignored
+     * @since 25.4
      */
     public static List<Pair<Long, Long>> parseRanges(String range,
             long resourceLength, Object resource) {
@@ -310,7 +311,8 @@ public class ResponseWriter implements Serializable {
      *            {@code null}; not closed by this method
      * @param resourceUrl
      *            the URL of the resource, to read it again for ranges that are
-     *            not in ascending order, not {@code null}
+     *            not in ascending order, or {@code null} if the ranges are in
+     *            ascending order
      * @param outputStream
      *            the stream to write the body to, usually the output stream of
      *            the response, not {@code null}; not flushed or closed by this
@@ -321,6 +323,7 @@ public class ResponseWriter implements Serializable {
      * @throws IOException
      *             if reading the resource or writing the response fails, or the
      *             resource ends before a range does
+     * @since 25.4
      */
     public static void writeRanges(List<Pair<Long, Long>> ranges,
             long resourceLength, InputStream dataStream, URL resourceUrl,

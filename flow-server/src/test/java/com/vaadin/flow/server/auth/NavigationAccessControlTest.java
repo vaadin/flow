@@ -28,8 +28,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -53,6 +51,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
@@ -68,7 +67,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 class NavigationAccessControlTest {
 
@@ -84,9 +91,9 @@ class NavigationAccessControlTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        checker1 = Mockito.mock(NavigationAccessChecker.class);
-        checker2 = Mockito.mock(NavigationAccessChecker.class);
-        checker3 = Mockito.mock(NavigationAccessChecker.class);
+        checker1 = mock(NavigationAccessChecker.class);
+        checker2 = mock(NavigationAccessChecker.class);
+        checker3 = mock(NavigationAccessChecker.class);
         accessControl = new NavigationAccessControl(
                 List.of(checker1, checker2, checker3));
     }
@@ -98,7 +105,7 @@ class NavigationAccessControlTest {
 
         ArgumentCaptor<NavigationContext> captor = ArgumentCaptor
                 .forClass(NavigationContext.class);
-        Mockito.when(checker1.check(captor.capture()))
+        when(checker1.check(captor.capture()))
                 .then(i -> i.getArgument(0, NavigationContext.class).allow());
 
         checkAccess(true, false);
@@ -108,7 +115,20 @@ class NavigationAccessControlTest {
                 "Expected Principal to be provided to checkers, but was null");
         assertTrue(navigationContext.hasRole("user"),
                 "Wrong role checker provided to checkers");
+        assertEquals(NavigationContext.Phase.NAVIGATION,
+                navigationContext.getPhase());
+    }
 
+    @Test
+    void createNavigationContext_evaluationPhase() {
+        VaadinService service = mock(VaadinService.class);
+        when(service.getRouter()).thenReturn(mock(Router.class));
+
+        NavigationContext context = accessControl.createNavigationContext(
+                AnonymousAllowedView.class, "anon", service, null);
+
+        assertEquals(NavigationContext.Phase.EVALUATION, context.getPhase());
+        assertFalse(context.isNavigating());
     }
 
     @Test
@@ -187,7 +207,7 @@ class NavigationAccessControlTest {
                         + failure.getMessage());
 
         // Result order does not matter
-        Mockito.reset(checker1, checker2, checker3);
+        reset(checker1, checker2, checker3);
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.ALLOW);
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
@@ -214,7 +234,7 @@ class NavigationAccessControlTest {
         assertEquals("", result.getRerouteErrorMessage());
 
         // Result order does not matter
-        Mockito.reset(checker1, checker2, checker3);
+        reset(checker1, checker2, checker3);
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.ALLOW);
         mockCheckerResult(checker3, AccessCheckDecision.NEUTRAL);
@@ -444,7 +464,7 @@ class NavigationAccessControlTest {
         assertTrue(result.wasTargetViewRendered(),
                 "Expected navigation to target view to be allowed when access control is disabled");
 
-        Mockito.reset(checker1, checker2, checker3);
+        reset(checker1, checker2, checker3);
         mockCheckerResult(checker1, AccessCheckDecision.DENY);
         mockCheckerResult(checker2, AccessCheckDecision.DENY);
         mockCheckerResult(checker3, AccessCheckDecision.DENY);
@@ -481,18 +501,18 @@ class NavigationAccessControlTest {
 
     private void verifyAllCheckersUsed(boolean used) {
         if (used) {
-            Mockito.verify(checker1).check(ArgumentMatchers.any());
-            Mockito.verify(checker2).check(ArgumentMatchers.any());
-            Mockito.verify(checker3).check(ArgumentMatchers.any());
+            verify(checker1).check(any());
+            verify(checker2).check(any());
+            verify(checker3).check(any());
         } else {
-            Mockito.verifyNoInteractions(checker1, checker2, checker3);
+            verifyNoInteractions(checker1, checker2, checker3);
         }
     }
 
     private void mockCheckerResult(NavigationAccessChecker checker,
             AccessCheckDecision decision) {
         String denyReason = accessDeniedReason(checker);
-        Mockito.when(checker.check(ArgumentMatchers.any())).then(i -> {
+        when(checker.check(any())).then(i -> {
             NavigationContext ctx = i.getArgument(0, NavigationContext.class);
             return switch (decision) {
             case ALLOW -> ctx.allow();
@@ -528,70 +548,64 @@ class NavigationAccessControlTest {
             roles = new String[0];
         }
 
-        VaadinServletRequest vaadinServletRequest = Mockito
-                .mock(VaadinServletRequest.class);
+        VaadinServletRequest vaadinServletRequest = mock(
+                VaadinServletRequest.class);
         HttpServletRequest httpServletRequest = AccessAnnotationCheckerTest
                 .createRequest(principal, roles);
-        Mockito.when(vaadinServletRequest.getHttpServletRequest())
+        when(vaadinServletRequest.getHttpServletRequest())
                 .thenReturn(httpServletRequest);
-        Mockito.when(vaadinServletRequest.getUserPrincipal())
+        when(vaadinServletRequest.getUserPrincipal())
                 .thenAnswer(answer -> httpServletRequest.getUserPrincipal());
-        Mockito.when(vaadinServletRequest.getSession())
+        when(vaadinServletRequest.getSession())
                 .thenAnswer(answer -> httpServletRequest.getSession());
-        Mockito.when(vaadinServletRequest.getSession(anyBoolean())).thenAnswer(
+        when(vaadinServletRequest.getSession(anyBoolean())).thenAnswer(
                 answer -> httpServletRequest.getSession(answer.getArgument(0)));
-        Mockito.when(vaadinServletRequest.isUserInRole(Mockito.any()))
+        when(vaadinServletRequest.isUserInRole(any()))
                 .thenAnswer(answer -> httpServletRequest
                         .isUserInRole(answer.getArgument(0)));
-        Mockito.when(vaadinServletRequest.getRequestURL()).thenReturn(
+        when(vaadinServletRequest.getRequestURL()).thenReturn(
                 new StringBuffer(AccessAnnotationCheckerTest.REQUEST_URL));
 
-        Mockito.when(vaadinServletRequest.getWrappedSession())
-                .thenCallRealMethod();
-        Mockito.when(vaadinServletRequest.getWrappedSession(anyBoolean()))
+        when(vaadinServletRequest.getWrappedSession()).thenCallRealMethod();
+        when(vaadinServletRequest.getWrappedSession(anyBoolean()))
                 .thenCallRealMethod();
 
         CurrentInstance.set(VaadinRequest.class, vaadinServletRequest);
 
-        Router router = Mockito.mock(Router.class);
-        UI ui = Mockito.mock(UI.class);
-        Page page = Mockito.mock(Page.class);
-        Mockito.when(ui.getPage()).thenReturn(page);
-        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
-        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
-        Mockito.when(ui.getSessionOrThrow()).thenCallRealMethod();
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(vaadinSession.getConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(productionMode);
+        Router router = mock(Router.class);
+        UI ui = mock(UI.class);
+        Page page = mock(Page.class);
+        when(ui.getPage()).thenReturn(page);
+        VaadinSession vaadinSession = mock(VaadinSession.class);
+        when(ui.getSession()).thenReturn(vaadinSession);
+        when(ui.getSessionOrThrow()).thenCallRealMethod();
+        DeploymentConfiguration configuration = mock(
+                DeploymentConfiguration.class);
+        when(vaadinSession.getConfiguration()).thenReturn(configuration);
+        when(configuration.isProductionMode()).thenReturn(productionMode);
 
-        UIInternals uiInternals = Mockito.mock(UIInternals.class);
-        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
-        Mockito.when(uiInternals.getRouter()).thenReturn(router);
+        UIInternals uiInternals = mock(UIInternals.class);
+        when(ui.getInternals()).thenReturn(uiInternals);
+        when(uiInternals.getRouter()).thenReturn(router);
 
-        Mockito.when(router.getErrorNavigationTarget(Mockito.any()))
-                .thenAnswer(invocation -> {
-                    Class<?> exceptionClass = invocation.getArguments()[0]
-                            .getClass();
-                    if (exceptionClass == NotFoundException.class) {
-                        return Optional.of(
-                                new ErrorTargetEntry(RouteNotFoundError.class,
-                                        NotFoundException.class));
-                    } else if (exceptionClass == AccessDeniedException.class) {
-                        return Optional.of(new ErrorTargetEntry(
-                                RouteAccessDeniedError.class,
+        when(router.getErrorNavigationTarget(any())).thenAnswer(invocation -> {
+            Class<?> exceptionClass = invocation.getArguments()[0].getClass();
+            if (exceptionClass == NotFoundException.class) {
+                return Optional.of(new ErrorTargetEntry(
+                        RouteNotFoundError.class, NotFoundException.class));
+            } else if (exceptionClass == AccessDeniedException.class) {
+                return Optional
+                        .of(new ErrorTargetEntry(RouteAccessDeniedError.class,
                                 AccessDeniedException.class));
-                    } else if (exceptionClass == CustomAccessDeniedException.class) {
-                        return Optional.of(new ErrorTargetEntry(
-                                CustomAccessDeniedErrorView.class,
+            } else if (exceptionClass == CustomAccessDeniedException.class) {
+                return Optional.of(
+                        new ErrorTargetEntry(CustomAccessDeniedErrorView.class,
                                 CustomAccessDeniedException.class));
-                    } else {
-                        return Optional.empty();
-                    }
+            } else {
+                return Optional.empty();
+            }
 
-                });
+        });
         Location location = new Location(getRoute(navigationTarget));
         NavigationEvent navigationEvent;
         if (HasErrorParameter.class.isAssignableFrom(navigationTarget)) {
@@ -606,9 +620,9 @@ class NavigationAccessControlTest {
         BeforeEnterEvent event = new BeforeEnterEvent(navigationEvent,
                 navigationTarget, new ArrayList<>());
 
-        RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
-        Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
-        Mockito.when(routeRegistry.getNavigationTarget(Mockito.anyString()))
+        RouteRegistry routeRegistry = mock(RouteRegistry.class);
+        when(router.getRegistry()).thenReturn(routeRegistry);
+        when(routeRegistry.getNavigationTarget(anyString()))
                 .thenAnswer(invocation -> {
                     String url = (String) invocation.getArguments()[0];
                     if (location.getPath().equals(url)) {
@@ -618,19 +632,18 @@ class NavigationAccessControlTest {
                     }
                 });
 
-        HttpSession session = Mockito.mock(HttpSession.class);
+        HttpSession session = mock(HttpSession.class);
         Map<String, Object> sessionAttributes = new HashMap<>();
-        Mockito.when(httpServletRequest.getSession()).thenReturn(session);
-        Mockito.when(httpServletRequest.getSession(anyBoolean()))
-                .thenReturn(session);
-        Mockito.doAnswer(invocation -> {
+        when(httpServletRequest.getSession()).thenReturn(session);
+        when(httpServletRequest.getSession(anyBoolean())).thenReturn(session);
+        doAnswer(invocation -> {
             String key = (String) invocation.getArguments()[0];
             Object value = invocation.getArguments()[1];
 
             sessionAttributes.put(key, value);
 
             return null;
-        }).when(session).setAttribute(Mockito.anyString(), Mockito.any());
+        }).when(session).setAttribute(anyString(), any());
 
         TestNavigationResult info = new TestNavigationResult();
         info.event = event;
