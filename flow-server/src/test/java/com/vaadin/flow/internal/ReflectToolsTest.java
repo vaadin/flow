@@ -24,6 +24,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Optional;
@@ -360,6 +361,43 @@ class ReflectToolsTest {
         assertNull(
                 ReflectTools.getTypeParameter(RawHasInterface.class, variable));
         assertNull(ReflectTools.getTypeParameter(String.class, variable));
+    }
+
+    public static class GenericHolder<N extends Number, H extends HasInterface> {
+        N number;
+        H hasInterface;
+        List<? extends HasInterface> hasInterfaces;
+        List<String>[] lists;
+    }
+
+    @Test
+    void getTypeParameter_typeVariableOrWildcard_resolvedThroughBound()
+            throws Exception {
+        TypeVariable<Class<TestInterface>> variable = TestInterface.class
+                .getTypeParameters()[0];
+
+        assertEquals(String.class, ReflectTools.getTypeParameter(
+                genericHolderFieldType("hasInterface"), variable));
+        assertEquals(String.class, ReflectTools.getTypeParameter(
+                ((ParameterizedType) genericHolderFieldType("hasInterfaces"))
+                        .getActualTypeArguments()[0],
+                variable));
+    }
+
+    @Test
+    void erase_typeVariableWildcardAndGenericArray() throws Exception {
+        assertEquals(Number.class,
+                ReflectTools.erase(genericHolderFieldType("number")));
+        assertEquals(HasInterface.class, ReflectTools.erase(
+                ((ParameterizedType) genericHolderFieldType("hasInterfaces"))
+                        .getActualTypeArguments()[0]));
+        assertEquals(List[].class,
+                ReflectTools.erase(genericHolderFieldType("lists")));
+    }
+
+    private static Type genericHolderFieldType(String name)
+            throws NoSuchFieldException {
+        return GenericHolder.class.getDeclaredField(name).getGenericType();
     }
 
     @Test
