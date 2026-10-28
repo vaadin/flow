@@ -33,10 +33,10 @@ jobs:
           # Custom token so the created PR triggers CI and can push to the repo
           token: ${{ secrets.VAADIN_BOT_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: '20'
+      # The Node.js version Flow installs on the checked-out branch, so the
+      # regenerated package locks are written by the same npm as other builds
+      - name: Set up the Flow frontend tools
+        uses: ./.github/actions/setup-frontend-tools
 
       - name: Run dependency update script
         run: |

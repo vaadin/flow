@@ -127,7 +127,9 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
             return defaultMode;
         }
 
-        // Tailwind CSS support should additionally enable frontend hotdeloy
+        // Tailwind CSS generates the styles from the class names in the
+        // application sources, which a pre-built bundle cannot know, so it
+        // needs the frontend dev server
         var featureFlags = FeatureFlags.get(getContext());
         if (featureFlags.isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
             return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;

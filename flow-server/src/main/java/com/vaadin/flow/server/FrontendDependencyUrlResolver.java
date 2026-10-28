@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
-import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +62,8 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      * <li>Values containing path traversals ({@code ..}) are rejected with a
      * warning and {@code null} is returned.</li>
      * <li>{@code http://}, {@code https://}, {@code //}, {@code context://} and
-     * {@code base://} prefixes are returned unchanged.</li>
+     * {@code base://} prefixes, and URLs with any other scheme (a value
+     * containing {@code ://}), are returned unchanged.</li>
      * <li>A leading {@code ./} is stripped.</li>
      * <li>If the value (after the previous step) starts with {@code /}, it is
      * returned unchanged.</li>
@@ -106,13 +106,11 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      * <p>
      * Returns {@code true} for values starting with any of: {@code http://},
      * {@code https://}, {@code //}, {@code context://}, {@code base://}, or
-     * {@code /}. Returns {@code false} for {@code null}, blank, or any other
-     * value (e.g. bare relative paths and bundler import specifiers).
-     * <p>
-     * URLs with any other scheme are not recognized here. The bundler skips
-     * them as well (see {@link UrlUtil#isExternal}), so use
-     * {@link #isRuntimeJavaScript(JavaScript)} to decide whether a
-     * {@code @JavaScript} value is loaded at runtime.
+     * {@code /}, and for URLs with any other scheme (a value containing
+     * {@code ://}), which the bundler skips as well (see
+     * {@link UrlUtil#isExternal}). Returns {@code false} for {@code null},
+     * blank, or any other value (e.g. bare relative paths and bundler import
+     * specifiers).
      *
      * @param value
      *            the raw annotation value
@@ -123,24 +121,17 @@ public final class FrontendDependencyUrlResolver implements Serializable {
             return false;
         }
         String trimmed = value.trim();
-        if (trimmed.startsWith("/")) {
-            return true;
-        }
-        String lower = trimmed.toLowerCase(Locale.ROOT);
-        return lower.startsWith("http://") || lower.startsWith("https://")
-                || lower.startsWith("//")
-                || lower.startsWith(
-                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
-                || lower.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX);
+        // A leading '/' also covers protocol-relative '//' URLs, and every
+        // scheme, including context:// and base://, contains '://'
+        return trimmed.startsWith("/") || UrlUtil.isExternal(trimmed);
     }
 
     /**
      * Tells whether the given {@link JavaScript} annotation is loaded at
      * runtime as a {@code script} element rather than bundled.
      * <p>
-     * That is the case for {@link JavaScript.Type#MODULE} values, for values
-     * with a runtime prefix (see {@link #isRuntimeDependencyUrl(String)}) and
-     * for URLs with any other scheme, which the bundler skips as well.
+     * That is the case for {@link JavaScript.Type#MODULE} values and for
+     * runtime URLs (see {@link #isRuntimeDependencyUrl(String)}).
      *
      * @param javaScript
      *            the annotation to check, not {@code null}
@@ -148,8 +139,7 @@ public final class FrontendDependencyUrlResolver implements Serializable {
      */
     public static boolean isRuntimeJavaScript(JavaScript javaScript) {
         return javaScript.type() == JavaScript.Type.MODULE
-                || isRuntimeDependencyUrl(javaScript.value())
-                || UrlUtil.isExternal(javaScript.value());
+                || isRuntimeDependencyUrl(javaScript.value());
     }
 
     /**

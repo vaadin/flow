@@ -55,6 +55,7 @@ import com.vaadin.flow.dom.impl.ElementJsInitializerRegistration;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.CspViolationReporter;
 import com.vaadin.flow.internal.DiscardAwareExecution;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -69,6 +70,8 @@ import com.vaadin.flow.js.JsDefinitionProxy;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
@@ -1933,7 +1936,8 @@ public class Element extends Node<Element> {
      * deferred until the element is attached and visible.
      * <p>
      * The expression is sent to the browser and compiled there, which a content
-     * security policy without <code>unsafe-eval</code> does not allow.
+     * security policy without <code>unsafe-eval</code> does not allow, so the
+     * {@link CspMode} of the application reports or refuses the call.
      * {@link #executeJs(Class)} runs JavaScript that is declared in Java and
      * collected into the bundle instead, and sends no expression.
      *
@@ -1945,9 +1949,12 @@ public class Element extends Node<Element> {
      *         the expression
      * @see #executeJs(Class)
      * @since 25.0
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public PendingJavaScriptResult executeJs(String expression,
             Object... parameters) {
+        CspViolationReporter.reportStringJavaScript();
         return scheduleExecuteJs(expression, parameters);
     }
 
@@ -2102,6 +2109,8 @@ public class Element extends Node<Element> {
      * @return a registration that, when removed, invokes the cleanup callback
      *         on the client
      * @since 25.2
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     public Registration addJsInitializer(String expression,
             Object... parameters) {
