@@ -677,7 +677,9 @@ public class ElementListenersTest
         // Test that addEventData correctly extracts nested record structure
         record EventDetails(int button, int clientX, int clientY) {
         }
-        record MouseEventData(EventDetails event, String type) {
+        record ElementDetails(String tagName) {
+        }
+        record MouseEventData(EventDetails event, ElementDetails element) {
         }
 
         DomListenerRegistration registration = ns.add("click", noOp);
@@ -692,7 +694,8 @@ public class ElementListenersTest
                 "Should capture event.clientX");
         assertTrue(expressions.contains("event.clientY"),
                 "Should capture event.clientY");
-        assertTrue(expressions.contains("type"), "Should capture type");
+        assertTrue(expressions.contains("element.tagName"),
+                "Should capture element.tagName");
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
