@@ -20,11 +20,14 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class DownloadHandlerIT extends AbstractStreamResourceIT {
+
+    private static final String FETCH_ERROR = "FETCH_ERROR:";
 
     @Test
     public void getDynamicDownloadHandlerResource() throws IOException {
@@ -113,6 +116,25 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
         }
         // Special characters in the file name in URL are encoded.
         Assert.assertEquals("download-%22.json", FilenameUtils.getName(url));
+        // The quote in the file name is escaped in the header.
+        String contentDisposition = fetchContentDisposition(url);
+        checkLogsForErrors();
+        Assert.assertFalse(
+                "Fetching the download failed: " + contentDisposition,
+                contentDisposition != null
+                        && contentDisposition.startsWith(FETCH_ERROR));
+        Assert.assertEquals("attachment; filename=\"download-\\\".json\"",
+                contentDisposition);
+    }
+
+    private String fetchContentDisposition(String url) {
+        return (String) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript("""
+                        const done = arguments[arguments.length - 1];
+                        fetch(arguments[0])
+                          .then(r => done(r.headers.get('Content-Disposition')))
+                          .catch(e => done(arguments[1] + e));
+                        """, url, FETCH_ERROR);
     }
 
     @Test
