@@ -48,7 +48,7 @@ public class DomEvent extends EventObject {
      * event data is deserialized.
      */
     private static final Pattern PROPERTY_PATH = Pattern
-            .compile("[A-Za-z_$][\\w$]*(\\.[A-Za-z_$][\\w$]*)+");
+            .compile("[A-Za-z_$][\\w$]*+(?:\\.[A-Za-z_$][\\w$]*+)++");
 
     private final JsonNode eventData;
 
