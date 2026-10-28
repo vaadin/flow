@@ -155,8 +155,7 @@ public final class JsFunction implements JsSnippet {
      * @return a new {@code JsFunction} instance
      * @throws RuntimeException
      *             if any argument of the call cannot be encoded to be sent to
-     *             the client, as {@link #of(String, Object...)} throws for a
-     *             capture
+     *             the client
      */
     public static JsFunction ofDeclaredCall(JsCall call) {
         Objects.requireNonNull(call, "call");

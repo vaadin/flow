@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.DatabindException;
 
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
@@ -69,12 +68,17 @@ class JsFunctionTest {
 
     @Test
     void declaredFunction_captureTheClientCanNotReceive_throwsWhenDeclared() {
-        // The capture is encoded when the snippet method is called, so the
-        // failure points at the application code that passed it rather than
-        // at the response that would have sent it later
+        // Either kind of function encodes its captures when it is created, so
+        // the failure points at the application code that passed the value
+        // rather than at the response that would have sent it later
         LoggerJs logger = JsSnippets.of(LoggerJs.class);
+        Unencodable capture = new Unencodable();
 
-        assertThrows(DatabindException.class,
-                () -> logger.createAnyLogger(new Unencodable()));
+        assertThrows(RuntimeException.class,
+                () -> logger.createAnyLogger(capture),
+                "a declared function should refuse the capture when declared");
+        assertThrows(RuntimeException.class,
+                () -> JsFunction.of("console.log($0);", capture),
+                "a function with a body should refuse the capture when created");
     }
 }
