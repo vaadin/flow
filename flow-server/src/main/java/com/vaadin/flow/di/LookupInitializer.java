@@ -97,11 +97,19 @@ public class LookupInitializer implements AbstractLookupInitializer {
                             .collect(Collectors.toList())));
         }
 
+        private static <T> ServiceLoader<T> loadServices(
+                Class<T> serviceClass) {
+            // Lookup accepts any service type, so it cannot be listed as
+            // 'uses' in module-info. No-op when running on the classpath.
+            LookupInitializer.class.getModule().addUses(serviceClass);
+            return ServiceLoader.load(serviceClass);
+        }
+
         @Override
         public <T> T lookup(Class<T> serviceClass) {
             Collection<Object> registered = serviceMap.get(serviceClass);
             if (registered == null || registered.isEmpty()) {
-                ServiceLoader<T> loader = ServiceLoader.load(serviceClass);
+                ServiceLoader<T> loader = loadServices(serviceClass);
                 List<T> services = new ArrayList<>();
                 for (Iterator<T> iterator = loader.iterator(); iterator
                         .hasNext();) {
@@ -135,7 +143,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
                 registered.forEach(
                         service -> result.add(serviceClass.cast(service)));
             }
-            ServiceLoader<T> loader = ServiceLoader.load(serviceClass);
+            ServiceLoader<T> loader = loadServices(serviceClass);
             for (Iterator<T> iterator = loader.iterator(); iterator
                     .hasNext();) {
                 T next = iterator.next();
