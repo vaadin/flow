@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.test.jpms;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
@@ -31,6 +32,8 @@ public class ModuleInfoView extends Div {
         appModule.setId("app-module");
         Span flowModule = new Span(describe(Route.class.getModule()));
         flowModule.setId("flow-module");
+        Span componentsModule = new Span(describe(Span.class.getModule()));
+        componentsModule.setId("components-module");
 
         Div clicked = new Div();
         clicked.setId("clicked");
@@ -38,7 +41,17 @@ public class ModuleInfoView extends Div {
                 event -> clicked.setText("Clicked"));
         button.setId("button");
 
-        add(appModule, flowModule, button, clicked);
+        Div pushed = new Div();
+        pushed.setId("pushed");
+        NativeButton pushButton = new NativeButton("Push", event -> {
+            UI ui = event.getSource().getUI().orElseThrow();
+            Thread.ofVirtual().start(
+                    () -> ui.access(() -> pushed.setText("Pushed")));
+        });
+        pushButton.setId("push-button");
+
+        add(appModule, flowModule, componentsModule, button, clicked,
+                pushButton, pushed);
     }
 
     private static String describe(Module module) {
