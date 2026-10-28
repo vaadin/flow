@@ -15,14 +15,17 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EventObject;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JavaType;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -40,6 +43,16 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class DomEvent extends EventObject {
+
+    /*
+     * A simplified JavaScript identifier: a letter, underscore or dollar sign,
+     * followed by any number of letters, digits, underscores or dollar signs.
+     * Event data keys made of such identifiers separated by dots, e.g.
+     * event.detail.r, are property paths that are also made available as nested
+     * objects.
+     */
+    private static final Pattern IDENTIFIER_PATTERN = Pattern
+            .compile("[\\p{L}_$][\\p{L}\\p{N}_$]*");
 
     private final JsonNode eventData;
 
@@ -171,18 +184,18 @@ public class DomEvent extends EventObject {
      * Gets the event data deserialized as the given type. This method supports
      * arbitrary bean types through Jackson deserialization.
      * <p>
+     * Event data expressions that are property paths, such as
+     * {@code event.clientX}, are also made available as nested objects, so that
+     * a type mirroring the structure of the event, as used with
+     * {@link DomListenerRegistration#addEventData(Class)}, can be decoded.
+     * Maps, {@link Object} and {@link JsonNode} types get the event data as is,
+     * with one key per expression.
+     * <p>
      * Example usage:
      *
      * <pre>
      * MyDto dto = domEvent.getEventData(MyDto.class);
      * </pre>
-     * <p>
-     * Event data keys that are dotted property paths, such as
-     * {@code event.clientX}, are also expanded into nested objects, so that
-     * data registered with {@link DomListenerRegistration#addEventData(Class)}
-     * can be read back using the same type. The original dotted keys are kept
-     * as well, so a {@code Map} target sees both the dotted keys and the
-     * expanded top-level entries.
      *
      * @param <T>
      *            the type to deserialize to
@@ -194,7 +207,8 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventData(Class<T> type) {
-        return JacksonCodec.decodeAs(getExpandedEventData(), type);
+        return JacksonCodec.decodeAs(getEventDataForType(
+                JacksonUtils.getMapper().constructType(type)), type);
     }
 
     /**
@@ -203,6 +217,13 @@ public class DomEvent extends EventObject {
      * {@code List<MyBean>} and {@code Map<String, MyBean>} through Jackson's
      * TypeReference mechanism.
      * <p>
+     * Event data expressions that are property paths, such as
+     * {@code event.clientX}, are also made available as nested objects, so that
+     * a type mirroring the structure of the event, as used with
+     * {@link DomListenerRegistration#addEventData(TypeReference)}, can be
+     * decoded. Maps, {@link Object} and {@link JsonNode} types get the event
+     * data as is, with one key per expression.
+     * <p>
      * Example usage:
      *
      * <pre>
@@ -210,11 +231,6 @@ public class DomEvent extends EventObject {
      * };
      * List&lt;MyDto&gt; dtos = domEvent.getEventData(typeRef);
      * </pre>
-     * <p>
-     * Event data keys that are dotted property paths, such as
-     * {@code event.clientX}, are also expanded into nested objects. The
-     * original dotted keys are kept as well, so a {@code Map} target sees both
-     * the dotted keys and the expanded top-level entries, e.g. {@code event}.
      *
      * @param <T>
      *            the type to deserialize to
@@ -226,7 +242,10 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventData(TypeReference<T> typeReference) {
-        return JacksonCodec.decodeAs(getExpandedEventData(), typeReference);
+        return JacksonCodec.decodeAs(
+                getEventDataForType(
+                        JacksonUtils.getMapper().constructType(typeReference)),
+                typeReference);
     }
 
     /**
@@ -300,7 +319,15 @@ public class DomEvent extends EventObject {
      * records through Jackson deserialization.
      * <p>
      * The {@code event.detail} property must have been included in the event
-     * data using {@link DomListenerRegistration#addEventDetail()}.
+     * data using {@link DomListenerRegistration#addEventDetail()}, or its
+     * properties using {@link DomListenerRegistration#addEventDetail(Class)}.
+     * <p>
+     * Detail properties that are property paths, such as {@code color.r}, are
+     * also made available as nested objects, so that a type with nested
+     * properties, as used with
+     * {@link DomListenerRegistration#addEventDetail(Class)}, can be decoded.
+     * Maps, {@link Object} and {@link JsonNode} types get the detail as is,
+     * with one key per property.
      * <p>
      * Example usage:
      *
@@ -326,7 +353,8 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventDetail(Class<T> type) {
-        JsonNode detailNode = getDetailNode();
+        JsonNode detailNode = getDetailNodeForType(
+                JacksonUtils.getMapper().constructType(type));
         if (detailNode == null) {
             return null;
         }
@@ -340,7 +368,15 @@ public class DomEvent extends EventObject {
      * {@code Map<String, MyBean>} through Jackson's TypeReference mechanism.
      * <p>
      * The {@code event.detail} property must have been included in the event
-     * data using {@link DomListenerRegistration#addEventDetail()}.
+     * data using {@link DomListenerRegistration#addEventDetail()}, or its
+     * properties using {@link DomListenerRegistration#addEventDetail(Class)}.
+     * <p>
+     * Detail properties that are property paths, such as {@code color.r}, are
+     * also made available as nested objects, so that a type with nested
+     * properties, as used with
+     * {@link DomListenerRegistration#addEventDetail(Class)}, can be decoded.
+     * Maps, {@link Object} and {@link JsonNode} types get the detail as is,
+     * with one key per property.
      * <p>
      * Example usage:
      *
@@ -364,11 +400,29 @@ public class DomEvent extends EventObject {
      * @since 25.0
      */
     public <T> T getEventDetail(TypeReference<T> typeReference) {
-        JsonNode detailNode = getDetailNode();
+        JsonNode detailNode = getDetailNodeForType(
+                JacksonUtils.getMapper().constructType(typeReference));
         if (detailNode == null) {
             return null;
         }
         return JacksonCodec.decodeAs(detailNode, typeReference);
+    }
+
+    /**
+     * Gets the event.detail node to decode as the given type. Maps,
+     * {@link Object} and {@link JsonNode} types get the detail as is, other
+     * types get it with nested objects for property paths.
+     *
+     * @param type
+     *            the type to decode the event detail as
+     * @return the detail node to decode, or null if no detail data is present
+     */
+    private JsonNode getDetailNodeForType(JavaType type) {
+        JsonNode detailNode = getDetailNode();
+        if (detailNode == null || isDecodedAsIs(type)) {
+            return detailNode;
+        }
+        return withNestedPaths(detailNode);
     }
 
     /**
@@ -377,84 +431,107 @@ public class DomEvent extends EventObject {
      * <ul>
      * <li>Case 1: event.detail sent as a complete object
      * <li>Case 2: event.detail properties sent individually (e.g.,
-     * event.detail.r, event.detail.g, event.detail.start.x)
+     * event.detail.r, event.detail.g)
      * </ul>
      *
      * @return the detail node, or null if no detail data is present
      */
     private JsonNode getDetailNode() {
-        JsonNode detailNode = getExpandedEventData().path("event")
-                .path("detail");
-        if (detailNode.isMissingNode() || detailNode.isNull()) {
+        JsonNode detailNode = eventData.get("event.detail");
+        if (detailNode != null && !detailNode.isNull()) {
+            // Case 1: event.detail sent as a complete object
+            return detailNode;
+        }
+
+        // Case 2: event.detail properties sent individually
+        boolean hasDetailProperties = JacksonUtils.getKeys(eventData).stream()
+                .anyMatch(key -> key.startsWith("event.detail."));
+
+        if (!hasDetailProperties) {
             return null;
         }
-        return detailNode;
+
+        // Reconstruct the detail object from individual properties by
+        // stripping the "event.detail." prefix
+        ObjectNode detailObject = JacksonUtils.createObjectNode();
+        JacksonUtils.getKeys(eventData).forEach(key -> {
+            if (key.startsWith("event.detail.")) {
+                String propertyName = key.substring("event.detail.".length());
+                detailObject.set(propertyName, eventData.get(key));
+            }
+        });
+
+        return detailObject;
     }
 
     /**
-     * Gets a copy of the event data where keys that are dotted property paths,
-     * e.g. {@code event.detail.r}, are additionally expanded into nested
-     * objects, e.g. <code>{"event": {"detail": {"r": ...}}}</code>. The
-     * original keys are retained. Shorter paths are expanded first so that a
-     * complete object sent for e.g. {@code event.detail} is merged with any
-     * individually sent properties. A path is not expanded if it would replace
-     * an existing non-object value.
+     * Gets the event data to decode as the given type. Maps, {@link Object} and
+     * {@link JsonNode} types get the event data as is, other types get it with
+     * nested objects for property paths.
      *
-     * @return the expanded event data
+     * @param type
+     *            the type to decode the event data as
+     * @return the event data to decode
      */
-    private JsonNode getExpandedEventData() {
-        if (!(eventData instanceof ObjectNode)) {
+    private JsonNode getEventDataForType(JavaType type) {
+        if (isDecodedAsIs(type)) {
             return eventData;
         }
-        ObjectNode expanded = (ObjectNode) eventData.deepCopy();
-        JacksonUtils.getKeys(eventData).stream()
-                .filter(DomEvent::isPropertyPath)
-                .sorted(Comparator.comparingLong(
-                        key -> key.chars().filter(c -> c == '.').count()))
-                .forEach(key -> setNestedIfAbsent(expanded, key.split("\\."),
-                        expanded.get(key)));
-        return expanded;
+        return withNestedPaths(eventData);
+    }
+
+    private static boolean isDecodedAsIs(JavaType type) {
+        Class<?> rawClass = type.getRawClass();
+        return type.isMapLikeType() || rawClass == Object.class
+                || JsonNode.class.isAssignableFrom(rawClass);
     }
 
     /**
-     * Checks whether the given event data key is a plain dotted property path,
-     * such as {@code event.clientX}, consisting of at least two identifier
-     * segments.
+     * Creates a copy of the given data where the values of property path keys,
+     * e.g. {@code event.clientX}, are additionally available as nested objects,
+     * e.g. {@code {"event": {"clientX": ...}}}. The original keys are kept as
+     * is, and an existing value is never replaced.
+     *
+     * @param data
+     *            the data to add nested objects to
+     * @return a copy of the data with nested objects for property paths, or the
+     *         data itself if it is not an object
      */
-    private static boolean isPropertyPath(String key) {
-        String[] segments = key.split("\\.", -1);
-        if (segments.length < 2) {
-            return false;
+    private static JsonNode withNestedPaths(JsonNode data) {
+        if (!(data instanceof ObjectNode dataObject)) {
+            return data;
         }
-        for (String segment : segments) {
-            if (segment.isEmpty()
-                    || !Character.isJavaIdentifierStart(segment.charAt(0))
-                    || !segment.chars().skip(1)
-                            .allMatch(Character::isJavaIdentifierPart)) {
-                return false;
-            }
-        }
-        return true;
+        ObjectNode result = dataObject.deepCopy();
+        // Shorter paths first so that e.g. a complete event.detail object is
+        // used as the base for the event.detail.* properties
+        JacksonUtils.getKeys(data).stream().filter(DomEvent::isPropertyPath)
+                .sorted(Comparator.comparingInt(String::length))
+                .forEach(key -> setNestedValue(result, key.split("\\."),
+                        data.get(key)));
+        return result;
     }
 
-    private static void setNestedIfAbsent(ObjectNode root, String[] keyPath,
+    private static boolean isPropertyPath(String key) {
+        String[] parts = key.split("\\.", -1);
+        return parts.length > 1 && Arrays.stream(parts)
+                .allMatch(part -> IDENTIFIER_PATTERN.matcher(part).matches());
+    }
+
+    private static void setNestedValue(ObjectNode target, String[] path,
             JsonNode value) {
-        ObjectNode current = root;
-        for (int i = 0; i < keyPath.length - 1; i++) {
-            JsonNode child = current.get(keyPath[i]);
+        ObjectNode current = target;
+        for (int i = 0; i < path.length - 1; i++) {
+            JsonNode child = current.get(path[i]);
             if (child == null || child.isNull()) {
-                ObjectNode created = JacksonUtils.createObjectNode();
-                current.set(keyPath[i], created);
-                current = created;
-            } else if (child instanceof ObjectNode childObject) {
-                current = childObject;
-            } else {
+                child = current.putObject(path[i]);
+            } else if (!(child instanceof ObjectNode)) {
                 return;
             }
+            current = (ObjectNode) child;
         }
-        String leaf = keyPath[keyPath.length - 1];
-        if (current.get(leaf) == null) {
-            current.set(leaf, value);
+        String name = path[path.length - 1];
+        if (!current.has(name)) {
+            current.set(name, value.deepCopy());
         }
     }
 }

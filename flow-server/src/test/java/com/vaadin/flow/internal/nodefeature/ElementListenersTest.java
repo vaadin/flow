@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -755,7 +756,9 @@ public class ElementListenersTest
         // Test that addEventData correctly extracts nested record structure
         record EventDetails(int button, int clientX, int clientY) {
         }
-        record MouseEventData(EventDetails event, String type) {
+        record ElementDetails(String tagName) {
+        }
+        record MouseEventData(EventDetails event, ElementDetails element) {
         }
 
         DomListenerRegistration registration = ns.add("click", noOp);
@@ -770,7 +773,8 @@ public class ElementListenersTest
                 "Should capture event.clientX");
         assertTrue(expressions.contains("event.clientY"),
                 "Should capture event.clientY");
-        assertTrue(expressions.contains("type"), "Should capture type");
+        assertTrue(expressions.contains("element.tagName"),
+                "Should capture element.tagName");
 
         // Should have exactly these 4 expressions
         assertEquals(4, expressions.size(), "Should have 4 expressions");
@@ -778,79 +782,105 @@ public class ElementListenersTest
 
     @Test
     void testAddEventDataWithRecordAndGetEventData() {
-        record EventDetails(int button, int clientX, int clientY) {
+        record EventDetails(String type, int button, int clientX, int clientY) {
         }
-        record MouseEventData(EventDetails event, String type) {
+        record MouseEventData(EventDetails event) {
         }
 
         Element element = new Element("div");
         AtomicReference<MouseEventData> captured = new AtomicReference<>();
-        element.addEventListener("click",
-                e -> captured.set(e.getEventData(MouseEventData.class)))
-                .addEventData(MouseEventData.class).preventDefault();
+        AtomicReference<MouseEventData> capturedWithTypeReference = new AtomicReference<>();
+        element.addEventListener("click", e -> {
+            captured.set(e.getEventData(MouseEventData.class));
+            capturedWithTypeReference
+                    .set(e.getEventData(new TypeReference<MouseEventData>() {
+                    }));
+        }).addEventData(MouseEventData.class);
 
+        // The client sends one flat key per expression
         ObjectNode eventData = JacksonUtils.createObjectNode();
-        eventData.put("event.button", 2);
-        eventData.put("event.clientX", 150);
-        eventData.put("event.clientY", 200);
-        eventData.put("type", "click");
-        eventData.putNull("event.preventDefault()");
+        eventData.put("event.button", 1);
+        eventData.put("event.clientX", 68);
+        eventData.put("event.clientY", 159);
+        eventData.put("event.type", "click");
 
         element.getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(element, "click", eventData));
 
-        MouseEventData result = captured.get();
-        assertEquals(new MouseEventData(new EventDetails(2, 150, 200), "click"),
-                result);
-        // The raw event data is not modified
-        assertFalse(eventData.has("event"));
+        assertEquals(new MouseEventData(new EventDetails("click", 1, 68, 159)),
+                captured.get());
+        assertEquals(captured.get(), capturedWithTypeReference.get());
     }
 
     @Test
-    void testGetEventDataWithTypeReferenceExpandsPropertyPaths() {
-        record Point(int x, int y) {
-        }
-        record Drag<T>(T start, T end) {
+    void testGetEventDataKeepsFlatKeys() {
+        record FlatMouseEventData(@JsonProperty("event.button") int button,
+                @JsonProperty("event.clientX") int clientX) {
         }
 
         ObjectNode eventData = JacksonUtils.createObjectNode();
-        eventData.put("start.x", 1);
-        eventData.put("start.y", 2);
-        eventData.put("end.x", 3);
-        eventData.put("end.y", 4);
-
-        DomEvent event = new DomEvent(new Element("div"), "drag", eventData);
-
-        Drag<Point> drag = event.getEventData(new TypeReference<Drag<Point>>() {
-        });
-
-        assertEquals(new Drag<>(new Point(1, 2), new Point(3, 4)), drag);
-    }
-
-    @Test
-    void testGetEventDataExpandsOnlyPropertyPathsAndKeepsOriginalKeys() {
-        ObjectNode eventData = JacksonUtils.createObjectNode();
-        eventData.put("event.clientX", 1);
-        eventData.put("event.größe", 2);
-        eventData.putNull("event.preventDefault()");
-        eventData.put("element.getAttribute('a.b')", "x");
-        eventData.put("a..b", 3);
-        eventData.put("1x.y", 4);
-
+        eventData.put("event.button", 2);
+        eventData.put("event.clientX", 68);
+        eventData.put("event.preventDefault()", (String) null);
+        // Keys with empty segments are not property paths
+        eventData.put("event.", "a");
+        eventData.put("event..x", "b");
+        eventData.put("event.other.", "c");
         DomEvent event = new DomEvent(new Element("div"), "click", eventData);
 
-        Map<String, Object> data = event
-                .getEventData(new TypeReference<Map<String, Object>>() {
-                });
-
-        assertEquals(Map.of("clientX", 1, "größe", 2), data.get("event"));
-        assertFalse(data.containsKey("element"));
-        assertFalse(data.containsKey("a"));
-        assertFalse(data.containsKey("1x"));
-        // The original keys are kept next to the expanded ones
-        for (String key : JacksonUtils.getKeys(eventData)) {
-            assertTrue(data.containsKey(key), key);
+        assertEquals(new FlatMouseEventData(2, 68),
+                event.getEventData(FlatMouseEventData.class));
+        record EventNode(JsonNode event) {
         }
+        JsonNode nested = event.getEventData(EventNode.class).event();
+        assertEquals(2, nested.get("button").asInt());
+        assertFalse(nested.has("preventDefault()"));
+        assertFalse(nested.has(""));
+        assertFalse(nested.has("x"));
+        assertFalse(nested.has("other"));
+        // Maps and JSON nodes get only the flat keys, so scalar value types
+        // keep working
+        Set<String> flatKeys = Set.of("event.button", "event.clientX",
+                "event.preventDefault()", "event.", "event..x", "event.other.");
+        Map<String, String> data = event
+                .getEventData(new TypeReference<Map<String, String>>() {
+                });
+        assertEquals(flatKeys, data.keySet());
+        assertEquals(flatKeys, Set.copyOf(
+                JacksonUtils.getKeys(event.getEventData(JsonNode.class))));
+        // The original event data is not modified
+        assertEquals(6, eventData.size());
+    }
+
+    @Test
+    void testGetEventDataMergesNestedPaths() {
+        record Rgb(int r, int g, int b) {
+        }
+        record Event(Rgb detail, JsonNode button) {
+        }
+        record Data(Event event, JsonNode target) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        // Sub-paths before the complete object they belong to
+        eventData.put("event.detail.g", 99);
+        eventData.put("event.detail.b", 3);
+        ObjectNode detail = eventData.putObject("event.detail");
+        detail.put("r", 1);
+        detail.put("g", 2);
+        // A null or scalar prefix value
+        eventData.putNull("event.button");
+        eventData.put("event.button.x", 4);
+        eventData.put("target", 5);
+        eventData.put("target.id", "foo");
+        DomEvent event = new DomEvent(new Element("div"), "click", eventData);
+
+        Data data = event.getEventData(Data.class);
+        // The complete object is the base, sub-paths are merged in without
+        // overwriting it
+        assertEquals(new Rgb(1, 2, 3), data.event().detail());
+        assertEquals(4, data.event().button().get("x").asInt());
+        assertEquals(5, data.target().asInt());
     }
 
     @Test
@@ -1006,68 +1036,32 @@ public class ElementListenersTest
     }
 
     @Test
-    void testAddEventDetailWithNestedClassAndGetEventDetail() {
+    void testGetEventDetailWithNestedPaths() {
         record Position(int x, int y) {
         }
         record DragDetail(Position start, Position end) {
         }
 
-        Element element = new Element("div");
-        AtomicReference<DragDetail> captured = new AtomicReference<>();
-        element.addEventListener("drag",
-                e -> captured.set(e.getEventDetail(DragDetail.class)))
-                .addEventDetail(DragDetail.class);
-
+        // The client sends one flat key per expression
         ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put("event.detail.start.x", 1);
         eventData.put("event.detail.start.y", 2);
         eventData.put("event.detail.end.x", 3);
         eventData.put("event.detail.end.y", 4);
-
-        element.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new DomEvent(element, "drag", eventData));
-
-        assertEquals(new DragDetail(new Position(1, 2), new Position(3, 4)),
-                captured.get());
-    }
-
-    @Test
-    void testGetEventDetailMergesWholeDetailWithIndividualProperties() {
-        record Position(int x, int y) {
-        }
-        record DragDetail(Position start, Position end) {
-        }
-
-        // Individual properties come before the whole object on purpose
-        ObjectNode eventData = JacksonUtils.createObjectNode();
-        eventData.put("event.detail.start.x", 9);
-        eventData.put("event.detail.start.y", 2);
-        eventData.put("event.detail.end.x", 3);
-        eventData.put("event.detail.end.y", 4);
-        ObjectNode detail = JacksonUtils.createObjectNode();
-        detail.putObject("start").put("x", 1);
-        eventData.set("event.detail", detail);
-
         DomEvent event = new DomEvent(new Element("div"), "drag", eventData);
 
-        // Values already present in the whole object win
-        assertEquals(new DragDetail(new Position(1, 2), new Position(3, 4)),
-                event.getEventDetail(DragDetail.class));
-    }
-
-    @Test
-    void testGetEventDetailDoesNotExpandIntoNonObjectValue() {
-        ObjectNode eventData = JacksonUtils.createObjectNode();
-        eventData.set("event.detail",
-                JacksonUtils.createArrayNode().add("a").add("b"));
-        eventData.put("event.detail.length", 2);
-
-        DomEvent event = new DomEvent(new Element("div"), "list-change",
-                eventData);
-
-        assertEquals(List.of("a", "b"),
-                event.getEventDetail(new TypeReference<List<String>>() {
+        DragDetail expected = new DragDetail(new Position(1, 2),
+                new Position(3, 4));
+        assertEquals(expected, event.getEventDetail(DragDetail.class));
+        assertEquals(expected,
+                event.getEventDetail(new TypeReference<DragDetail>() {
                 }));
+        // Maps get only the flat keys
+        Map<String, Integer> detail = event
+                .getEventDetail(new TypeReference<Map<String, Integer>>() {
+                });
+        assertEquals(Set.of("start.x", "start.y", "end.x", "end.y"),
+                detail.keySet());
     }
 
     @Test
