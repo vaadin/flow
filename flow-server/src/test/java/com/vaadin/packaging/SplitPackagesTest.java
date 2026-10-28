@@ -104,7 +104,9 @@ class SplitPackagesTest {
 
                 collectPackages(childPackageName, child, packages);
             } else {
-                containsJavaFile |= child.getName().endsWith(".java");
+                // A module descriptor does not belong to any package
+                containsJavaFile |= child.getName().endsWith(".java")
+                        && !child.getName().equals("module-info.java");
             }
         }
 

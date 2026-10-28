@@ -32,6 +32,8 @@ open module com.vaadin.flow.server {
     // java.beans for bean introspection
     requires transitive java.desktop;
 
+    // The client-side push library
+    requires com.vaadin.flow.push;
     requires atmosphere.runtime;
 
     // Provided by the environment when the related feature is used
