@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -824,6 +825,32 @@ public class ElementListenersTest
         });
 
         assertEquals(new Drag<>(new Point(1, 2), new Point(3, 4)), drag);
+    }
+
+    @Test
+    void testGetEventDataExpandsOnlyPropertyPathsAndKeepsOriginalKeys() {
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.clientX", 1);
+        eventData.put("event.größe", 2);
+        eventData.putNull("event.preventDefault()");
+        eventData.put("element.getAttribute('a.b')", "x");
+        eventData.put("a..b", 3);
+        eventData.put("1x.y", 4);
+
+        DomEvent event = new DomEvent(new Element("div"), "click", eventData);
+
+        Map<String, Object> data = event
+                .getEventData(new TypeReference<Map<String, Object>>() {
+                });
+
+        assertEquals(Map.of("clientX", 1, "größe", 2), data.get("event"));
+        assertFalse(data.containsKey("element"));
+        assertFalse(data.containsKey("a"));
+        assertFalse(data.containsKey("1x"));
+        // The original keys are kept next to the expanded ones
+        for (String key : JacksonUtils.getKeys(eventData)) {
+            assertTrue(data.containsKey(key), key);
+        }
     }
 
     @Test

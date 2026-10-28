@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
@@ -41,14 +40,6 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class DomEvent extends EventObject {
-
-    /**
-     * Matches event data keys that are plain dotted property paths, such as
-     * {@code event.clientX}, which are expanded into nested objects when the
-     * event data is deserialized.
-     */
-    private static final Pattern PROPERTY_PATH = Pattern
-            .compile("[A-Za-z_$][\\w$]*+(?:\\.[A-Za-z_$][\\w$]*+)++");
 
     private final JsonNode eventData;
 
@@ -417,12 +408,33 @@ public class DomEvent extends EventObject {
         }
         ObjectNode expanded = (ObjectNode) eventData.deepCopy();
         JacksonUtils.getKeys(eventData).stream()
-                .filter(key -> PROPERTY_PATH.matcher(key).matches())
+                .filter(DomEvent::isPropertyPath)
                 .sorted(Comparator.comparingLong(
                         key -> key.chars().filter(c -> c == '.').count()))
                 .forEach(key -> setNestedIfAbsent(expanded, key.split("\\."),
                         expanded.get(key)));
         return expanded;
+    }
+
+    /**
+     * Checks whether the given event data key is a plain dotted property path,
+     * such as {@code event.clientX}, consisting of at least two identifier
+     * segments.
+     */
+    private static boolean isPropertyPath(String key) {
+        String[] segments = key.split("\\.", -1);
+        if (segments.length < 2) {
+            return false;
+        }
+        for (String segment : segments) {
+            if (segment.isEmpty()
+                    || !Character.isJavaIdentifierStart(segment.charAt(0))
+                    || !segment.chars().skip(1)
+                            .allMatch(Character::isJavaIdentifierPart)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void setNestedIfAbsent(ObjectNode root, String[] keyPath,
