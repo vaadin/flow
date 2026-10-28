@@ -180,7 +180,7 @@ describe('DefaultConnectionStateHandler', () => {
     expect(registry.log.heartbeatSends).to.equal(1);
   });
 
-  it('reconnects a receive-only websocket when reopening it fails', () => {
+  it('checks the connection with a heartbeat when reopening a receive-only websocket fails', () => {
     // Beyond the Java suite: No Java case covers pushReconnectPending.
     const registry = makeRegistry(3);
     const handler = new DefaultConnectionStateHandler(registry.registry);
@@ -194,10 +194,18 @@ describe('DefaultConnectionStateHandler', () => {
     expect(getState()).to.equal(initialState);
     expect(registry.log.heartbeatSends).to.equal(0);
 
-    // Reopening it failed, so the connection is lost.
+    // Reopening it failed, so the connection is checked over HTTP, which
+    // decides whether to reconnect.
     handler.pushReconnectPending(websocket as PushConnection);
-    expect(getState()).to.equal(RECONNECTING);
+    expect(getState()).to.equal(initialState);
     expect(registry.log.heartbeatSends).to.equal(1);
+
+    // While reconnecting, the reconnect logic already sends heartbeats.
+    handler.heartbeatException({} as XMLHttpRequest, new Error('down'));
+    expect(getState()).to.equal(RECONNECTING);
+    const heartbeatSends = registry.log.heartbeatSends;
+    handler.pushReconnectPending(websocket as PushConnection);
+    expect(registry.log.heartbeatSends).to.equal(heartbeatSends);
   });
 
   it('stops heartbeats while the browser is offline and resumes them', () => {

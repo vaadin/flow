@@ -338,11 +338,13 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
       // A websocket that only receives, with messages to the server sent over
       // XHR. The server also closes it on purpose, e.g. when logging out
       // invalidates the session and the page is about to navigate away, so
-      // the connection is lost only if reopening the websocket fails as well.
-      // Atmosphere reports each close once, before it tries to reopen the
-      // websocket, and a successful reopen reaches pushOk.
-      if (this.#websocketReopenPending) {
-        this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);
+      // the connection is checked only if reopening the websocket fails as
+      // well. Atmosphere reports each close once, before it tries to reopen
+      // the websocket, and a successful reopen reaches pushOk. The check is a
+      // heartbeat, as messages to the server do not depend on the websocket:
+      // a failing heartbeat reconnects and a successful one resolves it.
+      if (this.#websocketReopenPending && !this.#machine.isReconnecting()) {
+        this.#registry.getHeartbeat().send();
       }
       this.#websocketReopenPending = true;
     } else {
