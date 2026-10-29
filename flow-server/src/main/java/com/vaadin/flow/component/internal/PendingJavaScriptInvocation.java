@@ -231,10 +231,18 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * <p>
      * Code compiled against Vaadin 14-24 passes a
      * {@code SerializableConsumer<elemental.json.JsonValue>}, which links to
-     * this method because of erasure. The cast that then fails is in a frame
-     * hidden from the stack trace, so without the handler's class name there is
-     * nothing pointing at the code that registered the handler. Exceptions not
-     * related to {@code elemental.json} are rethrown unchanged.
+     * this method because of erasure. Exceptions not related to
+     * {@code elemental.json} are rethrown unchanged.
+     * <p>
+     * For a lambda or a method reference, the cast that fails is in a generated
+     * frame hidden from the stack trace, so the handler's class name is the
+     * only thing pointing at the code that registered it. For an anonymous or
+     * named handler class, the cast is in a bridge method whose frame is in the
+     * trace, so the wrapper mainly adds the explanation that the handler
+     * targets an older Vaadin version. When the JVM replaces the exception of a
+     * frequently failing cast with a pre-allocated one, there is neither a
+     * message nor a stack trace, so the class name is the only clue for any
+     * kind of handler.
      * <p>
      * A {@link NoClassDefFoundError} for {@code elemental.json} is only caught
      * here for anonymous and named handler classes. For a lambda or a method
