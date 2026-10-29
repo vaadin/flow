@@ -130,7 +130,8 @@ public class DownloadEvent {
      * To be called before the response is committed.
      * <p>
      * If the <code>fileName</code> is <code>null</code>, the
-     * Content-Disposition header won't be set.
+     * Content-Disposition header won't be set. Control characters, such as line
+     * breaks, are removed from the file name.
      *
      * @param fileName
      *            the name to be assigned to the file
@@ -139,25 +140,28 @@ public class DownloadEvent {
         if (fileName == null) {
             return;
         }
-        if (fileName.isEmpty()) {
+        String cleanedFileName = EncodeUtil.removeControlCharacters(fileName);
+        if (cleanedFileName.isEmpty()) {
             response.setHeader("Content-Disposition", "attachment");
         } else {
             StringBuilder value = new StringBuilder();
             value.append("attachment; ");
-            if (EncodeUtil.isPureUSASCII(fileName)) {
-                value.append("filename=\"").append(fileName).append("\"");
+            if (EncodeUtil.isPureUSASCII(cleanedFileName)) {
+                value.append("filename=\"")
+                        .append(EncodeUtil.quotedStringEscape(cleanedFileName))
+                        .append("\"");
             } else {
                 value
                         // fallback legacy support
                         .append("filename=\"")
-                        .append(EncodeUtil.rfc2047Encode(fileName))
+                        .append(EncodeUtil.rfc2047Encode(cleanedFileName))
                         // used primarily
                         .append("\"; filename*=UTF-8''")
-                        .append(EncodeUtil.rfc5987Encode(fileName));
+                        .append(EncodeUtil.rfc5987Encode(cleanedFileName));
             }
             response.setHeader("Content-Disposition", value.toString());
         }
-        this.fileName = fileName;
+        this.fileName = cleanedFileName;
     }
 
     /**
