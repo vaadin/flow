@@ -14,6 +14,8 @@
  * the License.
  */
 
+import { hasOwnJsProperty } from '../../WidgetUtil';
+
 /**
  * Access to what the generated bundle registers for the JavaScript that
  * `@JsDefinition` interfaces declare: a function per method that runs its
@@ -35,7 +37,7 @@ type DeclaredJavaScript = {
  * `constructor` or `__proto__` does not resolve to something inherited.
  */
 function getOwnEntry<T>(registry: Record<string, T> | undefined, functionId: string): T | undefined {
-  return registry !== undefined && Object.hasOwn(registry, functionId) ? registry[functionId] : undefined;
+  return registry !== undefined && hasOwnJsProperty(registry, functionId) ? registry[functionId] : undefined;
 }
 
 function getDeclaredJavaScript(): DeclaredJavaScript {

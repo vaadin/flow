@@ -284,6 +284,20 @@ describe('ExecuteJavaScriptProcessor', () => {
       // Nothing registered it, so the message has only the identifier
       expect(String(errors[0])).to.contain(VALUE);
     });
+
+    it('does not resolve a function or its name to what the registry inherits', () => {
+      const flow = ((window as DefinitionWindow).Vaadin ??= {});
+      flow.Flow = flow.Flow ?? {};
+      flow.Flow.jsDefinitions = flow.Flow.jsDefinitions ?? {};
+      flow.Flow.jsDefinitionNames = flow.Flow.jsDefinitionNames ?? {};
+      const errors: unknown[] = [];
+      const element = { tagName: 'div' };
+
+      run([element, () => {}, (error: unknown) => errors.push(error), { f: 'constructor' }]);
+
+      expect(errors).to.have.lengthOf(1);
+      expect(String(errors[0])).to.contain('No JavaScript in the bundle for constructor.');
+    });
   });
 
   describe('execute', () => {
