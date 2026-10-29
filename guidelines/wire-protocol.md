@@ -259,8 +259,11 @@ travels as a single-key wrapper object whose key is reserved:
   JavaScript runs while decoding. The registry is separate from
   `jsDefinitions` because a snippet function is not `async`: whatever it
   is passed to may need its value synchronously. A missing id decodes to
-  a function that throws when it is called, so the failure reaches the
-  invocation that calls it.
+  a function that throws when it is called rather than failing the
+  decoding of the whole invocation. Where the error ends up depends on
+  the caller: an invocation that calls it reports it through its error
+  channel, while a call from an event listener only reaches the browser
+  console.
 
 `ClientJsonCodec.decodeWithTypeInfo` decodes these **recursively through
 objects and arrays**. The whole `@v-` prefix is consequently reserved on

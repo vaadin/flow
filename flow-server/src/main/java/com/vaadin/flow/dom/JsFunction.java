@@ -145,20 +145,29 @@ public final class JsFunction implements JsSnippet {
      * Creates the function that a call of a method of a {@link JsDefinition}
      * interface declares, which the build collects into the bundle.
      * <p>
-     * For internal use only. May be renamed or removed in a future release. Get
-     * the function from the implementation that {@link JsSnippets#of(Class)}
-     * hands out.
+     * For internal use only. May be renamed or removed in a future release.
+     * Application code should not call this method. Instead, obtain the
+     * function by calling the relevant method on the implementation returned by
+     * {@link JsSnippets#of(Class)}.
      *
      * @param call
      *            the call of a method that returns a function, not
      *            <code>null</code>
      * @return a new {@code JsFunction} instance
+     * @throws IllegalArgumentException
+     *             if the called method does not declare a {@link JsSnippet}
      * @throws RuntimeException
      *             if any argument of the call cannot be encoded to be sent to
      *             the client
      */
     public static JsFunction ofDeclaredCall(JsCall call) {
         Objects.requireNonNull(call, "call");
+        if (!call.isSnippet()) {
+            throw new IllegalArgumentException("Method " + call.methodName()
+                    + " of " + call.definitionType().getName()
+                    + " does not declare a JsSnippet, so a call of it runs"
+                    + " JavaScript rather than declaring a function");
+        }
         List<Object> captures = call.flattenArguments();
         // Fail fast at the call that captures an unsupported value, as of does
         for (Object capture : captures) {

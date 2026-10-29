@@ -161,9 +161,10 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
  * it.
  *
  * A function missing from the bundle is reported when the value is called
- * rather than when it is decoded, so the error reaches the invocation that
- * calls it and through that its error channel, instead of failing the decoding
- * of everything else the invocation is sent with.
+ * rather than when it is decoded, instead of failing the decoding of everything
+ * else the invocation is sent with. The error goes wherever the call is made:
+ * to the error channel of an invocation that calls the value, or only to the
+ * console when, for instance, an event listener calls it.
  */
 function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
   const snippet = findDeclaredSnippet(functionId);

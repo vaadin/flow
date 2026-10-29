@@ -29,6 +29,15 @@ type DeclaredJavaScript = {
   jsDefinitionNames?: Record<string, string>;
 };
 
+/**
+ * Reads an entry of a registry by the identifier the server sent, only when
+ * the registry has it as its own property, so that an identifier such as
+ * `constructor` or `__proto__` does not resolve to something inherited.
+ */
+function getOwnEntry<T>(registry: Record<string, T> | undefined, functionId: string): T | undefined {
+  return registry !== undefined && Object.hasOwn(registry, functionId) ? registry[functionId] : undefined;
+}
+
 function getDeclaredJavaScript(): DeclaredJavaScript {
   return (window as unknown as { Vaadin?: { Flow?: DeclaredJavaScript } }).Vaadin?.Flow ?? {};
 }
@@ -38,7 +47,7 @@ function getDeclaredJavaScript(): DeclaredJavaScript {
  * JavaScript when called.
  */
 export function findDeclaredFunction(functionId: string): DeclaredFunction | undefined {
-  return getDeclaredJavaScript().jsDefinitions?.[functionId];
+  return getOwnEntry(getDeclaredJavaScript().jsDefinitions, functionId);
 }
 
 /**
@@ -46,7 +55,7 @@ export function findDeclaredFunction(functionId: string): DeclaredFunction | und
  * snippet, which takes the captures and returns the value of the snippet.
  */
 export function findDeclaredSnippet(functionId: string): DeclaredFunction | undefined {
-  return getDeclaredJavaScript().jsSnippets?.[functionId];
+  return getOwnEntry(getDeclaredJavaScript().jsSnippets, functionId);
 }
 
 /**
@@ -55,7 +64,7 @@ export function findDeclaredSnippet(functionId: string): DeclaredFunction | unde
  * of the function when it does not, as in production.
  */
 export function getNameOf(functionId: string): string {
-  return getDeclaredJavaScript().jsDefinitionNames?.[functionId] ?? functionId;
+  return getOwnEntry(getDeclaredJavaScript().jsDefinitionNames, functionId) ?? functionId;
 }
 
 /**

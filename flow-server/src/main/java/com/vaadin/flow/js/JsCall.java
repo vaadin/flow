@@ -276,6 +276,17 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
+     * Whether the called method declares a {@link JsSnippet}, which a call of
+     * it answers with rather than running JavaScript.
+     *
+     * @return <code>true</code> when the called method returns a snippet type
+     */
+    public boolean isSnippet() {
+        return JsSnippet.class
+                .isAssignableFrom(resolveMethod().method().getReturnType());
+    }
+
+    /**
      * Whether the called method collects a variable number of arguments into
      * its last parameter.
      * <p>

@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
@@ -48,6 +49,22 @@ class JsFunctionTest {
 
         @JsExpression("return (value) => console.log($0, value);")
         JsFunction createUnwrappedLogger(String prefix);
+    }
+
+    @JsDefinition
+    interface ConsoleJs extends Serializable {
+        @JsExpression("console.log($0);")
+        void log(String message);
+    }
+
+    @Test
+    void ofDeclaredCall_callThatRunsJavaScript_throws() {
+        // A call of a method that runs JavaScript names no function of the
+        // snippet registry, so it can not become the value of a function
+        JsCall call = new JsCall(ConsoleJs.class, "log", List.of("Hello"));
+
+        assertThrows(IllegalArgumentException.class,
+                () -> JsFunction.ofDeclaredCall(call));
     }
 
     @Test

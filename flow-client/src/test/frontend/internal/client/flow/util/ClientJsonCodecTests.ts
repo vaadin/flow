@@ -235,6 +235,15 @@ describe('ClientJsonCodec', () => {
         expect(fn).to.throw(TypeError, 'fn-id returned undefined instead of a function');
       });
 
+      it('does not resolve an id to what the registry inherits', () => {
+        // Beyond the Java suite: the id form of @v-fn is new in the port.
+        flow().jsSnippets = flow().jsSnippets ?? {};
+
+        const fn = decodeWithTypeInfo(tree, { '@v-fn': { id: 'constructor', captures: [] } }) as () => unknown;
+
+        expect(fn).to.throw('No JavaScript in the bundle for constructor');
+      });
+
       it('answers a function missing from the bundle with one that throws when called', () => {
         // Beyond the Java suite: the id form of @v-fn is new in the port.
         const fn = decodeWithTypeInfo(tree, { '@v-fn': { id: 'fn-id', captures: [] } }) as () => unknown;
