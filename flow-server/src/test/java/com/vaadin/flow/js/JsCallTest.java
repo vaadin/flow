@@ -281,6 +281,17 @@ class JsCallTest {
                 JsCall.getCalledWithNames(LoggerJs.class
                         .getMethod("createUnwrapped", String.class)),
                 "a method without the annotation wraps no function around its expression");
+        // A call reads them off the method it calls, and only a snippet has
+        // a function around its expression to name parameters of
+        assertEquals(List.of("value"),
+                new JsCall(LoggerJs.class, "createLogger", List.of("a"))
+                        .getCalledWithNames());
+        assertEquals(List.of(), new JsCall(LoggerJs.class,
+                "createWithoutParameters", List.of("a")).getCalledWithNames());
+        assertNull(new JsCall(LoggerJs.class, "createUnwrapped", List.of("a"))
+                .getCalledWithNames());
+        assertNull(new JsCall(LoggerJs.class, "log", List.of("a"))
+                .getCalledWithNames());
     }
 
     @ParameterizedTest
