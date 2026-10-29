@@ -91,6 +91,16 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
+    interface MixedJs extends Serializable {
+        @JsExpression("console.log($0, value);")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+
+        @JsExpression("console.log($0);")
+        void log(String message);
+    }
+
+    @JsDefinition
     interface CalledWithWhenRunJs extends Serializable {
         @JsExpression("console.log(value);")
         @JsCalledWith("value")
@@ -215,6 +225,22 @@ class JsDefinitionProxyTest {
         // is evaluated and the browser reports a syntax error
         assertThrows(IllegalArgumentException.class, () -> JsDefinitionProxy
                 .createSnippets(CalledWithInvalidNameJs.class));
+    }
+
+    @Test
+    void checkDefinition_snippetsBesideJavaScriptToRun_throwsForEitherUse() {
+        // Whichever way it is used, half of it can not work
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.checkDefinition(MixedJs.class));
+
+        assertTrue(exception.getMessage().contains("log"),
+                "the message should name the method that does not fit: "
+                        + exception.getMessage());
+        assertThrows(IllegalArgumentException.class,
+                () -> JsDefinitionProxy.createSnippets(MixedJs.class));
+        assertThrows(IllegalArgumentException.class,
+                () -> proxy(MixedJs.class));
     }
 
     @Test

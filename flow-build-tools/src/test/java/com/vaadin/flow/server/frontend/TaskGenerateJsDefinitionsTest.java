@@ -82,6 +82,13 @@ class TaskGenerateJsDefinitionsTest {
     }
 
     @JsDefinition
+    public interface InvalidNameJs extends Serializable {
+        @JsExpression(LOG_EXPRESSION)
+        @JsCalledWith("class")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
     public interface CounterJs extends Serializable {
         @JsExpression(COUNT_EXPRESSION)
         void count(Integer from);
@@ -185,6 +192,22 @@ class TaskGenerateJsDefinitionsTest {
                         + content);
         assertFalse(content.contains("jsDefinitions[\""),
                 "a snippet is not run by a call: " + content);
+    }
+
+    @Test
+    void definitionThatCanNotWork_isLeftOutWithoutFailingTheBuild()
+            throws NoSuchMethodException {
+        // A bad name would be a syntax error that breaks every function in
+        // the module, and the definition may be in an add-on that the
+        // application can not fix, so it is left out and fails when used
+        String content = TaskGenerateJsDefinitions.renderFileContent(
+                List.of(InvalidNameJs.class, LoggerJs.class), false);
+
+        assertFalse(content.contains("function (class)"), content);
+        assertTrue(
+                content.contains(JsCall.functionId(LoggerJs.class
+                        .getMethod("createLogger", String.class))),
+                "the other definitions should still be generated: " + content);
     }
 
     @Test

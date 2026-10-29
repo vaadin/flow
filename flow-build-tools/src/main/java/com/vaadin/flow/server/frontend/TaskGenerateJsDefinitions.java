@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsDefinitionProxy;
+import com.vaadin.flow.js.JsDefinitionProxy.Kind;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.js.JsSnippet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -46,7 +48,10 @@ import static com.vaadin.flow.internal.FrontendUtils.JS_DEFINITIONS_FILE_NAME;
  * JavaScript of every {@link JsDefinition} interface on the class path as an
  * ordinary function of the bundle: in one registry for the methods that run
  * their JavaScript when called, and in another for the methods that declare a
- * {@link JsSnippet}, which the client evaluates when it decodes the snippet.
+ * {@link JsSnippet}, which the client turns into a function when it decodes the
+ * snippet. A definition that does not pass
+ * {@link JsDefinitionProxy#checkDefinition(Class)} is left out, with an error
+ * in the log.
  * <p>
  * This is what lets the client run a server-initiated call without compiling
  * anything from a string: the server sends the identifier of the function to
@@ -333,6 +338,20 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
      */
     private static List<String> renderFunctions(Class<?> definition,
             boolean withNames) {
+        boolean snippets;
+        try {
+            snippets = JsDefinitionProxy
+                    .checkDefinition(definition) == Kind.SNIPPETS;
+        } catch (IllegalArgumentException e) {
+            // Left out rather than failing the build, which would break every
+            // application that has the definition on its class path, an
+            // add-on its developer can not fix among them. Using it fails at
+            // runtime with the same message.
+            getLogger().error(
+                    "Leaving the JavaScript of {} out of the bundle: {}",
+                    definition.getName(), e.getMessage());
+            return List.of();
+        }
         List<Method> methods = new ArrayList<>();
         for (Method method : definition.getMethods()) {
             if (method.isAnnotationPresent(JsExpression.class)) {
@@ -357,7 +376,7 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
             String expression = method.getAnnotation(JsExpression.class)
                     .value();
             List<String> function = new ArrayList<>();
-            if (JsSnippet.class.isAssignableFrom(method.getReturnType())) {
+            if (snippets) {
                 // A snippet is evaluated by what it is passed to, which may
                 // need the value right away, so its function is not async.
                 // Its arguments are captured, and the parameters it is called
