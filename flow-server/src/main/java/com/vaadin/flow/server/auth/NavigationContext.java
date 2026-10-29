@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.auth;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -23,6 +24,8 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Context information for a navigation request.
@@ -63,6 +66,9 @@ public final class NavigationContext {
 
     private final boolean errorHandling;
     private final boolean navigating;
+
+    // Resolved on first use when the context is not created from an event
+    private List<Class<? extends RouterLayout>> layouts;
 
     /**
      * Creates a new navigation context instance.
@@ -149,6 +155,7 @@ public final class NavigationContext {
         this(event.getSource(), event.getNavigationTarget(),
                 event.getLocation(), event.getRouteParameters(), principal,
                 roleChecker, event.isErrorEvent());
+        this.layouts = List.copyOf(event.getLayouts());
     }
 
     /**
@@ -241,6 +248,26 @@ public final class NavigationContext {
      */
     public boolean hasRole(String role) {
         return roleChecker.test(role);
+    }
+
+    /**
+     * Gets the layouts the navigation target is shown in, starting from the
+     * layout closest to the navigation target.
+     * <p>
+     * During navigation, these are the layouts the router creates for the
+     * matched route or route alias, including an automatic layout. Outside of
+     * navigation, they are resolved from the route registry for the location.
+     *
+     * @return an unmodifiable list of the layouts of the navigation target, or
+     *         an empty list if there are none, not {@code null}
+     */
+    List<Class<? extends RouterLayout>> getLayouts() {
+        if (layouts == null) {
+            layouts = List.copyOf(
+                    RouteUtil.resolveTargetParentLayouts(router.getRegistry(),
+                            navigationTarget, location.getPath()));
+        }
+        return layouts;
     }
 
     /**
