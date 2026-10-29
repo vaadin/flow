@@ -617,6 +617,77 @@ public class RouteUtil {
     }
 
     /**
+     * Gets the parent layouts the router creates for the given route target.
+     * These are the parent layouts of the route target, or the layouts of the
+     * {@link Layout} that matches the path when the route target has no parent
+     * layouts and can get the automatic layout.
+     *
+     * @param routeTarget
+     *            the route target to get the parent layouts for, not
+     *            {@code null}
+     * @param registry
+     *            the registry that holds the {@link Layout} classes, not
+     *            {@code null}
+     * @param path
+     *            the path the route target was resolved from, not {@code null}
+     * @return the parent layouts, starting from the one closest to the route
+     *         target, or an empty list if there are none
+     */
+    public static List<Class<? extends RouterLayout>> getTargetParentLayouts(
+            RouteTarget routeTarget, RouteRegistry registry, String path) {
+        if (routeTarget.getParentLayouts().isEmpty()
+                && isAutolayoutEnabled(routeTarget.getTarget(), path)
+                && registry.hasLayout(path)) {
+            return collectRouteParentLayouts(registry.getLayout(path));
+        }
+        return routeTarget.getParentLayouts();
+    }
+
+    /**
+     * Resolves the parent layouts that navigation to the given path shows the
+     * navigation target in. This gives the same result as
+     * {@link #getTargetParentLayouts(RouteTarget, RouteRegistry, String)} for
+     * the route target the path resolves to, including a {@link RouteAlias}
+     * with its own layout.
+     * <p>
+     * If the path does not resolve to the navigation target, for example when
+     * the path is a route template with parameters, the parent layouts of the
+     * first route registered for the navigation target are used instead.
+     *
+     * @param registry
+     *            the registry to resolve the path in, not {@code null}
+     * @param navigationTarget
+     *            the navigation target, not {@code null}
+     * @param path
+     *            the path to resolve, not {@code null}
+     * @return the parent layouts, starting from the one closest to the
+     *         navigation target, or an empty list if there are none
+     */
+    public static List<Class<? extends RouterLayout>> resolveTargetParentLayouts(
+            RouteRegistry registry, Class<?> navigationTarget, String path) {
+        NavigationRouteTarget navigationRouteTarget = registry
+                .getNavigationRouteTarget(path);
+        if (navigationRouteTarget.hasTarget() && navigationRouteTarget
+                .getRouteTarget().getTarget().equals(navigationTarget)) {
+            return getTargetParentLayouts(
+                    navigationRouteTarget.getRouteTarget(), registry,
+                    navigationRouteTarget.getPath());
+        }
+        List<Class<? extends RouterLayout>> parentLayouts = registry
+                .getRegisteredRoutes().stream()
+                .filter(routeData -> routeData.getNavigationTarget()
+                        .equals(navigationTarget))
+                .map(RouteBaseData::getParentLayouts).findFirst()
+                .orElse(List.of());
+        if (parentLayouts.isEmpty()
+                && isAutolayoutEnabled(navigationTarget, path)
+                && registry.hasLayout(path)) {
+            return collectRouteParentLayouts(registry.getLayout(path));
+        }
+        return parentLayouts;
+    }
+
+    /**
      * Checks the given list of Flow routes for potential collisions with Hilla
      * routes.
      *

@@ -20,7 +20,6 @@ import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.lang.reflect.AnnotatedElement;
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -29,10 +28,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -73,56 +70,30 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
     @Override
     public AccessCheckResult check(NavigationContext context) {
         Class<?> targetView = context.getNavigationTarget();
-        if (RouteUtil.isAutolayoutEnabled(targetView,
-                context.getLocation().getPath())) {
-            RouteRegistry registry = context.getRouter().getRegistry();
-            boolean noParents = registry.getRegisteredRoutes().stream()
-                    .filter(routeData -> routeData.getNavigationTarget()
-                            .equals(targetView))
-                    .map(data -> data.getParentLayouts().isEmpty()).findFirst()
-                    .orElse(true);
-            if (noParents
-                    && registry.hasLayout(context.getLocation().getPath())) {
-                Class<?> layout = registry
-                        .getLayout(context.getLocation().getPath());
-
-                boolean hasAccess = accessAnnotationChecker.hasAccess(layout,
-                        context.getPrincipal(), context::hasRole);
-                if (!hasAccess) {
-                    logDeniedByLayoutAccessRules(context, layout);
-                    return context.deny("Denied access to view '"
-                            + targetView.getSimpleName() + "' due to layout '"
-                            + layout.getSimpleName() + "' access rules. "
-                            + "Consider adding one of the following annotations "
-                            + "to make the layout accessible: @AnonymousAllowed, "
-                            + "@PermitAll, or @RolesAllowed.");
-                }
+        for (Class<? extends RouterLayout> layout : getLayoutsToCheck(
+                context)) {
+            boolean hasAccess = accessAnnotationChecker.hasAccess(layout,
+                    context.getPrincipal(), context::hasRole);
+            if (hasAccess) {
+                continue;
             }
-        } else {
-            RouteRegistry registry = context.getRouter().getRegistry();
-            List<Class<? extends RouterLayout>> parents = registry
-                    .getRegisteredRoutes().stream()
-                    .filter(routeData -> routeData.getNavigationTarget()
-                            .equals(targetView))
-                    .map(RouteBaseData::getParentLayouts).findFirst()
-                    .orElse(Collections.emptyList());
-            if (!parents.isEmpty()) {
-                for (Class<? extends RouterLayout> parent : parents) {
-                    boolean hasAccess = accessAnnotationChecker.hasAccess(
-                            parent, context.getPrincipal(), context::hasRole);
-                    if (!hasAccess) {
-                        logDeniedByLayoutAccessRules(context, parent,
-                                "Denied access to view '{}' due to parent layout '{}' access rules");
-                        return context.deny("Denied access to view '"
-                                + targetView.getSimpleName()
-                                + "' due to parent layout '"
-                                + parent.getSimpleName() + "' access rules. "
-                                + "Consider adding one of the following annotations "
-                                + "to make the parent layout accessible: @AnonymousAllowed, "
-                                + "@PermitAll, or @RolesAllowed.");
-                    }
-                }
+            if (layout.isAnnotationPresent(Layout.class)) {
+                logDeniedByLayoutAccessRules(context, layout);
+                return context.deny("Denied access to view '"
+                        + targetView.getSimpleName() + "' due to layout '"
+                        + layout.getSimpleName() + "' access rules. "
+                        + "Consider adding one of the following annotations "
+                        + "to make the layout accessible: @AnonymousAllowed, "
+                        + "@PermitAll, or @RolesAllowed.");
             }
+            logDeniedByLayoutAccessRules(context, layout,
+                    "Denied access to view '{}' due to parent layout '{}' access rules");
+            return context.deny("Denied access to view '"
+                    + targetView.getSimpleName() + "' due to parent layout '"
+                    + layout.getSimpleName() + "' access rules. "
+                    + "Consider adding one of the following annotations "
+                    + "to make the parent layout accessible: @AnonymousAllowed, "
+                    + "@PermitAll, or @RolesAllowed.");
         }
 
         boolean hasAccess = accessAnnotationChecker.hasAccess(targetView,
@@ -157,6 +128,23 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
             denyReason = "Access is denied by annotations on the view.";
         }
         return context.deny(denyReason);
+    }
+
+    private List<Class<? extends RouterLayout>> getLayoutsToCheck(
+            NavigationContext context) {
+        if (context.isErrorHandling()) {
+            // An error view is shown in place of the requested view. Check
+            // only the layouts of its own route, if it has one, so that an
+            // error page can still be shown in an application layout that the
+            // user is not allowed to access.
+            return RouteUtil.resolveTargetParentLayouts(
+                    context.getRouter().getRegistry(),
+                    context.getNavigationTarget(),
+                    context.getLocation().getPath());
+        }
+        // The layouts the router creates for the matched route or route
+        // alias, which can differ from the layouts of the primary route
+        return context.getLayouts();
     }
 
     private void logDeniedByLayoutAccessRules(NavigationContext context,
