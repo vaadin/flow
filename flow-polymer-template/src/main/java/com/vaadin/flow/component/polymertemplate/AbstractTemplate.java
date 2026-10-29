@@ -19,12 +19,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.templatemodel.BeanModelType;
@@ -83,11 +83,11 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     @SuppressWarnings("unchecked")
     protected Class<? extends M> getModelType() {
-        Type type = GenericTypeReflector.getTypeParameter(
+        Type type = ReflectTools.getTypeParameter(
                 getClass().getGenericSuperclass(),
                 AbstractTemplate.class.getTypeParameters()[0]);
         if (type instanceof Class || type instanceof ParameterizedType) {
-            return (Class<M>) GenericTypeReflector.erase(type);
+            return (Class<M>) ReflectTools.erase(type);
         }
         throw new IllegalStateException(getExceptionMessage(type));
     }
