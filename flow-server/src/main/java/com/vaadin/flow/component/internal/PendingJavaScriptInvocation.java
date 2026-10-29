@@ -221,36 +221,67 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         }
 
         this.successHandler = combineHandlers(this.successHandler,
-                identifyOnClassCast(successHandler));
+                identifyIncompatibleHandler(successHandler));
         this.errorHandler = combineHandlers(this.errorHandler, errorHandler);
     }
 
     /**
-     * Wraps the handler so that a {@link ClassCastException} thrown when it
-     * receives the return value names the class of the handler.
+     * Wraps the handler so that an error caused by the handler having been
+     * compiled against Vaadin 24 or older names the class of the handler.
      * <p>
      * Code compiled against Vaadin 14-24 passes a
      * {@code SerializableConsumer<elemental.json.JsonValue>}, which links to
      * this method because of erasure. The cast that then fails is in a frame
      * hidden from the stack trace, so without the handler's class name there is
-     * nothing pointing at the code that registered the handler.
+     * nothing pointing at the code that registered the handler. Exceptions not
+     * related to {@code elemental.json} are rethrown unchanged.
+     * <p>
+     * A {@link NoClassDefFoundError} for {@code elemental.json} is only caught
+     * here for anonymous and named handler classes. For a lambda or a method
+     * reference, the JVM fails when linking the call site, so the error is
+     * thrown from the code calling {@code then} and never reaches the wrapper.
      */
-    private static SerializableConsumer<JsonNode> identifyOnClassCast(
+    private static SerializableConsumer<JsonNode> identifyIncompatibleHandler(
             SerializableConsumer<JsonNode> handler) {
         return value -> {
             try {
                 handler.accept(value);
             } catch (ClassCastException e) {
+                // The JVM may replace the exception of a frequently failing
+                // cast with a pre-allocated one without a message, so a
+                // missing message is treated as a match
+                if (e.getMessage() != null && !mentionsElementalJson(e)) {
+                    throw e;
+                }
                 ClassCastException identified = new ClassCastException(
-                        "The success handler " + handler.getClass().getName()
-                                + " of a JavaScript invocation could not accept"
-                                + " the return value. This usually means that"
-                                + " the code registering it was compiled against"
-                                + " an incompatible Vaadin version.");
+                        incompatibleHandlerMessage(handler));
+                identified.initCause(e);
+                throw identified;
+            } catch (NoClassDefFoundError e) {
+                if (!mentionsElementalJson(e)) {
+                    throw e;
+                }
+                NoClassDefFoundError identified = new NoClassDefFoundError(
+                        incompatibleHandlerMessage(handler));
                 identified.initCause(e);
                 throw identified;
             }
         };
+    }
+
+    private static boolean mentionsElementalJson(Throwable e) {
+        String message = e.getMessage();
+        // ClassCastException uses binary names (elemental.json.JsonValue),
+        // NoClassDefFoundError uses internal names (elemental/json/JsonValue)
+        return message != null && (message.contains("elemental.json.")
+                || message.contains("elemental/json/"));
+    }
+
+    private static String incompatibleHandlerMessage(Object handler) {
+        return "The success handler " + handler.getClass().getName()
+                + " of a JavaScript invocation was compiled against Vaadin 24"
+                + " or older (it expects elemental.json.JsonValue) and is"
+                + " incompatible with this Vaadin version.";
     }
 
     private static <T> SerializableConsumer<T> combineHandlers(
