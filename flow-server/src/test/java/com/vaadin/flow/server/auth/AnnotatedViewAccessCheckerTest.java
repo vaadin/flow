@@ -18,6 +18,11 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import java.util.Collections;
+import com.vaadin.flow.router.RouteParameters;
+import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.HasErrorParameter;
@@ -441,6 +446,33 @@ public class AnnotatedViewAccessCheckerTest {
     }
 
     @Test
+    public void aliasWithoutParentLayout_automaticLayoutNotAccessible_denied() {
+        Class<AccessControlTestClasses.AnonymousAllowedAliasedView> view = AccessControlTestClasses.AnonymousAllowedAliasedView.class;
+        String alias = "alias-in-automatic-layout";
+        NavigationContext context = setupNavigationContext(view, null);
+        context = new NavigationContext(context.getRouter(), view,
+                new Location(alias), RouteParameters.empty(), null,
+                role -> false, false);
+        RouteRegistry registry = context.getRouter().getRegistry();
+        // The primary route has a parent layout, the alias that matched has
+        // none and gets the automatic layout
+        Mockito.when(registry.getRegisteredRoutes()).thenReturn(Collections
+                .singletonList(new RouteData(Collections.singletonList(
+                        AccessControlTestClasses.AnonymousAllowedParent.class),
+                        "primary-in-parent", Collections.emptyMap(), view,
+                        Collections.emptyList())));
+        Mockito.when(registry.getNavigationRouteTarget(alias))
+                .thenReturn(new NavigationRouteTarget(alias,
+                        new RouteTarget(view), Collections.emptyMap()));
+        Mockito.when(registry.hasLayout(alias)).thenReturn(true);
+        Mockito.when(registry.getLayout(alias)).thenAnswer(
+                invocation -> AccessControlTestClasses.NoAuthLayout.class);
+
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
+    }
+
+    @Test
     public void routeWithNoAnnotationLayout_deny() {
         NavigationContext context = setupNavigationContext(
                 AccessControlTestClasses.AnonymousAllowedView.class, null);
@@ -509,6 +541,11 @@ public class AnnotatedViewAccessCheckerTest {
                 navigationTarget, new ArrayList<>());
 
         RouteRegistry routeRegistry = Mockito.mock(RouteRegistry.class);
+        Mockito.when(
+                routeRegistry.getNavigationRouteTarget(Mockito.anyString()))
+                .thenAnswer(invocation -> new NavigationRouteTarget(
+                        invocation.getArgument(0), null,
+                        Collections.emptyMap()));
         Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
         return new NavigationContext(event, principal, roles::contains);
     }
