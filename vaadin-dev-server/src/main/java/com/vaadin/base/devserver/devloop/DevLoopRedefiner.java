@@ -1499,6 +1499,8 @@ final class DevLoopRedefiner {
             // Names the build can not generate a function with: what was
             // declared is still what tells one edit from another, and the
             // restart that follows reports what is wrong with it
+            LOGGER.debug("Fingerprinting {} by why it can not be generated",
+                    method, e);
             return "invalid:" + e.getMessage();
         }
     }

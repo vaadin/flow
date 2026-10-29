@@ -141,13 +141,13 @@ public final class JsDefinitionProxy {
                 "Definition type cannot be null");
         if (checkedDefinitions.get(definitionType) != Kind.SNIPPETS) {
             List<String> names = collectDeclaredNames(definitionType);
-            throw new IllegalArgumentException(definitionType.getName()
-                    + (names.isEmpty() ? " declares no snippets"
-                            : " declares JavaScript that runs when "
-                                    + String.join(", ", names)
-                                    + " is called, not snippets. Get its"
-                                    + " implementation from"
-                                    + " Element.executeJs(Class)"));
+            String reason = names.isEmpty() ? " declares no snippets"
+                    : (" declares JavaScript that runs when "
+                            + String.join(", ", names)
+                            + " is called, not snippets. Get its implementation"
+                            + " from Element.executeJs(Class)");
+            throw new IllegalArgumentException(
+                    definitionType.getName() + reason);
         }
         return (T) Proxy.newProxyInstance(definitionType.getClassLoader(),
                 new Class<?>[] { definitionType },
