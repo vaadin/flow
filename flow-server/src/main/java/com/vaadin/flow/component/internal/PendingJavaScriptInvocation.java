@@ -248,9 +248,18 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * here for anonymous and named handler classes. For a lambda or a method
      * reference, the JVM fails when linking the call site, so the error is
      * thrown from the code calling {@code then} and never reaches the wrapper.
+     * <p>
+     * The converting handlers created by the typed {@code then} and
+     * {@code toCompletableFuture} overloads in {@link PendingJavaScriptResult}
+     * are not wrapped. A legacy handler cannot reach those overloads, and the
+     * message would otherwise name a Flow class instead of the user's handler.
      */
     private static SerializableConsumer<JsonNode> identifyIncompatibleHandler(
             SerializableConsumer<JsonNode> handler) {
+        // A lambda class is a nestmate of the class that defines the lambda
+        if (handler.getClass().getNestHost() == PendingJavaScriptResult.class) {
+            return handler;
+        }
         return value -> {
             try {
                 handler.accept(value);

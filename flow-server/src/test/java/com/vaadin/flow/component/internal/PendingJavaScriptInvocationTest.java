@@ -462,6 +462,19 @@ class PendingJavaScriptInvocationTest {
         assertSame(original, error.getCause());
     }
 
+    @Test
+    void typedSuccessHandlerCastFailureWithoutMessage_rethrownUnchanged() {
+        ClassCastException original = new ClassCastException();
+        invocation.then(String.class, value -> {
+            throw original;
+        });
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(original, exception);
+    }
+
     private void assertStringSuccess() {
         assertNoJsonSuccessValue();
         assertEquals("foo", stringSuccessConsumer.getCapturedValue());
