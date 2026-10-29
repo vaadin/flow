@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RouteDataTest {
 
@@ -40,12 +40,11 @@ class RouteDataTest {
                 Collections.<Class<?>> emptyList(), Target.class,
                 new ArrayList<>(List.of(alias))).toString();
 
-        assertTrue(alias.toString().startsWith("RouteAliasData{"),
-                alias.toString());
-        assertTrue(alias.toString().contains("url='alias'"), alias.toString());
-        assertTrue(routeData.startsWith("RouteData{"), routeData);
-        assertTrue(routeData.contains("routeAliases=[RouteAliasData{"),
-                routeData);
-        assertTrue(routeData.endsWith("menuData=null}"), routeData);
+        String target = "navigationTarget=" + Target.class;
+        assertEquals("RouteAliasData{parentLayout=null, url='alias', "
+                + "parameters={}, " + target + "}", alias.toString());
+        assertEquals("RouteData{parentLayout=null, url='route', "
+                + "parameters={}, " + target + ", routeAliases=[" + alias
+                + "], menuData=null}", routeData);
     }
 }
