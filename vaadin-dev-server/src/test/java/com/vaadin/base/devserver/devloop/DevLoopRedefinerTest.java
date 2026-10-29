@@ -192,7 +192,7 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
-    interface UnwrappedLoggerJs extends Serializable {
+    interface ParameterlessLoggerJs extends Serializable {
         @JsExpression("console.log($0, value)")
         JsFunction createLogger(String prefix);
     }
@@ -249,15 +249,14 @@ class DevLoopRedefinerTest {
     @Test
     void frontendDependencies_seesTheParametersASnippetIsCalledWith() {
         // The names a snippet is called with are parameters of the generated
-        // function, so renaming one, or wrapping no function at all, changes
-        // what the browser has to run even though the expression stays the
-        // same
+        // function, so renaming one, or declaring none, changes what the
+        // browser has to run even though the expression stays the same
         String imports = DevLoopRedefiner.frontendDependencies(LoggerJs.class);
 
         assertNotEquals(imports, DevLoopRedefiner
                 .frontendDependencies(RenamedParameterLoggerJs.class));
-        assertNotEquals(imports,
-                DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(ParameterlessLoggerJs.class));
     }
 
     @Test

@@ -58,14 +58,11 @@ import com.vaadin.flow.dom.JsFunction;
  * what the invoker passes when it calls the function. Inside the function,
  * <code>this</code> is whatever the invoker calls it with.
  * <p>
- * Without this annotation no function is wrapped around the expression, which
- * then has to <code>return</code> the value of the snippet itself, for an
- * invoker whose calling convention a list of parameters can not express:
- *
- * <pre>
- * &#64;JsExpression("return ({ point }) =&gt; `${point.y} ${$0}`;")
- * JsFunction formatTooltip(String unit);
- * </pre>
+ * Without this annotation the function takes no parameters. The expression is
+ * always the body of the function, so it runs only when the invoker calls the
+ * function, never while the client decodes the snippet. An invoker that passes
+ * an object, such as <code>{ point, series }</code>, is declared with one
+ * parameter that the expression reads the members of.
  * <p>
  * The names are part of the generated JavaScript, so a change to them is a
  * change to the function the client runs, as a change to the expression is.

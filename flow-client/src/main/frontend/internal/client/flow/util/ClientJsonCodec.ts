@@ -148,9 +148,11 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
 
 /**
  * Evaluates a snippet declared by a JavaScript definition: the bundle has a
- * function for it, which takes the captures and returns the value, so nothing
- * is compiled from a string. Each decode evaluates it again, so every
- * invocation that is passed the snippet gets a value of its own.
+ * function for it, which takes the captures and returns the function the
+ * declared expression is the body of, so nothing is compiled from a string and
+ * no declared JavaScript runs while the parameters are decoded. Each decode
+ * evaluates it again, so every invocation that is passed the snippet gets a
+ * value of its own.
  *
  * A function missing from the bundle is reported when the value is called
  * rather than when it is decoded, so the error reaches the invocation that

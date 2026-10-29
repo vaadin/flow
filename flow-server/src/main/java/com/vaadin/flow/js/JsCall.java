@@ -105,11 +105,11 @@ public record JsCall(Class<?> definitionType, String methodName,
     /**
      * A method of a JavaScript definition, the identifier of the function it
      * declares, or <code>null</code> for a method that declares no JavaScript,
-     * and the names the function of a snippet is called with, or
-     * <code>null</code> when it declares none.
+     * and the names the function of a snippet is called with, empty for a
+     * method that is no snippet.
      */
     private record DeclaredMethod(Method method, @Nullable String functionId,
-            @Nullable List<String> calledWithNames) {
+            List<String> calledWithNames) {
     }
 
     /**
@@ -167,11 +167,11 @@ public record JsCall(Class<?> definitionType, String methodName,
      * {@link #functionId(String, int, boolean)}. For a method that returns a
      * {@link JsSnippet}, the generated function is not run by the call but
      * evaluated later by what the snippet is passed to, and it is generated
-     * differently: it is not <code>async</code>, and it may wrap the expression
-     * in a function taking the {@link JsCalledWith} parameters. What sets it
-     * apart is hashed with the JavaScript, so a snippet and a call that declare
-     * the same JavaScript are different functions, and so are two snippets
-     * called with different parameters.
+     * differently: it is not <code>async</code>, and it wraps the expression in
+     * a function taking the {@link JsCalledWith} parameters. What sets it apart
+     * is hashed with the JavaScript, so a snippet and a call that declare the
+     * same JavaScript are different functions, and so are two snippets called
+     * with different parameters.
      *
      * @param method
      *            a method annotated with {@link JsExpression}, not
@@ -197,9 +197,7 @@ public record JsCall(Class<?> definitionType, String methodName,
         List<String> calledWith = getCalledWithNames(method);
         // A call is hashed from what starts with the parameter count, so a
         // snippet starting with anything else never shares its hash input
-        String parameters = calledWith == null ? ""
-                : ("(" + String.join(",", calledWith) + ")");
-        String kind = parameters + "=>";
+        String kind = "(" + String.join(",", calledWith) + ")=>";
         return StringUtil.getHash(kind + parameterCount + (variadic ? "*" : "")
                 + ":" + expression, StandardCharsets.UTF_8);
     }
@@ -214,17 +212,16 @@ public record JsCall(Class<?> definitionType, String methodName,
      *
      * @param method
      *            a method of a JavaScript definition, not <code>null</code>
-     * @return the parameter names in the order they are passed, or
-     *         <code>null</code> when the method declares none and no function
-     *         is wrapped around the expression
+     * @return the parameter names in the order they are passed, empty when the
+     *         method declares none and the function takes no parameters
      * @throws IllegalArgumentException
      *             if a name is not a JavaScript identifier, is a reserved word,
      *             names a captured argument or is declared twice
      */
-    public static @Nullable List<String> getCalledWithNames(Method method) {
+    public static List<String> getCalledWithNames(Method method) {
         JsCalledWith annotation = method.getAnnotation(JsCalledWith.class);
         if (annotation == null) {
-            return null;
+            return List.of();
         }
         List<String> names = List.of(annotation.value());
         for (String name : names) {
@@ -267,11 +264,11 @@ public record JsCall(Class<?> definitionType, String methodName,
      * Gets the names of the parameters that the function a snippet call
      * declares is called with.
      *
-     * @return the parameter names, or <code>null</code> when the called method
-     *         declares none
+     * @return the parameter names, empty when the called method declares none
+     *         or does not declare a snippet
      * @see #getCalledWithNames(Method)
      */
-    public @Nullable List<String> getCalledWithNames() {
+    public List<String> getCalledWithNames() {
         return resolveMethod().calledWithNames();
     }
 
@@ -443,7 +440,7 @@ public record JsCall(Class<?> definitionType, String methodName,
                     && JsSnippet.class.isAssignableFrom(method.getReturnType());
             declared.add(new DeclaredMethod(method,
                     declaresJavaScript ? functionId(method) : null,
-                    declaresSnippet ? getCalledWithNames(method) : null));
+                    declaresSnippet ? getCalledWithNames(method) : List.of()));
         }
         return List.copyOf(declared);
     }

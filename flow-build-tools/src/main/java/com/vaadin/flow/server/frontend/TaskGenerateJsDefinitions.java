@@ -366,15 +366,10 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 function.add(String.format(
                         "window.Vaadin.Flow.jsSnippets[%s] = function (%s) {",
                         functionId, parameters));
-                List<String> calledWith = JsCall.getCalledWithNames(method);
-                if (calledWith == null) {
-                    function.add(expression);
-                } else {
-                    function.add(String.format("  return function (%s) {",
-                            String.join(", ", calledWith)));
-                    function.add(expression);
-                    function.add("  };");
-                }
+                function.add(String.format("  return function (%s) {",
+                        String.join(", ", JsCall.getCalledWithNames(method))));
+                function.add(expression);
+                function.add("  };");
                 function.add("};");
             } else {
                 // The element the definition was obtained from is the `this`
