@@ -79,7 +79,7 @@ class JsDefinitionProxyTest {
         @JsCalledWith("value")
         JsFunction createLogger(String prefix);
 
-        @JsExpression("console.log($0);")
+        @JsExpression("return (value) => console.log($0, value);")
         JsSnippet createSnippet(String prefix);
     }
 

@@ -385,11 +385,23 @@ public class TaskGenerateJsDefinitions extends AbstractTaskClientGenerator {
                 function.add(String.format(
                         "window.Vaadin.Flow.jsSnippets[%s] = function (%s) {",
                         functionId, parameters));
-                function.add(String.format("  return function (%s) {",
-                        String.join(", ", JsCall.getCalledWithNames(method))));
-                function.add(expression);
-                function.add("  };");
-                function.add("};");
+                List<String> calledWith = JsCall.getCalledWithNames(method);
+                if (calledWith == null) {
+                    function.add(expression);
+                    function.add("};");
+                    // The expression returns the function itself, so running
+                    // it runs declared JavaScript: the client defers that to
+                    // the first call rather than doing it while it decodes
+                    function.add(String.format(
+                            "window.Vaadin.Flow.jsSnippets[%s].lazy = true;",
+                            functionId));
+                } else {
+                    function.add(String.format("  return function (%s) {",
+                            String.join(", ", calledWith)));
+                    function.add(expression);
+                    function.add("  };");
+                    function.add("};");
+                }
             } else {
                 // The element the definition was obtained from is the `this`
                 // of a call - the same contract as an executeJs expression has

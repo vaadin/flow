@@ -26,7 +26,7 @@
 
 import type { StateNode } from '../StateNode';
 import type { StateTree } from '../StateTree';
-import { describeMissingFunction, findDeclaredSnippet } from './DeclaredJavaScript';
+import { describeMissingFunction, findDeclaredSnippet, getNameOf } from './DeclaredJavaScript';
 
 type JsFunction = (...args: unknown[]) => unknown;
 
@@ -148,11 +148,17 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
 
 /**
  * Evaluates a snippet declared by a JavaScript definition: the bundle has a
- * function for it, which takes the captures and returns the function the
- * declared expression is the body of, so nothing is compiled from a string and
- * no declared JavaScript runs while the parameters are decoded. Each decode
- * evaluates it again, so every invocation that is passed the snippet gets a
- * value of its own.
+ * function for it, which takes the captures and returns the value, so nothing
+ * is compiled from a string. Each decode evaluates it again, so every
+ * invocation that is passed the snippet gets a value of its own.
+ *
+ * A snippet declared without the parameters it is called with is one whose
+ * expression returns the function itself, which the bundle marks as lazy.
+ * Running it runs declared JavaScript, so it is deferred to the first call of
+ * the value: nothing declared runs while the parameters of an invocation are
+ * decoded, decoding a deferred invocation again has no effect, and an
+ * expression that returns no function fails on that call with an error naming
+ * it.
  *
  * A function missing from the bundle is reported when the value is called
  * rather than when it is decoded, so the error reaches the invocation that
@@ -167,7 +173,22 @@ function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unkno
       throw new Error(message);
     };
   }
-  return snippet(...captures);
+  if (!(snippet as { lazy?: boolean }).lazy) {
+    return snippet(...captures);
+  }
+  let declared: ((...args: unknown[]) => unknown) | undefined;
+  return function (this: unknown, ...args: unknown[]): unknown {
+    if (declared === undefined) {
+      const value = snippet(...captures);
+      if (typeof value !== 'function') {
+        throw new TypeError(
+          `${getNameOf(functionId)} returned ${typeof value} instead of a function. Return the function from the expression, or declare the parameters it is called with in @JsCalledWith.`
+        );
+      }
+      declared = value as (...args: unknown[]) => unknown;
+    }
+    return declared.apply(this, args);
+  };
 }
 
 function decodeJsFunction(tree: StateTree, fnObject: Record<string, unknown>, originalJson: string): unknown {

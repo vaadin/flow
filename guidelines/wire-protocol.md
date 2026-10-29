@@ -251,12 +251,16 @@ travels as a single-key wrapper object whose key is reserved:
 - `{"@v-fn": {"id": …, "captures": […]}}` — a `JsFunction` declared as a
   `JsSnippet` by a `@JsDefinition` method. The client looks the id up in
   `window.Vaadin.Flow.jsSnippets` and calls that function with the
-  captures; it returns the function whose body is the declared
-  expression, which is the decoded value, so nothing is compiled from a
-  string and no declared JavaScript runs while decoding. The registry is
-  separate from `jsDefinitions` because a snippet function is not
-  `async`: whatever it is passed to may need its value synchronously. A missing id decodes to a function that throws
-  when it is called, so the failure reaches the invocation that calls it.
+  captures; what it returns is the decoded value, so nothing is compiled
+  from a string. For a snippet with `@JsCalledWith` that is a function
+  whose body is the declared expression. One without it is marked `lazy`
+  in the bundle, because its expression returns the function: the client
+  hands out a wrapper that runs it on the first call, so no declared
+  JavaScript runs while decoding. The registry is separate from
+  `jsDefinitions` because a snippet function is not `async`: whatever it
+  is passed to may need its value synchronously. A missing id decodes to
+  a function that throws when it is called, so the failure reaches the
+  invocation that calls it.
 
 `ClientJsonCodec.decodeWithTypeInfo` decodes these **recursively through
 objects and arrays**. The whole `@v-` prefix is consequently reserved on

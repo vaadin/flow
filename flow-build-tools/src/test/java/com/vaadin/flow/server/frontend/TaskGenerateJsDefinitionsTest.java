@@ -56,7 +56,7 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String LOG_EXPRESSION = "console.log($0, value);";
 
-    private static final String FORMAT_EXPRESSION = "return Date.now() + $0;";
+    private static final String FORMAT_EXPRESSION = "return (point) => point.y + $0;";
 
     private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
 
@@ -180,15 +180,16 @@ class TaskGenerateJsDefinitionsTest {
                         "};")),
                 "the expression should be the body of a function of the declared parameters, returned by one of the captures: "
                         + content);
+        String formatterId = JsCall.functionId(
+                LoggerJs.class.getMethod("createFormatter", String.class));
         assertTrue(
                 content.contains(String.join(separator,
-                        "window.Vaadin.Flow.jsSnippets[\""
-                                + JsCall.functionId(LoggerJs.class.getMethod(
-                                        "createFormatter", String.class))
+                        "window.Vaadin.Flow.jsSnippets[\"" + formatterId
                                 + "\"] = function ($0) {",
-                        "  return function () {", FORMAT_EXPRESSION, "  };",
-                        "};")),
-                "without declared parameters the expression should be the body of a function taking none, so it only runs when called: "
+                        FORMAT_EXPRESSION, "};",
+                        "window.Vaadin.Flow.jsSnippets[\"" + formatterId
+                                + "\"].lazy = true;")),
+                "without declared parameters the expression should return the function itself, marked for the client to run it on the first call rather than when decoding: "
                         + content);
         assertFalse(content.contains("jsDefinitions[\""),
                 "a snippet is not run by a call: " + content);

@@ -31,11 +31,11 @@ import com.vaadin.flow.dom.JsFunction;
  * call, which the expression references as <code>$0</code>, <code>$1</code>,
  * &hellip;. The value is passed on, for instance as an argument of a method of
  * a definition obtained from {@link Element#executeJs(Class)}. When the client
- * decodes the argument, it gets a function whose body is the expression, with
- * those arguments bound, and the expression runs when the invoker calls that
- * function. Nothing is compiled from a string in the browser, so a snippet
- * passed that way works under a content security policy that does not allow
- * <code>unsafe-eval</code>. Passed to
+ * decodes the argument, it gets a function with those arguments bound, and the
+ * expression runs when the invoker calls that function, as described for
+ * {@link JsCalledWith}. Nothing is compiled from a string in the browser, so a
+ * snippet passed that way works under a content security policy that does not
+ * allow <code>unsafe-eval</code>. Passed to
  * {@link Element#executeJs(String, Object...)} it works as well, but the
  * expression of that call is itself compiled from a string.
  * <p>

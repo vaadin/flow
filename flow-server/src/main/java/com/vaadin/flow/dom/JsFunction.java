@@ -164,7 +164,9 @@ public final class JsFunction implements JsSnippet {
         for (Object capture : captures) {
             JacksonCodec.encodeWithTypeInfo(capture);
         }
-        return new JsFunction(null, call, captures, call.getCalledWithNames());
+        List<String> names = call.getCalledWithNames();
+        return new JsFunction(null, call, captures,
+                names == null ? List.of() : names);
     }
 
     /**
