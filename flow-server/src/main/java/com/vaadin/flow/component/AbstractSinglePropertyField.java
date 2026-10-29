@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -273,8 +274,9 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     @SuppressWarnings("unchecked")
     private static <T> Class<T> findElementPropertyTypeFromTypeParameter(
             Class<?> hasValueClass) {
-        return (Class<T>) ReflectTools.erase(ReflectTools.getTypeParameter(
-                hasValueClass, HasValue.class.getTypeParameters()[1]));
+        Type type = ReflectTools.getTypeParameter(hasValueClass,
+                HasValue.class.getTypeParameters()[1]);
+        return type == null ? null : (Class<T>) ReflectTools.erase(type);
     }
 
     /**

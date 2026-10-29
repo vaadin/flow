@@ -105,6 +105,23 @@ class AbstractSinglePropertyFieldTest {
         assertEquals("foo", field.getElement().getProperty("property"));
     }
 
+    @Tag("tag")
+    @SuppressWarnings("rawtypes")
+    public static class RawField extends AbstractSinglePropertyField {
+        public RawField() {
+            super("property", "", false);
+        }
+    }
+
+    @Test
+    void rawField_propertyTypeNotResolvable_throws() {
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class, RawField::new);
+        assertEquals(
+                "Cannot automatically determine element property type based on type parameters.",
+                exception.getMessage());
+    }
+
     @Test
     void stringField_setValueNull_exceptionAndNoEvent() {
         StringField field = new StringField();
