@@ -765,6 +765,16 @@ class AbstractRouteRegistryTest {
         assertFalse(registry.hasLayout("/path"),
                 "Path outside layout should return false");
     }
+
+    @Test
+    void singleLayout_percentEncodedPath_matchesDecodedSegments() {
+        registry.setLayout(ViewLayout.class);
+
+        assertEquals(ViewLayout.class, registry.getLayout("/%76iew/home"),
+                "Encoded path segment should match the layout path");
+        assertFalse(registry.hasLayout("/view%2Fhome"),
+                "Encoded slash should not split the path segment");
+    }
     /* Private stuff */
 
     private void awaitCountDown(CountDownLatch countDownLatch) {
