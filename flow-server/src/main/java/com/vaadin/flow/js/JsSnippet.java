@@ -30,17 +30,18 @@ import com.vaadin.flow.dom.JsFunction;
  * generated from its {@link JsExpression} and carries the arguments of the
  * call, which the expression references as <code>$0</code>, <code>$1</code>,
  * &hellip;. The value is passed on, for instance as an argument of a method of
- * a definition obtained from {@link Element#executeJs(Class)}, and the client
- * evaluates the expression with those arguments when it decodes the argument.
- * Nothing is compiled from a string in the browser, so a snippet passed that
- * way works under a content security policy that does not allow
+ * a definition obtained from {@link Element#executeJs(Class)}. When the client
+ * decodes the argument, it gets a function whose body is the expression, with
+ * those arguments bound, and the expression runs when the invoker calls that
+ * function. Nothing is compiled from a string in the browser, so a snippet
+ * passed that way works under a content security policy that does not allow
  * <code>unsafe-eval</code>. Passed to
  * {@link Element#executeJs(String, Object...)} it works as well, but the
  * expression of that call is itself compiled from a string.
  * <p>
  * A snippet has no identity on the client and no lifetime. Passing the same
- * snippet to several invocations evaluates its expression once per invocation,
- * and each of them gets a value of its own, so there is nothing to cache and
+ * snippet to several invocations creates its function once per invocation, and
+ * each of them gets a function of its own, so there is nothing to cache and
  * nothing to release.
  * <p>
  * {@link JsFunction} is the snippet type for a function that whoever it is
