@@ -37,6 +37,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.ObjectMapper;
@@ -139,6 +140,26 @@ class NavigationStateRendererTest {
         public void afterNavigation(AfterNavigationEvent event) {
             refreshAfterNavigation = event.isRefreshEvent();
 
+        }
+    }
+
+    @Route(value = "preserved-redirect")
+    @PreserveOnRefresh
+    private static class PreservedRedirectingView extends Text
+            implements BeforeEnterObserver {
+        static boolean reroute;
+
+        PreservedRedirectingView() {
+            super("");
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            if (reroute) {
+                event.rerouteTo(PreservedEventView.class);
+            } else {
+                event.forwardTo(PreservedEventView.class);
+            }
         }
     }
 
@@ -588,6 +609,104 @@ class NavigationStateRendererTest {
                 "Reload should be flagged for before");
         assertTrue(view.refreshAfterNavigation,
                 "Reload should be flagged for after");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = NavigationTrigger.class, names = { "ROUTER_LINK",
+            "HISTORY", "UI_NAVIGATE", "PROGRAMMATIC", "PAGE_LOAD" })
+    void handle_preserveOnRefresh_queryChange_onlyReloadIsRefreshAndOnlyUINavigatePushes(
+            NavigationTrigger trigger) {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+
+        List<String> pushedLocations = new ArrayList<>();
+        MockUI ui = new MockUI(session) {
+            final Page page = new Page(this) {
+                final History history = new History(getUI().get()) {
+                    @Override
+                    public void pushState(BaseJsonNode state,
+                            Location location) {
+                        pushedLocations
+                                .add(location.getPathWithQueryParameters());
+                    }
+                };
+
+                @Override
+                public History getHistory() {
+                    return history;
+                }
+            };
+
+            @Override
+            public Page getPage() {
+                return page;
+            }
+        };
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
+        ui.getInternals().setExtendedClientDetails(details);
+
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(PreservedEventView.class));
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("preserved"), ui, NavigationTrigger.PAGE_LOAD));
+        final PreservedEventView view = (PreservedEventView) ui.getInternals()
+                .getActiveRouterTargetsChain().get(0);
+
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("preserved", QueryParameters.of("id", "1")), ui,
+                trigger));
+
+        assertSame(view, ui.getInternals().getActiveRouterTargetsChain().get(0),
+                "Preserved view should be reused");
+        boolean reload = trigger == NavigationTrigger.PAGE_LOAD;
+        assertEquals(reload, view.refreshBeforeEnter,
+                "Only a reload should be a refresh for " + trigger);
+        assertEquals(reload, view.refreshAfterNavigation,
+                "Only a reload should be a refresh for " + trigger);
+        assertEquals(
+                trigger == NavigationTrigger.UI_NAVIGATE
+                        ? List.of("preserved?id=1")
+                        : List.of(),
+                pushedLocations,
+                "Only server initiated navigation should push history state, "
+                        + "the browser has already updated history for "
+                        + trigger);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "PAGE_LOAD, false", "PAGE_LOAD, true", "ROUTER_LINK, false",
+            "ROUTER_LINK, true" })
+    void handle_preserveOnRefresh_redirectToPreservedView_onlyReloadIsRefresh(
+            NavigationTrigger trigger, boolean reroute) {
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        router = session.getService().getRouter();
+        RouteConfiguration routeConfiguration = RouteConfiguration
+                .forRegistry(router.getRegistry());
+        routeConfiguration.setAnnotatedRoute(PreservedEventView.class);
+        routeConfiguration.setAnnotatedRoute(PreservedRedirectingView.class);
+        PreservedRedirectingView.reroute = reroute;
+
+        MockUI ui = new MockUI(session);
+        ExtendedClientDetails details = mock(ExtendedClientDetails.class);
+        when(details.getWindowName()).thenReturn("ROOT.123");
+        ui.getInternals().setExtendedClientDetails(details);
+
+        router.navigate(ui, new Location("preserved-redirect"),
+                NavigationTrigger.PAGE_LOAD);
+        final PreservedEventView view = (PreservedEventView) ui.getInternals()
+                .getActiveRouterTargetsChain().get(0);
+
+        router.navigate(ui, new Location("preserved-redirect"), trigger);
+
+        assertSame(view, ui.getInternals().getActiveRouterTargetsChain().get(0),
+                "Preserved view should be reused");
+        boolean reload = trigger == NavigationTrigger.PAGE_LOAD;
+        assertEquals(reload, view.refreshBeforeEnter,
+                "Only a reload should be a refresh for " + trigger);
+        assertEquals(reload, view.refreshAfterNavigation,
+                "Only a reload should be a refresh for " + trigger);
     }
 
     @Test
