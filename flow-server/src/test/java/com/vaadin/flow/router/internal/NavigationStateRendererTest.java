@@ -620,28 +620,9 @@ class NavigationStateRendererTest {
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
 
         List<String> pushedLocations = new ArrayList<>();
-        MockUI ui = new MockUI(session) {
-            final Page page = new Page(this) {
-                final History history = new History(getUI().get()) {
-                    @Override
-                    public void pushState(BaseJsonNode state,
-                            Location location) {
-                        pushedLocations
-                                .add(location.getPathWithQueryParameters());
-                    }
-                };
-
-                @Override
-                public History getHistory() {
-                    return history;
-                }
-            };
-
-            @Override
-            public Page getPage() {
-                return page;
-            }
-        };
+        MockUI ui = createPushStateRecordingUI(session,
+                location -> pushedLocations
+                        .add(location.getPathWithQueryParameters()));
         ExtendedClientDetails details = mock(ExtendedClientDetails.class);
         when(details.getWindowName()).thenReturn("ROOT.123");
         ui.getInternals().setExtendedClientDetails(details);
