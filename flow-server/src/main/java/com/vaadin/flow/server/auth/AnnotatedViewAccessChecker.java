@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 
@@ -61,11 +62,8 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
         if (RouteUtil.isAutolayoutEnabled(targetView,
                 context.getLocation().getPath())) {
             RouteRegistry registry = context.getRouter().getRegistry();
-            boolean noParents = registry.getRegisteredRoutes().stream()
-                    .filter(routeData -> routeData.getNavigationTarget()
-                            .equals(targetView))
-                    .map(data -> data.getParentLayouts().isEmpty()).findFirst()
-                    .orElse(true);
+            boolean noParents = hasNoParentLayouts(registry, targetView,
+                    context.getLocation().getPath());
             if (noParents
                     && registry.hasLayout(context.getLocation().getPath())) {
                 Class<?> layout = registry
@@ -115,6 +113,25 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
             denyReason = "Access is denied by annotations on the view.";
         }
         return context.deny(denyReason);
+    }
+
+    private boolean hasNoParentLayouts(RouteRegistry registry,
+            Class<?> targetView, String path) {
+        // The router shows the view in the parent layouts of the route or
+        // route alias that matches the path, which can differ from the parent
+        // layouts of the primary route
+        NavigationRouteTarget navigationRouteTarget = registry
+                .getNavigationRouteTarget(path);
+        if (navigationRouteTarget.hasTarget() && navigationRouteTarget
+                .getRouteTarget().getTarget().equals(targetView)) {
+            return navigationRouteTarget.getRouteTarget().getParentLayouts()
+                    .isEmpty();
+        }
+        return registry.getRegisteredRoutes().stream()
+                .filter(routeData -> routeData.getNavigationTarget()
+                        .equals(targetView))
+                .map(data -> data.getParentLayouts().isEmpty()).findFirst()
+                .orElse(true);
     }
 
     private boolean isImplicitlyDenyAllAnnotated(Class<?> targetView) {
