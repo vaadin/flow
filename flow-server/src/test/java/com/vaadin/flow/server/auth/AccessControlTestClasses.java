@@ -446,4 +446,16 @@ public class AccessControlTestClasses {
             implements RouterLayout {
     }
 
+    @Tag(Tag.DIV)
+    @AnonymousAllowed
+    public static class AnonymousAllowedParent extends Component
+            implements RouterLayout {
+    }
+
+    @Route(value = "primary-in-parent", layout = AnonymousAllowedParent.class)
+    @RouteAlias("alias-in-automatic-layout")
+    @AnonymousAllowed
+    public static class AnonymousAllowedAliasedView extends Component {
+    }
+
 }
