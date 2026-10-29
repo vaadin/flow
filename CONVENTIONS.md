@@ -161,6 +161,23 @@ Put `@Nullable` on the declared type (`ValueSignal<@Nullable X>`). NullAway
 infers it for the constructor, so no repeated type argument or type witness is
 needed.
 
+## `toString()`
+
+Keep `toString()` for people — logs, debugger views, exception messages — and
+never let code, a wire format, a CSS value or a JavaScript name depend on its
+output. A string the program needs gets a named method (`getValue()`,
+`getClientValue()`, `toJson()`), and callers use that method. See
+`guidelines/design.md`.
+
+Make `toString()` cheap, free of side effects and unable to throw. Read a
+signal with `peek()` in it, never `get()`.
+
+Start `toString()` with `getClass().getSimpleName()` rather than a literal
+class name, and follow the `SimpleName[…]` shape. Keep `super.toString()` when
+the identity hash is what tells instances apart.
+
+Never put a password, token or other credential in `toString()`.
+
 ## Client-Side JavaScript
 
 Never concatenate values into an `executeJs` expression string. Pass them as
@@ -352,6 +369,12 @@ data reads as a contract that the code does not have.
 When changing the setup of an existing test, keep every case it already
 covered. Replacing a mock or a fixture must not drop assertions that still
 apply.
+
+When a test checks an exception or log message, or a `toString()` that is
+only part of what the case is about, assert that it contains the parts that
+matter, such as the class name and the offending value, not the exact wording.
+A test whose subject is the `toString()` itself, like the `toString` cases of
+the signal tests, asserts the exact output.
 
 Do not depend on JVM defaults such as locale, time zone or charset. Set them
 explicitly, or pick a value that differs from the default, so the case cannot

@@ -13,9 +13,9 @@ browser-API wrapper lives in sibling chapters:
 - [Documenting](documenting.md) — what the Javadoc of a wrapper has to explain.
 - [Testing](testing.md) — mocking the browser API in an integration test.
 
-The rules for new public API are in the Public API, Naming and Nullability
-sections of [`CONVENTIONS.md`](../CONVENTIONS.md). This chapter explains them
-and covers the design decisions they leave open.
+The rules for new public API are in the Public API, Naming, Nullability and
+`toString()` sections of [`CONVENTIONS.md`](../CONVENTIONS.md). This chapter
+explains them and covers the design decisions they leave open.
 
 ## Before you start
 
@@ -287,3 +287,71 @@ Decide it from the rules below rather than case by case.
 - **Do not rename just to close the gap with this guidance.** A rename is a
   breaking change and goes through a deprecation cycle, the way `Label` was
   replaced by `NativeLabel` in 24.1 and removed in 25.
+
+
+### `toString()`
+
+`toString()` is for people: log lines, debugger views and exception messages.
+Loggers, IDEs and string concatenation call it on their own, at moments the
+class does not choose, so it has two jobs — say enough to tell what an instance
+is — and one constraint — never get in the way of the code that called it.
+
+- **It is not a contract.** No code path, wire format, CSS value or
+  JavaScript name depends on what `toString()` returns. A string the program
+  needs gets a named method, and `toString()` may delegate to it:
+  `ScrollIntoViewOption.Behavior.getValue()`,
+  `ScreenOrientationType.getClientValue()`, `Direction.getClientName()`. Call
+  the named method, not `toString()` — `element.getOuterHTML()` rather than
+  `element.toString()`, `message.toJson()` rather than `message.toString()`.
+  Enums such as `HasText.WhiteSpace`, `WebStorage.Storage` and `Unit` predate
+  this and return their client value from `toString()`; they stay that way for
+  compatibility, but do not copy the pattern. Relying on the `toString()` of a
+  JDK or library type is fine when its Javadoc documents the format, such as
+  `Path` or `URI`.
+- **Cheap, side-effect free, never throws.** It runs on log paths, possibly
+  per request, and inside the construction of an error message, where an
+  exception from `toString()` hides the error that was being reported (which
+  is why `StateNode.describe()` catches one from a component). Do not serialize
+  a subtree, walk a large structure or load data to build it. Be careful with
+  values the application supplied: `size()` on the collection behind a
+  `ListDataProvider` can be slow or initialise a lazy JPA collection, which is
+  only acceptable as a deliberate choice.
+- **Signals use `peek()`.** A signal's `toString()` reads the value with
+  `peek()`, never `get()`, so that logging a signal inside an effect or a
+  computed signal does not register a dependency (`ValueSignal`,
+  `SharedListSignal`, …).
+- **Use the runtime class name.** Start with `getClass().getSimpleName()`, not
+  a string literal, so a subclass reports its own type (`Range`,
+  `StringLengthValidator`, `AbstractField.ComponentValueChangeEvent`). For a
+  class with many instances that wraps application data, such as a data
+  provider, keep `super.toString()` so the identity hash still tells two
+  instances apart, and append the summary to it.
+- **Shape: type name and the state that identifies the instance.** Follow
+  `SimpleName[…]`: the type name, then the state in square brackets, as
+  `name=value` pairs the way records print them when the values need a name
+  (`Name[width=100, height=50]`), and bare when they do not
+  (`StringLengthValidator[1, 10]`). Show what identifies the instance or
+  explains its behaviour, not every field. The
+  signals and `RegexpValidator` have the shape but write the class name as a
+  literal, so a subclass such as `EmailValidator` prints `RegexpValidator[…]`;
+  do not copy that part.
+- **Label numbers that can mislead.** If a value can be read two ways, say
+  which one it is: `ListDataProvider` prints `250 backend items, filtered`,
+  because a bare `250 items` suggests the data is fine when a filter hides all
+  of it.
+- **Wrappers include what they wrap.** `DataProviderWrapper` and
+  `ConfigurableFilterDataProviderWrapper` print the wrapped provider, so the
+  chain is visible in one line.
+- **No secrets, and no application content on per-request log paths.** Never
+  include a password, token or other credential — `ProxyConfig.Proxy` says
+  that authentication is used instead of printing the username and password
+  (its id-first format is not an example of the shape). A description written
+  into a server log on every request should name structure (class, id, tag),
+  not the user's data.
+- **Records already have one.** Do not override the generated `toString()` of
+  a record unless it has to hide a field or the components alone do not
+  describe it.
+
+Changing the text of an existing `toString()` is not an API break, but tests
+in other repositories and applications sometimes compare it, so mention it as a
+behaviour change in the pull request.

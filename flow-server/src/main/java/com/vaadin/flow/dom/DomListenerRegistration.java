@@ -24,6 +24,8 @@ import tools.jackson.core.type.TypeReference;
 
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.BeanUtil;
+import com.vaadin.flow.server.CspMode;
+import com.vaadin.flow.server.CspViolationException;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
@@ -61,6 +63,8 @@ public interface DomListenerRegistration extends Registration {
      *            definition for data that should be passed back to the server
      *            together with the event, not <code>null</code>
      * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      * @see #addEventDataElement(String) for mapping an element
      * @see #mapEventTargetElement() to map the {@code event.target} to an
      *      element
@@ -76,6 +80,8 @@ public interface DomListenerRegistration extends Registration {
      *            together with the event, not <code>null</code> and not
      *            containing <code>null</code>
      * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      * @see #addEventData(String)
      * @since 25.4
      */
@@ -105,6 +111,8 @@ public interface DomListenerRegistration extends Registration {
      *            the JavaScript filter expression, or <code>null</code> to
      *            clear the filter
      * @return this registration, for chaining
+     * @throws CspViolationException
+     *             in the {@link CspMode#STRICT} Content Security Policy mode
      */
     DomListenerRegistration setFilter(String filter);
 
@@ -453,8 +461,17 @@ public interface DomListenerRegistration extends Registration {
      * </pre>
      *
      * The above will automatically add event data expressions for
-     * {@code event.button}, {@code event.clientX}, {@code event.clientY}, and
-     * {@code type}.
+     * {@code event.button}, {@code event.clientX} and {@code event.clientY}.
+     * {@link DomEvent#getEventData(Class)} decodes the values of these
+     * expressions back into the nested structure of the class.
+     * <p>
+     * Each property path is evaluated as a JavaScript expression in the
+     * browser, where {@code event} and {@code element} are the only local
+     * variables besides the browser's global objects such as {@code window}. If
+     * a top-level property is none of these, such as {@code type}, its
+     * expression throws an error in the browser and the event is not sent to
+     * the server at all. The event type does not need an expression, it is
+     * available through {@link DomEvent#getType()}.
      *
      * @param type
      *            the class whose properties should be captured from the event
@@ -583,7 +600,10 @@ public interface DomListenerRegistration extends Registration {
      *
      * This will add expressions for {@code event.detail.r},
      * {@code event.detail.g}, and {@code event.detail.b}, rather than sending
-     * the entire {@code event.detail} object.
+     * the entire {@code event.detail} object. Nested properties get nested
+     * paths, e.g. {@code event.detail.color.r} for a {@code color} property of
+     * type {@code RgbColor}, and {@link DomEvent#getEventDetail(Class)} decodes
+     * them back into the nested structure of the class.
      *
      * @param type
      *            the class whose properties should be captured from
