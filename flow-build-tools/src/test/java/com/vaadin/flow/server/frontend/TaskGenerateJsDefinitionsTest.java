@@ -58,6 +58,8 @@ class TaskGenerateJsDefinitionsTest {
 
     private static final String FORMAT_EXPRESSION = "return (point) => point.y + $0;";
 
+    private static final String TICK_EXPRESSION = "console.log($0, Date.now());";
+
     private static final String SNIPPETS_REGISTRY = "window.Vaadin.Flow.jsSnippets = window.Vaadin.Flow.jsSnippets || {};";
 
     private static final String NAMES_REGISTRY = "window.Vaadin.Flow.jsDefinitionNames = window.Vaadin.Flow.jsDefinitionNames || {};";
@@ -79,6 +81,10 @@ class TaskGenerateJsDefinitionsTest {
 
         @JsExpression(FORMAT_EXPRESSION)
         JsFunction createFormatter(String unit);
+
+        @JsExpression(TICK_EXPRESSION)
+        @JsCalledWith({})
+        JsFunction createTicker(String label);
     }
 
     @JsDefinition
@@ -190,6 +196,19 @@ class TaskGenerateJsDefinitionsTest {
                         "window.Vaadin.Flow.jsSnippets[\"" + formatterId
                                 + "\"].lazy = true;")),
                 "without declared parameters the expression should return the function itself, marked for the client to run it on the first call rather than when decoding: "
+                        + content);
+        String tickerId = JsCall.functionId(
+                LoggerJs.class.getMethod("createTicker", String.class));
+        assertTrue(
+                content.contains(String.join(separator,
+                        "window.Vaadin.Flow.jsSnippets[\"" + tickerId
+                                + "\"] = function ($0) {",
+                        "  return function () {", TICK_EXPRESSION, "  };",
+                        "};")),
+                "an empty list of parameters should still wrap a function around the expression: "
+                        + content);
+        assertFalse(content.contains(tickerId + "\"].lazy"),
+                "and the expression of that function only runs when it is called: "
                         + content);
         assertFalse(content.contains("jsDefinitions[\""),
                 "a snippet is not run by a call: " + content);

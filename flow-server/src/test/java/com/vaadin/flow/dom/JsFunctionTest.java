@@ -45,6 +45,9 @@ class JsFunctionTest {
         @JsExpression("console.log($0, value);")
         @JsCalledWith("value")
         JsFunction createAnyLogger(Object prefix);
+
+        @JsExpression("return (value) => console.log($0, value);")
+        JsFunction createUnwrappedLogger(String prefix);
     }
 
     @Test
@@ -64,6 +67,10 @@ class JsFunctionTest {
                 () -> fn.withArguments("other"),
                 "the arguments are part of the JavaScript in the bundle");
         assertEquals(List.of("value"), fn.getArgumentNames());
+        assertEquals(List.of(),
+                JsSnippets.of(LoggerJs.class).createUnwrappedLogger("Greeting:")
+                        .getArgumentNames(),
+                "a function the expression returns declares no names");
     }
 
     @Test

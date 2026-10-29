@@ -68,6 +68,11 @@ import com.vaadin.flow.dom.JsFunction;
  * JsFunction formatTooltip(String unit);
  * </pre>
  * <p>
+ * The expression itself has no <code>this</code>, as the generated module runs
+ * in strict mode. The function it returns gets the <code>this</code> of the
+ * invoker only when it is a <code>function</code> rather than an arrow
+ * function.
+ * <p>
  * The client runs such an expression on the first call of the function rather
  * than when it receives the snippet, so it never runs while the parameters of
  * an invocation are decoded, and an expression that does not return a function
