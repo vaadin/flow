@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.vaadin.flow.internal.ToStringBuilder;
+
 /**
  * A container for Theme information when scanning the class path. It overrides
  * equals and hashCode in order to use HashSet to eliminate duplicates.
@@ -87,9 +89,9 @@ final class ThemeData implements Serializable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[notheme=" + notheme
-                + ", themeAnnotationPresent=" + themeAnnotationPresent
-                + ", themeClass=" + themeClass + ", variant=" + variant
-                + ", themeName=" + themeName + "]";
+        return ToStringBuilder.of(this).add("notheme", notheme)
+                .add("themeAnnotationPresent", themeAnnotationPresent)
+                .add("themeClass", themeClass).add("variant", variant)
+                .add("themeName", themeName).toString();
     }
 }

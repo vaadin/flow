@@ -24,6 +24,8 @@ import org.apache.maven.artifact.Artifact;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.ToStringBuilder;
+
 /**
  * Configuration class for filtering Maven artifacts to be scanned by the
  * plugin. This class allows enabling or disabling the scanner and defining
@@ -246,9 +248,9 @@ public class FrontendScannerConfig {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[enabled=" + enabled
-                + ", includeOutputDirectory=" + includeOutputDirectory
-                + ", includes=" + includes + ", excludes=" + excludes + "]";
+        return ToStringBuilder.of(this).add("enabled", enabled)
+                .add("includeOutputDirectory", includeOutputDirectory)
+                .add("includes", includes).add("excludes", excludes).toString();
     }
 
     /**

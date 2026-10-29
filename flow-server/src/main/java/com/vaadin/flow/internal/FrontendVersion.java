@@ -350,7 +350,7 @@ public class FrontendVersion
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + version + "]";
+        return ToStringBuilder.of(this).addValue(version).toString();
     }
 
     @Override

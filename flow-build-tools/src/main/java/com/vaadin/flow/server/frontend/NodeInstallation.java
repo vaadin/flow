@@ -33,6 +33,7 @@ import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.internal.ToStringBuilder;
 
 /**
  * A single Node.js version installed by Flow into the alternative install
@@ -275,7 +276,7 @@ final class NodeInstallation {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + directory + "]";
+        return ToStringBuilder.of(this).addValue(directory).toString();
     }
 
     /**

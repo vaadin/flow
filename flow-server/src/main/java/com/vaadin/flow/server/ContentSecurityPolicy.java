@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.internal.ToStringBuilder;
+
 /**
  * A mutable Content Security Policy, i.e. a set of directives and the sources
  * of each directive, that is serialized as the value of a
@@ -143,7 +145,7 @@ public class ContentSecurityPolicy implements Serializable {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + toHeaderValue() + "]";
+        return ToStringBuilder.of(this).addValue(toHeaderValue()).toString();
     }
 
     private static String normalizeDirective(String directive) {
