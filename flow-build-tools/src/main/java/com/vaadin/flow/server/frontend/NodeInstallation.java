@@ -275,7 +275,7 @@ final class NodeInstallation {
 
     @Override
     public String toString() {
-        return directory.toString();
+        return getClass().getSimpleName() + "[" + directory + "]";
     }
 
     /**

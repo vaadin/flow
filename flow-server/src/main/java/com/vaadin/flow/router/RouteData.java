@@ -135,11 +135,11 @@ public class RouteData extends RouteBaseData<RouteData> {
 
     @Override
     public String toString() {
-        return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
-                + getTemplate() + '\'' + ", parameters=" + getRouteParameters()
-                + ", navigationTarget=" + getNavigationTarget()
-                + ", routeAliases=" + routeAliases + ", menuData=" + menuData
-                + "}'";
+        return getClass().getSimpleName() + "{" + "parentLayout="
+                + getParentLayout() + ", url='" + getTemplate() + '\''
+                + ", parameters=" + getRouteParameters() + ", navigationTarget="
+                + getNavigationTarget() + ", routeAliases=" + routeAliases
+                + ", menuData=" + menuData + '}';
     }
 
     @Override

@@ -87,8 +87,9 @@ final class ThemeData implements Serializable {
 
     @Override
     public String toString() {
-        return " notheme: " + notheme + "\n themeAnnotationPresent: "
-                + themeAnnotationPresent + "\n themeClass:" + themeClass
-                + "\n variant: " + variant + "\n themeName: " + themeName;
+        return getClass().getSimpleName() + "[notheme=" + notheme
+                + ", themeAnnotationPresent=" + themeAnnotationPresent
+                + ", themeClass=" + themeClass + ", variant=" + variant
+                + ", themeName=" + themeName + "]";
     }
 }

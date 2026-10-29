@@ -143,7 +143,7 @@ public class ContentSecurityPolicy implements Serializable {
 
     @Override
     public String toString() {
-        return toHeaderValue();
+        return getClass().getSimpleName() + "[" + toHeaderValue() + "]";
     }
 
     private static String normalizeDirective(String directive) {

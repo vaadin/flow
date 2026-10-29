@@ -87,9 +87,10 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 
     @Override
     public String toString() {
-        return "RouteData{" + "parentLayout=" + getParentLayout() + ", url='"
-                + getTemplate() + '\'' + ", parameters=" + getRouteParameters()
-                + ", navigationTarget=" + getNavigationTarget() + '}';
+        return getClass().getSimpleName() + "{" + "parentLayout="
+                + getParentLayout() + ", url='" + getTemplate() + '\''
+                + ", parameters=" + getRouteParameters() + ", navigationTarget="
+                + getNavigationTarget() + '}';
     }
 
     @Override

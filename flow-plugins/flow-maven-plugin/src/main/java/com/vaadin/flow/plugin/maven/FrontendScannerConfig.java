@@ -246,9 +246,9 @@ public class FrontendScannerConfig {
 
     @Override
     public String toString() {
-        return "FrontendScannerConfig { enabled=" + enabled
+        return getClass().getSimpleName() + "[enabled=" + enabled
                 + ", includeOutputDirectory=" + includeOutputDirectory
-                + ", includes=" + includes + ", excludes=" + excludes + '}';
+                + ", includes=" + includes + ", excludes=" + excludes + "]";
     }
 
     /**

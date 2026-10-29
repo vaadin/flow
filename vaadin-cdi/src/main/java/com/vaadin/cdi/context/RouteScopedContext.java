@@ -288,7 +288,8 @@ public class RouteScopedContext extends AbstractContext {
 
         @Override
         public String toString() {
-            return "[ ui-key='" + getUIId() + "', owner='" + getOwner() + "' ]";
+            return getClass().getSimpleName() + "[uiId=" + getUIId()
+                    + ", owner=" + getOwner().getName() + "]";
         }
 
         Class<?> getOwner() {

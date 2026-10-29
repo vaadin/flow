@@ -113,8 +113,9 @@ public final class CssData implements Serializable {
 
     @Override
     public String toString() {
-        return "value: " + value + (id != null ? " id:" + id : "")
-                + (include != null ? " include:" + include : "")
-                + (themefor != null ? " themefor:" + themefor : "");
+        return getClass().getSimpleName() + "[value=" + value
+                + (id != null ? ", id=" + id : "")
+                + (include != null ? ", include=" + include : "")
+                + (themefor != null ? ", themefor=" + themefor : "") + "]";
     }
 }

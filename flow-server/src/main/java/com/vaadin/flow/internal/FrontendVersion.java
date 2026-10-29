@@ -350,9 +350,7 @@ public class FrontendVersion
 
     @Override
     public String toString() {
-        return "FrontendVersion [" + "majorVersion=" + majorVersion
-                + ", minorVersion=" + minorVersion + ", revision=" + revision
-                + ", buildIdentifier=" + buildIdentifier + "]";
+        return getClass().getSimpleName() + "[" + version + "]";
     }
 
     @Override
