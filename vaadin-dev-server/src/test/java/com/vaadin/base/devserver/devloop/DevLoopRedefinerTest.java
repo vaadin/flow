@@ -37,7 +37,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsCalledWith;
 import com.vaadin.flow.js.JsDefinition;
 import com.vaadin.flow.js.JsExpression;
 import com.vaadin.flow.theme.Theme;
@@ -176,6 +178,20 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
+    interface LoggerJs extends Serializable {
+        @JsExpression("console.log($0, value)")
+        @JsCalledWith("value")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
+    interface RenamedParameterLoggerJs extends Serializable {
+        @JsExpression("console.log($0, value)")
+        @JsCalledWith("message")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
     interface EditedGreeterJs extends Serializable {
         @JsExpression("window.alert('edited ' + $0)")
         void showGreeting(String greeting);
@@ -215,6 +231,23 @@ class DevLoopRedefinerTest {
         // The variant is read at startup the same way the name is, so a change
         // to it is the same kind of change.
         assertTrue(imports.contains("dark"), imports);
+    }
+
+    @Test
+    void frontendDependencies_seesTheParametersASnippetIsCalledWith()
+            throws NoSuchMethodException {
+        // The names a snippet is called with are parameters of the generated
+        // function, so renaming one changes what the browser has to run even
+        // though the expression stays the same
+        String imports = DevLoopRedefiner.frontendDependencies(LoggerJs.class);
+
+        assertTrue(
+                imports.contains(
+                        "jsdefinition:" + JsCall.functionId(LoggerJs.class
+                                .getMethod("createLogger", String.class))),
+                imports);
+        assertNotEquals(imports, DevLoopRedefiner
+                .frontendDependencies(RenamedParameterLoggerJs.class));
     }
 
     @Test
