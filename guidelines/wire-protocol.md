@@ -253,9 +253,9 @@ travels as a single-key wrapper object whose key is reserved:
   `window.Vaadin.Flow.jsSnippets` and calls that function with the
   captures; it returns the function whose body is the declared
   expression, which is the decoded value, so nothing is compiled from a
-  string and no declared JavaScript runs while decoding. The registry is separate from `jsDefinitions` because a
-  snippet function is not `async`: whatever it is passed to may need its
-  value synchronously. A missing id decodes to a function that throws
+  string and no declared JavaScript runs while decoding. The registry is
+  separate from `jsDefinitions` because a snippet function is not
+  `async`: whatever it is passed to may need its value synchronously. A missing id decodes to a function that throws
   when it is called, so the failure reaches the invocation that calls it.
 
 `ClientJsonCodec.decodeWithTypeInfo` decodes these **recursively through
