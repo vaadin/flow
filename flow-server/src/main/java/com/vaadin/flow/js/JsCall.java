@@ -50,6 +50,13 @@ import com.vaadin.flow.internal.StringUtil;
  *     call.invokeOn(new FocusSimulation(Element.get(pending.getOwner())));
  * }
  * </pre>
+ * <p>
+ * A call of a method that declares a {@link JsSnippet}, made through the
+ * implementation that {@link JsSnippets#of(Class)} hands out, is a call too,
+ * but it is not scheduled and runs nothing: it is what the snippet it answers
+ * with carries. Its {@link #getFunctionId() function} is the one of the snippet
+ * registry that the client calls with the arguments to get the value of the
+ * snippet, and {@link #isSnippet()} tells the two apart.
  *
  * @param definitionType
  *            the JavaScript definition the call was made on
@@ -250,8 +257,10 @@ public record JsCall(Class<?> definitionType, String methodName,
     }
 
     /**
-     * Gets the identifier of the function that runs this call, which is what
-     * the client looks the JavaScript up in the bundle by.
+     * Gets the identifier of the function of this call, which is what the
+     * client looks the JavaScript up in the bundle by: the function that runs
+     * the call, or for a {@link #isSnippet() snippet} the function that
+     * produces the value of the snippet from the arguments.
      *
      * @return the function identifier, not <code>null</code>
      */
