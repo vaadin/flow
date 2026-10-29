@@ -91,6 +91,10 @@ class JsDefinitionProxyTest {
     }
 
     @JsDefinition
+    interface EmptyJs extends Serializable {
+    }
+
+    @JsDefinition
     interface MixedJs extends Serializable {
         @JsExpression("console.log($0, value);")
         @JsCalledWith("value")
@@ -217,6 +221,16 @@ class JsDefinitionProxyTest {
         assertTrue(exception.getMessage().contains("showGreeting"),
                 "the message should name the method: "
                         + exception.getMessage());
+    }
+
+    @Test
+    void createSnippets_noMethods_saysThereAreNoSnippets() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> JsDefinitionProxy.createSnippets(EmptyJs.class));
+
+        assertTrue(exception.getMessage().endsWith("declares no snippets"),
+                exception.getMessage());
     }
 
     @Test
