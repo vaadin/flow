@@ -92,20 +92,24 @@ public record JsCall(Class<?> definitionType, String methodName,
 
     /**
      * The methods of each JavaScript definition, each with the identifier of
-     * the function it declares. Cached since a call is resolved several times
-     * when it is sent, and resolving it otherwise copies the methods of the
-     * interface and hashes the declared JavaScript every time. Keyed by any
-     * class, since a JavaScript definition is marked by an annotation rather
-     * than by a common supertype.
+     * the function it declares and the names a snippet is called with. Cached
+     * since a call is resolved several times when it is sent, and resolving it
+     * otherwise copies the methods of the interface, hashes the declared
+     * JavaScript and checks the declared names every time. Keyed by any class,
+     * since a JavaScript definition is marked by an annotation rather than by a
+     * common supertype.
      */
     private static final ReflectionCache<Object, List<DeclaredMethod>> declaredMethods = new ReflectionCache<>(
             JsCall::collectDeclaredMethods);
 
     /**
-     * A method of a JavaScript definition and the identifier of the function it
-     * declares, or <code>null</code> for a method that declares no JavaScript.
+     * A method of a JavaScript definition, the identifier of the function it
+     * declares, or <code>null</code> for a method that declares no JavaScript,
+     * and the names the function of a snippet is called with, or
+     * <code>null</code> when it declares none.
      */
-    private record DeclaredMethod(Method method, @Nullable String functionId) {
+    private record DeclaredMethod(Method method, @Nullable String functionId,
+            @Nullable List<String> calledWithNames) {
     }
 
     /**
@@ -268,7 +272,7 @@ public record JsCall(Class<?> definitionType, String methodName,
      * @see #getCalledWithNames(Method)
      */
     public @Nullable List<String> getCalledWithNames() {
-        return getCalledWithNames(resolveMethod().method());
+        return resolveMethod().calledWithNames();
     }
 
     /**
@@ -431,10 +435,15 @@ public record JsCall(Class<?> definitionType, String methodName,
             Class<?> definitionType) {
         List<DeclaredMethod> declared = new ArrayList<>();
         for (Method method : definitionType.getMethods()) {
+            boolean declaresJavaScript = method
+                    .isAnnotationPresent(JsExpression.class);
+            // Only a snippet wraps a function around its expression, so only
+            // a snippet has names to check
+            boolean declaresSnippet = declaresJavaScript
+                    && JsSnippet.class.isAssignableFrom(method.getReturnType());
             declared.add(new DeclaredMethod(method,
-                    method.isAnnotationPresent(JsExpression.class)
-                            ? functionId(method)
-                            : null));
+                    declaresJavaScript ? functionId(method) : null,
+                    declaresSnippet ? getCalledWithNames(method) : null));
         }
         return List.copyOf(declared);
     }
