@@ -1437,22 +1437,6 @@ final class DevLoopRedefiner {
      * restarting for one would be a regression.
      */
     // Package-private so the reads can be asserted directly.
-    /**
-     * What identifies the function the build generates for a method of a
-     * JavaScript definition, which covers everything the generated function is
-     * made of: for a snippet, the names it is called with as well.
-     */
-    private static String fingerprintOf(Method method) {
-        try {
-            return JsCall.functionId(method);
-        } catch (IllegalArgumentException e) {
-            // Names the build can not generate a function with: what was
-            // declared is still what tells one edit from another, and the
-            // restart that follows reports what is wrong with it
-            return "invalid:" + e.getMessage();
-        }
-    }
-
     static String frontendDependencies(Class<?> type) {
         List<String> imports = new ArrayList<>();
         for (JsModule annotation : type
@@ -1501,6 +1485,22 @@ final class DevLoopRedefiner {
         }
         java.util.Collections.sort(imports);
         return String.join(";", imports);
+    }
+
+    /**
+     * What identifies the function the build generates for a method of a
+     * JavaScript definition, which covers everything the generated function is
+     * made of: for a snippet, the names it is called with as well.
+     */
+    private static String fingerprintOf(Method method) {
+        try {
+            return JsCall.functionId(method);
+        } catch (IllegalArgumentException e) {
+            // Names the build can not generate a function with: what was
+            // declared is still what tells one edit from another, and the
+            // restart that follows reports what is wrong with it
+            return "invalid:" + e.getMessage();
+        }
     }
 
     /**

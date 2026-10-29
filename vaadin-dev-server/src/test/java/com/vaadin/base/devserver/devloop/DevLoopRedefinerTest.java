@@ -192,6 +192,19 @@ class DevLoopRedefinerTest {
     }
 
     @JsDefinition
+    interface UnwrappedLoggerJs extends Serializable {
+        @JsExpression("console.log($0, value)")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
+    interface InvalidNameLoggerJs extends Serializable {
+        @JsExpression("console.log($0, value)")
+        @JsCalledWith("class")
+        JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
     interface EditedGreeterJs extends Serializable {
         @JsExpression("window.alert('edited ' + $0)")
         void showGreeting(String greeting);
@@ -234,20 +247,30 @@ class DevLoopRedefinerTest {
     }
 
     @Test
-    void frontendDependencies_seesTheParametersASnippetIsCalledWith()
-            throws NoSuchMethodException {
+    void frontendDependencies_seesTheParametersASnippetIsCalledWith() {
         // The names a snippet is called with are parameters of the generated
-        // function, so renaming one changes what the browser has to run even
-        // though the expression stays the same
+        // function, so renaming one, or wrapping no function at all, changes
+        // what the browser has to run even though the expression stays the
+        // same
         String imports = DevLoopRedefiner.frontendDependencies(LoggerJs.class);
 
-        assertTrue(
-                imports.contains(
-                        "jsdefinition:" + JsCall.functionId(LoggerJs.class
-                                .getMethod("createLogger", String.class))),
-                imports);
         assertNotEquals(imports, DevLoopRedefiner
                 .frontendDependencies(RenamedParameterLoggerJs.class));
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(UnwrappedLoggerJs.class));
+    }
+
+    @Test
+    void frontendDependencies_nameNoFunctionCanDeclare_isStillAChange() {
+        // What a developer gets by typing a bad name into a snippet method:
+        // the redefinition is reported as a frontend change, for the restart
+        // to report what is wrong, rather than failing the whole change set
+        String imports = DevLoopRedefiner
+                .frontendDependencies(InvalidNameLoggerJs.class);
+
+        assertTrue(imports.contains("jsdefinition:invalid:"), imports);
+        assertNotEquals(imports,
+                DevLoopRedefiner.frontendDependencies(LoggerJs.class));
     }
 
     @Test
