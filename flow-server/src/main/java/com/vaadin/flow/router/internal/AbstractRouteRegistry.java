@@ -644,23 +644,19 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     }
 
     private boolean pathMatches(String path, String layoutPath) {
-        String[] pathSplit = removeStartSlash(path).split("/");
-        String[] layoutSplit = removeStartSlash(layoutPath).split("/");
-
-        if (layoutSplit.length == 1 && layoutSplit[0].isEmpty()) {
+        List<String> layoutSegments = PathUtil
+                .getSegmentsList(removeStartSlash(layoutPath));
+        if (layoutSegments.isEmpty()) {
             return true;
         }
-
-        if (layoutSplit.length > pathSplit.length) {
-            return false;
-        }
-
-        for (int i = 0; i < layoutSplit.length; i++) {
-            if (!pathSplit[i].equals(layoutSplit[i])) {
-                return false;
-            }
-        }
-        return true;
+        // Decode like route matching does, so that a path with
+        // percent-encoded characters gets the layout of the route it resolves
+        // to. Otherwise the view would be shown without its layout, and
+        // access checks would skip the layout.
+        List<String> pathSegments = PathUtil
+                .getSegmentsListWithDecoding(removeStartSlash(path));
+        return layoutSegments.size() <= pathSegments.size() && pathSegments
+                .subList(0, layoutSegments.size()).equals(layoutSegments);
     }
 
     private String removeStartSlash(String path) {
