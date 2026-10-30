@@ -5,6 +5,7 @@ import {
   type ConnectionStateStore
 } from '@vaadin/common-frontend';
 import { collectBrowserDetails } from './BrowserHelpers';
+import { loadAtmosphere } from './internal/client/communication/AtmosphereLoader';
 
 export interface FlowConfig {
   imports?: () => Promise<any>;
@@ -322,7 +323,8 @@ export class Flow {
       const { pushScript, appConfig } = this.response;
 
       if (typeof pushScript === 'string') {
-        await this.loadScript(pushScript);
+        // The push connection uses this load instead of starting its own
+        await loadAtmosphere(pushScript);
       }
       const { appId } = appConfig;
 
@@ -369,20 +371,6 @@ export class Flow {
       document.body.appendChild(this.container);
     }
     return this.response!;
-  }
-
-  private async loadScript(url: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.onload = () => resolve();
-      script.onerror = reject;
-      script.src = url;
-      const { nonce } = $wnd.Vaadin.Flow;
-      if (nonce !== undefined) {
-        script.setAttribute('nonce', nonce);
-      }
-      document.body.appendChild(script);
-    });
   }
 
   private findNonce(): string | undefined {

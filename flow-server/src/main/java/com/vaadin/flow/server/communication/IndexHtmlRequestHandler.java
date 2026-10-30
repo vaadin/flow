@@ -75,7 +75,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.shared.ApplicationConstants;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
@@ -513,13 +512,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         indexDocument.head().insertChildren(0, elm);
     }
 
-    private static void addScriptSrc(Document indexDocument, String scriptUrl) {
-        Element elm = new Element(SCRIPT);
-        elm.attr(SCRIPT_INITIAL, "");
-        elm.attr("src", scriptUrl);
-        indexDocument.head().appendChild(elm);
-    }
-
     private void storeAppShellTitleToUI(Document indexDocument) {
         if (UI.getCurrent() != null) {
             Element elm = indexDocument.head().selectFirst("title");
@@ -573,10 +565,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 """, devToolsConf));
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
-
-        // Use direct path - the <base href> already points to the servlet root,
-        // so VAADIN/... resolves correctly to {context}/{servlet}/VAADIN/...
-        addScriptSrc(indexDocument, ApplicationConstants.VAADIN_PUSH_DEBUG_JS);
     }
 
     static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,

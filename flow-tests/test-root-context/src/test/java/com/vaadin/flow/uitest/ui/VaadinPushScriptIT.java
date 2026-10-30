@@ -18,8 +18,6 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.testcategory.IgnoreOSGi;
@@ -34,8 +32,7 @@ public class VaadinPushScriptIT extends ChromeBrowserTest {
         getDriver().get(
                 getRootURL() + "/view/" + PushSettingsView.class.getName());
         waitForDevServer();
-        assertThatPushScriptUrlIsRelativeToUrlMapping(
-                findElement(By.tagName("body")));
+        assertThatPushScriptUrlIsRelativeToUrlMapping();
     }
 
     @Test
@@ -46,21 +43,22 @@ public class VaadinPushScriptIT extends ChromeBrowserTest {
                 getRootURL() + "/view/" + ActivatePushView.class.getName());
         waitForDevServer();
 
-        assertThatPushScriptUrlIsRelativeToUrlMapping(
-                findElement(By.tagName("head")));
+        assertThatPushScriptUrlIsRelativeToUrlMapping();
     }
 
-    private void assertThatPushScriptUrlIsRelativeToUrlMapping(
-            WebElement scriptContainer) {
-        String pushScriptUrl = scriptContainer
-                .findElements(By.tagName("script")).stream()
-                .map(script -> script.getAttribute("src"))
-                .filter(scriptUrl -> scriptUrl != null && scriptUrl
-                        .contains(ApplicationConstants.VAADIN_PUSH_DEBUG_JS))
-                .findFirst().orElse(null);
+    private void assertThatPushScriptUrlIsRelativeToUrlMapping() {
+        // vaadinPush.js is imported as a module, so it shows up as a loaded
+        // resource rather than as a script element
+        String script = """
+                return performance.getEntriesByType('resource')
+                    .map(entry => entry.name)
+                    .find(name => name.includes(arguments[0])) || null;
+                """;
+        waitUntil(driver -> executeScript(script,
+                ApplicationConstants.VAADIN_PUSH_DEBUG_JS) != null);
+        String pushScriptUrl = (String) executeScript(script,
+                ApplicationConstants.VAADIN_PUSH_DEBUG_JS);
 
-        Assert.assertNotNull(ApplicationConstants.VAADIN_PUSH_DEBUG_JS
-                + " script not loaded by page", pushScriptUrl);
         Assert.assertTrue("Push script not relative to Vaadin servlet mapping",
                 pushScriptUrl.contains(
                         "/view/" + ApplicationConstants.VAADIN_PUSH_DEBUG_JS));
