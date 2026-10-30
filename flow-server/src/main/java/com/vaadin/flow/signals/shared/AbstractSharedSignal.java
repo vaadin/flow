@@ -30,6 +30,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.signals.Id;
 import com.vaadin.flow.signals.InvalidSignalValueTypeException;
+import com.vaadin.flow.signals.MissingSignalUsageException;
 import com.vaadin.flow.signals.Node;
 import com.vaadin.flow.signals.Node.Data;
 import com.vaadin.flow.signals.Signal;
@@ -190,7 +191,27 @@ public abstract class AbstractSharedSignal<T extends @Nullable Object>
          * Extract value before registering since extracting sets up state that
          * is used by registerDepedency in the case of computed signals.
          */
-        T value = extractValue(data);
+        T value;
+        try {
+            value = extractValue(data);
+        } catch (RuntimeException e) {
+            /*
+             * The caller still depends on the value, e.g. for a cached signal
+             * holding an exception, so register the usage also in this case. A
+             * failing registration must not hide the original exception. A
+             * signal that could not compute any value has nothing to depend on,
+             * so its usage is not registered.
+             */
+            if (UsageTracker.isActive()
+                    && !(e instanceof MissingSignalUsageException)) {
+                try {
+                    UsageTracker.registerUsage(createUsage(transaction));
+                } catch (RuntimeException registrationFailure) {
+                    e.addSuppressed(registrationFailure);
+                }
+            }
+            throw e;
+        }
         if (UsageTracker.isActive()) {
             UsageTracker.registerUsage(createUsage(transaction));
         }
