@@ -127,8 +127,8 @@ public abstract class PromiseAction<T> extends Action {
      *
      * <pre>{@code
      * return JsFunction.of(
-     *         "return ((v) => navigator.clipboard.writeText(v).then(() => v))($0(event))",
-     *         textInput.toJs(trigger)).withArguments("event");
+     *         "return ((v) => navigator.clipboard.writeText(v).then(() => v))($0(event, context))",
+     *         textInput.toJs(trigger)).withArguments("event", "context");
      * }</pre>
      *
      * @param trigger
@@ -156,11 +156,13 @@ public abstract class PromiseAction<T> extends Action {
         }
         ReturnChannelRegistration channel = channelFor(
                 trigger.getHost().getNode());
-        // $0(observer)($1(event)(promise), $2(channel)) — invoke the inner
-        // function to get a Promise, then hand it plus the return channel to
-        // the shared observer JsFunction which subscribes to .then/.catch.
-        return JsFunction.of("$0($1(event), $2)", createPromiseObserver(),
-                inner, channel).withArguments("event");
+        // $0(observer)($1(event, context)(promise), $2(channel)) — invoke the
+        // inner function to get a Promise, then hand it plus the return
+        // channel to the shared observer JsFunction which subscribes to
+        // .then/.catch.
+        return JsFunction.of("$0($1(event, context), $2)",
+                createPromiseObserver(), inner, channel)
+                .withArguments("event", "context");
     }
 
     /**

@@ -71,7 +71,7 @@ class CallbackActionTest {
         JsFunction action = actionOf(singleInstallFn(ui));
         // $0 = the return channel; $1 = the source input's JsFunction. The
         // body forwards the source-fn's value straight into the channel call.
-        assertEquals("$0($1(event));", action.getBody());
+        assertEquals("$0($1(event, context));", action.getBody());
         assertEquals(2, action.getCaptures().size());
         assertTrue(
                 action.getCaptures()
