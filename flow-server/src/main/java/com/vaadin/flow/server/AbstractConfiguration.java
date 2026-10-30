@@ -17,8 +17,6 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.Serializable;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
@@ -260,22 +258,18 @@ public interface AbstractConfiguration extends Serializable {
          * be a Maven or Gradle project. Check to avoid cluttering server
          * directories (see tickets #8249, #8403).
          */
-        String baseDirCandidate = System.getProperty("user.dir", ".");
-        Path path = Paths.get(baseDirCandidate);
-        if (path.toFile().isDirectory() && (path.resolve("pom.xml").toFile()
-                .exists() || path.resolve("build.gradle").toFile().exists()
-                || path.resolve("build.gradle.kts").toFile().exists())) {
-            return path.toAbsolutePath().toFile();
-        } else {
-            throw new IllegalStateException(String.format(
-                    "Failed to determine project directory for dev mode. "
-                            + "Directory '%s' does not look like a Maven or "
-                            + "Gradle project. Ensure that you have run the "
-                            + "prepare-frontend Maven goal, which generates "
-                            + "'flow-build-info.json', prior to deploying your "
-                            + "application",
-                    path.toString()));
+        File workingDirectory = FileIOUtils
+                .getProjectFolderFromWorkingDirectory();
+        if (workingDirectory != null) {
+            return workingDirectory;
         }
+        throw new IllegalStateException(String
+                .format("Failed to determine project directory for dev mode. "
+                        + "Directory '%s' does not look like a Maven or "
+                        + "Gradle project. Ensure that you have run the "
+                        + "prepare-frontend Maven goal, which generates "
+                        + "'flow-build-info.json', prior to deploying your "
+                        + "application", System.getProperty("user.dir", ".")));
     }
 
     /**
