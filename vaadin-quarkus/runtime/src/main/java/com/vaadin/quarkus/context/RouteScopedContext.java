@@ -35,6 +35,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.internal.ToStringBuilder;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.RouterLayout;
@@ -222,7 +223,8 @@ public class RouteScopedContext extends AbstractContext {
 
         @Override
         public String toString() {
-            return "[ ui-key='" + getUIId() + "', owner='" + getOwner() + "' ]";
+            return ToStringBuilder.of(this).add("uiId", getUIId())
+                    .add("owner", getOwner().getName()).toString();
         }
 
         Class<?> getOwner() {

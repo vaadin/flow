@@ -18,6 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.io.Serializable;
 import java.util.Map;
 
+import com.vaadin.flow.internal.ToStringBuilder;
 import com.vaadin.flow.router.RouteParameters;
 
 /**
@@ -89,8 +90,10 @@ public class NavigationRouteTarget implements Serializable {
 
     @Override
     public String toString() {
-        return "[url: \"" + path + "\", target: "
-                + (routeTarget != null ? routeTarget.getTarget() : null)
-                + ", parameters: " + parameters + "]";
+        return ToStringBuilder.of(this).add("path", path)
+                .add("target",
+                        routeTarget != null ? routeTarget.getTarget().getName()
+                                : null)
+                .add("parameters", parameters).toString();
     }
 }

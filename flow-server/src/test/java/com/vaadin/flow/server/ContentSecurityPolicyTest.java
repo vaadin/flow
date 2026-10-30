@@ -53,6 +53,13 @@ class ContentSecurityPolicyTest {
                         .setDirective("base-uri", "'self'").toHeaderValue());
     }
 
+    @Test
+    void toString_headerValueInClassName() {
+        assertEquals("ContentSecurityPolicy[base-uri 'self']",
+                new ContentSecurityPolicy().setDirective("base-uri", "'self'")
+                        .toString());
+    }
+
     @ParameterizedTest
     @CsvSource(delimiter = '|', quoteCharacter = '"', nullValues = "NULL", value = {
             "NULL | is null", "\"\" | is empty",
