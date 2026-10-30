@@ -43,12 +43,15 @@ public abstract class AbstractCspStrictIT extends BrowserTestBase
         implements DriverSupplier {
 
     /**
-     * Port the application is served on. Matches the {@code server.port} used
-     * by the Spring Boot app and can be overridden for parallel module runs via
-     * the {@code serverPort} system property.
+     * Port the application is served on. Failsafe passes the
+     * {@code server.port} property of the pom as the {@code serverPort} system
+     * property, and the same property is filtered into the
+     * {@code application.properties} of the Spring Boot app, so overriding
+     * {@code server.port} on the Maven command line moves both. The fallback is
+     * for running a test from the IDE against an app started by Maven.
      */
     public static final int SERVER_PORT = Integer
-            .parseInt(System.getProperty("serverPort", "8888"));
+            .parseInt(System.getProperty("serverPort", "8890"));
 
     /**
      * Reason of the tests disabled because no page renders yet: the constructor
@@ -86,7 +89,7 @@ public abstract class AbstractCspStrictIT extends BrowserTestBase
     }
 
     /**
-     * Gets the URL of the root of the server, e.g. "http://localhost:8888".
+     * Gets the URL of the root of the server, e.g. "http://localhost:8890".
      *
      * @return the root URL
      */
