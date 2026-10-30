@@ -55,6 +55,16 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     public static final String SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS = "sendUrlsAsParameters";
     /**
+     * Configuration parameter name for the Content Security Policy mode of the
+     * application. The permitted values are {@code off} (the default),
+     * {@code warn} and {@code strict}, see {@link CspMode}. Values are
+     * case-insensitive; any other value fails the deployment configuration with
+     * an {@link IllegalArgumentException}.
+     *
+     * @since 25.4
+     */
+    public static final String CSP = "csp";
+    /**
      * Configuration parameter name for the value of the {@code X-Frame-Options}
      * HTTP response header sent with the application page. The header lets the
      * browser opt in to protection against clickjacking. Common values are

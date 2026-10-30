@@ -218,7 +218,7 @@ public final class BeanUtil implements Serializable {
      * @param type
      *            the class to introspect
      * @return a list of property paths (e.g., ["event.button", "event.clientX",
-     *         "type"])
+     *         "element.tagName"])
      * @throws IntrospectionException
      *             if bean introspection fails
      * @since 25.0

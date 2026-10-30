@@ -49,6 +49,7 @@ import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.geolocation.GeolocationAvailability;
@@ -74,7 +75,6 @@ import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
@@ -283,7 +283,7 @@ public class UIInternals implements Serializable {
     private final Signal<RouterState> readonlyRouterStateSignal = routerStateSignal
             .asReadonly();
 
-    private HashMap<Class<?>, List<?>> listeners = new HashMap<>();
+    private final HashMap<Class<?>, List<?>> listeners = new HashMap<>();
 
     private Location lastHandledNavigation = null;
 
@@ -1502,8 +1502,9 @@ public class UIInternals implements Serializable {
         jsDeps.addAll(dependencies.getJavaScripts().stream().filter(
                 js -> !FrontendDependencyUrlResolver.isRuntimeJavaScript(js))
                 .map(JavaScript::value).collect(Collectors.toList()));
-        jsDeps.addAll(dependencies.getJsModules().stream()
-                .map(dep -> dep.value()).filter(src -> !UrlUtil.isExternal(src))
+        jsDeps.addAll(dependencies.getJsModules().stream().map(JsModule::value)
+                .filter(src -> !FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(src))
                 .collect(Collectors.toList()));
 
         if (!jsDeps.isEmpty()) {
@@ -1562,14 +1563,20 @@ public class UIInternals implements Serializable {
                     }
                     page.addJavaScript(resolved, js.loadMode(), js.type());
                 });
-        // Runtime prefixes do not apply to @JsModule: '/' values are still
-        // bundled. This must match the external check that keeps @JsModule
-        // values out of the bundle at build time (AbstractUpdateImports).
+        // Must match the runtime URL check that keeps @JsModule values out of
+        // the bundle at build time (FrontendClassVisitor and
+        // FullDependenciesScanner), so each value is loaded exactly once.
         dependency.getJsModules().stream()
-                .filter(js -> UrlUtil.isExternal(js.value()))
+                .filter(js -> FrontendDependencyUrlResolver
+                        .isRuntimeDependencyUrl(js.value()))
                 .filter(js -> !productionMode || !js.developmentOnly())
-                .forEach(js -> page.addJavaScript(js.value(), LoadMode.EAGER,
-                        JavaScript.Type.MODULE));
+                // Resolved like a runtime @JavaScript value, so that the same
+                // value is accepted or rejected for both annotations
+                .map(js -> FrontendDependencyUrlResolver
+                        .resolveRuntimeJavaScript(js.value()))
+                .filter(Objects::nonNull)
+                .forEach(resolved -> page.addJavaScript(resolved,
+                        LoadMode.EAGER, JavaScript.Type.MODULE));
     }
 
     /**

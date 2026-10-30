@@ -11,7 +11,7 @@ package com.vaadin.flow.templatemodel;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
-import com.googlecode.gentyref.GenericTypeReflector;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * Template models encoder. Used for enabling the use of types in template model
@@ -46,10 +46,10 @@ public interface ModelEncoder<D, E extends Serializable> extends Serializable {
      */
     @SuppressWarnings("unchecked")
     default Class<D> getDecodedType() {
-        Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
+        Type type = ReflectTools.getTypeParameter(this.getClass(),
                 ModelEncoder.class.getTypeParameters()[0]);
         if (type instanceof Class<?>) {
-            return (Class<D>) GenericTypeReflector.erase(type);
+            return (Class<D>) ReflectTools.erase(type);
         }
         throw new InvalidTemplateModelException(String.format(
                 "Could not detect the model type of %s '%s'. "
@@ -64,10 +64,10 @@ public interface ModelEncoder<D, E extends Serializable> extends Serializable {
      */
     @SuppressWarnings("unchecked")
     default Class<E> getEncodedType() {
-        Type type = GenericTypeReflector.getTypeParameter(this.getClass(),
+        Type type = ReflectTools.getTypeParameter(this.getClass(),
                 ModelEncoder.class.getTypeParameters()[1]);
         if (type instanceof Class<?>) {
-            return (Class<E>) GenericTypeReflector.erase(type);
+            return (Class<E>) ReflectTools.erase(type);
         }
         throw new InvalidTemplateModelException(String.format(
                 "Could not detect the presentation type of %s '%s'. "

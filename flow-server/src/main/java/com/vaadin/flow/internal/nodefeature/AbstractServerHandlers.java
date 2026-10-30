@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
@@ -256,11 +254,11 @@ public abstract class AbstractServerHandlers<T>
 
     @SuppressWarnings("unchecked")
     private final Class<T> getType() {
-        Type type = GenericTypeReflector.getTypeParameter(
+        Type type = ReflectTools.getTypeParameter(
                 getClass().getGenericSuperclass(),
                 getClass().getSuperclass().getTypeParameters()[0]);
         if (type instanceof Class || type instanceof ParameterizedType) {
-            return (Class<T>) GenericTypeReflector.erase(type);
+            return (Class<T>) ReflectTools.erase(type);
         }
         throw new IllegalStateException(getExceptionMessage(type));
     }

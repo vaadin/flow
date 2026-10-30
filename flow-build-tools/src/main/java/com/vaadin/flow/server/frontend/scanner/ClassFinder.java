@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-
 /**
  * Interface for annotated and subclass class searches.
  * <p>
@@ -123,8 +121,7 @@ public interface ClassFinder extends Serializable {
         @SuppressWarnings("unchecked")
         public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
             return this.classes.stream()
-                    .filter(cl -> GenericTypeReflector.isSuperType(type, cl)
-                            && !type.equals(cl))
+                    .filter(cl -> type.isAssignableFrom(cl) && !type.equals(cl))
                     .map(cl -> (Class<T>) cl)
                     .collect(Collectors.toCollection(LinkedHashSet::new));
         }
