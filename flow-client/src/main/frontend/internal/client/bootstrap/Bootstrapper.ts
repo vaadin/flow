@@ -23,6 +23,7 @@
 // the onModuleLoad override the interface requires; the port is the module of
 // those members, so onModuleLoad is an exported function.
 
+import '../../../ConnectionIndicator';
 import { ApplicationConfiguration } from '../ApplicationConfiguration';
 import type { ErrorMessage } from './ErrorMessage';
 import {

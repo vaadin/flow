@@ -99,6 +99,10 @@ describe('Bootstrapper', () => {
     return { clients, lookedUp, started };
   }
 
+  it('loads the connection indicator with the module', () => {
+    expect(customElements.get('vaadin-connection-indicator')).not.to.be.undefined;
+  });
+
   it('registerCallback registers startApplication under the widgetset name', () => {
     const saved = win.Vaadin;
     try {

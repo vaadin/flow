@@ -137,7 +137,6 @@ class NodeUpdaterTest {
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
-        expectedDependencies.add("@vaadin/common-frontend");
         expectedDependencies.add("lit");
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
@@ -152,7 +151,6 @@ class NodeUpdaterTest {
     void getDefaultDependencies_includesAllDependencies() {
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
-        expectedDependencies.add("@vaadin/common-frontend");
         expectedDependencies.add("lit");
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
