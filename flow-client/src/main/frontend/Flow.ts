@@ -137,6 +137,9 @@ export class Flow {
     this.appShellTitle = document.title;
     // Put a vaadin-connection-indicator in the dom
     this.addConnectionIndicator();
+    // Track the navigation trigger before Flow is initialized, so that the
+    // click starting the first server navigation is recorded too
+    this.addNavigationTriggerListener();
   }
 
   /**
@@ -167,7 +170,9 @@ export class Flow {
     // Make Testbench know that server request has finished
     this.isActive = false;
     $wnd.Vaadin.connectionState.loadingFinished();
+  }
 
+  private addNavigationTriggerListener() {
     if ($wnd.Vaadin.listener) {
       // Listeners registered, do not register again.
       return;
@@ -288,7 +293,7 @@ export class Flow {
           trigger: this.navigation
         });
         // Default to history navigation trigger.
-        // Link and client cases are handled by click listener in loadingFinished().
+        // Link and client cases are handled by addNavigationTriggerListener().
         this.navigation = 'history';
       });
     } else {

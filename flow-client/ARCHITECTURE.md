@@ -110,8 +110,8 @@ own copies in `src/main/frontend/`, but not `Flow.tsx`.
    router puts the container in place.
 5. **Navigation.** The route's `onBeforeEnter` sends `ui-navigate` with the
    route, the query, the app shell title, the history state and the trigger
-   (`link`, `client` or `history`, from the click listener in
-   `loadingFinished`). On the first navigation, `UI.browserNavigate` renders
+   (`link`, `client` or `history`, from the click listener registered in the
+   `Flow` constructor; empty for a page load). On the first navigation, `UI.browserNavigate` renders
    the route (unless it was rendered eagerly) and installs the history
    handler. Later navigations go through that handler.
 6. **Ack.** The server calls `serverConnected(cancel)` on the container.
