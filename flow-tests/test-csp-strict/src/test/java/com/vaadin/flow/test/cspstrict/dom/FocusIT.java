@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.test.cspstrict.dom;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
@@ -35,8 +34,10 @@ public class FocusIT extends AbstractCspStrictIT {
         open();
 
         waitUntil(ExpectedConditions.titleIs(FocusView.TITLE));
-        Assertions.assertEquals("input",
-                getDriver().switchTo().activeElement().getDomAttribute("id"));
+        // The focus call runs from a setTimeout on the client, so it can land
+        // after the title update of the same round trip
+        waitUntil(driver -> "input".equals(
+                driver.switchTo().activeElement().getDomAttribute("id")));
         assertNoCspViolations();
     }
 }
