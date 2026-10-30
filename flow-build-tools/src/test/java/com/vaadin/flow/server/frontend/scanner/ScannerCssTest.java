@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
-import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.UI;
@@ -47,7 +45,7 @@ class ScannerCssTest {
 
             assertThat(
                     entryPoint.getCss().stream().map(CssData::toString)
-                            .collect(Collectors.toList()),
+                            .toList(),
                     containsInAnyOrder("value: ./foo.css",
                             "value: ./foo.css include:bar",
                             "value: ./foo.css id:bar",
@@ -70,7 +68,7 @@ class ScannerCssTest {
             // verifies #6523 as sufficiently complex names can get mixed up
             assertThat(
                     entryPoint.getCss().stream().map(CssData::toString)
-                            .collect(Collectors.toList()),
+                            .toList(),
                     contains("value: ./foo.css", "value: ./bar.css",
                             "value: ./foofoo.css", "value: ./foobar.css"));
         }

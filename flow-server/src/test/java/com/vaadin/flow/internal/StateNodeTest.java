@@ -880,8 +880,7 @@ public class StateNodeTest {
                 .count());
         List<String> changedMapKeys = changes.stream()
                 .filter(c -> c instanceof MapPutChange)
-                .map(c -> ((MapPutChange) c).getKey())
-                .collect(Collectors.toList());
+                .map(c -> ((MapPutChange) c).getKey()).toList();
         assertTrue(changedMapKeys.contains("visible"));
         assertTrue(changedMapKeys.contains("tag"));
 
@@ -893,8 +892,7 @@ public class StateNodeTest {
         assertEquals(2, changes.stream().filter(c -> c instanceof MapPutChange)
                 .count());
         changedMapKeys = changes.stream().filter(c -> c instanceof MapPutChange)
-                .map(c -> ((MapPutChange) c).getKey())
-                .collect(Collectors.toList());
+                .map(c -> ((MapPutChange) c).getKey()).toList();
         assertTrue(changedMapKeys.contains("visible"));
         assertTrue(changedMapKeys.contains("foo"));
     }
@@ -927,8 +925,7 @@ public class StateNodeTest {
                 .count());
         List<String> changedMapKeys = changes.stream()
                 .filter(c -> c instanceof MapPutChange)
-                .map(c -> ((MapPutChange) c).getKey())
-                .collect(Collectors.toList());
+                .map(c -> ((MapPutChange) c).getKey()).toList();
         assertTrue(changedMapKeys.contains("tag"));
 
         // Check that previously changed property is returned when visibility
@@ -939,8 +936,7 @@ public class StateNodeTest {
         assertEquals(1, changes.stream().filter(c -> c instanceof MapPutChange)
                 .count());
         changedMapKeys = changes.stream().filter(c -> c instanceof MapPutChange)
-                .map(c -> ((MapPutChange) c).getKey())
-                .collect(Collectors.toList());
+                .map(c -> ((MapPutChange) c).getKey()).toList();
         assertTrue(changedMapKeys.contains("foo"));
     }
 
@@ -1892,10 +1888,9 @@ public class StateNodeTest {
 
         List<MapPutChange> attributeChanges = changes.stream()
                 .filter(MapPutChange.class::isInstance)
-                .map(MapPutChange.class::cast)
-                .filter(change -> change
+                .map(MapPutChange.class::cast).filter(change -> change
                         .getFeature() == ElementAttributeMap.class)
-                .collect(Collectors.toList());
+                .toList();
 
         // Only "slot" should be sent, not "data-secret"
         assertEquals(1, attributeChanges.size(),

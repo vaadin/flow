@@ -35,7 +35,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -474,7 +473,7 @@ class SessionRouteRegistryTest {
                         return new Result(null);
                     };
                     return callable;
-                }).collect(Collectors.toList());
+                }).toList();
 
         List<Future<Result>> futures = executorService.invokeAll(callables);
         List<String> exceptions = new ArrayList<>();
@@ -523,7 +522,7 @@ class SessionRouteRegistryTest {
                         return new Result(null);
                     };
                     return callable;
-                }).collect(Collectors.toList());
+                }).toList();
 
         List<Future<Result>> futures = executorService.invokeAll(callables);
         List<String> exceptions = new ArrayList<>();

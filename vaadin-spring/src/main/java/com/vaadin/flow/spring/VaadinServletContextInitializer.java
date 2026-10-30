@@ -142,8 +142,7 @@ public class VaadinServletContextInitializer
             "com/nimbusds", "elemental/util", "org/reflections",
             "org/aopalliance", "org/objectweb",
 
-            "com/vaadin/hilla", "com/vaadin/copilot")
-            .collect(Collectors.toList());
+            "com/vaadin/hilla", "com/vaadin/copilot").toList();
 
     /**
      * Packages that should be scanned by default and can't be overriden by a
@@ -161,7 +160,7 @@ public class VaadinServletContextInitializer
                     IndexHtmlRequestHandler.class.getPackage().getName(),
                     "com.vaadin.shrinkwrap", "com.vaadin.copilot.startup",
                     "com.vaadin.hilla.startup")
-            .collect(Collectors.toList());
+            .toList();
 
     /**
      * Packages marked by the user to be scanned exclusively.
@@ -354,7 +353,7 @@ public class VaadinServletContextInitializer
 
                     List<Class<?>> routeClasses = findByAnnotation(
                             routePackages, Route.class, RouteAlias.class)
-                            .collect(Collectors.toList());
+                            .toList();
 
                     if (devModeCachingEnabled) {
                         ReloadCache.routePackages = routeClasses.stream()
@@ -763,8 +762,7 @@ public class VaadinServletContextInitializer
             neverScan = Collections.emptyList();
         } else {
             neverScan = Arrays.stream(neverScanProperty.split(","))
-                    .map(pkg -> pkg.replace('.', '/').trim())
-                    .collect(Collectors.toList());
+                    .map(pkg -> pkg.replace('.', '/').trim()).toList();
         }
 
         String onlyScanProperty = appContext.getEnvironment()
@@ -784,7 +782,7 @@ public class VaadinServletContextInitializer
         } else {
             customScanOnly = Arrays.stream(onlyScanProperty.split(","))
                     .map(onlyPackage -> onlyPackage.replace('/', '.').trim())
-                    .collect(Collectors.toList());
+                    .toList();
             customLoader = new CustomResourceLoader(appContext);
         }
 
@@ -993,12 +991,11 @@ public class VaadinServletContextInitializer
     }
 
     private List<String> getLookupPackages() {
-        return Stream
-                .concat(getDefaultPackages().stream(),
-                        Stream.of("com.vaadin.hilla.frontend",
-                                "com.vaadin.flow.component.polymertemplate.rpc",
-                                "com.vaadin.base.devserver"))
-                .collect(Collectors.toList());
+        return Stream.concat(getDefaultPackages().stream(),
+                Stream.of("com.vaadin.hilla.frontend",
+                        "com.vaadin.flow.component.polymertemplate.rpc",
+                        "com.vaadin.base.devserver"))
+                .toList();
     }
 
     private static void collectHandleTypes(Class<?> clazz,
@@ -1032,7 +1029,7 @@ public class VaadinServletContextInitializer
 
         private final PrefixTree scanAlways = new PrefixTree(DEFAULT_SCAN_ONLY
                 .stream().map(packageName -> packageName.replace('.', '/'))
-                .collect(Collectors.toList()));
+                .toList());
 
         /**
          * If true, only filter based on the package.properties in jar/module.

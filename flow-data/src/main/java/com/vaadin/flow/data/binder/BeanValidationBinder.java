@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.BeanPropertySet.NestedBeanPropertyDefinition;
@@ -429,7 +428,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
                         .test(constraintDescriptor.getAnnotation(), binding))
                 .map(constraintDescriptor -> (Set<Class<?>>) new LinkedHashSet<Class<?>>(
                         constraintDescriptor.getGroups()))
-                .collect(Collectors.toList());
+                .toList();
         if (constraintGroups.isEmpty()) {
             return;
         }

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
@@ -503,8 +502,7 @@ class AbstractFieldTest {
     @Test
     void noOwnPublicApi() {
         List<Method> newPublicMethods = PublicApiAnalyzer
-                .findNewPublicMethods(AbstractField.class)
-                .collect(Collectors.toList());
+                .findNewPublicMethods(AbstractField.class).toList();
         assertEquals(Collections.emptyList(), newPublicMethods);
     }
 

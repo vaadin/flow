@@ -16,7 +16,6 @@
 package com.vaadin.base.devserver.hotswap;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -154,7 +153,7 @@ class HotswapSignalsTest {
             assertEquals(42, newView.count.peek());
 
             List<String> tagValues = newView.tags.peek().stream()
-                    .map(entry -> entry.peek()).collect(Collectors.toList());
+                    .map(ValueSignal::peek).toList();
             assertEquals(List.of("java", "flow"), tagValues);
         });
     }

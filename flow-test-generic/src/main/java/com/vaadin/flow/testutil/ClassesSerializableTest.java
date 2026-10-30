@@ -361,7 +361,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
         List<String> classes = new ArrayList<>();
         List<Pattern> excludes = getExcludedPatterns().map(Pattern::compile)
-                .collect(Collectors.toList());
+                .toList();
         for (String location : rawClasspathEntries) {
             if (!isTestClassPath(location)) {
                 classes.addAll(findServerClasses(location, excludes));

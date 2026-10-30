@@ -24,7 +24,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.function.ValueProvider;
@@ -311,9 +310,8 @@ public class TreeData<T> implements HierarchicalData<T> {
     public TreeData<T> addItems(Stream<T> rootItems,
             ValueProvider<T, Stream<T>> childItemProvider) {
         // Must collect to lists since the algorithm iterates multiple times
-        return addItems(rootItems.collect(Collectors.toList()),
-                item -> childItemProvider.apply(item)
-                        .collect(Collectors.toList()));
+        return addItems(rootItems.toList(),
+                item -> childItemProvider.apply(item).toList());
     }
 
     /**

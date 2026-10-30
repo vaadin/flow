@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,11 +94,10 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        final List<File> filesToRemove = Arrays
-                .stream(projectRoot.listFiles(
-                        file -> generatedFiles.contains(file.getName())
-                                && !existingFiles.contains(file)))
-                .collect(Collectors.toList());
+        final List<File> filesToRemove = Arrays.stream(projectRoot
+                .listFiles(file -> generatedFiles.contains(file.getName())
+                        && !existingFiles.contains(file)))
+                .toList();
         for (File file : filesToRemove) {
             log().debug("Removing file {}", file);
             try {

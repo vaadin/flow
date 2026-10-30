@@ -214,7 +214,7 @@ class UidlWriterTest {
                 .of(invocation1, invocation2)
                 .map(invocation -> new PendingJavaScriptInvocation(
                         element.getNode(), invocation))
-                .collect(Collectors.toList());
+                .toList();
 
         ConstantPool constantPool = new ConstantPool();
         ArrayNode json = UidlWriter.encodeExecuteJavaScriptList(
@@ -578,7 +578,7 @@ class UidlWriterTest {
         assertThat("Eager dependencies should not have inline contents",
                 eagerDependencies.stream()
                         .filter(json -> json.has(Dependency.KEY_CONTENTS))
-                        .collect(Collectors.toList()),
+                        .toList(),
                 hasSize(0));
 
         ObjectNode eagerDependency = eagerDependencies.get(0);
@@ -758,8 +758,7 @@ class UidlWriterTest {
                 hasSize(1));
         assertThat("Eager dependencies should not have urls",
                 inlineDependencies.stream()
-                        .filter(json -> json.has(Dependency.KEY_URL))
-                        .collect(Collectors.toList()),
+                        .filter(json -> json.has(Dependency.KEY_URL)).toList(),
                 hasSize(0));
 
         ObjectNode inlineDependency = inlineDependencies.get(0);

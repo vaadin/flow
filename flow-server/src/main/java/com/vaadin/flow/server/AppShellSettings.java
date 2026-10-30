@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -477,8 +476,7 @@ public class AppShellSettings {
         return inlines.stream()
                 .filter(inline -> inline.target == target
                         && inline.position == position)
-                .map(inline -> inline.element(service))
-                .collect(Collectors.toList());
+                .map(inline -> inline.element(service)).toList();
     }
 
     private static Element createElement(String tag, String content,

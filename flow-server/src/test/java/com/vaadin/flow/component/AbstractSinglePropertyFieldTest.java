@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
@@ -531,7 +530,7 @@ class AbstractSinglePropertyFieldTest {
     void noOwnPublicApi() {
         List<Method> newPublicMethods = PublicApiAnalyzer
                 .findNewPublicMethods(AbstractSinglePropertyField.class)
-                .collect(Collectors.toList());
+                .toList();
         assertEquals(Collections.emptyList(), newPublicMethods);
     }
 

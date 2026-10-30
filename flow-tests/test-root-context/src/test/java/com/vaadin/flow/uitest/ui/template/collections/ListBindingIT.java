@@ -18,7 +18,6 @@ package com.vaadin.flow.uitest.ui.template.collections;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -112,7 +111,6 @@ public class ListBindingIT extends ChromeBrowserTest {
 
     private List<String> getMessages(TestBenchElement template) {
         return template.$(TestBenchElement.class).attribute("class", "msg")
-                .all().stream().map(WebElement::getText)
-                .collect(Collectors.toList());
+                .all().stream().map(WebElement::getText).toList();
     }
 }
