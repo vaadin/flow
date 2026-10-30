@@ -329,7 +329,11 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         return "The success handler " + handler.getClass().getName()
                 + " of a JavaScript invocation was compiled against Vaadin 24"
                 + " or older (it expects elemental.json.JsonValue) and is"
-                + " incompatible with this Vaadin version.";
+                + " incompatible with this Vaadin version. If it comes from"
+                + " an add-on, upgrade the add-on to a version that supports"
+                + " Vaadin 25. If it is your own code, recompile it and use"
+                + " then(Class<T>, ...) or a handler taking"
+                + " tools.jackson.databind.JsonNode.";
     }
 
     private static <T> SerializableConsumer<T> combineHandlers(
