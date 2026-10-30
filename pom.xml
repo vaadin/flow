@@ -532,6 +532,13 @@
                                                  transitive dependencies have
                                                  caught up. -->
                                             <exclude>org.jspecify:jspecify</exclude>
+                                            <!-- Selenium 4.52.0 brings in
+                                                 annotations 26.1.0 while the
+                                                 Kotlin stdlib used by TestBench
+                                                 depends on 13.0. Only
+                                                 compile-time annotations, so
+                                                 the split is harmless. -->
+                                            <exclude>org.jetbrains:annotations</exclude>
                                         </excludes>
                                     </dependencyConvergence>
                                 </rules>
