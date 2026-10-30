@@ -399,7 +399,7 @@ public class ComponentTracker {
      * @return true if in production mode or the mode is unclear, false if in
      *         development mode
      **/
-    private static boolean isDisabled() {
+    public static boolean isDisabled() {
         if (disabled != null) {
             return disabled;
         }
