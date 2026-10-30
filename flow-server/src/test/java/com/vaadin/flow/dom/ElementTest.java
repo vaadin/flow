@@ -2629,6 +2629,26 @@ class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    void callFunctionAndExecuteJs_nullArgumentArray_treatedAsNoArguments() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        element.callJsFunction("method", (Object[]) null);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertPendingFunctionCall(ui, element, "method");
+
+        element.executeJs("foo", (Object[]) null);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        assertEquals(1, pendingJs.size());
+        assertEquals(List.of(element),
+                pendingJs.get(0).getInvocation().getParameters(),
+                "only the element should be passed to the expression");
+    }
+
+    @Test
     void callFunctionWithBean() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();

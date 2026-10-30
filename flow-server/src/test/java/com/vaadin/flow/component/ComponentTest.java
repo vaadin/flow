@@ -51,6 +51,7 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -608,6 +609,31 @@ public class ComponentTest {
 
         ui.remove(component);
         assertEquals(List.of("attach:true", "detach"), log);
+    }
+
+    @Test
+    public void whenAttached_overrideWithOriginalParameterType_isCalled() {
+        // Declared with the parameter type whenAttached had before it was
+        // null-marked, so this stops compiling if the change breaks overrides
+        AtomicInteger overrideCalls = new AtomicInteger();
+        TestComponent component = new TestComponent() {
+            @Override
+            public Registration whenAttached(
+                    SerializableFunction<UI, Registration> attachHandler) {
+                overrideCalls.incrementAndGet();
+                return super.whenAttached(attachHandler);
+            }
+        };
+        AtomicBoolean attached = new AtomicBoolean();
+
+        component.whenAttached(ui -> {
+            attached.set(true);
+            return null;
+        });
+        new UI().add(component);
+
+        assertEquals(1, overrideCalls.get());
+        assertTrue(attached.get());
     }
 
     @Test
