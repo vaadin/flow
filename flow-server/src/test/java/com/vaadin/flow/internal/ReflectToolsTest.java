@@ -23,6 +23,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -321,6 +325,107 @@ class ReflectToolsTest {
         assertArrayEquals(
                 new Class<?>[] { Boolean.class, Short.class, Long.class },
                 genericInterfaceTypes.toArray());
+    }
+
+    public static class GenericHasInterface<X> implements TestInterface<X> {
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static class RawHasInterface implements TestInterface {
+    }
+
+    public static class Holder {
+        GenericHasInterface<List<String>> parameterized;
+        @SuppressWarnings("rawtypes")
+        GenericHasInterface raw;
+    }
+
+    @Test
+    void getTypeParameter_unresolvedOrRaw() throws Exception {
+        TypeVariable<Class<TestInterface>> variable = TestInterface.class
+                .getTypeParameters()[0];
+
+        ParameterizedType parameterized = (ParameterizedType) Holder.class
+                .getDeclaredField("parameterized").getGenericType();
+        assertEquals(parameterized.getActualTypeArguments()[0],
+                ReflectTools.getTypeParameter(parameterized, variable));
+        assertSame(GenericHasInterface.class.getTypeParameters()[0],
+                ReflectTools.getTypeParameter(
+                        GenericHasInterface.class.getGenericInterfaces()[0],
+                        variable));
+        assertNull(ReflectTools.getTypeParameter(GenericHasInterface.class,
+                variable));
+        assertNull(ReflectTools.getTypeParameter(
+                Holder.class.getDeclaredField("raw").getGenericType(),
+                variable));
+        assertNull(
+                ReflectTools.getTypeParameter(RawHasInterface.class, variable));
+        assertNull(ReflectTools.getTypeParameter(String.class, variable));
+    }
+
+    public static class GenericSubclassOfNonGeneric<T> extends HasInterface {
+    }
+
+    public static class GenericSubSubclass<T>
+            extends GenericSubclassOfNonGeneric<T> {
+    }
+
+    public static class ArrayHasInterface<T> implements TestInterface<T[]> {
+    }
+
+    public static class StringArrayHasInterface
+            extends ArrayHasInterface<String> {
+    }
+
+    @Test
+    void getTypeParameter_rawGenericSubclassOfNonGenericClass_resolvedThroughNonGenericClass() {
+        assertEquals(String.class,
+                ReflectTools.getTypeParameter(GenericSubSubclass.class,
+                        TestInterface.class.getTypeParameters()[0]));
+    }
+
+    @Test
+    void getTypeParameter_genericArrayArgument_componentTypeSubstituted() {
+        assertEquals(String[].class,
+                ReflectTools.getTypeParameter(StringArrayHasInterface.class,
+                        TestInterface.class.getTypeParameters()[0]));
+    }
+
+    public static class GenericHolder<N extends Number, H extends HasInterface> {
+        N number;
+        H hasInterface;
+        List<? extends HasInterface> hasInterfaces;
+        List<String>[] lists;
+    }
+
+    @Test
+    void getTypeParameter_typeVariableOrWildcard_resolvedThroughBound()
+            throws Exception {
+        TypeVariable<Class<TestInterface>> variable = TestInterface.class
+                .getTypeParameters()[0];
+
+        assertEquals(String.class, ReflectTools.getTypeParameter(
+                genericHolderFieldType("hasInterface"), variable));
+        assertEquals(String.class, ReflectTools.getTypeParameter(
+                ((ParameterizedType) genericHolderFieldType("hasInterfaces"))
+                        .getActualTypeArguments()[0],
+                variable));
+    }
+
+    @Test
+    void erase_typeVariableWildcardAndGenericArray() throws Exception {
+        assertEquals(Number.class,
+                ReflectTools.erase(genericHolderFieldType("number")));
+        assertEquals(HasInterface.class, ReflectTools.erase(
+                ((ParameterizedType) genericHolderFieldType("hasInterfaces"))
+                        .getActualTypeArguments()[0]));
+        assertEquals(List[].class,
+                ReflectTools.erase(genericHolderFieldType("lists")));
+    }
+
+    private static Type genericHolderFieldType(String name)
+            throws NoSuchFieldException {
+        return GenericHolder.class.getDeclaredField(name).getGenericType();
     }
 
     @Test
