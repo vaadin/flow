@@ -15,8 +15,15 @@
  */
 package com.vaadin.flow.devloop.test.it;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.parallel.Isolated;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * The exit code is the contract agents depend on, so it has to mean the same
@@ -44,6 +51,26 @@ class DevLoopCliContractIT {
         // what a developer runs when the loop is not working.
         VaadinDevCli.of(AbstractDevLoopIT.APP).run("--help").assertExitCode(0)
                 .assertOutputContains("usage: vaadin-dev");
+    }
+
+    @Test
+    void statusAndPing_withNoDaemon_answerWithoutSpawningOne(@TempDir Path app)
+            throws IOException {
+        // A daemon fixes the app's environment to the shell that spawned it,
+        // so one spawned by a status would hand the app that shell's
+        // environment rather than the one the following start was run with.
+        Files.writeString(app.resolve("pom.xml"), "<project/>");
+        VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
+
+        cli.run("--app", app.toString(), "status").assertExitCode(0)
+                .assertOutputContains("no daemon running");
+        cli.run("--app", app.toString(), "status", "--json").assertExitCode(0)
+                .assertOutputContains("{\"app\":{\"state\":\"stopped\"");
+        cli.run("--app", app.toString(), "ping").assertExitCode(1)
+                .assertOutputContains("no daemon running");
+
+        assertFalse(Files.exists(app.resolve(".vaadin/daemon.properties")),
+                "a command that only reports spawned a daemon");
     }
 
     @Test

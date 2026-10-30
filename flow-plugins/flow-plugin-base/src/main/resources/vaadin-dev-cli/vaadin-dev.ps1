@@ -57,7 +57,7 @@ usage: vaadin-dev [--app <dir>] <command> [options]
   stop              stop the app
   restart           stop then start
   shutdown          stop the daemon (and the app it owns)
-  ping              check the daemon is alive
+  ping              check the daemon is alive (exits 1 when none is running)
 
   start|restart --jvm-args "<flags>"
                     extra JVM flags for the app, after the loop's own, e.g.
@@ -70,9 +70,12 @@ usage: vaadin-dev [--app <dir>] <command> [options]
                     diagnostic: push named classes at the running app and print
                     the raw reply, without apply's escalation policy
 
-The daemon starts automatically on first use and serves this application only. When the
-application is one module of a Maven reactor, every reactor module it depends on is in the
-loop too: apply scans, compiles and hot-reloads those the same way. status names them.
+The daemon starts automatically on the first command other than status or ping, and serves
+this application only. The app inherits the environment of the shell that spawned the daemon,
+so a variable set for a later start is not seen: shutdown first, or pass -D flags with
+start --jvm-args. When the application is one module of a Maven reactor, every reactor module
+it depends on is in the loop too: apply scans, compiles and hot-reloads those the same way.
+status names them.
 
   --app <dir>              the application to act on (default: the directory this
                            script is in, or the one above it when the script is
@@ -600,6 +603,29 @@ function Send-Command([int] $port, [string] $token, [string[]] $words) {
     }
 }
 
+# status and ping only report on the daemon, so they never spawn one. A daemon
+# fixes its environment - and so the app's - to the shell that spawned it, and
+# one spawned by a status would quietly hand the app that shell's environment
+# instead of the one the start that follows was run with.
+function Test-ReportsOnly([string] $verb) {
+    return $verb -in @('status', 'ping')
+}
+
+# The answer a reporting command gives when there is no daemon to ask, as an exit
+# code.
+function Write-NoDaemon([string] $verb, [string[]] $arguments) {
+    if ($verb -eq 'ping') {
+        [Console]::Out.WriteLine("no daemon running for $root")
+        return 1
+    }
+    if ($arguments -contains '--json') {
+        [Console]::Out.WriteLine('{"app":{"state":"stopped","pid":null},"daemon":null}')
+    } else {
+        [Console]::Out.WriteLine('stopped  (no daemon running; start spawns one)')
+    }
+    return 0
+}
+
 # --- main --------------------------------------------------------------------
 if ($rest.Count -eq 0 -or $rest[0] -in @('-h', '--help', 'help')) {
     Write-Usage
@@ -613,6 +639,7 @@ try {
     $port = Read-Handshake 'port'
     $token = Read-Handshake 'token'
     if (-not $port -or -not $token) {
+        if (Test-ReportsOnly $command) { exit (Write-NoDaemon $command $commandArgs) }
         if (-not (Start-Daemon)) { exit 70 }
         $port = Read-Handshake 'port'
         $token = Read-Handshake 'token'
@@ -621,7 +648,8 @@ try {
     $status = Send-Command ([int]$port) $token $words
 
     # 99 means the recorded daemon is not answering: the record is stale, so reap
-    # it and try once more with a fresh daemon.
+    # it and try once more with a fresh daemon - or, for a command that only
+    # reports, answer that there is none.
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a process that
@@ -638,20 +666,21 @@ try {
         if ($alive) {
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
                 "$root (pid $recorded) is running but not answering. Reaping " +
-                "the record and starting a fresh daemon.")
+                "the record.")
         } else {
             $named = if ($recorded) { $recorded } else { 'unknown' }
             [Console]::Error.WriteLine("vaadin-dev: the daemon recorded for " +
                 "$root (pid $named) is gone and left its handshake behind, so " +
                 "it was killed rather than shut down - the application it " +
-                "owned stopped with it. Starting a fresh daemon; the app needs " +
-                "'vaadin-dev start' again.")
+                "owned stopped with it. The app needs 'vaadin-dev start' " +
+                "again.")
             [Console]::Error.WriteLine("vaadin-dev: if that repeats on every " +
                 "command, whatever runs vaadin-dev is killing the processes " +
                 "each command created; see ""When it goes wrong"" in the " +
                 "vaadin-devloop skill reference.")
         }
         Remove-Item -LiteralPath $handshake -Force -ErrorAction SilentlyContinue
+        if (Test-ReportsOnly $command) { exit (Write-NoDaemon $command $commandArgs) }
         if (-not (Start-Daemon)) { exit 70 }
         $port = Read-Handshake 'port'
         $token = Read-Handshake 'token'
