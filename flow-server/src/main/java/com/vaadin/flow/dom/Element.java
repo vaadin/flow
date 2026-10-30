@@ -1569,7 +1569,7 @@ public class Element extends Node<Element> {
      */
     public void flashClass(String className) {
         Objects.requireNonNull(className, "className cannot be null");
-        executeJs("window.Vaadin.Flow.flashClass(this, $0)", className);
+        executeJs(ElementJs.class).flashClass(className);
     }
 
     /**
@@ -2516,5 +2516,41 @@ public class Element extends Node<Element> {
          */
         @JsExpression("setTimeout(() => this.scrollIntoView($0), 0)")
         void scrollIntoView(ObjectNode options);
+    }
+
+    /**
+     * JavaScript that Flow runs on an element, as a JavaScript definition for
+     * {@link #executeJs(Class)}.
+     */
+    @JsDefinition
+    public interface ElementJs extends Serializable {
+
+        /**
+         * Adds the CSS class to the element and removes it again when the
+         * animation it starts has ended.
+         *
+         * @param className
+         *            the CSS class name to flash
+         * @see Element#flashClass(String)
+         */
+        @JsExpression("window.Vaadin.Flow.flashClass(this, $0)")
+        void flashClass(String className);
+
+        /**
+         * Dispatches a <code>window-resize</code> event on the element whenever
+         * the browser window is resized, with the size of the document as its
+         * <code>w</code> and <code>h</code> properties, so that a resize can be
+         * listened to on the element.
+         */
+        @JsExpression("""
+                const el = this;
+                window.addEventListener('resize', evt => {
+                    const event = new Event("window-resize");
+                    event.w = document.documentElement.clientWidth;
+                    event.h = document.documentElement.clientHeight;
+                    el.dispatchEvent(event);
+                });
+                """)
+        void forwardWindowResize();
     }
 }

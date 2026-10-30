@@ -47,6 +47,8 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.util.Assert;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.Page.PageJs;
+import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
@@ -174,7 +176,7 @@ public class AuthenticationContext {
             // invalidation. Switching to WEBSOCKET_XHR for a single request
             // to do the logout.
             ui.getPushConfiguration().setTransport(Transport.WEBSOCKET_XHR);
-            ui.getPage().executeJs("return true").then(ignored -> {
+            requestRoundTrip(ui).then(ignored -> {
                 LOGGER.debug(
                         "Switched to WEBSOCKET_XHR transport mode successfully for logout operation.");
                 ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
@@ -191,11 +193,17 @@ public class AuthenticationContext {
         } else if (VaadinRequest.getCurrent() == null) {
             // Logout started from a background thread, force client to send
             // a request
-            ui.getPage().executeJs("return true").then(ignored -> doLogout(ui),
+            requestRoundTrip(ui).then(ignored -> doLogout(ui),
                     error -> doLogout(ui));
         } else {
             doLogout(ui);
         }
+    }
+
+    private static PendingJavaScriptResult requestRoundTrip(UI ui) {
+        // Any call that answers with a value makes the client send a request
+        // back. Reading the address is one that the page already declares.
+        return ui.getPage().executeJs(PageJs.class).getHref();
     }
 
     private void doLogout(UI ui) {
