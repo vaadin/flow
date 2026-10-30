@@ -184,7 +184,17 @@ public class BuildFrontendUtil {
                 FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
-    private static FrontendToolsSettings getFrontendToolsSettings(
+    /**
+     * Creates the settings for locating Node.js and npm the same way as the
+     * frontend build does.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @return the frontend tools settings
+     * @throws URISyntaxException
+     *             - Could not build an URI from nodeDownloadRoot().
+     */
+    public static FrontendToolsSettings getFrontendToolsSettings(
             PluginAdapterBase adapter) throws URISyntaxException {
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 adapter.npmFolder().getAbsolutePath(),
