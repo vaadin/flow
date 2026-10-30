@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.lang.invoke.SerializedLambda;
+import java.lang.reflect.Method;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -242,32 +245,26 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * targets an older Vaadin version. When the JVM replaces the exception of a
      * frequently failing cast with a pre-allocated one, there is neither a
      * message nor a stack trace, so the class name is the only clue for any
-     * kind of handler.
+     * kind of handler. In that case, the handler's declared parameter type is
+     * inspected instead of the message, so that a handler written for
+     * {@link JsonNode}, including Flow's own internal handlers, never gets
+     * blamed.
      * <p>
      * A {@link NoClassDefFoundError} for {@code elemental.json} is only caught
      * here for anonymous and named handler classes. For a lambda or a method
      * reference, the JVM fails when linking the call site, so the error is
      * thrown from the code calling {@code then} and never reaches the wrapper.
-     * <p>
-     * The converting handlers created by the typed {@code then} and
-     * {@code toCompletableFuture} overloads in {@link PendingJavaScriptResult}
-     * are not wrapped. A legacy handler cannot reach those overloads, and the
-     * message would otherwise name a Flow class instead of the user's handler.
      */
     private static SerializableConsumer<JsonNode> identifyIncompatibleHandler(
             SerializableConsumer<JsonNode> handler) {
-        // A lambda class is a nestmate of the class that defines the lambda
-        if (handler.getClass().getNestHost() == PendingJavaScriptResult.class) {
-            return handler;
-        }
         return value -> {
             try {
                 handler.accept(value);
             } catch (ClassCastException e) {
-                // The JVM may replace the exception of a frequently failing
-                // cast with a pre-allocated one without a message, so a
-                // missing message is treated as a match
-                if (e.getMessage() != null && !mentionsElementalJson(e)) {
+                boolean incompatible = e.getMessage() == null
+                        ? acceptsElementalJson(handler)
+                        : mentionsElementalJson(e);
+                if (!incompatible) {
                     throw e;
                 }
                 ClassCastException identified = new ClassCastException(
@@ -292,6 +289,40 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
         // NoClassDefFoundError uses internal names (elemental/json/JsonValue)
         return message != null && (message.contains("elemental.json.")
                 || message.contains("elemental/json/"));
+    }
+
+    /**
+     * Checks whether the handler declares an {@code elemental.json} type as the
+     * type it accepts. Only used after a failure, so the reflection is not paid
+     * for by handlers that work.
+     */
+    static boolean acceptsElementalJson(Object handler) {
+        Class<?> type = handler.getClass();
+        try {
+            if (type.isHidden()) {
+                // A serializable lambda or method reference describes its
+                // parameter types in its serialized form
+                Method writeReplace = type.getDeclaredMethod("writeReplace");
+                writeReplace.setAccessible(true);
+                SerializedLambda lambda = (SerializedLambda) writeReplace
+                        .invoke(handler);
+                return lambda.getInstantiatedMethodType()
+                        .contains("Lelemental/json/");
+            }
+            for (Method method : type.getDeclaredMethods()) {
+                if (method.getName().equals("accept") && !method.isBridge()
+                        && method.getParameterCount() == 1
+                        && method.getParameterTypes()[0].getName()
+                                .startsWith("elemental.json.")) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (ReflectiveOperationException | RuntimeException
+                | LinkageError e) {
+            // Unknown, so leave the original exception as it is
+            return false;
+        }
     }
 
     private static String incompatibleHandlerMessage(Object handler) {

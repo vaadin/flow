@@ -401,20 +401,51 @@ class PendingJavaScriptInvocationTest {
     }
 
     @Test
-    void incompatibleSuccessHandler_castFailureWithoutMessage_exceptionNamesHandlerClass() {
+    void successHandlerCastFailureWithoutMessage_rethrownUnchanged() {
         ClassCastException original = new ClassCastException();
-        SerializableConsumer<JsonNode> handler = value -> {
+        invocation.then(value -> {
             throw original;
-        };
-        invocation.then(handler);
+        });
 
         ClassCastException exception = assertThrows(ClassCastException.class,
                 () -> invocation.complete(JacksonUtils.nullNode()));
 
-        assertTrue(
-                exception.getMessage().contains(handler.getClass().getName()),
-                exception.getMessage());
-        assertSame(original, exception.getCause());
+        assertSame(original, exception);
+    }
+
+    private static void acceptLegacyValue(JsonValue value) {
+    }
+
+    @Test
+    void acceptsElementalJson_legacyHandlers_true() {
+        SerializableConsumer<JsonValue> lambda = value -> {
+        };
+        SerializableConsumer<JsonValue> methodReference = PendingJavaScriptInvocationTest::acceptLegacyValue;
+        SerializableConsumer<JsonValue> anonymous = new SerializableConsumer<>() {
+            @Override
+            public void accept(JsonValue value) {
+            }
+        };
+
+        assertTrue(PendingJavaScriptInvocation.acceptsElementalJson(lambda));
+        assertTrue(PendingJavaScriptInvocation
+                .acceptsElementalJson(methodReference));
+        assertTrue(PendingJavaScriptInvocation.acceptsElementalJson(anonymous));
+    }
+
+    @Test
+    void acceptsElementalJson_jsonNodeHandlers_false() {
+        SerializableConsumer<JsonNode> lambda = value -> {
+        };
+        SerializableConsumer<JsonNode> anonymous = new SerializableConsumer<>() {
+            @Override
+            public void accept(JsonNode value) {
+            }
+        };
+
+        assertFalse(PendingJavaScriptInvocation.acceptsElementalJson(lambda));
+        assertFalse(
+                PendingJavaScriptInvocation.acceptsElementalJson(anonymous));
     }
 
     @Test
