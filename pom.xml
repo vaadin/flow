@@ -170,7 +170,14 @@
     <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
     <atmosphere.client.version>4.0.3</atmosphere.client.version>
 
-    <!-- JPMS: see the maven-jar-plugin configuration -->
+    <!-- JPMS: stable module name, written as Automatic-Module-Name by the
+         maven-jar-plugin configuration. A module that publishes a runtime
+         jar sets it to the root package of the jar, e.g.
+         com.vaadin.flow.component.html for flow-html-components. The
+         exception is flow-server, which is com.vaadin.flow.server
+         although its packages span com.vaadin.flow: that name would read
+         as covering every Flow jar. Names cannot change once released, as
+         other modules require them. Empty means no entry. -->
     <jpms.module.name/>
 
     <!-- OSGi -->
