@@ -139,7 +139,7 @@ export class XhrResponseHandler {
 
     this.#registry.getConnectionStateHandler().xhrOk();
     Console.debug(`Received xhr message: ${responseText}`);
-    this.#registry.getMessageHandler().handleMessage(json);
+    this.#registry.getMessageHandler().handleMessage(json, this.#payload);
   }
 }
 

@@ -19,6 +19,7 @@ import { StateNode } from '../../../../../main/frontend/internal/client/flow/Sta
 import { StateTree } from '../../../../../main/frontend/internal/client/flow/StateTree';
 import { UILifecycle, UIState } from '../../../../../main/frontend/internal/client/UILifecycle';
 import { NodeFeatures } from '../../../../../main/frontend/internal/flow/internal/nodefeature/NodeFeatures';
+import { VaadinRequest } from '../../../../../main/frontend/internal/client/communication/VaadinRequest';
 
 function makeRegistry(maxMessageSuspendTimeout = 10000) {
   const log = {
@@ -37,8 +38,11 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
   // active, so the tracker starts out with one; ending it clears the flag, as
   // the real tracker does.
   let activeRequest = true;
+  // The request the sender knows a reply to answer.
+  const request = new VaadinRequest();
   return {
     log,
+    request,
     getState: () => state,
     startRequest: () => {
       activeRequest = true;
@@ -58,7 +62,9 @@ function makeRegistry(maxMessageSuspendTimeout = 10000) {
         requestResynchronize: () => true,
         resynchronize: () => {
           log.resynchronized = true;
-        }
+        },
+        getRequest: () => request,
+        findRequest: (nextClientId: number | undefined) => (nextClientId === 1 ? request : undefined)
       },
       StateTree: { prepareForResync: () => {} },
       RequestResponseTracker: {
@@ -285,6 +291,45 @@ describe('MessageHandler', () => {
       expect(registry.log.stopLoadings).to.equal(2);
     });
 
+    describe('replies', () => {
+      // Records the events the request dispatches, with its outcome.
+      function recordRequest(request: VaadinRequest): string[] {
+        const events: string[] = [];
+        request.addEventListener('response', () => events.push('response'));
+        request.addEventListener('end', () => events.push(`end ${request.outcome}`));
+        return events;
+      }
+
+      it('settles the request an XHR reply answers', () => {
+        const registry = makeRegistry();
+        const events = recordRequest(registry.request);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1 }, { rpc: [] });
+        expect(events).to.deep.equal(['response', 'end acknowledged']);
+      });
+
+      it('settles the request a reply over push answers, found by the client id it carries', () => {
+        const registry = makeRegistry();
+        const events = recordRequest(registry.request);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1 });
+        expect(events).to.deep.equal(['response', 'end acknowledged']);
+      });
+
+      it('settles no request for a message the server pushed on its own', () => {
+        const registry = makeRegistry();
+        const events = recordRequest(registry.request);
+        // The client id would match the request, but the message is no reply.
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, clientId: 1, meta: { async: true } });
+        expect(events).to.deep.equal([]);
+      });
+
+      it('rejects the request a reply saying the session expired answers', () => {
+        const registry = makeRegistry();
+        const events = recordRequest(registry.request);
+        new MessageHandler(registry.registry).handleMessage({ syncId: 0, meta: { sessionExpired: true } }, { rpc: [] });
+        expect(events).to.deep.equal(['response', 'end rejected']);
+      });
+    });
+
     it('runs a one-shot session-expired handler when set', () => {
       // Beyond the Java suite: No Java case covers setNextResponseSessionExpiredHandler.
       const registry = makeRegistry();
@@ -475,7 +520,8 @@ describe('MessageHandler', () => {
           MessageSender: {
             getResynchronizationState: () => 'NOT_ACTIVE',
             clearResynchronizationState: () => {},
-            setClientToServerMessageId: () => {}
+            setClientToServerMessageId: () => {},
+            findRequest: () => undefined
           },
           RequestResponseTracker: {
             endRequest: () => {},

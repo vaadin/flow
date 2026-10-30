@@ -6,26 +6,31 @@ import { ServerRpcQueue } from '../../../../../main/frontend/internal/client/com
 
 function makeRegistry(running = true) {
   let sends = 0;
+  let openedRequests = 0;
   const registry = testRegistry({
     UILifecycle: { isRunning: () => running },
     MessageSender: {
       sendInvocationsToServer: () => {
         sends++;
+      },
+      openRequest: () => {
+        openedRequests++;
       }
     }
   });
-  return { registry, sends: () => sends };
+  return { registry, sends: () => sends, openedRequests: () => openedRequests };
 }
 
 describe('ServerRpcQueue', () => {
-  it('queues invocations while the UI is running', () => {
-    const { registry } = makeRegistry(true);
+  it('queues invocations while the UI is running, opening a request for the first one', () => {
+    const { registry, openedRequests } = makeRegistry(true);
     const queue = new ServerRpcQueue(registry);
     expect(queue.isEmpty()).to.be.true;
     queue.add({ a: 1 });
     queue.add({ b: 2 });
     expect(queue.size()).to.equal(2);
     expect(queue.toJson()).to.deep.equal([{ a: 1 }, { b: 2 }]);
+    expect(openedRequests()).to.equal(1);
   });
 
   it('ignores invocations when the UI is not running', () => {

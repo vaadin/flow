@@ -19,8 +19,8 @@ function makeRegistry() {
       xhrOk: () => calls.push('ok')
     }),
     getMessageHandler: () => ({
-      handleMessage: (json: unknown) => {
-        handled = json;
+      handleMessage: (...args: unknown[]) => {
+        handled = args;
         calls.push('handled');
       }
     }),
@@ -39,10 +39,14 @@ describe('XhrConnection', () => {
     it('routes a valid 200 response to the message handler', () => {
       const registry = makeRegistry();
       const handler = new XhrResponseHandler(registry);
-      handler.setPayload({ rpc: [] });
+      const payload = { rpc: [] };
+      handler.setPayload(payload);
       handler.onSuccess({ responseText: '{"syncId":3}' } as any);
       expect(registry.calls).to.deep.equal(['ok', 'handled']);
-      expect(registry.getHandled()).to.deep.equal({ syncId: 3 });
+      // Handed on with the payload the response replies to.
+      const [json, repliedTo] = registry.getHandled();
+      expect(json).to.deep.equal({ syncId: 3 });
+      expect(repliedTo).to.equal(payload);
     });
 
     it('reports invalid content when the response is not JSON', () => {
