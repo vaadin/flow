@@ -169,17 +169,26 @@ public class ClientCallableAotProcessor
      */
     private void processClass(Class<?> clazz, InspectionResult result) {
         // Flow looks for ClientCallable methods only in classes that extend
-        // Component
+        // Component, and in the default methods of their interfaces
         if (!Component.class.isAssignableFrom(clazz)) {
             return;
         }
-        while (Component.class != clazz) {
-            for (Method method : clazz.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(ClientCallable.class)) {
-                    processMethod(method, result);
-                }
+        processClassHierarchy(clazz, result);
+    }
+
+    private void processClassHierarchy(Class<?> type, InspectionResult result) {
+        if (type == null || type == Component.class || type == Object.class) {
+            return;
+        }
+        for (Method method : type.getDeclaredMethods()) {
+            if ((!type.isInterface() || method.isDefault())
+                    && method.isAnnotationPresent(ClientCallable.class)) {
+                processMethod(method, result);
             }
-            clazz = clazz.getSuperclass();
+        }
+        processClassHierarchy(type.getSuperclass(), result);
+        for (Class<?> iface : type.getInterfaces()) {
+            processClassHierarchy(iface, result);
         }
     }
 

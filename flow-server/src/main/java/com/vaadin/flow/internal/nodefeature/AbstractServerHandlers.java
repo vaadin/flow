@@ -142,12 +142,17 @@ public abstract class AbstractServerHandlers<T>
                     method.getParameterTypes())) {
                 String msg = String.format(Locale.ENGLISH,
                         "There may be only one handler method with the given name. "
-                                + "Class '%s' (considering its superclasses) "
+                                + "Class '%s' (considering its superclasses and interfaces) "
                                 + "contains several handler methods with the same name: '%s'",
                         classWithAnnotations.getName(), method.getName());
                 throw new IllegalStateException(msg);
             }
-            map.put(method.getName(), method);
+            // The most specific declaration wins, so e.g. the update mode of
+            // an override wins over the overridden one
+            if (existing == null
+                    || ReflectTools.isDeclaredInSubtype(method, existing)) {
+                map.put(method.getName(), method);
+            }
         }
         Map<String, DisabledUpdateMode> handlers = new LinkedHashMap<>();
         map.values().forEach(method -> handlers.put(method.getName(),
@@ -157,6 +162,9 @@ public abstract class AbstractServerHandlers<T>
 
     /**
      * Collect all Methods annotated with the handler annotation.
+     * <p>
+     * Superclasses are searched as well, and so are default methods of
+     * implemented interfaces.
      *
      * @param clazz
      *            Class to check methods for
@@ -171,10 +179,14 @@ public abstract class AbstractServerHandlers<T>
         if (clazz.equals(getType())) {
             return;
         }
-        Stream.of(clazz.getDeclaredMethods()).filter(
-                method -> hasAnnotation(method, getHandlerAnnotationFqn()))
+        Stream.of(clazz.getDeclaredMethods())
+                .filter(method -> !clazz.isInterface() || method.isDefault())
+                .filter(method -> hasAnnotation(method,
+                        getHandlerAnnotationFqn()))
                 .forEach(method -> addHandlerMethod(method, methods));
         collectHandlerMethods(clazz.getSuperclass(), methods);
+        Stream.of(clazz.getInterfaces())
+                .forEach(iface -> collectHandlerMethods(iface, methods));
     }
 
     private boolean hasAnnotation(Method method, String fqn) {
