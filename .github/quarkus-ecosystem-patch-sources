@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Adapts the sources to API changes in Quarkus main that the pinned
+# quarkus.version does not have yet. The Quarkus ecosystem CI build runs it
+# before building against the Quarkus main snapshot. Run it from the
+# repository root; it changes the files in place and can run more than once.
+#
+# Remove each change when the pinned quarkus.version has the new API and the
+# sources use it.
+set -eo pipefail
+
+# Quarkus main removed QuarkusUnitTest; QuarkusExtensionTest replaces it with
+# the same API, but only exists from Quarkus 3.35.
+if grep -rqw QuarkusUnitTest vaadin-quarkus --include=*.java; then
+  grep -rlw QuarkusUnitTest vaadin-quarkus --include=*.java \
+    | xargs sed -i 's/\bQuarkusUnitTest\b/QuarkusExtensionTest/g'
+fi
+
+# Quarkus main changed the Config parameter of CodeGenProvider.shouldRun from
+# MicroProfile Config to SmallRye Config. Only the code generation provider
+# and its test are changed: other classes still get a MicroProfile Config,
+# for example from ConfigProvider.
+CODEGEN_CONFIG_FILES=(
+  vaadin-quarkus/deployment/src/main/java/com/vaadin/quarkus/deployment/vaadinplugin/WorkspaceInfoCollector.java
+  vaadin-quarkus/deployment/src/test/java/com/vaadin/quarkus/deployment/vaadinplugin/WorkspaceInfoCollectorTest.java
+)
+sed -i 's/^import org\.eclipse\.microprofile\.config\.Config;$/import io.smallrye.config.Config;/' \
+  "${CODEGEN_CONFIG_FILES[@]}"
