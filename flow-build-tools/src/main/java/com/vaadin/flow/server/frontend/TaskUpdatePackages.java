@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 /**
@@ -394,6 +395,32 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
+     * Fails when a package is declared with an exotic version, such as a
+     * tarball URL or a git repository, and exotic versions are not allowed, as
+     * such a package is installed from neither the npm registry nor a local
+     * path.
+     */
+    private void verifyExoticVersionsAllowed(Map<String, String> dependencies) {
+        if (options.isNpmAllowExoticVersions()) {
+            return;
+        }
+        final String exoticDependencies = dependencies.entrySet().stream()
+                .filter(dep -> FrontendBuildUtils
+                        .isExoticVersion(dep.getValue()))
+                .map(dep -> "'" + dep.getKey() + "': '" + dep.getValue() + "'")
+                .sorted().collect(Collectors.joining(", "));
+        if (!exoticDependencies.isEmpty()) {
+            throw new IllegalStateException(String.format(
+                    "The npm packages %s are declared using @NpmPackage with a version that is neither"
+                            + " a registry version nor a local path, which is not allowed by default."
+                            + " Set the 'npmAllowExoticVersions' plugin parameter or the '%s'"
+                            + " configuration property to true to allow such versions.",
+                    exoticDependencies,
+                    InitParameters.NPM_ALLOW_EXOTIC_VERSIONS));
+        }
+    }
+
+    /**
      * Gets the version an npm package can be pinned to.
      *
      * @param version
@@ -408,7 +435,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             return null;
         }
         if (FrontendBuildUtils.isUrlVersion(version)) {
-            return version;
+            return options.isNpmAllowExoticVersions() ? version : null;
         }
         try {
             final FrontendVersion frontendVersion = new FrontendVersion(
@@ -664,6 +691,8 @@ public class TaskUpdatePackages extends NodeUpdater {
                         && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents())
                 .exclude(applicationDependencies);
+        verifyExoticVersionsAllowed(filteredApplicationDependencies);
+        verifyExoticVersionsAllowed(applicationDevDependencies);
 
         // Add application dependencies
         for (Entry<String, String> dep : filteredApplicationDependencies

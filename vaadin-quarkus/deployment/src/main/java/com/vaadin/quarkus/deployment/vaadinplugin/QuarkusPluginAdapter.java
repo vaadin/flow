@@ -480,6 +480,11 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
     }
 
     @Override
+    public boolean isNpmAllowExoticVersions() {
+        return config.npmAllowExoticVersions();
+    }
+
+    @Override
     public boolean isCommercialBannerEnabled() {
         return config.commercialWithBanner();
     }
