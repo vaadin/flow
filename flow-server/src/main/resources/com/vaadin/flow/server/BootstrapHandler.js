@@ -42,6 +42,10 @@
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
 
+  if (!window.Vaadin.Flow.ready) {
+    {{READY}}
+  }
+
   /**
    * Triggers a CSS animation on an element by adding a class, then
    * removes the class when the animation ends.

@@ -704,8 +704,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String json = initialJson.toString().replace("<", "\\x3C");
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
-        elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.TypeScript= " + json + ";"));
+        elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};"
+                + "window.Vaadin.Flow = window.Vaadin.Flow || {};"
+                + BootstrapHandler.READY_JS + "window.Vaadin.TypeScript= "
+                + json + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 
