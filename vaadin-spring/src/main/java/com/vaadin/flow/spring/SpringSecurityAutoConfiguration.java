@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.spring;
 
+import jakarta.servlet.Filter;
+
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +34,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.web.FilterChainProxy;
+import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer;
+import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
+import org.springframework.security.web.debug.DebugFilter;
 
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AccessPathChecker;
@@ -82,6 +90,16 @@ public class SpringSecurityAutoConfiguration {
 
     @Autowired
     private ObjectProvider<SecurityContextHolderStrategy> securityContextHolderStrategy;
+
+    /**
+     * The transformer the privilege evaluator applies to the request built for
+     * a path, when the application defines one.
+     */
+    @Autowired
+    private ObjectProvider<HttpServletRequestTransformer> privilegeEvaluatorRequestTransformer;
+
+    @Autowired
+    private BeanFactory beanFactory;
 
     /**
      * Creates the auto configuration. Spring instantiates it.
@@ -202,7 +220,30 @@ public class SpringSecurityAutoConfiguration {
             @Lazy WebInvocationPrivilegeEvaluator evaluator) {
         return new SpringAccessPathChecker(evaluator,
                 vaadinProperties.getUrlMapping(),
-                securityContextHolderStrategy.getObject());
+                securityContextHolderStrategy.getObject(),
+                this::getFilterChainProxy, privilegeEvaluatorRequestTransformer
+                        .getIfUnique(PathPatternRequestTransformer::new));
+    }
+
+    /**
+     * Gets the filter chain proxy behind the {@code springSecurityFilterChain}
+     * bean. The bean is declared as a plain {@link Filter}: it is the proxy
+     * itself, or a {@link DebugFilter} around it when security debugging is on.
+     * It is looked up on first use, like the privilege evaluator, because the
+     * filter chains depend on the navigation access control this configuration
+     * creates.
+     *
+     * @return the filter chain proxy, or {@literal null} if the bean is of an
+     *         unknown type
+     */
+    private FilterChainProxy getFilterChainProxy() {
+        Filter filter = beanFactory.getBean(
+                AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME,
+                Filter.class);
+        if (filter instanceof DebugFilter debugFilter) {
+            return debugFilter.getFilterChainProxy();
+        }
+        return filter instanceof FilterChainProxy proxy ? proxy : null;
     }
 
     /**
