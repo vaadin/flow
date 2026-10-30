@@ -37,6 +37,7 @@ import { NodeFeatures } from '../../flow/internal/nodefeature/NodeFeatures';
 import { assert } from '../../assert';
 import { needsRebind } from './binding/SimpleElementBindingStrategy';
 import { decodeStateNode, decodeWithTypeInfo } from './util/ClientJsonCodec';
+import { describeMissingFunction, findDeclaredFunction, getNameOf } from './util/DeclaredJavaScript';
 import {
   attachExistingElement,
   disposeInitializer,
@@ -67,8 +68,6 @@ interface ContextCallbacks {
   disposeInitializer: (node: StateNode, id: number) => void;
 }
 
-type JsDefinitionFunction = (this: unknown, ...args: unknown[]) => unknown;
-
 /**
  * What an invocation of declared JavaScript names instead of an expression:
  * the function of the bundle to run, identified by a hash of the JavaScript it
@@ -91,44 +90,6 @@ function reportThroughChannel(parameters: unknown[], message: string): void {
   if (typeof lastParameter === 'function') {
     (lastParameter as ReturnChannel)(message);
   }
-}
-
-/**
- * What the generated bundle registers on the page: a function per declared
- * expression, and, outside production, what a developer wrote for each of
- * them.
- */
-function getDeclaredJavaScript(): {
-  jsDefinitions?: Record<string, JsDefinitionFunction>;
-  jsDefinitionNames?: Record<string, string>;
-} {
-  return (
-    (
-      window as unknown as {
-        Vaadin?: {
-          Flow?: { jsDefinitions?: Record<string, JsDefinitionFunction>; jsDefinitionNames?: Record<string, string> };
-        };
-      }
-    ).Vaadin?.Flow ?? {}
-  );
-}
-
-/**
- * Looks up the function that the build generated for declared JavaScript. The
- * registry is populated by the generated bundle, so the function is ordinary
- * bundled code and nothing has to be compiled from a string here.
- */
-function findDeclaredFunction(functionId: string): JsDefinitionFunction | undefined {
-  return getDeclaredJavaScript().jsDefinitions?.[functionId];
-}
-
-/**
- * What to call a function in a message: what a developer wrote, which a
- * development bundle registers next to the function itself, and the identifier
- * of the function when it does not, as in production.
- */
-function getNameOf(functionId: string): string {
-  return getDeclaredJavaScript().jsDefinitionNames?.[functionId] ?? functionId;
 }
 
 /**
@@ -309,7 +270,7 @@ export class ExecuteJavaScriptProcessor {
     const name = getNameOf(functionId);
     const fn = findDeclaredFunction(functionId);
     if (fn === undefined) {
-      const message = `No JavaScript in the bundle for ${name}. The JavaScript definition is annotated with @JsDefinition, but the build did not collect it.`;
+      const message = describeMissingFunction(functionId);
       Console.error(message);
       // The server appends the two channels after everything else, or neither
       // of them, so the error channel is the last parameter. Report through it

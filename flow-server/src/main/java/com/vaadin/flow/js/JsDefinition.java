@@ -25,7 +25,9 @@ import com.vaadin.flow.dom.Element;
 
 /**
  * Marks an interface whose methods declare the JavaScript they run with
- * {@link JsExpression}, to be called through {@link Element#executeJs(Class)}.
+ * {@link JsExpression}, to be called through {@link Element#executeJs(Class)},
+ * or, when its methods return {@link JsSnippet snippets}, through
+ * {@link JsSnippets#of(Class)}. An interface declares one of the two kinds.
  * <p>
  * The annotation is what makes the interface findable during the build: every
  * annotated interface is collected into the generated bundle as a function per
@@ -36,6 +38,7 @@ import com.vaadin.flow.dom.Element;
  *
  * @see JsExpression
  * @see Element#executeJs(Class)
+ * @see JsSnippets#of(Class)
  * @since 25.4
  */
 @Documented

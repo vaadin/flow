@@ -33,6 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+// Asserts the bodies of the functions the actions are built from
+@SuppressWarnings("removal")
 class FullscreenTest {
 
     @Tag("test-button")

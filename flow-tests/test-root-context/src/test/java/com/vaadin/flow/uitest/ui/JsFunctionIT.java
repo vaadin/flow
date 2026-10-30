@@ -57,4 +57,13 @@ public class JsFunctionIT extends ChromeBrowserTest {
                 d -> findElement(By.id("thisRespectResult")));
         Assert.assertEquals("this is the host element", result.getText());
     }
+
+    @Test
+    public void declaredFunctionRunsFromTheBundle() {
+        open();
+        findElement(By.id("declaredButton")).click();
+        waitUntil(d -> "Hello World"
+                .equals(findElement(By.id("declaredResult")).getText()));
+        checkLogsForErrors();
+    }
 }
