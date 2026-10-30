@@ -264,10 +264,12 @@ class SpringSecurityAutoConfigurationTest {
         }
     }
 
-    @Test
-    void accessPathChecker_nullPrincipal_usesAnonymousAuthoritiesOfFilterChain() {
-        this.contextRunner
-                .withUserConfiguration(GuestAnonymousAuthorities.class)
+    @ParameterizedTest
+    @ValueSource(classes = { GuestAnonymousAuthorities.class,
+            GuestAnonymousAuthoritiesDebug.class })
+    void accessPathChecker_nullPrincipal_usesAnonymousAuthoritiesOfFilterChain(
+            Class<?> securityConfiguration) {
+        this.contextRunner.withUserConfiguration(securityConfiguration)
                 .run(context -> {
                     SecurityContextHolderStrategy strategy = context
                             .getBean(SecurityContextHolderStrategy.class);
@@ -427,6 +429,29 @@ class SpringSecurityAutoConfigurationTest {
     @TestConfiguration(proxyBeanMethods = false)
     @EnableWebSecurity
     static class GuestAnonymousAuthorities {
+
+        @Bean
+        public SecurityFilterChain guestSecurityFilterChain(
+                HttpSecurity httpSecurity) {
+            return httpSecurity
+                    .with(VaadinSecurityConfigurer.vaadin(),
+                            Customizer.withDefaults())
+                    .anonymous(anonymous -> anonymous.authorities("ROLE_GUEST"))
+                    .authorizeHttpRequests(cfg -> cfg
+                            .requestMatchers(PathPatternRequestMatcher
+                                    .withDefaults().matcher("/guest/**"))
+                            .hasRole("GUEST"))
+                    .build();
+        }
+    }
+
+    /**
+     * Same as {@link GuestAnonymousAuthorities}, with the filter chain proxy
+     * wrapped in a debug filter.
+     */
+    @TestConfiguration(proxyBeanMethods = false)
+    @EnableWebSecurity(debug = true)
+    static class GuestAnonymousAuthoritiesDebug {
 
         @Bean
         public SecurityFilterChain guestSecurityFilterChain(
