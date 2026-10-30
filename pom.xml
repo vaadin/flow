@@ -172,12 +172,16 @@
 
     <!-- JPMS: stable module name, written as Automatic-Module-Name by the
          maven-jar-plugin configuration. A module that publishes a runtime
-         jar sets it to the root package of the jar, e.g.
-         com.vaadin.flow.component.html for flow-html-components. The
-         exception is flow-server, which is com.vaadin.flow.server
-         although its packages span com.vaadin.flow: that name would read
-         as covering every Flow jar. Names cannot change once released, as
-         other modules require them. Empty means no entry. -->
+         jar sets it to the main package of the jar, e.g.
+         com.vaadin.flow.component.html for flow-html-components. When the
+         packages of a jar span com.vaadin.flow (flow-server,
+         flow-polymer-template), the name is not com.vaadin.flow, which
+         would read as covering every Flow jar, but the main package
+         (com.vaadin.flow.server, ...component.polymertemplate). Jars
+         without Java packages (flow-client, flow-push) use
+         com.vaadin.flow.<artifact name without "flow-">. Names cannot
+         change once released, as other modules require them. Empty means
+         no entry. -->
     <jpms.module.name/>
 
     <!-- OSGi -->
