@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
@@ -411,6 +412,38 @@ class PendingJavaScriptInvocationTest {
                 () -> invocation.complete(JacksonUtils.nullNode()));
 
         assertSame(original, exception);
+    }
+
+    /**
+     * A return value that a legacy handler can accept, so that the cast to
+     * {@code JsonValue} succeeds and the handler body runs.
+     */
+    private static class LegacyCompatibleNode extends StringNode
+            implements JsonValue {
+        LegacyCompatibleNode() {
+            super("foo");
+        }
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void incompatibleSuccessHandler_castFailureWithoutMessage_exceptionNamesHandlerClass() {
+        // Stands in for the pre-allocated exception without a message that
+        // the JVM throws for a cast that fails very often
+        ClassCastException original = new ClassCastException();
+        SerializableConsumer<JsonValue> legacyCallback = value -> {
+            throw original;
+        };
+        invocation.then((SerializableConsumer) legacyCallback);
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(new LegacyCompatibleNode()));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains(legacyCallback.getClass().getName()),
+                exception.getMessage());
+        assertSame(original, exception.getCause());
     }
 
     private static void acceptLegacyValue(JsonValue value) {
