@@ -20,8 +20,14 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
     heartbeatSends: 0,
     sessionExpired: 0,
     unrecoverable: [] as string[],
-    states: [] as string[]
+    states: [] as string[],
+    endRequests: 0,
+    // The order of request aborts and ends, as ending a request re-sends.
+    requestCalls: [] as string[]
   };
+  // Whether a request is active, and whether it is an XHR left without a
+  // response that going back online aborts.
+  const request = { active: false, abortable: false };
   const lifecycleHandlers: StateChangeHandler[] = [];
   let state: UIState = UIState.RUNNING;
   let heartbeatInterval = 300;
@@ -45,8 +51,12 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
       getDialogTextGaveUp: () => null
     },
     RequestResponseTracker: {
-      hasActiveRequest: () => false,
-      endRequest: () => {}
+      hasActiveRequest: () => request.active,
+      endRequest: () => {
+        request.active = false;
+        log.endRequests++;
+        log.requestCalls.push('end');
+      }
     },
     Heartbeat: {
       setInterval: (interval: number) => {
@@ -60,6 +70,14 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
       sendInvocationsToServer: () => {},
       resendQueuedMessages: (attempt: number) => log.reconnectionAttempts.push(attempt)
     },
+    XhrConnection: {
+      abortActiveRequest: () => {
+        const aborted = request.abortable;
+        request.abortable = false;
+        log.requestCalls.push('abort');
+        return aborted;
+      }
+    },
     SystemErrorHandler: {
       handleSessionExpiredError: () => log.sessionExpired++,
       handleUnrecoverableError: (_caption: string, message: string) => log.unrecoverable.push(message)
@@ -67,7 +85,7 @@ function makeRegistry(reconnectAttempts = 3, configuredHeartbeatInterval = 300) 
   });
   // The real loading handler, which shows connected when a reconnect resolves.
   registry.register('LoadingIndicatorStateHandler', new LoadingIndicatorStateHandler(registry));
-  return { log, lifecycleHandlers, registry };
+  return { log, lifecycleHandlers, request, registry };
 }
 
 // The handler listens on window for the browser's connectivity events.
@@ -278,6 +296,38 @@ describe('DefaultConnectionStateHandler', () => {
 
     handler.heartbeatOk();
     expect(getState()).to.equal(CONNECTED);
+  });
+
+  it('ends a request left without a response when back online', () => {
+    // Beyond the Java suite: a request sent while the network is gone may wait
+    // for a response forever, and no other message is sent before it ends.
+    // Ending it re-sends the pending messages.
+    const registry = makeRegistry(10);
+    new DefaultConnectionStateHandler(registry.registry);
+
+    // Returns how many times going online ended a request.
+    const goOnline = (active: boolean, abortable: boolean): number => {
+      dispatch('offline');
+      registry.request.active = active;
+      registry.request.abortable = abortable;
+      const endRequests = registry.log.endRequests;
+      dispatch('online');
+      return registry.log.endRequests - endRequests;
+    };
+
+    // A request that is not a hanging XHR, e.g. one sent over push, is left
+    // alone.
+    expect(goOnline(true, false)).to.equal(0);
+    // An aborted XHR whose request has already ended is not ended again.
+    expect(goOnline(false, true)).to.equal(0);
+    registry.log.requestCalls.length = 0;
+    expect(goOnline(true, true)).to.equal(1);
+    expect(registry.request.active).to.be.false;
+    // Ending the request re-sends it, so the hung one is aborted first.
+    expect(registry.log.requestCalls).to.deep.equal(['abort', 'end']);
+    // The heartbeat still verifies the connection.
+    expect(registry.log.heartbeatSends).to.equal(1);
+    expect(getState()).to.equal(RECONNECTING);
   });
 
   it('keeps reconnecting while heartbeats fail, then gives up', () => {

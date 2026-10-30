@@ -87,6 +87,12 @@ describe('XhrConnection', () => {
           state.opened = url;
         },
         setRequestHeader: () => {},
+        abort: () => {
+          // A request in progress completes synchronously with status 0.
+          xhr.readyState = 4;
+          xhr.status = 0;
+          xhr.onreadystatechange?.();
+        },
         send: () => {
           state.sent += 1;
           if (behaviour.throwOnSend === true) {
@@ -136,8 +142,11 @@ describe('XhrConnection', () => {
     it('reports a synchronous send failure as an exception', () => {
       const registry = makeRegistry();
       const fake = fakeXhr({ throwOnSend: true });
-      withFakeXhr(fake, () => new XhrConnection(registry).send({ rpc: [] }));
+      const connection = new XhrConnection(registry);
+      withFakeXhr(fake, () => connection.send({ rpc: [] }));
       expect(registry.calls).to.deep.equal(['exception']);
+      // The failed request is no longer waiting for its response.
+      expect(connection.abortActiveRequest()).to.be.false;
     });
 
     it('re-sends a request WebKit may have ignored during navigation', async () => {
@@ -171,6 +180,44 @@ describe('XhrConnection', () => {
         setTimeout(resolve, 400);
       });
       expect(fake.state.sent).to.equal(sentWhenStopped);
+    });
+
+    it('aborts a request left without a response without reporting it', () => {
+      const registry = makeRegistry();
+      const fake = fakeXhr({ stayOpened: true });
+      const connection = new XhrConnection(registry);
+      withFakeXhr(fake, () => connection.send({ rpc: [] }));
+
+      expect(connection.abortActiveRequest()).to.be.true;
+      expect(fake.xhr.readyState).to.equal(4);
+      // The request is aborted only once.
+      expect(connection.abortActiveRequest()).to.be.false;
+      expect(registry.calls).to.deep.equal([]);
+    });
+
+    it('does not abort a request that already completed', () => {
+      const registry = makeRegistry();
+      const connection = new XhrConnection(registry);
+      withFakeXhr(fakeXhr({ status: 0 }), () => connection.send({ rpc: [] }));
+
+      expect(connection.abortActiveRequest()).to.be.false;
+      expect(registry.calls).to.deep.equal(['invalidStatus']);
+    });
+
+    it('keeps tracking a re-sent request when the earlier one completes', () => {
+      const registry = makeRegistry();
+      const connection = new XhrConnection(registry);
+      const first = fakeXhr({ stayOpened: true });
+      const second = fakeXhr({ stayOpened: true });
+      withFakeXhr(first, () => connection.send({ rpc: [] }));
+      withFakeXhr(second, () => connection.send({ rpc: [] }));
+
+      // The earlier request finally fails while the re-sent one still waits.
+      first.xhr.readyState = 4;
+      first.xhr.onreadystatechange?.();
+
+      expect(connection.abortActiveRequest()).to.be.true;
+      expect(second.xhr.readyState).to.equal(4);
     });
 
     it('refuses to send a payload holding a dom node reference', () => {
