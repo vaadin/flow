@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # vaadin-dev - thin client over the dev-loop daemon's local RPC.
 #
-# Nobody starts the daemon by hand: the first command auto-spawns it and every
-# later command from any shell, agent or IDE reuses that same instance, so there
-# is exactly one authoritative answer to "what is the state of my last change?"
+# Nobody starts the daemon by hand: the first command that acts auto-spawns it
+# and every later command from any shell, agent or IDE reuses that same instance,
+# so there is exactly one authoritative answer to "what is the state of my last
+# change?" status and ping only report, so they answer without spawning one.
 #
 # Exit code is the outcome: 0 success, non-zero failure. Progress goes to stdout.
 # Deliberately no JVM start per command - the handshake file is a properties file
@@ -138,7 +139,7 @@ usage: vaadin-dev [--app <dir>] <command> [options]
   stop              stop the app
   restart           stop then start
   shutdown          stop the daemon (and the app it owns)
-  ping              check the daemon is alive
+  ping              check the daemon is alive (exits 1 when none is running)
 
   start|restart --jvm-args "<flags>"
                     extra JVM flags for the app, after the loop's own, e.g.
@@ -151,9 +152,12 @@ usage: vaadin-dev [--app <dir>] <command> [options]
                     diagnostic: push named classes at the running app and print
                     the raw reply, without apply's escalation policy
 
-The daemon starts automatically on first use and serves this application only. When the
-application is one module of a Maven reactor, every reactor module it depends on is in the
-loop too: apply scans, compiles and hot-reloads those the same way. status names them.
+The daemon starts automatically on the first command other than status or ping, and serves
+this application only. The app inherits the environment of the shell that spawned the daemon,
+so a variable set for a later start is not seen: shutdown first, or pass -D flags with
+start --jvm-args. When the application is one module of a Maven reactor, every reactor module
+it depends on is in the loop too: apply scans, compiles and hot-reloads those the same way.
+status names them.
 
   --app <dir>              the application to act on (default: the directory this
                            script is in, or the one above it when the script is
@@ -590,6 +594,35 @@ send() { # $1=port $2=token $3...=command words
     return "$status"
 }
 
+# status and ping only report on the daemon, so they never spawn one. A daemon
+# fixes its environment - and so the app's - to the shell that spawned it, and
+# one spawned by a status would quietly hand the app that shell's environment
+# instead of the one the start that follows was run with.
+reports_only() { # $1=command
+    case "$1" in
+        status|ping) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# The answer a reporting command gives when there is no daemon to ask. The JSON
+# has every member the daemon's own status --json has, null where only a daemon
+# could fill it in, so a reader that indexes into it needs no second shape.
+no_daemon() { # $1=command $2...=its arguments
+    if [[ "$1" == ping ]]; then
+        echo "no daemon running for $ROOT"
+        return 1
+    fi
+    shift
+    if [[ " $* " == *" --json "* ]]; then
+        printf '%s\n' \
+            '{"app":{"state":"stopped","pid":null,"exitCode":null,"failureReason":null,"registered":false,"owner":null,"mode":null,"frontend":null,"logErrors":[]},"modules":null,"daemon":null,"transaction":null}'
+    else
+        echo "stopped  (no daemon running; start spawns one)"
+    fi
+    return 0
+}
+
 main() {
     local cmd="${1:-}"
     case "$cmd" in
@@ -599,6 +632,7 @@ main() {
 
     local port token
     if ! port="$(read_prop port)" || ! token="$(read_prop token)"; then
+        reports_only "$cmd" && { no_daemon "$cmd" "$@"; exit; }
         spawn_daemon || exit 70
         port="$(read_prop port)"; token="$(read_prop token)"
     fi
@@ -607,7 +641,8 @@ main() {
     local status=$?
 
     # 99 means the recorded daemon is not answering: the record is stale, so reap
-    # it and try once more with a fresh daemon.
+    # it and try once more with a fresh daemon - or, for a command that only
+    # reports, answer that there is none.
     #
     # Said out loud, because the application went with it. A daemon that shuts
     # down deletes its own handshake, so a handshake still naming a dead process
@@ -618,20 +653,20 @@ main() {
         recorded="$(read_prop pid || true)"
         if [[ -n "$recorded" ]] && kill -0 "$recorded" 2>/dev/null; then
             echo "vaadin-dev: the daemon recorded for $ROOT (pid $recorded) is" \
-                 "running but not answering. Reaping the record and starting a" \
-                 "fresh daemon." >&2
+                 "running but not answering. Reaping the record." >&2
         else
             echo "vaadin-dev: the daemon recorded for $ROOT (pid" \
                  "${recorded:-unknown}) is gone and left its handshake behind," \
                  "so it was killed rather than shut down - the application it" \
-                 "owned stopped with it. Starting a fresh daemon; the app needs" \
-                 "'vaadin-dev start' again." >&2
+                 "owned stopped with it. The app needs 'vaadin-dev start'" \
+                 "again." >&2
             echo "vaadin-dev: if that repeats on every command, whatever runs" \
                  "vaadin-dev is killing the process group each command runs in;" \
                  "see \"When it goes wrong\" in the vaadin-devloop skill" \
                  "reference." >&2
         fi
         rm -f "$HANDSHAKE"
+        reports_only "$cmd" && { no_daemon "$cmd" "$@"; exit; }
         spawn_daemon || exit 70
         port="$(read_prop port)"; token="$(read_prop token)"
         send "$port" "$token" "$cmd" "$@"
