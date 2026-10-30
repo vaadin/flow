@@ -161,6 +161,66 @@ class ComputedSignalTest extends SignalTestBase {
         }
     }
 
+    @Test
+    void cached_sharedUpdateVsConcurrentRead_noDeadlock() throws Exception {
+        // Regression test for #26130: a lock-order inversion between the
+        // shared signal's tree lock and the cached signal's own tree lock.
+        //
+        // Writer: SharedValueSignal.update notifies observers under the shared
+        // tree lock, and the cached signal's dependency observer then reads
+        // the cached signal's tree.
+        //
+        // Reader: reading the cached signal submits the refreshed value to its
+        // own tree, whose observer re-runs the effect under that tree lock,
+        // and the effect then reads the shared signal's tree.
+        var shared = new SharedValueSignal<>(0);
+        Signal<Integer> cached = Signal.cached(shared.map(value -> value + 1));
+        Effect effect = new Effect(cached::get, Runnable::run);
+
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        var writer = startLoop("cached-writer",
+                () -> shared.update(value -> value + 1), failure);
+        var reader = startLoop("cached-reader", cached::peek, failure);
+
+        ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
+        long[] deadlocked = null;
+        for (int i = 0; i < 40 && deadlocked == null; i++) {
+            Thread.sleep(50);
+            deadlocked = tmx.findDeadlockedThreads();
+        }
+
+        writer.interrupt();
+        reader.interrupt();
+        if (deadlocked == null) {
+            writer.join(10_000);
+            reader.join(10_000);
+            effect.dispose();
+        }
+
+        assertNull(deadlocked,
+                "Lock-order inversion between two SignalTree locks (see #26130)");
+        if (failure.get() != null) {
+            throw new AssertionError("Worker thread failed", failure.get());
+        }
+        assertEquals(shared.peek() + 1, cached.peek());
+    }
+
+    private static Thread startLoop(String name, Runnable step,
+            AtomicReference<Throwable> failure) {
+        var thread = new Thread(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    step.run();
+                }
+            } catch (Throwable t) {
+                failure.set(t);
+            }
+        }, name);
+        thread.setDaemon(true);
+        thread.start();
+        return thread;
+    }
+
     private static void sleepQuietly(long millis) {
         try {
             Thread.sleep(millis);

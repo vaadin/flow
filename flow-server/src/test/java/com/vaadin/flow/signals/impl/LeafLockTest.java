@@ -48,7 +48,7 @@ class LeafLockTest extends SignalTestBase {
         LeafLock leaf = new LeafLock("probe");
 
         try (var ignored = leaf.lock()) {
-            // peek() -> getWithLock() -> assertNoLeafLockHeld() -> fails
+            // peek() -> getWithLock() -> TreeLock.lock() -> fails
             AssertionError error = assertThrows(AssertionError.class,
                     signal::peek);
             assertTrue(String.valueOf(error.getMessage()).contains("leaf lock"),
