@@ -17,7 +17,9 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -33,7 +35,9 @@ import org.apache.maven.shared.invoker.MavenInvocationException;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -145,11 +149,15 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                 .artifactId(ARTIFACT).version(VERSION).goal(GOAL)
                 .createInvocationRequest();
 
-        var properties = getProperties();
-        request.setProperties(properties);
-
         Invoker invoker = new DefaultInvoker();
         try {
+            // Use the same Node.js and npm as the rest of the frontend build,
+            // not whatever happens to be first on the PATH
+            FrontendTools tools = new FrontendTools(
+                    BuildFrontendUtil.getFrontendToolsSettings(this));
+            request.setProperties(getProperties(tools.getNpmExecutable()));
+            addNodeToPath(request, tools.getNodeExecutable());
+
             // the execution will fail if the directory does not exist
             createDirectoryIfNotExists();
 
@@ -199,19 +207,46 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
         }
     }
 
-    private Properties getProperties() {
+    /**
+     * Puts the directory of the given Node.js executable first on the PATH, so
+     * that the CycloneDX tool, which starts with {@code #!/usr/bin/env node},
+     * runs on the same Node.js as npm.
+     */
+    private static void addNodeToPath(InvocationRequest request,
+            String nodeExecutable) {
+        String nodeDir = new File(nodeExecutable).getParent();
+        // The variable is named "Path" on Windows
+        String pathKey = System.getenv().keySet().stream()
+                .filter("PATH"::equalsIgnoreCase).findFirst().orElse("PATH");
+        String path = System.getenv(pathKey);
+        request.addShellEnvironment(pathKey,
+                path == null ? nodeDir : nodeDir + File.pathSeparator + path);
+    }
+
+    // The npm command can contain paths with spaces, e.g. the user home
+    private static String quote(String arg) {
+        return arg.contains(" ") ? "\"" + arg + "\"" : arg;
+    }
+
+    private Properties getProperties(List<String> npmCommand) {
         Properties properties = new Properties();
-        properties.setProperty("exec.executable", "npx");
-        properties.setProperty("exec.args", "@cyclonedx/cyclonedx-npm"
-                + (ignoreNpmErrors ? " --ignore-npm-errors" : "")
-                + (packageLockOnly ? " --package-lock-only" : "")
-                + (flattenComponents ? " --flatten-components" : "")
-                + (shortPURLs ? " --short-PURLs" : "")
-                + (outputReproducible ? " --output-reproducible" : "")
-                + (validate ? " --validate" : " --no-validate") + " --mc-type "
-                + mcType + " --omit " + omit + " --spec-version " + specVersion
-                + " --output-file " + outputFilePath + " --output-format "
-                + outputFormat + " -- " + packageManifest);
+        properties.setProperty("exec.executable", npmCommand.get(0));
+        String npmArgs = npmCommand.stream().skip(1)
+                .map(GenerateNpmBOMMojo::quote)
+                .collect(Collectors.joining(" "));
+        properties.setProperty("exec.args",
+                npmArgs + (npmArgs.isEmpty() ? "" : " ")
+                        + "exec --yes -- @cyclonedx/cyclonedx-npm"
+                        + (ignoreNpmErrors ? " --ignore-npm-errors" : "")
+                        + (packageLockOnly ? " --package-lock-only" : "")
+                        + (flattenComponents ? " --flatten-components" : "")
+                        + (shortPURLs ? " --short-PURLs" : "")
+                        + (outputReproducible ? " --output-reproducible" : "")
+                        + (validate ? " --validate" : " --no-validate")
+                        + " --mc-type " + mcType + " --omit " + omit
+                        + " --spec-version " + specVersion + " --output-file "
+                        + outputFilePath + " --output-format " + outputFormat
+                        + " -- " + packageManifest);
         return properties;
     }
 
