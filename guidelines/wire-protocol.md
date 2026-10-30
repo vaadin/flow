@@ -82,22 +82,34 @@ memory between responses. `PolymerEventListenerMap` stores the event data
 expressions of a Polymer template listener. The third kind is what an
 `executeJs` invocation runs, covered [below](#wire-shape).
 
-An `ElementListenerMap` value is an object keyed by the JavaScript
-expressions the client evaluates when the event fires. The value of each
-key says whether that expression is also a filter that decides whether
-the event is sent at all, and takes one of exactly three forms:
+An `ElementListenerMap` value is an object with one entry per thing the
+client evaluates when the event fires. Entries are keyed by a short hash
+derived from the entry (its kind, name, expression and number of
+captures), not by the JavaScript itself, so the event data the client
+sends back carries no JavaScript. Each entry is an object with:
 
-- `false` — a plain expression, evaluated and sent as event data.
-- `true` — a filter with no debounce.
-- `[[timeout, phase…], …]` — a filter with debounce settings.
+- `e` — the JavaScript expression to evaluate.
+- `d` — whether the expression is also a filter that decides whether the
+  event is sent at all, in one of exactly three forms: `false` for a
+  plain expression whose value is sent as event data, `true` for a filter
+  with no debounce, and `[[timeout, phase…], …]` for a filter with
+  debounce settings.
+- `c` — the number of captures (`$0`, `$1`, …) the expression takes,
+  left out when it takes none.
 
 ```json
 "constants": {
-  "RBNvo1WzZ4o=": {},
-  "J4r/ss0KY+c=": { "event.clientX": false, "event.clientY": false },
-  "24b7yiAh6SA=": { "event.button === 0": true },
-  "vdAdQQWwVaQ=": { "1": [[250, "trailing"]] },
-  "gKEp5ocBgAc=": { "}value": false }
+  "vIpODLLAUDo=": {},
+  "K+UlDkYnz60=": {
+    "WyOTS0L8klk=": { "e": "event.clientY", "d": false },
+    "Vv2h+yqRcGI=": { "e": "event.clientX", "d": false }
+  },
+  "xCoOkOvieJ8=": { "xtspQVzFTXk=": { "e": "event.button === 0", "d": true } },
+  "eIQzjQgvQhk=": { "t3IbMdleTCM=": { "e": "1", "d": [[250, "trailing"]] } },
+  "xMogqm1nZ4U=": { "}value": { "e": "}value", "d": false } },
+  "CibvQNQhb/0=": {
+    "GqlRY8XxHVU=": { "e": "element.getAttribute($0)", "d": false, "c": 1 }
+  }
 }
 ```
 
@@ -105,24 +117,42 @@ Where each of those comes from:
 
 - `{}` — a plain listener with no event data: nothing for the client to
   evaluate, it just sends the event.
-- `{ "event.clientX": …, "event.clientY": … }` — two `addEventData(…)`
-  calls.
-- `{ "event.button === 0": true }` — `setFilter("event.button === 0")`.
-- `{ "1": [[250, "trailing"]] }` — `debounce(250)`. There is no real
+- `event.clientX` and `event.clientY` — two `addEventData(…)` calls.
+- `event.button === 0` — `setFilter("event.button === 0")`.
+- `1` with `[[250, "trailing"]]` — `debounce(250)`. There is no real
   filter, so the always-true filter expression `1` carries the debounce
-  settings. `1` also shows up as `"1": true` when an element has both
+  settings. `1` also shows up with `"d": true` when an element has both
   filtered and unfiltered listeners for one event type, so that the
   unfiltered ones are still notified when no filter matches.
-- `{ "}value": false }` — `synchronizeProperty("value")`. The `}` prefix
+- `}value` — `synchronizeProperty("value")`. The `}` prefix
   (`JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN`) marks a property to read
   off the element and send back, rather than an expression to evaluate.
+  These pseudo expressions, and the `]` state node mappings, keep the
+  expression as their key.
+- `element.getAttribute($0)` with `"c": 1` —
+  `addEventData("rowId", "element.getAttribute($0)", "data-row-id")`.
 
 The change that uses one carries only the id — a `put` on the element's
-listener feature with `"key": "click"` and `"value": "J4r/ss0KY+c="`.
+listener feature with `"key": "click"` and `"value": "K+UlDkYnz60="`.
 That is where the saving is: two thousand buttons sharing one click
 listener configuration cost one entry instead of two thousand copies of
 the same object, which is what `ConstantPoolPerformanceView` in
 `flow-tests` makes visible.
+
+Capture values vary per element, so they are not pooled. When an event
+type has captured entries, the `put` value is a
+`ParameterizedConstantPoolKey` encoded as `[poolId, captures]`, where
+`captures` maps a per-element key to `[entryKey, capture0, …]`:
+
+```json
+["CibvQNQhb/0=", { "GqlRY8XxHVU=$MzHQvFPe5sA=": ["GqlRY8XxHVU=", "data-row-id"] }]
+```
+
+The per-element key is the entry key plus `$` and a hash of the capture
+values, and it is the key the client reports that value under, so two
+listeners sharing an expression with different captures stay apart.
+The server maps the reported keys back to the names that
+`DomEvent.getEventData()` exposes before any listener runs.
 
 The ids above are the real hashes of those values, but the hash is taken
 over `json.toString()` — the compact form, without the spaces the

@@ -141,8 +141,9 @@ public class JacksonCodec {
 
     /**
      * Encodes a "primitive" value or a constant pool reference to JSON. This
-     * methods supports {@link ConstantPoolKey} in addition to the types
-     * supported by {@link #encodeWithoutTypeInfo(Object)}.
+     * methods supports {@link ConstantPoolKey} and
+     * {@link ParameterizedConstantPoolKey} in addition to the types supported
+     * by {@link #encodeWithoutTypeInfo(Object)}.
      *
      * @param value
      *            the value to encode
@@ -156,6 +157,8 @@ public class JacksonCodec {
             ConstantPoolKey reference = (ConstantPoolKey) value;
             return JacksonUtils.getMapper()
                     .valueToTree(constantPool.getConstantId(reference));
+        } else if (value instanceof ParameterizedConstantPoolKey reference) {
+            return reference.encode(constantPool);
         } else {
             return encodeWithoutTypeInfo(value);
         }
