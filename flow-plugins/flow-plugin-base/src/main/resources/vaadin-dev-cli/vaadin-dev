@@ -605,7 +605,9 @@ reports_only() { # $1=command
     esac
 }
 
-# The answer a reporting command gives when there is no daemon to ask.
+# The answer a reporting command gives when there is no daemon to ask. The JSON
+# has every member the daemon's own status --json has, null where only a daemon
+# could fill it in, so a reader that indexes into it needs no second shape.
 no_daemon() { # $1=command $2...=its arguments
     if [[ "$1" == ping ]]; then
         echo "no daemon running for $ROOT"
@@ -613,7 +615,8 @@ no_daemon() { # $1=command $2...=its arguments
     fi
     shift
     if [[ " $* " == *" --json "* ]]; then
-        printf '%s\n' '{"app":{"state":"stopped","pid":null},"daemon":null}'
+        printf '%s\n' \
+            '{"app":{"state":"stopped","pid":null,"exitCode":null,"failureReason":null,"registered":false,"owner":null,"mode":null,"frontend":null,"logErrors":[]},"modules":null,"daemon":null,"transaction":null}'
     else
         echo "stopped  (no daemon running; start spawns one)"
     fi

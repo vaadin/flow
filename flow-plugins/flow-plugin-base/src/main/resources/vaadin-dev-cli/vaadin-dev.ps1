@@ -612,14 +612,17 @@ function Test-ReportsOnly([string] $verb) {
 }
 
 # The answer a reporting command gives when there is no daemon to ask, as an exit
-# code.
+# code. The JSON has every member the daemon's own status --json has, null where
+# only a daemon could fill it in, so a reader that indexes into it needs no second
+# shape.
 function Write-NoDaemon([string] $verb, [string[]] $arguments) {
     if ($verb -eq 'ping') {
         [Console]::Out.WriteLine("no daemon running for $root")
         return 1
     }
     if ($arguments -contains '--json') {
-        [Console]::Out.WriteLine('{"app":{"state":"stopped","pid":null},"daemon":null}')
+        [Console]::Out.WriteLine(
+            '{"app":{"state":"stopped","pid":null,"exitCode":null,"failureReason":null,"registered":false,"owner":null,"mode":null,"frontend":null,"logErrors":[]},"modules":null,"daemon":null,"transaction":null}')
     } else {
         [Console]::Out.WriteLine('stopped  (no daemon running; start spawns one)')
     }

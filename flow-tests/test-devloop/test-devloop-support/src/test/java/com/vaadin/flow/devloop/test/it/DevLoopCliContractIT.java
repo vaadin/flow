@@ -16,6 +16,7 @@
 package com.vaadin.flow.devloop.test.it;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -71,6 +72,38 @@ class DevLoopCliContractIT {
 
         assertFalse(Files.exists(app.resolve(".vaadin/daemon.properties")),
                 "a command that only reports spawned a daemon");
+    }
+
+    @Test
+    void statusAndPing_withAKilledDaemon_reapItWithoutSpawningAnother(
+            @TempDir Path app) throws IOException {
+        // A daemon that was killed rather than shut down leaves its handshake
+        // behind, and nothing listens on the port it names.
+        Files.writeString(app.resolve("pom.xml"), "<project/>");
+        Path handshake = app.resolve(".vaadin/daemon.properties");
+        Files.createDirectories(handshake.getParent());
+        Files.writeString(handshake, "port=" + unusedPort()
+                + "\ntoken=stale\npid=" + Integer.MAX_VALUE + "\n");
+        VaadinDevCli cli = VaadinDevCli.of(AbstractDevLoopIT.APP);
+
+        cli.run("--app", app.toString(), "status").assertExitCode(0)
+                .assertOutputContains("left its handshake behind")
+                .assertOutputContains("no daemon running");
+        assertFalse(Files.exists(handshake),
+                "status neither reaped the stale handshake nor stopped there");
+
+        Files.writeString(handshake, "port=" + unusedPort()
+                + "\ntoken=stale\npid=" + Integer.MAX_VALUE + "\n");
+        cli.run("--app", app.toString(), "ping").assertExitCode(1)
+                .assertOutputContains("no daemon running");
+        assertFalse(Files.exists(handshake),
+                "ping neither reaped the stale handshake nor stopped there");
+    }
+
+    private static int unusedPort() throws IOException {
+        try (ServerSocket socket = new ServerSocket(0)) {
+            return socket.getLocalPort();
+        }
     }
 
     @Test

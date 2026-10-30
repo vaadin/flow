@@ -66,6 +66,10 @@ the app turns up.
 (`file`/`line`/`column`/`message`/`hint`), `logErrors[]`, `timings`, `nextAction`, and a field
 per leg: `actionsTaken` for the redefine, `resourcePush` for the push.
 
+`status --json` gives `app`, `modules`, `daemon` and `transaction`. With no daemon running,
+`status` spawns none: `app.state` is `stopped`, and `daemon`, `modules` and `transaction` are
+`null`.
+
 ## Which edits need a page reload
 
 | Edit | Browser |
@@ -160,10 +164,11 @@ What is different is worth knowing:
   from the app's own log, with the tail printed under it; `status` repeats the reason. The
   whole log is the target application's `target/devloop/app.log`. Daemon wedged → `shutdown`,
   then `start` respawns it.
-- Every command reports a fresh daemon (`up=0s`) and the app as `stopped`, and `vaadin-dev`
-  says the recorded daemon "left its handshake behind" — something outside the loop is killing
-  the processes each command created, so the daemon and the application it owns die with the
-  command that started them and the loop never holds across two commands. On POSIX the daemon
+- Every command reports a fresh daemon (`up=0s`), or `status` reports no daemon running, with
+  the app `stopped`, and `vaadin-dev` says the recorded daemon "left its handshake behind" —
+  something outside the loop is killing the processes each command created, so the daemon and
+  the application it owns die with the command that started them and the loop never holds
+  across two commands. On POSIX the daemon
   is spawned into a session of its own for exactly this reason, and that is defeated only where
   neither `setsid` nor `perl` exists; on Windows a runner whose job object closes over the
   command takes the daemon with it whichever launcher ran. Where it happens, `start` the app
