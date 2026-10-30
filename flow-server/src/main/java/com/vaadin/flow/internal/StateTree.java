@@ -401,9 +401,19 @@ public class StateTree implements NodeOwner {
                     discard(entry);
                     return;
                 }
+                StateNode node = entry.getStateNode();
+                if (!node.isAttached()) {
+                    // Detached by an earlier execution in this round, after
+                    // the entry was flushed off the node. Postpone it until
+                    // the node is attached again, as for a node detached
+                    // before the round.
+                    node.addBeforeClientResponseEntry(entry);
+                    discard(entry);
+                    return;
+                }
                 try {
                     ExecutionContext context = new ExecutionContext(getUI(),
-                            entry.getStateNode().isClientSideInitialized());
+                            node.isClientSideInitialized());
                     entry.getExecution().accept(context);
                 } catch (Exception e) {
                     if (getErrorHandlerClass()
@@ -411,7 +421,7 @@ public class StateTree implements NodeOwner {
                         throw e;
                     }
                     getUI().getSessionOrThrow().getErrorHandler()
-                            .error(new ErrorEvent(e, entry.getStateNode()));
+                            .error(new ErrorEvent(e, node));
                 }
             });
         }

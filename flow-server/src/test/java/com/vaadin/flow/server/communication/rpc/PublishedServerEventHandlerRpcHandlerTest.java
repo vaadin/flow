@@ -89,6 +89,12 @@ class PublishedServerEventHandlerRpcHandlerTest {
             }
         }
 
+        @ClientCallable
+        private void removeBeforeClientResponse() {
+            getUI().get().beforeClientResponse(this,
+                    context -> getElement().removeFromParent());
+        }
+
     }
 
     @Tag(Tag.DIV)
@@ -407,6 +413,28 @@ class PublishedServerEventHandlerRpcHandlerTest {
                 "Promise id should match the value passed to invokeMethod");
         assertEquals(component.getElement(), parameters.get(1),
                 "Target should be the component's element");
+    }
+
+    @Test
+    void promise_elementRemovedBeforeClientResponse_callbackNotSent() {
+        ComponentWithCompute component = new ComponentWithCompute();
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+        ui.add(component);
+
+        // Get rid of attach invocations
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        ui.getInternals().dumpPendingJavaScriptInvocations();
+
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "removeBeforeClientResponse",
+                JacksonUtils.createArrayNode(), 4);
+
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+        assertFalse(component.isAttached());
+        assertEquals(List.of(),
+                ui.getInternals().dumpPendingJavaScriptInvocations(),
+                "No promise callback should be sent for a detached element");
     }
 
     @Test

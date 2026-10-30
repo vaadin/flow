@@ -1201,7 +1201,7 @@ public class StateNode implements Serializable {
 
         beforeClientResponseEntries = null;
 
-        return !entries.isEmpty() ? entries : Collections.emptyList();
+        return entries.isEmpty() ? Collections.emptyList() : entries;
     }
 
     /**
@@ -1301,11 +1301,14 @@ public class StateNode implements Serializable {
             beforeClientResponseEntries = new ArrayList<>();
         }
 
-        // Effectively final local variable for the lambda
-        List<BeforeClientResponseEntry> localEntries = beforeClientResponseEntries;
-        localEntries.add(entry);
+        beforeClientResponseEntries.add(entry);
 
-        return () -> localEntries.remove(entry);
+        return () -> {
+            // null when the entries have been flushed and none added since
+            if (beforeClientResponseEntries != null) {
+                beforeClientResponseEntries.remove(entry);
+            }
+        };
     }
 
     /**
