@@ -287,14 +287,14 @@ it, and by its function id otherwise.
 
 ### Constraints this puts on new code
 
-- **Prefer declared JavaScript for new framework code.** It works without
+- **Declared JavaScript** is what the Client-Side JavaScript section of
+  [`CONVENTIONS.md`](../CONVENTIONS.md#client-side-javascript) asks for in
+  new framework code, because of the properties above: it works without
   `unsafe-eval`, sends no JavaScript, and keeps Java names off the wire.
-- **Never concatenate values into an expression** — pass them as
-  parameters. See [Browser Integration](browser-integration.md) for the
-  full set of rules around calling into the browser. On the wire this is
-  also a leak: every distinct expression string becomes a pool entry
-  that is never evicted, so an expression with a value baked in adds one
-  per call for the lifetime of the UI.
+- **A value concatenated into an expression is a leak.** Every distinct
+  expression string becomes a pool entry that is never evicted, so an
+  expression with a value baked in adds one per call for the lifetime of
+  the UI.
 - **Keep what an invocation runs stable.** For the same reason, do not
   generate expression variants per case — one expression with parameters
   is one constant, sent once.

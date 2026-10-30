@@ -75,8 +75,8 @@ goal execution time instead. See the Build & Dependencies section of
 ## Code style
 
 Formatting is applied by `mvn spotless:apply` and validated by
-`mvn spotless:check` and `mvn checkstyle:check`. Run the formatter before every
-commit — the CI validation job fails on unformatted code.
+`mvn spotless:check` and `mvn checkstyle:check`. The CI validation job fails on
+unformatted code.
 
 The year in `eclipse/*-license-header.txt` is plain text, so Spotless keeps
 the header of every file current. Bump it each January and run

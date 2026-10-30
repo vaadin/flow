@@ -40,9 +40,9 @@ build on top of them:
 - `@DomEvent` to map a DOM event to a server-side component event.
 - `@ClientCallable` to expose a server-side method to client-side code.
 
-An element's `nodeId` is not a stable identifier — it is `-1` until the node is
-attached. Use an attachment-independent identifier (e.g. a UUID) when you need
-one.
+An element's `nodeId` is assigned on attach and is `-1` before that, which is
+why the Code Style section of [`CONVENTIONS.md`](../CONVENTIONS.md#code-style)
+rules it out as an identifier.
 
 ## Client-server communication
 
@@ -57,10 +57,9 @@ Values that would otherwise be sent again and again — DOM event settings
 shared by many state nodes, and what each `executeJs` invocation runs — are
 sent once through the shared constant pool and referenced by id.
 
-Always pass values to `executeJs()` as parameters, never concatenated into the
-expression string. See [Browser Integration](browser-integration.md) for the
-full rules on calling into the browser, and [Wire Protocol](wire-protocol.md)
-for what the response actually contains and what that means for new code.
+See [Browser Integration](browser-integration.md) for the patterns of calling
+into the browser, and [Wire Protocol](wire-protocol.md) for what the response
+actually contains and what that means for new code.
 
 Push uses a WebSocket-based connection (`PushConnection`,
 `AtmospherePushConnection`).
@@ -94,6 +93,7 @@ constructing implementations directly.
 
 ## Accessing the UI
 
-Prefer reaching the UI through the component (`getUI()`) or through an event
-that provides it (e.g. `AttachEvent`). `UI.getCurrent()` is a last resort for
-code that has no component instance available.
+`UI.getCurrent()` reads a thread local that is only set while a request or an
+`access` task for that UI runs. The component and its events always know their
+UI, which is why the Code Style section of
+[`CONVENTIONS.md`](../CONVENTIONS.md#code-style) asks to go through them.
