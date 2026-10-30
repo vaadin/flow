@@ -55,6 +55,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -232,6 +233,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -263,6 +265,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -305,6 +308,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation name:'hilla-endpoint-stub'
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
@@ -346,6 +350,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -432,6 +437,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation(files('libs/addon.jar'))
             }
         """
@@ -611,6 +617,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow-client:$flowVersion")
                 implementation("com.vaadin:hilla-endpoint:${fakeHillaVersion}")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
