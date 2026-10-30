@@ -922,7 +922,7 @@ public class UIInternals implements Serializable {
             return Collections.emptyList();
         }
 
-        Map<Boolean, List<PendingJavaScriptInvocation>> partition = getPendingJavaScriptInvocations()
+        Map<Boolean, List<PendingJavaScriptInvocation>> partition = streamPendingJavaScriptInvocations()
                 .collect(Collectors.partitioningBy(
                         invocation -> invocation.getOwner().isVisible()));
 
@@ -993,14 +993,31 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Gets the pending javascript invocations added with
-     * {@link #addJavaScriptInvocation(PendingJavaScriptInvocation)} after last
-     * {@link #dumpPendingJavaScriptInvocations()}.
+     * Gets the pending JavaScript invocations added with
+     * {@link #addJavaScriptInvocation(PendingJavaScriptInvocation)} after the
+     * last {@link #dumpPendingJavaScriptInvocations()}, leaving them in the
+     * queue.
+     * <p>
+     * Unlike {@link #dumpPendingJavaScriptInvocations()}, this does not mark
+     * anything as sent, so it lets something that drives the client side
+     * without a browser read the queue, act on the calls it simulates and
+     * cancel them with {@link PendingJavaScriptInvocation#cancelExecution()},
+     * while every other invocation stays queued. Canceling reports a failure to
+     * an error handler registered on the result of the call.
+     * <p>
+     * The invocations owned by invisible nodes, which a dump retains instead of
+     * sending, are included; check
+     * {@link PendingJavaScriptInvocation#getOwner()} to tell them apart.
+     * Canceled invocations are not included. The list is an unmodifiable
+     * snapshot, so the queue can be changed while it is iterated.
      *
-     * @return the pending javascript invocations, never <code>null</code>
+     * @return the pending JavaScript invocations, never <code>null</code>
      */
-    // Non-private for testing purposes
-    Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+    public List<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+        return streamPendingJavaScriptInvocations().toList();
+    }
+
+    private Stream<PendingJavaScriptInvocation> streamPendingJavaScriptInvocations() {
         session.checkHasLock();
         return pendingJsInvocations.stream()
                 .filter(invocation -> !invocation.isCanceled());
@@ -1016,7 +1033,7 @@ public class UIInternals implements Serializable {
      * @since 24.4
      */
     public boolean containsPendingJavascript(String containsFilter) {
-        return getPendingJavaScriptInvocations().anyMatch(js -> js
+        return streamPendingJavaScriptInvocations().anyMatch(js -> js
                 .getInvocation().getExpression().contains(containsFilter));
     }
 
@@ -1041,7 +1058,7 @@ public class UIInternals implements Serializable {
      */
     public boolean containsPendingJsCall(Class<?> definitionType,
             String methodName) {
-        return getPendingJavaScriptInvocations()
+        return streamPendingJavaScriptInvocations()
                 .map(js -> js.getInvocation().getJsCall())
                 .anyMatch(call -> call != null
                         && call.definitionType() == definitionType
@@ -1501,11 +1518,11 @@ public class UIInternals implements Serializable {
         // absence is not a problem
         jsDeps.addAll(dependencies.getJavaScripts().stream().filter(
                 js -> !FrontendDependencyUrlResolver.isRuntimeJavaScript(js))
-                .map(JavaScript::value).collect(Collectors.toList()));
+                .map(JavaScript::value).toList());
         jsDeps.addAll(dependencies.getJsModules().stream().map(JsModule::value)
                 .filter(src -> !FrontendDependencyUrlResolver
                         .isRuntimeDependencyUrl(src))
-                .collect(Collectors.toList()));
+                .toList());
 
         if (!jsDeps.isEmpty()) {
             maybeWarnAboutDependencies(componentClass, jsDeps);
@@ -1814,7 +1831,7 @@ public class UIInternals implements Serializable {
      *         <code>false</code> otherwise
      */
     public boolean isDirty() {
-        return getStateTree().isDirty() || getPendingJavaScriptInvocations()
+        return getStateTree().isDirty() || streamPendingJavaScriptInvocations()
                 .anyMatch(invocation -> invocation.getOwner().isVisible());
     }
 
