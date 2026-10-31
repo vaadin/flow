@@ -81,8 +81,9 @@ jobs:
           echo "::error::There are ${{ steps.formatter.outputs.modified }} files with format errors"
           exit 1
 
-  # Temporary, for testing only: runs formatter-suggestions.yml's script in
-  # this workflow, as a workflow_run workflow only runs from the default branch
+  # Temporary, for testing only: runs the formatter-suggestions script of
+  # vaadin/github-actions here, as a workflow_run workflow only runs from the
+  # default branch
   report:
     name: Suggest formatting changes (test)
     needs: formatter
@@ -90,14 +91,16 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
       issues: write
     steps:
-      - name: Checkout scripts
+      - name: Checkout action
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
-          sparse-checkout: scripts
+          repository: vaadin/github-actions
+          ref: ff3cad16ca862680a5abc6df9c6a20f0236bb81a
+          path: github-actions
           persist-credentials: false
 
       - name: Download formatter diff
@@ -109,10 +112,11 @@ jobs:
       - name: Report on the pull request
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
+          SCRIPT: ${{ github.workspace }}/github-actions/formatter-suggestions/formatter-suggestions.mjs
           DIFF_FILE: ${{ runner.temp }}/formatter-diff/formatter-diff.txt
         with:
           script: |
-            const { run } = require('./scripts/formatterSuggestions.js');
+            const { run } = await import(process.env.SCRIPT);
             const pr = context.payload.pull_request;
             const fake = {
               repo: context.repo,
@@ -125,4 +129,12 @@ jobs:
                 }
               }
             };
-            await run({ github, context: fake, core, diffFile: process.env.DIFF_FILE });
+            await run({
+              github,
+              context: fake,
+              core,
+              diffFile: process.env.DIFF_FILE,
+              fixCommand: 'mvn spotless:apply',
+              commentMarker: '<!-- tc-formatter -->',
+              maxSuggestions: 12
+            });
