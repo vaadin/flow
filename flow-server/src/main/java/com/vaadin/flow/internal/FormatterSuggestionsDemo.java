@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class FormatterSuggestionsDemo {
+public class FormatterSuggestionsDemo implements Serializable {
     public static int sum(List<Integer> values) {
         int total = 0;
         for (int value : values) {
