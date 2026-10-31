@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebDriver;
@@ -34,6 +35,17 @@ public abstract class AbstractLogTest extends ChromeBrowserTest {
             return null;
         }
         return logs.get(logs.size() - 1);
+    }
+
+    protected String getLastLogText() {
+        WebElement lastLog = getLastLog();
+        return lastLog == null ? null : lastLog.getText();
+    }
+
+    protected void assertLogs(String... expected) {
+        List<String> logs = findElements(By.className("log")).stream()
+                .map(WebElement::getText).toList();
+        Assert.assertEquals(List.of(expected), logs);
     }
 
     public static ExpectedCondition<Boolean> textToBePresentInElement(
