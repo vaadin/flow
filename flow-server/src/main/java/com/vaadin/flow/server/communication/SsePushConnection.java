@@ -120,10 +120,21 @@ public class SsePushConnection implements PushConnection, Serializable {
             }
         } else {
             synchronized (lock) {
+                // A concurrent disconnect() may have closed the stream while
+                // this thread was waiting for the lock, in which case the push
+                // is deferred like above
+                if (!isConnected()) {
+                    if (async && state != State.RESPONSE_PENDING) {
+                        state = State.PUSH_PENDING;
+                    } else {
+                        state = State.RESPONSE_PENDING;
+                    }
+                    return;
+                }
                 try {
                     JsonNode response = new UidlWriter().createUidl(getUI(),
                             async);
-                    sendMessage("for(;;);[" + response + "]");
+                    sendMessage(response.toString());
                 } catch (Exception e) {
                     throw new RuntimeException("Push failed", e);
                 }

@@ -1,0 +1,334 @@
+/*
+ * Copyright 2000-2026 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server.communication;
+
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.AsyncEvent;
+import jakarta.servlet.AsyncListener;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.List;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.SsePushConnectionTest.SseEvent;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.tests.util.MockUI;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+class SseRequestHandlerTest {
+
+    private MockVaadinServletService service;
+    private MockVaadinSession session;
+    private UI ui;
+    private SseRequestHandler handler;
+
+    private HttpServletRequest httpRequest;
+    private HttpServletResponse httpResponse;
+    private AsyncContext asyncContext;
+    private StringWriter responseBody;
+
+    @BeforeEach
+    void setup() throws Exception {
+        service = spy(new MockVaadinServletService());
+        session = new MockVaadinSession(service);
+        session.lock();
+        ui = new MockUI(session);
+        ui.getPushConfiguration().setTransport(Transport.SSE_PURE);
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        String pushId = session.getPushId();
+        session.unlock();
+        UI.setCurrent(null);
+
+        handler = new SseRequestHandler(service);
+
+        httpRequest = mock(HttpServletRequest.class);
+        when(httpRequest
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(ApplicationConstants.REQUEST_TYPE_SSE);
+        when(httpRequest.getParameter(ApplicationConstants.PUSH_ID_PARAMETER))
+                .thenReturn(pushId);
+        when(httpRequest.isAsyncSupported()).thenReturn(true);
+
+        httpResponse = mock(HttpServletResponse.class);
+        responseBody = new StringWriter();
+        when(httpResponse.getWriter())
+                .thenReturn(new PrintWriter(responseBody));
+
+        asyncContext = mock(AsyncContext.class);
+        when(asyncContext.getResponse()).thenReturn(httpResponse);
+        when(httpRequest.startAsync()).thenReturn(asyncContext);
+    }
+
+    @AfterEach
+    void tearDown() {
+        UI.setCurrent(null);
+        VaadinSession.setCurrent(null);
+    }
+
+    @Test
+    void handleRequest_otherRequestType_notHandled() throws Exception {
+        when(httpRequest
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(ApplicationConstants.REQUEST_TYPE_PUSH);
+
+        assertFalse(handler.handleRequest(session, request(), response()));
+        verify(httpRequest, never()).startAsync();
+    }
+
+    @Test
+    void handleRequest_noServletRequest_throws() {
+        VaadinRequest request = mock(VaadinRequest.class);
+        when(request.getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(ApplicationConstants.REQUEST_TYPE_SSE);
+
+        assertThrows(IllegalArgumentException.class, () -> handler
+                .handleRequest(session, request, mock(VaadinResponse.class)));
+    }
+
+    @Test
+    void handleRequest_asyncNotSupported_sendsServerError() throws Exception {
+        when(httpRequest.isAsyncSupported()).thenReturn(false);
+
+        assertTrue(handler.handleRequest(session, request(), response()));
+
+        verify(httpResponse).sendError(
+                eq(HttpServletResponse.SC_INTERNAL_SERVER_ERROR), anyString());
+        verify(httpRequest, never()).startAsync();
+    }
+
+    @Test
+    void handleRequest_validRequest_connectsSsePushConnection()
+            throws Exception {
+        mockFindUI(ui);
+
+        assertTrue(handler.handleRequest(session, request(), response()));
+
+        verify(asyncContext).setTimeout(0);
+        SsePushConnection connection = (SsePushConnection) ui.getInternals()
+                .getPushConnection();
+        assertTrue(connection.isConnected());
+        assertEquals(asyncContext, connection.getAsyncContext());
+        verify(httpResponse).setContentType("text/event-stream");
+        assertEquals("connected", events().get(0).event());
+    }
+
+    @Test
+    void handleRequest_streamCompleted_connectionLost() throws Exception {
+        mockFindUI(ui);
+        handler.handleRequest(session, request(), response());
+
+        listener().onComplete(mock(AsyncEvent.class));
+
+        assertFalse(ui.getInternals().getPushConnection().isConnected());
+    }
+
+    @Test
+    void handleRequest_streamError_connectionLost() throws Exception {
+        mockFindUI(ui);
+        handler.handleRequest(session, request(), response());
+
+        listener().onError(mock(AsyncEvent.class));
+
+        assertFalse(ui.getInternals().getPushConnection().isConnected());
+    }
+
+    @Test
+    void handleRequest_streamTimeout_connectionLost() throws Exception {
+        mockFindUI(ui);
+        handler.handleRequest(session, request(), response());
+
+        listener().onTimeout(mock(AsyncEvent.class));
+
+        assertFalse(ui.getInternals().getPushConnection().isConnected());
+    }
+
+    @Test
+    void handleRequest_noSession_sendsSessionExpiredMessage() throws Exception {
+        assertTrue(handler.handleRequest(null, request(), response()));
+
+        // The client gets the notification through the event stream like any
+        // other UIDL message, as EventSource cannot read other responses
+        verify(httpResponse).setContentType("text/event-stream");
+        List<SseEvent> events = events();
+        assertEquals(1, events.size());
+        assertEquals("uidl", events.get(0).event());
+        assertTrue(
+                parse(events.get(0).data()).get("meta").has("sessionExpired"));
+        verify(httpRequest, never()).startAsync();
+    }
+
+    @Test
+    void handleSessionExpired_sseRequest_sendsSessionExpiredMessage()
+            throws Exception {
+        assertTrue(handler.handleSessionExpired(request(), response()));
+
+        assertTrue(parse(events().get(0).data()).get("meta")
+                .has("sessionExpired"));
+    }
+
+    @Test
+    void handleSessionExpired_otherRequestType_notHandled() throws Exception {
+        when(httpRequest
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER))
+                .thenReturn(ApplicationConstants.REQUEST_TYPE_UIDL);
+
+        assertFalse(handler.handleSessionExpired(request(), response()));
+    }
+
+    @Test
+    void handleRequest_uiNotFound_sendsUiNotFoundMessage() throws Exception {
+        mockFindUI(null);
+
+        assertTrue(handler.handleRequest(session, request(), response()));
+
+        verify(httpResponse).setContentType("text/event-stream");
+        // A missing UI is reported to the client like an expired session
+        JsonNode meta = parse(events().get(0).data()).get("meta");
+        assertTrue(meta.has("sessionExpired"),
+                "UI not found should be reported as an expired session, was: "
+                        + meta);
+        verify(httpRequest, never()).startAsync();
+    }
+
+    @Test
+    void handleRequest_invalidPushId_sendsRefreshMessage() throws Exception {
+        mockFindUI(ui);
+        when(httpRequest.getParameter(ApplicationConstants.PUSH_ID_PARAMETER))
+                .thenReturn("invalid");
+
+        assertTrue(handler.handleRequest(session, request(), response()));
+
+        verify(httpResponse).setContentType("text/event-stream");
+        JsonNode meta = parse(events().get(0).data()).get("meta");
+        assertTrue(meta.has("appError"),
+                "An invalid push id should make the client refresh, was: "
+                        + meta);
+        verify(httpRequest, never()).startAsync();
+        assertFalse(ui.getInternals().getPushConnection().isConnected());
+    }
+
+    @Test
+    void handleRequest_missingPushId_sendsRefreshMessage() throws Exception {
+        mockFindUI(ui);
+        when(httpRequest.getParameter(ApplicationConstants.PUSH_ID_PARAMETER))
+                .thenReturn(null);
+
+        assertTrue(handler.handleRequest(session, request(), response()));
+
+        verify(httpRequest, never()).startAsync();
+        assertFalse(ui.getInternals().getPushConnection().isConnected());
+    }
+
+    @Test
+    void handleRequest_uiWithoutSsePushConnection_sendsBadRequest()
+            throws Exception {
+        session.lock();
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+        session.unlock();
+        mockFindUI(ui);
+
+        assertTrue(handler.handleRequest(session, request(), response()));
+
+        verify(httpResponse).sendError(eq(HttpServletResponse.SC_BAD_REQUEST),
+                anyString());
+        verify(httpRequest, never()).startAsync();
+    }
+
+    @Test
+    void handleRequest_pendingPush_isSentWhenConnected() throws Exception {
+        mockFindUI(ui);
+        session.lock();
+        try {
+            ui.push();
+        } finally {
+            session.unlock();
+        }
+
+        handler.handleRequest(session, request(), response());
+
+        List<SseEvent> events = events();
+        assertEquals(2, events.size());
+        assertEquals("uidl", events.get(1).event());
+    }
+
+    @Test
+    void handleRequest_releasesSessionLock() throws Exception {
+        mockFindUI(ui);
+
+        handler.handleRequest(session, request(), response());
+
+        assertFalse(session.hasLock());
+    }
+
+    private void mockFindUI(UI result) {
+        doReturn(result).when(service).findUI(any());
+    }
+
+    private VaadinServletRequest request() {
+        return new VaadinServletRequest(httpRequest, service);
+    }
+
+    private VaadinServletResponse response() {
+        return new VaadinServletResponse(httpResponse, service);
+    }
+
+    private AsyncListener listener() {
+        ArgumentCaptor<AsyncListener> captor = ArgumentCaptor
+                .forClass(AsyncListener.class);
+        verify(asyncContext).addListener(captor.capture());
+        return captor.getValue();
+    }
+
+    private List<SseEvent> events() {
+        return SsePushConnectionTest.SseStream.parse(responseBody.toString());
+    }
+
+    private static JsonNode parse(String json) {
+        return new ObjectMapper().readTree(json);
+    }
+}

@@ -71,6 +71,10 @@ class JavaScriptBootstrapHandlerTest {
     static public class WebSocketPushAppShell implements AppShellConfigurator {
     }
 
+    @Push(transport = Transport.SSE_PURE)
+    static public class SsePurePushAppShell implements AppShellConfigurator {
+    }
+
     @BeforeEach
     void setup() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -233,6 +237,29 @@ class JavaScriptBootstrapHandlerTest {
         // Using regex, because version depends on the build
         assertTrue(json.get("pushScript").asString().matches(
                 "^VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+    }
+
+    @Test
+    void should_notRespondPushScript_when_ssePureTransport() throws Exception {
+        VaadinServletContext context = new VaadinServletContext(
+                mocks.getServletContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(SsePurePushAppShell.class);
+        mocks.setAppShellRegistry(registry);
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
+        jsInitHandler.handleRequest(session, request, response);
+
+        assertEquals(200, response.getErrorCode());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
+
+        // The client engine implements SSE_PURE itself, so the Atmosphere
+        // based push script is not loaded
+        assertFalse(json.has("pushScript"));
+        assertFalse(json.has("useSsePush"));
+        assertEquals(PushMode.AUTOMATIC,
+                UI.getCurrent().getPushConfiguration().getPushMode());
     }
 
     @Test

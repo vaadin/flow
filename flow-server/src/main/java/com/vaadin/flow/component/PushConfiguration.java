@@ -246,16 +246,8 @@ class PushConfigurationImpl implements PushConfiguration {
             if (!oldMode.isEnabled() && pushMode.isEnabled()) {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
-                PushConnection connection;
-                if (transport == Transport.SSE_PURE) {
-                    // Use SSE push connection (no Atmosphere dependency)
-                    connection = new SsePushConnection(ui);
-                } else {
-                    // Use the configured factory (default:
-                    // AtmospherePushConnection)
-                    connection = pushConnectionFactory.apply(ui);
-                }
-                ui.getInternals().setPushConnection(connection);
+                ui.getInternals()
+                        .setPushConnection(createPushConnection(transport));
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
@@ -270,7 +262,26 @@ class PushConfigurationImpl implements PushConfiguration {
     @Override
     public void setTransport(Transport transport) {
         checkTransportEnabled(transport);
+        boolean wasSsePure = getTransport() == Transport.SSE_PURE;
         getPushConfigurationMap().setTransport(transport);
+
+        // SSE_PURE is served by a different kind of connection than the
+        // Atmosphere based transports, so an existing connection is replaced
+        // when push is already enabled, e.g. by the deployment configuration
+        // before the @Push annotation of the app shell sets the transport
+        boolean isSsePure = transport == Transport.SSE_PURE;
+        if (wasSsePure != isSsePure && getPushMode().isEnabled()) {
+            ui.getInternals()
+                    .setPushConnection(createPushConnection(transport));
+        }
+    }
+
+    private PushConnection createPushConnection(Transport transport) {
+        if (transport == Transport.SSE_PURE) {
+            // SSE_PURE does not use Atmosphere
+            return new SsePushConnection(ui);
+        }
+        return pushConnectionFactory.apply(ui);
     }
 
     @Override

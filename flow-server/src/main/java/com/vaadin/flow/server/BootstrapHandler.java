@@ -900,7 +900,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 throw new BootstrapException("Unable to append bundle", e);
             }
 
-            if (context.getPushMode().isEnabled()) {
+            if (isPushScriptNeeded(context)) {
                 head.appendChild(
                         createJavaScriptElement(getPushScript(context)));
             }
@@ -1538,28 +1538,33 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 
+    /**
+     * Checks whether the Atmosphere based push script needs to be loaded for
+     * the given context. The {@link Transport#SSE_PURE} transport is
+     * implemented by the client engine without Atmosphere, so the script is not
+     * needed for it.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return {@code true} if push is enabled and uses Atmosphere,
+     *         {@code false} otherwise
+     */
+    protected static boolean isPushScriptNeeded(BootstrapContext context) {
+        return context.getPushMode().isEnabled() && context.getUI()
+                .getPushConfiguration().getTransport() != Transport.SSE_PURE;
+    }
+
     protected static String getPushScript(BootstrapContext context) {
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getBuildHash();
 
-        boolean isProductionMode = request.getService()
-                .getDeploymentConfiguration().isProductionMode();
-
-        // Check if SSE transport is configured
-        Transport transport = context.getUI().getPushConfiguration()
-                .getTransport();
-        boolean useSse = transport == Transport.SSE_PURE;
-
         String pushJs;
-        if (useSse) {
-            // Use SSE push script (no Atmosphere dependency)
-            pushJs = isProductionMode ? ApplicationConstants.VAADIN_SSE_PUSH_JS
-                    : ApplicationConstants.VAADIN_SSE_PUSH_DEBUG_JS;
+        if (request.getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            pushJs = ApplicationConstants.VAADIN_PUSH_JS;
         } else {
-            // Use Atmosphere-based push script
-            pushJs = isProductionMode ? ApplicationConstants.VAADIN_PUSH_JS
-                    : ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+            pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
         // Use direct path - the <base href> already points to the servlet root,

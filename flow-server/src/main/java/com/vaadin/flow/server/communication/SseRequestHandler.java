@@ -22,6 +22,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
@@ -41,7 +43,6 @@ import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.JsonConstants;
 
 /**
  * Handles requests to open an SSE (Server-Sent Events) push connection between
@@ -102,7 +103,8 @@ public class SseRequestHandler
         // Validate session
         if (session == null) {
             getLogger().debug("Session expired, sending session expired event");
-            sendSessionExpired(servletResponse);
+            sendNotification(servletResponse,
+                    VaadinService.createSessionExpiredJSON(true));
             return true;
         }
 
@@ -113,7 +115,8 @@ public class SseRequestHandler
             ui = service.findUI(request);
             if (ui == null) {
                 getLogger().warn("UI not found for SSE request");
-                sendError(servletResponse, "UI not found");
+                sendNotification(servletResponse,
+                        VaadinService.createUINotFoundJSON(true));
                 return true;
             }
 
@@ -123,7 +126,9 @@ public class SseRequestHandler
             if (!isPushIdValid(session, requestPushId)) {
                 getLogger().warn("Invalid push ID received from {}",
                         servletRequest.getRemoteHost());
-                sendRefresh(servletResponse);
+                sendNotification(servletResponse,
+                        VaadinService.createCriticalNotificationJSON(null, null,
+                                null, null));
                 return true;
             }
 
@@ -147,31 +152,7 @@ public class SseRequestHandler
             AsyncContext asyncContext = servletRequest.startAsync();
             asyncContext.setTimeout(0); // No timeout for SSE
 
-            // Set up async listener for connection lifecycle
-            asyncContext.addListener(new AsyncListener() {
-                @Override
-                public void onComplete(AsyncEvent event) {
-                    handleDisconnect(sseConnection);
-                }
-
-                @Override
-                public void onTimeout(AsyncEvent event) {
-                    getLogger().debug("SSE connection timed out");
-                    handleDisconnect(sseConnection);
-                }
-
-                @Override
-                public void onError(AsyncEvent event) {
-                    getLogger().debug("SSE connection error",
-                            event.getThrowable());
-                    handleDisconnect(sseConnection);
-                }
-
-                @Override
-                public void onStartAsync(AsyncEvent event) {
-                    // Re-register listener if async restarted
-                }
-            });
+            asyncContext.addListener(new SseStreamListener(sseConnection));
 
             // Connect the SSE push connection
             sseConnection.connect(asyncContext);
@@ -187,14 +168,40 @@ public class SseRequestHandler
     }
 
     /**
-     * Handles disconnection of an SSE connection.
-     *
-     * @param connection
-     *            the connection that was disconnected
+     * Marks the push connection lost when the event stream of the client ends.
      */
-    private void handleDisconnect(SsePushConnection connection) {
-        getLogger().debug("SSE connection disconnected");
-        connection.connectionLost();
+    private static class SseStreamListener
+            implements AsyncListener, Serializable {
+
+        private final SsePushConnection connection;
+
+        private SseStreamListener(SsePushConnection connection) {
+            this.connection = connection;
+        }
+
+        @Override
+        public void onComplete(AsyncEvent event) {
+            getLogger().debug("SSE connection disconnected");
+            connection.connectionLost();
+        }
+
+        @Override
+        public void onTimeout(AsyncEvent event) {
+            getLogger().debug("SSE connection timed out");
+            connection.connectionLost();
+        }
+
+        @Override
+        public void onError(AsyncEvent event) {
+            getLogger().debug("SSE connection error", event.getThrowable());
+            connection.connectionLost();
+        }
+
+        @Override
+        public void onStartAsync(AsyncEvent event) {
+            // The listener is registered after the async processing has
+            // started
+        }
     }
 
     /**
@@ -220,32 +227,28 @@ public class SseRequestHandler
     }
 
     /**
-     * Sends a session expired event to the client.
+     * Sends a single UIDL message to the client and ends the event stream. The
+     * message must be sent as an event stream, as {@code EventSource} on the
+     * client cannot read any other kind of response.
      *
      * @param response
      *            the response to write to
+     * @param json
+     *            the UIDL message to send
      * @throws IOException
      *             if writing fails
      */
-    private void sendSessionExpired(HttpServletResponse response)
+    private void sendNotification(HttpServletResponse response, String json)
             throws IOException {
-        response.setContentType(JsonConstants.JSON_CONTENT_TYPE);
-        response.getWriter()
-                .write(VaadinService.createSessionExpiredJSON(true));
-    }
-
-    /**
-     * Sends a refresh command to the client.
-     *
-     * @param response
-     *            the response to write to
-     * @throws IOException
-     *             if writing fails
-     */
-    private void sendRefresh(HttpServletResponse response) throws IOException {
-        response.setContentType(JsonConstants.JSON_CONTENT_TYPE);
-        response.getWriter().write(VaadinService
-                .createCriticalNotificationJSON(null, null, null, null));
+        response.setContentType("text/event-stream");
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter writer = response.getWriter();
+        writer.write("event: uidl\n");
+        for (String line : json.split("\n", -1)) {
+            writer.write("data: " + line + "\n");
+        }
+        writer.write("\n");
+        writer.flush();
     }
 
     /**
