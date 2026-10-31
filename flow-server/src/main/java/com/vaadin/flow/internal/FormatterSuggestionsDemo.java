@@ -24,5 +24,5 @@ public class FormatterSuggestionsDemo {
             total += value;
         }
         return total;
-  }
+    }
 }
