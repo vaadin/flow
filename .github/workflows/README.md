@@ -248,7 +248,9 @@ The two are split so that pull requests from forks get the report too. The
 formatter runs code of the pull request — its build files and Maven plugins
 — so it runs without write access and only uploads the diff.
 `formatter-suggestions.yml` is triggered by `workflow_run`, which runs it
-from the default branch with write access, and treats the diff as text: it
+from the default branch with write access (`pull-requests` and `issues` to
+post, and `contents`, which resolving review threads requires), and treats
+the diff as text: it
 checks out only `scripts/` of the default branch, finds the pull request
 from the commit the formatter checked, and suggests changes only in files
 the pull request changes.

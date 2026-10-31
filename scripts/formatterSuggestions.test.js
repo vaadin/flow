@@ -176,6 +176,9 @@ async function runWith(diff, state = {}) {
     graphql: async (query, variables) => {
       if (query.startsWith('mutation')) {
         calls.push({ name: 'resolveReviewThread', params: variables });
+        if (state.resolveError) {
+          throw state.resolveError;
+        }
         return {};
       }
       const nodes = state.threads ?? [];
@@ -208,7 +211,7 @@ async function runWith(diff, state = {}) {
   };
   const core = {
     info: () => {},
-    warning: () => {},
+    warning: (message) => calls.push({ name: 'warning', message }),
     setFailed: (message) => calls.push({ name: 'setFailed', message })
   };
   try {
@@ -296,6 +299,18 @@ test('run resolves the suggestions and deletes the comment once the format is fi
     { name: 'resolveReviewThread', params: { id: 'T1' } },
     { name: 'deleteComment', params: { owner: 'vaadin', repo: 'flow', comment_id: 42 } }
   ]);
+});
+
+test('run still deletes the comment when a suggestion can not be resolved', async () => {
+  const calls = await runWith('', {
+    comments: [STICKY],
+    threads: [thread('T1', { line: 5, body: REPEATED })],
+    resolveError: new Error('Resource not accessible by integration')
+  });
+  assert.deepStrictEqual(
+    calls.map((call) => call.name),
+    ['resolveReviewThread', 'warning', 'deleteComment']
+  );
 });
 
 test('run rejects an oversized diff', async () => {
