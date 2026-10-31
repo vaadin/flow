@@ -80,3 +80,49 @@ jobs:
         run: |
           echo "::error::There are ${{ steps.formatter.outputs.modified }} files with format errors"
           exit 1
+
+  # Temporary, for testing only: runs formatter-suggestions.yml's script in
+  # this workflow, as a workflow_run workflow only runs from the default branch
+  report:
+    name: Suggest formatting changes (test)
+    needs: formatter
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout scripts
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          sparse-checkout: scripts
+          persist-credentials: false
+
+      - name: Download formatter diff
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: formatter-diff
+          path: ${{ runner.temp }}/formatter-diff
+
+      - name: Report on the pull request
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          DIFF_FILE: ${{ runner.temp }}/formatter-diff/formatter-diff.txt
+        with:
+          script: |
+            const { run } = require('./scripts/formatterSuggestions.js');
+            const pr = context.payload.pull_request;
+            const fake = {
+              repo: context.repo,
+              payload: {
+                workflow_run: {
+                  html_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                  head_sha: pr.head.sha,
+                  head_branch: pr.head.ref,
+                  head_repository: { owner: { login: pr.head.repo.owner.login } }
+                }
+              }
+            };
+            await run({ github, context: fake, core, diffFile: process.env.DIFF_FILE });
