@@ -329,7 +329,10 @@ export class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
   pushReconnectPending(pushConnection: PushConnection): void {
     Console.debug('Reopening push connection');
-    if (pushConnection.isBidirectional()) {
+    // The Atmosphere-free SSE transport reliably notifies when the connection
+    // is re-established (via EventSource onopen), so it is treated like
+    // bidirectional connections here
+    if (pushConnection.isBidirectional() || pushConnection.getTransportType() === 'sse-pure') {
       // Lost connection for a connection which will tell us when the connection
       // is available again
       this.#machine.handleRecoverableError(ConnectionMessageType.PUSH, null);

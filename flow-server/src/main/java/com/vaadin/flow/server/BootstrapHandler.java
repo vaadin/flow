@@ -86,6 +86,7 @@ import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
+import com.vaadin.flow.shared.ui.Transport;
 
 import static com.vaadin.flow.internal.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
@@ -324,7 +325,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .getPushMode();
                 }
 
-                if (pushMode.isEnabled()
+                // SSE transport doesn't require Atmosphere
+                Transport transport = getUI().getPushConfiguration()
+                        .getTransport();
+                if (pushMode.isEnabled() && transport != Transport.SSE_PURE
                         && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
@@ -1307,11 +1311,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         PushMode pushMode = push.map(Push::value)
                 .orElseGet(deploymentConfiguration::getPushMode);
         setupPushConnectionFactory(pushConfiguration, context);
-        pushConfiguration.setPushMode(pushMode);
         pushConfiguration.setPushServletMapping(
                 BootstrapHandlerHelper.determinePushServletMapping(session));
 
+        // Set transport BEFORE push mode, because setPushMode creates the
+        // connection based on the configured transport (e.g., SSE needs
+        // SsePushConnection instead of AtmospherePushConnection)
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
+        pushConfiguration.setPushMode(pushMode);
 
         // Let the handler contribute its own push defaults while they can
         // still be overridden by a UIInitListener
@@ -1536,12 +1543,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getBuildHash();
 
+        boolean isProductionMode = request.getService()
+                .getDeploymentConfiguration().isProductionMode();
+
+        // Check if SSE transport is configured
+        Transport transport = context.getUI().getPushConfiguration()
+                .getTransport();
+        boolean useSse = transport == Transport.SSE_PURE;
+
         String pushJs;
-        if (request.getService().getDeploymentConfiguration()
-                .isProductionMode()) {
-            pushJs = ApplicationConstants.VAADIN_PUSH_JS;
+        if (useSse) {
+            // Use SSE push script (no Atmosphere dependency)
+            pushJs = isProductionMode ? ApplicationConstants.VAADIN_SSE_PUSH_JS
+                    : ApplicationConstants.VAADIN_SSE_PUSH_DEBUG_JS;
         } else {
-            pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+            // Use Atmosphere-based push script
+            pushJs = isProductionMode ? ApplicationConstants.VAADIN_PUSH_JS
+                    : ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
         // Use direct path - the <base href> already points to the servlet root,

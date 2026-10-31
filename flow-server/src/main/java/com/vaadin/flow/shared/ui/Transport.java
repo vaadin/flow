@@ -50,7 +50,16 @@ public enum Transport {
      * 
      * @since 25.3
      */
-    SERVER_SENT_EVENTS("sse");
+    SERVER_SENT_EVENTS("sse"),
+    /**
+     * Server-sent events for server-to-client messages, XHR for
+     * client-to-server messages, implemented directly in Flow without the
+     * Atmosphere framework.
+     * <p>
+     * Unlike {@link #SERVER_SENT_EVENTS}, this transport does not need the
+     * {@code flow-push} module or Atmosphere on the client or the server.
+     */
+    SSE_PURE("sse-pure");
 
     private String identifier;
 

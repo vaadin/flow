@@ -28,6 +28,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
+import com.vaadin.flow.server.communication.SsePushConnection;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
@@ -229,7 +230,10 @@ class PushConfigurationImpl implements PushConfiguration {
 
         session.checkHasLock();
 
-        if (pushMode.isEnabled()
+        Transport transport = getTransport();
+
+        // SSE transport doesn't require Atmosphere, so skip the check for SSE
+        if (pushMode.isEnabled() && transport != Transport.SSE_PURE
                 && !session.getService().ensurePushAvailable()) {
             throw new IllegalStateException(
                     "Push is not available. See previous log messages for more information.");
@@ -242,8 +246,16 @@ class PushConfigurationImpl implements PushConfiguration {
             if (!oldMode.isEnabled() && pushMode.isEnabled()) {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
-                ui.getInternals()
-                        .setPushConnection(pushConnectionFactory.apply(ui));
+                PushConnection connection;
+                if (transport == Transport.SSE_PURE) {
+                    // Use SSE push connection (no Atmosphere dependency)
+                    connection = new SsePushConnection(ui);
+                } else {
+                    // Use the configured factory (default:
+                    // AtmospherePushConnection)
+                    connection = pushConnectionFactory.apply(ui);
+                }
+                ui.getInternals().setPushConnection(connection);
             }
             // Nothing to do here if disabling push;
             // the client will close the connection
