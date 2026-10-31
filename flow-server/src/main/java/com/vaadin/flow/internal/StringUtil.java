@@ -45,7 +45,7 @@ public final class StringUtil {
      * @since 25.0
      */
     public static String toUTF8String(byte[] bytes) {
-        return   new String(bytes,StandardCharsets.UTF_8) ;
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     /**
