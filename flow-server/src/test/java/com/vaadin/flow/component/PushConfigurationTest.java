@@ -155,11 +155,75 @@ class PushConfigurationTest {
     }
 
     @Test
-    void setPushMode_otherTransportWithoutAtmosphere_throws() {
+    void setPushMode_otherTransportWithoutAtmosphere_usesSsePure() {
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setTransport(Transport.WEBSOCKET);
+
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setPushMode(PushMode.AUTOMATIC);
+
+        // The Atmosphere based transports cannot work without Atmosphere, so
+        // push uses the transport that does not need it
+        assertEquals(PushMode.AUTOMATIC,
+                uiWithoutAtmosphere.getPushConfiguration().getPushMode());
+        assertEquals(Transport.SSE_PURE,
+                uiWithoutAtmosphere.getPushConfiguration().getTransport());
+        assertInstanceOf(SsePushConnection.class,
+                uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_defaultTransportWithoutAtmosphere_usesSsePure() {
         UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
 
-        assertThrows(IllegalStateException.class, () -> uiWithoutAtmosphere
-                .getPushConfiguration().setPushMode(PushMode.AUTOMATIC));
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setPushMode(PushMode.AUTOMATIC);
+
+        assertEquals(Transport.SSE_PURE,
+                uiWithoutAtmosphere.getPushConfiguration().getTransport());
+        assertInstanceOf(SsePushConnection.class,
+                uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setTransport_otherTransportWhenPushEnabledWithoutAtmosphere_keepsSsePure() {
+        // An @Push annotation on the app shell sets the transport after the
+        // deployment configuration has enabled push
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setPushMode(PushMode.AUTOMATIC);
+
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setTransport(Transport.WEBSOCKET_XHR);
+
+        assertEquals(Transport.SSE_PURE,
+                uiWithoutAtmosphere.getPushConfiguration().getTransport());
+        assertInstanceOf(SsePushConnection.class,
+                uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setTransport_otherTransportWhenPushDisabledWithoutAtmosphere_isKept() {
+        // The transport is only replaced when push is enabled
+        UI uiWithoutAtmosphere = createUiWithoutAtmosphere();
+
+        uiWithoutAtmosphere.getPushConfiguration()
+                .setTransport(Transport.WEBSOCKET);
+
+        assertEquals(Transport.WEBSOCKET,
+                uiWithoutAtmosphere.getPushConfiguration().getTransport());
+        assertNull(uiWithoutAtmosphere.getInternals().getPushConnection());
+    }
+
+    @Test
+    void setPushMode_withAtmosphere_keepsTransport() {
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET);
+
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        assertEquals(Transport.WEBSOCKET,
+                ui.getPushConfiguration().getTransport());
     }
 
     @Test

@@ -263,6 +263,46 @@ class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
+    void should_useSsePure_when_pushAnnotatedInAppShellWithoutAtmosphere()
+            throws Exception {
+        mocks.getService().setAtmosphereAvailable(false);
+        VaadinServletContext context = new VaadinServletContext(
+                mocks.getServletContext());
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(PushAppShell.class);
+        mocks.setAppShellRegistry(registry);
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
+        jsInitHandler.handleRequest(session, request, response);
+
+        assertEquals(200, response.getErrorCode());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
+        assertFalse(json.has("pushScript"));
+        PushConfiguration push = UI.getCurrent().getPushConfiguration();
+        assertEquals(PushMode.AUTOMATIC, push.getPushMode());
+        assertEquals(Transport.SSE_PURE, push.getTransport());
+    }
+
+    @Test
+    void should_useSsePure_when_pushEnabledInDeploymentConfigurationWithoutAtmosphere()
+            throws Exception {
+        mocks.getService().setAtmosphereAvailable(false);
+        mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        VaadinRequest request = mocks.createRequest(mocks, "/",
+                "v-r=init&foo&location");
+        jsInitHandler.handleRequest(session, request, response);
+
+        assertEquals(200, response.getErrorCode());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
+        assertFalse(json.has("pushScript"));
+        PushConfiguration push = UI.getCurrent().getPushConfiguration();
+        assertEquals(PushMode.AUTOMATIC, push.getPushMode());
+        assertEquals(Transport.SSE_PURE, push.getTransport());
+    }
+
+    @Test
     void uiInitListener_shouldOverridePushConfigFromAppShellAnnotation()
             throws Exception {
         VaadinServletContext context = new VaadinServletContext(

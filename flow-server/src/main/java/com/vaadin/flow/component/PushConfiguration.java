@@ -231,12 +231,9 @@ class PushConfigurationImpl implements PushConfiguration {
         session.checkHasLock();
 
         Transport transport = getTransport();
-
-        // SSE transport doesn't require Atmosphere, so skip the check for SSE
-        if (pushMode.isEnabled() && transport != Transport.SSE_PURE
-                && !session.getService().ensurePushAvailable()) {
-            throw new IllegalStateException(
-                    "Push is not available. See previous log messages for more information.");
+        if (pushMode.isEnabled()) {
+            transport = resolveTransport(transport, session);
+            getPushConfigurationMap().setTransport(transport);
         }
 
         PushMode oldMode = getPushConfigurationMap().getPushMode();
@@ -263,6 +260,10 @@ class PushConfigurationImpl implements PushConfiguration {
     public void setTransport(Transport transport) {
         checkTransportEnabled(transport);
         boolean wasSsePure = getTransport() == Transport.SSE_PURE;
+        VaadinSession session = ui.getSession();
+        if (session != null && getPushMode().isEnabled()) {
+            transport = resolveTransport(transport, session);
+        }
         getPushConfigurationMap().setTransport(transport);
 
         // SSE_PURE is served by a different kind of connection than the
@@ -274,6 +275,20 @@ class PushConfigurationImpl implements PushConfiguration {
             ui.getInternals()
                     .setPushConnection(createPushConnection(transport));
         }
+    }
+
+    /**
+     * Gets the transport to use for enabled push. The Atmosphere based
+     * transports cannot work when Atmosphere is not on the classpath, so
+     * {@link Transport#SSE_PURE} is used instead of them.
+     */
+    private static Transport resolveTransport(Transport transport,
+            VaadinSession session) {
+        if (transport != Transport.SSE_PURE
+                && !session.getService().ensurePushAvailable()) {
+            return Transport.SSE_PURE;
+        }
+        return transport;
     }
 
     private PushConnection createPushConnection(Transport transport) {

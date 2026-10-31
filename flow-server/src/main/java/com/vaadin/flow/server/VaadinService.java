@@ -100,7 +100,7 @@ import com.vaadin.flow.server.dau.DAUVaadinRequestInterceptor;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.signals.SignalEnvironment;
 import com.vaadin.flow.signals.impl.Transaction;
 
@@ -123,15 +123,13 @@ public abstract class VaadinService implements Serializable {
             + SEPARATOR;
 
     public static final String ATMOSPHERE_MISSING_ERROR = SEPARATOR
-            + "\nAtmosphere could not be loaded. When using push with Vaadin, the\n"
-            + "Atmosphere framework must be present on the classpath.\n"
-            + "If using a dependency management system, please add a dependency\n"
-            + "to vaadin-push.\n"
-            + "If managing dependencies manually, please make sure Atmosphere\n"
+            + "\nAtmosphere could not be loaded, so push uses the "
+            + Transport.class.getSimpleName() + "." + Transport.SSE_PURE.name()
+            + "\ntransport, which does not need Atmosphere.\n"
+            + "To use the other push transports, add a dependency to\n"
+            + "vaadin-push or make sure Atmosphere "
             + Constants.REQUIRED_ATMOSPHERE_RUNTIME_VERSION
-            + " is included on the classpath.\n" + "Will fall back to using "
-            + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
-            + "." + SEPARATOR;
+            + "\nis included on the classpath." + SEPARATOR;
 
     /**
      * Attribute name for telling
