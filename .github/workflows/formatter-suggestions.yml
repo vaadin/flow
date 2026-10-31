@@ -35,7 +35,9 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
-      contents: read
+      # Resolving the review threads of suggestions that are no longer made
+      # fails with only pull-requests: write
+      contents: write
       actions: read
       pull-requests: write
       issues: write
