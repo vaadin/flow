@@ -26,10 +26,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Direction;
@@ -50,12 +47,16 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PageTest {
 
@@ -368,7 +369,7 @@ class PageTest {
                     Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return mock(PendingJavaScriptResult.class);
             }
         };
 
@@ -377,8 +378,7 @@ class PageTest {
         // self check
         assertEquals("_self", params.get(1));
 
-        MatcherAssert.assertThat(capture.get(),
-                CoreMatchers.containsString("this.stopApplication();"));
+        assertThat(capture.get(), containsString("this.stopApplication();"));
     }
 
     @Test
@@ -391,7 +391,7 @@ class PageTest {
                     Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return mock(PendingJavaScriptResult.class);
             }
         };
 
@@ -414,7 +414,7 @@ class PageTest {
             public PendingJavaScriptResult executeJs(String expression,
                     Object... parameters) {
                 capture.set(expression);
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return mock(PendingJavaScriptResult.class);
             }
         };
 
@@ -503,7 +503,7 @@ class PageTest {
             public PendingJavaScriptResult executeJs(String expression,
                     Object... parameters) {
                 capture.set(expression);
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return mock(PendingJavaScriptResult.class);
             }
         };
 
@@ -522,11 +522,10 @@ class PageTest {
         configuration.setApplicationOrSystemProperty(
                 InitParameters.URL_SAFE_SCHEMES, safeUrlSchemes);
 
-        VaadinService service = Mockito.mock(VaadinService.class);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        Mockito.when(session.getService()).thenReturn(service);
+        VaadinService service = mock(VaadinService.class);
+        when(service.getDeploymentConfiguration()).thenReturn(configuration);
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getService()).thenReturn(service);
 
         UI ui = new UI();
         ui.getInternals().setSession(session);
@@ -543,7 +542,7 @@ class PageTest {
                     Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return mock(PendingJavaScriptResult.class);
             }
         };
 
@@ -564,7 +563,7 @@ class PageTest {
                     Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
-                return Mockito.mock(PendingJavaScriptResult.class);
+                return mock(PendingJavaScriptResult.class);
             }
         };
 

@@ -15,8 +15,9 @@
  */
 package com.vaadin;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test that tests are run with assertions activated
@@ -29,7 +30,7 @@ class AssertionTest {
         // *assigns* true if assertions are on.
         assert assertOn = true;
 
-        Assertions.assertTrue(assertOn,
+        assertTrue(assertOn,
                 "Assertions are turned off for the server package");
     }
 

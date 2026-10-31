@@ -23,6 +23,8 @@ import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.quarkus.it.i18n.TranslationView;
 import com.vaadin.flow.test.AbstractChromeIT;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @QuarkusIntegrationTest
 public class TranslationIT extends AbstractChromeIT {
     @Override
@@ -36,13 +38,10 @@ public class TranslationIT extends AbstractChromeIT {
 
         String locales = $(SpanElement.class).id(TranslationView.LOCALES_ID)
                 .getText();
-        Assertions.assertTrue(locales.contains("de"),
-                "Couldn't verify German locale");
-        Assertions.assertTrue(locales.contains("fi_FI"),
-                "Couldn't verify Finnish locale");
-        Assertions.assertTrue(locales.contains("fr_FR"),
-                "Couldn't verify French locale");
-        Assertions.assertTrue(locales.contains("ja_JP"),
+        assertTrue(locales.contains("de"), "Couldn't verify German locale");
+        assertTrue(locales.contains("fi_FI"), "Couldn't verify Finnish locale");
+        assertTrue(locales.contains("fr_FR"), "Couldn't verify French locale");
+        assertTrue(locales.contains("ja_JP"),
                 "Couldn't verify Japanese locale");
 
         Assertions.assertEquals("Default",

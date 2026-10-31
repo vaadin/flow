@@ -19,11 +19,14 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.InetAddress;
+import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,6 +63,8 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ContentSecurityPolicy;
+import com.vaadin.flow.server.CspMode;
 import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
@@ -91,6 +96,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
     public static final String LIVE_RELOAD_PORT_ATTR = "livereload.port";
+    private static final String CONTENT_SECURITY_POLICY_HEADER = "Content-Security-Policy";
+    private static final String CSP_SELF = "'self'";
+
+    // Not static: a SecureRandom in a static field would be created at build
+    // time in native images that initialize classes at build time (Quarkus)
+    private final SecureRandom nonceRandom = new SecureRandom();
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -137,6 +148,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         } else {
             indexHtmlResponse = new IndexHtmlResponse(request, response,
                     indexDocument);
+        }
+
+        if (config.getCspMode() == CspMode.STRICT) {
+            String nonce = createCspNonce();
+            indexHtmlResponse.setContentSecurityPolicy(nonce,
+                    createDefaultContentSecurityPolicy(nonce));
         }
 
         addInitialFlow(initialJson, indexDocument, request);
@@ -232,6 +249,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addCommercialBanner(service.getDeploymentConfiguration(),
                 indexDocument);
 
+        // The dev server and dev tools need eval, so the policy is only sent
+        // in production mode
+        if (config.getCspMode() == CspMode.STRICT
+                && config.isProductionMode()) {
+            applyContentSecurityPolicy(indexHtmlResponse);
+        }
+
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
@@ -240,6 +264,58 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private String createCspNonce() {
+        byte[] bytes = new byte[16];
+        nonceRandom.nextBytes(bytes);
+        return Base64.getEncoder().encodeToString(bytes);
+    }
+
+    private static ContentSecurityPolicy createDefaultContentSecurityPolicy(
+            String nonce) {
+        // 'strict-dynamic' trusts the scripts that nonced scripts load, such
+        // as the chunks of the bundle. connect-src also covers push. Workers
+        // need their own directive since script-src only allows nonced
+        // scripts.
+        return new ContentSecurityPolicy().setDirective("default-src", CSP_SELF)
+                .setDirective("script-src", "'nonce-" + nonce + "'",
+                        "'strict-dynamic'")
+                .setDirective("style-src", CSP_SELF, "'unsafe-inline'")
+                .setDirective("img-src", CSP_SELF, "data:")
+                .setDirective("font-src", CSP_SELF, "data:")
+                .setDirective("connect-src", CSP_SELF)
+                .setDirective("worker-src", CSP_SELF)
+                .setDirective("object-src", "'none'")
+                .setDirective("base-uri", CSP_SELF);
+    }
+
+    private static void applyContentSecurityPolicy(
+            IndexHtmlResponse indexHtmlResponse) {
+        VaadinResponse response = indexHtmlResponse.getVaadinResponse();
+        if (response.containsHeader(CONTENT_SECURITY_POLICY_HEADER)) {
+            // Sending the page without Vaadin's policy would silently drop
+            // the protection the strict mode promises
+            throw new IllegalStateException(String.format(
+                    "The response already has a %s header, but the '%s=strict' "
+                            + "setting requires Vaadin to send its own policy. "
+                            + "Remove the code that sets the header, and adjust "
+                            + "the policy through "
+                            + "IndexHtmlResponse.getContentSecurityPolicy() "
+                            + "in an IndexHtmlRequestListener instead.",
+                    CONTENT_SECURITY_POLICY_HEADER, InitParameters.CSP));
+        }
+        // Both are created for the strict mode, which the caller checks
+        String nonce = Objects.requireNonNull(indexHtmlResponse.getCspNonce());
+        ContentSecurityPolicy policy = Objects
+                .requireNonNull(indexHtmlResponse.getContentSecurityPolicy());
+        // Done after the listeners have run so that every script in the page
+        // gets the nonce, whichever code added it
+        indexHtmlResponse.getDocument().select(
+                "script, link[rel=modulepreload], link[rel=preload][as=script]")
+                .attr("nonce", nonce);
+        response.setHeader(CONTENT_SECURITY_POLICY_HEADER,
+                policy.toHeaderValue());
     }
 
     private void initializeFeatureFlags(Document indexDocument,
@@ -621,10 +697,15 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request) {
         SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
                 indexDocument.head(), request);
+        // The < symbol is escaped so that values in the JSON (e.g. a
+        // </script> or <!-- coming from the request) cannot break out of the
+        // inline script element. In valid JSON < can only appear inside string
+        // literals, where \x3C is an equivalent JavaScript escape.
+        String json = initialJson.toString().replace("<", "\\x3C");
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.TypeScript= " + initialJson.toString() + ";"));
+                "window.Vaadin.TypeScript= " + json + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 

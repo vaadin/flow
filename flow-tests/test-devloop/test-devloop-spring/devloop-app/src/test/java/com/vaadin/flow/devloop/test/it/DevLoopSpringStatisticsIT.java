@@ -20,7 +20,6 @@ import java.time.Duration;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.openqa.selenium.By;
@@ -33,6 +32,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.BrowserTestBase;
 import com.vaadin.testbench.DriverSupplier;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * That the dev loop's usage-statistics entries actually reach a page.
@@ -87,10 +89,10 @@ class DevLoopSpringStatisticsIT extends BrowserTestBase
         cli.run("restart").assertExitCode(0);
 
         openTheView();
-        Assertions.assertTrue(registered("flow/devloop"),
+        assertTrue(registered("flow/devloop"),
                 "an application the daemon launched should report flow/devloop, "
                         + "but the page registered " + registrationNames());
-        Assertions.assertFalse(registered("flow/devloop/apply"),
+        assertFalse(registered("flow/devloop/apply"),
                 "a freshly launched application has hot swapped nothing yet, "
                         + "but the page registered " + registrationNames());
 
@@ -101,7 +103,7 @@ class DevLoopSpringStatisticsIT extends BrowserTestBase
         // when the document is rendered - so it is the next page load that
         // carries it.
         openTheView();
-        Assertions.assertTrue(registered("flow/devloop/apply"),
+        assertTrue(registered("flow/devloop/apply"),
                 "a hot-swapped change should report flow/devloop/apply, but "
                         + "the page registered " + registrationNames());
     }

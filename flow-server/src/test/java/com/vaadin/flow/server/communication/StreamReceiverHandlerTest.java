@@ -35,7 +35,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
@@ -57,7 +56,13 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class StreamReceiverHandlerTest {
@@ -128,21 +133,19 @@ class StreamReceiverHandlerTest {
                 .thenAnswer(invocationOnMock -> outputStream);
         when(response.getOutputStream()).thenReturn(responseOutput);
 
-        Mockito.when(session.getErrorHandler())
-                .thenReturn(Mockito.mock(ErrorHandler.class));
+        when(session.getErrorHandler()).thenReturn(mock(ErrorHandler.class));
     }
 
     private void mockReceiverAndRegistry() {
         when(session.getResourceRegistry()).thenReturn(registry);
-        when(registry.getResource(Mockito.any()))
+        when(registry.getResource(any()))
                 .thenReturn(Optional.of(streamReceiver));
         when(streamReceiver.getId()).thenReturn(expectedSecurityKey);
         when(streamReceiver.getStreamVariable()).thenReturn(streamVariable);
     }
 
     private void mockRequest() throws IOException {
-        HttpServletRequest servletRequest = Mockito
-                .mock(HttpServletRequest.class);
+        HttpServletRequest servletRequest = mock(HttpServletRequest.class);
         when(servletRequest.getContentLength()).thenAnswer(
                 invocationOnMock -> Integer.parseInt(contentLength));
 
@@ -265,20 +268,19 @@ class StreamReceiverHandlerTest {
     private void mockUi() {
         when(ui.getInternals()).thenReturn(uiInternals);
         when(uiInternals.getStateTree()).thenReturn(stateTree);
-        when(stateTree.getNodeById(Mockito.anyInt())).thenReturn(stateNode);
+        when(stateTree.getNodeById(anyInt())).thenReturn(stateNode);
         when(session.getUIById(uiId)).thenReturn(ui);
     }
 
     @Test
     void doHandleXhrFilePost_outputStreamGetterThrows_responseStatusIs500()
             throws IOException {
-        Mockito.doThrow(RuntimeException.class).when(streamVariable)
-                .getOutputStream();
+        doThrow(RuntimeException.class).when(streamVariable).getOutputStream();
 
         handler.doHandleXhrFilePost(session, request, response, streamReceiver,
                 stateNode, 1);
 
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -286,13 +288,13 @@ class StreamReceiverHandlerTest {
     void doHandleXhrFilePost_outputStreamThrowsOnWrite_responseStatusIs500()
             throws IOException {
 
-        Mockito.doThrow(RuntimeException.class).when(outputStream)
-                .write(Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
+        doThrow(RuntimeException.class).when(outputStream).write(any(),
+                anyInt(), anyInt());
 
         handler.doHandleXhrFilePost(session, request, response, streamReceiver,
                 stateNode, 1);
 
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -302,9 +304,9 @@ class StreamReceiverHandlerTest {
         handler.doHandleXhrFilePost(session, request, response, streamReceiver,
                 stateNode, 1);
 
-        Mockito.verify(response).setContentType(
+        verify(response).setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
-        Mockito.verify(response, Mockito.times(0)).setStatus(Mockito.anyInt());
+        verify(response, times(0)).setStatus(anyInt());
     }
 
     @Test
@@ -313,7 +315,7 @@ class StreamReceiverHandlerTest {
         handler.doHandleMultipartFileUpload(session, request, response,
                 streamReceiver, stateNode);
 
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -326,8 +328,8 @@ class StreamReceiverHandlerTest {
                         + "Content-Disposition: form-data; name=\"file\"; filename=\"EBookJP.txt\"\n"
                         + "Content-Type: text/plain\n" + "\n" + "\n"
                         + "------WebKitFormBoundary7NsWHeCJVZNwi6ll--");
-        Mockito.doThrow(RuntimeException.class).when(outputStream)
-                .write(Mockito.any(), Mockito.anyInt(), Mockito.anyInt());
+        doThrow(RuntimeException.class).when(outputStream).write(any(),
+                anyInt(), anyInt());
         contentLength = "99";
 
         parts = new ArrayList<>();
@@ -337,7 +339,7 @@ class StreamReceiverHandlerTest {
         handler.doHandleMultipartFileUpload(session, request, response,
                 streamReceiver, stateNode);
 
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -358,7 +360,7 @@ class StreamReceiverHandlerTest {
         handler.doHandleMultipartFileUpload(session, request, response, null,
                 null);
 
-        Mockito.verify(response)
+        verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
@@ -367,7 +369,7 @@ class StreamReceiverHandlerTest {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
-        Mockito.verify(responseOutput).close();
+        verify(responseOutput).close();
     }
 
     @Test
@@ -377,7 +379,7 @@ class StreamReceiverHandlerTest {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
-        Mockito.verifyNoInteractions(responseOutput);
+        verifyNoInteractions(responseOutput);
     }
 
     @Test
@@ -387,7 +389,7 @@ class StreamReceiverHandlerTest {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
-        Mockito.verifyNoInteractions(responseOutput);
+        verifyNoInteractions(responseOutput);
     }
 
     @Test // Vaadin Spring #381
@@ -410,10 +412,10 @@ class StreamReceiverHandlerTest {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
-        Mockito.verify(responseOutput).close();
+        verify(responseOutput).close();
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventArgumentCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable)
+        verify(streamVariable)
                 .streamingFinished(endEventArgumentCaptor.capture());
         assertEquals("foobar", new String(
                 ((ByteArrayOutputStream) outputStream).toByteArray()));
@@ -421,9 +423,9 @@ class StreamReceiverHandlerTest {
         assertEquals(contentType,
                 endEventArgumentCaptor.getValue().getMimeType());
 
-        Mockito.verify(response).setContentType(
+        verify(response).setContentType(
                 ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8);
-        Mockito.verify(response, Mockito.times(0)).setStatus(Mockito.anyInt());
+        verify(response, times(0)).setStatus(anyInt());
     }
 
     @Test
@@ -439,8 +441,8 @@ class StreamReceiverHandlerTest {
         handler.handleFileUploadValidationAndData(session, inputStream,
                 streamReceiver, null, null, 0, stateNode);
 
-        Mockito.verifyNoInteractions(errorHandler);
-        Mockito.verify(streamVariable).streamingFailed(Mockito.any());
+        verifyNoInteractions(errorHandler);
+        verify(streamVariable).streamingFailed(any());
     }
 
     @Test
@@ -460,17 +462,17 @@ class StreamReceiverHandlerTest {
         handler.handleFileUploadValidationAndData(session, inputStream,
                 streamReceiver, null, null, 0, stateNode);
 
-        Mockito.verifyNoInteractions(errorHandler);
+        verifyNoInteractions(errorHandler);
     }
 
     @Test
     void doHandleMultipartFileUpload_IOExceptionIsThrown_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws IOException, ServletException {
-        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
-        Mockito.doThrow(IOException.class).when(request).getParts();
+        VaadinServletRequest request = mock(VaadinServletRequest.class);
+        doThrow(IOException.class).when(request).getParts();
         handler.doHandleMultipartFileUpload(session, request, response,
                 streamReceiver, stateNode);
-        Mockito.verifyNoInteractions(errorHandler);
+        verifyNoInteractions(errorHandler);
     }
 
     @Test
@@ -484,8 +486,7 @@ class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable)
-                .streamingFinished(endEventCaptor.capture());
+        verify(streamVariable).streamingFinished(endEventCaptor.capture());
         assertEquals("test.txt", endEventCaptor.getValue().getFileName());
     }
 
@@ -501,8 +502,7 @@ class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable)
-                .streamingFinished(endEventCaptor.capture());
+        verify(streamVariable).streamingFinished(endEventCaptor.capture());
         assertEquals("my file åäö.txt",
                 endEventCaptor.getValue().getFileName());
     }
@@ -519,8 +519,7 @@ class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable)
-                .streamingFinished(endEventCaptor.capture());
+        verify(streamVariable).streamingFinished(endEventCaptor.capture());
         assertEquals("text/plain", endEventCaptor.getValue().getMimeType());
     }
 
@@ -536,8 +535,7 @@ class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable)
-                .streamingFinished(endEventCaptor.capture());
+        verify(streamVariable).streamingFinished(endEventCaptor.capture());
         assertEquals("unknown", endEventCaptor.getValue().getMimeType());
     }
 
@@ -552,8 +550,7 @@ class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable)
-                .streamingFinished(endEventCaptor.capture());
+        verify(streamVariable).streamingFinished(endEventCaptor.capture());
         assertEquals("unknown", endEventCaptor.getValue().getFileName());
     }
 

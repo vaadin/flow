@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,11 +18,8 @@ package com.vaadin.cdi.context;
 import java.io.Serializable;
 import java.util.Collections;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 
 import com.vaadin.cdi.annotation.NormalRouteScoped;
 import com.vaadin.cdi.context.RouteScopedContext.NavigationData;
@@ -33,6 +30,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.cdi.SerializationUtils.serializeAndDeserialize;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 
 public class RouteContextNormalTest extends
         AbstractContextTest<RouteContextNormalTest.RouteScopedTestBean> {
@@ -77,13 +78,12 @@ public class RouteContextNormalTest extends
         context.activate();
         BeanProvider.getContextualReference(getBeanType());
         UI ui = context.getUi();
-        try (MockedStatic<ApplicationConfiguration> appCfg = Mockito
-                .mockStatic(ApplicationConfiguration.class)) {
-            appCfg.when(
-                    () -> ApplicationConfiguration.get(ArgumentMatchers.any()))
-                    .thenReturn(Mockito.mock(ApplicationConfiguration.class));
+        try (MockedStatic<ApplicationConfiguration> appCfg = mockStatic(
+                ApplicationConfiguration.class)) {
+            appCfg.when(() -> ApplicationConfiguration.get(any()))
+                    .thenReturn(mock(ApplicationConfiguration.class));
             UI ui2 = serializeAndDeserialize(ui);
-            Assertions.assertNotNull(ui2);
+            assertNotNull(ui2);
         }
     }
 

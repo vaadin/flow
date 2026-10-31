@@ -23,13 +23,14 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class HandlerHelperTest {
 
@@ -41,13 +42,13 @@ class HandlerHelperTest {
 
     private HttpServletRequest createRequest(String pathInfo,
             String typeString) {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        HttpServletRequest request = mock(HttpServletRequest.class);
         if ("".equals(pathInfo)) {
             pathInfo = null;
         }
 
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(request.getParameter("v-r")).thenReturn(typeString);
+        when(request.getPathInfo()).thenReturn(pathInfo);
+        when(request.getParameter("v-r")).thenReturn(typeString);
         return request;
     }
 
@@ -126,7 +127,7 @@ class HandlerHelperTest {
     @Test
     void isFrameworkInternalRequest_validType_withServletMappingAndPath() {
         HttpServletRequest request = createRequest("", RequestType.INIT);
-        Mockito.when(request.getServletPath()).thenReturn("/servlet");
+        when(request.getServletPath()).thenReturn("/servlet");
 
         assertFalse(HandlerHelper.isFrameworkInternalRequest("/", request));
         assertFalse(HandlerHelper.isFrameworkInternalRequest("", request));
@@ -137,7 +138,7 @@ class HandlerHelperTest {
     @Test
     void isFrameworkInternalRequest_noType_withServletMappingAndPath() {
         HttpServletRequest request = createRequest("/", (RequestType) null);
-        Mockito.when(request.getServletPath()).thenReturn("/servlet");
+        when(request.getServletPath()).thenReturn("/servlet");
 
         assertFalse(HandlerHelper.isFrameworkInternalRequest("/", request));
         assertFalse(
@@ -364,9 +365,9 @@ class HandlerHelperTest {
             // HttpServletRequest#getServletPath
             servletPath = "";
         }
-        Mockito.when(servletRequest.getServletPath()).thenReturn(servletPath);
+        when(servletRequest.getServletPath()).thenReturn(servletPath);
         return new VaadinServletRequest(servletRequest,
-                Mockito.mock(VaadinServletService.class));
+                mock(VaadinServletService.class));
     }
 
     @Test

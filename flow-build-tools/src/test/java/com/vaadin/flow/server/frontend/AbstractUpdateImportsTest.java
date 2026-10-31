@@ -36,12 +36,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -70,6 +67,9 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -77,6 +77,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -215,7 +216,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         tokenFile = new File(tmpRoot, TOKEN_FILE);
 
         ClassFinder classFinder = getClassFinder();
-        featureFlags = Mockito.mock(FeatureFlags.class);
+        featureFlags = mock(FeatureFlags.class);
         options = new MockOptions(classFinder, tmpRoot).withTokenFile(tokenFile)
                 .withProductionMode(true).withFeatureFlags(featureFlags)
                 .withBundleBuild(true)
@@ -252,10 +253,9 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         updater.run();
 
         String output = logger.getLogs();
-        MatcherAssert.assertThat(output, CoreMatchers.not(CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "Use the './' prefix for files in the '"),
-                CoreMatchers.containsString(
+        assertThat(output, not(allOf(
+                containsString("Use the './' prefix for files in the '"),
+                containsString(
                         "folder: 'generated/jar-resources/foo.js', please update your annotations."))));
 
     }
@@ -302,11 +302,9 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         assertTrue(atLeastOneRemoved);
         updater.run();
 
-        MatcherAssert.assertThat(logger.getLogs(),
-                CoreMatchers.allOf(
-                        CoreMatchers.containsString(
-                                "@vaadin/vaadin-lumo-styles/spacing.js"),
-                        CoreMatchers.containsString(ERROR_MSG)));
+        assertThat(logger.getLogs(),
+                allOf(containsString("@vaadin/vaadin-lumo-styles/spacing.js"),
+                        containsString(ERROR_MSG)));
     }
 
     @Test
@@ -318,11 +316,10 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             updater.run();
             fail("Execute should have failed with missing file");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), CoreMatchers.allOf(
-                    CoreMatchers.containsString(
-                            "Failed to find the following files:"),
-                    CoreMatchers.containsString(fooFileName), CoreMatchers
-                            .containsString(getFrontendErrorMessageSuffix())));
+            assertThat(e.getMessage(),
+                    allOf(containsString("Failed to find the following files:"),
+                            containsString(fooFileName),
+                            containsString(getFrontendErrorMessageSuffix())));
         }
 
     }
@@ -342,7 +339,7 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             updater.run();
             fail("Execute should have failed with advice to run `prepare-frontend`");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), CoreMatchers.containsString(
+            assertThat(e.getMessage(), containsString(
                     "Unable to locate frontend resources and missing token file. "
                             + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application"));
         }
@@ -360,12 +357,11 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             updater.run();
             fail("Execute should have failed with missing files");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), CoreMatchers.allOf(
-                    CoreMatchers.containsString(
-                            "Failed to find the following files:"),
-                    CoreMatchers.containsString(localTemplateFileName),
-                    CoreMatchers.containsString(fooFileName), CoreMatchers
-                            .containsString(getFrontendErrorMessageSuffix())));
+            assertThat(e.getMessage(),
+                    allOf(containsString("Failed to find the following files:"),
+                            containsString(localTemplateFileName),
+                            containsString(fooFileName),
+                            containsString(getFrontendErrorMessageSuffix())));
         }
 
     }
@@ -475,22 +471,20 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         String output = logger.getLogs();
 
-        MatcherAssert.assertThat(output, CoreMatchers.containsString(
+        assertThat(output, containsString(
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
-        MatcherAssert.assertThat(output, CoreMatchers
-                .containsString("Use the './' prefix for files in the '"
+        assertThat(output,
+                containsString("Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
                         + "' folder: 'vaadin-mixed-component/src/vaadin-mixed-component.js'"));
 
         // Using regex match because of the ➜ character in TC
-        MatcherAssert.assertThat(output,
-                CoreMatchers.allOf(CoreMatchers.containsString(
-                        "Failed to find the following imports in the `node_modules` tree:"),
-                        CoreMatchers.containsString("unresolved/component")));
+        assertThat(output, allOf(containsString(
+                "Failed to find the following imports in the `node_modules` tree:"),
+                containsString("unresolved/component")));
 
-        MatcherAssert.assertThat(output,
-                CoreMatchers.not(CoreMatchers.containsString(
-                        "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'")));
+        assertThat(output, not(containsString(
+                "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'")));
     }
 
     @Test
@@ -499,10 +493,10 @@ abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 "@vaadin/vaadin-mixed-component/bar.css").delete());
         updater.run();
         String output = logger.getLogs();
-        MatcherAssert.assertThat(output, CoreMatchers.containsString(
+        assertThat(output, containsString(
                 "Failed to find the following css files in the `node_modules`"));
-        MatcherAssert.assertThat(output, CoreMatchers
-                .containsString("@vaadin/vaadin-mixed-component/bar.css"));
+        assertThat(output,
+                containsString("@vaadin/vaadin-mixed-component/bar.css"));
     }
 
     @Test

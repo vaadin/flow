@@ -101,6 +101,14 @@ SUBMAP = {
 
 SERVLET_NAMES = ("SyncError", "LogoutWithNotification")
 
+# flat ui package ITs whose keyword-derived feature was overruled when their
+# feature batch migrated
+CONFIRMED_FEATURES = {
+    "ElementInitOrderIT": "templates.polymer",
+    "ServiceInitListenersIT": "bootstrap",
+    "CustomBrowserTooOldPageIT": "bootstrap",
+}
+
 
 def target(module, submodule, pkg, cls, sub):
     """(target_module, feature, type) where type is move|reuse|keep|done."""
@@ -112,7 +120,8 @@ def target(module, submodule, pkg, cls, sub):
         if pkg == "com.vaadin.flow":
             return ("test-default", "bootstrap", "move")
         if sub == "":  # flat ui package
-            return ("test-default", feat_flat(cls), "move")
+            feat = CONFIRMED_FEATURES.get(cls) or feat_flat(cls)
+            return ("test-default", feat, "move")
         feat = SUBMAP.get(sub)
         if feat == "__faulttol__":
             return ("test-fault-tolerance(keep)", "fault-tolerance", "keep")

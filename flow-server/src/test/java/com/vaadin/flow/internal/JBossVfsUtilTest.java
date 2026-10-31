@@ -33,12 +33,12 @@ import java.util.jar.JarFile;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 class JBossVfsUtilTest {
 
@@ -416,8 +416,8 @@ class JBossVfsUtilTest {
         });
 
         MockLogger logger = new MockLogger();
-        try (MockedStatic<LoggerFactory> loggerFactory = Mockito
-                .mockStatic(LoggerFactory.class)) {
+        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
+                LoggerFactory.class)) {
             loggerFactory
                     .when(() -> LoggerFactory.getLogger(JBossVfsUtil.class))
                     .thenReturn(logger);

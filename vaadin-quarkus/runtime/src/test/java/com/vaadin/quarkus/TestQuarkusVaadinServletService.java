@@ -20,8 +20,6 @@ import jakarta.servlet.ServletContext;
 
 import java.util.Properties;
 
-import org.mockito.Mockito;
-
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
@@ -45,11 +43,14 @@ public class TestQuarkusVaadinServletService
         when(getServlet().getService()).thenReturn(this);
         servletcontext = mock(ServletContext.class);
         when(getServlet().getServletContext()).thenReturn(servletcontext);
+        Lookup lookup = mock(Lookup.class);
         when(servletcontext.getAttribute(Lookup.class.getName()))
-                .thenReturn(Mockito.mock(Lookup.class));
+                .thenReturn(lookup);
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
         when(servletcontext
                 .getAttribute(ApplicationConfiguration.class.getName()))
-                .thenReturn(Mockito.mock(ApplicationConfiguration.class));
+                .thenReturn(appConfig);
         DeploymentConfiguration config = getDeploymentConfiguration();
         Properties properties = new Properties();
         when(config.getInitParameters()).thenReturn(properties);

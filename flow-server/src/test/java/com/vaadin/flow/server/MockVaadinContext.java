@@ -17,15 +17,16 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletContext;
 
-import org.mockito.Mockito;
-
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RoutePathProvider;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class MockVaadinContext extends VaadinServletContext {
 
-    private Lookup lookup = Mockito.mock(Lookup.class);
+    private Lookup lookup = mock(Lookup.class);
 
     public static class RoutePathProviderImpl implements RoutePathProvider {
 
@@ -53,8 +54,7 @@ public class MockVaadinContext extends VaadinServletContext {
             RoutePathProvider provider) {
         super(context);
 
-        Mockito.when(lookup.lookup(RoutePathProvider.class))
-                .thenReturn(provider);
+        when(lookup.lookup(RoutePathProvider.class)).thenReturn(provider);
 
         setAttribute(lookup);
     }

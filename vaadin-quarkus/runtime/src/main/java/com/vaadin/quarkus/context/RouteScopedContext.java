@@ -51,10 +51,18 @@ import com.vaadin.quarkus.annotation.VaadinSessionScoped;
  */
 public class RouteScopedContext extends AbstractContext {
 
+    /**
+     * Manages the contextual storages of route scoped beans, one for each route
+     * owner in each browser window or UI.
+     */
     public abstract static class ContextualStorageManager
             extends AbstractContextualStorageManager<RouteStorageKey> {
 
-        public ContextualStorageManager() {
+        /**
+         * Creates a storage manager that relies on the session lock instead of
+         * locking on its own.
+         */
+        protected ContextualStorageManager() {
             // Session lock checked in VaadinSessionScopedContext while
             // getting the session attribute.
             super(false);
@@ -173,8 +181,8 @@ public class RouteScopedContext extends AbstractContext {
             return getKeySet().stream()
                     .filter(key -> key.getUIId()
                             .equals(getUIStoreId(UI.getCurrentOrThrow())))
-                    .map(key -> getContextualStorage(key, false))
-                    .collect(Collectors.toList());
+                    .map(key -> super.getContextualStorage(key, false))
+                    .toList();
         }
 
     }
@@ -186,7 +194,7 @@ public class RouteScopedContext extends AbstractContext {
 
     }
 
-    static class RouteStorageKey implements Serializable {
+    static final class RouteStorageKey implements Serializable {
         private final Class<?> owner;
         private final String uiId;
 
@@ -244,10 +252,6 @@ public class RouteScopedContext extends AbstractContext {
         List<Class<? extends RouterLayout>> getLayouts() {
             return layouts;
         }
-    }
-
-    public RouteScopedContext() {
-        super();
     }
 
     @Override
@@ -328,7 +332,7 @@ public class RouteScopedContext extends AbstractContext {
     @SuppressWarnings("unchecked")
     private Class<?> getOwner(UI ui, Bean<?> bean) {
         return bean.getQualifiers().stream()
-                .filter(annotation -> annotation instanceof RouteScopeOwner)
+                .filter(RouteScopeOwner.class::isInstance)
                 .map(annotation -> (Class<?>) (((RouteScopeOwner) annotation)
                         .value()))
                 .findFirst()

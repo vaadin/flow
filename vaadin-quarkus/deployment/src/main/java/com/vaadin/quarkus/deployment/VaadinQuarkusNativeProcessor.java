@@ -647,13 +647,13 @@ public class VaadinQuarkusNativeProcessor {
 
     private Stream<ClassInfo> collectClassesInPackage(IndexView index,
             String basePackage, boolean recursive) {
-        Predicate<ClassInfo> predicate = recursive
-                ? classInfo -> classInfo.name().packagePrefix() != null
-                        && classInfo.name().packagePrefix()
-                                .startsWith(basePackage)
-                : classInfo -> classInfo.name().packagePrefix() != null
-                        && classInfo.name().packagePrefix().equals(basePackage);
-        return index.getKnownClasses().stream().filter(predicate);
+        Predicate<String> inPackage = recursive
+                ? packageName -> packageName.startsWith(basePackage)
+                : basePackage::equals;
+        return index.getKnownClasses().stream().filter(classInfo -> {
+            String packageName = classInfo.name().packagePrefix();
+            return packageName != null && inPackage.test(packageName);
+        });
     }
 
     /**
@@ -670,10 +670,9 @@ public class VaadinQuarkusNativeProcessor {
      *         inner classes
      */
     static boolean isI18nClassName(String className) {
-        // matches() anchors the whole name, so what used to be an alternation
-        // of anchors inside the group is simply an optional group: the name
-        // either ends at I18n/I18N or continues into an inner class.
-        return className.matches(".*I18[nN](\\$.*)?");
+        // The name either ends at I18n/I18N or continues into an inner class
+        return className.endsWith("I18n") || className.endsWith("I18N")
+                || className.contains("I18n$") || className.contains("I18N$");
     }
 
     // These should really go into the separate components but are here for now
@@ -738,6 +737,10 @@ public class VaadinQuarkusNativeProcessor {
                 .build());
     }
 
+    /**
+     * Build step condition that is true when the application is built as a
+     * native image.
+     */
     public static class IsNativeBuild implements BooleanSupplier {
         @Inject
         NativeConfig nativeConfig;

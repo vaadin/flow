@@ -257,7 +257,7 @@ public final class Daemon {
             return;
         }
         Connector connector = new Connector(out);
-        transactions.onConnector(connector);
+        transactions.onConnector(connector, registration.snapshot);
         out.println("> registered");
         // Issued off-thread: the reply is only readable once the pump below is
         // running, so asking inline would wait for a line nobody is reading.

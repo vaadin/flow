@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.test.routing;
 
-import org.junit.jupiter.api.Assertions;
-
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.test.AbstractDefaultIT;
 import com.vaadin.flow.test.TestFor;
 import com.vaadin.testbench.BrowserTest;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestFor(BasePathView.class)
 public class BasePathIT extends AbstractDefaultIT {
@@ -29,8 +29,7 @@ public class BasePathIT extends AbstractDefaultIT {
     public void navigationTo_routeWithBasePath_succeeds() {
         open();
 
-        Assertions.assertTrue(
-                $(SpanElement.class).withText("BasePathView").exists());
+        assertTrue($(SpanElement.class).withText("BasePathView").exists());
     }
 
 }

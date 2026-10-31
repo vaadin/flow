@@ -475,6 +475,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            removes the attribute, which opens the link in the current
      *            context
      * @see #setOpenInNewBrowserTab(boolean)
+     * @since 25.4
      */
     public void setTarget(String target) {
         if (target == null || target.isEmpty()) {
@@ -489,6 +490,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *
      * @return the {@code target} attribute, or {@code null} if none is set
      * @see #setTarget(String)
+     * @since 25.4
      */
     public String getTarget() {
         return getElement().getAttribute(TARGET);
@@ -503,6 +505,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            {@code true} to open the route in a new tab, {@code false} to
      *            navigate in the current one
      * @see #setTarget(String)
+     * @since 25.4
      */
     public void setOpenInNewBrowserTab(boolean openInNewBrowserTab) {
         setTarget(openInNewBrowserTab ? BLANK : null);
@@ -513,6 +516,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *
      * @return {@code true} if the target is {@code _blank}
      * @see #setOpenInNewBrowserTab(boolean)
+     * @since 25.4
      */
     public boolean isOpenInNewBrowserTab() {
         return BLANK.equals(getTarget());

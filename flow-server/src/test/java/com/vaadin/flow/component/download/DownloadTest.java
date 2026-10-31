@@ -20,7 +20,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -38,8 +37,7 @@ import static org.mockito.Mockito.when;
 class DownloadTest {
 
     @Tag("test-button")
-    static final class TestButton extends Component
-            implements ClickNotifier<TestButton> {
+    static final class TestButton extends Component {
     }
 
     private UI ui;
@@ -66,7 +64,8 @@ class DownloadTest {
                 "Expected install captures to include the event name: "
                         + installFn.getCaptures());
         JsFunction action = actionOf(installFn);
-        assertEquals("window.Vaadin.Flow.download.start($0(event))",
+        assertEquals(
+                "window.Vaadin.Flow.download.start($0(event), undefined, event)",
                 action.getBody());
         resourceUri(action);
     }
@@ -76,7 +75,8 @@ class DownloadTest {
         Download.onClick(button, "/files/a.bin", "b.bin");
 
         JsFunction action = actionOf(singleInstallFn());
-        assertEquals("window.Vaadin.Flow.download.start($0(event), $1(event))",
+        assertEquals(
+                "window.Vaadin.Flow.download.start($0(event), $1(event), event)",
                 action.getBody());
         assertEquals("return $0",
                 ((JsFunction) action.getCaptures().get(1)).getBody());

@@ -16,10 +16,12 @@
 package com.vaadin.quarkus.context;
 
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.server.VaadinSession;
+
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 public class SessionContextTest
@@ -37,15 +39,12 @@ public class SessionContextTest
 
         VaadinSession.setCurrent(null);
 
-        Assertions.assertNull(
-                getContext().getContextualStorage(contextual, false));
-        Assertions.assertNull(
-                getContext().getContextualStorage(contextual, true));
+        assertNull(getContext().getContextualStorage(contextual, false));
+        assertNull(getContext().getContextualStorage(contextual, true));
         getContext().destroyAllActive();
         // getState() is the sibling path Arc reaches the same way, and it
         // walks the same storages, so it has to tolerate the absent one too.
-        Assertions.assertTrue(
-                getContext().getState().getContextualInstances().isEmpty());
+        assertTrue(getContext().getState().getContextualInstances().isEmpty());
     }
 
     @Override

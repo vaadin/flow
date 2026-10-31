@@ -124,6 +124,8 @@ final class AppProcess {
     static final class Run {
         final Process process;
         final Path logFile;
+        /** The files the launch reads, as stamped when it was spawned. */
+        final Compile.Snapshot snapshot;
         final CountDownLatch registrationLatch = new CountDownLatch(1);
         final AtomicBoolean stopExpected = new AtomicBoolean();
         /**
@@ -134,9 +136,10 @@ final class AppProcess {
          */
         final AtomicInteger openRegistrations = new AtomicInteger();
 
-        Run(Process process, Path logFile) {
+        Run(Process process, Path logFile, Compile.Snapshot snapshot) {
             this.process = process;
             this.logFile = logFile;
+            this.snapshot = snapshot;
         }
     }
 
@@ -261,23 +264,15 @@ final class AppProcess {
     }
 
     /**
-     * When the running JVM started, in epoch milliseconds.
-     * <p>
-     * This is the frontend leg's substitute for a build artifact. A Java source
-     * is stale when it is newer than its {@code .class} and a resource when it
-     * is newer than its classpath copy, but a frontend file has neither - what
-     * read it was the application, at startup. So a frontend file newer than
-     * this has not been folded into anything yet, whatever the daemon's own
-     * fingerprints say.
+     * The files the running application was launched with, as stamped the
+     * moment its process was spawned; see {@link Compile.Snapshot}.
      *
-     * @return the start time, or empty when there is no process or the platform
-     *         does not report one
+     * @return the snapshot, or empty when there is no process
      */
-    Optional<Long> startedAtMillis() {
+    Optional<Compile.Snapshot> launchSnapshot() {
         Run current = run;
         return current == null || !current.process.isAlive() ? Optional.empty()
-                : current.process.info().startInstant()
-                        .map(java.time.Instant::toEpochMilli);
+                : Optional.of(current.snapshot);
     }
 
     String mode() {
@@ -426,13 +421,20 @@ final class AppProcess {
             // built - a fresh clone, or anything after a mvn clean - and fail
             // with "cannot tell how to start this application". Asked after,
             // the answer is the one composing already settled on.
-            AppRuntime.Invocation invocation = launch.invocation(
-                    Daemon.currentPort(), Daemon.currentToken(), launchKind,
-                    log);
+            Launch.Composed composed = launch.invocation(Daemon.currentPort(),
+                    Daemon.currentToken(), launchKind, log);
+            AppRuntime.Invocation invocation = composed.invocation();
             AppRuntime runtime = launch.runtime();
             List<String> command = invocation.command();
             Path appLog = Launch.workDir(root).resolve("app.log");
             Files.createDirectories(appLog.getParent());
+            // As close to the spawn as it can be while still ahead of
+            // markStarting, so that a walk which fails leaves no launch open
+            // behind it. An edit made after this is one the launch may or may
+            // not read, and reporting it as a change is the safe way round:
+            // the worst it costs is one apply more than was needed - and for
+            // a bundled frontend file, whose change escalates, one restart.
+            Compile.Snapshot snapshot = Compile.Snapshot.of(composed.project());
 
             markStarting();
 
@@ -451,7 +453,7 @@ final class AppProcess {
                             ProcessBuilder.Redirect.to(appLog.toFile()));
             builder.environment().putAll(invocation.environment());
             Process started = builder.start();
-            Run current = beginRun(started, appLog);
+            Run current = beginRun(started, appLog, snapshot);
             log.line("app pid " + started.pid() + ", log " + appLog);
 
             started.onExit().thenAccept(exited -> handleExit(current));
@@ -751,8 +753,8 @@ final class AppProcess {
      * Publishes a launch as the current run, which is what makes its exit
      * callback authoritative and every earlier one obsolete.
      */
-    Run beginRun(Process started, Path appLog) {
-        Run current = new Run(started, appLog);
+    Run beginRun(Process started, Path appLog, Compile.Snapshot snapshot) {
+        Run current = new Run(started, appLog, snapshot);
         this.run = current;
         return current;
     }

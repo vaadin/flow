@@ -71,11 +71,19 @@ public class VaadinServiceScopedContext extends AbstractContext {
                 && QuarkusVaadinServlet.getCurrentServletName().isPresent());
     }
 
+    /**
+     * Manages the contextual storages of Vaadin service scoped beans, one for
+     * each servlet.
+     */
     @ApplicationScoped
     @Unremovable
     public static class ContextualStorageManager
             extends AbstractContextualStorageManager<String> {
 
+        /**
+         * Creates a storage manager with its own locking, since all sessions of
+         * the service share its storages.
+         */
         public ContextualStorageManager() {
             super(true);
         }

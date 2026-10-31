@@ -54,7 +54,18 @@ class EmailValidatorTest extends ValidatorTestBase {
         RegexpValidator v = shouldNotFail();
         assertPasses("johannesd+test@vaadin.com", v);
         assertPasses("johannes.dahlstrom@vaadin.com", v);
+        assertPasses("johannes.k.dahlstrom@vaadin.com", v);
+        assertPasses("johannes.-d+x.y@vaadin.com", v);
         assertPasses("johannes_d@vaadin.com", v);
+    }
+
+    @Test
+    void testLocalPartWithMisplacedDotFails() {
+        RegexpValidator v = validator(
+                "leading, trailing or consecutive dots not allowed");
+        assertFails(".johannes@vaadin.com", v);
+        assertFails("johannes.@vaadin.com", v);
+        assertFails("johannes..dahlstrom@vaadin.com", v);
     }
 
     @Test

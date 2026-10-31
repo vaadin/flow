@@ -28,6 +28,8 @@ import org.atmosphere.cpr.AtmosphereConfig;
  * the WebSocket container may already refuse new endpoints.
  * <p>
  * This class is meant for internal use only.
+ * 
+ * @since 25.4
  */
 public class QuarkusJSR356AsyncSupport extends Servlet30CometSupport {
 

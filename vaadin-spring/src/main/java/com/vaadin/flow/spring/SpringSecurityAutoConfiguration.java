@@ -18,7 +18,9 @@ package com.vaadin.flow.spring;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -77,6 +79,9 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 @ConditionalOnClass(WebSecurityCustomizer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringSecurityAutoConfiguration {
+
+    @Autowired
+    private ObjectProvider<SecurityContextHolderStrategy> securityContextHolderStrategy;
 
     /**
      * Creates the auto configuration. Spring instantiates it.
@@ -196,7 +201,8 @@ public class SpringSecurityAutoConfiguration {
             VaadinConfigurationProperties vaadinProperties,
             @Lazy WebInvocationPrivilegeEvaluator evaluator) {
         return new SpringAccessPathChecker(evaluator,
-                vaadinProperties.getUrlMapping());
+                vaadinProperties.getUrlMapping(),
+                securityContextHolderStrategy.getObject());
     }
 
     /**
@@ -246,7 +252,8 @@ public class SpringSecurityAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     AuthenticationContext authenticationContext() {
-        return new AuthenticationContext();
+        return new AuthenticationContext(
+                securityContextHolderStrategy.getObject());
     }
 
     @Bean

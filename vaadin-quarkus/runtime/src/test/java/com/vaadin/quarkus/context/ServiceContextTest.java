@@ -21,11 +21,12 @@ import jakarta.inject.Inject;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.quarkus.QuarkusVaadinServlet;
 import com.vaadin.quarkus.annotation.VaadinServiceScoped;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @QuarkusTest
 public class ServiceContextTest
@@ -52,10 +53,10 @@ public class ServiceContextTest
         thread.start();
         thread.join();
 
-        Assertions.assertFalse(namePresent.get(),
+        assertFalse(namePresent.get(),
                 "a thread that has not been inside init() or service() has no "
                         + "servlet name, and asking must not throw");
-        Assertions.assertFalse(active.get(),
+        assertFalse(active.get(),
                 "the service context is not active without a servlet name");
     }
 

@@ -38,6 +38,8 @@ import com.vaadin.flow.function.SerializableSupplier;
 @NotThreadSafe
 public class ThemeSwitchLiveReloadIT extends AbstractReloadIT {
 
+    // html background colors set by the styles.css of each theme
+    private static final String WHITE_COLOR = "rgba(255, 255, 255, 1)";
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
     private static final String ERROR_MESSAGE = "Expected theme swap from '%s' to '%s' has not been done after '%d' attempts";
     private static final int TIMEOUT = 5;
@@ -96,15 +98,28 @@ public class ThemeSwitchLiveReloadIT extends AbstractReloadIT {
     }
 
     private void waitUntilAppTheme() {
+        // Wait for the app theme color instead of the absence of the other
+        // theme color: a page that is not styled yet also lacks the other
+        // theme color, which would end the wait before the DevTools restart
+        // triggered by the recompilation, and the restart would then hit the
+        // next test.
         waitUntilThemeSwap(
                 String.format(ERROR_MESSAGE, OTHER_THEME, APP_THEME, ATTEMPTS),
-                () -> !isOtherThemeUsed());
+                this::isAppThemeUsed);
+    }
+
+    private boolean isAppThemeUsed() {
+        return isBackgroundColor(WHITE_COLOR);
     }
 
     private boolean isOtherThemeUsed() {
+        return isBackgroundColor(BLUE_COLOR);
+    }
+
+    private boolean isBackgroundColor(String color) {
         try {
             final WebElement html = findElement(By.tagName("html"));
-            return BLUE_COLOR.equals(html.getCssValue("background-color"));
+            return color.equals(html.getCssValue("background-color"));
         } catch (StaleElementReferenceException e) {
             return false;
         }

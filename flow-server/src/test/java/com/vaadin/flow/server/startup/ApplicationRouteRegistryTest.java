@@ -32,7 +32,6 @@ import java.util.concurrent.Future;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -43,6 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 /**
  * Tests for {@link ApplicationRouteRegistry} instance .
@@ -54,7 +54,7 @@ class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
     @BeforeEach
     void init() {
         registry = ApplicationRouteRegistry.getInstance(
-                new VaadinServletContext(Mockito.mock(ServletContext.class)));
+                new VaadinServletContext(mock(ServletContext.class)));
     }
 
     @Test

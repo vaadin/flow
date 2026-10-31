@@ -60,6 +60,7 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
     private final WorkspaceModule appModule;
     private final SourceDir sourcesDir;
     private final SourceDir resourcesDir;
+    private ClassFinder classFinder;
 
     /**
      * Creates a new instance of {@link QuarkusPluginAdapter} for the give build
@@ -233,8 +234,6 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
                 .toPath().resolve(FrontendUtils.GENERATED).toFile());
     }
 
-    private ClassFinder classFinder;
-
     @Override
     public ClassFinder getClassFinder() {
         if (classFinder == null) {
@@ -282,37 +281,37 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
 
     @Override
     public void logDebug(CharSequence charSequence) {
-        LOGGER.debug(charSequence.toString());
+        LOGGER.debug("{}", charSequence);
     }
 
     @Override
     public void logDebug(CharSequence charSequence, Throwable throwable) {
-        LOGGER.debug(charSequence.toString(), throwable);
+        LOGGER.debug("{}", charSequence, throwable);
     }
 
     @Override
     public void logInfo(CharSequence charSequence) {
-        LOGGER.info(charSequence.toString());
+        LOGGER.info("{}", charSequence);
     }
 
     @Override
     public void logWarn(CharSequence charSequence) {
-        LOGGER.warn(charSequence.toString());
+        LOGGER.warn("{}", charSequence);
     }
 
     @Override
     public void logError(CharSequence charSequence) {
-        LOGGER.error(charSequence.toString());
+        LOGGER.error("{}", charSequence);
     }
 
     @Override
     public void logWarn(CharSequence charSequence, Throwable throwable) {
-        LOGGER.warn(charSequence.toString(), throwable);
+        LOGGER.warn("{}", charSequence, throwable);
     }
 
     @Override
     public void logError(CharSequence charSequence, Throwable throwable) {
-        LOGGER.error(charSequence.toString(), throwable);
+        LOGGER.error("{}", charSequence, throwable);
     }
 
     @Override
@@ -381,6 +380,9 @@ class QuarkusPluginAdapter implements PluginAdapterBuild {
                 "resourceOutputDirectory");
     }
 
+    /**
+     * @deprecated use {@link #frontendOutputDirectory()} instead
+     */
     @Deprecated(since = "24.8", forRemoval = true)
     @Override
     public File webpackOutputDirectory() {
