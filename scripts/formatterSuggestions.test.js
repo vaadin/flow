@@ -82,12 +82,35 @@ test('suggestions past the limit are counted instead', () => {
   assert.deepStrictEqual([...unsuggested], [[PATH, 3]]);
 });
 
-test('lines added at the start of a file are suggested with the line after them', () => {
-  const diff = `diff --git a/${PATH} b/${PATH}\n--- a/${PATH}\n+++ b/${PATH}\n@@ -1 +1,3 @@\n+/* header */\n+\n package a;\n`;
-  const { comments } = suggestions(diff, [[PATH, [[1, 3]]]]);
+test('lines added around the first line of a file are suggested together with it', () => {
+  // The two blocks are both anchored on the package line, and overlapping
+  // suggestions can't be committed together
+  const diff = `diff --git a/${PATH} b/${PATH}\n--- a/${PATH}\n+++ b/${PATH}\n@@ -1,2 +1,5 @@\n+/* header */\n+\n package a;\n+\n import b;\n`;
+  const { comments, unsuggested } = suggestions(diff, [[PATH, [[1, 5]]]]);
   assert.deepStrictEqual(comments, [
-    { path: PATH, line: 1, side: 'RIGHT', body: SUGGESTION + '```suggestion\n/* header */\n\npackage a;\n```' }
+    { path: PATH, line: 1, side: 'RIGHT', body: SUGGESTION + '```suggestion\n/* header */\n\npackage a;\n\n```' }
   ]);
+  assert.deepStrictEqual([...unsuggested], []);
+
+  // Outside the pull request diff, the merged suggestion counts both changes
+  assert.deepStrictEqual([...suggestions(diff, [[PATH, [[3, 3]]]]).unsuggested], [[PATH, 2]]);
+});
+
+test('parseDiff numbers each file of a diff on its own hunks', () => {
+  const other = 'flow-server/src/main/java/com/vaadin/flow/Bar.java';
+  const diff =
+    DIFF +
+    `diff --git a/${other} b/${other}\n--- a/${other}\n+++ b/${other}\n@@ -3,2 +3,2 @@\n class Bar {\n-int a;\n+  int a;\n`;
+  const files = parseDiff(diff);
+  assert.deepStrictEqual(
+    files.map((f) => f.path),
+    [PATH, other]
+  );
+  assert.strictEqual(files[0].blocks.length, 4);
+  assert.deepStrictEqual(
+    files[1].blocks.map(({ oldStart, removed, added, previous }) => ({ oldStart, removed, added, previous })),
+    [{ oldStart: 4, removed: ['int a;'], added: ['  int a;'], previous: 'class Bar {' }]
+  );
 });
 
 test('a changed last line is suggested, and its missing newline counted', () => {

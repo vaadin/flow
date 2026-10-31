@@ -148,21 +148,21 @@ function fence(kind, lines) {
 }
 
 /**
- * The review comment suggesting a changed block, or null if a suggestion
- * can't express it. A suggestion replaces whole lines, so a block that only
- * adds lines is anchored on the line before or after it.
+ * The lines a changed block replaces and the lines to replace them with, or
+ * null if a suggestion can't express it. A suggestion replaces whole lines,
+ * so a block that only adds lines is anchored on the line before or after it.
  */
-function suggestionOf(path, block) {
+function replacementOf(block) {
   let start = block.oldStart;
   let end = block.oldStart + block.removed.length - 1;
-  let replacement = block.added;
+  let lines = block.added;
   if (block.removed.length === 0) {
     if (block.previous !== null) {
       start = end = block.oldStart - 1;
-      replacement = [block.previous, ...block.added];
+      lines = [block.previous, ...block.added];
     } else if (block.next !== null) {
       start = end = block.oldStart;
-      replacement = [...block.added, block.next];
+      lines = [...block.added, block.next];
     } else {
       return null;
     }
@@ -170,7 +170,41 @@ function suggestionOf(path, block) {
     // Only the newline at the end of the file differs
     return null;
   }
-  const comment = { path, line: end, side: 'RIGHT', body: SUGGESTION_PREFIX + '\n' + fence('suggestion', replacement) };
+  return { start, end, lines, newlineChanged: block.newlineChanged, changes: 1 };
+}
+
+/**
+ * The replacements of the changed blocks of a file, and the number of blocks
+ * a suggestion can't express. Two blocks anchored on the same context line,
+ * like a header added before the first line and a blank line added after it,
+ * are merged into one replacement, as overlapping suggestions can't be
+ * committed together.
+ */
+function replacementsOf(blocks) {
+  const replacements = [];
+  let unexpressed = 0;
+  for (const block of blocks) {
+    const replacement = replacementOf(block);
+    const last = replacements[replacements.length - 1];
+    if (!replacement) {
+      unexpressed++;
+    } else if (last && replacement.start <= last.end) {
+      // The overlapping lines are unchanged context in both
+      const overlap = last.end - replacement.start + 1;
+      last.lines = [...last.lines, ...replacement.lines.slice(overlap)];
+      last.end = replacement.end;
+      last.newlineChanged = last.newlineChanged || replacement.newlineChanged;
+      last.changes++;
+    } else {
+      replacements.push(replacement);
+    }
+  }
+  return { replacements, unexpressed };
+}
+
+/** The review comment suggesting a replacement. */
+function suggestionOf(path, { start, end, lines }) {
+  const comment = { path, line: end, side: 'RIGHT', body: SUGGESTION_PREFIX + '\n' + fence('suggestion', lines) };
   if (start < end) {
     Object.assign(comment, { start_line: start, start_side: 'RIGHT' });
   }
@@ -186,23 +220,26 @@ function suggestionOf(path, block) {
 function collectSuggestions(diffFiles, prFiles, maxSuggestions = MAX_SUGGESTIONS) {
   const comments = [];
   const unsuggested = new Map();
+  const count = (path, changes) => unsuggested.set(path, (unsuggested.get(path) || 0) + changes);
   for (const { path, blocks } of diffFiles) {
     const ranges = prFiles.get(path);
     if (!ranges) {
       continue;
     }
-    for (const block of blocks) {
-      const comment = suggestionOf(path, block);
-      const first = comment && (comment.start_line ?? comment.line);
-      const inDiff = comment && ranges.some(([from, to]) => from <= first && comment.line <= to);
+    const { replacements, unexpressed } = replacementsOf(blocks);
+    if (unexpressed > 0) {
+      count(path, unexpressed);
+    }
+    for (const replacement of replacements) {
+      const inDiff = ranges.some(([from, to]) => from <= replacement.start && replacement.end <= to);
       if (inDiff && comments.length < maxSuggestions) {
-        comments.push(comment);
-        if (block.newlineChanged) {
+        comments.push(suggestionOf(path, replacement));
+        if (replacement.newlineChanged) {
           // The suggestion fixes the line, but not the newline after it
-          unsuggested.set(path, (unsuggested.get(path) || 0) + 1);
+          count(path, 1);
         }
       } else {
-        unsuggested.set(path, (unsuggested.get(path) || 0) + 1);
+        count(path, replacement.changes);
       }
     }
   }
