@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
       issues: write
     steps:
