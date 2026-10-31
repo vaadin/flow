@@ -41,7 +41,7 @@ jobs:
       issues: write
     steps:
       - name: Report on the pull request
-        uses: vaadin/github-actions/formatter-suggestions@ff3cad16ca862680a5abc6df9c6a20f0236bb81a
+        uses: vaadin/github-actions/formatter-suggestions@aa988b8310613280895c08e7cf981b573590fcbf # main
         with:
           fix-command: mvn spotless:apply
           # The marker of the comments already on open pull requests
