@@ -105,6 +105,10 @@ export class SseConnection {
         this.options.onOpen?.(this.createResponse('opening'));
       };
 
+      // The server ends the stream at the heartbeat interval, so that a new
+      // request keeps the session and the UI alive
+      this.eventSource.addEventListener('reopen', () => this.connect());
+
       this.eventSource.onmessage = (event) => {
         this.watchStream();
         const response = this.createResponse('messageReceived');

@@ -65,7 +65,7 @@ public class SseRequestHandler implements SessionExpiredHandler {
 
     private final VaadinServletService service;
 
-    private transient ScheduledExecutorService keepAliveExecutor;
+    private transient ScheduledExecutorService scheduler;
 
     /**
      * Creates an instance connected to the given service.
@@ -162,13 +162,24 @@ public class SseRequestHandler implements SessionExpiredHandler {
 
             SseStream stream = new SseStream(sseConnection, asyncContext);
             asyncContext.addListener(stream);
+            // An open stream replaces the heartbeat requests of the client
+            ui.getInternals()
+                    .setLastHeartbeatTimestamp(System.currentTimeMillis());
             int keepAliveInterval = getKeepAliveInterval();
             previousStream = sseConnection.connect(asyncContext,
                     keepAliveInterval);
             if (keepAliveInterval > 0) {
-                stream.keepAlive.set(getKeepAliveExecutor()
-                        .scheduleWithFixedDelay(stream, keepAliveInterval,
-                                keepAliveInterval, TimeUnit.SECONDS));
+                stream.keepAlive.set(getScheduler().scheduleWithFixedDelay(
+                        stream::keepAlive, keepAliveInterval, keepAliveInterval,
+                        TimeUnit.SECONDS));
+            }
+            int heartbeatInterval = service.getDeploymentConfiguration()
+                    .getHeartbeatInterval();
+            if (heartbeatInterval > 0) {
+                // The client opens a new stream, a request that keeps the
+                // HTTP session alive and acts as the heartbeat of the UI
+                stream.reopen.set(getScheduler().schedule(stream::reopen,
+                        heartbeatInterval, TimeUnit.SECONDS));
             }
 
             getLogger().debug("SSE connection established for UI {}",
@@ -196,33 +207,33 @@ public class SseRequestHandler implements SessionExpiredHandler {
     }
 
     /**
-     * Returns the thread that times the keep-alive events of all streams. It
-     * only queues them, the push connection writes them on the executor of the
-     * service.
+     * Returns the thread that times the keep-alive events and reopen requests
+     * of all streams. It only queues them, the push connection writes them on
+     * the executor of the service.
      */
-    synchronized ScheduledExecutorService getKeepAliveExecutor() {
-        if (keepAliveExecutor == null) {
-            keepAliveExecutor = Executors
-                    .newSingleThreadScheduledExecutor(runnable -> {
-                        Thread thread = new Thread(runnable,
-                                "vaadin-sse-push-keep-alive");
-                        thread.setDaemon(true);
-                        return thread;
-                    });
+    synchronized ScheduledExecutorService getScheduler() {
+        if (scheduler == null) {
+            scheduler = Executors.newSingleThreadScheduledExecutor(runnable -> {
+                Thread thread = new Thread(runnable,
+                        "vaadin-sse-push-scheduler");
+                thread.setDaemon(true);
+                return thread;
+            });
         }
-        return keepAliveExecutor;
+        return scheduler;
     }
 
     /**
      * An open event stream of a push connection. Keeps the stream alive while
-     * it is open, and marks the push connection lost when it ends.
+     * it is open, asks the client to reopen it at the heartbeat interval, and
+     * marks the push connection lost when it ends.
      */
-    private static final class SseStream
-            implements AsyncListener, Runnable, Serializable {
+    static final class SseStream implements AsyncListener, Serializable {
 
         private final SsePushConnection connection;
         private final transient AsyncContext asyncContext;
         private final transient AtomicReference<ScheduledFuture<?>> keepAlive = new AtomicReference<>();
+        private final transient AtomicReference<ScheduledFuture<?>> reopen = new AtomicReference<>();
 
         private SseStream(SsePushConnection connection,
                 AsyncContext asyncContext) {
@@ -230,22 +241,28 @@ public class SseRequestHandler implements SessionExpiredHandler {
             this.asyncContext = asyncContext;
         }
 
-        @Override
-        public void run() {
+        void keepAlive() {
             if (!connection.sendKeepAlive(asyncContext)) {
-                stopKeepAlive();
+                stopTasks();
             }
         }
 
+        void reopen() {
+            stopTasks();
+            connection.requestReopen(asyncContext);
+        }
+
         private void ended() {
-            stopKeepAlive();
+            stopTasks();
             connection.connectionLost(asyncContext);
         }
 
-        private void stopKeepAlive() {
-            ScheduledFuture<?> future = keepAlive.get();
-            if (future != null) {
-                future.cancel(false);
+        private void stopTasks() {
+            for (ScheduledFuture<?> task : new ScheduledFuture<?>[] {
+                    keepAlive.get(), reopen.get() }) {
+                if (task != null) {
+                    task.cancel(false);
+                }
             }
         }
 
@@ -327,9 +344,9 @@ public class SseRequestHandler implements SessionExpiredHandler {
      * Frees any resources currently in use.
      */
     public synchronized void destroy() {
-        if (keepAliveExecutor != null) {
-            keepAliveExecutor.shutdownNow();
-            keepAliveExecutor = null;
+        if (scheduler != null) {
+            scheduler.shutdownNow();
+            scheduler = null;
         }
     }
 

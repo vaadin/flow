@@ -111,6 +111,22 @@ describe('SsePush', () => {
       expect(callbacks(calls)).to.deep.equal(['onOpen', 'onReconnect', 'onOpen']);
     });
 
+    it('reopens the stream right away when the server asks for it', () => {
+      const { request, calls } = recordingRequest();
+      new SseConnection(request);
+      const first = FakeEventSource.latest();
+      first.open();
+
+      first.emit('reopen', '');
+
+      // Not reported as a lost connection
+      expect(first.closed).to.be.true;
+      expect(FakeEventSource.instances).to.have.length(2);
+      expect(FakeEventSource.latest().url).to.equal(first.url);
+      FakeEventSource.latest().open();
+      expect(callbacks(calls)).to.deep.equal(['onOpen', 'onOpen']);
+    });
+
     it('waits the reconnect interval after the first quick attempts', () => {
       const { request } = recordingRequest();
       request.reconnectInterval = 5000;

@@ -458,6 +458,28 @@ class SsePushConnectionTest {
         assertEquals(State.PUSH_PENDING, connection.getState());
     }
 
+    @Test
+    void requestReopen_concurrentDisconnect_preventDeadlocks()
+            throws Exception {
+        // As above, but the stream is ended to replace a heartbeat request
+        ReentrantLock httpSessionLock = new ReentrantLock();
+        SseStream stream = streamCompletingWithLock(httpSessionLock);
+        CompletableFuture<Void> otherThread;
+        httpSessionLock.lock();
+        try {
+            otherThread = CompletableFuture.runAsync(
+                    () -> connection.requestReopen(stream.asyncContext));
+            stream.completing.await(2, TimeUnit.SECONDS);
+
+            connection.disconnect();
+        } finally {
+            httpSessionLock.unlock();
+        }
+
+        otherThread.get(5, TimeUnit.SECONDS);
+        verify(stream.asyncContext, times(1)).complete();
+    }
+
     /**
      * Connects a stream whose completion needs the given lock, like a container
      * that accesses the HTTP session when an async request completes. Fails
@@ -476,6 +498,51 @@ class SsePushConnectionTest {
             return null;
         }).when(stream.asyncContext).complete();
         return stream;
+    }
+
+    @Test
+    void requestReopen_sendsReopenEventAndEndsStream() throws Exception {
+        SseStream stream = new SseStream();
+        connection.connect(stream.asyncContext);
+
+        connection.requestReopen(stream.asyncContext);
+
+        assertEquals("reopen", stream.events().get(0).event);
+        verify(stream.asyncContext).complete();
+        assertFalse(connection.isConnected());
+    }
+
+    @Test
+    void requestReopen_previousStream_keepsCurrentStream() throws Exception {
+        SseStream previous = new SseStream();
+        SseStream current = new SseStream();
+        connection.connect(previous.asyncContext);
+        connection.connect(current.asyncContext);
+
+        connection.requestReopen(previous.asyncContext);
+
+        assertTrue(connection.isConnected());
+        assertTrue(current.events().isEmpty());
+    }
+
+    @Test
+    void requestReopen_pushInBetween_isSentThroughNewStream() throws Exception {
+        SseStream first = new SseStream();
+        connection.connect(first.asyncContext);
+        connection.requestReopen(first.asyncContext);
+        vaadinSession.runWithLock(() -> {
+            connection.push();
+            return null;
+        });
+
+        SseStream second = new SseStream();
+        vaadinSession.runWithLock(() -> {
+            connection.connect(second.asyncContext);
+            return null;
+        });
+
+        assertEquals(1, second.events().size());
+        assertTrue(parse(second.events().get(0).data).has("syncId"));
     }
 
     @Test

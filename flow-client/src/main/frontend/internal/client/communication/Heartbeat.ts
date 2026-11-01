@@ -95,6 +95,11 @@ export class Heartbeat {
       Console.debug('Heartbeat terminated, skipping request');
       return;
     }
+    if (this.#registry.getMessageSender().isPushOverEventStream()) {
+      Console.debug('Push event stream replaces the heartbeat request');
+      this.schedule();
+      return;
+    }
 
     Console.debug('Sending heartbeat request...');
 

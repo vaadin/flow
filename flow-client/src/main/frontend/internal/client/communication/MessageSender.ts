@@ -25,6 +25,7 @@ import type { XhrConnection } from './XhrConnection';
 import type { PushConnection } from './PushConnection';
 import type { PushConnectionFactory } from './PushConnectionFactory';
 import { Console } from '../Console';
+import { SSE_PURE_TRANSPORT } from './SsePush';
 
 // com.vaadin.flow.shared.ApplicationConstants
 const RPC_INVOCATIONS = 'rpc';
@@ -303,6 +304,17 @@ export class MessageSender {
         }
       });
     }
+  }
+
+  /**
+   * Checks whether push uses the event stream of the SSE_PURE transport. The
+   * server asks the client to reopen the stream at the heartbeat interval,
+   * which keeps the UI alive in place of heartbeat requests.
+   *
+   * @returns `true` if push uses an event stream that is open or opening
+   */
+  isPushOverEventStream(): boolean {
+    return this.#push !== null && this.#push.isActive() && this.#push.getTransportType() === SSE_PURE_TRANSPORT;
   }
 
   /**

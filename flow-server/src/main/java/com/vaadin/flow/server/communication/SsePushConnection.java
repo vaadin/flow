@@ -88,6 +88,12 @@ public class SsePushConnection implements PushConnection {
      */
     private static final String KEEP_ALIVE = "event: keep-alive\ndata: %d\n\n";
 
+    /**
+     * An event that makes the client open a new stream right away, instead of
+     * handling the end of the stream as a lost connection.
+     */
+    private static final String REOPEN = "event: reopen\ndata: \n\n";
+
     private final UI ui;
     private transient volatile State state = State.DISCONNECTED;
     private transient EventStream stream;
@@ -218,6 +224,34 @@ public class SsePushConnection implements PushConnection {
 
     private String keepAliveEvent() {
         return KEEP_ALIVE.formatted(keepAliveInterval);
+    }
+
+    /**
+     * Asks the client to open a new stream and ends the given stream, unless
+     * the connection uses another stream by now. Pushes in between are sent
+     * through the new stream.
+     *
+     * @param asyncContext
+     *            the stream to end
+     */
+    void requestReopen(AsyncContext asyncContext) {
+        EventStream ended = null;
+        lock.lock();
+        try {
+            if (!isConnected() || stream.context != asyncContext) {
+                return;
+            }
+            write(REOPEN);
+            if (isConnected()) {
+                ended = detach();
+            }
+        } finally {
+            lock.unlock();
+        }
+        // Queued after the reopen event, so that the client gets it first
+        if (ended != null) {
+            ended.complete();
+        }
     }
 
     private void write(String text) {

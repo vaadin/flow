@@ -111,6 +111,31 @@ describe('MessageSender (class)', () => {
     expect(sender.getCommunicationMethodName()).to.equal('Client to server: WEBSOCKET, server to client: WEBSOCKET');
   });
 
+  it('reports push over an event stream only for an active SSE_PURE connection', () => {
+    const { registry } = makeRegistry();
+    let transport = 'sse-pure';
+    let active = true;
+    const push = {
+      isActive: () => active,
+      isBidirectional: () => false,
+      push: () => {},
+      disconnect: (cb: () => void) => cb(),
+      getTransportType: () => transport
+    };
+    const sender = new MessageSender(registry, () => push);
+    expect(sender.isPushOverEventStream()).to.be.false;
+
+    sender.setPushEnabled(true);
+    expect(sender.isPushOverEventStream()).to.be.true;
+
+    active = false;
+    expect(sender.isPushOverEventStream()).to.be.false;
+
+    active = true;
+    transport = 'long-polling';
+    expect(sender.isPushOverEventStream()).to.be.false;
+  });
+
   it('sends an unload beacon with the UNLOAD flag', () => {
     const { registry } = makeRegistry();
     const beacons: Array<{ url: string; payload: string }> = [];

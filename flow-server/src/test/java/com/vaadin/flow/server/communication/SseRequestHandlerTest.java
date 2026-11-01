@@ -49,6 +49,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.SsePushConnectionTest.SseEvent;
+import com.vaadin.flow.server.communication.SseRequestHandler.SseStream;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
@@ -69,6 +70,8 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -323,7 +326,7 @@ class SseRequestHandlerTest {
         mockFindUI(ui);
         handler.handleRequest(session, request(), response());
 
-        ((Runnable) listener()).run();
+        stream().keepAlive();
 
         assertEquals(keepAlive(30).repeat(2), responseBody.toString());
     }
@@ -332,10 +335,10 @@ class SseRequestHandlerTest {
     void keepAlive_endedStream_sendsNothing() throws Exception {
         mockFindUI(ui);
         handler.handleRequest(session, request(), response());
-        AsyncListener stream = listener();
+        SseStream stream = stream();
         stream.onComplete(mock(AsyncEvent.class));
 
-        ((Runnable) stream).run();
+        stream.keepAlive();
 
         assertEquals(keepAlive(30), responseBody.toString());
     }
@@ -356,23 +359,82 @@ class SseRequestHandlerTest {
     }
 
     @Test
-    void keepAlive_intervalZero_isNotScheduled() throws Exception {
+    void keepAliveAndHeartbeatDisabled_nothingIsScheduled() throws Exception {
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setHeartbeatInterval(-1);
         handler = spy(handlerWithKeepAliveInterval("0"));
         mockFindUI(ui);
 
         handler.handleRequest(session, request(), response());
 
-        verify(handler, never()).getKeepAliveExecutor();
+        verify(handler, never()).getScheduler();
     }
 
     @Test
-    void keepAlive_defaultInterval_isScheduled() throws Exception {
+    void handleRequest_updatesHeartbeatTimestamp() throws Exception {
+        mockFindUI(ui);
+        ui.getInternals().setLastHeartbeatTimestamp(0);
+
+        handler.handleRequest(session, request(), response());
+
+        assertTrue(ui.getInternals().getLastHeartbeatTimestamp() > 0);
+    }
+
+    @Test
+    void reopen_openStream_asksClientToReopenAndEndsStream() throws Exception {
+        mockFindUI(ui);
+        handler.handleRequest(session, request(), response());
+
+        stream().reopen();
+
+        assertEquals("reopen", events().get(0).event());
+        verify(asyncContext).complete();
+        assertFalse(ui.getInternals().getPushConnection().isConnected());
+    }
+
+    @Test
+    void reopen_isScheduledAtHeartbeatInterval() throws Exception {
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setHeartbeatInterval(1);
+        handler = handlerWithKeepAliveInterval("0");
+        mockFindUI(ui);
+
+        handler.handleRequest(session, request(), response());
+
+        verify(asyncContext, timeout(5000)).complete();
+        assertEquals("reopen", events().get(0).event());
+    }
+
+    @Test
+    void reopen_isWrittenOnServiceExecutor() throws Exception {
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setHeartbeatInterval(1);
+        handler = handlerWithKeepAliveInterval("0");
+        Executor executor = service.getExecutor();
+        AtomicInteger tasks = new AtomicInteger();
+        doReturn((Executor) task -> {
+            tasks.incrementAndGet();
+            executor.execute(task);
+        }).when(service).getExecutor();
+        mockFindUI(ui);
+
+        handler.handleRequest(session, request(), response());
+
+        verify(asyncContext, timeout(5000)).complete();
+        // The reopen event and the end of the stream are both queued
+        assertTrue(tasks.get() > 0,
+                "The stream should be written on the executor of the service");
+        assertEquals("reopen", events().get(0).event());
+    }
+
+    @Test
+    void defaultIntervals_scheduleKeepAliveAndReopen() throws Exception {
         handler = spy(handler);
         mockFindUI(ui);
 
         handler.handleRequest(session, request(), response());
 
-        verify(handler).getKeepAliveExecutor();
+        verify(handler, times(2)).getScheduler();
     }
 
     @Test
@@ -517,6 +579,10 @@ class SseRequestHandlerTest {
 
     private VaadinServletResponse response() {
         return new VaadinServletResponse(httpResponse, service);
+    }
+
+    private SseStream stream() {
+        return (SseStream) listener();
     }
 
     private AsyncListener listener() {
