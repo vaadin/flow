@@ -91,8 +91,7 @@ class SessionUIServiceTest {
         List<UI> uis = service.getUIs(session);
 
         assertTrue(uis.isEmpty());
-        assertThrows(UnsupportedOperationException.class,
-                () -> uis.add(ui(0)));
+        assertThrows(UnsupportedOperationException.class, () -> uis.add(ui(0)));
     }
 
     @Test

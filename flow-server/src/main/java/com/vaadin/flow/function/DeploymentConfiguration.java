@@ -451,8 +451,8 @@ public interface DeploymentConfiguration
      *         session lock is used
      */
     default boolean isUILockingEnabled() {
-        return getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_UI_LOCKING, false);
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_UI_LOCKING,
+                false);
     }
 
     /**

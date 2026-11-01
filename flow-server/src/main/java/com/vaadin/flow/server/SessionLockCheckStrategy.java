@@ -29,8 +29,8 @@ public enum SessionLockCheckStrategy {
      */
     ASSERT {
         @Override
-        public void checkHasLock(BooleanSupplier hasLock,
-                VaadinSession session, String message) {
+        public void checkHasLock(BooleanSupplier hasLock, VaadinSession session,
+                String message) {
             assert hasLock.getAsBoolean() : message;
         }
     },
@@ -40,8 +40,8 @@ public enum SessionLockCheckStrategy {
      */
     LOG {
         @Override
-        public void checkHasLock(BooleanSupplier hasLock,
-                VaadinSession session, String message) {
+        public void checkHasLock(BooleanSupplier hasLock, VaadinSession session,
+                String message) {
             if (!hasLock.getAsBoolean()) {
                 session.getLogger().warn(message,
                         new IllegalStateException(message));
@@ -54,8 +54,8 @@ public enum SessionLockCheckStrategy {
      */
     THROW {
         @Override
-        public void checkHasLock(BooleanSupplier hasLock,
-                VaadinSession session, String message) {
+        public void checkHasLock(BooleanSupplier hasLock, VaadinSession session,
+                String message) {
             if (!hasLock.getAsBoolean()) {
                 throw new IllegalStateException(message);
             }

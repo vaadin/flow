@@ -83,8 +83,8 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
                 session.lock();
                 Optional<ResponseWriter> responseWriter;
                 try {
-                    responseWriter = synchronizedHandleRequest(session,
-                            request, response, requestBody);
+                    responseWriter = synchronizedHandleRequest(session, request,
+                            response, requestBody);
                 } finally {
                     releaseUILocks(session);
                 }
@@ -114,8 +114,7 @@ public abstract class SynchronizedRequestHandler implements RequestHandler {
      * with {@link VaadinSession#isUILockingEnabled() UI locking}.
      */
     private boolean handleRequestWithUILock(VaadinSession session, UI ui,
-            VaadinRequest request, VaadinResponse response)
-            throws IOException {
+            VaadinRequest request, VaadinResponse response) throws IOException {
         UIInternals internals = ui.getInternals();
         if (isReadAndWriteOutsideSessionLock()) {
             BufferedReader reader = request.getReader();

@@ -157,8 +157,9 @@ class UILockingRequestTest {
             assertTrue(handleInOtherThread(() -> handler.handleRequest(session,
                     request("uidl", ui2), response(output))));
             assertEquals("{\"ui\":2}", output.toString(StandardCharsets.UTF_8));
-            assertTrue(handleInOtherThread(() -> new HeartbeatHandler()
-                    .handleRequest(session, request("heartbeat", ui2),
+            assertTrue(handleInOtherThread(
+                    () -> new HeartbeatHandler().handleRequest(session,
+                            request("heartbeat", ui2),
                             mock(VaadinResponse.class))));
         }
         assertUI1StillLocked();
@@ -172,9 +173,9 @@ class UILockingRequestTest {
                 (ui, body) -> rpcUI.set(ui));
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        Future<Boolean> ui1Request = executor.submit(() -> handler
-                .handleRequest(session, request("uidl", ui1),
-                        response(output)));
+        Future<Boolean> ui1Request = executor
+                .submit(() -> handler.handleRequest(session,
+                        request("uidl", ui1), response(output)));
 
         // The request waits for the UI lock, not for the session lock
         waitUntil(() -> ui1.getInternals().getUILock().hasQueuedThreads());
@@ -182,8 +183,9 @@ class UILockingRequestTest {
         assertFalse(((ReentrantLock) session.getLockInstance()).isLocked());
 
         // Meanwhile the other UI keeps answering
-        assertTrue(handleInOtherThread(() -> new HeartbeatHandler()
-                .handleRequest(session, request("heartbeat", ui2),
+        assertTrue(handleInOtherThread(
+                () -> new HeartbeatHandler().handleRequest(session,
+                        request("heartbeat", ui2),
                         mock(VaadinResponse.class))));
 
         releaseUI1.countDown();

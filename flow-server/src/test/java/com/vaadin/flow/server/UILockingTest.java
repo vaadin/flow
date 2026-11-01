@@ -143,8 +143,8 @@ class UILockingTest {
 
     @Test
     void access_freeUI_runsImmediately() throws Exception {
-        Future<Void> future = ui1.access(
-                () -> assertTrue(ui1.getInternals().hasUILock()));
+        Future<Void> future = ui1
+                .access(() -> assertTrue(ui1.getInternals().hasUILock()));
         future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         assertTrue(future.isDone());
         assertFalse(ui1.getInternals().hasUILock());
