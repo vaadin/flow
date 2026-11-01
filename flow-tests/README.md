@@ -121,6 +121,7 @@ Active when `-DskipTests` is **not** set (the default).
 | Module | Description |
 |--------|-------------|
 | **test-default** | Home for ITs that need only the default configuration (Spring Boot, React, dev hotdeploy, root context, npm), on JUnit 6. Holds the routing suite, the DOM suite (Element API, DOM events and filters, shadow root, visibility, `Page`), the components suite (HTML components, composites, drag and drop, dialogs and shortcuts, popovers, inert and enabled state, loading indicator, upload, download handlers and media) and the dev-mode ITs (dependency loading order, Vite communication, browser logging, dev-mode URL validation, exported JS functions, stream resources, Vite websocket logout handling) — see [test-default/README.md](test-default/README.md). |
+| **test-push-sse-pure** | Push without Atmosphere in **production mode**: `flow-push` is excluded, so `@Push` falls back to the `SSE_PURE` transport. Covers server push, client requests during push, large multibyte messages and push after refresh, and that the Atmosphere script is not loaded. Also runs in the reverse proxy runs. |
 | **test-push-startup** | Tests that a push connection arriving while the Vaadin service is still initializing is held and then served, instead of being dropped. Uses a deliberately slow service init listener, so it needs its own module. |
 | **test-devloop** | End-to-end tests for the `vaadin-dev` CLI and the dev-loop daemon: apply/restart/deletion, frontend and CSS changes, POM edits, multi-module projects and daemon survival. |
 | **test-servlet** | Tests that the Flow servlet registers and deploys correctly, verifying a basic navigation target is accessible and renders content via the standard servlet mechanism. |
@@ -190,9 +191,9 @@ Active when `-DskipTests` is **not** set (the default).
 
 ## Reverse Proxy Runs
 
-The push tests and a selection of general tests of `test-root-context` also run
-through reverse proxies that terminate HTTPS, as applications are usually
-deployed behind one. Selecting a proxy with `reverse.proxy` activates the
+The push tests and a selection of general tests of `test-root-context`, and the
+tests of `test-push-sse-pure`, also run through reverse proxies that terminate
+HTTPS, as applications are usually deployed behind one. Selecting a proxy with `reverse.proxy` activates the
 `reverse-proxy` profile, which picks the tests, and the browser opens them
 through the proxy. The proxy runs in a Docker container started with
 Testcontainers, so Docker has to be available.
@@ -200,6 +201,7 @@ Testcontainers, so Docker has to be available.
 ```bash
 mvn verify -pl flow-tests/test-root-context -Dreverse.proxy=nginx
 mvn verify -pl flow-tests/test-root-context -Dreverse.proxy=caddy -Dreverse.proxy.config=default
+mvn verify -pl flow-tests/test-push-sse-pure -Dreverse.proxy=nginx -Dreverse.proxy.config=default
 ```
 
 `reverse.proxy.config` is `recommended` (the default), a configuration tuned for

@@ -1,12 +1,12 @@
 name: Reverse Proxy Tests
 
 # Runs the push tests and a selection of general integration tests of
-# flow-tests/test-root-context through reverse proxies that terminate HTTPS,
-# like the proxies applications are deployed behind. Each proxy runs with a
-# configuration tuned for Vaadin (recommended) and with a minimal one that
-# leaves the defaults of the proxy in place (default), see ReverseProxy in
-# flow-test-util. The proxies run in Docker containers started by
-# Testcontainers.
+# flow-tests/test-root-context, and the tests of flow-tests/test-push-sse-pure,
+# through reverse proxies that terminate HTTPS, like the proxies applications
+# are deployed behind. Each proxy runs with a configuration tuned for Vaadin
+# (recommended) and with a minimal one that leaves the defaults of the proxy in
+# place (default), see ReverseProxy in flow-test-util. The proxies run in Docker
+# containers started by Testcontainers.
 on:
   workflow_dispatch:
   schedule:
@@ -48,10 +48,10 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Build
-        run: mvn -B -ntp -T 1C install -DskipTests -Pit-shared-modules -pl flow-tests/test-root-context -am
+        run: mvn -B -ntp -T 1C install -DskipTests -Pit-shared-modules,it-test-modules -pl flow-tests/test-root-context,flow-tests/test-push-sse-pure -am
       - name: Run the tests through ${{ matrix.proxy }}
         run: >-
-          mvn -B -ntp verify -pl flow-tests/test-root-context
+          mvn -B -ntp -fae verify -pl flow-tests/test-root-context,flow-tests/test-push-sse-pure
           -Dreverse.proxy=${{ matrix.proxy }}
           -Dreverse.proxy.config=${{ matrix.config }}
       - name: Upload test reports
@@ -62,3 +62,5 @@ jobs:
           path: |
             flow-tests/test-root-context/target/failsafe-reports/
             flow-tests/test-root-context/target/jetty-start.out
+            flow-tests/test-push-sse-pure/target/failsafe-reports/
+            flow-tests/test-push-sse-pure/target/jetty-start.out
