@@ -1,0 +1,64 @@
+name: Reverse Proxy Tests
+
+# Runs the push tests and a selection of general integration tests of
+# flow-tests/test-root-context through reverse proxies that terminate HTTPS,
+# like the proxies applications are deployed behind. Each proxy runs with a
+# configuration tuned for Vaadin (recommended) and with a minimal one that
+# leaves the defaults of the proxy in place (default), see ReverseProxy in
+# flow-test-util. The proxies run in Docker containers started by
+# Testcontainers.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # The same flags validation.yml sets, for the same reason: a 403 from Central
+  # is retried rather than failing the build outright. See the note there.
+  MAVEN_ARGS: >-
+    -Daether.connector.http.retryHandler.count=3
+    -Daether.connector.http.retryHandler.serviceUnavailable=429,500,502,503,504,403
+    -Daether.connector.http.connectionMaxTtl=25
+
+jobs:
+  reverse-proxy:
+    name: ${{ matrix.proxy }} (${{ matrix.config }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        proxy: [nginx, caddy]
+        config: [recommended, default]
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+      - uses: ./.github/actions/setup-frontend-tools
+      - name: Set up JDK
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version-file: .tool-versions
+          distribution: 'temurin'
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Build
+        run: mvn -B -ntp -T 1C install -DskipTests -Pit-shared-modules -pl flow-tests/test-root-context -am
+      - name: Run the tests through ${{ matrix.proxy }}
+        run: >-
+          mvn -B -ntp verify -pl flow-tests/test-root-context
+          -Dreverse.proxy=${{ matrix.proxy }}
+          -Dreverse.proxy.config=${{ matrix.config }}
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: reverse-proxy-${{ matrix.proxy }}-${{ matrix.config }}
+          path: |
+            flow-tests/test-root-context/target/failsafe-reports/
+            flow-tests/test-root-context/target/jetty-start.out

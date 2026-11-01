@@ -1,0 +1,26 @@
+# Tests not run through nginx with its default configuration, see the
+# reverse-proxy profile in pom.xml. These are known issues of the
+# configuration, not of Flow.
+
+# nginx does not pass the Upgrade header on by default, so websocket push
+# fails. WEBSOCKET_XHR (the default transport) falls back to long polling only
+# after the websocket retries, long after these tests stop waiting.
+**/push/BasicPushIT.java
+**/push/BasicPushWebsocketIT.java
+**/push/BasicPushWebsocketXhrIT.java
+**/push/PushConfigurationWebSocketIT.java
+**/push/PushLargeDataWebsocketIT.java
+**/push/TogglePushIT.java
+**/push/EnableDisablePushIT.java
+**/push/MakeComponentVisibleWithPushIT.java
+**/ui/PushWSUpdateDivIT.java
+**/ui/RefreshCloseConnectionIT.java
+**/push/BarInUidlIT.java
+**/push/BarInUidlWebsocketIT.java
+**/push/PushAfterRefreshWebsocketIT.java
+**/push/PushFromInitIT.java
+**/push/PushFromInitWebsocketIT.java
+
+# nginx buffers responses by default, which holds back server-sent events
+**/push/BasicPushSseIT.java
+**/push/PushConfigurationSseIT.java

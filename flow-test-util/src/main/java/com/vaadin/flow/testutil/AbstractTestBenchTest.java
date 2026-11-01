@@ -116,7 +116,10 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     @Before
     public void checkIfServerAvailable() {
         if (!serverAvailabilityChecked) {
-            String rootUrl = getRootURL();
+            // The certificate of a reverse proxy is not trusted by the JVM,
+            // so the server behind it is checked instead
+            String rootUrl = ReverseProxy.isEnabled() ? getServerRootURL()
+                    : getRootURL();
             try {
                 new URL(rootUrl).openConnection().connect();
             } catch (IOException e) {
@@ -234,11 +237,20 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     protected abstract String getTestPath();
 
     /**
-     * Returns the URL to the root of the server, e.g. "http://localhost:8888"
+     * Returns the URL to the root of the server, e.g. "http://localhost:8888",
+     * or the URL of the reverse proxy in front of it when one is selected with
+     * the {@value ReverseProxy#PROXY_PROPERTY} system property.
      *
      * @return the URL to the root
      */
     protected String getRootURL() {
+        if (ReverseProxy.isEnabled()) {
+            return ReverseProxy.getRootUrl(getDeploymentPort());
+        }
+        return getServerRootURL();
+    }
+
+    private String getServerRootURL() {
         return "http://" + getDeploymentHostname() + ":" + getDeploymentPort();
     }
 

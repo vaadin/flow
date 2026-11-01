@@ -187,3 +187,25 @@ Active when `-DskipTests` is **not** set (the default).
 | Module | Description |
 |--------|-------------|
 | **test-webpush** | Integration tests for Flow's Web Push notification feature (`flow-webpush`): subscribing, unsubscribing, permission checking, and sending push notifications. |
+
+## Reverse Proxy Runs
+
+The push tests and a selection of general tests of `test-root-context` also run
+through reverse proxies that terminate HTTPS, as applications are usually
+deployed behind one. Selecting a proxy with `reverse.proxy` activates the
+`reverse-proxy` profile, which picks the tests, and the browser opens them
+through the proxy. The proxy runs in a Docker container started with
+Testcontainers, so Docker has to be available.
+
+```bash
+mvn verify -pl flow-tests/test-root-context -Dreverse.proxy=nginx
+mvn verify -pl flow-tests/test-root-context -Dreverse.proxy=caddy -Dreverse.proxy.config=default
+```
+
+`reverse.proxy.config` is `recommended` (the default), a configuration tuned for
+Vaadin, or `default`, a minimal one that leaves the defaults of the proxy in
+place. The configurations are in
+`flow-test-util/src/main/resources/com/vaadin/flow/testutil/reverseproxy/`. The
+tests a configuration is known to break, such as websocket push through nginx
+with its defaults, are listed in `test-root-context/reverse-proxy/`. The
+`Reverse Proxy Tests` workflow runs every proxy and configuration nightly.
