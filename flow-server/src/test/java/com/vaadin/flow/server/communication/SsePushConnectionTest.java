@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -84,16 +85,14 @@ class SsePushConnectionTest {
     }
 
     @Test
-    void connect_sendsConnectedEventWithUiId() throws Exception {
+    void connect_sendsCommentToOpenStream() throws Exception {
         SseStream stream = new SseStream();
 
         connection.connect(stream.asyncContext);
 
-        List<SseEvent> events = stream.events();
-        assertEquals(1, events.size());
-        assertEquals("connected", events.get(0).event);
-        assertEquals(ui.getUIId(),
-                parse(events.get(0).data).get("uiId").asInt());
+        // The client ignores comments, but writing one sends the headers
+        assertEquals(":\n\n", stream.raw());
+        assertTrue(stream.events().isEmpty());
     }
 
     @Test
@@ -107,20 +106,19 @@ class SsePushConnectionTest {
         });
 
         List<SseEvent> events = stream.events();
-        assertEquals(2, events.size());
-        SseEvent uidl = events.get(1);
-        assertEquals("uidl", uidl.event);
+        assertEquals(1, events.size());
+        SseEvent uidl = events.get(0);
+        // Unnamed events reach the message handler of EventSource
+        assertNull(uidl.event);
         // The client parses the data with JSON.parse, so it must be plain
         // JSON without any prefix or array wrapping
         JsonNode json = parse(uidl.data);
         assertTrue(json.isObject(), "UIDL should be a JSON object");
         assertTrue(json.has("syncId"), "UIDL should contain a syncId");
-        assertEquals(String.valueOf(json.get("syncId").asInt()), uidl.id,
-                "The event id should be the sync id of the message");
     }
 
     @Test
-    void push_connected_consecutivePushesHaveIncreasingIds() throws Exception {
+    void push_connected_consecutivePushesAreSeparateEvents() throws Exception {
         SseStream stream = new SseStream();
         connection.connect(stream.asyncContext);
 
@@ -131,9 +129,9 @@ class SsePushConnectionTest {
         });
 
         List<SseEvent> events = stream.events();
-        assertEquals(3, events.size());
-        int first = Integer.parseInt(events.get(1).id);
-        int second = Integer.parseInt(events.get(2).id);
+        assertEquals(2, events.size());
+        int first = parse(events.get(0).data).get("syncId").asInt();
+        int second = parse(events.get(1).data).get("syncId").asInt();
         assertEquals(first + 1, second);
     }
 
@@ -152,9 +150,8 @@ class SsePushConnectionTest {
         });
 
         List<SseEvent> events = stream.events();
-        assertEquals(2, events.size());
-        assertEquals("connected", events.get(0).event);
-        assertEquals("uidl", events.get(1).event);
+        assertEquals(1, events.size());
+        assertTrue(parse(events.get(0).data).has("syncId"));
         assertTrue(connection.isConnected());
     }
 
@@ -176,7 +173,7 @@ class SsePushConnectionTest {
 
         connection.sendMessage("first\nsecond\n\nfourth");
 
-        SseEvent event = stream.events().get(1);
+        SseEvent event = stream.events().get(0);
         assertEquals("first\nsecond\n\nfourth", event.data);
         assertTrue(stream.raw().contains(
                 "data: first\ndata: second\ndata: \ndata: fourth\n\n"));
@@ -217,7 +214,7 @@ class SsePushConnectionTest {
             connection.connect(stream.asyncContext);
             return null;
         });
-        assertEquals("uidl", stream.events().get(1).event);
+        assertEquals(1, stream.events().size());
     }
 
     @Test
@@ -262,24 +259,105 @@ class SsePushConnectionTest {
         SseStream stream = new SseStream();
         connection.connect(stream.asyncContext);
 
-        connection.connectionLost();
+        connection.connectionLost(stream.asyncContext);
 
         assertFalse(connection.isConnected());
         assertNull(connection.getAsyncContext());
     }
 
     @Test
-    void connectionLost_keepsPendingPush() {
-        vaadinSession.lock();
-        try {
-            connection.push();
-        } finally {
-            vaadinSession.unlock();
-        }
+    void connectionLost_previousStream_keepsCurrentStream() throws Exception {
+        SseStream previous = new SseStream();
+        SseStream current = new SseStream();
+        connection.connect(previous.asyncContext);
+        connection.connect(current.asyncContext);
 
-        connection.connectionLost();
+        // The end of the previous stream is reported after the client has
+        // already opened a new one
+        connection.connectionLost(previous.asyncContext);
+
+        assertTrue(connection.isConnected());
+        assertEquals(current.asyncContext, connection.getAsyncContext());
+    }
+
+    @Test
+    void connectionLost_keepsPendingPush() throws Exception {
+        SseStream stream = new SseStream();
+        connection.connect(stream.asyncContext);
+        stream.failWrites = true;
+        vaadinSession.runWithLock(() -> {
+            connection.push();
+            connection.push();
+            return null;
+        });
+
+        connection.connectionLost(stream.asyncContext);
 
         assertEquals(State.PUSH_PENDING, connection.getState());
+    }
+
+    @Test
+    void sendKeepAlive_connected_sendsComment() throws Exception {
+        SseStream stream = new SseStream();
+        connection.connect(stream.asyncContext);
+
+        assertTrue(connection.sendKeepAlive(stream.asyncContext));
+
+        assertEquals(":\n\n:\n\n", stream.raw());
+        assertTrue(connection.isConnected());
+    }
+
+    @Test
+    void sendKeepAlive_previousStream_sendsNothing() throws Exception {
+        SseStream previous = new SseStream();
+        SseStream current = new SseStream();
+        connection.connect(previous.asyncContext);
+        connection.connect(current.asyncContext);
+
+        assertFalse(connection.sendKeepAlive(previous.asyncContext));
+
+        assertEquals(":\n\n", current.raw());
+    }
+
+    @Test
+    void sendKeepAlive_writeFails_losesConnection() throws Exception {
+        SseStream stream = new SseStream();
+        connection.connect(stream.asyncContext);
+        stream.failWrites = true;
+
+        assertFalse(connection.sendKeepAlive(stream.asyncContext));
+
+        assertFalse(connection.isConnected());
+    }
+
+    @Test
+    void push_concurrentConnectionLoss_neverFails() throws Exception {
+        // Streams end on container threads without the session lock, while
+        // pushes happen with it
+        AtomicReference<Throwable> failure = new AtomicReference<>();
+        Thread pusher = new Thread(() -> {
+            try {
+                for (int i = 0; i < 2000; i++) {
+                    vaadinSession.runWithLock(() -> {
+                        connection.push();
+                        return null;
+                    });
+                }
+            } catch (Throwable t) {
+                failure.set(t);
+            }
+        });
+        pusher.start();
+        while (pusher.isAlive()) {
+            SseStream stream = new SseStream();
+            vaadinSession.runWithLock(() -> {
+                connection.connect(stream.asyncContext);
+                return null;
+            });
+            connection.connectionLost(stream.asyncContext);
+        }
+
+        assertNull(failure.get());
     }
 
     @Test

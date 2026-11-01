@@ -65,20 +65,9 @@ export class SseConnection {
     this.options = options;
     this.maxReconnectAttempts = options.maxReconnectOnClose ?? 25;
     this.reconnectInterval = options.reconnectInterval ?? 5000;
-    this.url = this.buildSseUrl(options.url);
+    // The push connection builds the url of an Atmosphere push request
+    this.url = options.url.replace('v-r=push', 'v-r=sse');
     this.connect();
-  }
-
-  private buildSseUrl(baseUrl: string): string {
-    let url = baseUrl;
-    if (url.includes('v-r=push')) {
-      url = url.replace('v-r=push', 'v-r=sse');
-    } else if (url.includes('?')) {
-      url += '&v-r=sse';
-    } else {
-      url += '?v-r=sse';
-    }
-    return url;
   }
 
   private connect(): void {
@@ -93,19 +82,14 @@ export class SseConnection {
       this.eventSource.onopen = () => {
         this.state = 'connected';
         this.reconnectAttempts = 0;
-        const response = this.createResponse('open');
-        response.transport = SSE_PURE_TRANSPORT;
-        response.state = 'opening';
-        this.options.onOpen?.(response);
+        this.options.onOpen?.(this.createResponse('opening'));
       };
 
       this.eventSource.onmessage = (event) => {
-        this.handleMessage(event.data);
+        const response = this.createResponse('messageReceived');
+        response.responseBody = event.data;
+        this.options.onMessage?.(response);
       };
-
-      this.eventSource.addEventListener('uidl', (event) => {
-        this.handleMessage((event as MessageEvent).data);
-      });
 
       this.eventSource.onerror = () => {
         if (this.state === 'closed') return;
@@ -153,19 +137,11 @@ export class SseConnection {
     }, interval);
   }
 
-  private handleMessage(data: string): void {
-    const response = this.createResponse('message');
-    response.responseBody = data;
-    response.state = 'messageReceived';
-    response.status = 200;
-    this.options.onMessage?.(response);
-  }
-
-  private createResponse(type: string): SseAtmosphereResponse {
+  private createResponse(state: string): SseAtmosphereResponse {
     return {
       request: this.options,
       transport: SSE_PURE_TRANSPORT,
-      state: type,
+      state,
       status: 200,
       responseBody: '',
       headers: () => null,
@@ -183,9 +159,7 @@ export class SseConnection {
       this.eventSource.close();
       this.eventSource = null;
     }
-    const response = this.createResponse('closed');
-    response.state = 'closed';
-    this.options.onClose?.(response);
+    this.options.onClose?.(this.createResponse('closed'));
   }
 }
 
@@ -194,7 +168,7 @@ export class SseConnection {
  * connection.
  */
 export interface SsePushAtmosphere {
-  subscribe(options: SseAtmosphereRequest): SseConnection;
+  subscribe(config: unknown): SseConnection;
   unsubscribeUrl(url: string): void;
 }
 
@@ -208,7 +182,9 @@ export function createSsePushAtmosphere(): SsePushAtmosphere {
   // The push connection disconnects by url, like with Atmosphere
   const connections = new Map<string, SseConnection>();
   return {
-    subscribe(options: SseAtmosphereRequest): SseConnection {
+    subscribe(config: unknown): SseConnection {
+      // The push connection passes the callbacks of the request in the config
+      const options = config as SseAtmosphereRequest;
       const connection = new SseConnection(options);
       connections.set(options.url, connection);
       return connection;

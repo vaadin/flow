@@ -58,6 +58,13 @@ public enum Transport {
      * <p>
      * Unlike {@link #SERVER_SENT_EVENTS}, this transport does not need the
      * {@code flow-push} module or Atmosphere on the client or the server.
+     * <p>
+     * Over HTTP/1.1, each open event stream takes one of the few connections
+     * (six in current browsers) a browser opens to the same server, so the
+     * application stops responding in a browser that has more tabs open to it.
+     * Over HTTP/2 and HTTP/3, which browsers use with servers and reverse
+     * proxies that support them, the streams share one connection and there is
+     * no such limit.
      */
     SSE_PURE("sse-pure");
 

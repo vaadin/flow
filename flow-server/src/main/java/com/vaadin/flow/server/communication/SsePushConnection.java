@@ -25,7 +25,6 @@ import java.io.Serializable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -40,7 +39,6 @@ import com.vaadin.flow.internal.UsageStatistics;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.7
  */
 public class SsePushConnection implements PushConnection, Serializable {
 
@@ -75,12 +73,17 @@ public class SsePushConnection implements PushConnection, Serializable {
 
     private static final String SSE_VERSION = "1.0";
 
+    /**
+     * A comment line, which the client ignores. It commits the response headers
+     * when the stream opens and keeps the stream from being closed as idle.
+     */
+    private static final String KEEP_ALIVE = ":\n\n";
+
     private UI ui;
-    private transient State state = State.DISCONNECTED;
+    private transient volatile State state = State.DISCONNECTED;
     private transient AsyncContext asyncContext;
     private transient PrintWriter writer;
     private transient Object lock = new Object();
-    private volatile boolean disconnecting;
 
     /**
      * Creates an instance connected to the given UI.
@@ -108,42 +111,26 @@ public class SsePushConnection implements PushConnection, Serializable {
      *            false if it is a response to a client request.
      */
     public void push(boolean async) {
-        if (disconnecting || !isConnected()) {
-            if (disconnecting) {
-                getLogger().debug(
-                        "Disconnection in progress, ignoring push request");
-            }
-            if (async && state != State.RESPONSE_PENDING) {
-                state = State.PUSH_PENDING;
-            } else {
-                state = State.RESPONSE_PENDING;
-            }
-        } else {
-            synchronized (lock) {
-                // A concurrent disconnect() may have closed the stream while
-                // this thread was waiting for the lock, in which case the push
-                // is deferred like above
-                if (!isConnected()) {
-                    if (async && state != State.RESPONSE_PENDING) {
-                        state = State.PUSH_PENDING;
-                    } else {
-                        state = State.RESPONSE_PENDING;
-                    }
-                    return;
+        synchronized (lock) {
+            if (!isConnected()) {
+                if (async && state != State.RESPONSE_PENDING) {
+                    state = State.PUSH_PENDING;
+                } else {
+                    state = State.RESPONSE_PENDING;
                 }
-                try {
-                    JsonNode response = new UidlWriter().createUidl(getUI(),
-                            async);
-                    sendMessage(response.toString());
-                } catch (Exception e) {
-                    throw new RuntimeException("Push failed", e);
-                }
+                return;
+            }
+            try {
+                sendMessage(
+                        new UidlWriter().createUidl(getUI(), async).toString());
+            } catch (Exception e) {
+                throw new RuntimeException("Push failed", e);
             }
         }
     }
 
     /**
-     * Sends the given message to the current client using SSE format. Cannot be
+     * Sends the given message to the current client as an event. Cannot be
      * called if {@link #isConnected()} returns false.
      *
      * @param message
@@ -151,30 +138,54 @@ public class SsePushConnection implements PushConnection, Serializable {
      */
     protected void sendMessage(String message) {
         assert isConnected() : "Cannot send message when not connected";
+        write(toEvent(message));
+    }
 
+    /**
+     * Formats the given data as an event of the event stream. Each line of the
+     * data goes to a data field of its own.
+     *
+     * @param data
+     *            the data of the event
+     * @return the event, ending with the empty line that ends an event
+     */
+    static String toEvent(String data) {
+        StringBuilder event = new StringBuilder();
+        for (String line : data.split("\n", -1)) {
+            event.append("data: ").append(line).append('\n');
+        }
+        return event.append('\n').toString();
+    }
+
+    /**
+     * Sends a comment to the client through the given stream, unless the
+     * connection uses another stream by now. Proxies and load balancers close
+     * connections that stay idle, and writing to a stream is also how the
+     * server notices that the client has gone.
+     *
+     * @param asyncContext
+     *            the stream to keep alive
+     * @return {@code true} if the stream is still the open stream of this
+     *         connection, {@code false} if it has ended
+     */
+    boolean sendKeepAlive(AsyncContext asyncContext) {
         synchronized (lock) {
-            try {
-                // SSE format: event type, id, and data fields
-                writer.write("event: uidl\n");
-                writer.write("id: " + (ui.getInternals().getServerSyncId() - 1)
-                        + "\n");
-                // Data can span multiple lines - each line needs "data: "
-                // prefix
-                String[] lines = message.split("\n", -1);
-                for (String line : lines) {
-                    writer.write("data: " + line + "\n");
-                }
-                writer.write("\n"); // Empty line ends the event
-                writer.flush();
+            if (!isConnected() || this.asyncContext != asyncContext) {
+                return false;
+            }
+            write(KEEP_ALIVE);
+            return isConnected();
+        }
+    }
 
-                if (writer.checkError()) {
-                    getLogger()
-                            .debug("Error detected while writing SSE message");
-                    connectionLost();
-                }
-            } catch (Exception e) {
-                getLogger().debug("Failed to send SSE message", e);
-                connectionLost();
+    private void write(String text) {
+        synchronized (lock) {
+            writer.write(text);
+            writer.flush();
+            // PrintWriter does not throw, but reports errors here
+            if (writer.checkError()) {
+                getLogger().debug("Writing to the event stream failed");
+                connectionLost(asyncContext);
             }
         }
     }
@@ -199,53 +210,37 @@ public class SsePushConnection implements PushConnection, Serializable {
     public void connect(AsyncContext asyncContext) throws IOException {
         assert asyncContext != null;
 
-        if (isConnected()) {
-            disconnect();
-        }
+        synchronized (lock) {
+            if (isConnected()) {
+                disconnect();
+            }
 
-        this.asyncContext = asyncContext;
+            HttpServletResponse response = (HttpServletResponse) asyncContext
+                    .getResponse();
+            response.setContentType("text/event-stream");
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Cache-Control",
+                    "no-cache, no-store, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Connection", "keep-alive");
+            // Stops nginx from buffering the stream
+            response.setHeader("X-Accel-Buffering", "no");
 
-        // Set up SSE response headers
-        HttpServletResponse response = (HttpServletResponse) asyncContext
-                .getResponse();
-        response.setContentType("text/event-stream");
-        response.setCharacterEncoding("UTF-8");
-        // Prevent caching
-        response.setHeader("Cache-Control",
-                "no-cache, no-store, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        // Keep connection alive
-        response.setHeader("Connection", "keep-alive");
-        // Disable buffering for immediate delivery
-        response.setHeader("X-Accel-Buffering", "no");
+            this.asyncContext = asyncContext;
+            this.writer = response.getWriter();
 
-        this.writer = response.getWriter();
+            State oldState = state;
+            state = State.CONNECTED;
 
-        State oldState = state;
-        state = State.CONNECTED;
+            // Sends the headers, which opens the stream on the client
+            write(KEEP_ALIVE);
 
-        // Send initial connection event
-        sendConnectionEstablishedEvent();
-
-        if (oldState == State.PUSH_PENDING
-                || oldState == State.RESPONSE_PENDING) {
-            // Sending a "response" message (async=false) also takes care of a
-            // pending push, but not vice versa
-            push(oldState == State.PUSH_PENDING);
-        }
-    }
-
-    /**
-     * Sends an event to the client indicating that the SSE connection has been
-     * established.
-     */
-    private void sendConnectionEstablishedEvent() {
-        try {
-            writer.write("event: connected\n");
-            writer.write("data: {\"uiId\":" + ui.getUIId() + "}\n\n");
-            writer.flush();
-        } catch (Exception e) {
-            getLogger().debug("Failed to send connection established event", e);
+            if (oldState == State.PUSH_PENDING
+                    || oldState == State.RESPONSE_PENDING) {
+                // Sending a "response" message (async=false) also takes care of
+                // a pending push, but not vice versa
+                push(oldState == State.PUSH_PENDING);
+            }
         }
     }
 
@@ -270,44 +265,42 @@ public class SsePushConnection implements PushConnection, Serializable {
 
     @Override
     public void disconnect() {
-        // If a disconnection is already happening on another thread it is safe
-        // to skip the operation
-        if (disconnecting) {
-            getLogger().debug(
-                    "Disconnection already in progress, ignoring request");
-            return;
-        }
-
         synchronized (lock) {
-            if (!isConnected() || asyncContext == null) {
+            if (!isConnected()) {
                 getLogger().debug(
                         "Disconnection already happened, ignoring request");
                 return;
             }
+            AsyncContext context = asyncContext;
+            // Detached first, so that the end of the stream is not reported
+            // as a lost connection
+            connectionLost(context);
             try {
-                disconnecting = true;
-
-                // Complete the async context to close the connection
-                try {
-                    asyncContext.complete();
-                } catch (Exception e) {
-                    getLogger().debug("Error when completing async context", e);
-                }
-                connectionLost();
-            } finally {
-                disconnecting = false;
+                context.complete();
+            } catch (Exception e) {
+                getLogger().debug("Error when completing async context", e);
             }
         }
     }
 
     /**
-     * Called when the connection to the client has been lost.
+     * Called when the given event stream has ended. Does nothing if the
+     * connection has already moved on to another stream, as the client may open
+     * a new stream before the server notices that the previous one ended.
+     *
+     * @param asyncContext
+     *            the async context of the stream that ended
      */
-    public void connectionLost() {
-        asyncContext = null;
-        writer = null;
-        if (state == State.CONNECTED) {
-            state = State.DISCONNECTED;
+    public void connectionLost(AsyncContext asyncContext) {
+        synchronized (lock) {
+            if (asyncContext != this.asyncContext) {
+                return;
+            }
+            this.asyncContext = null;
+            writer = null;
+            if (state == State.CONNECTED) {
+                state = State.DISCONNECTED;
+            }
         }
     }
 
@@ -336,7 +329,6 @@ public class SsePushConnection implements PushConnection, Serializable {
             throws IOException, ClassNotFoundException {
         stream.defaultReadObject();
         state = State.DISCONNECTED;
-        disconnecting = false;
         lock = new Object();
     }
 

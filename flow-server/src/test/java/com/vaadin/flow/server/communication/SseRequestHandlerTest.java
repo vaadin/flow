@@ -33,6 +33,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinRequest;
@@ -44,6 +45,7 @@ import com.vaadin.flow.server.communication.SsePushConnectionTest.SseEvent;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -106,6 +108,7 @@ class SseRequestHandlerTest {
 
     @AfterEach
     void tearDown() {
+        handler.destroy();
         UI.setCurrent(null);
         VaadinSession.setCurrent(null);
     }
@@ -154,7 +157,7 @@ class SseRequestHandlerTest {
         assertTrue(connection.isConnected());
         assertEquals(asyncContext, connection.getAsyncContext());
         verify(httpResponse).setContentType("text/event-stream");
-        assertEquals("connected", events().get(0).event());
+        assertEquals(":\n\n", responseBody.toString());
     }
 
     @Test
@@ -196,7 +199,6 @@ class SseRequestHandlerTest {
         verify(httpResponse).setContentType("text/event-stream");
         List<SseEvent> events = events();
         assertEquals(1, events.size());
-        assertEquals("uidl", events.get(0).event());
         assertTrue(
                 parse(events.get(0).data()).get("meta").has("sessionExpired"));
         verify(httpRequest, never()).startAsync();
@@ -291,9 +293,72 @@ class SseRequestHandlerTest {
 
         handler.handleRequest(session, request(), response());
 
-        List<SseEvent> events = events();
-        assertEquals(2, events.size());
-        assertEquals("uidl", events.get(1).event());
+        assertEquals(1, events().size());
+    }
+
+    @Test
+    void keepAlive_openStream_sendsComment() throws Exception {
+        mockFindUI(ui);
+        handler.handleRequest(session, request(), response());
+
+        ((Runnable) listener()).run();
+
+        assertEquals(":\n\n:\n\n", responseBody.toString());
+    }
+
+    @Test
+    void keepAlive_endedStream_sendsNothing() throws Exception {
+        mockFindUI(ui);
+        handler.handleRequest(session, request(), response());
+        AsyncListener stream = listener();
+        stream.onComplete(mock(AsyncEvent.class));
+
+        ((Runnable) stream).run();
+
+        assertEquals(":\n\n", responseBody.toString());
+    }
+
+    @Test
+    void keepAlive_isScheduledWithConfiguredInterval() throws Exception {
+        handler = handlerWithKeepAliveInterval("1");
+        mockFindUI(ui);
+
+        handler.handleRequest(session, request(), response());
+
+        long deadline = System.currentTimeMillis() + 5000;
+        while (!responseBody.toString().equals(":\n\n:\n\n")
+                && System.currentTimeMillis() < deadline) {
+            Thread.sleep(50);
+        }
+        assertEquals(":\n\n:\n\n", responseBody.toString());
+    }
+
+    @Test
+    void keepAlive_intervalZero_isNotScheduled() throws Exception {
+        handler = spy(handlerWithKeepAliveInterval("0"));
+        mockFindUI(ui);
+
+        handler.handleRequest(session, request(), response());
+
+        verify(handler, never()).getKeepAliveExecutor();
+    }
+
+    @Test
+    void keepAlive_defaultInterval_isScheduled() throws Exception {
+        handler = spy(handler);
+        mockFindUI(ui);
+
+        handler.handleRequest(session, request(), response());
+
+        verify(handler).getKeepAliveExecutor();
+    }
+
+    private SseRequestHandler handlerWithKeepAliveInterval(String seconds) {
+        ((MockDeploymentConfiguration) service.getDeploymentConfiguration())
+                .setApplicationOrSystemProperty(
+                        InitParameters.SERVLET_PARAMETER_PUSH_SSE_KEEP_ALIVE_INTERVAL,
+                        seconds);
+        return new SseRequestHandler(service);
     }
 
     @Test

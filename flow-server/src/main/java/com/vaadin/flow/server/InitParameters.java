@@ -75,6 +75,15 @@ public class InitParameters implements Serializable {
      * @since 25.2
      */
     public static final String SERVLET_PARAMETER_FRAME_OPTIONS = "frameOptions";
+    /**
+     * Configuration parameter name for the interval, in seconds, at which a
+     * {@link com.vaadin.flow.shared.ui.Transport#SSE_PURE} push connection
+     * sends a comment to the client. It keeps proxies and load balancers from
+     * closing the connection as idle, and lets the server notice clients that
+     * have gone. The default is 30 seconds, below the 60 second read timeout of
+     * nginx; set the value to {@code 0} to disable it.
+     */
+    public static final String SERVLET_PARAMETER_PUSH_SSE_KEEP_ALIVE_INTERVAL = "pushSseKeepAliveInterval";
     public static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
     public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
 

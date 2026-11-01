@@ -64,14 +64,6 @@ describe('SsePush', () => {
       expect(FakeEventSource.latest().withCredentials).to.be.true;
     });
 
-    it('adds the sse request type to a url without one', () => {
-      new SseConnection(recordingRequest('VAADIN/push').request);
-      expect(FakeEventSource.latest().url).to.equal('VAADIN/push?v-r=sse');
-
-      new SseConnection(recordingRequest('VAADIN/push?v-uiId=0').request);
-      expect(FakeEventSource.latest().url).to.equal('VAADIN/push?v-uiId=0&v-r=sse');
-    });
-
     it('reports the open stream with the sse-pure transport', () => {
       const { request, calls } = recordingRequest();
       new SseConnection(request);
@@ -83,36 +75,17 @@ describe('SsePush', () => {
       expect(calls[0].response.request).to.equal(request);
     });
 
-    it('passes uidl events to the message callback', () => {
+    it('passes events to the message callback', () => {
       const { request, calls } = recordingRequest();
       new SseConnection(request);
       FakeEventSource.latest().open();
 
-      FakeEventSource.latest().emit('uidl', '{"syncId":1}');
+      FakeEventSource.latest().emit('message', '{"syncId":1}');
 
       expect(callbacks(calls)).to.deep.equal(['onOpen', 'onMessage']);
       expect(calls[1].response.responseBody).to.equal('{"syncId":1}');
       expect(calls[1].response.status).to.equal(200);
       expect(calls[1].response.transport).to.equal(SSE_PURE_TRANSPORT);
-    });
-
-    it('passes unnamed events to the message callback', () => {
-      const { request, calls } = recordingRequest();
-      new SseConnection(request);
-
-      FakeEventSource.latest().emit('message', '{"syncId":2}');
-
-      expect(callbacks(calls)).to.deep.equal(['onMessage']);
-      expect(calls[0].response.responseBody).to.equal('{"syncId":2}');
-    });
-
-    it('ignores the connected event', () => {
-      const { request, calls } = recordingRequest();
-      new SseConnection(request);
-
-      FakeEventSource.latest().emit('connected', '{"uiId":0}');
-
-      expect(calls).to.be.empty;
     });
 
     it('reconnects with a new event stream when the stream fails', () => {

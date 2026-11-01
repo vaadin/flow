@@ -335,7 +335,7 @@ describe('AtmospherePushConnection', () => {
       await tick();
       FakeEventSource.latest().open();
 
-      FakeEventSource.latest().emit('uidl', '{"syncId":3}');
+      FakeEventSource.latest().emit('message', '{"syncId":3}');
 
       expect(log.handled).to.deep.equal([{ syncId: 3 }]);
     });

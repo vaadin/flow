@@ -32,7 +32,7 @@ import type { Command } from '../Command';
 import type { PushConnection } from './PushConnection';
 import type { PushConnectionFactory } from './PushConnectionFactory';
 import { Console } from '../Console';
-import { createSsePushAtmosphere, SSE_PURE_TRANSPORT, type SseAtmosphereRequest } from './SsePush';
+import { createSsePushAtmosphere, SSE_PURE_TRANSPORT } from './SsePush';
 
 // com.vaadin.flow.shared.communication.PushConstants
 const WEBSOCKET_FRAGMENT_SIZE = 16384 / 4 - 1; // 4095
@@ -542,14 +542,7 @@ export class AtmospherePushConnection implements PushConnection {
    */
   #getAtmosphere(): Atmosphere {
     if (this.#isSsePure()) {
-      if (this.#ssePushAtmosphere === null) {
-        const ssePush = createSsePushAtmosphere();
-        // doConnect builds the config with the callbacks of the request
-        this.#ssePushAtmosphere = {
-          subscribe: (config) => ssePush.subscribe(config as SseAtmosphereRequest),
-          unsubscribeUrl: (url) => ssePush.unsubscribeUrl(url)
-        };
-      }
+      this.#ssePushAtmosphere ??= createSsePushAtmosphere();
       return this.#ssePushAtmosphere;
     }
     // The connection only connects or disconnects after the library has

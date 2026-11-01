@@ -22,10 +22,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -54,12 +58,17 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since 24.7
  */
 public class SseRequestHandler
         implements RequestHandler, SessionExpiredHandler {
 
+    private static final int DEFAULT_KEEP_ALIVE_INTERVAL = 30;
+
     private final VaadinServletService service;
+
+    private final int keepAliveInterval;
+
+    private transient ScheduledExecutorService keepAliveExecutor;
 
     /**
      * Creates an instance connected to the given service.
@@ -69,6 +78,10 @@ public class SseRequestHandler
      */
     public SseRequestHandler(VaadinServletService service) {
         this.service = service;
+        keepAliveInterval = service.getDeploymentConfiguration()
+                .getApplicationOrSystemProperty(
+                        InitParameters.SERVLET_PARAMETER_PUSH_SSE_KEEP_ALIVE_INTERVAL,
+                        DEFAULT_KEEP_ALIVE_INTERVAL, Integer::parseInt);
         service.addServiceDestroyListener(event -> destroy());
     }
 
@@ -142,7 +155,8 @@ public class SseRequestHandler
                         pushConnection != null
                                 ? pushConnection.getClass().getName()
                                 : "null");
-                sendError(servletResponse, "SSE not configured for this UI");
+                servletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                        "SSE not configured for this UI");
                 return true;
             }
 
@@ -152,10 +166,14 @@ public class SseRequestHandler
             AsyncContext asyncContext = servletRequest.startAsync();
             asyncContext.setTimeout(0); // No timeout for SSE
 
-            asyncContext.addListener(new SseStreamListener(sseConnection));
-
-            // Connect the SSE push connection
+            SseStream stream = new SseStream(sseConnection, asyncContext);
+            asyncContext.addListener(stream);
             sseConnection.connect(asyncContext);
+            if (keepAliveInterval > 0) {
+                stream.keepAlive = getKeepAliveExecutor()
+                        .scheduleWithFixedDelay(stream, keepAliveInterval,
+                                keepAliveInterval, TimeUnit.SECONDS);
+            }
 
             getLogger().debug("SSE connection established for UI {}",
                     ui.getUIId());
@@ -167,34 +185,71 @@ public class SseRequestHandler
         return true;
     }
 
+    synchronized ScheduledExecutorService getKeepAliveExecutor() {
+        if (keepAliveExecutor == null) {
+            keepAliveExecutor = Executors
+                    .newSingleThreadScheduledExecutor(runnable -> {
+                        Thread thread = new Thread(runnable,
+                                "vaadin-sse-push-keep-alive");
+                        thread.setDaemon(true);
+                        return thread;
+                    });
+        }
+        return keepAliveExecutor;
+    }
+
     /**
-     * Marks the push connection lost when the event stream of the client ends.
+     * An open event stream of a push connection. Keeps the stream alive while
+     * it is open, and marks the push connection lost when it ends.
      */
-    private static class SseStreamListener
-            implements AsyncListener, Serializable {
+    private static class SseStream
+            implements AsyncListener, Runnable, Serializable {
 
         private final SsePushConnection connection;
+        private final transient AsyncContext asyncContext;
+        private transient volatile ScheduledFuture<?> keepAlive;
 
-        private SseStreamListener(SsePushConnection connection) {
+        private SseStream(SsePushConnection connection,
+                AsyncContext asyncContext) {
             this.connection = connection;
+            this.asyncContext = asyncContext;
+        }
+
+        @Override
+        public void run() {
+            if (!connection.sendKeepAlive(asyncContext)) {
+                stopKeepAlive();
+            }
+        }
+
+        private void ended() {
+            stopKeepAlive();
+            connection.connectionLost(asyncContext);
+        }
+
+        private void stopKeepAlive() {
+            ScheduledFuture<?> future = keepAlive;
+            if (future != null) {
+                future.cancel(false);
+            }
         }
 
         @Override
         public void onComplete(AsyncEvent event) {
             getLogger().debug("SSE connection disconnected");
-            connection.connectionLost();
+            ended();
         }
 
         @Override
         public void onTimeout(AsyncEvent event) {
             getLogger().debug("SSE connection timed out");
-            connection.connectionLost();
+            ended();
         }
 
         @Override
         public void onError(AsyncEvent event) {
             getLogger().debug("SSE connection error", event.getThrowable());
-            connection.connectionLost();
+            ended();
         }
 
         @Override
@@ -242,28 +297,8 @@ public class SseRequestHandler
             throws IOException {
         response.setContentType("text/event-stream");
         response.setCharacterEncoding("UTF-8");
-        PrintWriter writer = response.getWriter();
-        writer.write("event: uidl\n");
-        for (String line : json.split("\n", -1)) {
-            writer.write("data: " + line + "\n");
-        }
-        writer.write("\n");
-        writer.flush();
-    }
-
-    /**
-     * Sends an error message to the client.
-     *
-     * @param response
-     *            the response to write to
-     * @param message
-     *            the error message
-     * @throws IOException
-     *             if writing fails
-     */
-    private void sendError(HttpServletResponse response, String message)
-            throws IOException {
-        response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
+        response.getWriter().write(SsePushConnection.toEvent(json));
+        response.getWriter().flush();
     }
 
     @Override
@@ -279,8 +314,11 @@ public class SseRequestHandler
     /**
      * Frees any resources currently in use.
      */
-    public void destroy() {
-        // No resources to free for SSE (no Atmosphere framework)
+    public synchronized void destroy() {
+        if (keepAliveExecutor != null) {
+            keepAliveExecutor.shutdownNow();
+            keepAliveExecutor = null;
+        }
     }
 
     private static Logger getLogger() {
