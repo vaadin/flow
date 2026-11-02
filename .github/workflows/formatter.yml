@@ -71,7 +71,10 @@ jobs:
         if: github.event_name == 'pull_request' || steps.formatter.outputs.modified != '0'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: formatter-diff
+          # Not formatter-diff, the artifact maintenance branches upload while
+          # posting their own comment, so that formatter-suggestions.yml only
+          # reports on runs of this copy of the workflow
+          name: formatter-suggestions-diff
           path: formatter-diff.txt
           retention-days: 30
 
@@ -106,7 +109,7 @@ jobs:
       - name: Download formatter diff
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: formatter-diff
+          name: formatter-suggestions-diff
           path: ${{ runner.temp }}/formatter-diff
 
       - name: Report on the pull request
