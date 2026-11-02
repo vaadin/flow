@@ -1,9 +1,9 @@
 name: Reverse Proxy Tests
 
 # Runs the push tests and a selection of general integration tests of
-# flow-tests/test-root-context, and the tests of flow-tests/test-push-sse-pure,
-# through reverse proxies that terminate HTTPS, like the proxies applications
-# are deployed behind. Each proxy runs with a configuration tuned for Vaadin
+# flow-tests/test-root-context, and the push tests without Atmosphere on Jetty,
+# Spring Boot (Tomcat) and Quarkus, through reverse proxies that terminate
+# HTTPS, like the proxies applications are deployed behind. Each proxy runs with a configuration tuned for Vaadin
 # (recommended) and with a minimal one that leaves the defaults of the proxy in
 # place (default), see ReverseProxy in flow-test-util. The proxies run in Docker
 # containers started by Testcontainers.
@@ -47,11 +47,28 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Set TB License
+        env:
+          TB_LICENSE: ${{ secrets.TB_LICENSE }}
+        run: |
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Build
-        run: mvn -B -ntp -T 1C install -DskipTests -Pit-shared-modules,it-test-modules -pl flow-tests/test-root-context,flow-tests/test-push-sse-pure -am
+        run: >-
+          mvn -B -ntp -T 1C install -DskipTests -Pit-shared-modules,it-test-modules
+          -pl flow-tests/test-root-context,flow-tests/test-push-sse-pure,flow-tests/test-lumo,flow-tests/test-lumo-theme,vaadin-spring,vaadin-quarkus/deployment
+          -am
       - name: Run the tests through ${{ matrix.proxy }}
         run: >-
-          mvn -B -ntp -fae verify -pl flow-tests/test-root-context,flow-tests/test-push-sse-pure
+          mvn -B -ntp -fae verify -Pit-shared-modules
+          -pl flow-tests/test-root-context,flow-tests/test-push-sse-pure,flow-tests/vaadin-spring-tests/test-spring-boot-sse-pure
+          -Dreverse.proxy=${{ matrix.proxy }}
+          -Dreverse.proxy.config=${{ matrix.config }}
+      - name: Run the Quarkus tests through ${{ matrix.proxy }}
+        if: ${{ !cancelled() }}
+        run: >-
+          mvn -B -ntp verify -f flow-tests/vaadin-quarkus-tests/pom.xml
+          -pl push-sse-pure-it -am
           -Dreverse.proxy=${{ matrix.proxy }}
           -Dreverse.proxy.config=${{ matrix.config }}
       - name: Upload test reports
@@ -64,3 +81,6 @@ jobs:
             flow-tests/test-root-context/target/jetty-start.out
             flow-tests/test-push-sse-pure/target/failsafe-reports/
             flow-tests/test-push-sse-pure/target/jetty-start.out
+            flow-tests/vaadin-spring-tests/test-spring-boot-sse-pure/target/failsafe-reports/
+            flow-tests/vaadin-quarkus-tests/push-sse-pure-it/target/failsafe-reports/
+            flow-tests/vaadin-quarkus-tests/push-sse-pure-it/target/quarkus.log
