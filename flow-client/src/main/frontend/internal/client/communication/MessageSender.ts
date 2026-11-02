@@ -23,6 +23,7 @@
 // VaadinRequest that page scripts can follow through the client events.
 
 import type { Registry } from '../Registry';
+import type { EventRemover } from '../../EventRemover';
 import type { XhrConnection } from './XhrConnection';
 import type { PushConnection } from './PushConnection';
 import type { PushConnectionFactory } from './PushConnectionFactory';
@@ -88,6 +89,8 @@ export class MessageSender {
   // until they are sent as a payload.
   #openRequest: VaadinRequest | null = null;
 
+  #uiLifecycleRegistration: EventRemover | null = null;
+
   /**
    * Creates a new instance connected to the given registry.
    *
@@ -96,7 +99,15 @@ export class MessageSender {
   constructor(registry: Registry, pushConnectionFactory: PushConnectionFactory | null = null) {
     this.#registry = registry;
     this.#pushConnectionFactory = pushConnectionFactory;
-    this.#registry.getUILifecycle().addHandler((event) => {
+    this.#listenToUILifecycle();
+    // A reset replaces the UI lifecycle, e.g. after an exported web component
+    // resynchronizes its session.
+    this.#registry.addResetListener(() => this.#listenToUILifecycle());
+  }
+
+  #listenToUILifecycle(): void {
+    this.#uiLifecycleRegistration?.remove();
+    this.#uiLifecycleRegistration = this.#registry.getUILifecycle().addHandler((event) => {
       if (event.getUiLifecycle().isTerminated()) {
         // Nothing is sent after the application stops.
         this.discardSentRequests();
@@ -572,8 +583,12 @@ export class MessageSender {
     this.#messageQueue.forEach((payload) => this.settleRequest(payload, 'discarded'));
   }
 
+  // A payload pushed over a bidirectional connection stays pending after the
+  // queue is cleared and is sent again, so its request has not been dropped.
   #clearMessageQueue(): void {
-    this.#messageQueue.forEach((payload) => this.settleRequest(payload, 'discarded'));
+    this.#messageQueue
+      .filter((payload) => payload !== this.#pushPendingMessage)
+      .forEach((payload) => this.settleRequest(payload, 'discarded'));
     this.#messageQueue = [];
   }
 }

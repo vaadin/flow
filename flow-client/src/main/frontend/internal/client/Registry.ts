@@ -39,6 +39,7 @@ import type { ExistingElementMap } from './ExistingElementMap';
 import type { InitialPropertiesHandler } from './InitialPropertiesHandler';
 import type { Poller } from './communication/Poller';
 import type { LoadingIndicatorStateHandler } from './communication/LoadingIndicatorStateHandler';
+import type { EventRemover } from '../EventRemover';
 import { assert } from '../assert';
 
 // TypeScript port of the container mechanism of com.vaadin.client.Registry.
@@ -107,6 +108,8 @@ export class Registry {
   readonly #lookupTable = new Map<ServiceKey, unknown>();
 
   readonly #resettable = new Map<ServiceKey, () => unknown>();
+
+  readonly #resetListeners: Array<() => void> = [];
 
   /**
    * Stores an instance of the given type.
@@ -375,5 +378,25 @@ export class Registry {
       this.#lookupTable.delete(key);
       this.#lookupTable.set(key, supplier());
     });
+    this.#resetListeners.forEach((listener) => listener());
+  }
+
+  /**
+   * Adds a listener called after {@link reset} has recreated the resettable
+   * instances, so a service holding on to one can move to its replacement.
+   *
+   * @param listener - the listener to add
+   * @returns a registration object which can be used to remove the listener
+   */
+  addResetListener(listener: () => void): EventRemover {
+    this.#resetListeners.push(listener);
+    return {
+      remove: () => {
+        const index = this.#resetListeners.indexOf(listener);
+        if (index >= 0) {
+          this.#resetListeners.splice(index, 1);
+        }
+      }
+    };
   }
 }

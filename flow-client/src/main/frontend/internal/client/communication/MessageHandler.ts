@@ -97,6 +97,7 @@ const UIDL_PUSH_ID = 'Vaadin-Push-ID';
 const UIDL_KEY_EXECUTE = 'execute';
 const META_SESSION_EXPIRED = 'sessionExpired';
 const META_ASYNC = 'async';
+const META_APP_ERROR = 'appError';
 
 const SESSION_EXPIRED_HANDLING_DELAY = 250;
 
@@ -196,8 +197,12 @@ export class MessageHandler {
         ? messageSender.getRequest(payload)
         : messageSender.findRequest(json[CLIENT_TO_SERVER_ID] as number | undefined);
     if (request) {
+      // A reply with an application error is what the server sends instead of
+      // processing the request, e.g. for a bad security key or a message id
+      // out of sync.
       const meta = json.meta as ValueMap | undefined;
-      dispatchResponse(request, meta && META_SESSION_EXPIRED in meta ? 'rejected' : 'acknowledged');
+      const refused = meta && (META_SESSION_EXPIRED in meta || META_APP_ERROR in meta);
+      dispatchResponse(request, refused ? 'rejected' : 'acknowledged');
     }
   }
 
@@ -400,8 +405,8 @@ export class MessageHandler {
               SESSION_EXPIRED_HANDLING_DELAY
             );
           }
-        } else if ('appError' in meta && this.#registry.getUILifecycle().getState() !== UIState.TERMINATED) {
-          const error = meta.appError as ValueMap;
+        } else if (META_APP_ERROR in meta && this.#registry.getUILifecycle().getState() !== UIState.TERMINATED) {
+          const error = meta[META_APP_ERROR] as ValueMap;
           this.#registry
             .getSystemErrorHandler()
             .handleUnrecoverableError(

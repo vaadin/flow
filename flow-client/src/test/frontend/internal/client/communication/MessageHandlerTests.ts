@@ -322,11 +322,18 @@ describe('MessageHandler', () => {
         expect(events).to.deep.equal([]);
       });
 
-      it('rejects the request a reply saying the session expired answers', () => {
-        const registry = makeRegistry();
-        const events = recordRequest(registry.request);
-        new MessageHandler(registry.registry).handleMessage({ syncId: 0, meta: { sessionExpired: true } }, { rpc: [] });
-        expect(events).to.deep.equal(['response', 'end rejected']);
+      [
+        { refusal: 'the session expired', meta: { sessionExpired: true } },
+        // What the server replies with instead of processing the request, e.g.
+        // for a bad security key or a message id out of sync.
+        { refusal: 'an application error', meta: { appError: { caption: null, message: null } } }
+      ].forEach(({ refusal, meta }) => {
+        it(`rejects the request a reply with ${refusal} answers`, () => {
+          const registry = makeRegistry();
+          const events = recordRequest(registry.request);
+          new MessageHandler(registry.registry).handleMessage({ syncId: 0, meta }, { rpc: [] });
+          expect(events).to.deep.equal(['response', 'end rejected']);
+        });
       });
     });
 

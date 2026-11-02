@@ -17,9 +17,44 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
   };
   let activeRequest = false;
   let invocations: unknown[] = [];
-  const lifecycle = new UILifecycle();
-  lifecycle.setState(UIState.RUNNING);
   const clientEvents = new ClientEvents();
+  const registry = testRegistry({
+    RequestResponseTracker: {
+      hasActiveRequest: () => activeRequest,
+      startRequest: () => {
+        activeRequest = true;
+        log.startRequests++;
+      }
+    },
+    ClientEvents: clientEvents,
+    ServerRpcQueue: {
+      isEmpty: () => invocations.length === 0,
+      toJson: () => invocations,
+      clear: () => {
+        invocations = [];
+      },
+      isFlushPending: () => false,
+      flush: () => {}
+    },
+    LoadingIndicatorStateHandler: {
+      startLoading: () => {
+        log.loadingStarts++;
+      }
+    },
+    MessageHandler: { getCsrfToken: () => 'init', getLastSeenServerSyncId: () => 42 },
+    XhrConnection: {
+      send: (payload: Record<string, unknown>) => {
+        log.xhrSends.push(payload);
+      },
+      getUri: () => '/app?v-r=uidl'
+    },
+    ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 1000000 },
+    PushConfiguration: { isPushEnabled: () => opts.pushEnabled ?? false }
+  }).registerResettable('UILifecycle', () => {
+    const lifecycle = new UILifecycle();
+    lifecycle.setState(UIState.RUNNING);
+    return lifecycle;
+  });
   return {
     log,
     clientEvents,
@@ -27,41 +62,8 @@ function makeRegistry(opts: { pushEnabled?: boolean } = {}) {
       activeRequest = active;
     },
     queueInvocation: (invocation: unknown) => invocations.push(invocation),
-    terminate: () => lifecycle.setState(UIState.TERMINATED),
-    registry: testRegistry({
-      UILifecycle: lifecycle,
-      RequestResponseTracker: {
-        hasActiveRequest: () => activeRequest,
-        startRequest: () => {
-          activeRequest = true;
-          log.startRequests++;
-        }
-      },
-      ClientEvents: clientEvents,
-      ServerRpcQueue: {
-        isEmpty: () => invocations.length === 0,
-        toJson: () => invocations,
-        clear: () => {
-          invocations = [];
-        },
-        isFlushPending: () => false,
-        flush: () => {}
-      },
-      LoadingIndicatorStateHandler: {
-        startLoading: () => {
-          log.loadingStarts++;
-        }
-      },
-      MessageHandler: { getCsrfToken: () => 'init', getLastSeenServerSyncId: () => 42 },
-      XhrConnection: {
-        send: (payload: Record<string, unknown>) => {
-          log.xhrSends.push(payload);
-        },
-        getUri: () => '/app?v-r=uidl'
-      },
-      ApplicationConfiguration: { getMaxMessageSuspendTimeout: () => 1000000 },
-      PushConfiguration: { isPushEnabled: () => opts.pushEnabled ?? false }
-    })
+    terminate: () => registry.getUILifecycle().setState(UIState.TERMINATED),
+    registry
   };
 }
 
@@ -330,6 +332,47 @@ describe('MessageSender (class)', () => {
       sender.openRequest();
       context.terminate();
       expect(events).to.deep.equal(['3 sent 1', '3 end discarded', '4 end discarded']);
+    });
+
+    it('keeps a request pushed but not confirmed when the queue is cleared', () => {
+      const context = makeRegistry();
+      const push = {
+        isActive: () => true,
+        isBidirectional: () => true,
+        push: () => {},
+        disconnect: () => {},
+        getTransportType: () => 'websocket'
+      };
+      const sender = new MessageSender(context.registry, () => push);
+      sender.setPushEnabled(true);
+      const { events } = recordRequests(context.clientEvents);
+      sender.send({ rpc: [] });
+
+      // The pushed payload is sent again, so the server may still run it.
+      sender.resynchronize();
+      sender.setClientToServerMessageId(5, true);
+      expect(events).to.deep.equal(['0 sent 1']);
+
+      context.setActiveRequest(false);
+      sender.sendInvocationsToServer();
+      sender.setClientToServerMessageId(5, false);
+      expect(events).to.deep.equal(['0 sent 1', '0 sent 2', '0 end acknowledged']);
+    });
+
+    it('discards the open requests when the UI lifecycle that replaced the first one stops', () => {
+      const context = makeRegistry();
+      const sender = new MessageSender(context.registry);
+      const { events } = recordRequests(context.clientEvents);
+      sender.send({ rpc: [] });
+
+      // E.g. an exported web component resynchronizing its session.
+      const replaced = context.registry.getUILifecycle();
+      context.registry.reset();
+      replaced.setState(UIState.TERMINATED);
+      expect(events).to.deep.equal(['0 sent 1']);
+
+      context.terminate();
+      expect(events).to.deep.equal(['0 sent 1', '0 end discarded']);
     });
 
     it('keeps sending when a listener throws', () => {
