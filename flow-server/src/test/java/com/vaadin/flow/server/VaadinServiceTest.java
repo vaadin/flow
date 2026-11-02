@@ -959,11 +959,14 @@ class VaadinServiceTest {
         try {
             long now = System.currentTimeMillis();
             // The heartbeat timeout is 31 seconds for a 10 second interval.
-            // A UI closed by a reload keeps its tab within the timeout.
+            // A UI closed by a reload keeps its tab within the timeout. Its
+            // last heartbeat is newer than the tab, so it only counts if the
+            // tabs are checked before closed UIs are removed.
             UI reloadedUI = addUI(session, 1);
-            reloadedUI.getInternals().setLastHeartbeatTimestamp(now - 25_000);
+            reloadedUI.getInternals().setLastHeartbeatTimestamp(now - 40_000);
             BrowserTab.get(reloadedUI).addDestroyListener(
                     tab -> reloadedTabDestroyed.incrementAndGet());
+            reloadedUI.getInternals().setLastHeartbeatTimestamp(now - 25_000);
             reloadedUI.close();
             // A UI closed as inactive in this pass takes its tab along
             UI inactiveUI = addUI(session, 2);

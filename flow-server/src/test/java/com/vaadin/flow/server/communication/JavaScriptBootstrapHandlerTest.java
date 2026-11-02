@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.AfterEach;
@@ -284,6 +285,11 @@ class JavaScriptBootstrapHandlerTest {
         doAnswer(invocation -> attributes.put(invocation.getArgument(0),
                 invocation.getArgument(1))).when(session)
                 .setAttribute(any(Class.class), any());
+
+        // No browser tab is created while nobody listens for new tabs
+        jsInitHandler.handleRequest(session, mocks.createRequest(mocks, "/",
+                "v-r=init&location=&v-sw=1&v-wn=tab-a"), response);
+        assertEquals(Set.of(SessionRouteRegistry.class), attributes.keySet());
 
         List<String> events = new ArrayList<>();
         mocks.getService().addBrowserTabInitListener(
