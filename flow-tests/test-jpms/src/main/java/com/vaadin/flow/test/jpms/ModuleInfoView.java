@@ -19,6 +19,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.react.ReactAdapterComponent;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -34,6 +35,9 @@ public class ModuleInfoView extends Div {
         flowModule.setId("flow-module");
         Span componentsModule = new Span(describe(Span.class.getModule()));
         componentsModule.setId("components-module");
+        Span reactModule = new Span(
+                describe(ReactAdapterComponent.class.getModule()));
+        reactModule.setId("react-module");
 
         Div clicked = new Div();
         clicked.setId("clicked");
@@ -50,8 +54,8 @@ public class ModuleInfoView extends Div {
         });
         pushButton.setId("push-button");
 
-        add(appModule, flowModule, componentsModule, button, clicked,
-                pushButton, pushed);
+        add(appModule, flowModule, componentsModule, reactModule, button,
+                clicked, pushButton, pushed);
     }
 
     private static String describe(Module module) {

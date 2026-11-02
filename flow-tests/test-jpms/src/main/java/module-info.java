@@ -21,6 +21,7 @@
 module com.vaadin.flow.test.jpms {
     requires com.vaadin.flow.server;
     requires com.vaadin.flow.component.html;
+    requires com.vaadin.flow.component.react;
     requires org.eclipse.jetty.server;
     requires org.eclipse.jetty.ee11.webapp;
     requires org.eclipse.jetty.ee11.annotations;
