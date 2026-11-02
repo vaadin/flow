@@ -32,19 +32,25 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.SingleCaptureConsumer;
 
+import elemental.json.JsonValue;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 class PendingJavaScriptInvocationTest {
@@ -366,6 +372,171 @@ class PendingJavaScriptInvocationTest {
         return Arrays.asList(completableFuture::get,
                 () -> completableFuture.get(1, TimeUnit.HOURS),
                 completableFuture::join);
+    }
+
+    /**
+     * Simulates an add-on compiled against Vaadin 24, where {@code then} took a
+     * {@code SerializableConsumer<JsonValue>}. Due to erasure, the call links
+     * fine against the Vaadin 25 signature.
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private SerializableConsumer<JsonValue> scheduleCallbackFromIncompatibleAddon() {
+        SerializableConsumer<JsonValue> legacyCallback = value -> {
+        };
+        invocation.then((SerializableConsumer) legacyCallback);
+        return legacyCallback;
+    }
+
+    @Test
+    void incompatibleSuccessHandler_exceptionNamesHandlerClass() {
+        SerializableConsumer<JsonValue> legacyCallback = scheduleCallbackFromIncompatibleAddon();
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains(legacyCallback.getClass().getName()),
+                exception.getMessage());
+        assertInstanceOf(ClassCastException.class, exception.getCause());
+    }
+
+    @Test
+    void successHandlerCastFailureWithoutMessage_rethrownUnchanged() {
+        ClassCastException original = new ClassCastException();
+        invocation.then(value -> {
+            throw original;
+        });
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertSame(original, exception);
+    }
+
+    /**
+     * A return value that a legacy handler can accept, so that the cast to
+     * {@code JsonValue} succeeds and the handler body runs.
+     */
+    private static class LegacyCompatibleNode extends StringNode
+            implements JsonValue {
+        LegacyCompatibleNode() {
+            super("foo");
+        }
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void incompatibleSuccessHandler_castFailureWithoutMessage_exceptionNamesHandlerClass() {
+        // Stands in for the pre-allocated exception without a message that
+        // the JVM throws for a cast that fails very often
+        ClassCastException original = new ClassCastException();
+        SerializableConsumer<JsonValue> legacyCallback = value -> {
+            throw original;
+        };
+        invocation.then((SerializableConsumer) legacyCallback);
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(new LegacyCompatibleNode()));
+
+        assertTrue(
+                exception.getMessage()
+                        .contains(legacyCallback.getClass().getName()),
+                exception.getMessage());
+        assertSame(original, exception.getCause());
+    }
+
+    private static void acceptLegacyValue(JsonValue value) {
+    }
+
+    @Test
+    void acceptsElementalJson_legacyHandlers_true() {
+        SerializableConsumer<JsonValue> lambda = value -> {
+        };
+        SerializableConsumer<JsonValue> methodReference = PendingJavaScriptInvocationTest::acceptLegacyValue;
+        SerializableConsumer<JsonValue> anonymous = new SerializableConsumer<>() {
+            @Override
+            public void accept(JsonValue value) {
+            }
+        };
+
+        assertTrue(PendingJavaScriptInvocation.acceptsElementalJson(lambda));
+        assertTrue(PendingJavaScriptInvocation
+                .acceptsElementalJson(methodReference));
+        assertTrue(PendingJavaScriptInvocation.acceptsElementalJson(anonymous));
+    }
+
+    @Test
+    void acceptsElementalJson_jsonNodeHandlers_false() {
+        SerializableConsumer<JsonNode> lambda = value -> {
+        };
+        SerializableConsumer<JsonNode> anonymous = new SerializableConsumer<>() {
+            @Override
+            public void accept(JsonNode value) {
+            }
+        };
+
+        assertFalse(PendingJavaScriptInvocation.acceptsElementalJson(lambda));
+        assertFalse(
+                PendingJavaScriptInvocation.acceptsElementalJson(anonymous));
+    }
+
+    @Test
+    void successHandlerThrowsUnrelatedClassCastException_rethrownUnchanged() {
+        ClassCastException original = new ClassCastException(
+                "class java.lang.Integer cannot be cast to class java.lang.String");
+        invocation.then(value -> {
+            throw original;
+        });
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertSame(original, exception);
+    }
+
+    @Test
+    void successHandlerThrowsUnrelatedNoClassDefFoundError_rethrownUnchanged() {
+        NoClassDefFoundError original = new NoClassDefFoundError(
+                "com/example/Missing");
+        invocation.then(value -> {
+            throw original;
+        });
+
+        NoClassDefFoundError error = assertThrows(NoClassDefFoundError.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertSame(original, error);
+    }
+
+    @Test
+    void successHandlerMissingElementalJson_errorNamesHandlerClass() {
+        NoClassDefFoundError original = new NoClassDefFoundError(
+                "elemental/json/JsonValue");
+        SerializableConsumer<JsonNode> handler = value -> {
+            throw original;
+        };
+        invocation.then(handler);
+
+        NoClassDefFoundError error = assertThrows(NoClassDefFoundError.class,
+                () -> invocation.complete(JacksonUtils.nullNode()));
+
+        assertTrue(error.getMessage().contains(handler.getClass().getName()),
+                error.getMessage());
+        assertSame(original, error.getCause());
+    }
+
+    @Test
+    void typedSuccessHandlerCastFailureWithoutMessage_rethrownUnchanged() {
+        ClassCastException original = new ClassCastException();
+        invocation.then(String.class, value -> {
+            throw original;
+        });
+
+        ClassCastException exception = assertThrows(ClassCastException.class,
+                () -> invocation.complete(fooJsonString));
+
+        assertSame(original, exception);
     }
 
     private void assertStringSuccess() {

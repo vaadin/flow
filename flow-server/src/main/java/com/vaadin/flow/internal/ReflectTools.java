@@ -23,21 +23,25 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -670,6 +674,132 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Gets the type that is bound to the given type variable when viewed from
+     * the given type, e.g. {@code String} for the second type parameter of
+     * {@code HasValue} when viewed from {@code TextField}.
+     * <p>
+     * Type variables nested inside a parameterized type argument (e.g. the
+     * {@code X} in {@code List<X>}) are returned as is.
+     *
+     * @param type
+     *            the type to inspect, not {@code null}
+     * @param variable
+     *            the type variable to resolve, declared by a class or an
+     *            interface that {@code type} extends or implements
+     * @return the type bound to the variable, possibly a {@link TypeVariable}
+     *         if the variable is bound to another, unresolved, type variable;
+     *         {@code null} if {@code type} is not a subtype of the class
+     *         declaring the variable or if the type information is lost because
+     *         of raw types
+     */
+    public static Type getTypeParameter(Type type,
+            TypeVariable<? extends Class<?>> variable) {
+        if (type instanceof TypeVariable<?> typeVariable) {
+            return getTypeParameter(typeVariable.getBounds()[0], variable);
+        }
+        if (type instanceof WildcardType wildcardType) {
+            return getTypeParameter(wildcardType.getUpperBounds()[0], variable);
+        }
+        Class<?> declaringClass = variable.getGenericDeclaration();
+        Class<?> rawType = erase(type);
+        if (rawType == null || !declaringClass.isAssignableFrom(rawType)) {
+            return null;
+        }
+        if (type instanceof ParameterizedType parameterizedType) {
+            return findTypeParameter(rawType,
+                    bindTypeArguments(parameterizedType, Map.of()), variable);
+        }
+        return findTypeParameter(rawType, bindingsOfClass(rawType), variable);
+    }
+
+    /**
+     * Gets the class that the given type erases to.
+     *
+     * @param type
+     *            the type to erase, not {@code null}
+     * @return the erased class, or {@code null} if the type is of an unknown
+     *         kind
+     */
+    public static Class<?> erase(Type type) {
+        if (type instanceof Class<?> clazz) {
+            return clazz;
+        } else if (type instanceof ParameterizedType parameterizedType) {
+            return (Class<?>) parameterizedType.getRawType();
+        } else if (type instanceof GenericArrayType arrayType) {
+            Class<?> componentType = erase(arrayType.getGenericComponentType());
+            return componentType == null ? null : componentType.arrayType();
+        } else if (type instanceof TypeVariable<?> typeVariable) {
+            return erase(typeVariable.getBounds()[0]);
+        } else if (type instanceof WildcardType wildcardType) {
+            return erase(wildcardType.getUpperBounds()[0]);
+        }
+        return null;
+    }
+
+    /*
+     * The bindings are null when clazz is used as a raw type. The super types
+     * of a raw type are erased, but a non-generic class among them still has
+     * its declared generic super types (JLS 4.8).
+     */
+    private static Type findTypeParameter(Class<?> clazz,
+            Map<TypeVariable<?>, Type> bindings,
+            TypeVariable<? extends Class<?>> variable) {
+        Class<?> declaringClass = variable.getGenericDeclaration();
+        if (clazz.equals(declaringClass)) {
+            return bindings == null ? null : bindings.get(variable);
+        }
+        Type[] superTypes = Stream
+                .concat(Stream.ofNullable(clazz.getGenericSuperclass()),
+                        Stream.of(clazz.getGenericInterfaces()))
+                .toArray(Type[]::new);
+        for (Type superType : superTypes) {
+            Class<?> rawSuperType = erase(superType);
+            if (!declaringClass.isAssignableFrom(rawSuperType)) {
+                continue;
+            }
+            if (bindings != null
+                    && superType instanceof ParameterizedType parameterizedType) {
+                return findTypeParameter(rawSuperType,
+                        bindTypeArguments(parameterizedType, bindings),
+                        variable);
+            }
+            return findTypeParameter(rawSuperType,
+                    bindingsOfClass(rawSuperType), variable);
+        }
+        return null;
+    }
+
+    private static Map<TypeVariable<?>, Type> bindingsOfClass(Class<?> clazz) {
+        // A generic class used without type arguments is a raw type
+        return clazz.getTypeParameters().length > 0 ? null : Map.of();
+    }
+
+    private static Map<TypeVariable<?>, Type> bindTypeArguments(
+            ParameterizedType type, Map<TypeVariable<?>, Type> bindings) {
+        TypeVariable<?>[] typeParameters = erase(type).getTypeParameters();
+        Type[] typeArguments = type.getActualTypeArguments();
+        Map<TypeVariable<?>, Type> result = new HashMap<>();
+        for (int i = 0; i < typeParameters.length; i++) {
+            result.put(typeParameters[i],
+                    substitute(typeArguments[i], bindings));
+        }
+        return result;
+    }
+
+    private static Type substitute(Type type,
+            Map<TypeVariable<?>, Type> bindings) {
+        if (type instanceof TypeVariable<?> && bindings.containsKey(type)) {
+            return bindings.get(type);
+        }
+        if (type instanceof GenericArrayType arrayType
+                && substitute(arrayType.getGenericComponentType(),
+                        bindings) instanceof Class<?> componentType) {
+            return componentType.arrayType();
+        }
+        return type;
+    }
+
+    /**
      * Finds the Class type for the generic interface class extended by given
      * class if exists.
      *
@@ -681,11 +811,11 @@ public class ReflectTools implements Serializable {
      */
     public static Class<?> getGenericInterfaceType(Class<?> clazz,
             Class<?> interfaceType) {
-        Type type = GenericTypeReflector.getTypeParameter(clazz,
+        Type type = getTypeParameter(clazz,
                 interfaceType.getTypeParameters()[0]);
 
         if (type instanceof Class || type instanceof ParameterizedType) {
-            return GenericTypeReflector.erase(type);
+            return erase(type);
         }
         return null;
     }
@@ -704,12 +834,11 @@ public class ReflectTools implements Serializable {
     public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
             Class<?> interfaceType) {
         return Stream.of(interfaceType.getTypeParameters())
-                .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
-                        typeParam))
+                .map(typeParam -> getTypeParameter(clazz, typeParam))
                 .map(type -> {
                     if (type instanceof Class
                             || type instanceof ParameterizedType) {
-                        return GenericTypeReflector.erase(type);
+                        return erase(type);
                     }
                     return null;
                 }).collect(Collectors.toList());
