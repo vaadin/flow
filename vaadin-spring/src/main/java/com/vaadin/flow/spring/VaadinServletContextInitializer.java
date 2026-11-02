@@ -43,7 +43,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -445,11 +444,10 @@ public class VaadinServletContextInitializer
                 RouteConfiguration routeConfiguration,
                 Class<? extends Component> configuredNavigationTarget,
                 Class<? extends Component> navigationTarget) {
-            if (GenericTypeReflector.isSuperType(navigationTarget,
-                    configuredNavigationTarget)) {
+            if (navigationTarget.isAssignableFrom(configuredNavigationTarget)) {
                 return true;
-            } else if (GenericTypeReflector.isSuperType(
-                    configuredNavigationTarget, navigationTarget)) {
+            } else if (configuredNavigationTarget
+                    .isAssignableFrom(navigationTarget)) {
                 routeConfiguration.removeRoute(configuredNavigationTarget);
                 routeConfiguration.setAnnotatedRoute(navigationTarget);
                 return true;

@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.server.VaadinContext;
@@ -51,8 +49,7 @@ public class WebComponentExporterAwareValidator
 
     @Override
     protected Optional<String> handleNonRouterLayout(Class<?> clazz) {
-        if (WebComponentExporter.class
-                .isAssignableFrom(GenericTypeReflector.erase(clazz))) {
+        if (WebComponentExporter.class.isAssignableFrom(clazz)) {
             return Optional.empty();
         }
         return Optional.of(String.format(

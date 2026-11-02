@@ -39,7 +39,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -4098,7 +4097,7 @@ public class Binder<BEAN> implements Serializable {
      */
     private boolean bindProperty(Object objectWithMemberFields,
             Field memberField, String property, Class<?> propertyType) {
-        Type valueType = GenericTypeReflector.getTypeParameter(
+        Type valueType = ReflectTools.getTypeParameter(
                 memberField.getGenericType(),
                 HasValue.class.getTypeParameters()[1]);
         if (valueType == null) {
@@ -4108,7 +4107,7 @@ public class Binder<BEAN> implements Serializable {
                     memberField.getName(),
                     objectWithMemberFields.getClass().getName()));
         }
-        Class<?> erasedValueType = GenericTypeReflector.erase(valueType);
+        Class<?> erasedValueType = ReflectTools.erase(valueType);
         boolean compatibleTypes = propertyType.equals(erasedValueType);
         Converter automaticConverter = compatibleTypes ? null
                 : getConverterFactory()
