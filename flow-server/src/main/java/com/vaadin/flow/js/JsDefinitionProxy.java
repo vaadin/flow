@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.function.SerializableFunction;
@@ -81,7 +83,8 @@ public final class JsDefinitionProxy {
     private static final String RETURN_TYPES = "An interface declares either"
             + " JavaScript to run, with methods returning void or"
             + " PendingJavaScriptResult, or snippets, with methods returning"
-            + " JsFunction or JsSnippet, but not both";
+            + " JsFunction, JsSnippet, DomEventFilter or DomEventData, but not"
+            + " both";
 
     private JsDefinitionProxy() {
         // Only static members
@@ -225,7 +228,7 @@ public final class JsDefinitionProxy {
                 undeclared.add(method.getName());
                 continue;
             }
-            if (snippets ? !returnsFunction(method)
+            if (snippets ? !returnsSnippet(method)
                     : !returnsInvocationResult(method)) {
                 unanswerable.add(method.getName());
             } else if (snippets) {
@@ -267,13 +270,16 @@ public final class JsDefinitionProxy {
     }
 
     /**
-     * Whether the method returns a snippet type that a {@link JsFunction} is,
-     * which is the only kind of snippet there is to answer with.
+     * Whether the method returns a snippet type that there is a value to answer
+     * with for: a type that a {@link JsFunction} is, or one of the snippets
+     * that a DOM event listener evaluates.
      */
-    private static boolean returnsFunction(Method method) {
+    private static boolean returnsSnippet(Method method) {
         Class<?> returnType = method.getReturnType();
-        return JsSnippet.class.isAssignableFrom(returnType)
-                && returnType.isAssignableFrom(JsFunction.class);
+        return returnType == DomEventFilter.class
+                || returnType == DomEventData.class
+                || (JsSnippet.class.isAssignableFrom(returnType)
+                        && returnType.isAssignableFrom(JsFunction.class));
     }
 
     /**
@@ -304,7 +310,7 @@ public final class JsDefinitionProxy {
     }
 
     /**
-     * Answers a call of a JavaScript definition with the function that the call
+     * Answers a call of a JavaScript definition with the snippet that the call
      * declares, which runs nothing on the server.
      */
     private record JsSnippetHandler(Class<?> definitionType)
@@ -320,8 +326,16 @@ public final class JsDefinitionProxy {
             }
             List<Object> arguments = args == null ? List.of()
                     : Arrays.asList(args);
-            return JsFunction.ofDeclaredCall(
-                    new JsCall(definitionType, method.getName(), arguments));
+            JsCall call = new JsCall(definitionType, method.getName(),
+                    arguments);
+            Class<?> returnType = method.getReturnType();
+            if (returnType == DomEventFilter.class) {
+                return DomEventFilter.ofDeclaredCall(call);
+            } else if (returnType == DomEventData.class) {
+                return DomEventData.ofDeclaredCall(call,
+                        method.getGenericReturnType());
+            }
+            return JsFunction.ofDeclaredCall(call);
         }
     }
 }

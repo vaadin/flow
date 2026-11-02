@@ -84,31 +84,49 @@ expressions of a Polymer template listener. The third kind is what an
 
 An `ElementListenerMap` value is an object with one entry per thing the
 client evaluates when the event fires. Entries are keyed by a short hash
-derived from the entry (its kind, name, expression and number of
-captures), not by the JavaScript itself, so the event data the client
-sends back carries no JavaScript. Each entry is an object with:
+derived from the entry (its kind, its expression or declared function,
+and its number of captures), not by the JavaScript itself, so the event
+data the client sends back carries no JavaScript. Each entry is an object
+with:
 
-- `e` — the JavaScript expression to evaluate.
-- `d` — whether the expression is also a filter that decides whether the
+- `e` — the JavaScript expression to evaluate, for an expression given
+  as a string.
+- `f` — instead of `e`, the id of a function declared by a `@JsDefinition`
+  method returning `DomEventFilter` or `DomEventData`. The client calls
+  `window.Vaadin.Flow.jsSnippets[id]` with the captures and calls what it
+  returns with the event and the element, so nothing is compiled from a
+  string.
+- `d` — whether the entry is also a filter that decides whether the
   event is sent at all, in one of exactly three forms: `false` for a
-  plain expression whose value is sent as event data, `true` for a filter
+  plain entry whose value is sent as event data, `true` for a filter
   with no debounce, and `[[timeout, phase…], …]` for a filter with
   debounce settings.
-- `c` — the number of captures (`$0`, `$1`, …) the expression takes,
-  left out when it takes none.
+- `c` — the number of captures the declared function takes, left out
+  when it takes none.
+- `s` — `preventDefault` or `stopPropagation`, for an entry that
+  evaluates the filter of a listener and calls that method of the event
+  when the filter passes. Left out for any other entry.
 
 ```json
 "constants": {
   "vIpODLLAUDo=": {},
-  "K+UlDkYnz60=": {
-    "WyOTS0L8klk=": { "e": "event.clientY", "d": false },
-    "Vv2h+yqRcGI=": { "e": "event.clientX", "d": false }
+  "TRZZD0DW5Aw=": {
+    "xoM6bmSszJY=": { "e": "event.clientX", "d": false },
+    "RBFpNc35HTA=": { "e": "event.clientY", "d": false }
   },
-  "xCoOkOvieJ8=": { "xtspQVzFTXk=": { "e": "event.button === 0", "d": true } },
-  "eIQzjQgvQhk=": { "t3IbMdleTCM=": { "e": "1", "d": [[250, "trailing"]] } },
+  "hqKON6EQdGk=": { "/CaiUf64JDc=": { "e": "event.button === 0", "d": true } },
+  "PAUkDZoOfaE=": { "wW58xsBj7Fg=": { "e": "1", "d": [[250, "trailing"]] } },
   "xMogqm1nZ4U=": { "}value": { "e": "}value", "d": false } },
-  "CibvQNQhb/0=": {
-    "GqlRY8XxHVU=": { "e": "element.getAttribute($0)", "d": false, "c": 1 }
+  "+j6ZbbVBQ2k=": {
+    "lwSJXpBlXYA=": { "e": "event.key === 'Enter'", "d": false, "s": "preventDefault" },
+    "8C6cje1CtfY=": { "e": "event.key === 'Enter'", "d": true }
+  },
+  "ozqaDF3m2Ac=": {
+    "auM90ILrj9s=": {
+      "f": "8f66cb4332fd351e5ef6176714fb9a2f227abbb5a6d13458db0e290f4899a044",
+      "d": false,
+      "c": 1
+    }
   }
 }
 ```
@@ -129,30 +147,38 @@ Where each of those comes from:
   off the element and send back, rather than an expression to evaluate.
   These pseudo expressions, and the `]` state node mappings, keep the
   expression as their key.
-- `element.getAttribute($0)` with `"c": 1` —
-  `addEventData("rowId", "element.getAttribute($0)", "data-row-id")`.
+- `event.key === 'Enter'` twice —
+  `setFilter("event.key === 'Enter'").preventDefault()`: the filter, and
+  the side effect that calls `event.preventDefault()` only when the
+  filter passes.
+- `"f"` with `"c": 1` — `addEventData(JS.attribute("data-row-id"))`,
+  where `attribute` is a `@JsDefinition` method declared as
+  `@JsExpression("return element.getAttribute($0);")
+  DomEventData<String> attribute(String name)`.
 
 The change that uses one carries only the id — a `put` on the element's
-listener feature with `"key": "click"` and `"value": "K+UlDkYnz60="`.
+listener feature with `"key": "click"` and `"value": "TRZZD0DW5Aw="`.
 That is where the saving is: two thousand buttons sharing one click
 listener configuration cost one entry instead of two thousand copies of
 the same object, which is what `ConstantPoolPerformanceView` in
 `flow-tests` makes visible.
 
 Capture values vary per element, so they are not pooled. When an event
-type has captured entries, the `put` value is a
+type has entries with captures, the `put` value is a
 `ParameterizedConstantPoolKey` encoded as `[poolId, captures]`, where
 `captures` maps a per-element key to `[entryKey, capture0, …]`:
 
 ```json
-["CibvQNQhb/0=", { "GqlRY8XxHVU=$MzHQvFPe5sA=": ["GqlRY8XxHVU=", "data-row-id"] }]
+["ozqaDF3m2Ac=", { "auM90ILrj9s=$MzHQvFPe5sA=": ["auM90ILrj9s=", "data-row-id"] }]
 ```
 
 The per-element key is the entry key plus `$` and a hash of the capture
 values, and it is the key the client reports that value under, so two
-listeners sharing an expression with different captures stay apart.
-The server maps the reported keys back to the names that
-`DomEvent.getEventData()` exposes before any listener runs.
+listeners sharing a declared function with different captures stay
+apart. The server maps the reported keys of expressions back to the
+expressions that `DomEvent.getEventData()` exposes before any listener
+runs, and `DomEvent.getEventData(DomEventData)` reads the value of
+declared event data by deriving the same key from the snippet.
 
 The ids above are the real hashes of those values, but the hash is taken
 over `json.toString()` — the compact form, without the spaces the

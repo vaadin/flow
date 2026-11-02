@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -43,6 +42,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableRunnable;
@@ -55,6 +56,7 @@ import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.js.JsCall;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -87,17 +89,20 @@ public class ElementListenerMap extends NodeMap {
      * also to listeners that have no filter of their own.
      */
     private static final ExpressionEntry ALWAYS_TRUE_ENTRY = ExpressionEntry
-            .forFilter(ALWAYS_TRUE_FILTER, JacksonUtils.createArrayNode());
+            .forFilter(ALWAYS_TRUE_FILTER);
+
+    private static final String PREVENT_DEFAULT = "preventDefault";
+    private static final String STOP_PROPAGATION = "stopPropagation";
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
 
     /*
      * Server-side only mapping from the keys that the client reports event data
-     * under to the names used on the server, per event type. Derived lazily
-     * when the first event of a type arrives, so that the keys are hashed once
-     * rather than for every event, and cleared when the listeners of that type
-     * change.
+     * under to the expressions that the server knows the values by, per event
+     * type. Derived lazily when the first event of a type arrives, so that the
+     * keys are hashed once rather than for every event, and cleared when the
+     * listeners of that type change.
      */
     private Map<String, Map<String, String>> eventDataNames;
 
@@ -111,61 +116,94 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * One JavaScript snippet that the client evaluates when the event occurs,
-     * together with the values captured for it.
+     * One piece of JavaScript that the client evaluates when the event occurs:
+     * either an expression given as a string, or a function declared by a
+     * {@link DomEventFilter} or a {@link DomEventData} together with the values
+     * captured for it.
      * <p>
      * An entry is identified towards the client by a {@link #getKey() key}
      * derived from its contents rather than by its expression, so that two
-     * entries that share an expression but use different captures stay apart,
-     * and so that no JavaScript is sent back to the server when the event
-     * occurs.
+     * entries that share a declared function but use different captures stay
+     * apart, and so that no JavaScript is sent back to the server when the
+     * event occurs.
      */
     private static final class ExpressionEntry implements Serializable {
-        private final String name;
+        /**
+         * What the entry is for: <code>d</code> for event data, <code>f</code>
+         * for a filter, and for a side effect made conditional on a filter,
+         * <code>s</code> followed by the method of the event that the side
+         * effect calls.
+         */
+        private final String kind;
         private final String expression;
+        private final String functionId;
         private final ArrayNode captures;
 
         private String sharedKey;
         private String key;
 
-        private ExpressionEntry(String name, String expression,
-                ArrayNode captures) {
-            this.name = name;
+        private ExpressionEntry(String kind, String expression,
+                String functionId, ArrayNode captures) {
+            this.kind = kind;
             this.expression = expression;
+            this.functionId = functionId;
             this.captures = captures;
         }
 
         /**
          * Creates an entry for an expression whose value is passed to the
-         * server under the given name.
-         */
-        private static ExpressionEntry forEventData(String name,
-                String expression, ArrayNode captures) {
-            return new ExpressionEntry(Objects.requireNonNull(name), expression,
-                    captures);
-        }
-
-        /**
-         * Creates an entry for an expression that is added without a name or
-         * captures, which means that the expression is also used as the name.
+         * server under the expression.
          */
         private static ExpressionEntry forEventData(String expression) {
-            return forEventData(expression, expression,
+            return new ExpressionEntry("d", expression, null,
                     JacksonUtils.createArrayNode());
         }
 
         /**
-         * Creates an entry for a filter expression. Filter values are only used
-         * internally, so a filter entry has no name and is passed to the server
-         * under its derived key.
+         * Creates an entry for declared event data, whose value the server
+         * reads by its key.
          */
-        private static ExpressionEntry forFilter(String expression,
-                ArrayNode captures) {
-            return new ExpressionEntry(null, expression, captures);
+        private static ExpressionEntry forEventData(DomEventData<?> data) {
+            return forCall("d", data.getDeclaredCall());
         }
 
-        private boolean isFilter() {
-            return name == null;
+        /**
+         * Creates an entry for a filter expression. Filter values are only used
+         * internally, so they are passed to the server under the derived key.
+         */
+        private static ExpressionEntry forFilter(String expression) {
+            return new ExpressionEntry("f", expression, null,
+                    JacksonUtils.createArrayNode());
+        }
+
+        private static ExpressionEntry forFilter(DomEventFilter filter) {
+            return forCall("f", filter.getDeclaredCall());
+        }
+
+        private static ExpressionEntry forCall(String kind, JsCall call) {
+            ArrayNode captures = call.flattenArguments().stream()
+                    .map(JacksonCodec::encodeWithTypeInfo)
+                    .collect(JacksonUtils.asArray());
+            return new ExpressionEntry(kind, null, call.getFunctionId(),
+                    captures);
+        }
+
+        /**
+         * Creates an entry that evaluates the given filter and calls the given
+         * method of the event when the filter passes.
+         */
+        private static ExpressionEntry forSideEffect(ExpressionEntry filter,
+                String sideEffect) {
+            return new ExpressionEntry("s" + sideEffect, filter.expression,
+                    filter.functionId, filter.captures);
+        }
+
+        private boolean isEventData() {
+            return "d".equals(kind);
+        }
+
+        private String getSideEffect() {
+            return kind.startsWith("s") ? kind.substring(1) : null;
         }
 
         /**
@@ -174,26 +212,27 @@ public class ElementListenerMap extends NodeMap {
          * Those keep using the pseudo expression as their key.
          */
         private boolean isPseudoExpression() {
-            return expression
-                    .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
-                    || expression.startsWith(
-                            JsonConstants.MAP_STATE_NODE_EVENT_DATA);
+            return isEventData() && expression != null
+                    && (expression.startsWith(
+                            JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)
+                            || expression.startsWith(
+                                    JsonConstants.MAP_STATE_NODE_EVENT_DATA));
         }
 
         /**
          * Gets the key of the shared settings entry that this entry uses. All
          * entries that differ only by capture values share the same shared key,
          * which is what keeps the shared settings identical for e.g. two
-         * elements that use the same expression with different captures.
+         * elements that use the same declared function with different captures.
          */
         private String getSharedKey() {
             if (sharedKey == null) {
                 if (isPseudoExpression()) {
                     sharedKey = expression;
                 } else {
-                    String kind = isFilter() ? "f" : "d";
-                    sharedKey = hash(kind + captures.size() + '|' + name + '|'
-                            + expression);
+                    String source = functionId == null ? "e" + expression
+                            : "f" + functionId;
+                    sharedKey = hash(kind + captures.size() + '|' + source);
                 }
             }
             return sharedKey;
@@ -251,13 +290,17 @@ public class ElementListenerMap extends NodeMap {
 
     private static final class ExpressionSettings implements Serializable {
         private final String expression;
+        private final String functionId;
         private final int captureCount;
+        private final String sideEffect;
 
         private final Map<Integer, Set<DebouncePhase>> debounceSettings = new HashMap<>();
 
-        private ExpressionSettings(String expression, int captureCount) {
-            this.expression = expression;
-            this.captureCount = captureCount;
+        private ExpressionSettings(ExpressionEntry entry) {
+            this.expression = entry.expression;
+            this.functionId = entry.functionId;
+            this.captureCount = entry.captures.size();
+            this.sideEffect = entry.getSideEffect();
         }
 
         public void addDebouncePhases(int timeout, Set<DebouncePhase> phases) {
@@ -271,13 +314,33 @@ public class ElementListenerMap extends NodeMap {
 
         public JsonNode toJson() {
             ObjectNode json = JacksonUtils.createObjectNode();
-            json.put(JsonConstants.EVENT_SETTINGS_EXPRESSION, expression);
+            if (functionId == null) {
+                json.put(JsonConstants.EVENT_SETTINGS_EXPRESSION, expression);
+            } else {
+                json.put(JsonConstants.EVENT_SETTINGS_FUNCTION, functionId);
+            }
             json.set(JsonConstants.EVENT_SETTINGS_DEBOUNCE, debounceToJson());
             if (captureCount > 0) {
                 json.put(JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT,
                         captureCount);
             }
+            if (sideEffect != null) {
+                json.put(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT, sideEffect);
+            }
             return json;
+        }
+
+        /**
+         * Describes what the client evaluates for an expression, which for a
+         * side effect is the expression of the filter followed by the side
+         * effect. Gives <code>null</code> for a declared function, which has no
+         * expression.
+         */
+        private String describe() {
+            if (expression == null || sideEffect == null) {
+                return expression;
+            }
+            return "(" + expression + ") && event." + sideEffect + "()";
         }
 
         private JsonNode debounceToJson() {
@@ -320,45 +383,25 @@ public class ElementListenerMap extends NodeMap {
         private final Map<String, ExpressionEntry> captured = new LinkedHashMap<>();
 
         /**
-         * The name to use for the value that the client reports for an entry,
-         * keyed by {@link ExpressionEntry#getKey()}. Only contains entries for
-         * which the key and the name differ.
+         * The expression that the server knows the value that the client
+         * reports for an entry by, keyed by {@link ExpressionEntry#getKey()}.
+         * Only contains event data entries for which the key and the expression
+         * differ. Declared event data is read by its key, see
+         * {@link #getEventDataKey(DomEventData)}.
          */
         private final Map<String, String> names = new HashMap<>();
 
-        /**
-         * The entry key that each name is used by, for detecting names that are
-         * used by more than one entry.
-         */
-        private final Map<String, String> keysByName = new HashMap<>();
-
-        /**
-         * Names that are used by more than one entry, which means that only one
-         * of the values is available to the listeners.
-         */
-        private final Set<String> conflictingNames = new LinkedHashSet<>();
-
         private ExpressionSettings add(ExpressionEntry entry) {
             ExpressionSettings settings = shared.computeIfAbsent(
-                    entry.getSharedKey(),
-                    key -> new ExpressionSettings(entry.expression,
-                            entry.captures.size()));
+                    entry.getSharedKey(), key -> new ExpressionSettings(entry));
 
             String key = entry.getKey();
             if (!entry.captures.isEmpty()) {
                 captured.putIfAbsent(key, entry);
             }
-            if (!entry.isFilter()) {
-                String previousKey = keysByName.putIfAbsent(entry.name, key);
-                // Side effects made conditional on different filters share
-                // their generated name, but nobody reads their values
-                if (previousKey != null && !previousKey.equals(key)
-                        && !isSideEffect(entry.name)) {
-                    conflictingNames.add(entry.name);
-                }
-                if (!key.equals(entry.name)) {
-                    names.put(key, entry.name);
-                }
+            if (entry.isEventData() && entry.expression != null
+                    && !key.equals(entry.expression)) {
+                names.put(key, entry.expression);
             }
 
             return settings;
@@ -380,8 +423,8 @@ public class ElementListenerMap extends NodeMap {
          */
         private List<String> eventDataExpressions;
         /*
-         * Event data that is added with a name or captures, kept apart from the
-         * plain expressions so that those can still be shared.
+         * Declared event data, kept apart from the plain expressions so that
+         * those can still be shared.
          */
         private List<ExpressionEntry> eventDataEntries;
         private ExpressionEntry filter;
@@ -475,27 +518,10 @@ public class ElementListenerMap extends NodeMap {
         }
 
         @Override
-        public DomListenerRegistration addEventData(String name,
-                String expression, Object... captures) {
-            if (name == null) {
-                throw new IllegalArgumentException(
-                        "The event data name must not be null");
-            }
-            if (expression == null) {
-                throw new IllegalArgumentException(
-                        "The event data expression must not be null");
-            }
+        public DomListenerRegistration addEventData(DomEventData<?> eventData) {
+            Objects.requireNonNull(eventData, "Event data cannot be null");
 
-            ArrayNode encodedCaptures = encodeCaptures(captures);
-            if (encodedCaptures.isEmpty() && name.equals(expression)) {
-                return addEventData(expression);
-            }
-            // The client compiles every named expression, even one that would
-            // otherwise be read without compiling
-            CspViolationReporter.reportStringJavaScript();
-
-            ExpressionEntry entry = ExpressionEntry.forEventData(name,
-                    expression, encodedCaptures);
+            ExpressionEntry entry = ExpressionEntry.forEventData(eventData);
 
             if (eventDataEntries == null) {
                 // Don't use the no-args constructor that allocates for 10
@@ -528,22 +554,18 @@ public class ElementListenerMap extends NodeMap {
             if (filter != null) {
                 CspViolationReporter.reportStringJavaScript();
             }
-            return updateFilter(filter, JacksonUtils.createArrayNode());
+            return updateFilter(
+                    filter == null ? null : ExpressionEntry.forFilter(filter));
         }
 
         @Override
-        public DomListenerRegistration setFilter(String filter,
-                Object... captures) {
-            if (filter != null) {
-                CspViolationReporter.reportStringJavaScript();
-            }
-            return updateFilter(filter, encodeCaptures(captures));
+        public DomListenerRegistration setFilter(DomEventFilter filter) {
+            Objects.requireNonNull(filter, "Filter cannot be null");
+            return updateFilter(ExpressionEntry.forFilter(filter));
         }
 
-        private DomListenerRegistration updateFilter(String filter,
-                ArrayNode captures) {
-            this.filter = filter == null ? null
-                    : ExpressionEntry.forFilter(filter, captures);
+        private DomListenerRegistration updateFilter(ExpressionEntry filter) {
+            this.filter = filter;
 
             listenerMap.updateEventSettings(type);
 
@@ -552,6 +574,7 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public String getFilter() {
+            // A declared filter has no expression to return
             return filter == null ? null : filter.expression;
         }
 
@@ -630,12 +653,9 @@ public class ElementListenerMap extends NodeMap {
         }
 
         private boolean isPropertySynchronized(String propertyName) {
-            String token = JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                    + propertyName;
-            return (eventDataExpressions != null
-                    && eventDataExpressions.contains(token))
-                    || (eventDataEntries != null && eventDataEntries.stream()
-                            .anyMatch(entry -> token.equals(entry.expression)));
+            return eventDataExpressions != null && eventDataExpressions
+                    .contains(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
+                            + propertyName);
         }
 
         private Stream<ExpressionEntry> streamEventData() {
@@ -651,14 +671,6 @@ public class ElementListenerMap extends NodeMap {
         public DomListenerRegistration allowInert() {
             allowInert = true;
             return this;
-        }
-
-        private static ArrayNode encodeCaptures(Object... captures) {
-            if (captures == null) {
-                return JacksonUtils.createArrayNode();
-            }
-            return Stream.of(captures).map(JacksonCodec::encodeWithTypeInfo)
-                    .collect(JacksonUtils.asArray());
         }
     }
 
@@ -779,9 +791,9 @@ public class ElementListenerMap extends NodeMap {
      * listener, so that the side effect only happens for events that the
      * listener is actually interested in.
      * <p>
-     * The filter is used as the left hand side of the combined expression so
-     * that any captures of the filter keep their positions, which means that
-     * only the filter may have captures.
+     * The conditional entry evaluates the filter, with its captures, and the
+     * client calls the method of the event when the filter passes. Nothing is
+     * composed from strings, so this works for a declared filter as well.
      *
      * @param entry
      *            the event data entry to make conditional
@@ -792,19 +804,17 @@ public class ElementListenerMap extends NodeMap {
      */
     private static ExpressionEntry makeConditional(ExpressionEntry entry,
             ExpressionEntry filter) {
-        if (filter == null || filter.expression.isEmpty()
-                || !isSideEffect(entry.expression)) {
+        if (filter == null || "".equals(filter.expression)
+                || entry.expression == null) {
             return entry;
         }
-
-        return ExpressionEntry.forEventData(entry.name,
-                "(" + filter.expression + ") && " + entry.expression,
-                filter.captures);
-    }
-
-    private static boolean isSideEffect(String expression) {
-        return "event.preventDefault()".equals(expression)
-                || "event.stopPropagation()".equals(expression);
+        return switch (entry.expression) {
+        case "event.preventDefault()" ->
+            ExpressionEntry.forSideEffect(filter, PREVENT_DEFAULT);
+        case "event.stopPropagation()" ->
+            ExpressionEntry.forSideEffect(filter, STOP_PROPAGATION);
+        default -> entry;
+        };
     }
 
     private void updateEventSettings(String eventType) {
@@ -822,17 +832,6 @@ public class ElementListenerMap extends NodeMap {
 
     private Serializable createEventSettingsKey(String eventType) {
         EventSettings settings = collectEventSettings(eventType);
-
-        if (!settings.conflictingNames.isEmpty()) {
-            LoggerFactory.getLogger(ElementListenerMap.class).warn(
-                    "The event data name(s) {} are used by multiple listeners "
-                            + "for the {} event on the same element, but with "
-                            + "different expressions or captures. Only one of "
-                            + "the values will be available to the listeners. "
-                            + "Use a unique name for each event data "
-                            + "expression.",
-                    settings.conflictingNames, eventType);
-        }
 
         ObjectNode sharedJson = JacksonUtils.createObject(settings.shared,
                 ExpressionSettings::toJson);
@@ -997,7 +996,7 @@ public class ElementListenerMap extends NodeMap {
     public Set<String> getExpressions(String eventName) {
         assert eventName != null;
         return collectEventSettings(eventName).shared.values().stream()
-                .map(settings -> settings.expression)
+                .map(ExpressionSettings::describe).filter(Objects::nonNull)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
@@ -1019,26 +1018,43 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Gets the key that the client uses when reporting the value of the event
-     * data expression that is registered with the given name. This method is
-     * currently only provided to facilitate unit testing.
+     * Gets the key that the client uses when reporting the value of the given
+     * event data expression of the given registration. This method is currently
+     * only provided to facilitate unit testing.
      *
      * @param registration
      *            the registration to get the event data key for, not
      *            <code>null</code>
-     * @param name
-     *            the name of the event data, not <code>null</code>
+     * @param expression
+     *            the event data expression, not <code>null</code>
      * @return the event data key, or <code>null</code> if the registration has
-     *         no event data with the given name
+     *         no such event data expression
      */
     public static String getEventDataKey(DomListenerRegistration registration,
-            String name) {
+            String expression) {
         Objects.requireNonNull(registration, "Registration cannot be null");
-        Objects.requireNonNull(name, "Name cannot be null");
+        Objects.requireNonNull(expression, "Expression cannot be null");
 
         return ((DomEventListenerWrapper) registration).streamEventData()
-                .filter(entry -> name.equals(entry.name))
+                .filter(entry -> expression.equals(entry.expression))
                 .map(ExpressionEntry::getKey).findFirst().orElse(null);
+    }
+
+    /**
+     * Gets the key that the client reports the value of the given declared
+     * event data under, which is derived from the declared function and the
+     * captured values.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param eventData
+     *            the event data, not <code>null</code>
+     * @return the event data key, not <code>null</code>
+     * @see DomEvent#getEventData(DomEventData)
+     */
+    public static String getEventDataKey(DomEventData<?> eventData) {
+        Objects.requireNonNull(eventData, "Event data cannot be null");
+        return ExpressionEntry.forEventData(eventData).getKey();
     }
 
     /**

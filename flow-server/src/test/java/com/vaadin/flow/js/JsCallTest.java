@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.JsFunction;
@@ -110,6 +111,15 @@ class JsCallTest {
         @JsExpression("console.log($0, value)")
         @JsCalledWith("other")
         JsFunction createOtherLogger(String prefix);
+    }
+
+    interface EventJs extends Serializable {
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return e.key === $0;")
+        @JsCalledWith("e")
+        DomEventFilter isKeyOf(String key);
     }
 
     interface InvalidNamesJs extends Serializable {
@@ -292,6 +302,15 @@ class JsCallTest {
                 .getCalledWithNames());
         assertNull(new JsCall(LoggerJs.class, "log", List.of("a"))
                 .getCalledWithNames());
+    }
+
+    @Test
+    void getCalledWithNames_snippetTypeDeclaresNames_methodTakesPrecedence()
+            throws Exception {
+        assertEquals(List.of("event", "element"), JsCall.getCalledWithNames(
+                EventJs.class.getMethod("isKey", String.class)));
+        assertEquals(List.of("e"), JsCall.getCalledWithNames(
+                EventJs.class.getMethod("isKeyOf", String.class)));
     }
 
     @ParameterizedTest

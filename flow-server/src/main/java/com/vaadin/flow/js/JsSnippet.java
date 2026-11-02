@@ -17,6 +17,8 @@ package com.vaadin.flow.js;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 
@@ -46,6 +48,8 @@ import com.vaadin.flow.dom.JsFunction;
  * <p>
  * {@link JsFunction} is the snippet type for a function that whoever it is
  * passed to calls with arguments of its own, which {@link JsCalledWith} names.
+ * {@link DomEventFilter} and {@link DomEventData} are the snippet types that a
+ * DOM event listener evaluates for every event.
  *
  * @see JsSnippets#of(Class)
  * @see JsCalledWith

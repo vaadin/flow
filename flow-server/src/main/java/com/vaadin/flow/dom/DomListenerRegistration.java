@@ -95,51 +95,32 @@ public interface DomListenerRegistration extends Registration {
     }
 
     /**
-     * Adds a JavaScript expression for extracting event data, using the given
-     * name for the result and the given values as captures.
-     * <p>
-     * This works like {@link #addEventData(String)} except that the expression
-     * can be parameterized: captures are referenced as <code>$0</code>,
-     * <code>$1</code>, &hellip; in the expression (the same naming convention
-     * as for {@link Element#executeJs(String, Object...) executeJs} parameters
-     * and {@link JsFunction} captures), and the result is available in
-     * {@link DomEvent#getEventData()} using <code>name</code> as the key.
-     * <p>
-     * Using captures instead of concatenating values into the expression means
-     * that the same expression is used regardless of the values, which lets the
-     * browser reuse the same compiled function for all listeners that use the
-     * expression. It also removes the need to escape the values, which reduces
-     * the risk of XSS vulnerabilities.
-     * <p>
-     * An expression might be e.g. <code>element.closest($0).textContent</code>
-     * with a CSS selector as the capture.
-     * <p>
-     * The name must be unique among the listeners that are registered for the
-     * same event on the same element. If two registrations use the same name
-     * for different expressions or captures, then only one of the values is
-     * available, and both listeners see the same value.
-     * <p>
-     * The captures are encoded when this method is called, so a value that
-     * cannot be sent to the client fails immediately. This also means that an
-     * element or component capture must already be attached, since one that is
-     * not is captured as <code>null</code>.
+     * Adds declared JavaScript for extracting event data. When an event is
+     * fired in the browser, the declared expression is evaluated with the DOM
+     * <code>event</code> and this <code>element</code>, and its value is sent
+     * back to the server together with the event. The value is read with
+     * {@link DomEvent#getEventData(DomEventData)}:
      *
-     * @param name
-     *            the name to use for the value in
-     *            {@link DomEvent#getEventData()}, not <code>null</code>
-     * @param expression
-     *            definition for data that should be passed back to the server
-     *            together with the event, not <code>null</code>
-     * @param captures
-     *            the values to capture; each must be a type supported as a
-     *            parameter to {@link Element#executeJs(String, Object...)}
+     * <pre>
+     * DomEventData&lt;String&gt; label = JS.attribute("data-label");
+     * button.getElement()
+     *         .addEventListener("click",
+     *                 event -&gt; show(event.getEventData(label)))
+     *         .addEventData(label);
+     * </pre>
+     * <p>
+     * Unlike {@link #addEventData(String)}, nothing is compiled from a string
+     * in the browser, so this works under a Content Security Policy that does
+     * not allow <code>unsafe-eval</code>. The values captured by the event data
+     * are sent separately from the expression, so all event data declared by
+     * the same method shares one function in the browser.
+     *
+     * @param eventData
+     *            the event data to send, not <code>null</code>
      * @return this registration, for chaining
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
-     * @see #addEventData(String)
+     * @see DomEventData
      */
-    default DomListenerRegistration addEventData(String name, String expression,
-            Object... captures) {
+    default DomListenerRegistration addEventData(DomEventData<?> eventData) {
         /*
          * Dummy backwards compatibility implementation to keep old custom code
          * compiling.
@@ -170,44 +151,32 @@ public interface DomListenerRegistration extends Registration {
     DomListenerRegistration setFilter(String filter);
 
     /**
-     * Sets a JavaScript expression that is used for filtering events to this
-     * listener, using the given values as captures.
+     * Sets declared JavaScript that is used for filtering events to this
+     * listener. When an event is fired in the browser, the declared expression
+     * is evaluated with the DOM <code>event</code> and this
+     * <code>element</code>, and the event is sent to the server only if it
+     * returns a truthy value:
+     *
+     * <pre>
+     * field.getElement().addEventListener("keydown", event -&gt; submit())
+     *         .setFilter(JS.isKey("Enter"));
+     * </pre>
      * <p>
-     * This works like {@link #setFilter(String)} except that the expression can
-     * be parameterized: captures are referenced as <code>$0</code>,
-     * <code>$1</code>, &hellip; in the expression (the same naming convention
-     * as for {@link Element#executeJs(String, Object...) executeJs} parameters
-     * and {@link JsFunction} captures).
+     * Unlike {@link #setFilter(String)}, nothing is compiled from a string in
+     * the browser, so this works under a Content Security Policy that does not
+     * allow <code>unsafe-eval</code>. The values captured by the filter are
+     * sent separately from the expression, so all filters declared by the same
+     * method share one function in the browser.
      * <p>
-     * Using captures instead of concatenating values into the expression means
-     * that the same expression is used regardless of the values, which lets the
-     * browser reuse the same compiled function for all listeners that use the
-     * expression. It also removes the need to escape the values, which reduces
-     * the risk of XSS vulnerabilities.
-     * <p>
-     * An expression might be e.g. <code>event.key === $0</code> to only forward
-     * events for one specific key.
-     * <p>
-     * Any previous filter for this registration is discarded.
-     * <p>
-     * The captures are encoded when this method is called, so a value that
-     * cannot be sent to the client fails immediately. This also means that an
-     * element or component capture must already be attached, since one that is
-     * not is captured as <code>null</code>.
+     * Any previous filter for this registration is discarded. To clear the
+     * filter, pass <code>(String) null</code> to {@link #setFilter(String)}.
      *
      * @param filter
-     *            the JavaScript filter expression, or <code>null</code> to
-     *            clear the filter
-     * @param captures
-     *            the values to capture; each must be a type supported as a
-     *            parameter to {@link Element#executeJs(String, Object...)}
+     *            the filter, not <code>null</code>
      * @return this registration, for chaining
-     * @throws CspViolationException
-     *             in the {@link CspMode#STRICT} Content Security Policy mode
-     * @see #setFilter(String)
+     * @see DomEventFilter
      */
-    default DomListenerRegistration setFilter(String filter,
-            Object... captures) {
+    default DomListenerRegistration setFilter(DomEventFilter filter) {
         /*
          * Dummy backwards compatibility implementation to keep old custom code
          * compiling.
@@ -218,9 +187,8 @@ public interface DomListenerRegistration extends Registration {
     /**
      * Gets the currently set filter expression.
      * <p>
-     * For a filter set with {@link #setFilter(String, Object...)}, this is the
-     * expression without its captures, so passing it to
-     * {@link #setFilter(String)} does not give an equivalent filter.
+     * A filter set with {@link #setFilter(DomEventFilter)} has no expression to
+     * return, so this returns <code>null</code> for it.
      *
      * @see #setFilter(String)
      *

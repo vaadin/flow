@@ -364,6 +364,13 @@ public class JsonConstants implements Serializable {
     public static final String EVENT_SETTINGS_EXPRESSION = "e";
 
     /**
+     * Key of the identifier of the declared function in the settings that are
+     * sent to the client for one entry that is evaluated when an event occurs.
+     * An entry has either this or {@link #EVENT_SETTINGS_EXPRESSION}.
+     */
+    public static final String EVENT_SETTINGS_FUNCTION = "f";
+
+    /**
      * Key of the debounce settings in the settings that are sent to the client
      * for one entry that is evaluated when an event occurs.
      */
@@ -376,6 +383,15 @@ public class JsonConstants implements Serializable {
      * separately for each element.
      */
     public static final String EVENT_SETTINGS_CAPTURE_COUNT = "c";
+
+    /**
+     * Key of the side effect in the settings that are sent to the client for
+     * one entry that is evaluated when an event occurs: the name of the method
+     * of the event, <code>preventDefault</code> or
+     * <code>stopPropagation</code>, that is called when the entry evaluates to
+     * a truthy value.
+     */
+    public static final String EVENT_SETTINGS_SIDE_EFFECT = "s";
 
     /**
      * RPC type value used for return channel messages.

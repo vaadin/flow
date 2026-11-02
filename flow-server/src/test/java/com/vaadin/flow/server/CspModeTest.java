@@ -38,6 +38,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
@@ -67,6 +69,15 @@ class CspModeTest {
         @JsExpression("console.log($0, value);")
         @JsCalledWith("value")
         JsFunction createLogger(String prefix);
+    }
+
+    @JsDefinition
+    interface EventJs extends Serializable {
+        @JsExpression("return event.x == $0;")
+        DomEventFilter isX(int x);
+
+        @JsExpression("return event.x * $0;")
+        DomEventData<Integer> scaledX(int factor);
     }
 
     @Tag("div")
@@ -118,19 +129,6 @@ class CspModeTest {
                 call(DomListenerRegistration.class, "setFilter",
                         ui -> ui.getElement().addEventListener("click", e -> {
                         }).setFilter("event.x")),
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData("x", "event.x * $0", 2)),
-                call(DomListenerRegistration.class, "setFilter",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).setFilter("event.x == $0", 2)),
-                // Compiled by the client even though the plain overload reads
-                // the same token without compiling it
-                call(DomListenerRegistration.class, "addEventData",
-                        ui -> ui.getElement().addEventListener("click", e -> {
-                        }).addEventData("v",
-                                JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN
-                                        + "value")),
                 // Vaadin code sending event data and a filter on its own
                 call(DomListenerRegistration.class, "addEventData",
                         ui -> new Clickable().addDoubleClickListener(e -> {
@@ -164,8 +162,7 @@ class CspModeTest {
             DomListenerRegistration registration = ui.getElement()
                     .addEventListener("click", e -> {
                     });
-            registration.setFilter(null);
-            registration.setFilter(null, 1);
+            registration.setFilter((String) null);
             registration.addEventData(List.of());
             registration.addEventData(
                     List.of(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "value",
@@ -174,6 +171,9 @@ class CspModeTest {
             registration.mapEventTargetElement();
             // Its JavaScript is in the bundle rather than in a string
             JsSnippets.of(LoggerJs.class).createLogger("Greeting:");
+            EventJs eventJs = JsSnippets.of(EventJs.class);
+            registration.setFilter(eventJs.isX(2))
+                    .addEventData(eventJs.scaledX(2));
         });
     }
 

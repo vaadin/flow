@@ -22,6 +22,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.JsFunction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,6 +83,15 @@ class JsDefinitionProxyTest {
 
         @JsExpression("return (value) => console.log($0, value);")
         JsSnippet createSnippet(String prefix);
+    }
+
+    @JsDefinition
+    interface EventJs extends Serializable {
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return element.getAttribute($0);")
+        DomEventData<String> attribute(String name);
     }
 
     @JsDefinition
@@ -209,6 +220,16 @@ class JsDefinitionProxyTest {
                 "a method returning any snippet should answer with a function");
         assertNotNull(logger.toString(),
                 "the implementation should answer the methods of Object");
+    }
+
+    @Test
+    void createSnippets_domEventSnippets_answerWithTheTypeTheyDeclare() {
+        EventJs events = JsDefinitionProxy.createSnippets(EventJs.class);
+
+        assertEquals(new JsCall(EventJs.class, "isKey", List.of("Enter")),
+                events.isKey("Enter").getDeclaredCall());
+        assertEquals(new JsCall(EventJs.class, "attribute", List.of("id")),
+                events.attribute("id").getDeclaredCall());
     }
 
     @Test

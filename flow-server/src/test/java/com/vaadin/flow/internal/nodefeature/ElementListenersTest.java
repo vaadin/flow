@@ -30,9 +30,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
@@ -41,6 +38,8 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -51,6 +50,10 @@ import com.vaadin.flow.internal.ParameterizedConstantPoolKey;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.js.JsCall;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
@@ -64,9 +67,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -319,31 +319,68 @@ public class ElementListenersTest
         assertEquals("true", capturedJson.get("baz").toString());
     }
 
-    @Test
-    void addEventDataWithCaptures_valueReportedUnderName() {
-        AtomicReference<JsonNode> eventDataReference = new AtomicReference<>();
-        DomListenerRegistration registration = ns.add("foo",
-                e -> eventDataReference.set(e.getEventData()));
-        registration.addEventData("closest", "element.closest($0).tagName",
-                ".container");
+    @JsDefinition
+    public interface EventJs extends Serializable {
+        @JsExpression("return element.closest($0).tagName;")
+        DomEventData<String> closestTag(String selector);
 
-        assertEquals(Collections.singleton("element.closest($0).tagName"),
-                getExpressions("foo"));
+        @JsExpression("return event.key === $0;")
+        DomEventFilter isKey(String key);
+
+        @JsExpression("return $0;")
+        DomEventData<Object> echo(Object value);
+
+        @JsExpression("return [];")
+        DomEventData<List<Point>> points();
+    }
+
+    public record Point(int x, int y) {
+    }
+
+    private static final EventJs JS = JsSnippets.of(EventJs.class);
+
+    @Test
+    void addDeclaredEventData_valueReadThroughEventData() {
+        AtomicReference<DomEvent> eventReference = new AtomicReference<>();
+        DomListenerRegistration registration = ns.add("foo",
+                eventReference::set);
+        registration.addEventData(JS.closestTag(".container"));
+
+        // No expression is sent for the client to compile
+        assertEquals(Collections.emptySet(), getExpressions("foo"));
 
         // The client reports the value under a derived key that contains
         // neither the expression nor the capture
-        String key = ElementListenerMap.getEventDataKey(registration,
-                "closest");
+        String key = ElementListenerMap
+                .getEventDataKey(JS.closestTag(".container"));
         assertFalse(key.contains("element.closest"));
         assertFalse(key.contains(".container"));
 
         ObjectNode fromClient = JacksonUtils.createObjectNode();
         fromClient.put(key, "DIV");
-
         ns.fireEvent(new DomEvent(new Element("element"), "foo",
                 ns.translateEventData("foo", fromClient)));
 
-        assertEquals("DIV", eventDataReference.get().get("closest").asString());
+        // Read through an equal snippet, since the key is derived from what
+        // is declared and captured rather than from the instance
+        DomEvent event = eventReference.get();
+        assertEquals("DIV", event.getEventData(JS.closestTag(".container")));
+        assertNull(event.getEventData(JS.closestTag(".other")));
+    }
+
+    @Test
+    void declaredEventData_readAsDeclaredGenericType() {
+        ObjectNode fromClient = JacksonUtils.createObjectNode();
+        ObjectNode point = fromClient
+                .putArray(ElementListenerMap.getEventDataKey(JS.points()))
+                .addObject();
+        point.put("x", 1);
+        point.put("y", 2);
+
+        DomEvent event = new DomEvent(new Element("element"), "foo",
+                fromClient);
+
+        assertEquals(List.of(new Point(1, 2)), event.getEventData(JS.points()));
     }
 
     @Test
@@ -370,20 +407,17 @@ public class ElementListenersTest
     }
 
     @Test
-    void sameExpressionDifferentCaptures_separateValuesAndFilters() {
+    void sameDeclaredFilterDifferentCaptures_separateFilters() {
         AtomicInteger firstCount = new AtomicInteger();
         AtomicInteger secondCount = new AtomicInteger();
 
         DomListenerRegistration first = ns.add("foo",
                 e -> firstCount.incrementAndGet());
-        first.setFilter("event.key === $0", "Enter");
+        first.setFilter(JS.isKey("Enter"));
         DomListenerRegistration second = ns.add("foo",
                 e -> secondCount.incrementAndGet());
-        second.setFilter("event.key === $0", "Escape");
+        second.setFilter(JS.isKey("Escape"));
 
-        // One shared expression, but one key per set of captures
-        assertEquals(Collections.singleton("event.key === $0"),
-                getExpressions("foo"));
         String firstKey = ElementListenerMap.getFilterKey(first);
         String secondKey = ElementListenerMap.getFilterKey(second);
         assertNotEquals(firstKey, secondKey);
@@ -398,12 +432,13 @@ public class ElementListenersTest
     }
 
     @Test
-    void capturesAreSentOutsideTheConstantPool() {
+    void declaredFilter_functionAndCapturesSentOutsideTheConstantPool()
+            throws Exception {
         ElementListenerMap first = createFeature();
-        first.add("foo", noOp).setFilter("event.key === $0", "Enter");
+        first.add("foo", noOp).setFilter(JS.isKey("Enter"));
 
         ElementListenerMap second = createFeature();
-        second.add("foo", noOp).setFilter("event.key === $0", "Escape");
+        second.add("foo", noOp).setFilter(JS.isKey("Escape"));
 
         ConstantPool constantPool = new ConstantPool();
         ArrayNode firstValue = encodeSettings(first, "foo", constantPool);
@@ -412,9 +447,21 @@ public class ElementListenersTest
         // The shared part is identical even though the captures differ, so it
         // is only sent to the client once
         assertEquals(firstValue.get(0), secondValue.get(0));
-        assertEquals(1,
-                JacksonUtils.getKeys(constantPool.dumpConstants()).size());
+        ObjectNode constants = constantPool.dumpConstants();
+        assertEquals(1, JacksonUtils.getKeys(constants).size());
         assertNotEquals(firstValue.get(1), secondValue.get(1));
+
+        // The shared part names the function of the bundle, not JavaScript
+        JsonNode shared = constants.get(firstValue.get(0).stringValue());
+        JsonNode filterSettings = shared
+                .get(JacksonUtils.getKeys(shared).get(0));
+        assertEquals(
+                JsCall.functionId(
+                        EventJs.class.getMethod("isKey", String.class)),
+                filterSettings.get(JsonConstants.EVENT_SETTINGS_FUNCTION)
+                        .asString());
+        assertFalse(
+                filterSettings.has(JsonConstants.EVENT_SETTINGS_EXPRESSION));
 
         // The captures are sent as [sharedKey, capture...] for each key
         ObjectNode captures = (ObjectNode) firstValue.get(1);
@@ -425,28 +472,29 @@ public class ElementListenersTest
     }
 
     @Test
-    void setFilterWithCaptures_getFilterReturnsExpression() {
+    void setDeclaredFilter_getFilterReturnsNull() {
         DomListenerRegistration registration = ns.add("foo", noOp);
-        registration.setFilter("event.key === $0", "Enter");
+        registration.setFilter(JS.isKey("Enter"));
 
-        assertEquals("event.key === $0", registration.getFilter());
-
-        registration.setFilter(null);
         assertNull(registration.getFilter());
+        assertNotNull(ElementListenerMap.getFilterKey(registration));
+
+        registration.setFilter((String) null);
         assertNull(ElementListenerMap.getFilterKey(registration));
 
-        // No event data has been added, so there is no key for any name
-        assertNull(ElementListenerMap.getEventDataKey(registration, "label"));
+        // No event data has been added, so there is no key for any expression
+        assertNull(
+                ElementListenerMap.getEventDataKey(registration, "event.key"));
     }
 
     @Test
-    void nullNameOrExpression_throws() {
+    void nullSnippet_throws() {
         DomListenerRegistration registration = ns.add("foo", noOp);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> registration.addEventData(null, "$0"));
-        assertThrows(IllegalArgumentException.class,
-                () -> registration.addEventData("data", null));
+        assertThrows(NullPointerException.class,
+                () -> registration.addEventData((DomEventData<?>) null));
+        assertThrows(NullPointerException.class,
+                () -> registration.setFilter((DomEventFilter) null));
     }
 
     /**
@@ -459,14 +507,10 @@ public class ElementListenersTest
     }
 
     @Test
-    void unencodableCaptureValue_throwsWhenAdded() {
-        DomListenerRegistration registration = ns.add("foo", noOp);
+    void unencodableCaptureValue_throwsWhenSnippetIsCreated() {
         SelfReference unencodable = new SelfReference();
 
-        assertThrows(RuntimeException.class,
-                () -> registration.addEventData("data", "$0", unencodable));
-        assertThrows(RuntimeException.class,
-                () -> registration.setFilter("$0", unencodable));
+        assertThrows(RuntimeException.class, () -> JS.echo(unencodable));
     }
 
     private static ArrayNode encodeSettings(ElementListenerMap listenerMap,
@@ -538,25 +582,16 @@ public class ElementListenersTest
     }
 
     @Test
-    void serializable_withCaptures() {
-        DomListenerRegistration registration = ns.add("click", noOp)
-                .setFilter("event.key === $0", "Enter")
-                .addEventData("label", "element.getAttribute($0)", "data-a");
-        String filterKey = ElementListenerMap.getFilterKey(registration);
-        String labelKey = ElementListenerMap.getEventDataKey(registration,
-                "label");
+    void serializable_withDeclaredSnippets() {
+        ns.add("click", noOp).setFilter(JS.isKey("Enter"))
+                .addEventData(JS.closestTag(".container"));
 
         ElementListenerMap roundtrip = SerializationUtils.roundtrip(ns);
 
-        assertEquals(ns.getExpressions("click"),
-                roundtrip.getExpressions("click"));
-
-        ObjectNode fromClient = JacksonUtils.createObjectNode();
-        fromClient.put(filterKey, true);
-        fromClient.put(labelKey, "a");
-        JsonNode translated = roundtrip.translateEventData("click", fromClient);
-        assertTrue(translated.get(filterKey).booleanValue());
-        assertEquals("a", translated.get("label").stringValue());
+        // The deserialized listeners send the same function ids, keys and
+        // captures to the client
+        assertEquals(encodeSettings(ns, "click", new ConstantPool()),
+                encodeSettings(roundtrip, "click", new ConstantPool()));
     }
 
     @Test
@@ -806,105 +841,62 @@ public class ElementListenersTest
     }
 
     @Test
-    void preventDefaultWithCapturedFilter_keepsFilterCaptures() {
+    void preventDefaultWithDeclaredFilter_conditionalOnFilter() {
         DomListenerRegistration registration = ns.add("keydown", noOp);
-        registration.setFilter("event.key === $0", "Enter");
+        registration.setFilter(JS.isKey("Enter"));
         registration.preventDefault();
 
-        assertTrue(
-                getExpressions("keydown").contains(
-                        "(event.key === $0) && event.preventDefault()"),
-                "preventDefault should be conditional on the filter");
+        // Nothing is composed from strings for a declared filter
+        assertEquals(Collections.emptySet(), getExpressions("keydown"));
 
         ConstantPool constantPool = new ConstantPool();
         ArrayNode value = encodeSettings(ns, "keydown", constantPool);
 
-        // Both the filter and the combined expression are evaluated with the
-        // capture of the filter
+        // Both the filter and the side effect evaluate the declared function
+        // with the capture of the filter
         ObjectNode captures = (ObjectNode) value.get(1);
         assertEquals(2, JacksonUtils.getKeys(captures).size());
         JacksonUtils.getKeys(captures).forEach(key -> assertEquals("Enter",
                 ((ArrayNode) captures.get(key)).get(1).asString()));
 
-        ObjectNode shared = (ObjectNode) constantPool.dumpConstants()
+        // The side effect is called by the client when the filter passes
+        JsonNode shared = constantPool.dumpConstants()
                 .get(value.get(0).stringValue());
-        JacksonUtils.getKeys(shared)
-                .forEach(key -> assertEquals(1,
-                        shared.get(key).get("c").asInt(),
-                        "Both entries should be evaluated with one capture"));
+        List<JsonNode> sideEffects = JacksonUtils.getKeys(shared).stream()
+                .map(shared::get)
+                .filter(settings -> settings
+                        .has(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT))
+                .toList();
+        assertEquals(1, sideEffects.size());
+        assertEquals("preventDefault", sideEffects.get(0)
+                .get(JsonConstants.EVENT_SETTINGS_SIDE_EFFECT).asString());
+        assertTrue(
+                sideEffects.get(0).has(JsonConstants.EVENT_SETTINGS_FUNCTION));
     }
 
     @Test
-    void duplicateEventDataName_valueIsSharedByBothListeners() {
-        AtomicReference<JsonNode> firstData = new AtomicReference<>();
-        AtomicReference<JsonNode> secondData = new AtomicReference<>();
-
-        DomListenerRegistration first = ns.add("foo",
-                e -> firstData.set(e.getEventData()));
-        first.addEventData("label", "element.getAttribute($0)", "data-a");
-        DomListenerRegistration second = ns.add("foo",
-                e -> secondData.set(e.getEventData()));
-        second.addEventData("label", "element.getAttribute($0)", "data-b");
-
-        // The name is the key towards the server, so the two entries cannot
-        // both be available; this is why the name has to be unique
-        ObjectNode fromClient = JacksonUtils.createObjectNode();
-        fromClient.put(ElementListenerMap.getEventDataKey(first, "label"), "a");
-        fromClient.put(ElementListenerMap.getEventDataKey(second, "label"),
-                "b");
-
-        JsonNode translated = ns.translateEventData("foo", fromClient);
-        assertEquals(1, JacksonUtils.getKeys(translated).size());
-
-        ns.fireEvent(new DomEvent(new Element("element"), "foo", translated));
-        assertEquals(firstData.get(), secondData.get());
-
-        assertTrue(isConflictingNameWarningLogged());
-    }
-
-    @Test
-    void preventDefaultWithDifferentFilters_noConflictingNameWarning() {
-        ns.add("foo", noOp).setFilter("event.key === 'a'").preventDefault();
-        ns.add("foo", noOp).setFilter("event.key === 'b'").preventDefault();
-
-        assertFalse(isConflictingNameWarningLogged());
-    }
-
-    private boolean isConflictingNameWarningLogged() {
-        Logger logger = mock(Logger.class);
-        try (MockedStatic<LoggerFactory> loggerFactory = mockStatic(
-                LoggerFactory.class)) {
-            loggerFactory.when(
-                    () -> LoggerFactory.getLogger(ElementListenerMap.class))
-                    .thenReturn(logger);
-            collectChanges(ns);
-        }
-        return !mockingDetails(logger).getInvocations().isEmpty();
-    }
-
-    @Test
-    void translateEventData_listenerChangedAfterEvent_newNameUsed() {
+    void translateEventData_listenerChangedAfterEvent_newKeyUsed() {
         DomListenerRegistration registration = ns.add("foo", noOp);
-        registration.addEventData("first", "element.getAttribute($0)", "a");
+        registration.addEventData("event.a");
         ObjectNode fromClient = JacksonUtils.createObjectNode();
         fromClient.put(
-                ElementListenerMap.getEventDataKey(registration, "first"),
+                ElementListenerMap.getEventDataKey(registration, "event.a"),
                 "value");
-        assertTrue(ns.translateEventData("foo", fromClient).has("first"));
+        assertTrue(ns.translateEventData("foo", fromClient).has("event.a"));
 
-        registration.addEventData("second", "element.getAttribute($0)", "b");
+        registration.addEventData("event.b");
         fromClient.put(
-                ElementListenerMap.getEventDataKey(registration, "second"),
+                ElementListenerMap.getEventDataKey(registration, "event.b"),
                 "value");
 
         JsonNode translated = ns.translateEventData("foo", fromClient);
-        assertTrue(translated.has("first"));
-        assertTrue(translated.has("second"));
+        assertTrue(translated.has("event.a"));
+        assertTrue(translated.has("event.b"));
     }
 
     @Test
     void translateEventDataForUnknownEventType_dataIsPassedThrough() {
-        ns.add("foo", noOp).addEventData("data", "$0", "capture");
+        ns.add("foo", noOp).addEventData("event.a");
 
         ObjectNode fromClient = JacksonUtils.createObjectNode();
         fromClient.put("whatever", true);

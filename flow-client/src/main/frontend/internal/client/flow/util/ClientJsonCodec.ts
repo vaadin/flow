@@ -166,7 +166,7 @@ function decodeArrayWithTypeInfo(tree: StateTree, jsonArray: unknown[]): unknown
  * to the error channel of an invocation that calls the value, or only to the
  * console when, for instance, an event listener calls it.
  */
-function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
+export function evaluateDeclaredSnippet(functionId: string, captures: unknown[]): unknown {
   const snippet = findDeclaredSnippet(functionId);
   if (snippet === undefined) {
     const message = describeMissingFunction(functionId);

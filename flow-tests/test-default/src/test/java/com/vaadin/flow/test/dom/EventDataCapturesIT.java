@@ -25,7 +25,7 @@ import com.vaadin.testbench.BrowserTest;
 public class EventDataCapturesIT extends AbstractDefaultIT {
 
     @BrowserTest
-    public void capturedEventDataIsReportedUnderItsName() {
+    public void declaredEventDataIsReadThroughTheSnippet() {
         open();
 
         findElement(By.id("dataButton")).click();
@@ -35,7 +35,7 @@ public class EventDataCapturesIT extends AbstractDefaultIT {
     }
 
     @BrowserTest
-    public void capturedFilterOnlyMatchesItsOwnListener() {
+    public void declaredFilterOnlyMatchesItsOwnListener() {
         open();
 
         findElement(By.id("filterButton")).click();

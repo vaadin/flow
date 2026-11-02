@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
 
 /**
@@ -246,6 +247,32 @@ public class DomEvent extends EventObject {
                 getEventDataForType(
                         JacksonUtils.getMapper().constructType(typeReference)),
                 typeReference);
+    }
+
+    /**
+     * Gets the value of the given event data, as sent by the browser together
+     * with this event, read as the type that the method declaring the event
+     * data returns.
+     *
+     * @param <T>
+     *            the type of the value
+     * @param eventData
+     *            event data added to the listener with
+     *            {@link DomListenerRegistration#addEventData(DomEventData)},
+     *            not <code>null</code>
+     * @return the value, or <code>null</code> if the browser sent no value for
+     *         the event data
+     * @throws IllegalArgumentException
+     *             if the value can not be read as the declared type
+     */
+    public <T> T getEventData(DomEventData<T> eventData) {
+        Objects.requireNonNull(eventData, "Event data cannot be null");
+        JsonNode value = this.eventData
+                .get(ElementListenerMap.getEventDataKey(eventData));
+        if (value == null) {
+            return null;
+        }
+        return JacksonCodec.decodeAs(value, eventData.getValueType());
     }
 
     /**

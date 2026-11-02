@@ -61,8 +61,8 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
                 .getFeature(ElementListenerMap.class);
 
         // The client identifies event data by keys derived from the
-        // expression and its captures, so map them back to the names used on
-        // the server before the event is exposed to listeners
+        // expression, so map them back to the expressions used on the server
+        // before the event is exposed to listeners
         DomEvent event = new DomEvent(Element.get(node), eventType,
                 listenerMap.translateEventData(eventType, eventData));
 

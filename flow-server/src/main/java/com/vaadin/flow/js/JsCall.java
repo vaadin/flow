@@ -213,7 +213,8 @@ public record JsCall(Class<?> definitionType, String methodName,
 
     /**
      * Gets the names of the parameters that the function a snippet evaluates to
-     * is called with, as declared by {@link JsCalledWith} on the given method.
+     * is called with, as declared by {@link JsCalledWith} on the given method,
+     * or else on the snippet type it returns.
      * <p>
      * The names become parameters of the generated function, so each of them is
      * checked to be one that a function in a JavaScript module can declare and
@@ -230,6 +231,12 @@ public record JsCall(Class<?> definitionType, String methodName,
      */
     public static @Nullable List<String> getCalledWithNames(Method method) {
         JsCalledWith annotation = method.getAnnotation(JsCalledWith.class);
+        if (annotation == null) {
+            // A snippet type that is always invoked the same way declares
+            // the names for every method that returns it
+            annotation = method.getReturnType()
+                    .getAnnotation(JsCalledWith.class);
+        }
         if (annotation == null) {
             return null;
         }

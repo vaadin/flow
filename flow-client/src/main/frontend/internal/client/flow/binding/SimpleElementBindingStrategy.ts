@@ -72,7 +72,7 @@ import type { BindingStrategy } from './BindingStrategy';
 import { Debouncer } from './Debouncer';
 import { bindServerEventHandlerNames } from './ServerEventHandlerBinder';
 import { Console } from '../../Console';
-import { decodeWithTypeInfo } from '../util/ClientJsonCodec';
+import { decodeWithTypeInfo, evaluateDeclaredSnippet } from '../util/ClientJsonCodec';
 
 // com.vaadin.client.flow.binding.SimpleElementBindingStrategy.HIDDEN_ATTRIBUTE
 const HIDDEN_ATTRIBUTE = 'hidden';
@@ -99,29 +99,32 @@ type Command = () => void;
  *
  * @param event - Event to expand
  * @param element - target Element
- * @param captures - values captured for this expression, referenced as `$0`,
- * `$1`, ... in the expression
  * @returns Result of evaluated function
  */
-type EventExpression = (event: Event, element: Element, ...captures: unknown[]) => unknown;
+type EventExpression = (event: Event, element: Element) => unknown;
 
 /**
- * The settings that the server sends for one expression that the client should
- * evaluate when an event occurs. Shared between all elements that use the same
- * expression with the same debounce settings, so the capture values are sent
- * separately for each element.
+ * The settings that the server sends for one entry that the client should
+ * evaluate when an event occurs: either an expression or a function declared
+ * in the bundle. Shared between all elements that use the same entry with the
+ * same debounce settings, so the capture values of a declared function are
+ * sent separately for each element.
  */
 type ExpressionSettings = {
   /** The JavaScript expression to evaluate; EVENT_SETTINGS_EXPRESSION. */
-  [JsonConstants.EVENT_SETTINGS_EXPRESSION]: string;
+  [JsonConstants.EVENT_SETTINGS_EXPRESSION]?: string;
+  /** The id of the declared function to evaluate; EVENT_SETTINGS_FUNCTION. */
+  [JsonConstants.EVENT_SETTINGS_FUNCTION]?: string;
   /** Debounce settings: `false`, `true` or `[[timeout, phase, ...], ...]`; EVENT_SETTINGS_DEBOUNCE. */
   [JsonConstants.EVENT_SETTINGS_DEBOUNCE]: unknown;
-  /** The number of captures, when the expression is parameterized; EVENT_SETTINGS_CAPTURE_COUNT. */
+  /** The number of captures of a declared function; EVENT_SETTINGS_CAPTURE_COUNT. */
   [JsonConstants.EVENT_SETTINGS_CAPTURE_COUNT]?: number;
+  /** The method of the event to call when the entry is truthy; EVENT_SETTINGS_SIDE_EFFECT. */
+  [JsonConstants.EVENT_SETTINGS_SIDE_EFFECT]?: string;
 };
 
 /**
- * Capture values for one parameterized expression, as
+ * Capture values for one declared function, as
  * `[sharedKey, capture0, capture1, ...]`.
  */
 type CaptureValues = unknown[];
@@ -1262,10 +1265,10 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     } else if (key.startsWith(MAP_STATE_NODE_EVENT_DATA)) {
       // map an element returned by JS to the closest state node
       const jsEvaluation = key.substring(MAP_STATE_NODE_EVENT_DATA.length);
-      const expressionValue = getOrCreateExpression(jsEvaluation, 0)(event, element);
+      const expressionValue = getOrCreateExpression(jsEvaluation)(event, element);
       eventData![key] = getClosestStateNodeIdToDomNode(node.getTree(), expressionValue, jsEvaluation);
     } else {
-      eventData![key] = getOrCreateExpression(settings[JsonConstants.EVENT_SETTINGS_EXPRESSION], 0)(event, element);
+      eventData![key] = evaluateEntry(settings, [], event, element);
     }
   }
 
@@ -1276,11 +1279,7 @@ function handleDomEvent(event: Event, context: BindingContext): void {
     entrySettings[key] = settings[JsonConstants.EVENT_SETTINGS_DEBOUNCE];
 
     const decodedCaptures = captures.map((capture) => decodeWithTypeInfo(node.getTree(), capture));
-    eventData![key] = getOrCreateExpression(settings[JsonConstants.EVENT_SETTINGS_EXPRESSION], decodedCaptures.length)(
-      event,
-      element,
-      ...decodedCaptures
-    );
+    eventData![key] = evaluateEntry(settings, decodedCaptures, event, element);
   }
 
   synchronizeProperties.forEach((name) => {
@@ -1493,22 +1492,41 @@ function updateAttributeValue(
 }
 
 /**
- * Parses an event-data expression into a function
- * `(event, element, $0, $1, ...) => value`, caching the result per expression
- * string and capture count; mirrors getOrCreateExpression.
+ * Evaluates one entry of the event settings: a function declared in the bundle,
+ * evaluated with its captures and then called with the event and the element,
+ * or else an expression. When the entry has a side effect, the method of the
+ * event it names is called if the value is truthy, which makes a
+ * `preventDefault` or `stopPropagation` conditional on the filter of the
+ * listener.
  */
-function getOrCreateExpression(expressionString: string, captureCount: number): EventExpression {
+function evaluateEntry(settings: ExpressionSettings, captures: unknown[], event: Event, element: Element): unknown {
+  const functionId = settings[JsonConstants.EVENT_SETTINGS_FUNCTION];
+  const value =
+    functionId === undefined
+      ? getOrCreateExpression(settings[JsonConstants.EVENT_SETTINGS_EXPRESSION]!)(event, element)
+      : (evaluateDeclaredSnippet(functionId, captures) as EventExpression)(event, element);
+
+  const sideEffect = settings[JsonConstants.EVENT_SETTINGS_SIDE_EFFECT];
+  if (value && (sideEffect === 'preventDefault' || sideEffect === 'stopPropagation')) {
+    event[sideEffect]();
+  }
+  return value;
+}
+
+/**
+ * Parses an event-data expression into a function `(event, element) => value`,
+ * caching the result per expression string; mirrors getOrCreateExpression.
+ */
+function getOrCreateExpression(expressionString: string): EventExpression {
   if (expressionCache === null) {
     expressionCache = new Map();
   }
-  const cacheKey = `${captureCount}:${expressionString}`;
-  let expression = expressionCache.get(cacheKey);
+  let expression = expressionCache.get(expressionString);
 
   if (expression === undefined) {
     // Mirrors NativeFunction.create; the server controls these expressions.
-    const captureNames = Array.from({ length: captureCount }, (_ignored, index) => `$${index}`);
-    expression = new Function('event', 'element', ...captureNames, `return (${expressionString})`) as EventExpression;
-    expressionCache.set(cacheKey, expression);
+    expression = new Function('event', 'element', `return (${expressionString})`) as EventExpression;
+    expressionCache.set(expressionString, expression);
   }
 
   return expression;

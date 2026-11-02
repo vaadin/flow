@@ -15,12 +15,30 @@
  */
 package com.vaadin.flow.test.dom;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.dom.DomEventData;
+import com.vaadin.flow.dom.DomEventFilter;
+import com.vaadin.flow.js.JsDefinition;
+import com.vaadin.flow.js.JsExpression;
+import com.vaadin.flow.js.JsSnippets;
 import com.vaadin.flow.router.Route;
 
 @Route("event-data-captures")
 public class EventDataCapturesView extends Div {
+
+    @JsDefinition
+    public interface EventJs extends Serializable {
+        @JsExpression("return element.getAttribute($0);")
+        DomEventData<String> attribute(String name);
+
+        @JsExpression("return event.button === $0;")
+        DomEventFilter isButton(int button);
+    }
+
+    private static final EventJs JS = JsSnippets.of(EventJs.class);
 
     public EventDataCapturesView() {
         Div dataResult = new Div();
@@ -28,28 +46,27 @@ public class EventDataCapturesView extends Div {
         Div filterResult = new Div();
         filterResult.setId("filterResult");
 
+        DomEventData<String> label = JS.attribute("data-label");
         NativeButton dataButton = new NativeButton("Report event data");
         dataButton.setId("dataButton");
         dataButton.getElement().setAttribute("data-label", "captured label");
         dataButton.getElement()
                 .addEventListener("click",
-                        event -> dataResult.setText(
-                                event.getEventData().get("label").asString()))
-                .addEventData("label", "element.getAttribute($0)",
-                        "data-label");
+                        event -> dataResult.setText(event.getEventData(label)))
+                .addEventData(label);
 
-        // Two listeners using the same expression with different captures, to
-        // show that their values and filters stay apart
+        // Two listeners using the same declared filter with different
+        // captures, to show that their filters stay apart
         NativeButton filterButton = new NativeButton("Filtered by capture");
         filterButton.setId("filterButton");
         filterButton.getElement()
                 .addEventListener("click",
                         event -> filterResult.setText("primary"))
-                .setFilter("event.button === $0", 0);
+                .setFilter(JS.isButton(0));
         filterButton.getElement()
                 .addEventListener("click",
                         event -> filterResult.setText("secondary"))
-                .setFilter("event.button === $0", 2);
+                .setFilter(JS.isButton(2));
 
         add(dataButton, filterButton, dataResult, filterResult);
     }
