@@ -85,16 +85,18 @@ class NativeFormTest extends ComponentTest {
 
     @Test
     void addNestedForm_throws() {
-        NativeForm form = new NativeForm(new Input());
+        Input input = new Input();
+        NativeForm form = new NativeForm(input);
         NativeForm nested = new NativeForm();
+        Div div = new Div();
 
         assertThrows(IllegalArgumentException.class, () -> form.add(nested));
         assertThrows(IllegalArgumentException.class,
                 () -> form.addComponentAsFirst(nested));
         assertThrows(IllegalArgumentException.class,
-                () -> form.replace(form.getComponentAt(0), nested));
+                () -> form.replace(input, nested));
         assertThrows(IllegalArgumentException.class,
-                () -> new NativeForm(new Div(), nested));
+                () -> new NativeForm(div, nested));
         assertEquals(1, form.getComponentCount());
         assertNull(nested.getParent().orElse(null));
     }
