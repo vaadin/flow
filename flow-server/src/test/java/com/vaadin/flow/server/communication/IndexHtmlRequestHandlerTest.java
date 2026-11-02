@@ -46,6 +46,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
@@ -235,6 +236,28 @@ public class IndexHtmlRequestHandlerTest {
                 createVaadinRequest("/"), response);
         Mockito.verify(response, Mockito.never())
                 .setHeader(Mockito.eq("X-Frame-Options"), Mockito.any());
+    }
+
+    @Test
+    public void serveIndexHtml_setsNoCacheHeaders() throws IOException {
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        verify(response).setHeader("Cache-Control", "no-cache, no-store");
+        verify(response).setHeader("Pragma", "no-cache");
+        verify(response).setDateHeader("Expires", 0L);
+    }
+
+    @Test
+    public void serveIndexHtml_listenerSetsCacheControl_overridesDefault()
+            throws IOException {
+        service.addIndexHtmlRequestListener(evt -> evt.getVaadinResponse()
+                .setHeader("Cache-Control", "max-age=60"));
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+        InOrder inOrder = Mockito.inOrder(response);
+        inOrder.verify(response).setHeader("Cache-Control",
+                "no-cache, no-store");
+        inOrder.verify(response).setHeader("Cache-Control", "max-age=60");
     }
 
     @Test
