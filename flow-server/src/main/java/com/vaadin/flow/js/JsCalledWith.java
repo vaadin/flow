@@ -85,6 +85,7 @@ import com.vaadin.flow.dom.JsFunction;
  *
  * @see JsSnippet
  * @see JsFunction
+ * @since 25.4
  */
 @Documented
 @Target(ElementType.METHOD)
