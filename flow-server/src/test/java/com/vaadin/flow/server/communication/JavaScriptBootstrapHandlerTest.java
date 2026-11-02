@@ -54,8 +54,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @Isolated
 class JavaScriptBootstrapHandlerTest {
@@ -276,12 +278,12 @@ class JavaScriptBootstrapHandlerTest {
         Map<Class<?>, Object> attributes = new HashMap<>();
         attributes.put(SessionRouteRegistry.class,
                 session.getAttribute(SessionRouteRegistry.class));
-        Mockito.when(session.getAttribute(Mockito.any(Class.class)))
+        when(session.getAttribute(any(Class.class)))
                 .thenAnswer(invocation -> attributes
                         .get(invocation.getArgument(0, Class.class)));
-        Mockito.doAnswer(invocation -> attributes.put(invocation.getArgument(0),
+        doAnswer(invocation -> attributes.put(invocation.getArgument(0),
                 invocation.getArgument(1))).when(session)
-                .setAttribute(Mockito.any(Class.class), Mockito.any());
+                .setAttribute(any(Class.class), any());
 
         List<String> events = new ArrayList<>();
         mocks.getService().addBrowserTabInitListener(

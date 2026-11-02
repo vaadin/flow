@@ -946,7 +946,7 @@ class VaadinServiceTest {
         configuration.setHeartbeatInterval(10);
         MockVaadinServletService service = new MockVaadinServletService(
                 configuration);
-        WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
+        WrappedSession wrappedSession = mock(WrappedSession.class);
         MockVaadinSession session = new MockVaadinSession(service) {
             @Override
             public WrappedSession getSession() {
