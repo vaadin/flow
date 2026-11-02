@@ -62,7 +62,7 @@ The two halves talk only through standard Flow element features: a named
 | Piece | Where | Role |
 | ----- | ----- | ---- |
 | `ReactAdapterComponent` | `flow-react/src/main/java/com/vaadin/flow/component/react/` | Java base class: `setState` / `getState` / `addStateChangeListener`, `getContentElement`, Jackson conversion helpers. |
-| `ReactAdapter.template` | `flow-react/src/main/resources/com/vaadin/flow/server/frontend/` | Source of `ReactAdapterElement` and `RenderHooks`. Written to `src/main/frontend/generated/flow/ReactAdapter.tsx` by `TaskGenerateReactFiles`, with `{{VAADIN_VERSION}}` replaced for usage statistics. |
+| `ReactAdapter.template` | `flow-react/src/main/resources/com/vaadin/flow/component/react/` | Source of `ReactAdapterElement` and `RenderHooks`. Written to `src/main/frontend/generated/flow/ReactAdapter.tsx` by `TaskGenerateReactFiles`, with `{{VAADIN_VERSION}}` replaced for usage statistics. |
 | `ReactRouterOutlet` + `ReactRouterOutletElement.tsx` | `flow-react` | An adapter that renders React Router's `<Outlet/>`, so a Flow `@Layout` can host client-side views. |
 | `Flow.tsx` | `flow-server/.../server/frontend/` | Handles `flow-portal-add` / `flow-portal-remove` and renders the portals. See [`flow-client/ARCHITECTURE.md`](../flow-client/ARCHITECTURE.md). |
 | `SimpleElementBindingStrategy`, `ReactUtils.ts` | `flow-client/src/main/frontend/internal/client/` | Bind `INJECT_BY_NAME` virtual children, waiting for the adapter's ready callback. |

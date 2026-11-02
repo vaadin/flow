@@ -67,6 +67,10 @@ public class ModuleInfoIT extends ChromeBrowserTest {
                 $("span").id("flow-module").getText());
         Assert.assertEquals("com.vaadin.flow.component.html explicit",
                 $("span").id("components-module").getText());
+        // flow-react and flow-server can only be in the same layer when they
+        // do not share a package
+        Assert.assertEquals("com.vaadin.flow.component.react explicit",
+                $("span").id("react-module").getText());
 
         $("button").id("button").click();
         Assert.assertEquals("Clicked", $("div").id("clicked").getText());
@@ -77,7 +81,6 @@ public class ModuleInfoIT extends ChromeBrowserTest {
         open();
 
         $("button").id("push-button").click();
-        waitUntil(driver -> "Pushed"
-                .equals($("div").id("pushed").getText()));
+        waitUntil(driver -> "Pushed".equals($("div").id("pushed").getText()));
     }
 }
