@@ -161,18 +161,21 @@ Put `@Nullable` on the declared type (`ValueSignal<@Nullable X>`). NullAway
 infers it for the constructor, so no repeated type argument or type witness is
 needed.
 
-When annotating the first class of a package, add a `package-info.java` with
-`@NullMarked` instead of annotating classes one by one.
+When annotating existing classes, put `@NullMarked` on each class you have
+audited. Add it at the package level (in `package-info.java`) only once every
+class in the package has been audited, because it opts the whole package in.
 
-Adding `@Nullable` to a parameter or return type of an existing public method
-is a source break for Kotlin callers, which treat JSpecify annotations as
-strict. List it as a breaking change in the pull request and the release notes.
-See `guidelines/design.md`.
+Marking an existing public API as null-marked or `@Nullable` can break Kotlin
+code, which treats JSpecify annotations as strict: a `@Nullable` return type
+breaks callers, and a `@Nullable` parameter of an overridable method breaks
+Kotlin overrides that declare it non-null. List such a change as breaking in
+the pull request and the release notes. See `guidelines/design.md`.
 
 Do not introduce a wildcard such as `? extends @Nullable T` into a parameter
 type of an existing overridable method: overrides with the old signature stop
 compiling. Annotate the type argument instead (`Function<UI, @Nullable
-Registration>`).
+Registration>`), noting that it no longer accepts a variable declared as
+`Function<UI, Registration>`.
 
 Keep the existing delegation between overloads when annotating them. Do not
 split overloads to give them different nullness.
