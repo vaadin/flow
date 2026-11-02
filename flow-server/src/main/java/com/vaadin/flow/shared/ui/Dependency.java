@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -40,6 +41,9 @@ public class Dependency implements Serializable {
     public static final String KEY_CONTENTS = "contents";
     public static final String KEY_ID = "id";
     public static final String KEY_LAYER = "layer";
+
+    // How a function that JacksonCodec encodes starts
+    private static final String ENCODED_FUNCTION_PREFIX = "{\"@v-fn\":";
 
     /**
      * The type of a dependency.
@@ -65,7 +69,6 @@ public class Dependency implements Serializable {
     private final LoadMode loadMode;
     private final String id;
     private final String layer;
-    private final JsFunction dynamicImport;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
@@ -154,7 +157,6 @@ public class Dependency implements Serializable {
         this.loadMode = loadMode;
         this.id = id;
         this.layer = layer;
-        this.dynamicImport = null;
     }
 
     /**
@@ -184,25 +186,35 @@ public class Dependency implements Serializable {
      * <p>
      * The created instance dependency mode is {@link LoadMode#LAZY}. Its URL is
      * the JSON the function is sent to the browser as, which tells apart
-     * dependencies that load different things. Only this instance carries the
-     * function: a copy made from its type and URL sends the URL as an
-     * expression, which fails to load.
+     * dependencies that load different things, and which a copy made from the
+     * type and the URL keeps.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
      * @param dynamicImport
      *            the function that loads the dependency, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the function captures an element, which the browser cannot
+     *             resolve yet when it loads dependencies, as it does so before
+     *             applying the changes of the same round trip
      */
     public Dependency(JsFunction dynamicImport) {
         // LAZY for the same reason as in Dependency(Type, String)
-        this.type = Type.DYNAMIC_IMPORT;
-        this.dynamicImport = Objects.requireNonNull(dynamicImport,
-                "dynamicImport cannot be null");
-        this.url = JacksonUtils.getMapper().writeValueAsString(
-                JacksonCodec.encodeWithTypeInfo(dynamicImport));
-        this.loadMode = LoadMode.LAZY;
-        this.id = null;
-        this.layer = null;
+        this(Type.DYNAMIC_IMPORT, encodeDynamicImport(dynamicImport),
+                LoadMode.LAZY);
+    }
+
+    private static String encodeDynamicImport(JsFunction dynamicImport) {
+        Objects.requireNonNull(dynamicImport, "dynamicImport cannot be null");
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(dynamicImport);
+        // How JacksonCodec references an element, at any depth of a capture
+        if (encoded.findValue("@v-node") != null) {
+            throw new IllegalArgumentException(
+                    "A dynamic import cannot capture an element: the browser"
+                            + " loads dependencies before it applies the"
+                            + " changes that create elements");
+        }
+        return JacksonUtils.getMapper().writeValueAsString(encoded);
     }
 
     /**
@@ -260,16 +272,24 @@ public class Dependency implements Serializable {
 
     /**
      * Gets the function that loads a {@link Type#DYNAMIC_IMPORT} dependency
-     * created with {@link #Dependency(JsFunction)}.
+     * created with {@link #Dependency(JsFunction)}, as the JSON it is sent to
+     * the browser as.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
-     * @return the function, or {@code null} for a dependency that is loaded
-     *         from its URL or a JavaScript expression
+     * @return the encoded function, or {@code null} for a dependency that is
+     *         loaded from its URL or a JavaScript expression
      */
     @JsonIgnore
-    public JsFunction getDynamicImport() {
-        return dynamicImport;
+    public JsonNode getEncodedDynamicImport() {
+        // Read from the URL alone, so that a copy made from the type and the
+        // URL loads the function too. No expression starts like this, as it
+        // would not compile as the body of a function.
+        if (type == Type.DYNAMIC_IMPORT
+                && url.startsWith(ENCODED_FUNCTION_PREFIX)) {
+            return JacksonUtils.readTree(url);
+        }
+        return null;
     }
 
     @Override

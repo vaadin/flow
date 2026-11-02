@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -126,11 +127,25 @@ class PageTest {
         page.addDynamicImport(JsFunction.of("return import($0)", "a"));
         page.addDynamicImport(JsFunction.of("return import($0)", "b"));
 
-        Collection<Dependency> dependencies = ui.getInternals()
-                .getDependencyList().getPendingSendToClient();
-        assertEquals(2, dependencies.size());
-        assertTrue(dependencies.stream()
-                .allMatch(dependency -> dependency.getDynamicImport() != null));
+        List<String> captures = ui.getInternals().getDependencyList()
+                .getPendingSendToClient().stream()
+                .map(dependency -> dependency.getEncodedDynamicImport()
+                        .get("@v-fn").get("captures").get(0).asString())
+                .toList();
+        assertEquals(List.of("a", "b"), captures);
+    }
+
+    @Test
+    void addDynamicImportFunction_capturedElement_throws() {
+        JsFunction function = JsFunction.of("return import($0)",
+                List.of(ui.getElement()));
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> page.addDynamicImport(function));
+        assertTrue(exception.getMessage().contains("element"));
+        assertTrue(ui.getInternals().getDependencyList()
+                .getPendingSendToClient().isEmpty());
     }
 
     private long countPendingInvocations() {

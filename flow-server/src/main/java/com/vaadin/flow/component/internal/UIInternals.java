@@ -108,6 +108,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.signals.Signal;
 import com.vaadin.flow.signals.local.ValueSignal;
@@ -125,6 +126,9 @@ import com.vaadin.flow.signals.local.ValueSignal;
 public class UIInternals implements Serializable {
 
     private static final ChunkJs CHUNK_JS = JsSnippets.of(ChunkJs.class);
+
+    // Bounded by the number of chunks, and holds only strings
+    private static final Map<String, Dependency> chunkDependencies = new ConcurrentHashMap<>();
 
     private static final Pattern APP_ID_REPLACE_PATTERN = Pattern
             .compile("-\\d+$");
@@ -1462,8 +1466,11 @@ public class UIInternals implements Serializable {
         } else {
             chunkIds.add(BundleUtils.getChunkId(componentClass));
         }
-        chunkIds.forEach(chunkId -> ui.getPage()
-                .addDynamicImport(CHUNK_JS.loadChunk(chunkId)));
+        // What Page.addDynamicImport(JsFunction) adds, created once per chunk
+        // rather than every time a response attaches a component of it
+        chunkIds.forEach(chunkId -> dependencyList
+                .add(chunkDependencies.computeIfAbsent(chunkId,
+                        id -> new Dependency(CHUNK_JS.loadChunk(id)))));
     }
 
     private static void collectProductionChunkIds(

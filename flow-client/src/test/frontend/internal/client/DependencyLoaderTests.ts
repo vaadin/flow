@@ -137,7 +137,7 @@ describe('DependencyLoader (class)', () => {
   });
 
   it('fails only the dynamic import when its function cannot be decoded', () => {
-    // A node the client does not have yet, as for an element attached in the same round trip
+    // A node the client does not have, which the codec cannot resolve
     const dynamicImport = { '@v-fn': { id: 'import-fn', captures: [{ '@v-node': 42 }] } };
     const registry = makeRegistry();
     new DependencyLoader(registry.registry).loadDependencies(

@@ -29,6 +29,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,7 +61,7 @@ class DependencyTest {
     }
 
     @Test
-    void functionDependency_lazyDynamicImportSerializedWithoutFunction() {
+    void functionDependency_lazyDynamicImportKeptByCopy() {
         Dependency dependency = new Dependency(
                 JsFunction.of("return Promise.resolve($0)", "a"));
 
@@ -68,7 +69,17 @@ class DependencyTest {
         // Lazy for the same reason as dynamicDependency_hasLazyMode
         assertEquals(LoadMode.LAZY, dependency.getLoadMode());
         assertDependency(dependency);
-        assertFalse(JacksonUtils.createNode(dependency).has("dynamicImport"));
+        // As a dependency filter or DependencyList copies a dependency
+        Dependency copy = new Dependency(dependency.getType(),
+                dependency.getUrl(), dependency.getLoadMode());
+        assertEquals("a", copy.getEncodedDynamicImport().get("@v-fn")
+                .get("captures").get(0).asString());
+    }
+
+    @Test
+    void expressionDependency_hasNoEncodedFunction() {
+        assertNull(new Dependency(Dependency.Type.DYNAMIC_IMPORT,
+                "return import('a.js')").getEncodedDynamicImport());
     }
 
     @Test

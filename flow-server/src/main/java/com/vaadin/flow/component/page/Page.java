@@ -472,12 +472,13 @@ public class Page implements Serializable {
      * is loaded only when the import runs.
      * <p>
      * A function that is added again with the same captured values is loaded
-     * only once. The function is created when the dependencies are processed in
-     * the browser, before the changes of the same round trip are applied, so it
-     * cannot capture an element that is attached in that round trip.
+     * only once. The function cannot capture an element, as the browser loads
+     * dependencies before it applies the changes of the same round trip.
      *
      * @param dynamicImport
      *            the function that returns a Promise, not {@code null}
+     * @throws IllegalArgumentException
+     *             if the function captures an element
      */
     public void addDynamicImport(JsFunction dynamicImport) {
         addDependency(new Dependency(dynamicImport));
