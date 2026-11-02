@@ -126,6 +126,7 @@ public final class EncodeUtil {
      * @param value
      *            the string to escape, not <code>null</code>
      * @return the escaped string
+     * @since 25.2.16
      */
     public static String quotedStringEscape(String value) {
         String cleaned = removeControlCharacters(value);
@@ -148,6 +149,7 @@ public final class EncodeUtil {
      * @param value
      *            the string to clean, not <code>null</code>
      * @return the string without control characters
+     * @since 25.2.16
      */
     public static String removeControlCharacters(String value) {
         StringBuilder sb = new StringBuilder(value.length());
