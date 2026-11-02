@@ -81,7 +81,7 @@ public class FrontendTools {
      */
     public static final String DEFAULT_NPM_VERSION = "11.19.1";
 
-    public static final String DEFAULT_PNPM_VERSION = "11.26.0";
+    public static final String DEFAULT_PNPM_VERSION = "11.28.9";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
