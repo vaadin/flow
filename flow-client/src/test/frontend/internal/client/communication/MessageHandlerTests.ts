@@ -366,13 +366,20 @@ describe('MessageHandler', () => {
         expect(events).to.deep.equal(['message parsed false', 'message start', 'message end applied']);
       });
 
-      it('settles a request as rejected by a reply saying the session expired', () => {
-        const registry = makeRegistry();
-        const handler = new MessageHandler(registry.registry);
-        const { message } = announce(registry, handler);
+      [
+        { refusal: 'the session expired', meta: { sessionExpired: true } },
+        // What the server replies with when it refuses the request, e.g. for a
+        // bad security key or a message id out of sync, or fails to process it.
+        { refusal: 'an application error', meta: { appError: { caption: null, message: null } } }
+      ].forEach(({ refusal, meta }) => {
+        it(`settles a request as rejected by a reply with ${refusal}`, () => {
+          const registry = makeRegistry();
+          const handler = new MessageHandler(registry.registry);
+          const { message } = announce(registry, handler);
 
-        handler.handleMessage({ syncId: 0, meta: { sessionExpired: true } }, message, { rpc: [] });
-        expect(registry.request.outcome).to.equal('rejected');
+          handler.handleMessage({ syncId: 0, meta }, message, { rpc: [] });
+          expect(registry.request.outcome).to.equal('rejected');
+        });
       });
 
       it('ends the messages it drops as discarded, once', () => {

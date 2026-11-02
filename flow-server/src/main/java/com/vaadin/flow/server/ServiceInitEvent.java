@@ -38,6 +38,7 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 public class ServiceInitEvent extends EventObject {
 
     private List<RequestHandler> addedRequestHandlers = new ArrayList<>();
+    private List<SessionlessRequestHandler> addedSessionlessRequestHandlers = new ArrayList<>();
     private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
     private List<VaadinRequestInterceptor> addedVaadinRequestInterceptors = new ArrayList<>();
@@ -58,6 +59,8 @@ public class ServiceInitEvent extends EventObject {
      * Adds a new request handler that will be used by this service. The added
      * handler will be run before any of the framework's own request handlers,
      * but the ordering relative to other custom handlers is not guaranteed.
+     * Request handlers run after all sessionless request handlers, see
+     * {@link #addSessionlessRequestHandler(SessionlessRequestHandler)}.
      *
      * @param requestHandler
      *            the request handler to add, not <code>null</code>
@@ -67,6 +70,25 @@ public class ServiceInitEvent extends EventObject {
                 "Request handler cannot be null");
 
         addedRequestHandlers.add(requestHandler);
+    }
+
+    /**
+     * Adds a new sessionless request handler that will be used by this service.
+     * Sessionless handlers are asked before the session of a request is looked
+     * up, so they run before all request handlers. The added handler will be
+     * run before any of the framework's own sessionless request handlers, but
+     * the ordering relative to other custom sessionless handlers is not
+     * guaranteed.
+     *
+     * @param sessionlessRequestHandler
+     *            the sessionless request handler to add, not <code>null</code>
+     */
+    public void addSessionlessRequestHandler(
+            SessionlessRequestHandler sessionlessRequestHandler) {
+        Objects.requireNonNull(sessionlessRequestHandler,
+                "Sessionless request handler cannot be null");
+
+        addedSessionlessRequestHandlers.add(sessionlessRequestHandler);
     }
 
     /**
@@ -142,6 +164,16 @@ public class ServiceInitEvent extends EventObject {
      */
     public Stream<RequestHandler> getAddedRequestHandlers() {
         return addedRequestHandlers.stream();
+    }
+
+    /**
+     * Gets a stream of all custom sessionless request handlers that have been
+     * added for the service.
+     *
+     * @return the stream of added sessionless request handlers
+     */
+    public Stream<SessionlessRequestHandler> getAddedSessionlessRequestHandlers() {
+        return addedSessionlessRequestHandlers.stream();
     }
 
     /**

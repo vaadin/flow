@@ -37,8 +37,10 @@ export interface VaadinRequestFailure {
  * How the delivery of a {@link VaadinRequest} settled.
  *
  * - `acknowledged`: the server replied to the request.
- * - `rejected`: the server refused the request: it replied with 401, or with a
- *   message saying that the session has expired.
+ * - `rejected`: the server refused the request or failed to process it: it
+ *   replied with 401, or with a message saying that the session has expired or
+ *   that the request could not be processed. The request did not take effect,
+ *   or only partly.
  * - `discarded`: the client dropped the request without a confirming reply.
  *   The server may or may not have executed it.
  */

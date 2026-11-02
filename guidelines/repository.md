@@ -78,6 +78,10 @@ Formatting is applied by `mvn spotless:apply` and validated by
 `mvn spotless:check` and `mvn checkstyle:check`. Run the formatter before every
 commit — the CI validation job fails on unformatted code.
 
+The year in `eclipse/*-license-header.txt` is plain text, so Spotless keeps
+the header of every file current. Bump it each January and run
+`mvn spotless:apply`.
+
 ## Blast radius
 
 This is a complex, interconnected system. Changes to core classes such as

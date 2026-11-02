@@ -167,6 +167,91 @@ describe('ClientJsonCodec', () => {
       expect(fn(5)).to.equal(15);
     });
 
+    describe('a function declared by a JavaScript definition', () => {
+      type Snippet = (...captures: unknown[]) => unknown;
+      const flow = (): { jsSnippets?: Record<string, Snippet>; jsDefinitionNames?: Record<string, string> } => {
+        const global = window as unknown as { Vaadin?: { Flow?: Record<string, unknown> } };
+        global.Vaadin = global.Vaadin ?? {};
+        global.Vaadin.Flow = global.Vaadin.Flow ?? {};
+        return global.Vaadin.Flow;
+      };
+
+      afterEach(() => {
+        delete flow().jsSnippets?.['fn-id'];
+      });
+
+      it('evaluates the function from the bundle with the decoded captures', () => {
+        // Beyond the Java suite: the id form of @v-fn is new in the port.
+        // Registered as the generated bundle registers a snippet called with `a`
+        flow().jsSnippets = {
+          ...flow().jsSnippets,
+          'fn-id': function ($0: unknown, $1: unknown) {
+            return function (this: unknown, a: unknown) {
+              return [$0, $1, a, this];
+            };
+          }
+        };
+        const json = { '@v-fn': { id: 'fn-id', captures: [10, { '@v-node': 5 }] } };
+
+        const fn = decodeWithTypeInfo(tree, json) as (this: unknown, ...args: unknown[]) => unknown;
+
+        expect(fn.call('caller', 5)).to.deep.equal([10, domNode, 5, 'caller']);
+        expect(decodeWithTypeInfo(tree, json)).to.not.equal(fn, 'every decode evaluates the snippet again');
+      });
+
+      it('runs a snippet that returns its function on the first call rather than when decoding', () => {
+        // Beyond the Java suite: the id form of @v-fn is new in the port.
+        // Registered as the generated bundle registers a snippet declared
+        // without the parameters it is called with
+        let runs = 0;
+        const snippet = Object.assign(
+          function ($0: unknown) {
+            runs += 1;
+            return function (this: unknown, a: unknown) {
+              return [$0, a, this];
+            };
+          },
+          { lazy: true }
+        );
+        flow().jsSnippets = { ...flow().jsSnippets, 'fn-id': snippet };
+
+        const fn = decodeWithTypeInfo(tree, { '@v-fn': { id: 'fn-id', captures: [10] } }) as (
+          this: unknown,
+          ...args: unknown[]
+        ) => unknown;
+
+        expect(runs).to.equal(0, 'nothing declared should run while decoding');
+        expect(fn.call('caller', 5)).to.deep.equal([10, 5, 'caller']);
+        expect(fn.call('caller', 6)).to.deep.equal([10, 6, 'caller']);
+        expect(runs).to.equal(1, 'the expression should run once per decoded value');
+      });
+
+      it('names the snippet when its expression returns no function', () => {
+        // Beyond the Java suite: the id form of @v-fn is new in the port.
+        flow().jsSnippets = { ...flow().jsSnippets, 'fn-id': Object.assign(() => undefined, { lazy: true }) };
+
+        const fn = decodeWithTypeInfo(tree, { '@v-fn': { id: 'fn-id', captures: [] } }) as () => unknown;
+
+        expect(fn).to.throw(TypeError, 'fn-id returned undefined instead of a function');
+      });
+
+      it('does not resolve an id to what the registry inherits', () => {
+        // Beyond the Java suite: the id form of @v-fn is new in the port.
+        flow().jsSnippets = flow().jsSnippets ?? {};
+
+        const fn = decodeWithTypeInfo(tree, { '@v-fn': { id: 'constructor', captures: [] } }) as () => unknown;
+
+        expect(fn).to.throw('No JavaScript in the bundle for constructor');
+      });
+
+      it('answers a function missing from the bundle with one that throws when called', () => {
+        // Beyond the Java suite: the id form of @v-fn is new in the port.
+        const fn = decodeWithTypeInfo(tree, { '@v-fn': { id: 'fn-id', captures: [] } }) as () => unknown;
+
+        expect(fn).to.throw('No JavaScript in the bundle for fn-id');
+      });
+    });
+
     it('throws on an unknown @v- type', () => {
       // Ported from decodeWithTypeInfo_unknownVType_throwsException and
       // decodeStateNode_unknownVType_throwsException.
