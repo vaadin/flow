@@ -172,11 +172,39 @@ class LaunchTest {
      * Maven 4 resolves a module of a build aggregating the reactor from above
      * to its {@code target/classes}, so a directory on the classpath is not
      * necessarily one of the reactor's own modules - while a module the reactor
-     * aggregates from beside its root still is.
+     * aggregates from beside its root still is, and so is one under the root
+     * that the pom walk did not enumerate.
      */
     @Test
     void selectModules_takesOnlyTheReactorsOwnModules(@TempDir Path workspace)
             throws IOException {
+        Path root = reactorFixture(workspace);
+
+        assertEquals(List.of("app", "lib", "unlisted", "shared"),
+                selectedFromFixture(root, workspace));
+    }
+
+    /**
+     * The candidates and the root are resolved paths, so a classpath entry
+     * spelled through a symlink must be resolved before it is matched.
+     */
+    @Test
+    void selectModules_resolvesSymlinkedClasspathEntries(
+            @TempDir Path workspace) throws IOException {
+        Path root = reactorFixture(workspace);
+        Path alias = Files.createSymbolicLink(workspace.resolve("alias"),
+                workspace);
+
+        assertEquals(List.of("app", "lib", "unlisted", "shared"),
+                selectedFromFixture(root, alias));
+    }
+
+    /**
+     * A reactor aggregating {@code app}, {@code lib} and {@code ../shared},
+     * plus {@code unlisted} under its root but in no {@code <modules>}, and
+     * {@code outside} beside it and aggregated by nothing.
+     */
+    private static Path reactorFixture(Path workspace) throws IOException {
         Path root = workspace.resolve("fixture");
         Files.createDirectories(root);
         Files.writeString(root.resolve("pom.xml"), """
@@ -190,23 +218,31 @@ class LaunchTest {
                   </modules>
                 </project>
                 """);
-        Path app = module(root.resolve("app"), "app");
-        Path lib = module(root.resolve("lib"), "lib");
-        Path shared = module(workspace.resolve("shared"), "shared");
-        Path outside = module(workspace.resolve("outside"), "outside");
-        Launch launch = new Launch(Reactor.discover(app, text -> {
-        }), text -> {
-        });
+        module(root.resolve("app"), "app");
+        module(root.resolve("lib"), "lib");
+        module(root.resolve("unlisted"), "unlisted");
+        module(workspace.resolve("shared"), "shared");
+        module(workspace.resolve("outside"), "outside");
+        return root;
+    }
 
-        List<String> selected = launch
-                .selectModules(List.of(
-                        lib.resolve("target").resolve("classes").toString(),
-                        shared.resolve("target").resolve("classes").toString(),
-                        outside.resolve("target").resolve("classes")
-                                .toString()))
-                .stream().map(Reactor.Module::artifactId).toList();
-
-        assertEquals(List.of("app", "lib", "shared"), selected);
+    /**
+     * The modules selected from the fixture's output directories, with the
+     * classpath entries spelled under {@code entryBase} instead of the real
+     * workspace.
+     */
+    private static List<String> selectedFromFixture(Path root, Path entryBase) {
+        Launch launch = new Launch(
+                Reactor.discover(root.resolve("app"), text -> {
+                }), text -> {
+                });
+        List<String> entries = Stream
+                .of("fixture/lib", "fixture/unlisted", "shared", "outside")
+                .map(dir -> entryBase.resolve(dir).resolve("target")
+                        .resolve("classes").toString())
+                .toList();
+        return launch.selectModules(entries).stream()
+                .map(Reactor.Module::artifactId).toList();
     }
 
     private static Path module(Path dir, String artifactId) throws IOException {
