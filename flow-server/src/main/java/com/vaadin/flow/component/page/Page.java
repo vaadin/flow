@@ -456,16 +456,21 @@ public class Page implements Serializable {
      *
      * <pre>
      * &#64;JsDefinition
-     * public interface ElementsJs extends Serializable {
-     *     &#64;JsExpression("return customElements.whenDefined($0);")
+     * public interface ReportEditorJs extends Serializable {
+     *     &#64;JsExpression("return import('Frontend/report-editor/report-editor.js');")
      *     &#64;JsCalledWith({})
-     *     JsFunction whenDefined(String tagName);
+     *     JsFunction loadEditor();
      * }
      *
-     * page.addDynamicImport(
-     *         JsSnippets.of(ElementsJs.class).whenDefined("my-chart"));
+     * page.addDynamicImport(JsSnippets.of(ReportEditorJs.class).loadEditor());
+     * // Defined by the time it is attached, as the import blocks later changes
+     * layout.add(new ReportEditor());
      * </pre>
      *
+     * The build puts the expression into the bundle, where the bundler can
+     * split a module imported with a literal path into a file of its own that
+     * is loaded only when the import runs.
+     * <p>
      * A function that is added again with the same captured values is loaded
      * only once. The function is created when the dependencies are processed in
      * the browser, before the changes of the same round trip are applied, so it
