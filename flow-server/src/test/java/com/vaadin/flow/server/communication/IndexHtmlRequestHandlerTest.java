@@ -97,7 +97,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.clearInvocations;
@@ -251,17 +250,6 @@ public class IndexHtmlRequestHandlerTest {
         verify(response).setHeader("Cache-Control", "no-cache, no-store");
         verify(response).setHeader("Pragma", "no-cache");
         verify(response).setDateHeader("Expires", 0L);
-    }
-
-    @Test
-    public void serveIndexHtml_cacheControlAlreadyPresent_doesNotOverride()
-            throws IOException {
-        when(response.containsHeader("Cache-Control")).thenReturn(true);
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
-        verify(response, never()).setHeader(eq("Cache-Control"), any());
-        verify(response, never()).setHeader(eq("Pragma"), any());
-        verify(response, never()).setDateHeader(eq("Expires"), anyLong());
     }
 
     @Test

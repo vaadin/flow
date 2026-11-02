@@ -169,12 +169,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         // The page references hashed bundle files and embeds session bound
         // data, so a stored copy must not be reused, e.g. when the browser
-        // restores a tab after the application has been redeployed. A
-        // header set elsewhere (e.g. by a servlet filter) is respected.
-        if (!response.containsHeader("Cache-Control")) {
-            HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
-                    response::setDateHeader);
-        }
+        // restores a tab after the application has been redeployed.
+        HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
+                response::setDateHeader);
 
         String frameOptions = config.getFrameOptions();
         if (frameOptions != null && !frameOptions.isEmpty()) {
