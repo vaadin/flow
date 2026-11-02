@@ -22,9 +22,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -137,8 +140,35 @@ class PageTest {
 
     @Test
     void addDynamicImportFunction_capturedElement_throws() {
-        JsFunction function = JsFunction.of("return import($0)",
-                List.of(ui.getElement()));
+        assertCaptureRejected(ui.getElement());
+    }
+
+    @Test
+    void addDynamicImportFunction_capturedDetachedElement_throws() {
+        // Encoded as null, so only the check on the Java value catches it
+        Element detached = new Element("div");
+        assertFalse(detached.getNode().isAttached());
+
+        assertCaptureRejected(detached);
+    }
+
+    @Test
+    void addDynamicImportFunction_capturedDetachedComponent_throws() {
+        assertCaptureRejected(new TestComponent());
+    }
+
+    @Test
+    void addDynamicImportFunction_elementInCollection_throws() {
+        assertCaptureRejected(List.of("a", new Element("div")));
+    }
+
+    @Test
+    void addDynamicImportFunction_elementInNestedFunction_throws() {
+        assertCaptureRejected(JsFunction.of("return $0", new Element("div")));
+    }
+
+    private void assertCaptureRejected(Object capture) {
+        JsFunction function = JsFunction.of("return import($0)", capture);
 
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
@@ -146,6 +176,10 @@ class PageTest {
         assertTrue(exception.getMessage().contains("element"));
         assertTrue(ui.getInternals().getDependencyList()
                 .getPendingSendToClient().isEmpty());
+    }
+
+    @Tag("div")
+    private static class TestComponent extends Component {
     }
 
     private long countPendingInvocations() {

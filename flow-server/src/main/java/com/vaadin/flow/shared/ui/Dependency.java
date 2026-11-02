@@ -16,6 +16,7 @@
 package com.vaadin.flow.shared.ui;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -23,7 +24,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.JsFunction;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 
@@ -194,9 +197,10 @@ public class Dependency implements Serializable {
      * @param dynamicImport
      *            the function that loads the dependency, not {@code null}
      * @throws IllegalArgumentException
-     *             if the function captures an element, which the browser cannot
-     *             resolve yet when it loads dependencies, as it does so before
-     *             applying the changes of the same round trip
+     *             if the function captures an element or a component, attached
+     *             or not: the browser loads dependencies before it applies the
+     *             changes of the same round trip, and a detached element cannot
+     *             be referenced
      */
     public Dependency(JsFunction dynamicImport) {
         // LAZY for the same reason as in Dependency(Type, String)
@@ -206,15 +210,51 @@ public class Dependency implements Serializable {
 
     private static String encodeDynamicImport(JsFunction dynamicImport) {
         Objects.requireNonNull(dynamicImport, "dynamicImport cannot be null");
+        // Checked on the Java values, as JacksonCodec encodes a detached
+        // element as null, which the check below cannot see
+        if (capturesElement(dynamicImport)) {
+            throw elementCaptured();
+        }
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(dynamicImport);
-        // How JacksonCodec references an element, at any depth of a capture
+        // How JacksonCodec references an attached element, such as one in a
+        // bean property, which capturesElement does not look into
         if (encoded.findValue("@v-node") != null) {
-            throw new IllegalArgumentException(
-                    "A dynamic import cannot capture an element: the browser"
-                            + " loads dependencies before it applies the"
-                            + " changes that create elements");
+            throw elementCaptured();
         }
         return JacksonUtils.getMapper().writeValueAsString(encoded);
+    }
+
+    private static boolean capturesElement(Object value) {
+        if (value instanceof Node<?> || value instanceof Component) {
+            return true;
+        }
+        if (value instanceof JsFunction function) {
+            return function.getCaptures().stream()
+                    .anyMatch(Dependency::capturesElement);
+        }
+        if (value instanceof Iterable<?> iterable) {
+            for (Object item : iterable) {
+                if (capturesElement(item)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (value instanceof Map<?, ?> map) {
+            return map.values().stream().anyMatch(Dependency::capturesElement);
+        }
+        if (value instanceof Object[] array) {
+            return Stream.of(array).anyMatch(Dependency::capturesElement);
+        }
+        return false;
+    }
+
+    private static IllegalArgumentException elementCaptured() {
+        return new IllegalArgumentException(
+                "A dynamic import cannot capture an element or a component,"
+                        + " attached or not: the browser loads dependencies"
+                        + " before it applies the changes of the same round"
+                        + " trip, and a detached element cannot be referenced");
     }
 
     /**
