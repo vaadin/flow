@@ -294,10 +294,14 @@ export class MessageSender {
       // reconnection; keep a copy to resend after a reconnection until the
       // server confirms it.
       Console.debug('send PUSH');
+      if (this.#pushPendingMessage !== null && this.#pushPendingMessage !== payload) {
+        this.#discardIfUntracked(this.#pushPendingMessage);
+      }
       this.#pushPendingMessage = payload;
       this.#transmit(payload, true);
     } else {
       Console.debug('send XHR');
+      this.#discardIfUntracked(payload);
       this.#resetTimer();
       this.#transmit(payload, false);
       this.#scheduleResend(payload);
@@ -590,6 +594,16 @@ export class MessageSender {
       .filter((payload) => payload !== this.#pushPendingMessage)
       .forEach((payload) => this.settleRequest(payload, 'discarded'));
     this.#messageQueue = [];
+  }
+
+  // A payload kept pending over push after the queue was cleared is tracked
+  // only as the pending push message. Once another payload replaces it there,
+  // or it goes out over XHR, nothing confirms it any more, so its request is
+  // dropped.
+  #discardIfUntracked(payload: Payload): void {
+    if (!this.#messageQueue.includes(payload)) {
+      this.settleRequest(payload, 'discarded');
+    }
   }
 }
 

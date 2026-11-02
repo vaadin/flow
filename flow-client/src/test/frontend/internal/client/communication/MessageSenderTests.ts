@@ -334,11 +334,12 @@ describe('MessageSender (class)', () => {
       expect(events).to.deep.equal(['3 sent 1', '3 end discarded', '4 end discarded']);
     });
 
-    it('keeps a request pushed but not confirmed when the queue is cleared', () => {
+    it('keeps a request pushed but not confirmed when the queue is cleared, until nothing can confirm it', () => {
       const context = makeRegistry();
+      let bidirectional = true;
       const push = {
         isActive: () => true,
-        isBidirectional: () => true,
+        isBidirectional: () => bidirectional,
         push: () => {},
         disconnect: () => {},
         getTransportType: () => 'websocket'
@@ -357,6 +358,24 @@ describe('MessageSender (class)', () => {
       sender.sendInvocationsToServer();
       sender.setClientToServerMessageId(5, false);
       expect(events).to.deep.equal(['0 sent 1', '0 sent 2', '0 end acknowledged']);
+      events.length = 0;
+
+      // Replaced as the pending push message by the next payload, it is no
+      // longer tracked.
+      context.setActiveRequest(false);
+      sender.send({ rpc: [] });
+      sender.setClientToServerMessageId(7, true);
+      context.setActiveRequest(false);
+      sender.send({ rpc: [] });
+      expect(events).to.deep.equal(['1 sent 1', '1 end discarded', '2 sent 1']);
+      events.length = 0;
+
+      // Sent again over XHR once push only receives, it is no longer tracked.
+      sender.setClientToServerMessageId(9, true);
+      bidirectional = false;
+      context.setActiveRequest(false);
+      sender.sendInvocationsToServer();
+      expect(events).to.deep.equal(['2 end discarded']);
     });
 
     it('discards the open requests when the UI lifecycle that replaced the first one stops', () => {
