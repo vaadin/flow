@@ -500,6 +500,27 @@ class UidlWriterTest {
     }
 
     @Test
+    void dynamicImports_expressionSentAsString_functionSentAsValue()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+        JsFunction function = JsFunction.of("return import($0)", "x.js");
+
+        ui.getPage().addDynamicImport("return import('y.js')");
+        ui.getPage().addDynamicImport(function);
+        ObjectNode response = uidlWriter.createUidl(ui, false);
+
+        List<JsonNode> urls = JacksonUtils
+                .<ObjectNode> stream(
+                        (ArrayNode) response.get(LoadMode.LAZY.name()))
+                .map(dependency -> dependency.get(Dependency.KEY_URL)).toList();
+        assertEquals(List.of(
+                JacksonUtils.getMapper().valueToTree("return import('y.js')"),
+                JacksonCodec.encodeWithTypeInfo(function)), urls);
+    }
+
+    @Test
     void testComponentInterfaceDependencies_npmMode() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
         UidlWriter uidlWriter = new UidlWriter();
