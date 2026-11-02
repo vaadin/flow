@@ -89,6 +89,8 @@ public class ElementListenerMap extends NodeMap {
     private static final ExpressionEntry ALWAYS_TRUE_ENTRY = ExpressionEntry
             .forFilter(ALWAYS_TRUE_FILTER);
 
+    private static final String EVENT_DATA_NULL_MESSAGE = "Event data cannot be null";
+
     private static final String PREVENT_DEFAULT = "preventDefault";
     private static final String STOP_PROPAGATION = "stopPropagation";
 
@@ -224,8 +226,8 @@ public class ElementListenerMap extends NodeMap {
                 if (isPseudoExpression()) {
                     sharedKey = expression;
                 } else {
-                    String source = functionId == null ? "e" + expression
-                            : "f" + functionId;
+                    String source = functionId == null ? ("e" + expression)
+                            : ("f" + functionId);
                     sharedKey = hash(kind + captures.size() + '|' + source);
                 }
             }
@@ -513,7 +515,7 @@ public class ElementListenerMap extends NodeMap {
 
         @Override
         public DomListenerRegistration addEventData(DomEventData<?> eventData) {
-            Objects.requireNonNull(eventData, "Event data cannot be null");
+            Objects.requireNonNull(eventData, EVENT_DATA_NULL_MESSAGE);
 
             ExpressionEntry entry = ExpressionEntry.forEventData(eventData);
 
@@ -871,7 +873,7 @@ public class ElementListenerMap extends NodeMap {
      */
     public JsonNode translateEventData(String eventType, JsonNode eventData) {
         Objects.requireNonNull(eventType, "Event type cannot be null");
-        Objects.requireNonNull(eventData, "Event data cannot be null");
+        Objects.requireNonNull(eventData, EVENT_DATA_NULL_MESSAGE);
 
         if (getWrappers(eventType).isEmpty()) {
             return eventData;
@@ -1047,7 +1049,7 @@ public class ElementListenerMap extends NodeMap {
      * @see DomEvent#getEventData(DomEventData)
      */
     public static String getEventDataKey(DomEventData<?> eventData) {
-        Objects.requireNonNull(eventData, "Event data cannot be null");
+        Objects.requireNonNull(eventData, EVENT_DATA_NULL_MESSAGE);
         return ExpressionEntry.forEventData(eventData).getKey();
     }
 

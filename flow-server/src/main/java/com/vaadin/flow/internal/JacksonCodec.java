@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JavaType;
@@ -296,8 +297,8 @@ public class JacksonCodec {
      */
     @SuppressWarnings("unchecked")
     public static <T> T decodeAs(JsonNode json, JavaType type) {
-        assert json != null;
-        assert type != null;
+        Objects.requireNonNull(json, "JSON cannot be null");
+        Objects.requireNonNull(type, "Type cannot be null");
         if (json.getNodeType() == JsonNodeType.NULL) {
             return null;
         }
