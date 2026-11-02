@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.Nullable;
 
@@ -73,6 +74,19 @@ public class NativeButton extends HtmlContainer implements
          */
         public String getValue() {
             return value;
+        }
+
+        /**
+         * Resolves an attribute value to its constant. The comparison ignores
+         * case, because {@code type} is an HTML enumerated attribute and its
+         * keywords are matched ASCII case-insensitively, so an element that
+         * arrived with {@code type="SUBMIT"} has to read back as
+         * {@link #SUBMIT}.
+         */
+        private static @Nullable Type fromValue(@Nullable String value) {
+            return Stream.of(values())
+                    .filter(type -> type.value.equalsIgnoreCase(value))
+                    .findFirst().orElse(null);
         }
     }
 
@@ -141,14 +155,7 @@ public class NativeButton extends HtmlContainer implements
      * @see #setType(Type)
      */
     public @Nullable Type getType() {
-        String value = getElement().getAttribute("type");
-        for (Type type : Type.values()) {
-            // HTML keywords are case-insensitive
-            if (type.getValue().equalsIgnoreCase(value)) {
-                return type;
-            }
-        }
-        return null;
+        return Type.fromValue(getElement().getAttribute("type"));
     }
 
 }

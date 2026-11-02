@@ -69,13 +69,18 @@ class NativeFormTest extends ComponentTest {
     }
 
     @Test
-    void getMethod_ignoresCaseOfAttribute() {
+    void getMethodAndEnctype_ignoreCaseOfAttribute() {
         NativeForm form = new NativeForm();
         form.getElement().setAttribute("method", "POST");
         assertEquals(Method.POST, form.getMethod());
 
+        form.getElement().setAttribute("enctype", "MULTIPART/FORM-DATA");
+        assertEquals(Enctype.MULTIPART, form.getEnctype());
+
         form.getElement().setAttribute("method", "put");
+        form.getElement().setAttribute("enctype", "application/json");
         assertNull(form.getMethod());
+        assertNull(form.getEnctype());
     }
 
     @Test

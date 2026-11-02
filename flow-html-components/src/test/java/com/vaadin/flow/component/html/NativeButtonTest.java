@@ -44,6 +44,9 @@ class NativeButtonTest extends ComponentTest {
         button.getElement().setAttribute("type", "RESET");
         assertEquals(Type.RESET, button.getType());
 
+        button.getElement().setAttribute("type", "menu");
+        assertNull(button.getType());
+
         button.setType(null);
         assertNull(button.getType());
         assertNull(button.getElement().getAttribute("type"));

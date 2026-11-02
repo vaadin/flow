@@ -17,6 +17,7 @@ package com.vaadin.flow.component.html;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -104,6 +105,18 @@ public class NativeForm extends HtmlContainer {
         public String getValue() {
             return value;
         }
+
+        /**
+         * Resolves an attribute value to its constant. The comparison ignores
+         * case, because {@code method} is an HTML enumerated attribute and its
+         * keywords are matched ASCII case-insensitively, so an element that
+         * arrived with {@code method="POST"} has to read back as {@link #POST}.
+         */
+        private static @Nullable Method fromValue(@Nullable String value) {
+            return Stream.of(values())
+                    .filter(method -> method.value.equalsIgnoreCase(value))
+                    .findFirst().orElse(null);
+        }
     }
 
     /**
@@ -139,6 +152,19 @@ public class NativeForm extends HtmlContainer {
          */
         public String getValue() {
             return value;
+        }
+
+        /**
+         * Resolves an attribute value to its constant. The comparison ignores
+         * case, because {@code enctype} is an HTML enumerated attribute and its
+         * keywords are matched ASCII case-insensitively, so an element that
+         * arrived with {@code enctype="MULTIPART/FORM-DATA"} has to read back
+         * as {@link #MULTIPART}.
+         */
+        private static @Nullable Enctype fromValue(@Nullable String value) {
+            return Stream.of(values())
+                    .filter(enctype -> enctype.value.equalsIgnoreCase(value))
+                    .findFirst().orElse(null);
         }
     }
 
@@ -204,14 +230,7 @@ public class NativeForm extends HtmlContainer {
      * @see #setMethod(Method)
      */
     public @Nullable Method getMethod() {
-        String value = getElement().getAttribute(ATTRIBUTE_METHOD);
-        for (Method method : Method.values()) {
-            // HTML keywords are case-insensitive
-            if (method.getValue().equalsIgnoreCase(value)) {
-                return method;
-            }
-        }
-        return null;
+        return Method.fromValue(getElement().getAttribute(ATTRIBUTE_METHOD));
     }
 
     /**
@@ -234,13 +253,7 @@ public class NativeForm extends HtmlContainer {
      * @see #setEnctype(Enctype)
      */
     public @Nullable Enctype getEnctype() {
-        String value = getElement().getAttribute(ATTRIBUTE_ENCTYPE);
-        for (Enctype enctype : Enctype.values()) {
-            if (enctype.getValue().equalsIgnoreCase(value)) {
-                return enctype;
-            }
-        }
-        return null;
+        return Enctype.fromValue(getElement().getAttribute(ATTRIBUTE_ENCTYPE));
     }
 
     /**
@@ -282,9 +295,11 @@ public class NativeForm extends HtmlContainer {
 
     /**
      * {@inheritDoc}
-     *
-     * @throws IllegalArgumentException
-     *             if the factory creates a {@code NativeForm}
+     * <p>
+     * A {@code NativeForm} created by the factory is rejected with an
+     * {@link IllegalArgumentException}. While this form is attached, the
+     * factory runs in an effect, so the exception is passed to the session
+     * error handler instead of being thrown to the caller.
      */
     @Override
     public <V extends @Nullable Object, S extends Signal<V>> void bindChildren(
