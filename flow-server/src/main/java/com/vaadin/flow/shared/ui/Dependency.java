@@ -184,7 +184,9 @@ public class Dependency implements Serializable {
      * <p>
      * The created instance dependency mode is {@link LoadMode#LAZY}. Its URL is
      * the JSON the function is sent to the browser as, which tells apart
-     * dependencies that load different things.
+     * dependencies that load different things. Only this instance carries the
+     * function: a copy made from its type and URL sends the URL as an
+     * expression, which fails to load.
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *

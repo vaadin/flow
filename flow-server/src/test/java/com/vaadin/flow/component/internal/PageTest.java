@@ -24,6 +24,7 @@ import org.junit.jupiter.api.parallel.Isolated;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
@@ -117,6 +118,19 @@ class PageTest {
         assertEquals(1, dependencies.size());
         Dependency dependency = dependencies.iterator().next();
         assertEquals("foo", dependency.getUrl());
+    }
+
+    @Test
+    void addDynamicImportFunction_sameCapturesLoadedOnce() {
+        page.addDynamicImport(JsFunction.of("return import($0)", "a"));
+        page.addDynamicImport(JsFunction.of("return import($0)", "a"));
+        page.addDynamicImport(JsFunction.of("return import($0)", "b"));
+
+        Collection<Dependency> dependencies = ui.getInternals()
+                .getDependencyList().getPendingSendToClient();
+        assertEquals(2, dependencies.size());
+        assertTrue(dependencies.stream()
+                .allMatch(dependency -> dependency.getDynamicImport() != null));
     }
 
     private long countPendingInvocations() {

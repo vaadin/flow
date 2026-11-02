@@ -152,11 +152,16 @@ export class DependencyLoader {
   }
 
   // A dynamic import sent as a function value (@v-fn) rather than as an
-  // expression, which is decoded instead of compiled from a string
+  // expression, which is decoded instead of compiled from a string. Decoding
+  // is part of loading, so a value that cannot be decoded fails this import
+  // through its listener instead of the whole message.
   #getFunctionImportLoader(dynamicImport: unknown): Loader {
-    const load = decodeWithTypeInfo(this.#registry.getStateTree(), dynamicImport) as () => unknown;
+    const tree = this.#registry.getStateTree();
     const resourceLoader = this.#registry.getResourceLoader();
-    return (description, listener) => resourceLoader.loadDynamicImport(description, listener, load);
+    return (description, listener) =>
+      resourceLoader.loadDynamicImport(description, listener, () =>
+        (decodeWithTypeInfo(tree, dynamicImport) as () => unknown)()
+      );
   }
 
   #getDependencyUrl(dependency: Dependency): string {

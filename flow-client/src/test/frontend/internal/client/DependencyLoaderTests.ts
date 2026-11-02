@@ -128,12 +128,23 @@ describe('DependencyLoader (class)', () => {
       new DependencyLoader(registry.registry).loadDependencies(
         new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
       );
+      const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
+      expect(call?.args[0]).to.equal(JSON.stringify(dynamicImport));
+      expect((call?.args[2] as () => unknown)()).to.equal('loaded chunk-7');
     } finally {
       delete snippets['import-fn'];
     }
+  });
+
+  it('fails only the dynamic import when its function cannot be decoded', () => {
+    // A node the client does not have yet, as for an element attached in the same round trip
+    const dynamicImport = { '@v-fn': { id: 'import-fn', captures: [{ '@v-node': 42 }] } };
+    const registry = makeRegistry();
+    new DependencyLoader(registry.registry).loadDependencies(
+      new Map([['LAZY', [{ type: 'DYNAMIC_IMPORT', url: dynamicImport }]]])
+    );
     const call = registry.calls.find((c) => c.method === 'loadDynamicImport');
-    expect(call?.args[0]).to.equal(JSON.stringify(dynamicImport));
-    expect((call?.args[2] as () => unknown)()).to.equal('loaded chunk-7');
+    expect(call?.args[2] as () => unknown).to.throw();
   });
 
   it('defers lazy dependencies until after eager ones complete', async () => {

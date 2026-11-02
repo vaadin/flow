@@ -467,7 +467,9 @@ public class Page implements Serializable {
      * </pre>
      *
      * A function that is added again with the same captured values is loaded
-     * only once.
+     * only once. The function is created when the dependencies are processed in
+     * the browser, before the changes of the same round trip are applied, so it
+     * cannot capture an element that is attached in that round trip.
      *
      * @param dynamicImport
      *            the function that returns a Promise, not {@code null}

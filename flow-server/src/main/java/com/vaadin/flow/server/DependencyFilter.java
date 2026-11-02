@@ -38,6 +38,10 @@ public interface DependencyFilter extends Serializable {
      * <p>
      * Called whenever dependencies are about to be sent to the client side for
      * loading and when templates are parsed on the server side.
+     * <p>
+     * Return a {@link Dependency.Type#DYNAMIC_IMPORT} dependency as the same
+     * instance rather than as a copy: one that loads a function, such as the
+     * chunk of a route, carries the function only in the original instance.
      *
      * @param dependencies
      *            the collected dependencies, possibly already modified by other

@@ -20,6 +20,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.dom.JsFunction;
 import com.vaadin.flow.internal.JacksonUtils;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -56,6 +57,18 @@ class DependencyTest {
         // adding an element into the document head right away (no client side
         // processing is involved).
         assertThat(dependency.getLoadMode(), equalTo(LoadMode.LAZY));
+    }
+
+    @Test
+    void functionDependency_lazyDynamicImportSerializedWithoutFunction() {
+        Dependency dependency = new Dependency(
+                JsFunction.of("return Promise.resolve($0)", "a"));
+
+        assertEquals(Dependency.Type.DYNAMIC_IMPORT, dependency.getType());
+        // Lazy for the same reason as dynamicDependency_hasLazyMode
+        assertEquals(LoadMode.LAZY, dependency.getLoadMode());
+        assertDependency(dependency);
+        assertFalse(JacksonUtils.createNode(dependency).has("dynamicImport"));
     }
 
     @Test
