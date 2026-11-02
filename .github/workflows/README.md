@@ -237,9 +237,9 @@ formatted, and a review that suggests the changes on the lines they apply
 to, so the author can accept them with **Commit suggestions** instead of
 running the formatter locally. At most 12 changes are suggested per review;
 the comment counts the rest, along with changes outside the lines of the
-pull request diff, and points at `mvn spotless:apply`. Suggestions a later run no longer makes are
-deleted, unless someone replied to them, and the comment is deleted once
-the format is fixed.
+pull request diff, and points at `mvn spotless:apply`. Suggestions a later
+run no longer makes are deleted, unless someone replied to them, and the
+comment is deleted once the format is fixed.
 
 The two are split so that pull requests from forks get the report too. The
 formatter runs code of the pull request — its build files and Maven plugins
